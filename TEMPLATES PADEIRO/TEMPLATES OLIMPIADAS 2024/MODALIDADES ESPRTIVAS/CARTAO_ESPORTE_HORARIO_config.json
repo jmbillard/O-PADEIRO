@@ -1,0 +1,27 @@
+{
+	"configName": "OLIMPIADAS 2024 CARTAO CATEGORIA ESPORTIVA",
+	"exemple": "SKATE STREET\nMASCULINO - FINAIS\n12:00",
+	"tip": "digite em ordem:\nESPORTE\nGENERO\nHORÁRIO\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "CRT - ESPORTE HORARIO TEMPLATE",
+	"prefix": "CRT",
+	"refTime": 3,
+	"separator": "\n",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 2,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/OLIMPIADAS/OLIMPIADAS 2024/GRAFISMO EVENTOS OLIMPICOS/CATEGORIAS ESPORTIVAS"
+	]
+}

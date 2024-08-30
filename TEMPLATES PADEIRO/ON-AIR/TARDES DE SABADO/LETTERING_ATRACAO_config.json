@@ -1,0 +1,27 @@
+{
+	"configName": "TARDES DE SABADO LETTERING ATRACAO",
+	"exemple": "CHEIAS DE\nCHARME",
+	"tip": "digite o texto em 1 ou 2 linhas para o título, subtítulo e/ou horário.\n\nuse 1 linha com '---' para separar cada título.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "LETT - ATRACAO TEMPLATE",
+	"prefix": "LETT",
+	"refTime": 2,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 4,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/TARDES DE SABADO/LETTERINGS"
+	]
+}

@@ -1,0 +1,19 @@
+{
+	"configName": "RDP_GENERICO_3D_PEQUENO",
+	"exemple": "Estrela da Casa",
+	"tip": "digite o texto em 1 ou mais linhas.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP_GENERICO_3D_PEQUENO",
+	"prefix": "RDP",
+	"refTime": 2,
+	"separator": "---",
+	"textCase": "titleCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"/l/Fileserver_3/PROGRAMAS/ESTRELA DA CASA/05SAIDA/preview"
+	]
+}

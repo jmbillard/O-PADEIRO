@@ -1,0 +1,27 @@
+{
+	"configName": "OLIMPIADAS 2024 RODAPE CATEGORIA ESPORTIVA",
+	"exemple": "CANOAGEM SLALOM\nMASCULINO - FINAIS\n11:45",
+	"tip": "digite em ordem:\nESPORTE\nGENERO\nHORÁRIO\n\no GÊNERO pode ser acompanhado ou substituído por OUTRAS INFORMAÇÕES\n\no HORÁRIO é opcional para removê-lo basta deixar a terceira linha em branco\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP - ESPORTE HORARIO TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 3,
+	"separator": "\n",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/OLIMPIADAS/OLIMPIADAS 2024/GRAFISMO EVENTOS OLIMPICOS/CATEGORIAS ESPORTIVAS"
+	]
+}

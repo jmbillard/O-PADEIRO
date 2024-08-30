@@ -1,0 +1,20 @@
+{
+	"configName": "ALTAS HORAS CHROMA VOLTA JA",
+	"exemple": "1\n\n2\n\n3\n\n4",
+	"tip": "digite um número para cada CHROMA desejado.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "VOLTA JA - TEMPLATE",
+	"prefix": "VOLTA JA",
+	"refTime": 1,
+	"separator": "",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"importPath": "//10.193.48.13/promo_ber/BACKUP/edicao/Chamadas para Arte/ALTAS HORAS",
+	"outputPath": [
+		"//10.228.183.146/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE SP/ALTAS HORAS/PROGRAMAS"
+	]
+}

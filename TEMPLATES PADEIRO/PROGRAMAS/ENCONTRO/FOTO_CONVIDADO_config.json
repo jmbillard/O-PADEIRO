@@ -1,0 +1,24 @@
+{
+	"configName": "ENCONTRO FOTO CONVIDADO",
+	"exemple": "Talita\nYounan",
+	"tip": "digite o texto em 1 ou 2 linhas.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\ndepois de criar, importe e adicione a imagem de cada convidado em sua respectiva comp.\n\nuse os controles nos efeitos do layer 'ctrl'.",
+	"compName": "FOTO - CONVIDADO TEMPLATE",
+	"prefix": "FOTO",
+	"refTime": 2,
+	"separator": "\n",
+	"textCase": "titleCase",
+	"inputLayers": [
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 4,
+			"method": "textContent"
+		}
+	],
+	"importPath": "//10.193.48.13/promo_ber/BACKUP/edicao/Chamadas para Arte/ENCONTRO",
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/PROGRAMAS/DIVERSOS/ENCONTRO/ID 2024/CONVIDADOS"
+	]
+}

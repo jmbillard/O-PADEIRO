@@ -1,0 +1,27 @@
+{
+	"configName": "OLIMPIADAS 2024 RODAPE MEDALHA",
+	"exemple": "BRONZE\nRAYSSA LEAL\nSKATE STREET",
+	"tip": "IMPORTANTE:\nPARA ESPORTES INDIVIDUAIS, NÃO COLOQUE O GÊNERO!\nESPORTES COLETIVOS PODEM TER GÊNERO!\n\ndigite o texto em ordem:\nMEDALHA\nESPORTE\nINFORMAÇÃO\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RODAPE MEDALHA TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 2,
+	"separator": "\n",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 4,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/OLIMPIADAS/OLIMPIADAS 2024/MEDALHAS"
+	]
+}

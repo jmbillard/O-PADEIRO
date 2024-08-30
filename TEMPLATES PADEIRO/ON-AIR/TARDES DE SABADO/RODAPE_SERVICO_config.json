@@ -1,0 +1,19 @@
+{
+	"configName": "TARDES DE SABADO RODAPE SERVICO",
+	"exemple": "AMANHÃ",
+	"tip": "digite o texto em 1 ou 2 linhas.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP - SERVICO TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 2,
+	"separator": "",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/SESSOES DE CINEMA/S TARDE ONAIR/FILMES"
+	]
+}

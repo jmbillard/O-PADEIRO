@@ -1,0 +1,3 @@
+// esse script só pode ser executado pelo padeiro... 
+
+renamePromoComps(createdTemplatesArray);

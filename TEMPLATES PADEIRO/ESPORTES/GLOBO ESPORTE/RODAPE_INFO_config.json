@@ -1,0 +1,28 @@
+{
+	"configName": "GLOBO ESPORTE RODAPE INFO",
+	"exemple": "REFLEXOS",
+	"tip": "digite o texto em 1 ou 2 linhas.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP - INFO TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 0.5,
+	"separator": "",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 4,
+			"method": "textContent"
+		}
+	],
+	"inputFx": {
+		"layerIndex": 1,
+		"fxName": "layout",
+		"optionIndex": 1,
+		"options": [
+			"E",
+			"D"
+		]
+	},
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/GLOBO ESPORTE/2022-2024/_LETTERINGS"
+	]
+}

@@ -1,0 +1,29 @@
+{
+	"configName": "VERTICAL LETTERING DIA HORA",
+	"exemple": "HOJE 10:00",
+	"tip": "digite o texto em 1 linha.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\nuse os controles nos efeitos do layer 'ctrl'.",
+	"compName": "LETT - DIA HORA TEMPLATE",
+	"prefix": "",
+	"refTime": 0,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "textContent"
+		}
+	],
+	"inputFx": {
+		"layerIndex": 1,
+		"fxName": "paleta",
+		"optionIndex": 1,
+		"options": [
+			"MANHA",
+			"TARDE",
+			"NOITE"
+		]
+	},
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/VERTICAIS/VERTICAL_ONAIR"
+	]
+}

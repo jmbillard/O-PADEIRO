@@ -1,0 +1,19 @@
+{
+	"configName": "ALTAS HORAS CARTAO INFO",
+	"exemple": "ESPECIAL\nALCIONE",
+	"tip": "digite o texto em 1, 2 ou 3 linhas.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\nuse os controles nos efeitos do layer 'ctrl'.",
+	"compName": "CRT - INFO TEMPLATE",
+	"prefix": "CRT",
+	"refTime": 2,
+	"separator": "",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 5,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.146/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE SP/ALTAS HORAS/PROGRAMAS"
+	]
+}

@@ -1,0 +1,31 @@
+{
+	"configName": "OLIMPIADAS 2024 CONFRONTO",
+	"exemple": "VÔLEI\nMASCULINO\nBRASIL X PORTUGAL\n2:00",
+	"tip": "digite em ordem:\nESPORTE\nGÊNERO\nPAÍS 1 X PAÍS 2\nHORÁRIO\n\nuse um \" X \" entre o nome dos 2 países.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "CONFRONTO TEMPLATE",
+	"prefix": "CONFRONTO",
+	"refTime": 4,
+	"separator": "\n",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 8,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 2,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 9,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/OLIMPIADAS/OLIMPIADAS 2024/GRAFISMO EVENTOS OLIMPICOS/CATEGORIAS ESPORTIVAS"
+	]
+}

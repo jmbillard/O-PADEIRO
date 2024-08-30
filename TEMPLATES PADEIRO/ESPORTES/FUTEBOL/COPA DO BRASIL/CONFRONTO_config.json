@@ -1,0 +1,23 @@
+{
+	"configName": "COPA DO BRASIL CONFRONTO",
+	"exemple": "CORINTHIANS X GRÊMIO",
+	"tip": "digite o texto em 1 linha.\n\nuse um \" X \" entre o nome dos 2 times.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\nuse os controles nos efeitos dos layers de cada time.",
+	"compName": "CONFRONTO TEMPLATE",
+	"prefix": "CONFRONTO",
+	"refTime": 2,
+	"separator": " X ",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "layerName"
+		},
+		{
+			"layerIndex": 2,
+			"method": "layerName"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/COPA DO BRASIL/2024/CONFRONTOS"
+	]
+}

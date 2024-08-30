@@ -1,0 +1,19 @@
+{
+	"configName": "OLIMPIADAS 2024 CARTAO SERVICO HORA",
+	"exemple": "11:00",
+	"tip": "digite o horário.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "CRT - HORARIO TEMPLATE",
+	"prefix": "CRT",
+	"refTime": 3,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/OLIMPIADAS/OLIMPIADAS 2024/GRAFISMO EVENTOS OLIMPICOS/SERVICOS"
+	]
+}

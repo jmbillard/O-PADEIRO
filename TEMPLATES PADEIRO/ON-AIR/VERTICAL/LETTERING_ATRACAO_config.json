@@ -1,0 +1,37 @@
+{
+	"configName": "VERTICAL LETTERING ATRACAO",
+	"exemple": "THE GOOD\nDOCTOR\n---\nO BOM DOUTOR",
+	"tip": "digite o texto em 1 ou 2 linhas para o título e subtítulo.\n\nuse 1 linha com '---' para separar título, subtítulo e apoio.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\nuse os controles nos efeitos do layer 'ctrl'.",
+	"compName": "LETT - NOME TEMPLATE",
+	"prefix": "",
+	"refTime": 0,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 3,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 6,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 7,
+			"method": "textContent"
+		}
+	],
+	"inputFx": {
+		"layerIndex": 1,
+		"fxName": "paleta",
+		"optionIndex": 1,
+		"options": [
+			"MANHA",
+			"TARDE",
+			"NOITE"
+		]
+	},
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/VERTICAIS/VERTICAL_ONAIR"
+	]
+}

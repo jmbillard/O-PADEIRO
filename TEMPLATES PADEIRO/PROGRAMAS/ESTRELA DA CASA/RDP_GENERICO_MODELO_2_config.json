@@ -1,0 +1,19 @@
+{
+	"configName": "RDP GENERICO MODELO 2",
+	"exemple": "informação 1\ninformação 2",
+	"tip": "\ndigite o texto em 1 ou 2 linhas.\n\nuse a quebra de linha para separar \"informação\" 1 e \"informação 2\".\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP_LETTERING GENERICO",
+	"prefix": "RDP",
+	"refTime": 1,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"outputPath": [
+		"/l/Fileserver_3/PROGRAMAS/ESTRELA DA CASA/05SAIDA/preview"
+	]
+}
