@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -232,11 +234,11 @@ function createColorButtons(colorArray, colorGrp) {
 
 // Função para desenhar o botão personalizado.
 function customDraw() {
-	with (this) {                                  // Refere-se ao próprio botão (this).
-		graphics.drawOSControl();                  // Desenha o contorno padrão do botão.
-		graphics.rectPath(0, 0, size[0], size[1]); // Define o caminho de um retângulo no tamanho do botão.
-		graphics.fillPath(fillBrush);              // Preenche o retângulo com a cor definida em 'fillBrush'.
-	}
+	// with (this) {                                  // Refere-se ao próprio botão (this).
+	this.graphics.drawOSControl();                  // Desenha o contorno padrão do botão.
+	this.graphics.rectPath(0, 0, size[0], size[1]); // Define o caminho de um retângulo no tamanho do botão.
+	this.graphics.fillPath(fillBrush);              // Preenche o retângulo com a cor definida em 'fillBrush'.
+	// }
 }
 
 function drawRoundedRect(g, brush, width, height, cornerRadius, x, y) {

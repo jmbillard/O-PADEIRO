@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -91,7 +93,7 @@ function findDialog() {
 
 	//---------------------------------------------------------
 
-	// var infoBtn = optMainGrp.add('iconbutton', undefined, infoIcon.light, { style: 'toolbutton' });
+	// var infoBtn = optMainGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
 	// infoBtn.helpTip = 'ajuda | DOCS';
 	var infoBtn = new themeIconButton(optMainGrp, {
 		icon: PAD_INFO_ICON,

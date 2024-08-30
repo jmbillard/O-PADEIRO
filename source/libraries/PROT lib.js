@@ -27,6 +27,7 @@ if (!String.prototype.trim) {
 	};
 }
 
+/* cSpell:disable */
 // replaces most of the special characters...
 String.prototype.replaceSpecialCharacters = function () {
 
@@ -46,6 +47,7 @@ String.prototype.replaceSpecialCharacters = function () {
 		.replace(/[\s_]+/g, ' ') // replaces 2 or more spaces...
 		.trim();
 };
+/* cSpell:enable */
 
 // date shortener...
 String.prototype.toShortDate = function () {

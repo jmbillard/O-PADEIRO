@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------

@@ -1,3 +1,7 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 /*
 
 ---------------------------------------------------------------
@@ -119,7 +123,7 @@ function padeiroTemplateDialog() {
 	setFgColor(templateLabTxt, normalColor1); // Define a cor do rótulo
 
 	// Cria o botão de informações
-	// var infoBtn = infoGrp.add('iconbutton', undefined, infoIcon.light, { style: 'toolbutton' });
+	// var infoBtn = infoGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
 	// infoBtn.helpTip = 'ajuda | DOCS'; // Define a dica da ferramenta
 	var infoBtn = new themeIconButton(infoGrp, {
 		icon: PAD_INFO_ICON,

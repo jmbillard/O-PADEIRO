@@ -1,3 +1,7 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable no-undef */
+/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -54,7 +58,7 @@ function optimizeHierarchy(nodeTree) {
 						newItem.image = item.image;
 						newItem.file = item.file;
 						subfolder.remove(0);
-					} catch (error) { }
+					} catch (err) { }
 				}
 				nodeTree.remove(subfolder); // Remove a subpasta agora vazia
 			}
@@ -74,7 +78,7 @@ function createHierarchy(array, node, fileTypes) {
 			// Se a pasta possui conteúdo (arquivos ou subpastas)
 			if (subArray.length > 0) {
 				var nodeItem = node.add('node', nodeName); // Adiciona um nó de pasta na árvore
-				// nodeItem.image = fldTogIcon.light;  // Opcional: define o ícone da pasta (descomente se necessário)
+				// nodeItem.image = fldTogIcon.light;  // Opcional: define o ícone da pasta
 
 				// Chama recursivamente a função para processar o conteúdo da pasta
 				createHierarchy(subArray, nodeItem, fileTypes);

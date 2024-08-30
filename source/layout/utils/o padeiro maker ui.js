@@ -1,3 +1,6 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -41,7 +44,7 @@ function PadMakerDialog() {
 
 		if (selLayers.length == 0) return;
 
-		for (i = 0; i < selLayers.length; i++) {
+		for (var i = 0; i < selLayers.length; i++) {
 			var selLayer = selLayers[i];
 
 			if (selLayer.comment == 'TEMPLATE LAYER') continue;
@@ -232,7 +235,7 @@ function PadMakerDialog() {
 	setFgColor(labMain2, normalColor1);   // Define a cor do texto
 
 	// Cria o botão de informações
-	// var infoBtn = infoGrp.add('iconbutton', undefined, infoIcon.light, { style: 'toolbutton' });
+	// var infoBtn = infoGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
 	// infoBtn.helpTip = 'ajuda | DOCS'; // Define a dica da ferramenta
 	var infoBtn = new themeIconButton(infoGrp, {
 		icon: PAD_INFO_ICON,
@@ -274,7 +277,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// var div = PAD_MAKER_w.add('panel', undefined, undefined);
 	// div.alignment = 'fill';
-	var newDiv = themeDivider(PAD_MAKER_w);
+	newDiv = new themeDivider(PAD_MAKER_w);
 	newDiv.alignment = ['center', 'fill'];
 
 	// Cria um grupo para o cabeçalho da árvore de templates
@@ -291,7 +294,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// var div = PAD_MAKER_w.add('panel', undefined, undefined);
 	// div.alignment = 'fill';
-	var newDiv = themeDivider(PAD_MAKER_w);
+	newDiv = new themeDivider(PAD_MAKER_w);
 	newDiv.alignment = ['center', 'fill'];
 
 	// Cria um grupo para o cabeçalho da árvore de templates
@@ -397,7 +400,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// var div = layoutMainGrp3.add('panel', undefined, undefined);
 	// div.alignment = 'fill';
-	var newDiv = themeDivider(layoutMainGrp3);
+	newDiv = new themeDivider(layoutMainGrp3);
 	newDiv.alignment = ['fill', 'center'];
 
 	// ==============
@@ -458,7 +461,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	// ==============
 
 	// var newDiv = layoutMainGrp3.add('panel', undefined, undefined);
-	var newDiv = themeDivider(layoutMainGrp3);
+	newDiv = new themeDivider(layoutMainGrp3);
 	newDiv.alignment = ['fill', 'center'];
 
 	// ==============
@@ -561,7 +564,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// var div = layoutMainGrp4.add('panel', undefined, undefined);
 	// div.alignment = 'fill';
-	var newDiv = themeDivider(layoutMainGrp4);
+	newDiv = new themeDivider(layoutMainGrp4);
 	newDiv.alignment = ['fill', 'center'];
 
 	var infoMainGrp = layoutMainGrp4.add('group', undefined);
@@ -854,10 +857,10 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		tempConfigObj.textCase = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'][caseDrop.selection.index];
 		tempConfigObj.inputLayers = [];
 
-		for (var i = 0; i < layersMainGrp.children.length; i++) {
+		for (var b = 0; b < layersMainGrp.children.length; b++) {
 
 			try {
-				var layerGrp = layersMainGrp.children[i];
+				var layerGrp = layersMainGrp.children[b];
 				var methodArray = ['layerName', 'textContent'];
 				var m = layerGrp.children[1].selection.index;
 				var selectedLayer = layerGrp.children[2].properties.selectedLayer;

@@ -1,22 +1,39 @@
-// Script: O PADEIRO script de utilidades
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
 	var scriptVersion = 'v1.4';
+	var thisScriptFile = new File($.fileName);
 
-	#include 'source/globals.js';                   // Inclui variáveis globais (usadas em todo o script)
-	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
-	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
-	#include 'source/libraries/FUNC lib.js';        // Inclui funções utilitárias gerais
-	#include 'source/libraries/PROT lib.js';        // Inclui funções que estendem objetos JavaScript (prototype)
-	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
+	var libArray = [
 
-	// utilidades com interface
-	#include 'source/layout/Utils/o padeiro templates ui.js'; // Sistema de templates
-	#include 'source/layout/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
-	#include 'source/layout/Utils/o padeiro maker ui.js';     // Editor de templates
-	#include 'source/layout/Utils/find ui.js';                // Busca em layers de texto
+		'source/libraries/ICON lib.js',        // Inclui ícones codificados para a interface
+		'source/libraries/JSON lib.js',        // Inclui funções para trabalhar com dados JSON
+		'source/libraries/FUNC lib.js',        // Inclui funções utilitárias gerais
+		'source/libraries/PROT lib.js',        // Inclui funções que estendem objetos JavaScript (prototype)
+		'source/globals.js',                   // Inclui variáveis globais (usadas em todo o script)
+		'source/libraries/functions/color lib.js',
+		'source/libraries/functions/ctrl anim lib.js',
+		'source/libraries/functions/file system lib.js',
+		'source/libraries/functions/layers lib.js',
+		'source/libraries/functions/math num lib.js',
+		'source/libraries/functions/string lib.js',
+		'source/libraries/functions/treeView lib.js',
+		'source/libraries/functions/metadata lib.js',
+		
+		// utilidades com interface
+		'source/layout/main ui functions.js',  // Inclui funções para criar a interface do usuário
+		'source/layout/Utils/o padeiro templates ui.js', // Sistema de templates
+		'source/layout/Utils/o padeiro folders ui.js',   // Lista de pastas de produção
+		'source/layout/Utils/o padeiro maker ui.js',     // Editor de templates
+		'source/layout/Utils/find ui.js'                 // Busca em layers de texto
+	];
+
+	for (var l = 0; l < libArray.length; l++) {
+		eval('#include \'' + thisScriptFile.parent.fullName + '/' + libArray[l] + '\';');
+	}
 
 	var lClick = '◖  →  ';
 	var rClick = ' ◗  →  ';
@@ -282,24 +299,24 @@ function O_PADEIRO_UTL(thisObj) {
 		var sectionCounter = 0;
 		var ctrlCounter = 0;
 
-		for (var sec in structureObj.pinGrp) {
-			var section = structureObj['pinGrp'][sec];
+		for (var pinSec in structureObj.pinGrp) {
+			var pinSection = structureObj['pinGrp'][pinSec];
 
 			if (sectionCounter > 0) uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
 
-			var sectionGrp = uiObj.mainGrp.add('group', undefined, { name: 'sectionGrp' }); // Grupo de botões superior
-			sectionGrp.alignment = ['center', 'top']; // Alinhamento
-			uiObj.sectionGrpArray.push(sectionGrp);
+			var pinSectionGrp = uiObj.mainGrp.add('group', undefined, { name: 'sectionGrp' }); // Grupo de botões superior
+			pinSectionGrp.alignment = ['center', 'top']; // Alinhamento
+			uiObj.sectionGrpArray.push(pinSectionGrp);
 
-			for (var ctrl in section) {
-				var ctrlProperties = section[ctrl];
-				ctrlProperties.key = ctrl;
+			for (var pinCtrl in pinSection) {
+				var pinCtrlProperties = pinSection[pinCtrl];
+				pinCtrlProperties.key = pinCtrl;
 
-				if (ctrlProperties.labelTxt == undefined) ctrlProperties.labelTxt = ctrl.replace(/_/g, ' ').toTitleCase();
+				if (pinCtrlProperties.labelTxt == undefined) pinCtrlProperties.labelTxt = pinCtrl.replace(/_/g, ' ').toTitleCase();
 
-				if (ctrlProperties.type == 'iconButton') {
-					uiObj[ctrl] = new themeIconButton(uiObj['iconBtnGrp' + ctrlCounter % 2], ctrlProperties);
-					uiObj.iconButtonArray.push(uiObj[ctrl]);
+				if (pinCtrlProperties.type == 'iconButton') {
+					uiObj[pinCtrl] = new themeIconButton(uiObj['iconBtnGrp' + ctrlCounter % 2], pinCtrlProperties);
+					uiObj.iconButtonArray.push(uiObj[pinCtrl]);
 				}
 				ctrlCounter++;
 			}

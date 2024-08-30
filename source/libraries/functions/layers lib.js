@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 /*
 
 ---------------------------------------------------------------
@@ -374,15 +376,15 @@ function columnText(sLayer) {
 */
 // Cria uma camada null do tipo especificado (0: shape layer, 1: null layer).
 function createNull(nullType) {
-    var aItem = app.project.activeItem; // Obtém a composição ativa
-    
-    // Cria a camada null com base no tipo
-    var nullLayer = nullType === 0 ? shpNull() : aItem.layers.addNull(); // Cria uma camada de forma (shpNull) ou uma camada null padrão
-    
-    // Configura as propriedades da camada null
-    nullLayer.guideLayer = true;            // Define como camada guia (não renderiza)
-    nullLayer.name = nullPrefix;            // Define o nome da camada (nullPrefix deve ser definido em outro lugar do script)
-    nullLayer.label = 1;                    // Define a cor da label (1 = vermelho)
+	var aItem = app.project.activeItem; // Obtém a composição ativa
 
-    return nullLayer; // Retorna a camada null criada
+	// Cria a camada null com base no tipo
+	var nullLayer = nullType === 0 ? shpNull() : aItem.layers.addNull(); // Cria uma camada de forma (shpNull) ou uma camada null padrão
+
+	// Configura as propriedades da camada null
+	nullLayer.guideLayer = true;            // Define como camada guia (não renderiza)
+	nullLayer.name = nullPrefix;            // Define o nome da camada (nullPrefix deve ser definido em outro lugar do script)
+	nullLayer.label = 1;                    // Define a cor da label (1 = vermelho)
+
+	return nullLayer; // Retorna a camada null criada
 }

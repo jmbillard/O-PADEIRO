@@ -1,3 +1,8 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-redeclare */
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -15,15 +20,16 @@
 */
 // Define o conteúdo da área de transferência no Windows ou macOS.
 function setClipboard(str) {
+	var cmd;
 	if (appOs === 'Win') {
 		// Comando PowerShell para Windows
 		var setClipboard = 'Set-Clipboard -Value \'' + str + '\'';
-		var cmd = 'cmd.exe /c powershell.exe -c "' + setClipboard + '"';
+		cmd = 'cmd.exe /c powershell.exe -c "' + setClipboard + '"';
 		system.callSystem(cmd);
 
 	} else if (appOs === 'Mac') {
 		// Comando pbcopy para macOS
-		var cmd = 'echo "' + str + '" | pbcopy';
+		cmd = 'echo "' + str + '" | pbcopy';
 		system.callSystem(cmd);
 	}
 }
@@ -132,7 +138,6 @@ function unzipContent(zipPath, dstPath) {
 function zipContent(path, zipPath) {
 	if (appOs == 'Win') {
 		// get only the NOT '\' OR '/' at the end...
-		// eslint-disable-next-line no-useless-escape
 		var fileName = decodeURI(zipPath.match(/[^\\|\/]*$/i));
 		// removes any character after the '?' at the end...
 		fileName = fileName.replace(/[?].*$/, '');

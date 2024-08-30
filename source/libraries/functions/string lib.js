@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /*
 
 ---------------------------------------------------------------
@@ -48,22 +49,6 @@ function getFileExt(str) {
 	return match ? match[0].toLowerCase() : ''; // Retorna a extensão em minúsculas ou uma string vazia se não encontrar
 }
 
-// Remove prefixos de um nome, se existirem.
-function deletePrefix(name) {
-	var prefixArray = getPrefixes();  // Obtém um array de prefixos a serem removidos (assumimos que esta função existe)
-
-	// Itera sobre os prefixos no array
-	for (var p = 0; p < prefixArray.length; p++) {
-		var pattern = new RegExp('^' + prefixArray[p]); // Cria uma expressão regular para encontrar o prefixo no início do nome
-
-		// Remove o prefixo se for encontrado
-		if (name.match(pattern) != null) {
-			name = name.replace(pattern, '');
-		}
-	}
-
-	return name; // Retorna o nome sem os prefixos encontrados
-}
 
 // Converte uma string para o formato Title Case (primeira letra de cada palavra em maiúscula).
 function titleCase(str) {
