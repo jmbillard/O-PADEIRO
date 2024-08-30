@@ -175,7 +175,7 @@ function findDialog() {
 
 	infoBtn.leftClick.onClick = function () {
 
-		openWebSite('https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#busca');
+		openWebSite(repoURL + '/blob/main/README.md#busca');
 	};
 
 	findW.show();

@@ -199,7 +199,7 @@ function padProdFoldersDialog(prodArray) {
 
 	infoBtn.leftClick.onClick = function () {
 
-		var siteUrl = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
+		var siteUrl = repoURL + '/blob/main/README.md#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
 		openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
 	};
 

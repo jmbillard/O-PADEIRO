@@ -434,7 +434,7 @@ function O_PADEIRO_UTL(thisObj) {
 		uiObj.vLab.addEventListener('mousedown', function () {
 
 			// Define o URL do site de documentação.
-			var siteUrl = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
+			var siteUrl = repoURL + '/blob/main/README.md#-o-padeiro-script';
 			openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
 		});
 

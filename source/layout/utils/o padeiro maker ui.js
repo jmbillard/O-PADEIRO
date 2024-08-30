@@ -908,7 +908,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	// Função para abrir a página de documentação quando o botão 'Informações' é clicado
 	infoBtn.leftClick.onClick = function () {
 		// Abre a página de documentação do script 'O Padeiro' no GitHub em um navegador web
-		openWebSite('https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-criando-um-novo-template');
+		openWebSite(repoURL + '/blob/main/README.md#-criando-um-novo-template');
 	};
 
 	PAD_MAKER_w.show();
