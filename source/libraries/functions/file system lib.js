@@ -23,10 +23,9 @@ function setClipboard(str) {
 	var cmd;
 	if (appOs === 'Win') {
 		// Comando PowerShell para Windows
-		var setClipboard = 'Set-Clipboard -Value \'' + str + '\'';
+		var setClipboard = "Set-Clipboard -Value '" + str + "'";
 		cmd = 'cmd.exe /c powershell.exe -c "' + setClipboard + '"';
 		system.callSystem(cmd);
-
 	} else if (appOs === 'Mac') {
 		// Comando pbcopy para macOS
 		cmd = 'echo "' + str + '" | pbcopy';
@@ -41,7 +40,6 @@ function openFolder(folderPath) {
 	if (appOs === 'Win') {
 		// Comando para abrir a pasta no Windows Explorer
 		system.callSystem('explorer ' + Folder.decode(folder.fsName));
-
 	} else if (appOs === 'Mac') {
 		// Comando para abrir a pasta no Finder (macOS)
 		system.callSystem('open "' + Folder.decode(folder.fsName) + '"');
@@ -53,7 +51,6 @@ function openWebSite(url) {
 	if (appOs === 'Win') {
 		// Comando para abrir o URL no Windows Explorer (que também pode abrir URLs)
 		system.callSystem('explorer ' + url);
-
 	} else if (appOs === 'Mac') {
 		// Comando para abrir o URL no navegador padrão do macOS
 		system.callSystem('open ' + url);
@@ -74,26 +71,44 @@ function getURLContent(urlArray, dstArray) {
 		// PowerShell (Windows)
 
 		// Cabeçalho em destaque
-		cmd += 'Write-Host \'------------- O PADEIRO script -------------\' -ForegroundColor white -BackgroundColor DarkRed;';
+		cmd +=
+			"Write-Host '------------- O PADEIRO script -------------' -ForegroundColor white -BackgroundColor DarkRed;";
 
 		// Itera sobre as URLs e prepara os comandos de download
 		for (var i = 0; i < urlArray.length; i++) {
-			var fileName = decodeURI(urlArray[i].match(/[^\\|\/]*$/i)[0]).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
-			cmd += 'Write-Host \'> baixando ' + fileName + '...\';'; // Mensagem de download
-			cmd += 'curl \'' + urlArray[i] + '\' -OutFile \'' + dstArray[i] + '/' + fileName + '\';'; // Comando curl
+			var fileName = decodeURI(
+				urlArray[i].match(/[^\\|\/]*$/i)[0],
+			).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
+			cmd += "Write-Host '> baixando " + fileName + "...';"; // Mensagem de download
+			cmd +=
+				"curl '" +
+				urlArray[i] +
+				"' -OutFile '" +
+				dstArray[i] +
+				'/' +
+				fileName +
+				"';"; // Comando curl
 		}
 
 		// Executa o comando PowerShell no cmd.exe
 		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
 		system.callSystem(cmdStr);
-
 	} else if (appOs === 'Mac') {
 		// Terminal (macOS)
 
 		// Itera sobre as URLs e prepara os comandos de download
 		for (var i = 0; i < urlArray.length; i++) {
-			var fileName = decodeURI(urlArray[i].match(/[^\\|\/]*$/i)[0]).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
-			cmd += 'curl -o \'' + dstArray[i] + '/' + fileName + '\' \'' + urlArray[i] + '\';'; // Comando curl
+			var fileName = decodeURI(
+				urlArray[i].match(/[^\\|\/]*$/i)[0],
+			).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
+			cmd +=
+				"curl -o '" +
+				dstArray[i] +
+				'/' +
+				fileName +
+				"' '" +
+				urlArray[i] +
+				"';"; // Comando curl
 		}
 
 		// Executa o comando no terminal
@@ -104,7 +119,10 @@ function getURLContent(urlArray, dstArray) {
 // Descompacta um arquivo ZIP em um diretório de destino (Windows e macOS).
 function unzipContent(zipPath, dstPath) {
 	// Extrai o nome do arquivo ZIP
-	var fileName = decodeURI(zipPath.match(/[^\\|\/]*$/i)[0]).replace(/[?].*$/, '');
+	var fileName = decodeURI(zipPath.match(/[^\\|\/]*$/i)[0]).replace(
+		/[?].*$/,
+		'',
+	);
 
 	var cmd = ''; // Comando a ser executado
 
@@ -112,23 +130,28 @@ function unzipContent(zipPath, dstPath) {
 		// PowerShell (Windows)
 
 		// Cabeçalho em destaque
-		cmd += 'Write-Host \'------------- O PADEIRO script -------------\' -ForegroundColor white -BackgroundColor DarkRed;';
+		cmd +=
+			"Write-Host '------------- O PADEIRO script -------------' -ForegroundColor white -BackgroundColor DarkRed;";
 
 		// Mensagem de extração
-		cmd += 'Write-Host \'> extraindo ' + fileName + '...\';';
+		cmd += "Write-Host '> extraindo " + fileName + "...';";
 
 		// Descompacta o arquivo ZIP usando Expand-Archive
-		cmd += 'Expand-Archive -Path \'' + zipPath + '\' -DestinationPath \'' + dstPath + '\' -Force;';
+		cmd +=
+			"Expand-Archive -Path '" +
+			zipPath +
+			"' -DestinationPath '" +
+			dstPath +
+			"' -Force;";
 
 		// Executa o comando PowerShell no cmd.exe
 		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
 		system.callSystem(cmdStr);
-
 	} else if (appOs === 'Mac') {
 		// Terminal (macOS)
 
 		// Descompacta o arquivo ZIP usando unzip
-		cmd = 'unzip -o \'' + zipPath + '\' -d \'' + dstPath + '\'';
+		cmd = "unzip -o '" + zipPath + "' -d '" + dstPath + "'";
 
 		// Executa o comando no terminal
 		system.callSystem(cmd);
@@ -144,13 +167,17 @@ function zipContent(path, zipPath) {
 
 		// powershell command string...
 		// header...
-		var cmd = 'Write-Host \'------------- O PADEIRO script -------------\'';
+		var cmd = "Write-Host '------------- O PADEIRO script -------------'";
 		cmd += ' -ForegroundColor white -BackgroundColor DarkRed;';
 		// current action description...
-		cmd += 'Write-Host \'> compressing ' + fileName + '...\';';
+		cmd += "Write-Host '> compressing " + fileName + "...';";
 		// zip file...
-		cmd += 'Compress-Archive -Path \'' + path + '\' -DestinationPath \'' + zipPath;
-		cmd += '\' -CompressionLevel Optimal -Force;';
+		cmd +=
+			"Compress-Archive -Path '" +
+			path +
+			"' -DestinationPath '" +
+			zipPath;
+		cmd += "' -CompressionLevel Optimal -Force;";
 		// pass the powershell command thru cmd...
 		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
 
@@ -169,10 +196,12 @@ function installWinFonts(fontsPath) {
 
 	if (filesArray.length == 0) return;
 
-	var installFontsPS = 'Write-Host \'------------- O PADEIRO script -------------\'';
+	var installFontsPS =
+		"Write-Host '------------- O PADEIRO script -------------'";
 	installFontsPS += ' -ForegroundColor white -BackgroundColor DarkRed;';
-	installFontsPS += 'Write-Host \'                (u.u )...zzz\';';
-	installFontsPS += '$Destination = (New-Object -ComObject Shell.Application).Namespace(0x14);';
+	installFontsPS += "Write-Host '                (u.u )...zzz';";
+	installFontsPS +=
+		'$Destination = (New-Object -ComObject Shell.Application).Namespace(0x14);';
 
 	for (var i = 0; i < filesArray.length; i++) {
 		var aFile = filesArray[i];
@@ -180,25 +209,40 @@ function installWinFonts(fontsPath) {
 		var subArray = [];
 
 		try {
-			subArray = new Folder(decodeURI(aFile.fullName).toString()).getFiles();
-		} catch (err) { }
+			subArray = new Folder(
+				decodeURI(aFile.fullName).toString(),
+			).getFiles();
+		//
+} catch (err) {}
 
 		if (subArray.length > 0) {
 			installFonts(decodeURI(aFile.fullName).toString());
 
 			continue;
 		} else {
-
 			if (filter.indexOf(getFileExt(aFileName)) >= 0) {
 				var driveLetter = fontsPath.split(/\//)[1];
-				var driveStr = driveLetter.match(/\w{1}/) && driveLetter.length == 1 ? driveLetter + ':/' : null;
+				var driveStr =
+					driveLetter.match(/\w{1}/) && driveLetter.length == 1
+						? driveLetter + ':/'
+						: null;
 
-				if (driveLetter != null) fontsPath = fontsPath.replace(/^\/\w\//i, driveStr)
+				if (driveLetter != null)
+					fontsPath = fontsPath.replace(/^\/\w\//i, driveStr);
 
-				var aFontPath = fontsPath.replace(/^~/, 'C:/Users/' + system.userName.toString());
+				var aFontPath = fontsPath.replace(
+					/^~/,
+					'C:/Users/' + system.userName.toString(),
+				);
 				aFontPath = aFontPath.replace(/\//g, '\\');
-				installFontsPS += '$Destination.CopyHere(\'' + aFontPath + '\\' + aFileName + '\');';
-				installFontsPS += 'Write-Host \'> installing ' + aFileName + '...\';';
+				installFontsPS +=
+					"$Destination.CopyHere('" +
+					aFontPath +
+					'\\' +
+					aFileName +
+					"');";
+				installFontsPS +=
+					"Write-Host '> installing " + aFileName + "...';";
 			} else continue;
 		}
 	}
@@ -216,13 +260,14 @@ function installWinFonts(fontsPath) {
 
 function copyFolderContent(src, dst) {
 	try {
-		var f = (new Folder(src)).getFiles();
+		var f = new Folder(src).getFiles();
 
-		for (var i = 0; i < f.length; i++) if (!copyFile(f[i], dst)) return false;
+		for (var i = 0; i < f.length; i++)
+			if (!copyFile(f[i], dst)) return false;
 
 		return true;
-	}
-	catch (err) { }
+	//
+} catch (err) {}
 }
 
 function createPath(path) {
@@ -237,14 +282,12 @@ function createPath(path) {
 	return true;
 }
 
-
 function removeFolder(folder) {
 	if (!folder.exists) return;
 
 	var files = folder.getFiles();
 
 	for (var n = 0; n < files.length; n++) {
-
 		if (files[n] instanceof File) {
 			files[n].remove();
 		} else {
@@ -267,20 +310,17 @@ function copyFolderContentContent(src, dst) {
 
 	for (var i = 0; i < filesArray.length; i++) {
 		var aFile = filesArray[i];
-		var aFileName = File
-			.decode(aFile.displayName)
-			.toString();
+		var aFileName = File.decode(aFile.displayName).toString();
 		var subArray = [];
 
 		try {
 			if (aFile instanceof Folder) subArray = aFile.getFiles();
-		} catch (err) { }
+		//
+} catch (err) {}
 
 		if (subArray.length > 0) {
 			copyFolderContentContent(decodeURI(aFile.fullName).toString(), dst);
-
 		} else {
-
 			if (!dstFolder.exists) continue;
 
 			var cFile = new File(dst + '/' + aFileName);
@@ -290,7 +330,6 @@ function copyFolderContentContent(src, dst) {
 }
 
 function createPathFolders(path) {
-
 	var folderNamesArray = path.split('/');
 	var parentFolderName = '';
 
@@ -316,18 +355,20 @@ function copyFile(fullPath, newPath) {
 		if (file.length < 0) {
 			// Se for uma pasta, cria o caminho de destino e copia o conteúdo recursivamente
 			if (!createPath(newPath + '/' + file.name)) return false; // Cria a pasta de destino
-			if (!copyFolderContent(fullPath, newPath + '/' + file.name)) return false; // Copia o conteúdo da pasta
-
-		} else { // Se o caminho original for um arquivo
+			if (!copyFolderContent(fullPath, newPath + '/' + file.name))
+				return false; // Copia o conteúdo da pasta
+		} else {
+			// Se o caminho original for um arquivo
 			// Cria o caminho de destino e copia o arquivo
-			if (!createPath(newPath)) return false;  // Cria a pasta de destino
+			if (!createPath(newPath)) return false; // Cria a pasta de destino
 			if (!file.copy(newPath + '/' + file.name)) return false; // Copia o arquivo
 		}
 
 		return true; // Retorna true se a cópia for bem-sucedida
 
 		// Lidar com erros
-	} catch (err) {
+	//
+} catch (err) {
 		return false; // Retorna false em caso de erro
 	}
 }
@@ -360,9 +401,7 @@ function fileToBinary(aFile) {
 	strCode = strCode.substring(13, strCode.length - 3);
 	aFile.close();
 
-	return '\'' + strCode
-		.replace(/'/g, '\\\'')
-		.replace(/\\"/g, '"') + '\'';
+	return "'" + strCode.replace(/'/g, "\\'").replace(/\\"/g, '"') + "'";
 }
 
 function writeFileContent(newFile, fileContent) {
@@ -381,12 +420,12 @@ function createPresetFile(tempFolder, fileName, strCode) {
 		writeFileContent(aFile, strCode);
 
 		return aFile;
-	} catch (err) { }
+	//
+} catch (err) {}
 }
 
 // copy all fonts used in the project...
 function fontCollect(savePath) {
-
 	var saveFolder = new Folder(savePath); // collect folder...
 	var fontArray = []; // copied fonts array...
 	var failArray = []; // failed copy array...
@@ -416,7 +455,8 @@ function fontCollect(savePath) {
 
 			var fontFileName = fontSrcFile.displayName;
 
-			if (!fontFileName.match(/(\.ttf|\.otf)$/i)) fontFileName = 'cc_' + fontName + '.ttf';
+			if (!fontFileName.match(/(\.ttf|\.otf)$/i))
+				fontFileName = 'cc_' + fontName + '.ttf';
 
 			var fontCopyFile = new File(savePath + '/' + fontFileName);
 

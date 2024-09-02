@@ -10,11 +10,10 @@
 
 // Retorna uma cor aleatória de um array de cores.
 function randomColor(colorArray) {
-	// Gera um índice aleatório dentro do intervalo do array e	
+	// Gera um índice aleatório dentro do intervalo do array e
 	// retorna a cor correspondente ao índice aleatório.
 	return colorArray[randomInteger(0, colorArray.length)];
 }
-
 
 // Converte valores RGB (0-255) para um array normalizado [0-1].
 function rgb(r, g, b) {
@@ -26,7 +25,6 @@ function rgb(r, g, b) {
 	// Retorna o array com os valores normalizados
 	return [rNormalizado, gNormalizado, bNormalizado];
 }
-
 
 // Converte valores RGBA (0-255) para um array normalizado [0-1].
 function rgba(r, g, b, a) {
@@ -57,7 +55,12 @@ function rgbToHEX(rgbArray) {
 	const b = Math.round(rgbArray[2] * 255);
 
 	// Converte os componentes para hexadecimal e junta em uma string.
-	return ('#' + componentToHex(r) + componentToHex(g) + componentToHex(b)).toUpperCase();
+	return (
+		'#' +
+		componentToHex(r) +
+		componentToHex(g) +
+		componentToHex(b)
+	).toUpperCase();
 }
 
 // Converte um array RGB normalizado [0-1] para uma string hexadecimal com prefixo '0x' (ex: '0xFF0000').
@@ -66,15 +69,14 @@ function rgbToHex(rgbArray) {
 	const r = Math.round(rgbArray[0] * 255);
 	const g = Math.round(rgbArray[1] * 255);
 	const b = Math.round(rgbArray[2] * 255);
-  
+
 	// Converte os componentes para hexadecimal e junta em uma string com o prefixo '0x'.
 	return '0x' + componentToHex(r) + componentToHex(g) + componentToHex(b);
-  }
-  
+}
+
 function rgbStr(val) {
 	if (val.length > 0) {
 		val = rgbToHex(val);
-	
 	} else if (eval(val).length > 0) {
 		val = rgbToHex(eval(val));
 	}
@@ -99,13 +101,12 @@ function rgbStr(val) {
 function hexToRGB(hex) {
 	// Remove o caractere '#' se estiver presente
 	hex = hex.replace('#', '');
-  
+
 	// Extrai os componentes RGB do hexadecimal e converte para valores de 0 a 255
 	var r = parseInt(hex.substring(0, 2), 16);
 	var g = parseInt(hex.substring(2, 4), 16);
 	var b = parseInt(hex.substring(4, 6), 16);
-  
+
 	// Retorna o array com os valores RGB normalizados
 	return [r / 255, g / 255, b / 255];
-  }
-  
+}

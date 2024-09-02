@@ -46,7 +46,10 @@ function optimizeHierarchy(nodeTree) {
 			optimizeHierarchy(branches[i]);
 		} else {
 			// Se a pasta tiver apenas uma subpasta, combina os nomes e move os itens
-			if (branches[i].items.length === 1 && branches[i].items[0].type === 'node') {
+			if (
+				branches[i].items.length === 1 &&
+				branches[i].items[0].type === 'node'
+			) {
 				var subfolder = branches[i].items[0];
 				branches[i].text += ' / ' + subfolder.text; // Combina os nomes
 
@@ -58,7 +61,8 @@ function optimizeHierarchy(nodeTree) {
 						newItem.image = item.image;
 						newItem.file = item.file;
 						subfolder.remove(0);
-					} catch (err) { }
+					//
+} catch (err) {}
 				}
 				nodeTree.remove(subfolder); // Remove a subpasta agora vazia
 			}
@@ -83,15 +87,17 @@ function createHierarchy(array, node, fileTypes) {
 				// Chama recursivamente a função para processar o conteúdo da pasta
 				createHierarchy(subArray, nodeItem, fileTypes);
 			}
-		} else { // Se o item atual não for uma pasta (é um arquivo)
+		} else {
+			// Se o item atual não for uma pasta (é um arquivo)
 			try {
 				// Filtra os arquivos com base nas extensões permitidas em fileTypes
 				if (fileTypes.indexOf(getFileExt(nodeName)) >= 0) {
 					var templateItem = node.add('item', nodeName); // Adiciona um nó de arquivo na árvore
 					templateItem.image = PAD_AE_ICON; // Define o ícone do arquivo
-					templateItem.file = array[n];  // Define o ícone do arquivo
+					templateItem.file = array[n]; // Define o ícone do arquivo
 				}
-			} catch (error) { }
+			//
+} catch (err) {}
 		}
 	}
 }
@@ -122,11 +128,11 @@ function buildTree(folder, tree, fileTypes) {
 
 // Constrói a árvore de resultados da busca
 function buildTxtSearchTree(tree, obj, compArray, progressBar) {
-	var sKey = obj.sKey;          // Palavra-chave de busca
-	var vis = obj.vis;            // Incluir camadas ocultas? (true/false)
+	var sKey = obj.sKey; // Palavra-chave de busca
+	var vis = obj.vis; // Incluir camadas ocultas? (true/false)
 	var matchCase = obj.matchCase; // Diferenciar maiúsculas/minúsculas? (true/false)
 	var matchAccent = obj.matchAccent; // Diferenciar acentos? (true/false)
-	var invert = !obj.invert;      // Inverter a busca (não incluir a palavra-chave)? (true/false)
+	var invert = !obj.invert; // Inverter a busca (não incluir a palavra-chave)? (true/false)
 
 	if (!matchCase) sKey = sKey.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
 	if (!matchAccent) sKey = sKey.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
@@ -160,17 +166,25 @@ function buildTxtSearchTree(tree, obj, compArray, progressBar) {
 			if (vis && !txtLayer.enabled) continue;
 
 			var matchResult = false;
-			var doc = txtLayer.property('ADBE Text Properties').property('ADBE Text Document'); // Propriedade de texto da camada
-			var refTime = comp.duration < 1 ? 0 : txtLayer.inPoint + (txtLayer.outPoint - txtLayer.inPoint) / 2;
-			var layerName = '#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
+			var doc = txtLayer
+				.property('ADBE Text Properties')
+				.property('ADBE Text Document'); // Propriedade de texto da camada
+			var refTime =
+				comp.duration < 1
+					? 0
+					: txtLayer.inPoint +
+					  (txtLayer.outPoint - txtLayer.inPoint) / 2;
+			var layerName =
+				'#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
 
-			if (refTime > comp.duration) refTime = comp.duration - comp.frameDuration;
+			if (refTime > comp.duration)
+				refTime = comp.duration - comp.frameDuration;
 
 			// Se a propriedade de texto tiver uma expressão
 			if (doc.expression != '') comp.time = refTime; // Define o tempo para antes do ponto de saída da camada
 
 			var sTxt = getTextLayerContent(txtLayer);
-			
+
 			if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
 			if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
 			if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
@@ -190,7 +204,7 @@ function buildTxtSearchTree(tree, obj, compArray, progressBar) {
 					comp.time = doc.keyTime(k); // Define o tempo da composição para o keyframe atual
 
 					sTxt = getTextLayerContent(txtLayer);
-					
+
 					if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
 					if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
 					if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
@@ -211,7 +225,7 @@ function buildTxtSearchTree(tree, obj, compArray, progressBar) {
 
 // Expande todos os nós de uma 'árvore de exibição' (tree view).
 function expandNodes(nodeTree) {
-	var count = 0
+	var count = 0;
 	var branches = nodeTree.items; // Obtém os nodes do nó atual
 
 	nodeTree.expanded = true; // Expande o nó atual
@@ -228,19 +242,22 @@ function expandNodes(nodeTree) {
 // Função recursiva que percorre uma 'árvore de exibição' (tree view)
 // e adiciona os nós que contêm uma determinada string na lista de resultados
 function findItem(nodeTree, list, searchTxt) {
-
 	// Obtém os nodes do nó atual
 	var branches = nodeTree.items;
 
 	// Percorre cada node
 	for (var i = 0; i < branches.length; i++) {
-
 		// Se o node for um nó (node), chama a função recursivamente para o seu node
 		if (branches[i].type == 'node') findItem(branches[i], list, searchTxt);
 
 		// Verifica se o texto do node contém a string procurada
-		if (branches[i].text.trim().toUpperCase().replaceSpecialCharacters().match(searchTxt)) {
-
+		if (
+			branches[i].text
+				.trim()
+				.toUpperCase()
+				.replaceSpecialCharacters()
+				.match(searchTxt)
+		) {
 			// Adiciona o node na lista de resultados
 			list.push(branches[i]);
 		}

@@ -8,32 +8,32 @@
 */
 // Formata um objeto JavaScript para uma string de texto legível.
 function formatObjTxt(obj) {
-	return JSON.stringify(obj, null, '\t')     // Converte o objeto em JSON com indentação por tabulação
-		.replace(/(\{[\r\n]|[\r\n]\})/g, '')     // Remove chaves com quebras de linha ao redor
-		.replace(/\t"/g, '\t')                   // Remove aspas duplas após tabulações
-		.replace(/\//g, ' / ')                   // Adiciona espaços em torno de barras (/)
-		.replace(/":/g, ' →')                    // Substitui dois-pontos (:) e aspas duplas por seta (→)
-		.replace(/"/g, '\'')                     // Substitui aspas duplas (") por aspas simples (')
-		.replace(/,/g, '');                      // Remove vírgulas (,)
+	return JSON.stringify(obj, null, '\t') // Converte o objeto em JSON com indentação por tabulação
+		.replace(/(\{[\r\n]|[\r\n]\})/g, '') // Remove chaves com quebras de linha ao redor
+		.replace(/\t"/g, '\t') // Remove aspas duplas após tabulações
+		.replace(/\//g, ' / ') // Adiciona espaços em torno de barras (/)
+		.replace(/":/g, ' →') // Substitui dois-pontos (:) e aspas duplas por seta (→)
+		.replace(/"/g, "'") // Substitui aspas duplas (") por aspas simples (')
+		.replace(/,/g, ''); // Remove vírgulas (,)
 }
 
 // Formata um objeto JavaScript para uma string JSON válida e legível.
 function formatObjStr(obj) {
-	return JSON.stringify(obj, null, '\t')     // Converte o objeto em JSON com indentação por tabulação
-		.replace(/\\\\/g, '\\')                  // Corrige barras duplas (\\)
-		.replace(/\t"/g, '\t')                   // Remove aspas duplas após tabulações
-		.replace(/": "/g, ': ')                  // Remove espaços extras em torno de dois-pontos (:)
-		.replace(/",[\n\r]/g, ',\n')             // Adiciona quebras de linha após vírgulas (,)
-		.replace(/"[\n\r]/g, '\n');              // Remove aspas duplas e adiciona quebras de linha
+	return JSON.stringify(obj, null, '\t') // Converte o objeto em JSON com indentação por tabulação
+		.replace(/\\\\/g, '\\') // Corrige barras duplas (\\)
+		.replace(/\t"/g, '\t') // Remove aspas duplas após tabulações
+		.replace(/": "/g, ': ') // Remove espaços extras em torno de dois-pontos (:)
+		.replace(/",[\n\r]/g, ',\n') // Adiciona quebras de linha após vírgulas (,)
+		.replace(/"[\n\r]/g, '\n'); // Remove aspas duplas e adiciona quebras de linha
 }
 
 // Incrementa o número no final de um nome, se houver. Caso contrário, adiciona ' 2'.
 function nameInc(aName) {
-	var name = aName.replace(/\s*[0-9]+$/, '');   // Extrai a parte do nome sem o número
-	var num = aName.match(/\s*[0-9]+$/);        // Extrai o número no final (com espaços opcionais)
+	var name = aName.replace(/\s*[0-9]+$/, ''); // Extrai a parte do nome sem o número
+	var num = aName.match(/\s*[0-9]+$/); // Extrai o número no final (com espaços opcionais)
 
 	// Se não houver número, define numStr como '2', caso contrário, incrementa o número existente
-	var numStr = (num == null) ? 2 : parseInt(num) + 1;
+	var numStr = num == null ? 2 : parseInt(num) + 1;
 
 	return name + ' ' + numStr.toString(); // Retorna o nome com o número incrementado
 }
@@ -45,10 +45,9 @@ function deleteFileExt(str) {
 
 // Obtém a extensão de um nome de arquivo (em minúsculas).
 function getFileExt(str) {
-	var match = str.match(/\.[0-9a-z]+$/i);  // /\.[0-9a-z]+$/i: Encontra um ponto seguido de um ou mais caracteres alfanuméricos no final da string
+	var match = str.match(/\.[0-9a-z]+$/i); // /\.[0-9a-z]+$/i: Encontra um ponto seguido de um ou mais caracteres alfanuméricos no final da string
 	return match ? match[0].toLowerCase() : ''; // Retorna a extensão em minúsculas ou uma string vazia se não encontrar
 }
-
 
 // Converte uma string para o formato Title Case (primeira letra de cada palavra em maiúscula).
 function titleCase(str) {

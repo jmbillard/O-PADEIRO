@@ -10,7 +10,6 @@
 */
 
 function PadMakerDialog() {
-
 	var scriptName = 'EDITOR DE TEMPLATES';
 	var scriptVersion = scriptVersion;
 
@@ -30,9 +29,7 @@ function PadMakerDialog() {
 		inputLayers: [],
 
 		importPath: '~/Downloads',
-		outputPath: [
-			'~/Desktop'
-		]
+		outputPath: ['~/Desktop'],
 	};
 
 	function addLayers() {
@@ -55,13 +52,22 @@ function PadMakerDialog() {
 			layerGrp.spacing = 10;
 			layerGrp.margins = 0;
 
-			var layerLab = layerGrp.add('statictext', undefined, selLayer.index + '   ' + selLayer.name, { selectedLayer: selLayer, truncate: 'end' });
+			var layerLab = layerGrp.add(
+				'statictext',
+				undefined,
+				selLayer.index + '   ' + selLayer.name,
+				{ selectedLayer: selLayer, truncate: 'end' },
+			);
 			layerLab.preferredSize.width = 95;
 			setCtrlHighlight(layerLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
 			var layerDrop_array = ['nome'];
 			if (selLayer instanceof TextLayer) layerDrop_array.push('conteúdo');
-			var layerDrop = layerGrp.add('dropdownlist', undefined, layerDrop_array);
+			var layerDrop = layerGrp.add(
+				'dropdownlist',
+				undefined,
+				layerDrop_array,
+			);
 			layerDrop.selection = selLayer instanceof TextLayer ? 1 : 0;
 			layerDrop.preferredSize.width = 90;
 
@@ -70,22 +76,23 @@ function PadMakerDialog() {
 			// excludeLayerBtn.preferredSize = [24, 24];
 			var excludeLayerBtn = new themeIconButton(layerGrp, {
 				icon: PAD_FECHAR_ICON,
-				tips: [
-					lClick + 'remover layer'
-				]
+				tips: [lClick + 'remover layer'],
 			});
-	
+
 			layerLab.addEventListener('mousedown', function () {
 				try {
-					this.properties.selectedLayer.selected = !this.properties.selectedLayer.selected;
-				} catch (err) { }
+					this.properties.selectedLayer.selected =
+						!this.properties.selectedLayer.selected;
+				//
+} catch (err) {}
 			});
 
 			excludeLayerBtn.leftClick.onClick = function () {
 				try {
-					this.parent.parent.parent.children[0].properties.selectedLayer.comment = '';
-
-				} catch (err) {
+					this.parent.parent.parent.children[0].properties.selectedLayer.comment =
+						'';
+				//
+} catch (err) {
 					alert(lol + '#PAD_024 - ' + err.message); // Exibe uma mensagem de erro
 				}
 
@@ -94,31 +101,37 @@ function PadMakerDialog() {
 					exempleText.size.height -= 18;
 				}
 
-				this.parent.parent.parent.parent.remove(this.parent.parent.parent);
+				this.parent.parent.parent.parent.remove(
+					this.parent.parent.parent,
+				);
 
 				PAD_MAKER_w.layout.layout(true);
 				layoutMainGrp3.layout.layout(true);
 				layersMainGrp.layout.layout(true);
 
-				separatorTxt.enabled = (layersMainGrp.children.length > 1);
-				separatorLab.enabled = (layersMainGrp.children.length > 1);
-			}
+				separatorTxt.enabled = layersMainGrp.children.length > 1;
+				separatorLab.enabled = layersMainGrp.children.length > 1;
+			};
 			if (layersMainGrp.children.length > 4) {
 				tipsText.size.height += 18;
 				exempleText.size.height += 18;
 			}
 			selLayer.comment = 'TEMPLATE LAYER';
 		}
-	};
+	}
 
 	function addOutputFolder() {
-
 		var outputGrp = outputMainGrp.add('group', undefined);
 		outputGrp.orientation = 'row';
 		outputGrp.alignChildren = ['left', 'center'];
 		outputGrp.spacing = 10;
 
-		var outputPathLab = outputGrp.add('statictext', [0, 0, 190, 24], 'caminho da pasta...', { outputPath: '~/Desktop', truncate: 'middle' });
+		var outputPathLab = outputGrp.add(
+			'statictext',
+			[0, 0, 190, 24],
+			'caminho da pasta...',
+			{ outputPath: '~/Desktop', truncate: 'middle' },
+		);
 		outputPathLab.helpTip = 'caminho da pasta:';
 		setCtrlHighlight(outputPathLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
@@ -127,55 +140,52 @@ function PadMakerDialog() {
 		// excludeOutputBtn.preferredSize = [24, 24];
 		var excludeOutputBtn = new themeIconButton(outputGrp, {
 			icon: PAD_FECHAR_ICON,
-			tips: [
-				lClick + 'remover output'
-			]
+			tips: [lClick + 'remover output'],
 		});
 
 		outputPathLab.addEventListener('mousedown', function () {
-
-			var newOutputFolder = new Folder(this.properties.outputPath)
-			var newOutputPath = newOutputFolder.selectDlg('selecione a pasta de output'); // Abre a janela de seleção de pastas
+			var newOutputFolder = new Folder(this.properties.outputPath);
+			var newOutputPath = newOutputFolder.selectDlg(
+				'selecione a pasta de output',
+			); // Abre a janela de seleção de pastas
 
 			if (newOutputPath == null) return; // Se a janela foi cancelada, não faz nada
 
 			this.properties.outputPath = newOutputPath.fullName;
 			this.text = newOutputPath.fullName;
-			this.helpTip = 'caminho da pasta de output:\n\n' + newOutputPath.fullName;
+			this.helpTip =
+				'caminho da pasta de output:\n\n' + newOutputPath.fullName;
 		});
 
 		excludeOutputBtn.leftClick.onClick = function () {
-
 			if (this.parent.parent.parent.parent.children.length <= 2) return;
 
 			this.parent.parent.parent.parent.remove(this.parent.parent.parent);
 			// outputMainGrp.layout.layout(true);
 			PAD_MAKER_w.layout.layout(true);
-		}
-	};
+		};
+	}
 
 	function getTemplateLayers() {
-
 		var templateLayersArray = [];
 
 		for (var i = 0; i < layersMainGrp.children.length; i++) {
-
 			try {
 				var layerGrp = layersMainGrp.children[i];
 				var methodArray = ['layerName', 'textContent'];
 				var m = layerGrp.children[1].selection.index;
-				var selectedLayer = layerGrp.children[0].properties.selectedLayer;
+				var selectedLayer =
+					layerGrp.children[0].properties.selectedLayer;
 
 				templateLayersArray.push([selectedLayer, methodArray[m]]);
-
-			} catch (err) { }
+			//
+} catch (err) {}
 		}
 
 		return templateLayersArray;
-	};
+	}
 
 	function getFontList() {
-
 		var fontNameArray = []; // copied fonts array...
 		var compArray = getComps(); // all project comps...
 
@@ -198,7 +208,7 @@ function PadMakerDialog() {
 			}
 		}
 		return fontNameArray;
-	};
+	}
 
 	var tempPreviewFile;
 
@@ -218,8 +228,8 @@ function PadMakerDialog() {
 
 	// Cria um grupo para o cabeçalho da árvore de templates
 	var headerGrp1 = layoutMainGrp1.add('group');
-	headerGrp1.alignment = 'fill';      // Ocupa todo o espaço disponível
-	headerGrp1.orientation = 'stack';   // Empilha os elementos verticalmente
+	headerGrp1.alignment = 'fill'; // Ocupa todo o espaço disponível
+	headerGrp1.orientation = 'stack'; // Empilha os elementos verticalmente
 
 	// Cria um grupo para o botão de informações
 	var labGrp1 = headerGrp1.add('group');
@@ -232,16 +242,14 @@ function PadMakerDialog() {
 	// Rótulo de preview
 	var labMain2 = labGrp1.add('statictext', undefined, 'AJUDA BÁSICA:'); // Adiciona um texto estático
 	labMain2.preferredSize.height = 24;
-	setFgColor(labMain2, normalColor1);   // Define a cor do texto
+	setFgColor(labMain2, normalColor1); // Define a cor do texto
 
 	// Cria o botão de informações
 	// var infoBtn = infoGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
 	// infoBtn.helpTip = 'ajuda | DOCS'; // Define a dica da ferramenta
 	var infoBtn = new themeIconButton(infoGrp, {
 		icon: PAD_INFO_ICON,
-		tips: [
-			lClick + 'ajuda | DOCS'
-		]
+		tips: [lClick + 'ajuda | DOCS'],
 	});
 
 	var helpGrp = layoutMainGrp1.add('group', undefined);
@@ -250,7 +258,8 @@ function PadMakerDialog() {
 	helpGrp.spacing = 10;
 	helpGrp.margins = 0;
 
-	var instructionsTxt = 'limpe o projeto!\nremova tudo o que não for necessário para a comp principal.\n\
+	var instructionsTxt =
+		'limpe o projeto!\nremova tudo o que não for necessário para a comp principal.\n\
 preencha o os dados do formulário.\n\
 posicione a agulha da timeline em um frame de referencia, e capture a imagem de preview do template.\n\
 edite os demais parâmetros do projeto.\n\
@@ -258,7 +267,9 @@ selecione os layers editáveis do template, esses layers receberão o texto das 
 caso o texto esteja em uma pre-comp, adicione a propriedade "source text" ao painel "essential graphics" e use um layer de texto na comp principal para controlar o texto.\n\
 adicione as pastas de mídia e outputs necessários.\n\
 em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n\njean.billard';
-	var helpLab = helpGrp.add('statictext', undefined, instructionsTxt, { multiline: true });
+	var helpLab = helpGrp.add('statictext', undefined, instructionsTxt, {
+		multiline: true,
+	});
 	setFgColor(helpLab, normalColor2);
 
 	// ==============
@@ -267,7 +278,6 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	// 	var newDiv = themeDivider(PAD_MAKER_w);
 	var newDiv = themeDivider(PAD_MAKER_w);
 	newDiv.alignment = ['center', 'fill'];
-
 
 	var layoutMainGrp2 = PAD_MAKER_w.add('group', undefined);
 	layoutMainGrp2.orientation = 'column';
@@ -282,8 +292,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// Cria um grupo para o cabeçalho da árvore de templates
 	var layoutGrp3 = PAD_MAKER_w.add('group');
-	layoutGrp3.alignment = 'fill';      // Ocupa todo o espaço disponível
-	layoutGrp3.orientation = 'stack';   // Empilha os elementos verticalmente
+	layoutGrp3.alignment = 'fill'; // Ocupa todo o espaço disponível
+	layoutGrp3.orientation = 'stack'; // Empilha os elementos verticalmente
 
 	var layoutMainGrp3 = layoutGrp3.add('group', undefined);
 	layoutMainGrp3.orientation = 'column';
@@ -299,8 +309,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	// Cria um grupo para o cabeçalho da árvore de templates
 	var layoutGrp4 = PAD_MAKER_w.add('group');
-	layoutGrp4.alignment = 'fill';      // Ocupa todo o espaço disponível
-	layoutGrp4.orientation = 'stack';   // Empilha os elementos verticalmente
+	layoutGrp4.alignment = 'fill'; // Ocupa todo o espaço disponível
+	layoutGrp4.orientation = 'stack'; // Empilha os elementos verticalmente
 
 	var layoutMainGrp4 = layoutGrp4.add('group', undefined);
 	layoutMainGrp4.orientation = 'column';
@@ -327,11 +337,19 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	configGrp.spacing = 5;
 	configGrp.margins = 0;
 
-	var configLab = configGrp.add('statictext', undefined, 'nome da configuração:');
+	var configLab = configGrp.add(
+		'statictext',
+		undefined,
+		'nome da configuração:',
+	);
 	configLab.preferredSize.height = 18;
 	setFgColor(configLab, monoColor0);
 
-	var configText = configGrp.add('edittext', [0, 0, 230, 24], tempConfigObj.configName);
+	var configText = configGrp.add(
+		'edittext',
+		[0, 0, 230, 24],
+		tempConfigObj.configName,
+	);
 	configText.helpTip = 'identificador da configuração.';
 
 	var tipsGrp = formMainGrp.add('group', undefined);
@@ -344,7 +362,12 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	tipsLab.preferredSize.height = 18;
 	setFgColor(tipsLab, monoColor0);
 
-	var tipsText = tipsGrp.add('edittext', [0, 0, 230, 260], tempConfigObj.tip, { multiline: true });
+	var tipsText = tipsGrp.add(
+		'edittext',
+		[0, 0, 230, 260],
+		tempConfigObj.tip,
+		{ multiline: true },
+	);
 	tipsText.helpTip = 'as dicas para ajudar no preenchimento.';
 
 	var exempleGrp = formMainGrp.add('group', undefined);
@@ -353,11 +376,20 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	exempleGrp.spacing = 5;
 	exempleGrp.margins = 0;
 
-	var exempleLab = exempleGrp.add('statictext', undefined, 'exemplo de preenchimento:');
+	var exempleLab = exempleGrp.add(
+		'statictext',
+		undefined,
+		'exemplo de preenchimento:',
+	);
 	exempleLab.preferredSize.height = 18;
 	setFgColor(exempleLab, monoColor0);
 
-	var exempleText = exempleGrp.add('edittext', [0, 0, 230, 90], tempConfigObj.exemple, { multiline: true });
+	var exempleText = exempleGrp.add(
+		'edittext',
+		[0, 0, 230, 90],
+		tempConfigObj.exemple,
+		{ multiline: true },
+	);
 	exempleText.helpTip = 'apenas um exemplo.';
 
 	// ==============
@@ -394,8 +426,9 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		// buttonColor: normalColor1,
 		labelTxt: 'capturar preview',
 		tips: [
-			lClick + 'capturar o frame de preview,\na comp principal e o\ntempo de referência',
-		]
+			lClick +
+				'capturar o frame de preview,\na comp principal e o\ntempo de referência',
+		],
 	});
 
 	// var div = layoutMainGrp3.add('panel', undefined, undefined);
@@ -443,8 +476,13 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	prefixLab.preferredSize.width = 130;
 	setFgColor(prefixLab, monoColor0);
 
-	var prefixTxt = prefixGrp.add('edittext', [0, 0, 90, 24], tempConfigObj.prefix);
-	prefixTxt.helpTip = 'prefixo que será inserido no nome final de todas as versões desse template.';
+	var prefixTxt = prefixGrp.add(
+		'edittext',
+		[0, 0, 90, 24],
+		tempConfigObj.prefix,
+	);
+	prefixTxt.helpTip =
+		'prefixo que será inserido no nome final de todas as versões desse template.';
 
 	var separatorGrp = projGeneralGrp.add('group', undefined);
 	separatorGrp.alignChildren = ['left', 'center'];
@@ -455,8 +493,13 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	separatorLab.preferredSize.width = 130;
 	setFgColor(separatorLab, monoColor0);
 
-	var separatorTxt = separatorGrp.add('edittext', [0, 0, 90, 24], tempConfigObj.separator.replace(/\n|\r/g, '\\n'));
-	separatorTxt.helpTip = 'separador de informações\n\nuse "\\n" para colocar cada linha de texto em um layer diferente';
+	var separatorTxt = separatorGrp.add(
+		'edittext',
+		[0, 0, 90, 24],
+		tempConfigObj.separator.replace(/\n|\r/g, '\\n'),
+	);
+	separatorTxt.helpTip =
+		'separador de informações\n\nuse "\\n" para colocar cada linha de texto em um layer diferente';
 
 	// ==============
 
@@ -495,7 +538,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		labelTxt: '+ layers',
 		tips: [
 			lClick + 'adicionar layers selecionados a configuração do template',
-		]
+		],
 	});
 
 	// var testBtn = btnGrp4.add('button', [0, 0, 110, 24], 'testar');
@@ -506,9 +549,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		// textColor: bgColor1,
 		// buttonColor: normalColor1,
 		labelTxt: 'testar agora',
-		tips: [
-			lClick + 'testar preenchimento com o exemplo',
-		]
+		tips: [lClick + 'testar preenchimento com o exemplo'],
 	});
 
 	// ==============
@@ -523,11 +564,20 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	importMainGrp.spacing = 2;
 	importMainGrp.margins = 0;
 
-	var importLab = importMainGrp.add('statictext', undefined, 'pasta de mídias: (opcional)');
+	var importLab = importMainGrp.add(
+		'statictext',
+		undefined,
+		'pasta de mídias: (opcional)',
+	);
 	importLab.preferredSize.height = 18;
 	setFgColor(importLab, monoColor0);
 
-	var importPathLab = importMainGrp.add('statictext', [0, 0, 230, 24], 'caminho da pasta...', { importPath: tempConfigObj.importPath, truncate: 'middle' });
+	var importPathLab = importMainGrp.add(
+		'statictext',
+		[0, 0, 230, 24],
+		'caminho da pasta...',
+		{ importPath: tempConfigObj.importPath, truncate: 'middle' },
+	);
 	importPathLab.helpTip = 'caminho da pasta:';
 	setCtrlHighlight(importPathLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
@@ -539,7 +589,11 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	outputMainGrp.spacing = 2;
 	outputMainGrp.margins = 0;
 
-	var outputLab = outputMainGrp.add('statictext', undefined, 'pastas de output:');
+	var outputLab = outputMainGrp.add(
+		'statictext',
+		undefined,
+		'pastas de output:',
+	);
 	outputLab.preferredSize.height = 18;
 	setFgColor(outputLab, monoColor0);
 
@@ -556,11 +610,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		// textColor: bgColor1,
 		// buttonColor: normalColor1,
 		labelTxt: '+ novo output',
-		tips: [
-			lClick + 'adicionar um novo output a configuração do template',
-		]
+		tips: [lClick + 'adicionar um novo output a configuração do template'],
 	});
-
 
 	// var div = layoutMainGrp4.add('panel', undefined, undefined);
 	// div.alignment = 'fill';
@@ -583,7 +634,16 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	infoLab1.preferredSize.height = 18;
 	setFgColor(infoLab1, monoColor0);
 
-	var infoText1 = infoGrp1.add('statictext', [0, 0, 230, 18], app.project.activeItem.name, { comp: app.project.activeItem, ref_time: app.project.activeItem.time, truncate: 'end' });
+	var infoText1 = infoGrp1.add(
+		'statictext',
+		[0, 0, 230, 18],
+		app.project.activeItem.name,
+		{
+			comp: app.project.activeItem,
+			ref_time: app.project.activeItem.time,
+			truncate: 'end',
+		},
+	);
 	infoText1.helpTip = 'comp principal do template';
 	setFgColor(infoText1, normalColor2); // Cor de destaque do texto
 
@@ -593,11 +653,17 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	infoGrp2.spacing = 2;
 	infoGrp2.margins = 0;
 
-	var infoLab2 = infoGrp2.add('statictext', undefined, 'preview da nomenclatura:');
+	var infoLab2 = infoGrp2.add(
+		'statictext',
+		undefined,
+		'preview da nomenclatura:',
+	);
 	infoLab2.preferredSize.height = 18;
 	setFgColor(infoLab2, monoColor0);
 
-	var infoText2 = infoGrp2.add('statictext', [0, 0, 230, 18], '...', { truncate: 'end' });
+	var infoText2 = infoGrp2.add('statictext', [0, 0, 230, 18], '...', {
+		truncate: 'end',
+	});
 	setFgColor(infoText2, normalColor2); // Cor de destaque do texto
 
 	var infoGrp3 = infoMainGrp.add('group', undefined);
@@ -613,7 +679,12 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	var fontList = getFontList();
 
 	for (var f = 0; f < fontList.length; f++) {
-		var infoText3 = infoGrp3.add('statictext', [0, 0, 230, 18], fontList[f], { truncate: 'end' });
+		var infoText3 = infoGrp3.add(
+			'statictext',
+			[0, 0, 230, 18],
+			fontList[f],
+			{ truncate: 'end' },
+		);
 		infoText3.helpTip = fontList[f];
 		setFgColor(infoText3, normalColor2); // Cor de destaque do texto
 	}
@@ -638,9 +709,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		textColor: bgColor1,
 		buttonColor: normalColor1,
 		labelTxt: 'salvar template',
-		tips: [
-			lClick + 'salvar novo template',
-		]
+		tips: [lClick + 'salvar novo template'],
 	});
 
 	setBgColor(PAD_MAKER_w, bgColor1); // Cor de fundo da janela
@@ -648,7 +717,6 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	// ==============
 
 	PAD_MAKER_w.onClose = function () {
-
 		var templateLayers = getTemplateLayers();
 
 		for (var i = 0; i < templateLayers.length; i++) {
@@ -657,19 +725,20 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		try {
 			tempPreviewFile.remove();
-
-		} catch (err) { }
+		//
+} catch (err) {}
 	};
 
 	PAD_MAKER_w.onShow = function () {
-
 		var tempItem = app.project.activeItem;
 
 		if (tempItem == null) return;
 
-		var tempPreviewName = tempItem.name.toUpperCase()
-			.replaceSpecialCharacters()
-			.replace(/\s+/g, '_') + '_preview.png';
+		var tempPreviewName =
+			tempItem.name
+				.toUpperCase()
+				.replaceSpecialCharacters()
+				.replace(/\s+/g, '_') + '_preview.png';
 
 		infoText1.properties.comp = tempItem;
 		infoText1.properties.ref_time = tempItem.time;
@@ -680,16 +749,16 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			$.sleep(500);
 			previewImg.image = tempPreviewFile;
-
-		} catch (err) {
+		//
+} catch (err) {
 			alert(lol + '#PAD_026 - ' + err.message); // Exibe uma mensagem de erro
 		}
 
 		addLayers();
 		addOutputFolder();
 
-		separatorTxt.enabled = (layersMainGrp.children.length > 1);
-		separatorLab.enabled = (layersMainGrp.children.length > 1);
+		separatorTxt.enabled = layersMainGrp.children.length > 1;
+		separatorLab.enabled = layersMainGrp.children.length > 1;
 
 		layersMainGrp.layout.layout(true);
 		outputMainGrp.layout.layout(true);
@@ -702,10 +771,10 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	prefixTxt.onChanging = function () {
-
 		var prefix = this.text.toUpperCase().replaceSpecialCharacters();
 		var inputTxt = exempleText.text.split(/\n{2,}/)[0];
-		infoText2.text = infoText2.helpTip = prefix + ' - ' + inputTxt.toUpperCase().replaceSpecialCharacters();
+		infoText2.text = infoText2.helpTip =
+			prefix + ' - ' + inputTxt.toUpperCase().replaceSpecialCharacters();
 	};
 
 	prefixTxt.onChange = function () {
@@ -713,22 +782,23 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	exempleText.onChanging = function () {
-
 		var prefix = prefixTxt.text.toUpperCase().replaceSpecialCharacters();
 		var inputTxt = this.text.split(/\n{2,}/)[0];
-		infoText2.text = infoText2.helpTip = prefix + ' - ' + inputTxt.toUpperCase().replaceSpecialCharacters();
+		infoText2.text = infoText2.helpTip =
+			prefix + ' - ' + inputTxt.toUpperCase().replaceSpecialCharacters();
 	};
 
 	captureBtn.leftClick.onClick = function () {
-
 		// alert(0);
 		var tempItem = app.project.activeItem;
 
 		if (tempItem == null) return;
 
-		var tempPreviewName = tempItem.name.toUpperCase()
-			.replaceSpecialCharacters()
-			.replace(/\s+/g, '_') + '_preview.png';
+		var tempPreviewName =
+			tempItem.name
+				.toUpperCase()
+				.replaceSpecialCharacters()
+				.replace(/\s+/g, '_') + '_preview.png';
 
 		infoText1.properties.comp = tempItem;
 		infoText1.properties.ref_time = tempItem.time;
@@ -736,8 +806,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		try {
 			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
 			tempPreviewFile.remove();
-
-		} catch (err) {
+		//
+} catch (err) {
 			alert(lol + '#PAD_025 - ' + err.message); // Exibe uma mensagem de erro
 		}
 
@@ -747,8 +817,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			$.sleep(300);
 			previewImg.image = tempPreviewFile;
-
-		} catch (err) {
+		//
+} catch (err) {
 			alert(lol + '#PAD_023 - ' + err.message); // Exibe uma mensagem de erro
 		}
 		// previewGrp.layout.layout(true);
@@ -757,11 +827,10 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	selectLayersBtn.leftClick.onClick = function () {
-
 		addLayers();
 
-		separatorTxt.enabled = (layersMainGrp.children.length > 1);
-		separatorLab.enabled = (layersMainGrp.children.length > 1);
+		separatorTxt.enabled = layersMainGrp.children.length > 1;
+		separatorLab.enabled = layersMainGrp.children.length > 1;
 
 		tipsGrp.layout.layout(true);
 		exempleGrp.layout.layout(true);
@@ -772,25 +841,27 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	importPathLab.addEventListener('mousedown', function () {
-
-		var newImportFolder = new Folder(this.properties.importPath)
-		var newImportPath = newImportFolder.selectDlg('selecione a pasta de mídias'); // Abre a janela de seleção de pastas
+		var newImportFolder = new Folder(this.properties.importPath);
+		var newImportPath = newImportFolder.selectDlg(
+			'selecione a pasta de mídias',
+		); // Abre a janela de seleção de pastas
 
 		if (newImportPath == null) return; // Se a janela foi cancelada, não faz nada
 
 		this.properties.importPath = newImportPath.fullName;
 		this.text = newImportPath.fullName;
-		this.helpTip = 'caminho da pasta de mídias:\n\n' + newImportPath.fullName;
+		this.helpTip =
+			'caminho da pasta de mídias:\n\n' + newImportPath.fullName;
 	});
 
 	testBtn.leftClick.onClick = function () {
-
 		var inputTxt = exempleText.text.split(/\n{2,}/)[0];
 		var txtCase = caseDrop.selection.index;
 		var templateLayers = getTemplateLayers();
 		var separador = separatorTxt.text.replace(/\\n|\\r/g, '\n');
-	
-		if (separatorTxt.text == '' || templateLayers.length < 2) separador = '---';
+
+		if (separatorTxt.text == '' || templateLayers.length < 2)
+			separador = '---';
 
 		if (txtCase == 0) inputTxt = exempleText.text = inputTxt.toUpperCase(); // Converte para MAIÚSCULAS
 		if (txtCase == 1) inputTxt = exempleText.text = inputTxt.toLowerCase(); // Converte para minúsculas
@@ -803,7 +874,6 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		app.beginUndoGroup('PADEIRO - testar preenchimento');
 
 		for (var i = 0; i < templateLayers.length; i++) {
-
 			var selectedLayer = templateLayers[i][0];
 			var method = templateLayers[i][1];
 			selectedLayer.enabled = i < inputArray.length;
@@ -811,8 +881,9 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			if (i > inputArray.length - 1) continue;
 
 			if (method == 'textContent') {
-				selectedLayer.property('ADBE Text Properties') // Obtém a propriedade de texto
-					.property('ADBE Text Document')            // Obtém o documento de texto
+				selectedLayer
+					.property('ADBE Text Properties') // Obtém a propriedade de texto
+					.property('ADBE Text Document') // Obtém o documento de texto
 					.setValue(inputArray[i].trim());
 			}
 			if (method == 'layerName') {
@@ -824,7 +895,6 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	newOutputBtn.leftClick.onClick = function () {
-
 		addOutputFolder();
 
 		outputMainGrp.layout.layout(true);
@@ -833,7 +903,6 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	makeBtn.leftClick.onClick = function () {
-
 		app.beginUndoGroup('PADEIRO - criar template');
 
 		var templateLayers = getTemplateLayers();
@@ -852,35 +921,43 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		tempConfigObj.refTime = infoText1.properties.ref_time;
 
 		tempConfigObj.separator = separatorTxt.text.replace(/\\n|\\r/g, '\n');
-		if (separatorTxt.text == '' || templateLayers.length < 2) tempConfigObj.separator = '---';
+		if (separatorTxt.text == '' || templateLayers.length < 2)
+			tempConfigObj.separator = '---';
 
-		tempConfigObj.textCase = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'][caseDrop.selection.index];
+		tempConfigObj.textCase = [
+			'upperCase',
+			'lowerCase',
+			'titleCase',
+			'freeCase',
+		][caseDrop.selection.index];
 		tempConfigObj.inputLayers = [];
 
 		for (var b = 0; b < layersMainGrp.children.length; b++) {
-
 			try {
 				var layerGrp = layersMainGrp.children[b];
 				var methodArray = ['layerName', 'textContent'];
 				var m = layerGrp.children[1].selection.index;
-				var selectedLayer = layerGrp.children[2].properties.selectedLayer;
+				var selectedLayer =
+					layerGrp.children[2].properties.selectedLayer;
 
-				tempConfigObj.inputLayers.push({ layerIndex: selectedLayer.index, method: methodArray[m] });
-
-			} catch (err) { }
+				tempConfigObj.inputLayers.push({
+					layerIndex: selectedLayer.index,
+					method: methodArray[m],
+				});
+			//
+} catch (err) {}
 		}
 
 		tempConfigObj.importPath = importPathLab.properties.importPath;
 		tempConfigObj.outputPath = [];
 
 		for (var o = 0; o < outputMainGrp.children.length; o++) {
-
 			try {
 				var outputGrp = outputMainGrp.children[o];
 				var outputPath = outputGrp.children[0].properties.outputPath;
 				tempConfigObj.outputPath.push(outputPath);
-
-			} catch (err) { }
+			//
+} catch (err) {}
 		}
 		var isSaved = app.project.saveWithDialog();
 
@@ -888,7 +965,10 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var currentProj = app.project.file;
 		var currentTemplateFolder = currentProj.parent;
-		var currentProjBase = decodeURI(currentProj.fullName).replace(/\.ae[pt]/, '');
+		var currentProjBase = decodeURI(currentProj.fullName).replace(
+			/\.ae[pt]/,
+			'',
+		);
 
 		try {
 			var configContent = JSON.stringify(tempConfigObj, null, '\t');
@@ -901,8 +981,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			tempPreviewFile.remove();
 
 			openFolder(decodeURI(currentTemplateFolder.fullName));
-
-		} catch (err) {
+		//
+} catch (err) {
 			alert(lol + '#PAD_028 - ' + err.message); // Exibe uma mensagem de erro
 		}
 		app.endUndoGroup();

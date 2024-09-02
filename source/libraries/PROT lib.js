@@ -9,15 +9,23 @@
 // string to camel case...
 String.prototype.toCamelCase = function () {
 	return this.toLowerCase()
-		.replace(/\s(.)/g, function ($1) { return $1.toUpperCase(); })
+		.replace(/\s(.)/g, function ($1) {
+			return $1.toUpperCase();
+		})
 		.replace(/\s/g, '')
-		.replace(/^(.)/, function ($1) { return $1.toLowerCase(); });
+		.replace(/^(.)/, function ($1) {
+			return $1.toLowerCase();
+		});
 };
 // string to camel case...
 String.prototype.toTitleCase = function () {
 	return this.toLowerCase()
-		.replace(/\s(.)/g, function ($1) { return $1.toUpperCase(); })
-		.replace(/^(.)/, function ($1) { return $1.toUpperCase(); });
+		.replace(/\s(.)/g, function ($1) {
+			return $1.toUpperCase();
+		})
+		.replace(/^(.)/, function ($1) {
+			return $1.toUpperCase();
+		});
 };
 
 // trim...
@@ -30,7 +38,6 @@ if (!String.prototype.trim) {
 /* cSpell:disable */
 // replaces most of the special characters...
 String.prototype.replaceSpecialCharacters = function () {
-
 	return this.replace(/\u00C0|\u00C1|\u00C2|\u00C3|\u00C4|[ÀÁÂÃÄ]/g, 'A')
 		.replace(/\u00E0|\u00E1|\u00E2|\u00E3|\u00E4|[àáâãä]/g, 'a')
 		.replace(/\u00C8|\u00C9|\u00CA|\u00CB|[ÈÉÊË]/g, 'E')
@@ -51,7 +58,6 @@ String.prototype.replaceSpecialCharacters = function () {
 
 // date shortener...
 String.prototype.toShortDate = function () {
-
 	return this.replaceSpecialCharacters()
 		.replace(/SEGUNDA/, 'SEG')
 		.replace(/TERCA/, 'TER')
@@ -77,7 +83,6 @@ String.prototype.toShortDate = function () {
 
 // image resize to fit dimensions...
 Image.prototype.onDraw = function () {
-
 	// 'this' is the container and 'this.image' is the graphic
 	if (!this.image) return;
 	var WH = this.size,
@@ -102,11 +107,12 @@ if (typeof Array.isArray === 'undefined') {
 // indexOf() definition...
 if (!Array.prototype.indexOf) {
 	Array.prototype.indexOf = function (element, startPoint) {
-
 		var k;
 
 		if (this == null) {
-			throw new TypeError('"this" é nulo (null) ou não foi definido (undefined)');
+			throw new TypeError(
+				'"this" é nulo (null) ou não foi definido (undefined)',
+			);
 		}
 		var O = Object(this);
 		var aSize = O.length >>> 0;
@@ -114,7 +120,7 @@ if (!Array.prototype.indexOf) {
 		if (aSize === 0) {
 			return -1;
 		}
-		var n = + startPoint || 0;
+		var n = +startPoint || 0;
 
 		if (Math.abs(n) === Infinity) {
 			n = 0;

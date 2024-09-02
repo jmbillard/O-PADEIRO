@@ -9,7 +9,6 @@
 */
 
 function findDialog() {
-
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'BUSCA';
 	var scriptVersion = 'v2.2';
@@ -28,16 +27,13 @@ function findDialog() {
 	inputGrp.spacing = 8;
 	inputGrp.margins = 8;
 
-
 	var findEdTxt = inputGrp.add('edittext', [0, 0, 240, 32]);
 
 	// var findBtn = inputGrp.add('iconbutton', iconSize, findIcon.light, { style: 'toolbutton' });
 	// findBtn.helpTip = '◖ → buscar';
 	var findBtn = new themeIconButton(inputGrp, {
 		icon: PAD_BUSCAR_ICON,
-		tips: [
-			lClick + 'buscar'
-		]
+		tips: [lClick + 'buscar'],
 	});
 
 	//---------------------------------------------------------
@@ -65,7 +61,8 @@ function findDialog() {
 	optCkb1.value = false;
 
 	var optTxt1 = optGrp1.add('statictext', undefined, 'Tt');
-	optCkb1.helpTip = optTxt1.helpTip = '⦿  → considerar maiúsculas e minúsculas';
+	optCkb1.helpTip = optTxt1.helpTip =
+		'⦿  → considerar maiúsculas e minúsculas';
 
 	//---------------------------------------------------------
 
@@ -89,7 +86,8 @@ function findDialog() {
 	optCkb4.value = false;
 
 	var optTxt4 = optGrp4.add('statictext', undefined, '!=');
-	optCkb4.helpTip = optTxt4.helpTip = '⦿  → apenas textos que NÃO possuem o termo buscado';
+	optCkb4.helpTip = optTxt4.helpTip =
+		'⦿  → apenas textos que NÃO possuem o termo buscado';
 
 	//---------------------------------------------------------
 
@@ -97,11 +95,8 @@ function findDialog() {
 	// infoBtn.helpTip = 'ajuda | DOCS';
 	var infoBtn = new themeIconButton(optMainGrp, {
 		icon: PAD_INFO_ICON,
-		tips: [
-			lClick + 'ajuda | DOCS'
-		]
+		tips: [lClick + 'ajuda | DOCS'],
 	});
-
 
 	var findProgressBar = findW.add('progressbar', [0, 0, 280, 5], undefined);
 	findProgressBar.value = 100;
@@ -145,7 +140,7 @@ function findDialog() {
 			return;
 		}
 		resultTree.visible = true;
-		resultTree.size.height = count >= 16 ? 320 : (count * 21) + 5;
+		resultTree.size.height = count >= 16 ? 320 : count * 21 + 5;
 		findW.text = 'BUSCA CONCLUÍDA...  (o °▽ °)o☆';
 		findW.layout.layout(true);
 	};
@@ -158,7 +153,6 @@ function findDialog() {
 		var txtLayer;
 
 		if (resultTree.selection.type == 'item') {
-
 			txtLayer = resultTree.selection.txtLayer;
 
 			for (var l = 1; l <= comp.numLayers; l++) {
@@ -176,7 +170,6 @@ function findDialog() {
 	//---------------------------------------------------------
 
 	infoBtn.leftClick.onClick = function () {
-
 		openWebSite(repoURL + '/blob/main/README.md#busca');
 	};
 
