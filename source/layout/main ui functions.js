@@ -271,11 +271,9 @@ function PAD_UI_EVENTS(uiObj) {
 	// Adiciona um ouvinte de evento de clique ao botão "Abrir O Padeiro".
 	uiObj.templates.rightClick.onClick = function () {
 		if (app.project.numItems == 0) return;
-
 		var aItem = app.project.activeItem;
-
 		if (aItem == null) return;
-
+		
 		try {
 			PadMakerDialog();
 			//
@@ -578,9 +576,6 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 
 	hoverImg.addEventListener('click', function (c) {
 		if (c.button == 0) this.parent.children[0].notify();
-	});
-
-	hoverImg.addEventListener('click', function (c) {
 		if (c.button == 2) this.parent.children[1].notify();
 	});
 
@@ -591,12 +586,10 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 // as propriedades 'ctrlProperties' estão definidas na estrutura da ui 'structureObj'
 function themeImageButton(sectionGrp, ctrlProperties) {
 	var newUiCtrlObj = {};
-	var newBtn = (newUiCtrlObj[ctrlProperties.key] = {});
-	var tipTxt =
-		ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
+	var newBtn = newUiCtrlObj[ctrlProperties.key] = {};
+	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
 
-	if (ctrlProperties.icon.hover == undefined)
-		ctrlProperties.icon.hover = ctrlProperties.icon.normal;
+	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
 
 	newBtn.btnGroup = sectionGrp.add('group'); // Grupo de botões superior
 
@@ -651,17 +644,11 @@ function themeImageButton(sectionGrp, ctrlProperties) {
 
 	newBtn.label.addEventListener('click', function (c) {
 		if (c.button == 0) this.parent.children[0].children[0].notify();
-	});
-
-	newBtn.label.addEventListener('click', function (c) {
 		if (c.button == 2) this.parent.children[0].children[1].notify();
 	});
 
 	newBtn.hoverImg.addEventListener('click', function (c) {
 		if (c.button == 0) this.parent.children[0].notify();
-	});
-
-	newBtn.hoverImg.addEventListener('click', function (c) {
 		if (c.button == 2) this.parent.children[1].notify();
 	});
 

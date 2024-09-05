@@ -10,6 +10,7 @@
 */
 
 function PadMakerDialog() {
+
 	var scriptName = 'EDITOR DE TEMPLATES';
 	var scriptVersion = scriptVersion;
 
@@ -33,6 +34,7 @@ function PadMakerDialog() {
 	};
 
 	function addLayers() {
+
 		var aItem = app.project.activeItem;
 
 		if (aItem == null) return;
@@ -83,16 +85,15 @@ function PadMakerDialog() {
 				try {
 					this.properties.selectedLayer.selected =
 						!this.properties.selectedLayer.selected;
-				//
-} catch (err) {}
+					//
+				} catch (err) { }
 			});
 
 			excludeLayerBtn.leftClick.onClick = function () {
 				try {
-					this.parent.parent.parent.children[0].properties.selectedLayer.comment =
-						'';
-				//
-} catch (err) {
+					this.parent.parent.parent.children[0].properties.selectedLayer.comment = '';
+					//
+				} catch (err) {
 					alert(lol + '#PAD_024 - ' + err.message); // Exibe uma mensagem de erro
 				}
 
@@ -121,6 +122,7 @@ function PadMakerDialog() {
 	}
 
 	function addOutputFolder() {
+
 		var outputGrp = outputMainGrp.add('group', undefined);
 		outputGrp.orientation = 'row';
 		outputGrp.alignChildren = ['left', 'center'];
@@ -153,8 +155,7 @@ function PadMakerDialog() {
 
 			this.properties.outputPath = newOutputPath.fullName;
 			this.text = newOutputPath.fullName;
-			this.helpTip =
-				'caminho da pasta de output:\n\n' + newOutputPath.fullName;
+			this.helpTip = 'caminho da pasta de output:\n\n' + newOutputPath.fullName;
 		});
 
 		excludeOutputBtn.leftClick.onClick = function () {
@@ -167,6 +168,7 @@ function PadMakerDialog() {
 	}
 
 	function getTemplateLayers() {
+
 		var templateLayersArray = [];
 
 		for (var i = 0; i < layersMainGrp.children.length; i++) {
@@ -178,14 +180,15 @@ function PadMakerDialog() {
 					layerGrp.children[0].properties.selectedLayer;
 
 				templateLayersArray.push([selectedLayer, methodArray[m]]);
-			//
-} catch (err) {}
+				//
+			} catch (err) { }
 		}
 
 		return templateLayersArray;
 	}
 
 	function getFontList() {
+
 		var fontNameArray = []; // copied fonts array...
 		var compArray = getComps(); // all project comps...
 
@@ -426,8 +429,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		// buttonColor: normalColor1,
 		labelTxt: 'capturar preview',
 		tips: [
-			lClick +
-				'capturar o frame de preview,\na comp principal e o\ntempo de referência',
+			lClick + 'capturar o frame de preview,\na comp principal e o\ntempo de referência',
 		],
 	});
 
@@ -725,8 +727,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		try {
 			tempPreviewFile.remove();
-		//
-} catch (err) {}
+			//
+		} catch (err) { }
 	};
 
 	PAD_MAKER_w.onShow = function () {
@@ -749,8 +751,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			$.sleep(500);
 			previewImg.image = tempPreviewFile;
-		//
-} catch (err) {
+			//
+		} catch (err) {
 			alert(lol + '#PAD_026 - ' + err.message); // Exibe uma mensagem de erro
 		}
 
@@ -806,8 +808,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		try {
 			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
 			tempPreviewFile.remove();
-		//
-} catch (err) {
+			//
+		} catch (err) {
 			alert(lol + '#PAD_025 - ' + err.message); // Exibe uma mensagem de erro
 		}
 
@@ -817,8 +819,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			$.sleep(300);
 			previewImg.image = tempPreviewFile;
-		//
-} catch (err) {
+			//
+		} catch (err) {
 			alert(lol + '#PAD_023 - ' + err.message); // Exibe uma mensagem de erro
 		}
 		// previewGrp.layout.layout(true);
@@ -944,8 +946,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 					layerIndex: selectedLayer.index,
 					method: methodArray[m],
 				});
-			//
-} catch (err) {}
+				//
+			} catch (err) { }
 		}
 
 		tempConfigObj.importPath = importPathLab.properties.importPath;
@@ -956,8 +958,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 				var outputGrp = outputMainGrp.children[o];
 				var outputPath = outputGrp.children[0].properties.outputPath;
 				tempConfigObj.outputPath.push(outputPath);
-			//
-} catch (err) {}
+				//
+			} catch (err) { }
 		}
 		var isSaved = app.project.saveWithDialog();
 
@@ -981,8 +983,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			tempPreviewFile.remove();
 
 			openFolder(decodeURI(currentTemplateFolder.fullName));
-		//
-} catch (err) {
+			//
+		} catch (err) {
 			alert(lol + '#PAD_028 - ' + err.message); // Exibe uma mensagem de erro
 		}
 		app.endUndoGroup();
