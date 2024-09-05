@@ -12,7 +12,7 @@
 function PadMakerDialog() {
 
 	var scriptName = 'EDITOR DE TEMPLATES';
-	var scriptVersion = scriptVersion;
+	// var scriptVersion = scriptVersion;
 
 	var tempConfigObj = {
 		configName: 'NOME DA CONFIGURAÇÃO',

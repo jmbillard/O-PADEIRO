@@ -67,6 +67,8 @@ function renderTemplateDialog(array) {
 
 // Função para criar a interface de usuário do 'O Padeiro'
 function padeiroTemplateDialog() {
+	var scriptName = 'TEMPLATES';
+
 	var wWidth; // Largura da janela sem a pré-visualização
 	var oWidth; // Largura da janela com a pré-visualização
 	var previewScale = 0.23; // Fator de escala de preview da imagem
@@ -85,7 +87,7 @@ function padeiroTemplateDialog() {
 	var tipContent = '...';
 
 	// Cria a janela principal do 'O Padeiro'
-	var PAD_TEMPLATES_w = new Window('dialog', 'O PADEIRO ' + scriptVersion);
+	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
 
 	// Cria o grupo principal que conterá todos os elementos da interface
 	var mainGrp = PAD_TEMPLATES_w.add('group');

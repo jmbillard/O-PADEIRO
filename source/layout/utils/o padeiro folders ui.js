@@ -10,7 +10,7 @@
 
 function padProdFoldersDialog(prodArray) {
 	var scriptName = 'LISTA DE PRODUÇÕES';
-	var scriptVersion = scriptVersion;
+	// var scriptVersion = scriptVersion;
 
 	function addProductionLine(prodObj) {
 		var nameTxt = prodObj.name;
