@@ -11,57 +11,59 @@
 */
 
 // Função para criar a janela de diálogo de configuração do render
-function renderTemplateDialog(array) {
+function renderOptionsDialog(outputTemplatesArray) {
 	// Variáveis Locais
 	var renderTemplate = ''; // String que armazenará o nome do template de renderização selecionado pelo usuário
 	// Mensagem de ajuda, indicando se o template precisa ou não de canal alpha (transparência)
-	var txtHelp2Content =
-		'templates de render disponíveis em:\nEdit > Templates > Output Module...';
+	var helpTxt = 'templates de render disponíveis em:\nEdit > Templates > Output Module...';
 
 	// Criação da Janela de Diálogo
-	var wPref = new Window('dialog', 'RENDER SETUP'); // Cria uma nova janela de diálogo com o título 'render setup...'
-	wPref.alignChildren = ['left', 'top']; // Alinha todos os elementos da janela à esquerda e ao topo
-	wPref.spacing = 10; // Define um espaçamento de 10 pixels entre os elementos da janela
+	var PAD_RENDER_SETUP_w = new Window('dialog', 'OPÇÕES DE RENDER'); // Cria uma nova janela de diálogo com o título 'render setup...'
+	PAD_RENDER_SETUP_w.alignChildren = ['left', 'top']; // Alinha todos os elementos da janela à esquerda e ao topo
+	PAD_RENDER_SETUP_w.spacing = 12; // Define um espaçamento de 10 pixels entre os elementos da janela
 
 	// Primeiro Texto de Ajuda
 	// Adiciona um texto estático à janela com instruções para o usuário
-	var helpTxt1 = wPref.add(
+	var optionsHeaderLab = PAD_RENDER_SETUP_w.add(
 		'statictext',
 		[0, 0, 250, 18],
 		'TEMPLATES DE RENDER:',
 	);
-	setFgColor(helpTxt1, monoColor0); // Define a cor do texto
+	setFgColor(optionsHeaderLab, monoColor0); // Define a cor do texto
 
 	// Grupo para a Lista Suspensa
-	var renderGrp = wPref.add('group'); // Cria um grupo para organizar a lista e facilitar o layout
+	var renderGrp = PAD_RENDER_SETUP_w.add('group'); // Cria um grupo para organizar a lista e facilitar o layout
+	renderGrp.orientation = 'column'; // Orientação vertical
+	renderGrp.spacing = 12; // Define um espaçamento de 10 pixels entre os elementos da janela
 
 	// Lista Suspensa dos Templates de Renderização
-	var renderDrop = renderGrp.add('dropdownlist', undefined, array); // Adiciona uma lista
+	var renderDrop = renderGrp.add('dropdownlist', undefined, outputTemplatesArray); // Adiciona uma lista
 	renderDrop.preferredSize = [250, 24]; // Define um tamanho preferencial para a lista
 
 	// Divisor Visual
-	// var divider1 = wPref.add('panel');                    // Divisor visual para separar as seções da janela
-	// divider1.alignment = 'fill';                          // Faz o divisor ocupar toda a largura da janela
-	var newDiv = themeDivider(wPref);
+	var newDiv = themeDivider(renderGrp);
 	newDiv.alignment = ['fill', 'center'];
 
 	// Segundo Texto de Ajuda (Canal Alpha)
-	var helpTxt2 = wPref.add('statictext', [0, 0, 250, 36], txtHelp2Content, {
+	var helpTxt2 = renderGrp.add(
+		'statictext',
+		[0, 0, 250, 36],
+		helpTxt, {
 		multiline: true,
 	}); // Indicação sobre a nescidade de canal alpha
-	setFgColor(helpTxt1, normalColor1); // Define a cor do texto
+	setFgColor(optionsHeaderLab, normalColor1); // Define a cor do texto
 	setFgColor(helpTxt2, normalColor2); // Define a cor do texto
 
-	setBgColor(wPref, bgColor1); // Cor de fundo da janela
+	setBgColor(PAD_RENDER_SETUP_w, bgColor1); // Cor de fundo da janela
 
 	// Define uma função que será executada quando o usuário alterar a seleção na lista
 	renderDrop.onChange = function () {
 		renderTemplate = renderDrop.selection.toString(); // Obtém o nome do template selecionado e o converte para uma string
-		wPref.close(); // Fecha a janela de diálogo após a seleção
+		PAD_RENDER_SETUP_w.close(); // Fecha a janela de diálogo após a seleção
 	};
 
 	// Exibir a Janela e Retornar o Template Selecionado
-	wPref.show();
+	PAD_RENDER_SETUP_w.show();
 	return renderTemplate;
 }
 
@@ -71,12 +73,11 @@ function padeiroTemplateDialog() {
 
 	var wWidth; // Largura da janela sem a pré-visualização
 	var oWidth; // Largura da janela com a pré-visualização
-	var previewScale = 0.23; // Fator de escala de preview da imagem
 	var fileFilter = ['.aep', '.aet']; // Extensões de arquivo de template permitidas
 	var hasTextInputData = false; // Indica se há dados de entrada
 	var hasInputLayers = false; // Indica se o template possui campos de entrada
 	var exemple = ''; // Exemplo de texto de entrada
-	var padeiroOutputModuleTemplate; // Variável para armazenar o template do módulo de saída
+	var padOutputTemplate; // Variável para armazenar o template do módulo de saída
 
 	// Variáveis para armazenar os arquivos do template
 	var templateFile;
@@ -195,7 +196,7 @@ function padeiroTemplateDialog() {
 
 	// Imagem de preview
 	var previewImg = previewGrp.add('image', undefined, no_preview); // Adiciona um elemento de imagem ao grupo de preview. 'no_preview'
-	previewImg.size = [1920 * previewScale, 1080 * previewScale]; // Define o tamanho da imagem de preview, aplicando um fator de escala ('previewScale')
+	previewImg.size = [440, 250]; // Define o tamanho da imagem de preview
 
 	// Divisor de preview
 	var newDiv = themeDivider(vGrp2);
@@ -457,7 +458,7 @@ function padeiroTemplateDialog() {
 			// Em caso de erro durante o carregamento ou análise da configuração, exibe um alerta e sai da função
 			alert(
 				lol +
-					'#PAD_017 - esse template não tem um arquivo de configuração válido!',
+				'#PAD_017 - esse template não tem um arquivo de configuração válido!',
 			);
 			return;
 		}
@@ -575,20 +576,13 @@ function padeiroTemplateDialog() {
 			// Loop para cada linha de texto de entrada (cada item no array inputList)
 			for (var n = 0; n < inputList.length; n++) {
 				// Define um prefixo , se houver um prefixo definido em templateData
-				var prefix =
-					templateData.prefix != ''
-						? templateData.prefix + ' - '
-						: '';
+				var prefix = templateData.prefix != '' ? templateData.prefix + ' - ' : '';
 				// Gera o nome do template combinando o prefixo (se existir) e o texto da linha atual, removendo caracteres especiais
-				var templateName =
-					prefix + inputList[n].replaceSpecialCharacters();
+				var templateName = prefix + inputList[n].replaceSpecialCharacters();
 				var t = templateData.refTime; // Obtém o tempo de referência do template (em segundos)
 
 				// Obtém a lista de opções do efeito de entrada (inputFx), se definido; caso contrário, usa um array vazio
-				var optionsList =
-					templateData.inputFx != null
-						? templateData.inputFx.options
-						: [''];
+				var optionsList = templateData.inputFx != null ? templateData.inputFx.options : [''];
 
 				// Loop para cada opção de efeito de entrada
 				for (var f = 0; f < optionsList.length; f++) {
@@ -640,23 +634,16 @@ function padeiroTemplateDialog() {
 
 							// Se o método de entrada for 'textContent' (conteúdo de texto)
 							if (inputLayerList[l].method == 'textContent') {
-								if (!(inputLayer instanceof TextLayer))
-									continue; // Pula se a camada não for uma camada de texto
+								if (!(inputLayer instanceof TextLayer)) continue; // Pula se a camada não for uma camada de texto
 
 								txtList[l] = txtList[l].trim(); // Remove espaços em branco do texto
 								var textContent = txtList[l]; // Obtém o conteúdo do texto
-								var text = inputLayer.property(
-									'ADBE Text Properties',
-								); // Obtém a propriedade de texto da camada
-								var textDoc =
-									text.property('ADBE Text Document').value; // Obtém o documento de texto da camada
+								var text = inputLayer.property('ADBE Text Properties'); // Obtém a propriedade de texto da camada
+								var textDoc = text.property('ADBE Text Document').value; // Obtém o documento de texto da camada
 
 								textDoc.text = textContent; // Define o novo conteúdo do texto
-								text.property('ADBE Text Document').setValue(
-									textDoc,
-								); // Aplica o novo conteúdo
-								txtList[l] =
-									txtList[l].replaceSpecialCharacters(); // Remove caracteres especiais do texto
+								text.property('ADBE Text Document').setValue(textDoc); // Aplica o novo conteúdo
+								txtList[l] = txtList[l].replaceSpecialCharacters(); // Remove caracteres especiais do texto
 							}
 
 							// Se o método de entrada for 'layerName' (nome da camada)
@@ -692,25 +679,22 @@ function padeiroTemplateDialog() {
 						var outputModule = item.outputModule(1); // Obtém o módulo de saída do item na fila de render
 
 						// Verifica se o template do módulo de saída já foi definido
-						if (padeiroOutputModuleTemplate == undefined) {
+						if (padOutputTemplate == undefined) {
 							var tArray = outputModule.templates; // Array com os templates disponíveis para o módulo de saída
 							var tIndex = tArray.length - 1; // Índice do último template do array
 
 							// Remove templates ocultos do array
-							while (
-								tArray[tIndex].toString().match(/^_HIDDEN\s/)
-							) {
+							while (tArray[tIndex].toString().match(/^_HIDDEN\s/)) {
 								tArray.pop(); // Remove o último elemento do array
 								tIndex--; // Decrementa o índice para verificar o próximo template
 							}
 
 							// Ui para escolha de um template de saída
-							padeiroOutputModuleTemplate =
-								renderTemplateDialog(tArray);
+							padOutputTemplate = renderOptionsDialog(tArray);
 						}
 
 						// Verifica se um template de saída foi selecionado
-						if (padeiroOutputModuleTemplate != '') {
+						if (padOutputTemplate != '') {
 							item.applyTemplate('Best Settings'); // Aplica as melhores configurações de renderização ao item na fila
 							var outputPathArray = templateData.outputPath;
 							for (var o = 0; o < outputPathArray.length; o++) {
@@ -718,18 +702,12 @@ function padeiroTemplateDialog() {
 
 								outputModule = item.outputModule(o + 1);
 								// Cria um objeto Folder para a pasta de saída definida em templateData
-								var outputFolder = new Folder(
-									outputPathArray[o],
-								);
+								var outputFolder = new Folder(outputPathArray[o]);
 
 								// Verifica se a pasta de saída está disponível
 								// evita delays em casos de problema na rede
-								if (
-									folderNotAvailable ||
-									!outputFolder.exists
-								) {
-									outputPathArray[o] =
-										defaultTemplateConfigObj.outputPath[0]; // se não estiver, usa a pasta padrão definida em defaultTemplateConfigObj
+								if (folderNotAvailable || !outputFolder.exists) {
+									outputPathArray[o] = defaultTemplateConfigObj.outputPath[0]; // se não estiver, usa a pasta padrão definida em defaultTemplateConfigObj
 									// Define a variável de controle para indicar que a pasta original não está disponível
 									// assim pulamos a verificação em caso de problema na rede
 									folderNotAvailable = true;
@@ -737,19 +715,13 @@ function padeiroTemplateDialog() {
 
 								try {
 									// Cria o arquivo de saída do render (nome do template + '.mov')
-									var outputFile = new File(
-										outputPathArray[o] +
-											'/[compName].[fileextension]',
-									);
+									var outputFile = new File(outputPathArray[o] + '/[compName].[fileextension]');
 
 									outputModule.file = outputFile; // Define o arquivo de saída no módulo de render
-									outputModule.applyTemplate(
-										padeiroOutputModuleTemplate,
-									); // Aplica o template de saída selecionado ao módulo de render
+									outputModule.applyTemplate(padOutputTemplate); // Aplica o template de saída selecionado ao módulo de render
 									createdOutputModuleArray.push(outputModule); // Adiciona o módulo de saída ao array
 
 									// Em caso de erro
-									//
 								} catch (err) {
 									alert(lol + '#PAD_019 - ' + err.message); // Mensagem de erro
 								}
@@ -815,7 +787,7 @@ function padeiroTemplateDialog() {
 			].join(',');
 			saveLogData(logFile, logData); // Salva o registro de log no arquivo
 			//
-		} catch (err) {} // Ignora qualquer erro que possa ocorrer durante o registro de log
+		} catch (err) { } // Ignora qualquer erro que possa ocorrer durante o registro de log
 
 		// Alertas e Metadados
 		// Se a pasta de saída original não estava disponível
