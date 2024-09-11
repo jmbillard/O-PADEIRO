@@ -923,8 +923,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		tempConfigObj.refTime = infoText1.properties.ref_time;
 
 		tempConfigObj.separator = separatorTxt.text.replace(/\\n|\\r/g, '\n');
-		if (separatorTxt.text == '' || templateLayers.length < 2)
-			tempConfigObj.separator = '---';
+		if (separatorTxt.text == '' || templateLayers.length < 2) tempConfigObj.separator = '---';
 
 		tempConfigObj.textCase = [
 			'upperCase',
@@ -934,17 +933,12 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		][caseDrop.selection.index];
 		tempConfigObj.inputLayers = [];
 
-		for (var b = 0; b < layersMainGrp.children.length; b++) {
+		for (var b = 0; b < templateLayers.length; b++) {
 			try {
-				var layerGrp = layersMainGrp.children[b];
-				var methodArray = ['layerName', 'textContent'];
-				var m = layerGrp.children[1].selection.index;
-				var selectedLayer =
-					layerGrp.children[2].properties.selectedLayer;
 
 				tempConfigObj.inputLayers.push({
-					layerIndex: selectedLayer.index,
-					method: methodArray[m],
+					layerIndex: templateLayers[b][0].index,
+					method: templateLayers[b][1]
 				});
 				//
 			} catch (err) { }
@@ -967,10 +961,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var currentProj = app.project.file;
 		var currentTemplateFolder = currentProj.parent;
-		var currentProjBase = decodeURI(currentProj.fullName).replace(
-			/\.ae[pt]/,
-			'',
-		);
+		var currentProjBase = decodeURI(currentProj.fullName).replace(/\.ae[pt]/,'');
 
 		try {
 			var configContent = JSON.stringify(tempConfigObj, null, '\t');

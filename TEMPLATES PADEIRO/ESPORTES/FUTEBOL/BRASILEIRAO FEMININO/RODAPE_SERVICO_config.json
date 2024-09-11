@@ -1,0 +1,24 @@
+{
+	"configName": "BRASILEIRÃO FEMININO RODAPE SERVIÇO",
+	"exemple": "DOMINGO\n10:30",
+	"tip": "A ANIMAÇÃO TEM 2 TEMPOS!\nPRIMEIRO TEMPO - LINHA 1\nSEGUNDO TEMPO - LINHA 2\n\ndigite o texto em 1 ou 2 linhas.\n\nuse a quebra de linha para separar o que será exibido em cada tempo da animação\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP - SERVICO TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 1,
+	"separator": "\n",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 4,
+			"method": "textContent"
+		},
+		{
+			"layerIndex": 5,
+			"method": "textContent"
+		}
+	],
+	"importPath": "~/Downloads",
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/BRASILEIRAO FEMININO/2024/SERVICO"
+	]
+}
