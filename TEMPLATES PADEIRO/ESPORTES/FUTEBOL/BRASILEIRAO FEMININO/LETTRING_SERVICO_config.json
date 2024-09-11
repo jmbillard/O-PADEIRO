@@ -1,0 +1,20 @@
+{
+	"configName": "BRASILEIRÃO FEMININO LETTERING SERVIÇO",
+	"exemple": "SEMIFINAL",
+	"tip": "digite o texto em 1 linha.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template selecionado.",
+	"compName": "LETT - SERVICO TEMPLATE",
+	"prefix": "LETT",
+	"refTime": 3.003003003003,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 2,
+			"method": "textContent"
+		}
+	],
+	"importPath": "~/Downloads",
+	"outputPath": [
+		"~/Desktop"
+	]
+}
