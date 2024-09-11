@@ -4,7 +4,7 @@
 	"tip": "digite o texto em 1 linha.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template selecionado.",
 	"compName": "LETT - SERVICO TEMPLATE",
 	"prefix": "LETT",
-	"refTime": 3.003003003003,
+	"refTime": 2,
 	"separator": "---",
 	"textCase": "upperCase",
 	"inputLayers": [
@@ -15,6 +15,6 @@
 	],
 	"importPath": "~/Downloads",
 	"outputPath": [
-		"~/Desktop"
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/BRASILEIRAO FEMININO/2024/SERVICO"
 	]
 }
