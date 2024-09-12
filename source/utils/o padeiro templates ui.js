@@ -10,63 +10,6 @@
 
 */
 
-// Função para criar a janela de diálogo de configuração do render
-function renderOptionsDialog(outputTemplatesArray) {
-	// Variáveis Locais
-	var renderTemplate = ''; // String que armazenará o nome do template de renderização selecionado pelo usuário
-	// Mensagem de ajuda, indicando se o template precisa ou não de canal alpha (transparência)
-	var helpTxt = 'templates de render disponíveis em:\nEdit > Templates > Output Module...';
-
-	// Criação da Janela de Diálogo
-	var PAD_RENDER_SETUP_w = new Window('dialog', 'OPÇÕES DE RENDER'); // Cria uma nova janela de diálogo com o título 'render setup...'
-	PAD_RENDER_SETUP_w.alignChildren = ['left', 'top']; // Alinha todos os elementos da janela à esquerda e ao topo
-	PAD_RENDER_SETUP_w.spacing = 12; // Define um espaçamento de 10 pixels entre os elementos da janela
-
-	// Primeiro Texto de Ajuda
-	// Adiciona um texto estático à janela com instruções para o usuário
-	var optionsHeaderLab = PAD_RENDER_SETUP_w.add(
-		'statictext',
-		[0, 0, 250, 18],
-		'TEMPLATES DE RENDER:',
-	);
-	setFgColor(optionsHeaderLab, monoColor0); // Define a cor do texto
-
-	// Grupo para a Lista Suspensa
-	var renderGrp = PAD_RENDER_SETUP_w.add('group'); // Cria um grupo para organizar a lista e facilitar o layout
-	renderGrp.orientation = 'column'; // Orientação vertical
-	renderGrp.spacing = 12; // Define um espaçamento de 10 pixels entre os elementos da janela
-
-	// Lista Suspensa dos Templates de Renderização
-	var renderDrop = renderGrp.add('dropdownlist', undefined, outputTemplatesArray); // Adiciona uma lista
-	renderDrop.preferredSize = [250, 24]; // Define um tamanho preferencial para a lista
-
-	// Divisor Visual
-	var newDiv = themeDivider(renderGrp);
-	newDiv.alignment = ['fill', 'center'];
-
-	// Segundo Texto de Ajuda (Canal Alpha)
-	var helpTxt2 = renderGrp.add(
-		'statictext',
-		[0, 0, 250, 36],
-		helpTxt, {
-		multiline: true,
-	}); // Indicação sobre a nescidade de canal alpha
-	setFgColor(optionsHeaderLab, normalColor1); // Define a cor do texto
-	setFgColor(helpTxt2, normalColor2); // Define a cor do texto
-
-	setBgColor(PAD_RENDER_SETUP_w, bgColor1); // Cor de fundo da janela
-
-	// Define uma função que será executada quando o usuário alterar a seleção na lista
-	renderDrop.onChange = function () {
-		renderTemplate = renderDrop.selection.toString(); // Obtém o nome do template selecionado e o converte para uma string
-		PAD_RENDER_SETUP_w.close(); // Fecha a janela de diálogo após a seleção
-	};
-
-	// Exibir a Janela e Retornar o Template Selecionado
-	PAD_RENDER_SETUP_w.show();
-	return renderTemplate;
-}
-
 // Função para criar a interface de usuário do 'O Padeiro'
 function padeiroTemplateDialog() {
 	var scriptName = 'TEMPLATES';
@@ -77,7 +20,6 @@ function padeiroTemplateDialog() {
 	var hasTextInputData = false; // Indica se há dados de entrada
 	var hasInputLayers = false; // Indica se o template possui campos de entrada
 	var exemple = ''; // Exemplo de texto de entrada
-	var padOutputTemplate; // Variável para armazenar o template do módulo de saída
 
 	// Variáveis para armazenar os arquivos do template
 	var templateFile;
@@ -87,11 +29,39 @@ function padeiroTemplateDialog() {
 	var templateData;
 	var tipContent = '...';
 
+	var inputList = []; // Array para armazenar os campos de entrada
+	var createdTemplatesArray = []; // Array para armazenar os templates criados
+	var createdOutputModuleArray = []; // Array para armazenar os módulos de saída do render (configurações de exportação)
+	var folderNotAvailable = false;
+
 	// Cria a janela principal do 'O Padeiro'
 	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
+	var mainStackGrp = PAD_TEMPLATES_w.add('group');
+	mainStackGrp.orientation = 'stack';
 
 	// Cria o grupo principal que conterá todos os elementos da interface
-	var mainGrp = PAD_TEMPLATES_w.add('group');
+	var topHeaderGrp = mainStackGrp.add('group');
+	topHeaderGrp.orientation = 'column'; // Orientação vertical
+	topHeaderGrp.spacing = 12;
+	topHeaderGrp.alignment = ['left', 'top'];
+	var infoHeaderLab = topHeaderGrp.add(
+		'statictext',
+		[0, 0, 320, 18]
+	);
+	setFgColor(infoHeaderLab, normalColor1); // Define a cor do texto
+
+	var progressBar = topHeaderGrp.add(
+		'progressbar',
+		[0, 0, 320, 1]
+	); // Cria uma barra de progresso
+	var renderDrop = topHeaderGrp.add(
+		'dropdownlist',
+		[0, 0, 320, 24]
+	); // Adiciona uma lista
+	renderDrop.enabled = false;
+	topHeaderGrp.visible = false;
+
+	var mainGrp = mainStackGrp.add('group');
 	mainGrp.spacing = 12;
 
 	// Cria o grupo vertical à esquerda para os elementos de seleção do template
@@ -129,6 +99,7 @@ function padeiroTemplateDialog() {
 
 	// Cria o rótulo 'busca:'
 	var templateLabTxt = templateLabGrp.add('statictext', undefined, 'BUSCA:');
+	// templateLabTxt.size.height = 18;
 	setFgColor(templateLabTxt, normalColor1); // Define a cor do rótulo
 
 	// Cria o botão de informações
@@ -160,10 +131,6 @@ function padeiroTemplateDialog() {
 	lBtnGrp1.alignment = 'left'; // Alinha o subgrupo à esquerda
 	lBtnGrp1.spacing = 16; // Define um pequeno espaçamento de 2 pixels entre os botões dentro deste subgrupo
 
-	// // Grupo do botão à direita
-	// var bGrp2 = bGrp.add('group');      // Cria outro subgrupo dentro do grupo principal para o botão que ficará à direita
-	// bGrp2.alignment = 'right';          // Alinha o subgrupo à direita
-
 	var refreshBtn = new themeIconButton(lBtnGrp1, {
 		icon: PAD_ATUALIZAR_ICON,
 		tips: [lClick + 'atualizar lista de templates'],
@@ -192,6 +159,7 @@ function padeiroTemplateDialog() {
 
 	// Rótulo de preview
 	var previewLabTxt = previewLabGrp.add('statictext', undefined, 'PREVIEW:'); // Adiciona um texto estático 'preview:' ao grupo de preview
+	// previewLabTxt.size.height = 18;
 	setFgColor(previewLabTxt, normalColor1); // Define a cor do texto 'preview:'
 
 	// Imagem de preview
@@ -230,6 +198,7 @@ function padeiroTemplateDialog() {
 
 	// Elementos da Caixa de Texto
 	var inputLabTxt = inputLabGrp.add('statictext', undefined, 'INPUT:'); // Adiciona um texto estático 'input:' para identificar a caixa de texto
+	// inputLabTxt.size.height = 18;
 	setFgColor(inputLabTxt, normalColor1); // Define a cor do texto
 
 	// Criação da caixa de texto
@@ -248,31 +217,14 @@ function padeiroTemplateDialog() {
 	lBtnGrp2.alignment = 'left'; // Alinha o subgrupo à esquerda
 	lBtnGrp2.spacing = 16; // Define um pequeno espaçamento de 2 pixels entre os botões dentro deste subgrupo
 
-	var makeBtn = new themeButton(lBtnGrp2, {
+	var processBtn = new themeButton(lBtnGrp2, {
 		width: 120,
 		height: 32,
 		textColor: bgColor1,
 		buttonColor: normalColor1,
-		labelTxt: 'preencher: 1',
+		labelTxt: 'processar: 1',
 		tips: [lClick + 'criar e preencher o template selecionado'],
 	});
-
-	// Opções de Renderização
-	var renderGrp = lBtnGrp2.add('group'); // Cria um grupo para as opções de renderização (checkbox)
-	renderGrp.spacing = 8; // Define um espaçamento de 15 pixels entre os elementos do grupo
-
-	var renderLabTxt = renderGrp.add(
-		'statictext',
-		undefined,
-		'adicionar a fila de render:',
-	); // Adiciona um rótulo para a caixa de seleção de renderização
-	setFgColor(renderLabTxt, monoColor0); // Define a cor do rótulo.
-	renderLabTxt.helpTip =
-		"adiciona automaticamente os templates\na fila de render, ao clicar no botão 'criar'."; // Define a dica da ferramenta
-
-	var renderCkb = renderGrp.add('checkbox', [4, 4, 20, 18]); // Cria a caixa de seleção (checkbox) para a opção de renderização.
-	renderCkb.value = true; // Marca a caixa de seleção por padrão.
-	renderCkb.enabled = false; // Desabilita a caixa de seleção inicialmente.
 
 	// Dicas
 
@@ -286,13 +238,17 @@ function padeiroTemplateDialog() {
 	tipLabGrp.alignment = 'left'; // Alinhamento à esquerda
 
 	var tipLabTxt = tipLabGrp.add('statictext', undefined, 'DICAS:'); // Adiciona o rótulo 'dicas:' ao grupo de dicas.
+	// tipLabTxt.size.height = 18;
 	setFgColor(tipLabTxt, normalColor1); // Define a cor do rótulo.
 
-	var tipContentTxt = tipGrp.add('statictext', [0, 0, 180, 192], tipContent, {
-		multiline: true,
-	}); // Cria um texto estático para exibir as dicas.
-	setFgColor(tipContentTxt, normalColor2); // Define a cor do texto das dicas.
+	var tipContentTxt = tipGrp.add(
+		'statictext',
+		[0, 0, 180, 192],
+		tipContent,
+		{ multiline: true }
+	); // Cria um texto estático para exibir as dicas.
 
+	setFgColor(tipContentTxt, normalColor2); // Define a cor do texto das dicas.
 	setBgColor(PAD_TEMPLATES_w, bgColor1); // Cor de fundo da janela
 
 	//---------------------------------------------------------
@@ -389,25 +345,18 @@ function padeiroTemplateDialog() {
 
 		templateFile = templateTree.selection.file; // arquivo do template
 
-		var templateBase =
-			templateFile.path + '/' + deleteFileExt(templateFile.displayName); // nome do template
+		var templateBase = templateFile.path + '/' + deleteFileExt(templateFile.displayName); // nome do template
 
 		// Criação dos objetos File para os arquivos do template
 		previewImgFile = new File(templateBase + '_preview.png'); // arquivo de preview
 		configFile = new File(templateBase + '_config.json'); // arquivo de configuração
 		scriptFile = new File(templateBase + '_script.js'); // arquivo de script (se houver)
 
-		// Habilita o botão de importar se um template estiver selecionado
-		// importBtn.enabled = templateTree.selection != null;
-
-		// Verifica se o arquivo de preview existe
 		if (previewImgFile.exists) {
-			//define a imagem de preview para o arquivo encontrado
 			previewImg.image = previewImgFile;
 
 			// Se não existir...
 		} else {
-			//define a imagem de preview para a imagem padrão 'no_preview'
 			previewImg.image = no_preview;
 		}
 
@@ -467,11 +416,9 @@ function padeiroTemplateDialog() {
 		// Habilita o botão 'Criar' se um template for selecionado, houver dados de entrada e o template tiver inputs
 		inputLabTxt.enabled = hasInputLayers; // Habilita ou desabilita o rótulo 'input:'
 		edtText.enabled = hasInputLayers; // Habilita ou desabilita a caixa de texto de entrada
-		renderCkb.enabled = hasInputLayers; // Habilita ou desabilita a caixa de seleção 'adicionar à fila de render'
-		renderLabTxt.enabled = hasInputLayers; // Habilita ou desabilita o rótulo da caixa de seleção de renderização
 
 		var count = edtText.text.split(/[\n\r]{2,}/).length;
-		makeBtn.text = 'preencher: ' + count;
+		processBtn.text = 'preencher: ' + count;
 	};
 
 	//---------------------------------------------------------
@@ -487,8 +434,6 @@ function padeiroTemplateDialog() {
 		// Habilita/desabilita os elementos da interface de acordo com a presença de inputs no template
 		inputLabTxt.enabled = hasInputLayers; // Rótulo 'input:'
 		edtText.enabled = hasInputLayers; // Caixa de texto de entrada
-		renderCkb.enabled = hasInputLayers; // Caixa de seleção 'adicionar à fila de render'
-		renderLabTxt.enabled = hasInputLayers; // Rótulo da caixa de seleção de renderização
 	};
 
 	//---------------------------------------------------------
@@ -499,11 +444,11 @@ function padeiroTemplateDialog() {
 		hasTextInputData = edtText.text.trim() != '';
 
 		// Habilita o botão 'Criar' se um template for selecionado, houver dados de entrada e o template tiver inputs
-		makeBtn.enabled = hasTextInputData && hasInputLayers;
+		processBtn.enabled = hasTextInputData && hasInputLayers;
 
 		var count = this.text.split(/[\n\r]{2,}/).length;
 		// var suffix = count == 1 ? ' versão será criada' : ' versões serão criadas';
-		makeBtn.label.text = 'preencher: ' + count;
+		processBtn.label.text = 'preencher: ' + count;
 	};
 
 	edtText.onChange = function () {
@@ -513,249 +458,182 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	// Função executada quando o botão é clicado
-	makeBtn.leftClick.onClick = function () {
+	processBtn.leftClick.onClick = function () {
 		// Inicialização de variáveis
 		var logCount = 0; // Contador de templates processados
-		var createdTemplatesArray = []; // Array para armazenar os templates criados
-		var createdOutputModuleArray = []; // Array para armazenar os módulos de saída do render (configurações de exportação)
+		var template;
+		var templateComp;
+		var renderTemplateArray; // String que armazenará o nome do template de renderização selecionado pelo usuário
+		inputList = edtText.text.split(/[\n\r]{2,}/);
 
 		// Preparação da Interface
-		PAD_TEMPLATES_w.size.height = 10; // Minimiza a altura da janela principal (simula o fechamento)
-		PAD_TEMPLATES_w.text = 'processando os templates...'; // Altera o texto da janela
-		mainGrp.visible = false; // Oculta o grupo principal
+		mainGrp.visible = false;
+		topHeaderGrp.visible = true;
+		infoHeaderLab.text = templateFile.displayName;
+		PAD_TEMPLATES_w.text = 'importando projeto...';
+		PAD_TEMPLATES_w.size = [wWidth, 100];
+		PAD_TEMPLATES_w.update();
+		PAD_TEMPLATES_w.center();
 
 		// Verificações Iniciais
 		if (edtText.text.trim() == '') return; // Sai da função se não houver texto de entrada
 		if (!templateFile.exists) return; // Sai da função se o arquivo do template não existir
 		if (!configFile.exists) return; // Sai da função se o arquivo de configuração não existir
 
+		// Ajusta a caixa do texto de entrada (edtText) conforme a configuração no arquivo JSON (templateData)
+		if (templateData.textCase == 'upperCase')
+			edtText.text = edtText.text.toUpperCase(); // Converte para MAIÚSCULAS
+		if (templateData.textCase == 'lowerCase')
+			edtText.text = edtText.text.toLowerCase(); // Converte para minúsculas
+		if (templateData.textCase == 'titleCase')
+			edtText.text = edtText.text.toTitleCase(); // Converte para 'Title Case'
+
+		// Define configurações do projeto
+		app.project.bitsPerChannel = 8; // Define a profundidade de bits por canal para 8 bits (padrão para a maioria dos projetos)
+		app.project.expressionEngine = 'javascript-1.0'; // Define o mecanismo de expressão como JavaScript 1.0
+		app.project.linearBlending = true; // Habilita a mistura de cores linear (blending)
+		app.project.timeDisplayType = TimeDisplayType.TIMECODE; // Define a exibição de tempo como TimeCode (00:00:00:00)
+
 		// Bloco try...catch para lidar com possíveis erros durante a importação e configuração do template
 		try {
 			var IO = new ImportOptions(templateFile); // Opções de importação
 
-			app.project.importFile(IO); // Importa o arquivo do template selecionado para o projeto
+			app.project.importFile(IO);
 
-			// Ajusta a caixa do texto de entrada (edtText) conforme a configuração no arquivo JSON (templateData)
-			if (templateData.textCase == 'upperCase')
-				edtText.text = edtText.text.toUpperCase(); // Converte para MAIÚSCULAS
-			if (templateData.textCase == 'lowerCase')
-				edtText.text = edtText.text.toLowerCase(); // Converte para minúsculas
-			if (templateData.textCase == 'titleCase')
-				edtText.text = edtText.text.toTitleCase(); // Converte para 'Title Case'
+			var iNum = app.project.numItems;
 
-			// Divide o texto de entrada em uma lista de strings
-			// usando como separador duas ou mais quebras de linha (\n ou \r)
-			var inputList = edtText.text.split(/[\n\r]{2,}/);
+			for (var i = 1; i <= iNum; i++) {
+				var comp = app.project.item(i);
 
-			// Define configurações do projeto
-			app.project.bitsPerChannel = 8; // Define a profundidade de bits por canal para 8 bits (padrão para a maioria dos projetos)
-			app.project.expressionEngine = 'javascript-1.0'; // Define o mecanismo de expressão como JavaScript 1.0
-			app.project.linearBlending = true; // Habilita a mistura de cores linear (blending)
-			app.project.timeDisplayType = TimeDisplayType.TIMECODE; // Define a exibição de tempo como TimeCode (00:00:00:00)
+				if (!(comp instanceof CompItem)) continue;
+				if (!comp.comment.match(/^TEMPLATE/)) continue;
+				if (comp.name != templateData.compName) continue;
+				templateComp = comp;
 
-			// Em caso de erro
-			//
+				break;
+			}
+
+			try {
+				var item = app.project.renderQueue.items.add(templateComp);
+				renderTemplateArray = item.outputModule(1).templates;
+				var tIndex = renderTemplateArray.length - 1;
+
+				while (renderTemplateArray[tIndex].toString().match(/^_HIDDEN\s/)) {
+					renderTemplateArray.pop();
+					tIndex--;
+				}
+				populateDropdownList(renderTemplateArray, renderDrop);
+				item.remove();
+
+			} catch (err) {
+				alert(lol + '#PAD_017 - ' + err.message); // Exibe uma mensagem de erro
+				return;
+			}
+
 		} catch (err) {
 			alert(lol + '#PAD_018 - ' + err.message); // Exibe uma mensagem de erro
 			return;
 		}
+		var prefix = templateData.prefix != '' ? templateData.prefix + ' - ' : '';
+		var t = templateData.refTime; // Obtém o tempo de referência do template (em segundos)
+		var optionsList = templateData.inputFx != null ? templateData.inputFx.options : [''];
 
-		var iNum = app.project.numItems; // Obtém o número total de itens no projeto
-		var folderNotAvailable = false; // Variável de controle para verificar se a pasta de saída está disponível
+		progressBar.maxvalue = inputList.length * optionsList.length;
+		PAD_TEMPLATES_w.text = 'preenchendo templates...';
 
-		// Loop principal para processar todas as comps no projeto
-		for (var i = 1; i <= iNum; i++) {
-			var comp = app.project.item(i); // Obtém a composição atual pelo índice (i)
+		for (var n = 0; n < inputList.length; n++) {
 
-			// Verifica se o item é uma composição, se é um template e se o nome da composição
-			// corresponde ao nome definido no arquivo de configuração (templateData.compName)
-			if (!(comp instanceof CompItem)) continue; // Pula para a próxima iteração se o item não for uma composição (CompItem)
-			if (!comp.comment.match(/^TEMPLATE/)) continue; // Pula se a composição não tiver um comentário que comece com 'TEMPLATE'
-			if (comp.name != templateData.compName) continue; // Pula se o nome da composição não for o nome esperado do template
-
-			// Loop para cada linha de texto de entrada (cada item no array inputList)
-			for (var n = 0; n < inputList.length; n++) {
-				// Define um prefixo , se houver um prefixo definido em templateData
-				var prefix = templateData.prefix != '' ? templateData.prefix + ' - ' : '';
-				// Gera o nome do template combinando o prefixo (se existir) e o texto da linha atual, removendo caracteres especiais
-				var templateName = prefix + inputList[n].replaceSpecialCharacters();
-				var t = templateData.refTime; // Obtém o tempo de referência do template (em segundos)
-
-				// Obtém a lista de opções do efeito de entrada (inputFx), se definido; caso contrário, usa um array vazio
-				var optionsList = templateData.inputFx != null ? templateData.inputFx.options : [''];
-
-				// Loop para cada opção de efeito de entrada
-				for (var f = 0; f < optionsList.length; f++) {
-					var template = comp; // A composição original é o template
-
-					// Se houver o prefixo 'ignore' a composição do template não será alterada
-					// apenas adicionada ao array de templates criados
-					if (templateData.prefix != 'ignore') {
-						template = comp.duplicate(); // Duplica a composição original para criar um novo template
-
-						var inputLayerList = templateData.inputLayers; // Obtém a lista de camadas de entrada (inputLayers) do template
-						var txtList = inputList[n].split(/[\n\r]-+[\n\r]/); // Divide o texto da linha atual em um array de strings, usando como separador uma ou mais ocorrências de hífen (-) e quebras de linha (\n ou \r)
-
-						// Se houver um separador personalizado definido, usa-o para dividir o texto
-						if (templateData.separator != '') {
-							txtList = inputList[n].split(
-								templateData.separator,
-							);
-						}
-
-						// Se houver um efeito de entrada (inputFx) definido
-						if (templateData.inputFx != null) {
-							var ctrlLayer = template.layer(
-								templateData.inputFx.layerIndex,
-							); // Obtém a camada que controla o efeito de entrada
-
-							// Aplica a opção do efeito de entrada à camada de controle
-							ctrlLayer
-								.property('ADBE Effect Parade') // Acessa o grupo de efeitos da camada
-								.property(templateData.inputFx.fxName) // Acessa o efeito específico
-								.property(templateData.inputFx.optionIndex) // Acessa a propriedade que controla as opções do efeito
-								.setValue(f + 1); // Define o valor da opção do efeito (f + 1 para começar em 1 em vez de 0)
-						}
-
-						// Loop para cada camada de entrada (inputLayerList)
-						for (var l = 0; l < inputLayerList.length; l++) {
-							var inputLayer = template.layer(
-								inputLayerList[l].layerIndex,
-							); // Obtém a camada de entrada pelo índice
-
-							// Verifica se há texto suficiente para preencher todas as camadas de entrada
-							if (l >= txtList.length) {
-								inputLayer.enabled = false; // Desabilita a camada se não houver texto suficiente
-								continue; // Pula para a próxima iteração do loop
-							}
-
-							// Pula para a próxima iteração se o texto estiver vazio
-							if (txtList[l] == '') continue;
-
-							// Se o método de entrada for 'textContent' (conteúdo de texto)
-							if (inputLayerList[l].method == 'textContent') {
-								if (!(inputLayer instanceof TextLayer)) continue; // Pula se a camada não for uma camada de texto
-
-								txtList[l] = txtList[l].trim(); // Remove espaços em branco do texto
-								var textContent = txtList[l]; // Obtém o conteúdo do texto
-								var text = inputLayer.property('ADBE Text Properties'); // Obtém a propriedade de texto da camada
-								var textDoc = text.property('ADBE Text Document').value; // Obtém o documento de texto da camada
-
-								textDoc.text = textContent; // Define o novo conteúdo do texto
-								text.property('ADBE Text Document').setValue(textDoc); // Aplica o novo conteúdo
-								txtList[l] = txtList[l].replaceSpecialCharacters(); // Remove caracteres especiais do texto
-							}
-
-							// Se o método de entrada for 'layerName' (nome da camada)
-							if (inputLayerList[l].method == 'layerName') {
-								var layerName = txtList[l].trim(); // Remove espaços em branco do nome da camada
-								inputLayer.name = layerName; // Define o novo nome da camada
-							}
-						}
-						// Ajusta o nome do template se não houver prefixo
-						if (templateData.prefix == '') {
-							// Junta os elementos do array txtList, separando-os por ' - ' e remove as quebras de linha
-							templateName = txtList
-								.join(' - ')
-								.replace(/[\n\r]/g, ' ');
-						}
-
-						// Define o nome final do template
-						// Concatena o nome do template (em maiúsculas), a opção de efeito (se houver) e remove espaços extras
-						template.name = [
-							templateName.toUpperCase(),
-							optionsList[f],
-						]
-							.join(' ')
-							.trim();
-					}
-					createdTemplatesArray.push(template); // Adiciona o template criado ao array de templates criados
-
-					logCount++; // Incrementa o contador de templates processados
-
-					// Adiciona o template a fila de render (se a caixa de seleção estiver marcada)
-					if (renderCkb.value) {
-						var item = app.project.renderQueue.items.add(template); // Adiciona o template à fila de render
-						var outputModule = item.outputModule(1); // Obtém o módulo de saída do item na fila de render
-
-						// Verifica se o template do módulo de saída já foi definido
-						if (padOutputTemplate == undefined) {
-							var tArray = outputModule.templates; // Array com os templates disponíveis para o módulo de saída
-							var tIndex = tArray.length - 1; // Índice do último template do array
-
-							// Remove templates ocultos do array
-							while (tArray[tIndex].toString().match(/^_HIDDEN\s/)) {
-								tArray.pop(); // Remove o último elemento do array
-								tIndex--; // Decrementa o índice para verificar o próximo template
-							}
-
-							// Ui para escolha de um template de saída
-							padOutputTemplate = renderOptionsDialog(tArray);
-						}
-
-						// Verifica se um template de saída foi selecionado
-						if (padOutputTemplate != '') {
-							item.applyTemplate('Best Settings'); // Aplica as melhores configurações de renderização ao item na fila
-							var outputPathArray = templateData.outputPath;
-							for (var o = 0; o < outputPathArray.length; o++) {
-								if (o > 0) item.outputModules.add();
-
-								outputModule = item.outputModule(o + 1);
-								// Cria um objeto Folder para a pasta de saída definida em templateData
-								var outputFolder = new Folder(outputPathArray[o]);
-
-								// Verifica se a pasta de saída está disponível
-								// evita delays em casos de problema na rede
-								if (folderNotAvailable || !outputFolder.exists) {
-									outputPathArray[o] = defaultTemplateConfigObj.outputPath[0]; // se não estiver, usa a pasta padrão definida em defaultTemplateConfigObj
-									// Define a variável de controle para indicar que a pasta original não está disponível
-									// assim pulamos a verificação em caso de problema na rede
-									folderNotAvailable = true;
-								}
-
-								try {
-									// Cria o arquivo de saída do render (nome do template + '.mov')
-									var outputFile = new File(outputPathArray[o] + '/[compName].[fileextension]');
-
-									outputModule.file = outputFile; // Define o arquivo de saída no módulo de render
-									outputModule.applyTemplate(padOutputTemplate); // Aplica o template de saída selecionado ao módulo de render
-									createdOutputModuleArray.push(outputModule); // Adiciona o módulo de saída ao array
-
-									// Em caso de erro
-								} catch (err) {
-									alert(lol + '#PAD_019 - ' + err.message); // Mensagem de erro
-								}
-							}
-							// Se nenhum template de render for selecionado
-						} else {
-							item.remove(); // Remove o item da fila de render
-						}
-					}
-
-					template.openInViewer(); // Abre a composição do template preenchido
-					template.time = t; // move a agulha da timeline para o tempo de referência (t)
-					template.comment = 'EXPORTAR'; // Adiciona um comentário 'EXPORTAR' para organização automática
-				}
+			if (templateData.prefix == 'ignore') {
+				createdTemplatesArray.push(templateComp);
+				break;
 			}
-			// Se não houver o prefixo 'ignore'
-			if (templateData.prefix != 'ignore') comp.remove(); // Remove a composição original do template
-			break; // Sai do loop principal, pois o template desejado foi encontrado e processado
+
+			var templateName = prefix + inputList[n].replaceSpecialCharacters();
+
+			for (var f = 0; f < optionsList.length; f++) {
+
+				template = templateComp.duplicate();
+
+				var inputLayerList = templateData.inputLayers;
+				var txtList = inputList[n].split(/[\n\r]-+[\n\r]/);
+
+				if (templateData.separator != '') txtList = inputList[n].split(templateData.separator);
+
+				if (templateData.inputFx != null) {
+					var ctrlLayer = template.layer(templateData.inputFx.layerIndex);
+
+					ctrlLayer
+						.property('ADBE Effect Parade')
+						.property(templateData.inputFx.fxName)
+						.property(templateData.inputFx.optionIndex)
+						.setValue(f + 1);
+				}
+
+				for (var l = 0; l < inputLayerList.length; l++) {
+					var inputLayer = template.layer(inputLayerList[l].layerIndex);
+
+					if (l >= txtList.length) {
+						inputLayer.enabled = false;
+						continue;
+					}
+
+					if (txtList[l] == '') continue;
+
+					if (inputLayerList[l].method == 'textContent') {
+						if (!(inputLayer instanceof TextLayer)) continue;
+
+						txtList[l] = txtList[l].trim();
+						var textContent = txtList[l];
+						var text = inputLayer.property('ADBE Text Properties');
+						var textDoc = text.property('ADBE Text Document').value;
+
+						textDoc.text = textContent;
+						text.property('ADBE Text Document').setValue(textDoc);
+						txtList[l] = txtList[l].replaceSpecialCharacters();
+					}
+
+					if (inputLayerList[l].method == 'layerName') {
+						var layerName = txtList[l].trim();
+						inputLayer.name = layerName;
+					}
+				}
+
+				if (templateData.prefix == '') templateName = txtList.join(' - ').replace(/[\n\r]/g, ' ');
+
+				template.name = (templateName.toUpperCase() + ' ' + optionsList[f]).trim();
+
+				infoHeaderLab.text = template.name;
+				progressBar.value++;
+				PAD_TEMPLATES_w.update();
+				createdTemplatesArray.push(template); // Adiciona o template criado ao array de templates criados
+
+				logCount++; // Incrementa o contador de templates processados
+
+				template.openInViewer(); // Abre a composição do template preenchido
+				template.time = t; // move a agulha da timeline para o tempo de referência (t)
+				template.comment = 'EXPORTAR'; // Adiciona um comentário 'EXPORTAR' para organização automática
+			}
 		}
-		// Configuração da Pasta de Importação e Limpeza de Pastas do Projeto
-		var importFolder = new Folder(templateData.importPath); // Opções de importação
-		app.project.setDefaultImportFolder(importFolder); // Define a pasta de importação padrão
 
-		// Organização das Pastas do Projeto
-		deleteProjectFolders(); // Exclui todas pastas do projeto.
-		populateProjectFolders(); // Organiza o projeto com os templates criados.
-		deleteEmptyProjectFolders(); // Exclui pastas vazias do projeto.
+		var importFolder = new Folder(templateData.importPath);
+		app.project.setDefaultImportFolder(importFolder);
 
-		PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'.
+		PAD_TEMPLATES_w.text = 'organizando projeto...';
+
+		// Organização do Projeto
+		deleteProjectFolders();
+		populateProjectFolders();
+		deleteEmptyProjectFolders();
 
 		// Registro de Dados (Log)
 		// os Logs ainda não são 100% confiáveis devido a
 		// variação nas configurações do sistema (formatos de data e hora)
 		try {
+			PAD_TEMPLATES_w.text = 'salvando log...';
+			infoHeaderLab.text = logCount + ' templates processados';
+			progressBar.value = 0;
+			PAD_TEMPLATES_w.update();
+
 			// Obtém data e hora atual do sistema usando comandos do sistema operacional (Windows)
 			var dateStr = system
 				.callSystem('cmd.exe /c date /t')
@@ -789,19 +667,85 @@ function padeiroTemplateDialog() {
 			//
 		} catch (err) { } // Ignora qualquer erro que possa ocorrer durante o registro de log
 
-		// Alertas e Metadados
-		// Se a pasta de saída original não estava disponível
+		PAD_TEMPLATES_w.text = 'registrando metadados...';
+		infoHeaderLab.text = 'source - FONTS';
+		PAD_TEMPLATES_w.update();
+
+		// Adiciona metadados XMP ao projeto indicando o caminho do template original
+		setXMPData('source', decodeURI(templateFile.path).toString());
+
+		PAD_TEMPLATES_w.text = 'templates de render...';
+		infoHeaderLab.text = 'SELECIONE O TEMPLATE:';
+		renderDrop.enabled = true;
+		renderDrop.active = true;
+	};
+
+	// Define uma função que será executada quando o usuário alterar a seleção na lista
+	renderDrop.onChange = function () {
+
+		var outputPathArray = templateData.outputPath;
+		var padOutputTemplate = this.selection.toString(); // Obtém o nome do template selecionado e o converte para uma string
+		PAD_TEMPLATES_w.text = 'processando...';
+		infoHeaderLab.text = 'AGUARDE A VERIFICAÇÃO DO OUTPUT!';
+		progressBar.maxvalue = createdTemplatesArray.length * outputPathArray.length;
+		progressBar.value = 0;
+		this.enabled = false;
+
+		for (var r = 0; r < createdTemplatesArray.length; r++) {
+
+			if (padOutputTemplate == '') break;
+
+			template = createdTemplatesArray[r];
+			var item = app.project.renderQueue.items.add(template);
+
+			item.applyTemplate('Best Settings'); // Aplica as melhores configurações de renderização ao item na fila
+
+			for (var o = 0; o < outputPathArray.length; o++) {
+				if (o > 0) item.outputModules.add();
+
+				var outputModule = item.outputModule(o + 1);
+				var outputFolder = new Folder(outputPathArray[o]);
+
+				if (folderNotAvailable || !outputFolder.exists) {
+					outputPathArray[o] = defaultTemplateConfigObj.outputPath[0];
+					folderNotAvailable = true;
+					PAD_TEMPLATES_w.text = 'pasta não encontrada...';
+				}
+
+				PAD_TEMPLATES_w.text = 'criando fila de render...';
+				try {
+					var outputFile = new File(outputPathArray[o] + '/[compName].[fileextension]');
+
+					outputModule.file = outputFile;
+					outputModule.applyTemplate(padOutputTemplate);
+					createdOutputModuleArray.push(outputModule);
+
+					// Em caso de erro
+				} catch (err) {
+					alert(lol + '#PAD_019 - ' + err.message); // Mensagem de erro
+				}
+				infoHeaderLab.text = outputModule.file.displayName;
+				progressBar.value++;
+				PAD_TEMPLATES_w.update();
+			}
+		}
+
 		if (folderNotAvailable) {
 			// Exibe um alerta informando o usuário
 			alert(lol + '#PAD_020 - o output do render não pode ser acessado!');
 		}
 
-		// Adiciona metadados XMP ao projeto indicando o caminho do template original
-		setXMPData('source', decodeURI(templateFile.path).toString());
+		PAD_TEMPLATES_w.close(); // Fecha a janela de diálogo após a seleção
+	};
+
+	PAD_TEMPLATES_w.onClose = function () {
 
 		// Execução de Script Personalizado (se houver)
 		// Verifica se existe um arquivo de script associado ao template
 		if (scriptFile.exists) {
+			PAD_TEMPLATES_w.text = 'executando script externo...';
+			infoHeaderLab.text = scriptFile.displayName;
+
 			try {
 				scriptFile.open('r'); // Abre o arquivo de script para leitura
 				eval(scriptFile.read()); // Executa o código JavaScript contido no arquivo
@@ -813,9 +757,7 @@ function padeiroTemplateDialog() {
 				alert(lol + '#PAD_021 - ' + err.message);
 			}
 		}
-	};
-
-	//---------------------------------------------------------
+	}
 
 	// Função executada ao clicar no botão 'Importar' ou ao dar duplo clique em um template na árvore
 	// Atribui a mesma função para o evento onClick do botão e onDoubleClick da árvore de templates

@@ -8,9 +8,9 @@
 	"separator": "---",
 	"textCase": "upperCase",
 	"inputLayers": [],
-	"importPath": "//10.228.183.165/vfx/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2024/CHAMADA PATROCINADORES 2024/02 ARQUIVOS",
+	"importPath": "~/Downloads",
 	"outputPath": [
-		"//10.228.183.165/vfx/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2024/CHAMADA PATROCINADORES 2024/SAIDAS",
-		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/PATROCINIO/PATROCINIO 2024"
+		"~/Desktop",
+		"~/Desktop/teste 1"
 	]
 }

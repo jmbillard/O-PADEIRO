@@ -1,3 +1,8 @@
+/* eslint-disable no-empty */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-redeclare */
+/* eslint-disable no-undef */
 // esse script só pode ser executado pelo padeiro...
 app.project.linearizeWorkingSpace = false;
 app.project.compensateForSceneReferredProfiles = false;
@@ -12,7 +17,7 @@ var logoComp;
 
 // Obtém a data atual em um formato adequado para nomes de arquivo.
 var date = inputList[0].replace(/[\/\\\|_]/g, '-'); // -> 11-06 a 16-06
-
+alert(0);
 var logoFolder = app.project.items.addFolder('MARCAS ' + date); // Cria uma pasta no projeto para organizar os logos importados.
 
 // Verifica se o usuário selecionou algum arquivo de logo.
@@ -27,6 +32,7 @@ if (logoArray != null) {
 		if (comp.name != 'LOGOS') continue;
 
 		logoComp = comp; // Atribui a composição encontrada à variável logoComp.
+		alert(1);
 	}
 
 	// Verifica se a composição de logos foi encontrada.
@@ -45,6 +51,7 @@ if (logoArray != null) {
 				logoLayer.replaceSource(logoImg, false); // Substitui a imagem da camada pelo novo logo.
 			}
 		}
+		alert(2);
 
 		var outputPathArray = templateData.outputPath;
 		// Define o arquivo de saída para cada módulo de saída.
@@ -69,15 +76,15 @@ if (logoArray != null) {
 	}
 
 	// Tenta salvar o projeto em um caminho de rede específico.
-	try {
-		var savePath =
-			'//10.228.183.165/vfx/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2024/CHAMADA PATROCINADORES 2024';
-		var projId = 'PATROCINADORES FUT 2024_' + date;
+	// try {
+	// 	var savePath =
+	// 		'//10.228.183.165/vfx/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2024/CHAMADA PATROCINADORES 2024';
+	// 	var projId = 'PATROCINADORES FUT 2024_' + date;
 
-		projFile = new File(savePath + '/01 PROJETOS/' + projId);
-		app.project.save(projFile);
+	// 	projFile = new File(savePath + '/01 PROJETOS/' + projId);
+	// 	app.project.save(projFile);
 
-		// Se houver algum erro ao salvar, ele será ignorado.
-		//
-	} catch (err) {}
+	// 	// Se houver algum erro ao salvar, ele será ignorado.
+	// 	//
+	// } catch (err) { }
 }

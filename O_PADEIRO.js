@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.42';
+	var scriptVersion = 'v1.50';
 
 	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
 	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
@@ -22,10 +22,10 @@ function O_PADEIRO_UTL(thisObj) {
 
 	// utilidades com interface
 	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
-	#include 'source/layout/Utils/o padeiro templates ui.js'; // Sistema de templates
-	#include 'source/layout/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
-	#include 'source/layout/Utils/o padeiro maker ui.js';     // Editor de templates
-	#include 'source/layout/Utils/find ui.js';                 // Busca em layers de texto
+	#include 'source/Utils/o padeiro templates ui.js'; // Sistema de templates
+	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
+	#include 'source/Utils/o padeiro maker ui.js';     // Editor de templates
+	#include 'source/Utils/find ui.js';                 // Busca em layers de texto
 
 	// estrutura de 'ctrlProperties'
 	var PAD_mainGrpUiStructure = {
