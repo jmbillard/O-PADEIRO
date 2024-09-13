@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-empty */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable no-unused-vars */
@@ -12,553 +13,605 @@
 
 // Função para criar a interface de usuário do 'O Padeiro'
 function padeiroTemplateDialog() {
+	// Título da janela
 	var scriptName = 'TEMPLATES';
 
-	var wWidth; // Largura da janela sem a pré-visualização
-	var oWidth; // Largura da janela com a pré-visualização
-	var fileFilter = ['.aep', '.aet']; // Extensões de arquivo de template permitidas
-	var hasTextInputData = false; // Indica se há dados de entrada
-	var hasInputLayers = false; // Indica se o template possui campos de entrada
-	var exemple = ''; // Exemplo de texto de entrada
+	var compactWidth; // Largura da janela sem a pré-visualização
+	var extendedWidth; // Largura da janela com a pré-visualização
+	var fileFilter = ['.aep', '.aet']; // Extensões de template permitidas
+	var hasInputData = false; // Indica se há dados de input
+	var hasInputLayers = false; // Template possui layers editáveis
 
-	// Variáveis para armazenar os arquivos do template
-	var templateFile;
-	var previewImgFile;
+	// Arquivos do template
+	var projectFile;
+	var previewFile;
 	var configFile;
 	var scriptFile;
+
+	// Dados da configuração template
 	var templateData;
 	var tipContent = '...';
+	var exemple = '...';
 
-	var inputList = []; // Array para armazenar os campos de entrada
-	var createdTemplatesArray = []; // Array para armazenar os templates criados
-	var createdOutputModuleArray = []; // Array para armazenar os módulos de saída do render (configurações de exportação)
-	var folderNotAvailable = false;
+	// Arrays ascensíveis a um script externo
+	var inputTextArray = []; // Array com os textos de input
+	var newCompsArray = []; // Array de templates criados
+	var newOutputsArray = []; // Array de módulos individuais de saída
 
-	// Cria a janela principal do 'O Padeiro'
+	var hasOutputFolder = true; // Indica se a pasta de saída não está disponível
+
+	// Janela principal
 	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
-	var mainStackGrp = PAD_TEMPLATES_w.add('group');
-	mainStackGrp.orientation = 'stack';
 
-	// Cria o grupo principal que conterá todos os elementos da interface
-	var topHeaderGrp = mainStackGrp.add('group');
-	topHeaderGrp.orientation = 'column'; // Orientação vertical
-	topHeaderGrp.spacing = 12;
-	topHeaderGrp.alignment = ['left', 'top'];
-	var infoHeaderLab = topHeaderGrp.add(
+	// Grupo principal
+	var mainGrp = PAD_TEMPLATES_w.add('group');
+	mainGrp.orientation = 'stack';
+
+	// Grupo de opções e progresso
+	var optionsMainGrp = mainGrp.add('group');
+	optionsMainGrp.orientation = 'column';
+	optionsMainGrp.spacing = 12;
+	optionsMainGrp.alignment = ['left', 'top'];
+	optionsMainGrp.visible = false;
+
+	// Rótulo de informações
+	var infoHeaderLab = optionsMainGrp.add(
 		'statictext',
 		[0, 0, 320, 18]
 	);
 	setFgColor(infoHeaderLab, normalColor1); // Define a cor do texto
-
-	var progressBar = topHeaderGrp.add(
+	// Barra de progresso
+	var progressBar = optionsMainGrp.add(
 		'progressbar',
 		[0, 0, 320, 1]
-	); // Cria uma barra de progresso
-	var renderDrop = topHeaderGrp.add(
+	);
+	// Lista de templates de render
+	var renderDrop = optionsMainGrp.add(
 		'dropdownlist',
 		[0, 0, 320, 24]
-	); // Adiciona uma lista
+	);
 	renderDrop.enabled = false;
-	topHeaderGrp.visible = false;
 
-	var mainGrp = mainStackGrp.add('group');
-	mainGrp.spacing = 12;
+	// ----------------------------------------------------------------------------
 
-	// Cria o grupo vertical à esquerda para os elementos de seleção do template
-	var vGrp1 = mainGrp.add('group');
-	vGrp1.orientation = 'column'; // Orientação vertical
-	vGrp1.alignment = ['center', 'top']; // Alinhamento no centro e no topo
-	vGrp1.alignChildren = 'left'; // Alinhamento dos elementos filhos à esquerda
-	vGrp1.spacing = 12; // Alinhamento dos elementos filhos à esquerda
+	// Grupo da interface de templates
+	var templatesMainGrp = mainGrp.add('group');
+	templatesMainGrp.spacing = 12;
 
-	// Cria o grupo vertical à direita para a pré-visualização e entrada de dados
-	var vGrp2 = mainGrp.add('group');
-	vGrp2.orientation = 'column'; // Orientação vertical
-	vGrp2.alignment = ['center', 'top']; // Alinhamento no centro e no topo
-	vGrp2.alignChildren = 'left'; // Alinhamento dos elementos filhos à esquerda
-	vGrp2.spacing = 12; // Alinhamento dos elementos filhos à esquerda
-	vGrp2.visible = false; // Inicialmente oculta a pré-visualização
+	// Grupo vertical esquerdo
+	var vGrp1 = templatesMainGrp.add('group');
+	vGrp1.orientation = 'column';
+	vGrp1.alignment = ['center', 'top'];
+	vGrp1.alignChildren = 'left';
+	vGrp1.spacing = 12;
 
-	// Cria um grupo para o cabeçalho da árvore de templates
+	// Grupo vertical direito
+	var vGrp2 = templatesMainGrp.add('group');
+	vGrp2.orientation = 'column';
+	vGrp2.alignment = ['center', 'top'];
+	vGrp2.alignChildren = 'left';
+	vGrp2.spacing = 12;
+	vGrp2.visible = false;
+
+	// ----------------------------------------------------------------------------
+
+	// Grupo para o cabeçalho
 	var templatesHeaderGrp = vGrp1.add('group');
-	templatesHeaderGrp.alignment = 'fill'; // Ocupa todo o espaço disponível
-	templatesHeaderGrp.orientation = 'stack'; // Empilha os elementos verticalmente
+	templatesHeaderGrp.alignment = 'fill';
+	templatesHeaderGrp.orientation = 'stack';
 
-	// Cria um grupo para a árvore de templates
-	var treeGrp = vGrp1.add('group');
-	treeGrp.orientation = 'column'; // Orientação vertical
-	treeGrp.spacing = 4; // Espaçamento entre os elementos
-
-	// Cria um grupo para o rótulo e a caixa de pesquisa dos templates
+	// Grupo do rótulo da seção BUSCA
 	var templateLabGrp = templatesHeaderGrp.add('group');
-	templateLabGrp.alignment = 'left'; // Alinhamento à esquerda
+	templateLabGrp.alignment = 'left';
+
+	// Cria o rótulo 'BUSCA:'
+	var templateLab = templateLabGrp.add(
+		'statictext',
+		undefined,
+		'BUSCA:'
+	);
+	setFgColor(templateLab, normalColor1); // Define a cor do rótulo
 
 	// Cria um grupo para o botão de informações
 	var infoGrp = templatesHeaderGrp.add('group');
-	infoGrp.alignment = ['right', 'center']; // Alinhamento à direita
+	infoGrp.alignment = ['right', 'center'];
 
-	// Cria o rótulo 'busca:'
-	var templateLabTxt = templateLabGrp.add('statictext', undefined, 'BUSCA:');
-	// templateLabTxt.size.height = 18;
-	setFgColor(templateLabTxt, normalColor1); // Define a cor do rótulo
+	// Botão de ajuda
+	var infoBtn = new themeIconButton(
+		infoGrp,
+		{
+			icon: PAD_INFO_ICON,
+			tips: [lClick + 'ajuda | DOCS']
+		}
+	);
 
-	// Cria o botão de informações
-	// var infoBtn = infoGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
-	// infoBtn.helpTip = 'ajuda | DOCS'; // Define a dica da ferramenta
-	var infoBtn = new themeIconButton(infoGrp, {
-		icon: PAD_INFO_ICON,
-		tips: [lClick + 'ajuda | DOCS'],
-	});
+	// Grupo da árvore de templates
+	var treeGrp = vGrp1.add('group');
+	treeGrp.orientation = 'column';
+	treeGrp.spacing = 4;
 
 	// Cria a caixa de pesquisa
-	var searchBox = treeGrp.add('edittext', [0, 0, 320, 24], '');
-
+	var searchBox = treeGrp.add(
+		'edittext',
+		[0, 0, 320, 24],
+		''
+	);
 	// Cria a árvore de templates
-	var templateTree = treeGrp.add('treeview', [0, 0, 320, 464]);
-	buildTree(templatesFolder, templateTree, fileFilter); // Constrói a árvore de templates
+	var templateTree = treeGrp.add(
+		'treeview',
+		[0, 0, 320, 464]
+	);
 	setFgColor(templateTree, monoColor2);
+	buildTree(templatesFolder, templateTree, fileFilter); // Constrói a árvore de templates
 
-	//---------------------------------------------------------
-
-	// Criação do grupo de botões principal
-	var mainBtnGrp1 = vGrp1.add('group'); // Cria um grupo para organizar os botões dentro do grupo vertical à esquerda (vGrp1)
-	mainBtnGrp1.orientation = 'stack'; // Define a orientação do grupo como 'stack' (empilhamento)
-	mainBtnGrp1.alignment = 'fill'; // Faz o grupo ocupar toda a largura disponível
+	// Grupo principal de botões
+	var mainBtnGrp1 = vGrp1.add('group');
+	mainBtnGrp1.orientation = 'stack';
+	mainBtnGrp1.alignment = 'fill';
 	mainBtnGrp1.margins = [0, 8, 0, 0];
 
-	// Grupo dos botões à esquerda
-	var lBtnGrp1 = mainBtnGrp1.add('group'); // Cria um subgrupo dentro do grupo principal (bGrp) para os botões que ficarão à esquerda
-	lBtnGrp1.alignment = 'left'; // Alinha o subgrupo à esquerda
-	lBtnGrp1.spacing = 16; // Define um pequeno espaçamento de 2 pixels entre os botões dentro deste subgrupo
-
-	var refreshBtn = new themeIconButton(lBtnGrp1, {
-		icon: PAD_ATUALIZAR_ICON,
-		tips: [lClick + 'atualizar lista de templates'],
-	});
-
-	var openFldBtn = new themeIconButton(lBtnGrp1, {
-		icon: PAD_PASTA_ICON,
-		tips: [lClick + 'abrir pasta de templates'],
-	});
+	// Grupo de botões esquerdo
+	var lBtnGrp1 = mainBtnGrp1.add('group');
+	lBtnGrp1.alignment = 'left';
+	lBtnGrp1.spacing = 16;
+	// Botão de atualizar
+	var refreshBtn = new themeIconButton(
+		lBtnGrp1,
+		{
+			icon: PAD_ATUALIZAR_ICON,
+			tips: [lClick + 'atualizar lista de templates']
+		}
+	);
+	// Botão de abrir pasta
+	var openFldBtn = new themeIconButton(
+		lBtnGrp1,
+		{
+			icon: PAD_PASTA_ICON,
+			tips: [lClick + 'abrir pasta de templates']
+		}
+	);
 
 	//---------------------------------------------------------
 
-	// Cria um grupo para o cabeçalho da árvore de templates
+	// Grupo para o cabeçalho
 	var previewHeaderGrp = vGrp2.add('group');
-	previewHeaderGrp.alignment = 'fill'; // Ocupa todo o espaço disponível
-	previewHeaderGrp.orientation = 'stack'; // Empilha os elementos verticalmente
+	previewHeaderGrp.alignment = 'fill';
+	previewHeaderGrp.orientation = 'stack';
 
-	// Criação do Grupo de preview
-	var previewGrp = vGrp2.add('group'); // Cria um grupo para organizar à pré-visualização do template
-	previewGrp.orientation = 'column'; // Define a orientação do grupo como 'column' (coluna)
-	previewGrp.alignChildren = 'left'; // Alinha os elementos filhos do grupo à esquerda.
-
-	// Cria um grupo para o rótulo e a caixa de pesquisa dos templates
+	// Grupo do rótulo da seção PREVIEW
 	var previewLabGrp = previewHeaderGrp.add('group');
-	previewLabGrp.alignment = 'left'; // Alinhamento à esquerda
+	previewLabGrp.alignment = 'left';
 
-	// Rótulo de preview
-	var previewLabTxt = previewLabGrp.add('statictext', undefined, 'PREVIEW:'); // Adiciona um texto estático 'preview:' ao grupo de preview
-	// previewLabTxt.size.height = 18;
-	setFgColor(previewLabTxt, normalColor1); // Define a cor do texto 'preview:'
+	// Rótulo PREVIEW
+	var previewLab = previewLabGrp.add(
+		'statictext',
+		undefined,
+		'PREVIEW:'
+	);
+	setFgColor(previewLab, normalColor1); // Define a cor do texto
+
+	// Grupo da imagem preview
+	var previewGrp = vGrp2.add('group');
+	previewGrp.orientation = 'column';
+	previewGrp.alignChildren = 'left';
 
 	// Imagem de preview
-	var previewImg = previewGrp.add('image', undefined, no_preview); // Adiciona um elemento de imagem ao grupo de preview. 'no_preview'
-	previewImg.size = [440, 250]; // Define o tamanho da imagem de preview
+	var previewImg = previewGrp.add(
+		'image',
+		[0, 0, 440, 250],
+		no_preview
+	);
 
-	// Divisor de preview
+	// ----------------------------------------------------------------------------
+
+	// Divisor horizontal
 	var newDiv = themeDivider(vGrp2);
 	newDiv.alignment = ['fill', 'center'];
 
-	// Criação do Grupo de Entrada de Dados (inputGrp)
-	var inputGrp = vGrp2.add('group'); // Cria um grupo para conter os elementos relacionados à entrada de dados e dicas
-	inputGrp.alignment = ['left', 'top']; // Alinha o grupo à esquerda e ao topo
-	inputGrp.spacing = 12; // Alinha o grupo à esquerda e ao topo
+	// ----------------------------------------------------------------------------
+
+	// Grupo principal do input
+	var inputMainGrp = vGrp2.add('group');
+	inputMainGrp.alignment = ['left', 'top'];
+	inputMainGrp.spacing = 12;
 
 	// Subgrupo para a caixa de texto e opções de render
-	var txtGrp = inputGrp.add('group'); // Cria um subgrupo para conter a caixa de texto e as opções de renderização
-	txtGrp.orientation = 'column'; // Define a orientação como coluna (elementos dispostos verticalmente)
-	txtGrp.alignment = ['left', 'top']; // Alinha o subgrupo à esquerda e ao topo
-	txtGrp.alignChildren = 'left'; // Alinha os elementos filhos à esquerda
+	var txtInputGrp = inputMainGrp.add('group');
+	txtInputGrp.orientation = 'column';
+	txtInputGrp.alignment = ['left', 'top'];
+	txtInputGrp.alignChildren = 'left';
 
 	// Subgrupo para as dicas
-	var tipGrp = inputGrp.add('group'); // Cria um subgrupo para conter as dicas
-	tipGrp.orientation = 'column'; // Define a orientação como coluna (elementos dispostos verticalmente)
-	tipGrp.alignment = ['left', 'top']; // Alinha o subgrupo à esquerda e ao topo
-	tipGrp.alignChildren = 'left'; // Alinha os elementos filhos à esquerda
+	var tipGrp = inputMainGrp.add('group');
+	tipGrp.orientation = 'column';
+	tipGrp.alignment = ['left', 'top'];
+	tipGrp.alignChildren = 'left';
 
-	// Cria um grupo para o cabeçalho da árvore de templates
-	var inputHeaderGrp = txtGrp.add('group');
+	// ----------------------------------------------------------------------------
+
+	// Grupo do cabeçalho da seção INPUT
+	var inputHeaderGrp = txtInputGrp.add('group');
 	inputHeaderGrp.alignment = 'fill'; // Ocupa todo o espaço disponível
 	inputHeaderGrp.orientation = 'stack'; // Empilha os elementos verticalmente
 
-	// Cria um grupo para o rótulo e a caixa de pesquisa dos templates
+	// Grupo do rótulo INPUT
 	var inputLabGrp = inputHeaderGrp.add('group');
 	inputLabGrp.alignment = 'left'; // Alinhamento à esquerda
 
-	// Elementos da Caixa de Texto
-	var inputLabTxt = inputLabGrp.add('statictext', undefined, 'INPUT:'); // Adiciona um texto estático 'input:' para identificar a caixa de texto
-	// inputLabTxt.size.height = 18;
-	setFgColor(inputLabTxt, normalColor1); // Define a cor do texto
+	// Rótulo INPUT
+	var inputLab = inputLabGrp.add(
+		'statictext',
+		undefined,
+		'INPUT:'
+	);
+	setFgColor(inputLab, normalColor1); // Define a cor do texto
 
-	// Criação da caixa de texto
-	var edtText = txtGrp.add('edittext', [0, 0, 316, 192], '', {
-		multiline: true,
-	}); // Cria uma caixa de texto editável (multiline) inicialmente vazia
-	edtText.enabled = false; // A caixa de texto começa desabilitada
+	// Caixa de texto INPUT
+	var inputTxt = txtInputGrp.add(
+		'edittext',
+		[0, 0, 316, 192],
+		'',
+		{ multiline: true }
+	);
 
-	// Criação do grupo de botões principal
-	var mainBtnGrp2 = vGrp2.add('group'); // Cria um grupo para organizar os botões dentro do grupo vertical à esquerda (vGrp1)
-	mainBtnGrp2.orientation = 'stack'; // Define a orientação do grupo como 'stack' (empilhamento)
-	mainBtnGrp2.alignment = 'fill'; // Faz o grupo ocupar toda a largura disponível
+	// ----------------------------------------------------------------------------
 
-	// Grupo dos botões à esquerda
-	var lBtnGrp2 = mainBtnGrp2.add('group'); // Cria um subgrupo dentro do grupo principal (bGrp) para os botões que ficarão à esquerda
-	lBtnGrp2.alignment = 'left'; // Alinha o subgrupo à esquerda
-	lBtnGrp2.spacing = 16; // Define um pequeno espaçamento de 2 pixels entre os botões dentro deste subgrupo
-
-	var processBtn = new themeButton(lBtnGrp2, {
-		width: 120,
-		height: 32,
-		textColor: bgColor1,
-		buttonColor: normalColor1,
-		labelTxt: 'processar: 1',
-		tips: [lClick + 'criar e preencher o template selecionado'],
-	});
-
-	// Dicas
-
-	// Cria um grupo para o cabeçalho da árvore de templates
+	// Grupo do cabeçalho da seção DICAS
 	var tipHeaderGrp = tipGrp.add('group');
-	tipHeaderGrp.alignment = 'fill'; // Ocupa todo o espaço disponível
-	tipHeaderGrp.orientation = 'stack'; // Empilha os elementos verticalmente
+	tipHeaderGrp.alignment = 'fill';
+	tipHeaderGrp.orientation = 'stack';
 
-	// Cria um grupo para o rótulo e a caixa de pesquisa dos templates
+	// Grupo do rótulo DICAS
 	var tipLabGrp = tipHeaderGrp.add('group');
-	tipLabGrp.alignment = 'left'; // Alinhamento à esquerda
+	tipLabGrp.alignment = 'left';
 
-	var tipLabTxt = tipLabGrp.add('statictext', undefined, 'DICAS:'); // Adiciona o rótulo 'dicas:' ao grupo de dicas.
-	// tipLabTxt.size.height = 18;
-	setFgColor(tipLabTxt, normalColor1); // Define a cor do rótulo.
-
-	var tipContentTxt = tipGrp.add(
+	// Rótulo DICAS
+	var tipLab = tipLabGrp.add(
+		'statictext',
+		undefined,
+		'DICAS:'
+	);
+	setFgColor(tipLab, normalColor1); // Define a cor do rótulo
+	// Texto com o conteúdo das dicas
+	var tipTxt = tipGrp.add(
 		'statictext',
 		[0, 0, 180, 192],
 		tipContent,
-		{ multiline: true }
-	); // Cria um texto estático para exibir as dicas.
+		{
+			multiline: true
+		}
+	);
+	setFgColor(tipTxt, normalColor2); // Define a cor do texto
 
-	setFgColor(tipContentTxt, normalColor2); // Define a cor do texto das dicas.
-	setBgColor(PAD_TEMPLATES_w, bgColor1); // Cor de fundo da janela
+	// ----------------------------------------------------------------------------
+
+	// Grupo principal de botões direito
+	var mainBtnGrp2 = vGrp2.add('group');
+	mainBtnGrp2.orientation = 'stack';
+	mainBtnGrp2.alignment = 'fill';
+
+	// Grupo dos botões esquerdo
+	var lBtnGrp2 = mainBtnGrp2.add('group');
+	lBtnGrp2.alignment = 'left';
+	lBtnGrp2.spacing = 16;
+
+	// Botão de processar preenchimento
+	var processBtn = new themeButton(
+		lBtnGrp2,
+		{
+			width: 120,
+			height: 32,
+			textColor: bgColor1,
+			buttonColor: normalColor1,
+			labelTxt: 'processar: 1',
+			tips: [
+				lClick + 'criar e preencher o template selecionado'
+			]
+		}
+	);
+
+	setBgColor(PAD_TEMPLATES_w, bgColor1); // Define a cor de fundo da janela
 
 	//---------------------------------------------------------
 
-	// Função executada quando a janela 'O Padeiro' é exibida
 	PAD_TEMPLATES_w.onShow = function () {
-		// Expandir a raiz da árvore de templates
-		templateTree.expanded = true; // Expande o nível principal da árvore de templates (a raiz).
-		var branches = templateTree.items; // Obtém todos os itens (nós e folhas) da árvore de templates.
+		// Expande a raiz da árvore de templates
+		templateTree.expanded = true;
 
-		// Expandir todas as pastas na árvore de templates
+		// Expande as pastas de nível 1
+		var branches = templateTree.items;
+
 		for (var i = 0; i < branches.length; i++) {
-			if (branches[i].type == 'node') {
-				// Verifica se o item é um nó (pasta), e não uma folha (template).
-				branches[i].expanded = true; // Se for um nó, expande a pasta.
-			}
+			var s = branches[i];
+
+			if (s.type == 'node') s.expanded = true;
 		}
 
 		// Calcula e armazena as dimensões da janela
-		oWidth = PAD_TEMPLATES_w.size.width; // Armazena a largura original da janela (com a área de preview)
-		wWidth = oWidth - 520; // Calcula a largura da janela sem a área de preview
+		extendedWidth = PAD_TEMPLATES_w.size.width; // Com preview
+		compactWidth = extendedWidth - 520; // Sem preview
 
-		// Oculta elementos da interface
-		vGrp2.visible = false; // Oculta o grupo que contém a pré-visualização do template e a área de entrada de dados
-		newDiv.visible = false; // Oculta o divisor que separa a pré-visualização dos outros elementos
-		PAD_TEMPLATES_w.size.width = wWidth; // Redimensiona a janela para a largura sem pré-visualização
+		// Oculta a área de preview  inicialmente
+		vGrp2.visible = false;
+		newDiv.visible = false;
+		PAD_TEMPLATES_w.size.width = compactWidth;
 
 		// Foco na caixa de pesquisa
-		// Define o foco (cursor) na caixa de pesquisa para que o usuário possa começar a digitar imediatamente
 		searchBox.active = true;
 	};
 
 	//---------------------------------------------------------
 
-	// Função para lidar com a tecla Enter na caixa de pesquisa
 	searchBox.onEnterKey = function () {
-		templateLabTxt.active = true; // Define o rótulo 'busca:' como ativo (focado).
-		templateTree.active = true; // Define a árvore de templates como ativa (focada).
+		templateLab.active = true;
+		templateTree.active = true;
 	};
 
 	//---------------------------------------------------------
 
-	// Função executada quando o texto na caixa de pesquisa é alterado
 	searchBox.onChange = function () {
-		if (this.text.trim() == '') return; // Sai da função se a caixa de pesquisa estiver vazia
+
+		// Aborta se a pesquisa estiver vazia
+		if (this.text.trim() == '') return;
 
 		// Formatação do texto de pesquisa
 		searchBox.text = searchBox.text
-			.trim() // Remove espaços em branco do início e do fim do texto
-			.toUpperCase() // Converte todo o texto para maiúsculas
-			.replaceSpecialCharacters(); // Remove caracteres especiais
+			.trim()
+			.toUpperCase()
+			.replaceSpecialCharacters();
 
-		buildTree(templatesFolder, templateTree, fileFilter); // Atualiza a árvore de templates
+		// Atualiza a árvore de templates
+		buildTree(templatesFolder, templateTree, fileFilter);
 
-		var items = findItem(templateTree, [], searchBox.text); // Encontra os itens na árvore que correspondem à pesquisa
+		// Encontra os itens na árvore
+		var items = findItem(templateTree, [], searchBox.text);
 
-		if (items.length == 0) return; // Sai da função se nenhum item for encontrado
+		// Aborta se nenhum item for encontrado
+		if (items.length == 0) return;
 
-		// Expande os nós da árvore para mostrar os resultados da pesquisa
+		// Expande as pastas para mostrar os resultados da pesquisa
 		for (var n = 0; n < items.length; n++) {
-			var s = items[n]; // Obtém o item atual da pesquisa
-			if (s.type == 'node') s.expanded = true; // Se o item for um nó (pasta), expande-o
 
-			// Expande os pais do item até chegar à raiz da árvore
+			var s = items[n];
+
+			if (s.type == 'node') s.expanded = true;
+
+			// Expande as pastas do item até a raiz
 			while (s.parent.constructor.name != 'TreeView') {
-				s.parent.expanded = true; // Expande o nó pai
-				s = s.parent; // Sobe um nível na árvore
+				s.parent.expanded = true;
+				s = s.parent;
 			}
 		}
 
-		templateLabTxt.active = true; // Define o rótulo 'busca:' como ativo (focado)
-		templateTree.active = true; // Define a árvore de templates como ativa (focada)
+		templateLab.active = true;
+		templateTree.active = true;
 	};
 
 	//---------------------------------------------------------
 
-	// Função executada quando a seleção na árvore de templates muda (templateTree.onChange)
 	templateTree.onChange = function () {
-		// Pastas (nós) na árvore não devem ser selecionáveis
-		if (
-			templateTree.selection != null &&
-			templateTree.selection.type == 'node'
-		) {
-			templateTree.selection = null; // Limpa a seleção se um nó (pasta) for clicado
-		}
+		// Pastas na árvore não devem ser selecionáveis
+		if (this.selection != null && this.selection.type == 'node') this.selection = null;
 
 		// Caso nenhum template seja selecionado
-		if (templateTree.selection == null) {
-			PAD_TEMPLATES_w.size.width = wWidth; // Redimensiona a janela para o tamanho menor (sem a pré-visualização)
-			vGrp2.visible = false; // Oculta a área de preview
-			newDiv.visible = false; // Oculta o divisor de preview
-			return; // Encerra a função, pois não há mais nada a fazer
+		if (this.selection == null) {
+			PAD_TEMPLATES_w.size.width = compactWidth;
+			vGrp2.visible = false;
+			newDiv.visible = false;
+
+			return;
 		}
 
-		templateFile = templateTree.selection.file; // arquivo do template
+		// arquivo de projeto do template
+		projectFile = this.selection.file;
 
-		var templateBase = templateFile.path + '/' + deleteFileExt(templateFile.displayName); // nome do template
+		// Base do nome dos arquivos template --> caminho do projeto/nome do template
+		var templateBase = projectFile.path + '/' + deleteFileExt(projectFile.displayName);
 
 		// Criação dos objetos File para os arquivos do template
-		previewImgFile = new File(templateBase + '_preview.png'); // arquivo de preview
-		configFile = new File(templateBase + '_config.json'); // arquivo de configuração
-		scriptFile = new File(templateBase + '_script.js'); // arquivo de script (se houver)
+		previewFile = new File(templateBase + '_preview.png');
+		configFile = new File(templateBase + '_config.json');
+		scriptFile = new File(templateBase + '_script.js');
 
-		if (previewImgFile.exists) {
-			previewImg.image = previewImgFile;
+		if (previewFile.exists) {
+			previewImg.image = previewFile;
 
-			// Se não existir...
 		} else {
 			previewImg.image = no_preview;
 		}
 
-		// Mostra a área de preview e ajusta a janela
-		vGrp2.visible = true; // Torna o grupo de preview visível
-		newDiv.visible = true; // Torna o divisor de preview visível
-		PAD_TEMPLATES_w.size.width = oWidth; // Redimensiona a janela para incluir a área de preview
+		// Mostra a área de preview
+		vGrp2.visible = true;
+		newDiv.visible = true;
+		PAD_TEMPLATES_w.size.width = extendedWidth;
 
-		// Bloco try...catch para lidar com possíveis erros durante o carregamento e análise da configuração
+		// Preenche o conteúdo da área de preview
 		try {
-			hasInputLayers = false; // Inicializa a variável 'hasInputLayers' como falso
-			exemple =
-				lol + '\n\nesse template não pode ser editado pelo padeiro.'; // Mensagem padrão
-			tipContent =
-				'clique no botão importar e edite o template manualmente.'; // Dica padrão
+			hasInputLayers = false;
+			exemple = lol + '\n\nesse template não pode ser editado pelo padeiro.';
+			tipContent = 'clique no botão importar e edite o template manualmente.';
 
-			// Verificação se o arquivo de configuração existe
+			// Checagem do arquivo de configuração
 			if (configFile.exists) {
-				exemple = relax + '\n\nesse template não possui inputs.'; // Mensagem padrão para o usuário caso o template não possua inputs
-				var JSONContent = readFileContent(configFile); // Lê o conteúdo do arquivo de configuração JSON
-				templateData = JSON.parse(JSONContent); // Analisa o conteúdo JSON e o armazena no objeto 'templateData'
+				exemple = relax + '\n\nesse template não possui inputs.';
+				var JSONContent = readFileContent(configFile);
+				templateData = JSON.parse(JSONContent);
 
-				// Verifica se todas as configurações padrão estão presentes no arquivo de configuração
-				// Itera sobre as propriedades do objeto de configurações padrão (defaultTemplateConfigObj)
+				// Verifica as configurações
 				for (var o in defaultTemplateConfigObj) {
-					// Se a propriedade já existe no templateData
-					if (templateData.hasOwnProperty(o)) continue; // Pula para a próxima
 
-					// Se a propriedade não existe
-					templateData[o] = defaultTemplateConfigObj[o]; // usa o valor padrão
+					if (templateData.hasOwnProperty(o)) continue;
+
+					templateData[o] = defaultTemplateConfigObj[o];
 				}
 
-				// Verifica se o template possui camadas de entrada (inputs)
+				// Verifica os layers editáveis
 				hasInputLayers = templateData.inputLayers != null;
 
-				// Se houver camadas de entrada, atualiza as mensagens de exemplo e dica
+				// Atualiza o exemplo e a dica
 				if (hasInputLayers) {
 					exemple = templateData.exemple;
 					tipContent = templateData.tip;
 				}
 			}
 
-			// Atualiza o texto na caixa de entrada de texto e nas dicas com base no resultado da análise da configuração
-			if (!hasTextInputData) edtText.text = exemple;
-			tipContentTxt.text = tipContent;
-			//
+			if (!hasInputData) inputTxt.text = exemple;
+			tipTxt.text = tipContent;
+
 		} catch (err) {
-			// Em caso de erro durante o carregamento ou análise da configuração, exibe um alerta e sai da função
-			alert(
-				lol +
-				'#PAD_017 - esse template não tem um arquivo de configuração válido!',
-			);
+			alert(lol + '#PAD_017 - esse template não tem um arquivo de configuração válido!');
 			return;
 		}
 
-		// Atualiza o estado dos elementos da interface com base na presença de campos de entrada (inputs) e dados
-		// Habilita o botão 'Criar' se um template for selecionado, houver dados de entrada e o template tiver inputs
-		inputLabTxt.enabled = hasInputLayers; // Habilita ou desabilita o rótulo 'input:'
-		edtText.enabled = hasInputLayers; // Habilita ou desabilita a caixa de texto de entrada
+		inputLab.enabled = hasInputLayers;
+		inputTxt.enabled = hasInputLayers;
 
-		var count = edtText.text.split(/[\n\r]{2,}/).length;
+		var count = inputTxt.text.split(/[\n\r]{2,}/).length;
 		processBtn.text = 'preencher: ' + count;
 	};
 
-	//---------------------------------------------------------
-
-	// Função executada quando um template na árvore é ativado (clicado)
 	templateTree.onActivate = function () {
-		// Verifica se o texto de entrada (edtText) não está vazio e se é diferente do exemplo padrão
-		hasTextInputData = edtText.text.trim() != '' && edtText.text != exemple;
+
+		hasInputData = inputTxt.text.trim() != '' && inputTxt.text != exemple;
 
 		// Se não houver dados, define o texto de entrada como o exemplo
-		if (!hasTextInputData) edtText.text = exemple;
+		if (!hasInputData) inputTxt.text = exemple;
 
-		// Habilita/desabilita os elementos da interface de acordo com a presença de inputs no template
-		inputLabTxt.enabled = hasInputLayers; // Rótulo 'input:'
-		edtText.enabled = hasInputLayers; // Caixa de texto de entrada
+		// Atualiza a interface
+		inputLab.enabled = hasInputLayers;
+		inputTxt.enabled = hasInputLayers;
 	};
 
 	//---------------------------------------------------------
 
-	// Função executada enquanto o usuário está digitando na caixa de texto (edtText)
-	edtText.onChanging = function () {
-		// A variável 'hasTextInputData' se torna 'true' se o texto não estiver vazio e for diferente do exemplo padrão
-		hasTextInputData = edtText.text.trim() != '';
-
-		// Habilita o botão 'Criar' se um template for selecionado, houver dados de entrada e o template tiver inputs
-		processBtn.enabled = hasTextInputData && hasInputLayers;
+	inputTxt.onChanging = function () {
 
 		var count = this.text.split(/[\n\r]{2,}/).length;
-		// var suffix = count == 1 ? ' versão será criada' : ' versões serão criadas';
+
+		hasInputData = inputTxt.text.trim() != '';
+		processBtn.enabled = hasInputData && hasInputLayers;
 		processBtn.label.text = 'preencher: ' + count;
 	};
 
-	edtText.onChange = function () {
+	inputTxt.onChange = function () {
 		this.text = this.text.replace(/[\n\r]{3,}/g, '\n\n');
 	};
 
 	//---------------------------------------------------------
 
-	// Função executada quando o botão é clicado
 	processBtn.leftClick.onClick = function () {
-		// Inicialização de variáveis
-		var logCount = 0; // Contador de templates processados
-		var template;
-		var templateComp;
-		var renderTemplateArray; // String que armazenará o nome do template de renderização selecionado pelo usuário
-		inputList = edtText.text.split(/[\n\r]{2,}/);
 
-		// Preparação da Interface
-		mainGrp.visible = false;
-		topHeaderGrp.visible = true;
-		infoHeaderLab.text = templateFile.displayName;
-		PAD_TEMPLATES_w.text = 'importando projeto...';
-		PAD_TEMPLATES_w.size = [wWidth, 100];
+		// Verificações Iniciais
+		if (inputTxt.text.trim() == '') return; // Aborta se não houver texto de entrada
+		if (!projectFile.exists) return; // Aborta se o arquivo do template não existir
+		if (!configFile.exists) return; // Aborta se o arquivo de configuração não existir
+
+		var logCount = 0; // Contador de templates processados
+		var templateComp; // Comp original
+		var template; // Comp duplicada que será editada
+		var renderTemplateArray; // Array de templates de render
+
+		// Array com os textos de input
+		inputTextArray = inputTxt.text.split(/[\n\r]{2,}/);
+
+		// Preparação da Interface para o processamento
+		templatesMainGrp.visible = false;
+		optionsMainGrp.visible = true;
+		infoHeaderLab.text = projectFile.displayName;
+		PAD_TEMPLATES_w.text = 'IMPORTANDO PROJETO...';
+		PAD_TEMPLATES_w.size = [compactWidth, 100];
 		PAD_TEMPLATES_w.update();
 		PAD_TEMPLATES_w.center();
 
-		// Verificações Iniciais
-		if (edtText.text.trim() == '') return; // Sai da função se não houver texto de entrada
-		if (!templateFile.exists) return; // Sai da função se o arquivo do template não existir
-		if (!configFile.exists) return; // Sai da função se o arquivo de configuração não existir
-
-		// Ajusta a caixa do texto de entrada (edtText) conforme a configuração no arquivo JSON (templateData)
-		if (templateData.textCase == 'upperCase')
-			edtText.text = edtText.text.toUpperCase(); // Converte para MAIÚSCULAS
-		if (templateData.textCase == 'lowerCase')
-			edtText.text = edtText.text.toLowerCase(); // Converte para minúsculas
-		if (templateData.textCase == 'titleCase')
-			edtText.text = edtText.text.toTitleCase(); // Converte para 'Title Case'
+		// Ajusta a caixa do texto de input
+		if (templateData.textCase == 'upperCase') inputTxt.text = inputTxt.text.toUpperCase();
+		if (templateData.textCase == 'lowerCase') inputTxt.text = inputTxt.text.toLowerCase();
+		if (templateData.textCase == 'titleCase') inputTxt.text = inputTxt.text.toTitleCase();
 
 		// Define configurações do projeto
-		app.project.bitsPerChannel = 8; // Define a profundidade de bits por canal para 8 bits (padrão para a maioria dos projetos)
-		app.project.expressionEngine = 'javascript-1.0'; // Define o mecanismo de expressão como JavaScript 1.0
-		app.project.linearBlending = true; // Habilita a mistura de cores linear (blending)
-		app.project.timeDisplayType = TimeDisplayType.TIMECODE; // Define a exibição de tempo como TimeCode (00:00:00:00)
+		app.project.bitsPerChannel = 8;
+		app.project.expressionEngine = 'javascript-1.0';
+		app.project.linearBlending = true;
+		app.project.timeDisplayType = TimeDisplayType.TIMECODE;
 
-		// Bloco try...catch para lidar com possíveis erros durante a importação e configuração do template
+		// Importação do arquivo de projeto
 		try {
-			var IO = new ImportOptions(templateFile); // Opções de importação
+			var IO = new ImportOptions(projectFile);
 
 			app.project.importFile(IO);
 
-			var iNum = app.project.numItems;
-
-			for (var i = 1; i <= iNum; i++) {
-				var comp = app.project.item(i);
-
-				if (!(comp instanceof CompItem)) continue;
-				if (!comp.comment.match(/^TEMPLATE/)) continue;
-				if (comp.name != templateData.compName) continue;
-				templateComp = comp;
-
-				break;
-			}
-
-			try {
-				var item = app.project.renderQueue.items.add(templateComp);
-				renderTemplateArray = item.outputModule(1).templates;
-				var tIndex = renderTemplateArray.length - 1;
-
-				while (renderTemplateArray[tIndex].toString().match(/^_HIDDEN\s/)) {
-					renderTemplateArray.pop();
-					tIndex--;
-				}
-				populateDropdownList(renderTemplateArray, renderDrop);
-				item.remove();
-
-			} catch (err) {
-				alert(lol + '#PAD_017 - ' + err.message); // Exibe uma mensagem de erro
-				return;
-			}
-
 		} catch (err) {
-			alert(lol + '#PAD_018 - ' + err.message); // Exibe uma mensagem de erro
+			alert(lol + '#PAD_018 - ' + err.message);
 			return;
 		}
-		var prefix = templateData.prefix != '' ? templateData.prefix + ' - ' : '';
-		var t = templateData.refTime; // Obtém o tempo de referência do template (em segundos)
-		var optionsList = templateData.inputFx != null ? templateData.inputFx.options : [''];
 
-		progressBar.maxvalue = inputList.length * optionsList.length;
-		PAD_TEMPLATES_w.text = 'preenchendo templates...';
+		// Busca e define a comp original
+		var iNum = app.project.numItems;
 
-		for (var n = 0; n < inputList.length; n++) {
+		for (var i = 1; i <= iNum; i++) {
+			var comp = app.project.item(i);
 
-			if (templateData.prefix == 'ignore') {
-				createdTemplatesArray.push(templateComp);
+			if (!(comp instanceof CompItem)) continue;
+			if (!comp.comment.match(/^TEMPLATE/)) continue;
+			if (comp.name != templateData.compName) continue;
+			templateComp = comp;
+
+			break;
+		}
+
+		// Extrai e filtra o array de templates de render
+		try {
+			var item = app.project.renderQueue.items.add(templateComp);
+			renderTemplateArray = item.outputModule(1).templates;
+			var tIndex = renderTemplateArray.length - 1;
+
+			// Remove templates ocultos
+			while (renderTemplateArray[tIndex].toString().match(/^_HIDDEN\s/)) {
+				renderTemplateArray.pop();
+				tIndex--;
+			}
+			populateDropdownList(renderTemplateArray, renderDrop);
+			item.remove();
+
+		} catch (err) {
+			alert(lol + '#PAD_017 - ' + err.message);
+			return;
+		}
+
+		// Propriedades da configuração do template
+		var t = templateData.refTime; // Tempo de referencia em segundos
+		var suffixArray = templateData.inputFx != null ? templateData.inputFx.options : ['']; // Array de sufixos --> ['MANHA', 'TARDE', 'NOITE']
+
+		// Inicia o preenchimento dos templates
+		progressBar.maxvalue = inputTextArray.length * suffixArray.length;
+		PAD_TEMPLATES_w.text = 'PREENCHENDO TEMPLATES...';
+
+		// Loop no Array de textos de input
+		for (var n = 0; n < inputTextArray.length; n++) {
+
+			// Templates com prefixo 'ignore' não são processados
+			// Mas podem ser manipulados por um script externo posteriormente
+			if (templateData.prefix.match(/ignore/i)) {
+				newCompsArray.push(templateComp);
 				break;
 			}
+			// Texto a ser preenchido
+			var inputText = inputTextArray[n];
 
-			var templateName = prefix + inputList[n].replaceSpecialCharacters();
+			// Loop no Array de efeitos
+			for (var f = 0; f < suffixArray.length; f++) {
 
-			for (var f = 0; f < optionsList.length; f++) {
-
+				// Comp duplicada que será editada
 				template = templateComp.duplicate();
 
+				// Array de Layers editáveis
 				var inputLayerList = templateData.inputLayers;
-				var txtList = inputList[n].split(/[\n\r]-+[\n\r]/);
+				// Pattern de separação de informações
+				var sPattern = new RegExp('[\\n\\r]' + templateData.separator + '[\\n\\r]', 'i');
+				// Array de informações
+				var infoArray = inputText.split(sPattern); // ex: título e subtítulo --> ['A.X.L', 'O CÃO ROBÔ']
 
-				if (templateData.separator != '') txtList = inputList[n].split(templateData.separator);
-
+				// Define o valor do efeito
 				if (templateData.inputFx != null) {
 					var ctrlLayer = template.layer(templateData.inputFx.layerIndex);
 
@@ -569,56 +622,72 @@ function padeiroTemplateDialog() {
 						.setValue(f + 1);
 				}
 
+				// Preenche a informação no layer editável
 				for (var l = 0; l < inputLayerList.length; l++) {
+					// Layer editável
 					var inputLayer = template.layer(inputLayerList[l].layerIndex);
 
-					if (l >= txtList.length) {
+					// Desabilita o layer se índice dele for maior que o numero de informações
+					if (l >= infoArray.length) {
 						inputLayer.enabled = false;
 						continue;
 					}
 
-					if (txtList[l] == '') continue;
+					if (infoArray[l] == '') continue;
 
+					// Aplica a informação como conteúdo do layer (apenas para layers de texto)
 					if (inputLayerList[l].method == 'textContent') {
+
+						// Verifica se o layer editável é um layer de texto
 						if (!(inputLayer instanceof TextLayer)) continue;
 
-						txtList[l] = txtList[l].trim();
-						var textContent = txtList[l];
+						infoArray[l] = infoArray[l].trim();
+						var textContent = infoArray[l];
 						var text = inputLayer.property('ADBE Text Properties');
 						var textDoc = text.property('ADBE Text Document').value;
 
 						textDoc.text = textContent;
 						text.property('ADBE Text Document').setValue(textDoc);
-						txtList[l] = txtList[l].replaceSpecialCharacters();
+						infoArray[l] = infoArray[l].replaceSpecialCharacters();
 					}
 
+					// Aplica a informação como nome do layer (qualquer layer)
 					if (inputLayerList[l].method == 'layerName') {
-						var layerName = txtList[l].trim();
+						var layerName = infoArray[l].trim();
 						inputLayer.name = layerName;
 					}
 				}
 
-				if (templateData.prefix == '') templateName = txtList.join(' - ').replace(/[\n\r]/g, ' ');
+				template.name = [
+					templateData.prefix + ' -',
+					inputText.replaceSpecialCharacters(),
+					suffixArray[f].replaceSpecialCharacters()
+				].join(' ')
+					.toUpperCase()
+					.trim();
 
-				template.name = (templateName.toUpperCase() + ' ' + optionsList[f]).trim();
+				template.openInViewer(); // Abre a composição preenchida
+				template.time = t; // move a agulha da timeline para o tempo de referência
+				template.comment = 'EXPORTAR'; // Adiciona o comentário 'EXPORTAR' para organização
+				newCompsArray.push(template); // Adiciona a comp ao array de templates criados
 
+				logCount++; // Incrementa número de templates processados
+
+				// Atualização da interface de progresso
 				infoHeaderLab.text = template.name;
 				progressBar.value++;
 				PAD_TEMPLATES_w.update();
-				createdTemplatesArray.push(template); // Adiciona o template criado ao array de templates criados
-
-				logCount++; // Incrementa o contador de templates processados
-
-				template.openInViewer(); // Abre a composição do template preenchido
-				template.time = t; // move a agulha da timeline para o tempo de referência (t)
-				template.comment = 'EXPORTAR'; // Adiciona um comentário 'EXPORTAR' para organização automática
 			}
 		}
-
+		// Remove o template original caso o prefixo não seja 'ignore'
+		if (!templateData.prefix.match(/ignore/i)) templateComp.remove();
+		// Define a pasta de importação padrão do projeto
 		var importFolder = new Folder(templateData.importPath);
 		app.project.setDefaultImportFolder(importFolder);
 
-		PAD_TEMPLATES_w.text = 'organizando projeto...';
+		// Atualização da interface de progresso
+		PAD_TEMPLATES_w.text = 'ORGANIZANDO PROJETO...';
+		PAD_TEMPLATES_w.update();
 
 		// Organização do Projeto
 		deleteProjectFolders();
@@ -629,31 +698,24 @@ function padeiroTemplateDialog() {
 		// os Logs ainda não são 100% confiáveis devido a
 		// variação nas configurações do sistema (formatos de data e hora)
 		try {
-			PAD_TEMPLATES_w.text = 'salvando log...';
+			PAD_TEMPLATES_w.text = 'SALVANDO LOG...';
 			infoHeaderLab.text = logCount + ' templates processados';
 			progressBar.value = 0;
 			PAD_TEMPLATES_w.update();
 
+			// Cria um objeto File para o arquivo de log na pasta de templates
+			var logFile = new File(templatesPath + '/log padeiro.csv');
+
 			// Obtém data e hora atual do sistema usando comandos do sistema operacional (Windows)
 			var dateStr = system
 				.callSystem('cmd.exe /c date /t')
-				.replace(/[a-z]/gi, '')
+				.replace(/[^\d\/]/gi, '')
 				.trim(); // Obtém a data e remove caracteres não numéricos
 			var timeStr = system
 				.callSystem('cmd.exe /c time /t')
-				.replace(/\sAM/i, '')
+				.replace(/[^\d\:]/gi, '')
 				.trim(); // Obtém a hora e remove 'AM' se presente
 
-			// Conversão da hora para formato de 24 horas
-			// Se a hora for PM (tarde/noite)
-			if (timeStr.match(/PM/i)) {
-				var timeArray = timeStr.split(/\s/)[0].split(':'); // Divide a hora em horas, minutos e segundos
-				var hStr = parseInt(timeArray[0]) + 12; // Adiciona 12 horas ao valor das horas
-				timeStr = hStr + ':' + timeArray[1]; // Reconstrói a string da hora no formato 24 horas
-			}
-
-			// Cria um objeto File para o arquivo de log na pasta de templates
-			var logFile = new File(templatesPath + '/log padeiro.csv');
 			// Cria um registro de log com as informações:
 			// configuração usada, número de templates criados, nome do usuário, data e hora
 			var logData = [
@@ -663,42 +725,47 @@ function padeiroTemplateDialog() {
 				dateStr,
 				timeStr,
 			].join(',');
-			saveLogData(logFile, logData); // Salva o registro de log no arquivo
-			//
-		} catch (err) { } // Ignora qualquer erro que possa ocorrer durante o registro de log
 
-		PAD_TEMPLATES_w.text = 'registrando metadados...';
+			// Salva o registro de log no arquivo
+			saveLogData(logFile, logData);
+
+		} catch (err) { }
+
+		// Atualização da interface de progresso
+		PAD_TEMPLATES_w.text = 'REGISTRANDO METADADOS...';
 		infoHeaderLab.text = 'source - FONTS';
 		PAD_TEMPLATES_w.update();
 
-		// Adiciona metadados XMP ao projeto indicando o caminho do template original
-		setXMPData('source', decodeURI(templateFile.path).toString());
+		// Adiciona metadados XMP indicando o caminho do template
+		setXMPData('source', decodeURI(projectFile.path).toString());
 
-		PAD_TEMPLATES_w.text = 'templates de render...';
+		PAD_TEMPLATES_w.text = 'TEMPLATES DE RENDER...';
 		infoHeaderLab.text = 'SELECIONE O TEMPLATE:';
 		renderDrop.enabled = true;
 		renderDrop.active = true;
 	};
 
-	// Define uma função que será executada quando o usuário alterar a seleção na lista
 	renderDrop.onChange = function () {
 
 		var outputPathArray = templateData.outputPath;
-		var padOutputTemplate = this.selection.toString(); // Obtém o nome do template selecionado e o converte para uma string
-		PAD_TEMPLATES_w.text = 'processando...';
-		infoHeaderLab.text = 'AGUARDE A VERIFICAÇÃO DO OUTPUT!';
-		progressBar.maxvalue = createdTemplatesArray.length * outputPathArray.length;
+		var padOutputTemplate = this.selection.toString();
+
+		PAD_TEMPLATES_w.text = 'PROCESSANDO...';
+		infoHeaderLab.text = 'AGUARDE A VERIFICAÇÃO DO CAMINHO DE OUTPUT!';
+		progressBar.maxvalue = newCompsArray.length * outputPathArray.length;
 		progressBar.value = 0;
 		this.enabled = false;
+		PAD_TEMPLATES_w.update();
 
-		for (var r = 0; r < createdTemplatesArray.length; r++) {
+		// [ ] Fazer a checagem do output fora do loop e sobrescrever os item do outputPathArray
+		for (var r = 0; r < newCompsArray.length; r++) {
 
 			if (padOutputTemplate == '') break;
 
-			template = createdTemplatesArray[r];
+			template = newCompsArray[r];
 			var item = app.project.renderQueue.items.add(template);
 
-			item.applyTemplate('Best Settings'); // Aplica as melhores configurações de renderização ao item na fila
+			item.applyTemplate('Best Settings');
 
 			for (var o = 0; o < outputPathArray.length; o++) {
 				if (o > 0) item.outputModules.add();
@@ -706,21 +773,20 @@ function padeiroTemplateDialog() {
 				var outputModule = item.outputModule(o + 1);
 				var outputFolder = new Folder(outputPathArray[o]);
 
-				if (folderNotAvailable || !outputFolder.exists) {
+				if (!hasOutputFolder || !outputFolder.exists) {
+					PAD_TEMPLATES_w.text = 'PASTA NÃO ENCONTRADA...';
 					outputPathArray[o] = defaultTemplateConfigObj.outputPath[0];
-					folderNotAvailable = true;
-					PAD_TEMPLATES_w.text = 'pasta não encontrada...';
+					hasOutputFolder = false;
 				}
 
-				PAD_TEMPLATES_w.text = 'criando fila de render...';
+				PAD_TEMPLATES_w.text = 'CRIANDO FILA DE RENDER...';
 				try {
 					var outputFile = new File(outputPathArray[o] + '/[compName].[fileextension]');
 
 					outputModule.file = outputFile;
 					outputModule.applyTemplate(padOutputTemplate);
-					createdOutputModuleArray.push(outputModule);
+					newOutputsArray.push(outputModule);
 
-					// Em caso de erro
 				} catch (err) {
 					alert(lol + '#PAD_019 - ' + err.message); // Mensagem de erro
 				}
@@ -730,98 +796,91 @@ function padeiroTemplateDialog() {
 			}
 		}
 
-		if (folderNotAvailable) {
-			// Exibe um alerta informando o usuário
+		if (!hasOutputFolder) {
 			alert(lol + '#PAD_020 - o output do render não pode ser acessado!');
 		}
 
-		PAD_TEMPLATES_w.close(); // Fecha a janela de diálogo após a seleção
+		PAD_TEMPLATES_w.close();
 	};
 
 	PAD_TEMPLATES_w.onClose = function () {
 
 		// Execução de Script Personalizado (se houver)
-		// Verifica se existe um arquivo de script associado ao template
-		if (scriptFile.exists) {
-			PAD_TEMPLATES_w.text = 'executando script externo...';
-			infoHeaderLab.text = scriptFile.displayName;
+		if (!scriptFile.exists) return;
 
-			try {
-				scriptFile.open('r'); // Abre o arquivo de script para leitura
-				eval(scriptFile.read()); // Executa o código JavaScript contido no arquivo
+		PAD_TEMPLATES_w.text = 'EXECUTANDO SCRIPT EXTERNO...';
+		infoHeaderLab.text = scriptFile.displayName;
 
-				scriptFile.close(); // Fecha o arquivo de script
-				//
-			} catch (err) {
-				// Em caso de erro, exibe um alerta
-				alert(lol + '#PAD_021 - ' + err.message);
-			}
+		try {
+			scriptFile.open('r');
+			eval(scriptFile.read());
+
+			scriptFile.close();
+
+		} catch (err) {
+			alert(lol + '#PAD_021 - ' + err.message);
 		}
 	}
 
-	// Função executada ao clicar no botão 'Importar' ou ao dar duplo clique em um template na árvore
-	// Atribui a mesma função para o evento onClick do botão e onDoubleClick da árvore de templates
-	templateTree.onDoubleClick = function () {
-		try {
-			// Tentar importar o template
-			var IO = new ImportOptions(templateFile); // Opções de importação
+	// templateTree.onDoubleClick = function () {
+	// 	try {
+	// 		// Tentar importar o template
+	// 		var IO = new ImportOptions(projectFile); // Opções de importação
 
-			app.project.importFile(IO); // Importa o template selecionado para o projeto atual
+	// 		app.project.importFile(IO); // Importa o template selecionado para o projeto atual
 
-			// Organização das Pastas do Projeto
-			deleteProjectFolders(); // Exclui todas pastas do projeto.
-			populateProjectFolders(); // Organiza o projeto com os templates criados.
-			deleteEmptyProjectFolders(); // Exclui pastas vazias do projeto.
+	// 		// Organização das Pastas do Projeto
+	// 		deleteProjectFolders(); // Exclui todas pastas do projeto.
+	// 		populateProjectFolders(); // Organiza o projeto com os templates criados.
+	// 		deleteEmptyProjectFolders(); // Exclui pastas vazias do projeto.
 
-			// Adiciona metadados XMP ao projeto indicando o caminho do template original
-			setXMPData('source', decodeURI(templateFile.path).toString());
-			//
-		} catch (err) {
-			// Captura e trata qualquer erro que ocorra durante a importação
-			alert(lol + '#PAD_022 - ' + err.message); // Exibe uma mensagem de alerta com a mensagem de erro
-			return; // Sai da função para evitar mais processamento em caso de erro
-		}
+	// 		// Adiciona metadados XMP ao projeto indicando o caminho do template original
+	// 		setXMPData('source', decodeURI(projectFile.path).toString());
+	// 		//
+	// 	} catch (err) {
+	// 		// Captura e trata qualquer erro que ocorra durante a importação
+	// 		alert(lol + '#PAD_022 - ' + err.message); // Exibe uma mensagem de alerta com a mensagem de erro
+	// 		return; // Sai da função para evitar mais processamento em caso de erro
+	// 	}
 
-		PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'
-	};
+	// 	PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'
+	// };
 
 	//---------------------------------------------------------
 
-	// Função para atualizar a árvore de templates quando o botão 'Atualizar' (refreshBtn) é clicado
 	refreshBtn.leftClick.onClick = function () {
-		// Atualiza a árvore de templates chamando a função 'buildTree'
+
 		buildTree(templatesFolder, templateTree, fileFilter);
 
-		// Expande todos os nós da árvore após a atualização
-		templateTree.expanded = true; // Expande o nível principal da árvore
-		var branches = templateTree.items; // Obtém todos os itens da árvore
+		templateTree.expanded = true;
 
-		// Loop para percorrer cada item da árvore
+		var branches = templateTree.items;
+
 		for (var i = 0; i < branches.length; i++) {
-			// Se o item for um nó (pasta)
+
 			if (branches[i].type == 'node') {
-				branches[i].expanded = true; // Expande a pasta.
+				branches[i].expanded = true;
 			}
 		}
 	};
 
 	//---------------------------------------------------------
 
-	// Função para abrir a pasta de templates quando o botão 'Abrir Pasta' é clicado
 	openFldBtn.leftClick.onClick = function () {
+
 		if (!templatesFolder.exists) {
-			// Verifica se a pasta de templates ainda não existe
-			templatesFolder.create(); // Se não existir, cria a pasta de templates
+
+			templatesFolder.create();
 		}
-		openFolder(templatesPath); // Abre a pasta de templates no sistema operacional do usuário
+		openFolder(templatesPath);
 	};
 
-	// Função para abrir a página de documentação quando o botão 'Informações' é clicado
+
 	infoBtn.leftClick.onClick = function () {
-		// Abre a página de documentação do script 'O Padeiro' no GitHub em um navegador web
+
 		openWebSite(repoURL + '/blob/main/README.md#-preenchendo-templates');
 	};
 
-	// Exibir a janela da interface do usuário
-	PAD_TEMPLATES_w.show(); // Mostra a janela principal da interface do usuário 'O Padeiro'
+	// Exibe a janela
+	PAD_TEMPLATES_w.show();
 }

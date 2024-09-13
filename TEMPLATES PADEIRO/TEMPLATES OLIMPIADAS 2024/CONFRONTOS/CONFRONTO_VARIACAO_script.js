@@ -12,23 +12,23 @@ function getTextLayerContent(aLayer) {
 		.trim(); // Remove espaços em branco no início e no fim
 }
 
-for (var t = 0; t < createdTemplatesArray.length; t++) {
-	var nameContent = createdTemplatesArray[t].layer(2).name.split(/\s+X\s+/i);
+for (var t = 0; t < newCompsArray.length; t++) {
+	var nameContent = newCompsArray[t].layer(2).name.split(/\s+X\s+/i);
 
 	try {
-		createdTemplatesArray[t].layer(2).name = nameContent[0];
-		createdTemplatesArray[t].layer(3).name = nameContent[1];
+		newCompsArray[t].layer(2).name = nameContent[0];
+		newCompsArray[t].layer(3).name = nameContent[1];
 
 		//
 	} catch (err) {}
 }
-renamePromoComps(createdTemplatesArray);
+renamePromoComps(newCompsArray);
 
 var outputPathArray = templateData.outputPath;
 // Redefine o arquivo de saída para cada módulo de saída.
-for (var t = 0; t < createdOutputModuleArray.length; t++) {
+for (var t = 0; t < newOutputsArray.length; t++) {
 	var o = t % outputPathArray.length;
-	var comp = createdTemplatesArray[t];
+	var comp = newCompsArray[t];
 	var pathIncrement = getTextLayerContent(
 		comp.layer(9),
 	).replaceSpecialCharacters();
@@ -38,5 +38,5 @@ for (var t = 0; t < createdOutputModuleArray.length; t++) {
 	if (!newFolder.exists) newPath = outputPathArray[o];
 
 	var newOutputFile = new File(newPath + '/[compName].[fileextension]'); // -> PATROCINADORES FUT 2024_11-06 a 16-06
-	createdOutputModuleArray[t].file = newOutputFile;
+	newOutputsArray[t].file = newOutputFile;
 }

@@ -1,6 +1,6 @@
 // esse script só pode ser executado pelo padeiro... 
 
-renamePromoComps(createdTemplatesArray);
+renamePromoComps(newCompsArray);
 
 
 var pathIncrement = [
@@ -10,7 +10,7 @@ var pathIncrement = [
 ];
 var outputPathArray = templateData.outputPath;
 
-for (var t = 0; t < createdOutputModuleArray.length; t++) {
+for (var t = 0; t < newOutputsArray.length; t++) {
 
 	var o = t % outputPathArray.length;
 	var p = Math.floor(t / outputPathArray.length) % pathIncrement.length;
@@ -18,5 +18,5 @@ for (var t = 0; t < createdOutputModuleArray.length; t++) {
 	var newPath = outputPathArray[o] + pathIncrement[p] + '[compName]_[#].[fileextension]';
 
 	var newOutputFile = new File(newPath);
-	createdOutputModuleArray[t].file = newOutputFile;
+	newOutputsArray[t].file = newOutputFile;
 }

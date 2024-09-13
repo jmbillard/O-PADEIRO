@@ -11,13 +11,13 @@ function getTextLayerContent(aLayer) {
 		.trim();                                   // Remove espaços em branco no início e no fim
 }
 
-renamePromoComps(createdTemplatesArray);
+renamePromoComps(newCompsArray);
 
 var outputPathArray = templateData.outputPath;
 // Redefine o arquivo de saída para cada módulo de saída.
-for (var t = 0; t < createdOutputModuleArray.length; t++) {
+for (var t = 0; t < newOutputsArray.length; t++) {
 	var o = t % outputPathArray.length;
-	var comp = createdTemplatesArray[t];
+	var comp = newCompsArray[t];
 	var pathIncrement = getTextLayerContent(comp.layer(5)).replaceSpecialCharacters();
 	var newPath = outputPathArray[o] + '/' + pathIncrement;
 	var newFolder = new Folder(newPath);
@@ -25,5 +25,5 @@ for (var t = 0; t < createdOutputModuleArray.length; t++) {
 	if (!newFolder.exists) newPath = outputPathArray[o];
 
 	var newOutputFile = new File(newPath +'/[compName].[fileextension]'); // -> PATROCINADORES FUT 2024_11-06 a 16-06
-	createdOutputModuleArray[t].file = newOutputFile;
+	newOutputsArray[t].file = newOutputFile;
 }
