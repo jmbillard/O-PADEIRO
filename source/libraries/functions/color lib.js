@@ -44,7 +44,7 @@ function componentToHex(c) {
 	const hex = c.toString(16);
 
 	// Adiciona um zero à esquerda se o hexadecimal tiver apenas um dígito.
-	return hex.length === 1 ? '0' + hex : hex;
+	return hex.length == 1 ? '0' + hex : hex;
 }
 
 // Converte um array RGB normalizado [0-1] para uma string hexadecimal (ex: '#FF0000').

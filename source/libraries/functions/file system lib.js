@@ -21,12 +21,12 @@
 // Define o conteúdo da área de transferência no Windows ou macOS.
 function setClipboard(str) {
 	var cmd;
-	if (appOs === 'Win') {
+	if (appOs == 'Win') {
 		// Comando PowerShell para Windows
 		var setClipboard = "Set-Clipboard -Value '" + str + "'";
 		cmd = 'cmd.exe /c powershell.exe -c "' + setClipboard + '"';
 		system.callSystem(cmd);
-	} else if (appOs === 'Mac') {
+	} else if (appOs == 'Mac') {
 		// Comando pbcopy para macOS
 		cmd = 'echo "' + str + '" | pbcopy';
 		system.callSystem(cmd);
@@ -37,10 +37,10 @@ function setClipboard(str) {
 function openFolder(folderPath) {
 	var folder = Folder(folderPath); // Obtém um objeto Folder representando o caminho da pasta
 
-	if (appOs === 'Win') {
+	if (appOs == 'Win') {
 		// Comando para abrir a pasta no Windows Explorer
 		system.callSystem('explorer ' + Folder.decode(folder.fsName));
-	} else if (appOs === 'Mac') {
+	} else if (appOs == 'Mac') {
 		// Comando para abrir a pasta no Finder (macOS)
 		system.callSystem('open "' + Folder.decode(folder.fsName) + '"');
 	}
@@ -48,10 +48,10 @@ function openFolder(folderPath) {
 
 // Abre um URL no navegador padrão do sistema operacional (Windows ou macOS).
 function openWebSite(url) {
-	if (appOs === 'Win') {
+	if (appOs == 'Win') {
 		// Comando para abrir o URL no Windows Explorer (que também pode abrir URLs)
 		system.callSystem('explorer ' + url);
-	} else if (appOs === 'Mac') {
+	} else if (appOs == 'Mac') {
 		// Comando para abrir o URL no navegador padrão do macOS
 		system.callSystem('open ' + url);
 	}
@@ -60,14 +60,14 @@ function openWebSite(url) {
 // Faz o download de conteúdo de URLs em um array para arquivos em um array de destinos (Windows e macOS).
 function getURLContent(urlArray, dstArray) {
 	// Verifica se os arrays têm o mesmo tamanho
-	if (urlArray.length !== dstArray.length) {
+	if (urlArray.length != dstArray.length) {
 		alert('Os arrays de URLs e destinos devem ter o mesmo tamanho.');
 		return;
 	}
 
 	var cmd = ''; // Comando a ser executado
 
-	if (appOs === 'Win') {
+	if (appOs == 'Win') {
 		// PowerShell (Windows)
 
 		// Cabeçalho em destaque
@@ -93,7 +93,7 @@ function getURLContent(urlArray, dstArray) {
 		// Executa o comando PowerShell no cmd.exe
 		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
 		system.callSystem(cmdStr);
-	} else if (appOs === 'Mac') {
+	} else if (appOs == 'Mac') {
 		// Terminal (macOS)
 
 		// Itera sobre as URLs e prepara os comandos de download
@@ -126,7 +126,7 @@ function unzipContent(zipPath, dstPath) {
 
 	var cmd = ''; // Comando a ser executado
 
-	if (appOs === 'Win') {
+	if (appOs == 'Win') {
 		// PowerShell (Windows)
 
 		// Cabeçalho em destaque
@@ -147,7 +147,7 @@ function unzipContent(zipPath, dstPath) {
 		// Executa o comando PowerShell no cmd.exe
 		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
 		system.callSystem(cmdStr);
-	} else if (appOs === 'Mac') {
+	} else if (appOs == 'Mac') {
 		// Terminal (macOS)
 
 		// Descompacta o arquivo ZIP usando unzip
@@ -464,7 +464,7 @@ function fontCollect(savePath) {
 			fontSrcFile.copy(fontCopyFile);
 		}
 	}
-	if (saveFolder.getFiles().length === 0) saveFolder.remove();
+	if (saveFolder.getFiles().length == 0) saveFolder.remove();
 
 	if (failArray.length > 0) alert(failArray.toString() + ' cant be copied');
 

@@ -18,7 +18,7 @@ function cleanHierarchy(nodeTree) {
 	// Percorre os subitens em ordem reversa para remover com segurança enquanto iteramos
 	for (var i = branches.length - 1; i >= 0; i--) {
 		// Se o subitem não for uma pasta ("node"), ignora e passa para o próximo
-		if (branches[i].type !== 'node') continue;
+		if (branches[i].type != 'node') continue;
 
 		// Chama a função recursivamente para limpar as subpastas
 		var wasEmpty = cleanHierarchy(branches[i]);
@@ -30,7 +30,7 @@ function cleanHierarchy(nodeTree) {
 	}
 
 	// Retorna se o nó atual ficou vazio após a limpeza (exceto se for a raiz)
-	return nodeTree.items.length === 0 && nodeTree.parent !== null;
+	return nodeTree.items.length == 0 && nodeTree.parent != null;
 }
 
 // Otimiza a hierarquia da árvore, combinando pastas com apenas uma subpasta
@@ -39,7 +39,7 @@ function optimizeHierarchy(nodeTree) {
 
 	for (var i = branches.length - 1; i >= 0; i--) {
 		// Pula itens que não são pastas
-		if (branches[i].type !== 'node') continue;
+		if (branches[i].type != 'node') continue;
 
 		// Se a pasta tiver mais de um item, chama a função recursivamente para otimizar as subpastas
 		if (branches[i].items.length > 1) {
@@ -47,8 +47,8 @@ function optimizeHierarchy(nodeTree) {
 		} else {
 			// Se a pasta tiver apenas uma subpasta, combina os nomes e move os itens
 			if (
-				branches[i].items.length === 1 &&
-				branches[i].items[0].type === 'node'
+				branches[i].items.length == 1 &&
+				branches[i].items[0].type == 'node'
 			) {
 				var subfolder = branches[i].items[0];
 				branches[i].text += ' / ' + subfolder.text; // Combina os nomes

@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-empty */
 /* eslint-disable no-prototype-builtins */
@@ -37,8 +38,6 @@ function padeiroTemplateDialog() {
 	var inputTextArray = []; // Array com os textos de input
 	var newCompsArray = []; // Array de templates criados
 	var newOutputsArray = []; // Array de módulos individuais de saída
-
-	var hasOutputFolder = true; // Indica se a pasta de saída não está disponível
 
 	// Janela principal
 	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
@@ -142,7 +141,7 @@ function padeiroTemplateDialog() {
 		[0, 0, 320, 464]
 	);
 	setFgColor(templateTree, monoColor2);
-	buildTree(templatesFolder, templateTree, fileFilter); // Constrói a árvore de templates
+	buildTree(templatesFolder, templateTree, fileFilter); // Cria a árvore de templates
 
 	// Grupo principal de botões
 	var mainBtnGrp1 = vGrp1.add('group');
@@ -517,9 +516,9 @@ function padeiroTemplateDialog() {
 		// Preparação da Interface para o processamento
 		templatesMainGrp.visible = false;
 		optionsMainGrp.visible = true;
-		infoHeaderLab.text = projectFile.displayName;
-		PAD_TEMPLATES_w.text = 'IMPORTANDO PROJETO...';
 		PAD_TEMPLATES_w.size = [compactWidth, 100];
+		PAD_TEMPLATES_w.text = 'IMPORTANDO PROJETO...';
+		infoHeaderLab.text = 'PROJETO: ' + projectFile.displayName;
 		PAD_TEMPLATES_w.update();
 		PAD_TEMPLATES_w.center();
 
@@ -658,11 +657,11 @@ function padeiroTemplateDialog() {
 					}
 				}
 
-				template.name = [
-					templateData.prefix + ' -',
-					inputText.replaceSpecialCharacters(),
-					suffixArray[f].replaceSpecialCharacters()
-				].join(' ')
+				var prefix = templateData.prefix + ' -';
+				var info = inputText.replaceSpecialCharacters();
+				var suffix = suffixArray[f].replaceSpecialCharacters();
+
+				template.name = [prefix, info, suffix].join(' ')
 					.toUpperCase()
 					.trim();
 
@@ -674,7 +673,7 @@ function padeiroTemplateDialog() {
 				logCount++; // Incrementa número de templates processados
 
 				// Atualização da interface de progresso
-				infoHeaderLab.text = template.name;
+				infoHeaderLab.text = 'COMP: ' + template.name;
 				progressBar.value++;
 				PAD_TEMPLATES_w.update();
 			}
@@ -694,14 +693,16 @@ function padeiroTemplateDialog() {
 		populateProjectFolders();
 		deleteEmptyProjectFolders();
 
+		// Atualização da interface de progresso
+		PAD_TEMPLATES_w.text = 'SALVANDO LOG...';
+		infoHeaderLab.text = logCount + ' TEMPLATES PROCESSADOS';
+		progressBar.value = 0;
+		PAD_TEMPLATES_w.update();
+
 		// Registro de Dados (Log)
 		// os Logs ainda não são 100% confiáveis devido a
 		// variação nas configurações do sistema (formatos de data e hora)
 		try {
-			PAD_TEMPLATES_w.text = 'SALVANDO LOG...';
-			infoHeaderLab.text = logCount + ' templates processados';
-			progressBar.value = 0;
-			PAD_TEMPLATES_w.update();
 
 			// Cria um objeto File para o arquivo de log na pasta de templates
 			var logFile = new File(templatesPath + '/log padeiro.csv');
@@ -733,13 +734,13 @@ function padeiroTemplateDialog() {
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'REGISTRANDO METADADOS...';
-		infoHeaderLab.text = 'source - FONTS';
+		infoHeaderLab.text = 'SOURCE - FONTS';
 		PAD_TEMPLATES_w.update();
 
 		// Adiciona metadados XMP indicando o caminho do template
 		setXMPData('source', decodeURI(projectFile.path).toString());
 
-		PAD_TEMPLATES_w.text = 'TEMPLATES DE RENDER...';
+		PAD_TEMPLATES_w.text = 'OPÇÕES DE RENDER';
 		infoHeaderLab.text = 'SELECIONE O TEMPLATE:';
 		renderDrop.enabled = true;
 		renderDrop.active = true;
@@ -749,15 +750,37 @@ function padeiroTemplateDialog() {
 
 		var outputPathArray = templateData.outputPath;
 		var padOutputTemplate = this.selection.toString();
+		this.enabled = false;
 
+		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'PROCESSANDO...';
 		infoHeaderLab.text = 'AGUARDE A VERIFICAÇÃO DO CAMINHO DE OUTPUT!';
 		progressBar.maxvalue = newCompsArray.length * outputPathArray.length;
 		progressBar.value = 0;
-		this.enabled = false;
 		PAD_TEMPLATES_w.update();
 
-		// [ ] Fazer a checagem do output fora do loop e sobrescrever os item do outputPathArray
+		// Verifica as pastas de output
+		for (var o = 0; o < outputPathArray.length; o++) {
+
+			var outputFolder = new Folder(outputPathArray[o]);
+
+			if (outputFolder.exists) continue;
+
+			// Substitui o caminho inexistente pelo caminho padrão
+			outputPathArray[o] = defaultTemplateConfigObj.outputPath[0];
+
+			// Atualização da interface de progresso
+			infoHeaderLab.text = 'PASTA NÃO ENCONTRADA...';
+			PAD_TEMPLATES_w.update();
+
+			alert(lol + '#PAD_019 - o output não pode ser acessado!');
+		}
+
+		// Atualização da interface de progresso
+		PAD_TEMPLATES_w.text = 'CRIANDO FILA DE RENDER...';
+		PAD_TEMPLATES_w.update();
+
+		// Cria a fila de render
 		for (var r = 0; r < newCompsArray.length; r++) {
 
 			if (padOutputTemplate == '') break;
@@ -773,13 +796,7 @@ function padeiroTemplateDialog() {
 				var outputModule = item.outputModule(o + 1);
 				var outputFolder = new Folder(outputPathArray[o]);
 
-				if (!hasOutputFolder || !outputFolder.exists) {
-					PAD_TEMPLATES_w.text = 'PASTA NÃO ENCONTRADA...';
-					outputPathArray[o] = defaultTemplateConfigObj.outputPath[0];
-					hasOutputFolder = false;
-				}
-
-				PAD_TEMPLATES_w.text = 'CRIANDO FILA DE RENDER...';
+				// Cria os arquivos de saída
 				try {
 					var outputFile = new File(outputPathArray[o] + '/[compName].[fileextension]');
 
@@ -788,16 +805,13 @@ function padeiroTemplateDialog() {
 					newOutputsArray.push(outputModule);
 
 				} catch (err) {
-					alert(lol + '#PAD_019 - ' + err.message); // Mensagem de erro
+					alert(lol + '#PAD_020 - ' + err.message); // Mensagem de erro
 				}
-				infoHeaderLab.text = outputModule.file.displayName;
+				// Atualização da interface de progresso
+				infoHeaderLab.text = 'SAÍDA: ' + outputModule.file.displayName;
 				progressBar.value++;
 				PAD_TEMPLATES_w.update();
 			}
-		}
-
-		if (!hasOutputFolder) {
-			alert(lol + '#PAD_020 - o output do render não pode ser acessado!');
 		}
 
 		PAD_TEMPLATES_w.close();
@@ -808,8 +822,10 @@ function padeiroTemplateDialog() {
 		// Execução de Script Personalizado (se houver)
 		if (!scriptFile.exists) return;
 
+		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'EXECUTANDO SCRIPT EXTERNO...';
-		infoHeaderLab.text = scriptFile.displayName;
+		infoHeaderLab.text = 'SCRIPT: ' + scriptFile.displayName;
+		PAD_TEMPLATES_w.update();
 
 		try {
 			scriptFile.open('r');

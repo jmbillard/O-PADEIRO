@@ -427,7 +427,7 @@ function PAD_UI_EVENTS(uiObj) {
 				var aItem = app.project.selection[i]; // item selecionado
 
 				// Se o item selecionado for uma composição sem tag
-				if (aItem instanceof CompItem && aItem.comment === '') {
+				if (aItem instanceof CompItem && aItem.comment == '') {
 					aItem.comment = 'EXPORTAR'; // Adiciona a tag 'EXPORTAR' como comentário
 				}
 			}
@@ -822,7 +822,7 @@ function drawRoundedRect(g, brush, width, height, radius, x, y) {
 	];
 
 	for (var i = 0; i <= coords.length - 1; i += 2) {
-		if (i === 0) {
+		if (i == 0) {
 			g.moveTo(coords[i], coords[i + 1]);
 		} else {
 			g.lineTo(coords[i], coords[i + 1]);

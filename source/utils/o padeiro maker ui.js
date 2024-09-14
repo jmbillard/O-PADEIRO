@@ -215,13 +215,13 @@ function PadMakerDialog() {
 
 	var tempPreviewFile;
 
-	// ==============
+	// ==========
 
 	var PAD_MAKER_w = new Window('palette', scriptName + ' ' + scriptVersion);
 	PAD_MAKER_w.orientation = 'row';
 	PAD_MAKER_w.alignChildren = ['center', 'top'];
 
-	// ==============
+	// ==========
 
 	var layoutMainGrp1 = PAD_MAKER_w.add('group', undefined);
 	layoutMainGrp1.orientation = 'column';
@@ -275,7 +275,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	});
 	setFgColor(helpLab, normalColor2);
 
-	// ==============
+	// ==========
 
 	// var div = PAD_MAKER_w.add('panel', undefined, undefined);
 	// 	var newDiv = themeDivider(PAD_MAKER_w);
@@ -332,7 +332,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	formMainGrp.spacing = 20;
 	formMainGrp.margins = 0;
 
-	// ==============
+	// ==========
 
 	var configGrp = formMainGrp.add('group', undefined);
 	configGrp.orientation = 'column';
@@ -395,7 +395,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	);
 	exempleText.helpTip = 'apenas um exemplo.';
 
-	// ==============
+	// ==========
 
 	var previewGrp = layoutMainGrp3.add('group', undefined);
 	previewGrp.orientation = 'column';
@@ -438,7 +438,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	newDiv = new themeDivider(layoutMainGrp3);
 	newDiv.alignment = ['fill', 'center'];
 
-	// ==============
+	// ==========
 
 	var projGrp = layoutMainGrp3.add('group', undefined);
 	projGrp.orientation = 'column';
@@ -446,7 +446,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	projGrp.spacing = 5;
 	projGrp.margins = 0;
 
-	// ==============
+	// ==========
 
 	var projGeneralGrp = projGrp.add('group', undefined);
 	projGeneralGrp.orientation = 'column';
@@ -503,13 +503,13 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	separatorTxt.helpTip =
 		'separador de informações\n\nuse "\\n" para colocar cada linha de texto em um layer diferente';
 
-	// ==============
+	// ==========
 
 	// var newDiv = layoutMainGrp3.add('panel', undefined, undefined);
 	newDiv = new themeDivider(layoutMainGrp3);
 	newDiv.alignment = ['fill', 'center'];
 
-	// ==============
+	// ==========
 
 	var layersMainGrp = layoutMainGrp3.add('group', undefined);
 	layersMainGrp.orientation = 'column';
@@ -517,7 +517,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	layersMainGrp.spacing = 10;
 	layersMainGrp.margins = [0, 0, 0, 29];
 
-	// ==============
+	// ==========
 
 	var bottomGrp3 = layoutGrp3.add('group', undefined);
 	bottomGrp3.orientation = 'column';
@@ -554,7 +554,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		tips: [lClick + 'testar preenchimento com o exemplo'],
 	});
 
-	// ==============
+	// ==========
 
 	var labMain5 = layoutMainGrp4.add('statictext', undefined, 'CAMINHOS:');
 	labMain5.preferredSize.height = 24;
@@ -583,7 +583,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	importPathLab.helpTip = 'caminho da pasta:';
 	setCtrlHighlight(importPathLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
-	// ==============
+	// ==========
 
 	var outputMainGrp = layoutMainGrp4.add('group', undefined);
 	outputMainGrp.orientation = 'column';
@@ -716,7 +716,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	setBgColor(PAD_MAKER_w, bgColor1); // Cor de fundo da janela
 
-	// ==============
+	// ==========
 
 	PAD_MAKER_w.onClose = function () {
 		var templateLayers = getTemplateLayers();

@@ -515,7 +515,7 @@ function createNull(nullType) {
 	var aItem = app.project.activeItem; // Obtém a composição ativa
 
 	// Cria a camada null com base no tipo
-	var nullLayer = nullType === 0 ? shpNull() : aItem.layers.addNull(); // Cria uma camada de forma (shpNull) ou uma camada null padrão
+	var nullLayer = nullType == 0 ? shpNull() : aItem.layers.addNull(); // Cria uma camada de forma (shpNull) ou uma camada null padrão
 
 	// Configura as propriedades da camada null
 	nullLayer.guideLayer = true; // Define como camada guia (não renderiza)

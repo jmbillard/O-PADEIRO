@@ -65,7 +65,7 @@ function padProdFoldersDialog(prodArray) {
 			tips: [lClick + 'deletar produção'],
 		});
 
-		// ==========
+		// =======
 
 		prodIconBtn.onClick = function () {
 			var newIconFile = File.openDialog(
@@ -110,7 +110,7 @@ function padProdFoldersDialog(prodArray) {
 	PAD_CONFIG_w.spacing = 12;
 	PAD_CONFIG_w.margins = 16;
 
-	// ===========
+	// ========
 
 	// Cria um grupo para o cabeçalho da árvore de templates
 	var headerGrp = PAD_CONFIG_w.add('group');
@@ -151,7 +151,7 @@ function padProdFoldersDialog(prodArray) {
 		}
 	}
 
-	// ===========
+	// ========
 
 	// Criação do grupo de botões principal
 	var BtnGrp = PAD_CONFIG_w.add('group', undefined);

@@ -50,7 +50,7 @@ String.prototype.replaceSpecialCharacters = function () {
 		.replace(/\u00F9|\u00FA|\u00FB|\u00FC|[ùúûü]/g, 'u')
 		.replace(/Ç|\u00C7/g, 'C')
 		.replace(/ç|\u00E7/g, 'c')
-		.replace(/[^\w\s]/g, ' ') // replaces any letter character except space...
+		.replace(/[^\w\s-]/g, ' ') // replaces any letter character except space...
 		.replace(/[\s_]+/g, ' ') // replaces 2 or more spaces...
 		.trim();
 };
@@ -98,9 +98,9 @@ Image.prototype.onDraw = function () {
 };
 
 // Array.isArray(obj) definition...
-if (typeof Array.isArray === 'undefined') {
+if (typeof Array.isArray == 'undefined') {
 	Array.isArray = function (obj) {
-		return Object.prototype.toString.call(obj) === '[object Array]';
+		return Object.prototype.toString.call(obj) == '[object Array]';
 	};
 }
 
@@ -117,12 +117,12 @@ if (!Array.prototype.indexOf) {
 		var O = Object(this);
 		var aSize = O.length >>> 0;
 
-		if (aSize === 0) {
+		if (aSize == 0) {
 			return -1;
 		}
 		var n = +startPoint || 0;
 
-		if (Math.abs(n) === Infinity) {
+		if (Math.abs(n) == Infinity) {
 			n = 0;
 		}
 		if (n >= aSize) {
@@ -131,7 +131,7 @@ if (!Array.prototype.indexOf) {
 		k = Math.max(n >= 0 ? n : aSize - Math.abs(n), 0);
 
 		while (k < aSize) {
-			if (k in O && O[k] === element) {
+			if (k in O && O[k] == element) {
 				return k;
 			}
 			k++;
@@ -142,7 +142,7 @@ if (!Array.prototype.indexOf) {
 
 if (!Array.prototype.pop) {
 	Array.prototype.pop = function () {
-		if (this.length === 0) {
+		if (this.length == 0) {
 			return undefined;
 		}
 		var lastElement = this[this.length - 1];
