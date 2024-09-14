@@ -447,7 +447,7 @@ function PAD_UI_EVENTS(uiObj) {
 	uiObj.organizar.rightClick.onClick = function () {
 		app.beginUndoGroup('criar pastas do projeto');
 
-		projectTemplateFolders(projectMode); // cria a estrutura de pastas do projeto
+		projectTemplateFolders(); // cria a estrutura de pastas do projeto
 
 		app.endUndoGroup();
 	};

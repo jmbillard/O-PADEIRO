@@ -69,6 +69,7 @@ function padeiroTemplateDialog() {
 		'dropdownlist',
 		[0, 0, 320, 24]
 	);
+	renderDrop.visible = false;
 	renderDrop.enabled = false;
 
 	// ----------------------------------------------------------------------------
@@ -516,9 +517,9 @@ function padeiroTemplateDialog() {
 		// Preparação da Interface para o processamento
 		templatesMainGrp.visible = false;
 		optionsMainGrp.visible = true;
-		PAD_TEMPLATES_w.size = [compactWidth, 100];
-		PAD_TEMPLATES_w.text = 'IMPORTANDO PROJETO...';
-		infoHeaderLab.text = 'PROJETO: ' + projectFile.displayName;
+		PAD_TEMPLATES_w.size = [compactWidth, 60];
+		PAD_TEMPLATES_w.text = 'IMPORTANDO ARQUIVOS...';
+		infoHeaderLab.text = 'projeto:  ' + projectFile.displayName;
 		PAD_TEMPLATES_w.update();
 		PAD_TEMPLATES_w.center();
 
@@ -558,19 +559,33 @@ function padeiroTemplateDialog() {
 			break;
 		}
 
+		PAD_TEMPLATES_w.text = 'EXTRAINDO TEMPLATES RENDER...';
+		progressBar.maxvalue = 3;
+		progressBar.value = 0;
+		PAD_TEMPLATES_w.update();
+
 		// Extrai e filtra o array de templates de render
 		try {
 			var item = app.project.renderQueue.items.add(templateComp);
 			renderTemplateArray = item.outputModule(1).templates;
 			var tIndex = renderTemplateArray.length - 1;
 
+			progressBar.value++;
+			PAD_TEMPLATES_w.update();
+
 			// Remove templates ocultos
 			while (renderTemplateArray[tIndex].toString().match(/^_HIDDEN\s/)) {
 				renderTemplateArray.pop();
 				tIndex--;
 			}
+			progressBar.value++;
+			PAD_TEMPLATES_w.update();
+
 			populateDropdownList(renderTemplateArray, renderDrop);
 			item.remove();
+
+			progressBar.value++;
+			PAD_TEMPLATES_w.update();
 
 		} catch (err) {
 			alert(lol + '#PAD_017 - ' + err.message);
@@ -582,8 +597,10 @@ function padeiroTemplateDialog() {
 		var suffixArray = templateData.inputFx != null ? templateData.inputFx.options : ['']; // Array de sufixos --> ['MANHA', 'TARDE', 'NOITE']
 
 		// Inicia o preenchimento dos templates
-		progressBar.maxvalue = inputTextArray.length * suffixArray.length;
 		PAD_TEMPLATES_w.text = 'PREENCHENDO TEMPLATES...';
+		progressBar.maxvalue = inputTextArray.length * suffixArray.length;
+		progressBar.value = 0;
+		PAD_TEMPLATES_w.update();
 
 		// Loop no Array de textos de input
 		for (var n = 0; n < inputTextArray.length; n++) {
@@ -647,7 +664,6 @@ function padeiroTemplateDialog() {
 
 						textDoc.text = textContent;
 						text.property('ADBE Text Document').setValue(textDoc);
-						infoArray[l] = infoArray[l].replaceSpecialCharacters();
 					}
 
 					// Aplica a informação como nome do layer (qualquer layer)
@@ -657,13 +673,15 @@ function padeiroTemplateDialog() {
 					}
 				}
 
-				var prefix = templateData.prefix + ' -';
-				var info = inputText.replaceSpecialCharacters();
-				var suffix = suffixArray[f].replaceSpecialCharacters();
+				var prefix = templateData.prefix;
+				var info = infoArray.join(' ');
+				var suffix = suffixArray[f];
 
-				template.name = [prefix, info, suffix].join(' ')
+				template.name = [prefix, separator, info, suffix].join(' ')
+					.trim()
 					.toUpperCase()
-					.trim();
+					.replace(/^-+|-+$/g, '')
+					.replaceSpecialCharacters();
 
 				template.openInViewer(); // Abre a composição preenchida
 				template.time = t; // move a agulha da timeline para o tempo de referência
@@ -673,7 +691,7 @@ function padeiroTemplateDialog() {
 				logCount++; // Incrementa número de templates processados
 
 				// Atualização da interface de progresso
-				infoHeaderLab.text = 'COMP: ' + template.name;
+				infoHeaderLab.text = 'input:  ' + template.name;
 				progressBar.value++;
 				PAD_TEMPLATES_w.update();
 			}
@@ -742,6 +760,8 @@ function padeiroTemplateDialog() {
 
 		PAD_TEMPLATES_w.text = 'OPÇÕES DE RENDER';
 		infoHeaderLab.text = 'SELECIONE O TEMPLATE:';
+		PAD_TEMPLATES_w.size = [compactWidth, 100];
+		renderDrop.visible = true;
 		renderDrop.enabled = true;
 		renderDrop.active = true;
 	};
@@ -778,6 +798,8 @@ function padeiroTemplateDialog() {
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'CRIANDO FILA DE RENDER...';
+		PAD_TEMPLATES_w.size = [compactWidth, 60];
+		renderDrop.visible = false;
 		PAD_TEMPLATES_w.update();
 
 		// Cria a fila de render
@@ -808,7 +830,7 @@ function padeiroTemplateDialog() {
 					alert(lol + '#PAD_020 - ' + err.message); // Mensagem de erro
 				}
 				// Atualização da interface de progresso
-				infoHeaderLab.text = 'SAÍDA: ' + outputModule.file.displayName;
+				infoHeaderLab.text = 'saída:  ' + outputModule.file.displayName;
 				progressBar.value++;
 				PAD_TEMPLATES_w.update();
 			}
@@ -824,7 +846,7 @@ function padeiroTemplateDialog() {
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'EXECUTANDO SCRIPT EXTERNO...';
-		infoHeaderLab.text = 'SCRIPT: ' + scriptFile.displayName;
+		infoHeaderLab.text = 'script:  ' + scriptFile.displayName;
 		PAD_TEMPLATES_w.update();
 
 		try {
