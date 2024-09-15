@@ -11,8 +11,6 @@ function getTextLayerContent(aLayer) {
 		.trim();                                   // Remove espaços em branco no início e no fim
 }
 
-renamePromoComps(newCompsArray);
-
 var outputPathArray = templateData.outputPath;
 // Redefine o arquivo de saída para cada módulo de saída.
 for (var t = 0; t < newOutputsArray.length; t++) {

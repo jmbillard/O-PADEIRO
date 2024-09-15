@@ -72,6 +72,44 @@ function padeiroTemplateDialog() {
 	renderDrop.visible = false;
 	renderDrop.enabled = false;
 
+	var optBtnMainGrp = optionsMainGrp.add('group');
+	optBtnMainGrp.orientation = 'stack';
+	optBtnMainGrp.alignment = 'fill';
+	optBtnMainGrp.margins = [0, 32, 0, 0];
+	optBtnMainGrp.visible = false;
+
+	var optBtnMainGrpL = optBtnMainGrp.add('group');
+	optBtnMainGrpL.alignment = 'left';
+	optBtnMainGrpL.spacing = 16;
+
+	// Botão de cancelar fila de render
+	var cancelBtn = new themeButton(
+		optBtnMainGrpL,
+		{
+			width: 80,
+			height: 32,
+			labelTxt: 'cancelar',
+			tips: [lClick + 'cancelar a criação da fila de render']
+		}
+	);
+
+	var optBtnMainGrpR = optBtnMainGrp.add('group');
+	optBtnMainGrpR.alignment = 'right';
+	optBtnMainGrpR.spacing = 16;
+
+	// Botão de criar fila de render
+	var nextBtn = new themeButton(
+		optBtnMainGrpR,
+		{
+			width: 100,
+			height: 32,
+			textColor: bgColor1,
+			buttonColor: normalColor1,
+			labelTxt: 'continuar',
+			tips: [lClick + 'criar fila de render']
+		}
+	);
+
 	// ----------------------------------------------------------------------------
 
 	// Grupo da interface de templates
@@ -277,9 +315,7 @@ function padeiroTemplateDialog() {
 		'statictext',
 		[0, 0, 180, 192],
 		tipContent,
-		{
-			multiline: true
-		}
+		{ multiline: true }
 	);
 	setFgColor(tipTxt, normalColor2); // Define a cor do texto
 
@@ -291,22 +327,20 @@ function padeiroTemplateDialog() {
 	mainBtnGrp2.alignment = 'fill';
 
 	// Grupo dos botões esquerdo
-	var lBtnGrp2 = mainBtnGrp2.add('group');
-	lBtnGrp2.alignment = 'left';
-	lBtnGrp2.spacing = 16;
+	var rBtnGrp2 = mainBtnGrp2.add('group');
+	rBtnGrp2.alignment = 'right';
+	rBtnGrp2.spacing = 16;
 
 	// Botão de processar preenchimento
 	var processBtn = new themeButton(
-		lBtnGrp2,
+		rBtnGrp2,
 		{
 			width: 120,
 			height: 32,
 			textColor: bgColor1,
 			buttonColor: normalColor1,
 			labelTxt: 'processar: 1',
-			tips: [
-				lClick + 'criar e preencher o template selecionado'
-			]
+			tips: [lClick + 'criar e preencher o template selecionado']
 		}
 	);
 
@@ -582,6 +616,7 @@ function padeiroTemplateDialog() {
 			PAD_TEMPLATES_w.update();
 
 			populateDropdownList(renderTemplateArray, renderDrop);
+			renderDrop.selection = 0;
 			item.remove();
 
 			progressBar.value++;
@@ -677,11 +712,15 @@ function padeiroTemplateDialog() {
 				var info = infoArray.join(' ');
 				var suffix = suffixArray[f];
 
-				template.name = [prefix, separator, info, suffix].join(' ')
-					.trim()
-					.toUpperCase()
-					.replace(/^-+|-+$/g, '')
-					.replaceSpecialCharacters();
+				// Define o nome do template
+				if (!overwriteCompName(template)) {
+
+					template.name = [prefix, separator, info, suffix].join(' ')
+						.trim()
+						.toUpperCase()
+						.replace(/^-+|-+$/g, '')
+						.replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
+				}
 
 				template.openInViewer(); // Abre a composição preenchida
 				template.time = t; // move a agulha da timeline para o tempo de referência
@@ -759,22 +798,27 @@ function padeiroTemplateDialog() {
 		setXMPData('source', decodeURI(projectFile.path).toString());
 
 		PAD_TEMPLATES_w.text = 'OPÇÕES DE RENDER';
-		infoHeaderLab.text = 'SELECIONE O TEMPLATE:';
-		PAD_TEMPLATES_w.size = [compactWidth, 100];
+		infoHeaderLab.text = 'SELECIONE O TEMPLATE PARA CONTINUAR:';
+		PAD_TEMPLATES_w.size = [compactWidth, 176];
+
+		optBtnMainGrp.visible = true;
 		renderDrop.visible = true;
 		renderDrop.enabled = true;
 		renderDrop.active = true;
 	};
 
-	renderDrop.onChange = function () {
+	nextBtn.leftClick.onClick = function () {
 
+		var padOutputTemplate = renderDrop.selection.toString();
 		var outputPathArray = templateData.outputPath;
-		var padOutputTemplate = this.selection.toString();
-		this.enabled = false;
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'PROCESSANDO...';
 		infoHeaderLab.text = 'AGUARDE A VERIFICAÇÃO DO CAMINHO DE OUTPUT!';
+		PAD_TEMPLATES_w.size = [compactWidth, 60];
+		optBtnMainGrp.visible = false;
+		renderDrop.visible = false;
+
 		progressBar.maxvalue = newCompsArray.length * outputPathArray.length;
 		progressBar.value = 0;
 		PAD_TEMPLATES_w.update();
@@ -837,7 +881,13 @@ function padeiroTemplateDialog() {
 		}
 
 		PAD_TEMPLATES_w.close();
-	};
+
+	}
+
+	cancelBtn.leftClick.onClick = function () {
+
+		PAD_TEMPLATES_w.close();
+	}
 
 	PAD_TEMPLATES_w.onClose = function () {
 
@@ -860,29 +910,28 @@ function padeiroTemplateDialog() {
 		}
 	}
 
-	// templateTree.onDoubleClick = function () {
-	// 	try {
-	// 		// Tentar importar o template
-	// 		var IO = new ImportOptions(projectFile); // Opções de importação
+	templateTree.onDoubleClick = function () {
+		try {
+			// Tentar importar o template
+			var IO = new ImportOptions(projectFile); // Opções de importação
 
-	// 		app.project.importFile(IO); // Importa o template selecionado para o projeto atual
+			app.project.importFile(IO); // Importa o template selecionado para o projeto atual
 
-	// 		// Organização das Pastas do Projeto
-	// 		deleteProjectFolders(); // Exclui todas pastas do projeto.
-	// 		populateProjectFolders(); // Organiza o projeto com os templates criados.
-	// 		deleteEmptyProjectFolders(); // Exclui pastas vazias do projeto.
+			// Organização das Pastas do Projeto
+			deleteProjectFolders();
+			populateProjectFolders();
+			deleteEmptyProjectFolders();
 
-	// 		// Adiciona metadados XMP ao projeto indicando o caminho do template original
-	// 		setXMPData('source', decodeURI(projectFile.path).toString());
-	// 		//
-	// 	} catch (err) {
-	// 		// Captura e trata qualquer erro que ocorra durante a importação
-	// 		alert(lol + '#PAD_022 - ' + err.message); // Exibe uma mensagem de alerta com a mensagem de erro
-	// 		return; // Sai da função para evitar mais processamento em caso de erro
-	// 	}
+			// Adiciona metadados XMP ao projeto indicando o caminho do template original
+			setXMPData('source', decodeURI(projectFile.path).toString());
+			//
+		} catch (err) {
 
-	// 	PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'
-	// };
+			alert(lol + '#PAD_022 - ' + err.message);
+		}
+
+		PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'
+	};
 
 	//---------------------------------------------------------
 

@@ -1,7 +1,5 @@
 // esse script só pode ser executado pelo padeiro... 
 
-renamePromoComps(newCompsArray);
-
 var outputPathArray = templateData.outputPath;
 
 for (var t = 0; t < newOutputsArray.length; t++) {

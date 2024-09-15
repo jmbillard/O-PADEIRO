@@ -1,8 +1,5 @@
 // esse script só pode ser executado pelo padeiro... 
 
-renamePromoComps(newCompsArray);
-
-
 var pathIncrement = [
 	'/MANHA/TARJAS_DIA_HORA_MANHA/',
 	'/TARDE/TARJAS_DIA_HORA_TARDE/',

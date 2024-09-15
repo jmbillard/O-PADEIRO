@@ -22,7 +22,6 @@ for (var t = 0; t < newCompsArray.length; t++) {
 		//
 	} catch (err) {}
 }
-renamePromoComps(newCompsArray);
 
 var outputPathArray = templateData.outputPath;
 // Redefine o arquivo de saída para cada módulo de saída.
