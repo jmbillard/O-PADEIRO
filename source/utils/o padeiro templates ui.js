@@ -712,7 +712,7 @@ function padeiroTemplateDialog() {
 				}
 
 				var prefix = templateData.prefix;
-				var info = infoArray.join(' ');
+				var info = infoArray.join(' ').replace(/\s*-+\s*/g, ' ');
 				var suffix = suffixArray[f];
 
 				// Define o nome do template
