@@ -193,7 +193,7 @@ function padProdFoldersDialog(prodArray) {
 		height: 32,
 		textColor: bgColor1,
 		buttonColor: normalColor1,
-		labelTxt: 'salvar a lista',
+		labelTxt: 'salvar lista',
 		tips: [lClick + 'salvar a lista de produções'],
 	});
 

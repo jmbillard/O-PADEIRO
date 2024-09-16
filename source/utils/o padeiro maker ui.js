@@ -811,7 +811,28 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.trim()
 			.toUpperCase()
 			.replaceSpecialCharacters();
-		var inputTxt = exempleText.text.split(/\n{2,}/)[0];
+		var inputTxt = exempleText.text
+			.split(/\n{2,}/)[0]
+			.split(separatorTxt.text)
+			.join(' ');
+
+		infoText2.text = infoText2.helpTip = [
+			prefix,
+			separator,
+			inputTxt
+		].join(' ').toUpperCase().replaceSpecialCharacters();
+	};
+
+	separatorTxt.onChanging = function () {
+		var prefix = prefixTxt.text
+			.trim()
+			.toUpperCase()
+			.replaceSpecialCharacters();
+		var inputTxt = exempleText.text
+			.split(/\n{2,}/)[0]
+			.split(this.text)
+			.join(' ');
+
 		infoText2.text = infoText2.helpTip = [
 			prefix,
 			separator,
@@ -821,16 +842,20 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	prefixTxt.onChange = function () {
 		this.text = this.text
-		.trim()
-		.toUpperCase()
-		.replaceSpecialCharacters();
+			.trim()
+			.toUpperCase()
+			.replaceSpecialCharacters();
 	};
 
 	exempleText.onChanging = function () {
 		var prefix = prefixTxt.text
 			.toUpperCase()
 			.replaceSpecialCharacters();
-		var inputTxt = this.text.split(/\n{2,}/)[0];
+		var inputTxt = this.text
+			.split(/\n{2,}/)[0]
+			.split(separatorTxt.text)
+			.join(' ');
+		
 		infoText2.text = infoText2.helpTip = [
 			prefix,
 			separator,
@@ -848,6 +873,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.toUpperCase()
 			.replaceSpecialCharacters()
 			.replace(/\s+/g, '_') + '_preview.png';
+
+		infoText1.text = tempItem.name;
 
 		infoText1.properties.comp = tempItem;
 		infoText1.properties.ref_time = tempItem.time;
@@ -1006,7 +1033,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var currentProj = app.project.file;
 		var currentTemplateFolder = currentProj.parent;
-		var currentProjBase = decodeURI(currentProj.fullName).replace(/\.ae[pt]/,'');
+		var currentProjBase = decodeURI(currentProj.fullName).replace(/\.ae[pt]/, '');
 
 		try {
 			var configContent = JSON.stringify(tempConfigObj, null, '\t');
@@ -1021,7 +1048,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			openFolder(decodeURI(currentTemplateFolder.fullName));
 
 		} catch (err) {
-			alert(lol + '#PAD_028 - ' + err.message); 
+			alert(lol + '#PAD_028 - ' + err.message);
 		}
 		app.endUndoGroup();
 	};

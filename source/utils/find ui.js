@@ -98,7 +98,7 @@ function findDialog() {
 		tips: [lClick + 'ajuda | DOCS'],
 	});
 
-	var findProgressBar = findW.add('progressbar', [0, 0, 280, 5], undefined);
+	var findProgressBar = findW.add('progressbar', [0, 0, 280, 1], undefined);
 	findProgressBar.value = 100;
 
 	var resultTree = findW.add('treeview', [0, 0, 320, 0]);

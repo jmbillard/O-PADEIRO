@@ -51,15 +51,16 @@ uma pasta de produção é um pasta que contem ou irá conter templates do padei
 ao executar o script pela primeira vez, o editor de pastas de produção será aberto automaticamente.\
 o arquivo da lista de produção será salvo na mesma pasta do script e compartilhado entre todos os usuários que executarem o script a partir desta mesma pasta, assim todos os membros de uma equipe terão a mesma lista de produções e seus respectivos templates.
 
-> 📟 *interface do editor de pastas de produção:*\
-> ![ui](docs/images/pastas_ui.png)
+> 📟 *interface do editor de pastas de produção:*
+>
+> ![ui](docs/images/pastas_ui2.png)
 
 1. `◖ clique DUPLO esquerdo` no ícone da produção para abrir o editor.
-2. clique no botão '*nova produção*'.
+2. clique no botão '*+ nova produção*'.
 3. edite a pasta de templates.
 4. selecione um ícone para a produção.
 5. edite o nome da produção.
-6. clique no botão '*salvar*'.
+6. clique no botão '*salvar lista*'.
 
 > 🚩 *obs:*\
 > • as produções serão sempre organizadas alfabeticamente na lista.\
@@ -77,8 +78,9 @@ o arquivo da lista de produção será salvo na mesma pasta do script e comparti
 
 a interface principal do padeiro pode assumir um layout vertical ou horizontal de acordo com o tamanho do painel.
 
-> 📟 launcher:\
-> ![ui](docs/images/ui1.png)
+> 📟 launcher:
+>
+> ![ui](docs/images/ui2.png)
 
 ferramentas disponíveis em ordem:
 
@@ -119,14 +121,12 @@ ferramentas disponíveis em ordem:
 `◖ clique esquerdo` → abre a janela de busca.
   > *a busca funciona apenas no conteúdo dos layers de texto do projeto.*
 
-- **APONTAMENTO**:\
-`◖ clique esquerdo` → abre a planilha de apontamento de projetos.
+<!-- - **APONTAMENTO**:\
+`◖ clique esquerdo` → abre a planilha de apontamento de projetos. -->
 
 > 🚩 *obs:*\
 > • a versão atual do script é sempre exibida na lateral direita para o layout horizontal e no canto inferior para o layout vertical.\
 > • para atualizar o script, caso exista uma nova versão disponível, basta fechar o script e executa-lo novamente.
-
-<br>
 
 ---
 
@@ -136,18 +136,19 @@ ferramentas disponíveis em ordem:
 
 um template do padeiro é um conjunto de arquivos que inclui: um *projeto* do after effects com uma comp principal, preferencialmente salvo com a extensão '*.aet*', um arquivo de configuração '*_config.json*' com as informações necessárias para o preenchimento correto do template, uma imagem de preview '*_preview.png*' e uma pasta com todas os arquivos de fontes usadas no projeto.
 
-> 📟 *interface do criador de templates:*\
-> ![ui](docs/images/maker_ui.png)
+> 📟 *interface do criador de templates:*
+>
+> ![ui](docs/images/maker_ui2.png)
 
 1. limpe o projeto, remova tudo o que não for necessário para a comp principal.
-2. `◗ clique direito` no botão com ícone de luva para abrir a interface do criador de templates.
+2. `◗ clique direito` no botão com ícone de paninho para abrir a interface do criador de templates.
 3. preencha o '*nome da configuração*', as '*dicas*' e o '*exemplo de preenchimento*'.
-4. posicione a agulha da timeline em um frame de referência e clique no botão '*capturar*'.
+4. posicione a agulha da timeline em um frame de referência e clique no botão '*capturar preview*'.
 5. selecione / preencha o padrão de '*caixa de texto*' do projeto, o '*prefixo*' e o '*separador*' de informações.
 6. selecione os layers editáveis em ordem de preenchimento e clique no botão '*selecionar layers*'.
 7. edite a '*pasta de mídia: (opcional)*' e as '*pastas de output*'.
-8. use o botão '*testar*' para verificar o preenchimento das informações inseridas no '*exemplo de preenchimento*'.
-9. clique no botão '*criar*' para salvar o template,preferencialmente com a extensão '.aet'.
+8. use o botão '*testar agora*' para verificar o preenchimento das informações inseridas no '*exemplo de preenchimento*'.
+9. clique no botão '*salvar template*' para salvar o template,preferencialmente com a extensão '.aet'.
 
 <br>
 
@@ -188,7 +189,7 @@ o script executará as seguintes tarefas em ordem:
 - **prefixo** → prefixo adicionado em todas as versões geradas do template.
 - **separador** → o texto usado para separar as informações de tipos diferentes.
 - **+ layers** → adiciona os layers selecionados da comp principal.
-- **testar** → preenche os layers selecionados com o exemplo de preenchimento.
+- **testar agora** → preenche os layers selecionados com o exemplo de preenchimento.
 
 > 🚩 *obs:*\
 > • todos os textos serão convertidos para a '*caixa de texto*' selecionada.\
@@ -213,7 +214,7 @@ o script executará as seguintes tarefas em ordem:
 
 <br>
 
-- **criar** → salva o projeto e gera todos os arquivos necessários para o template.
+- **salvar template** → salva o projeto e gera todos os arquivos necessários para o template.
 
 > 🚩 *obs:*\
 > • todo template pode ter múltiplas pastas de output.\
@@ -266,25 +267,42 @@ o script executará as seguintes tarefas em ordem:
 a interface de templates sempre exibirá a lista de templates disponíveis na pasta de produção no '**menu de produção**'.\
 caso não exista nenhum template disponível, a lista aparecerá vazia, mostrando apenas a pasta de produção como raiz.
 
-> 📟 *interface de templates:*\
-> ![ui](docs/images/o_padeiro_ui.png)
+> 📟 *interface de templates:*
+>
+> ![ui](docs/images/o_padeiro_ui2.png)
 
-1. `◖ clique esquerdo`  no botão com ícone de luva para abrir interface de templates.
+1. `◖ clique esquerdo`  no botão com ícone de paninho para abrir interface de templates.
 2. faca uma busca ou navegue pela estrutura da lista.
 3. selecione o template desejado.
 4. preencha o campo '**input**' seguindo as '**dicas**'.
 5. habilite ou não a opção '**adicionar a fila de render**'.
-6. clique no botão '**criar**'.
-7. caso tenha habilitado '**adicionar a fila de render**', selecione um preset para o render output na interface '**RENDER SETUP**'.
+6. clique no botão '**processar**'.
 
 <br>
 
-> 📟 *render setup:*\
+> 📟 *OPÇÕES DE RENDER:*
+>
 > ![ui](docs/images/render_ui.png)
 
 *lista todos os presets disponíveis no After Effects.*
 
-- **templates de render** → caso tenha habilitado '**adicionar a fila de render**', selecione um preset para o render output.
+- **templates de render** → seleciona o preset para o render.
+- **cancelar** → aborta a criação da fila de render.
+- **continuar** → cria a fila de render.
+
+> 🚩 *obs:*\
+> • ao cancelar a seleção do preset, o script abortará apenas a criação da fila de render.\
+> • caso exista um arquivo de script externo associado ao template, o mesmo ainda será executado.
+
+<br>
+
+> 📟 *PROGRESSO:*
+>
+> ![ui](docs/images/progresso3.png)
+
+*informa o andamento de cada etapa do processo.*
+
+<br>
 
 caso deseje adicionar um novo preset acesse o menu:\
 `Edit` > `Templates` > `Presets` > `Output Module...`
@@ -304,7 +322,7 @@ o script executará as seguintes tarefas em ordem:
 3. preencher as informações inseridas no input.
 4. renomear as comps com base no seu conteúdo.
 5. organizar o projeto seguindo0 o padrão da PROMO.
-6. se habilitado, adicionar as comps criadas a fila de render
+6. adicionar as comps criadas a fila de render
 7. setar os caminhos para o output.
 
 > 📋 *exemplo de uso:*\
@@ -320,6 +338,8 @@ o script executará as seguintes tarefas em ordem:
 - **busca** → retorna os templates ou pastas com o termo buscado.
 - **lista de templates** → árvore com todos os templates disponíveis na pasta de templates do script.
 - **ajuda | DOCS** → acessa a documentação provisória do script e seus templates disponíveis.
+- **atualizar lista** → verifica e atualiza a lista de templates disponíveis.
+- **abrir pasta** → abre a pasta raiz de templates.
 
 > 🚩 *obs:*\
 > • ao selecionar um template da lista, a interface do script se ajustará para exibir um preview, o campo de input e dicas, se disponíveis.\
@@ -342,20 +362,12 @@ o script executará as seguintes tarefas em ordem:
 - **texto** → campo de texto editável multifuncional, é o responsável pelo preenchimento de qualquer possível campo de texto do template selecionado.
 - **adicionar a fila de render** → se habilitado, adiciona as comps criadas e o seus caminhos corretos no output automaticamente.
 - **dicas** → tópicos curtos explicando o preenchimento do template selecionado.
+- **processar** → inicia a execução do preenchimento automático.
 
 > 🚩 *obs:*\
 > • o '**input**' é pré preenchido com dados genéricos disponíveis no arquivo de configuração do template selecionado e usados para gerar a imagem do preview apenas para exemplificar.\
 > • sem um arquivo de configuração, não é possível preencher o template selecionado usando o campo de texto do '**input**'.\
 > • você ainda poderá **IMPORTAR** e **PREENCHER MANUALMENTE** o template no After Effects!!!
-
-### botões
-
-> ![ui](docs/images/botoes_ui.png)
-
-- **importar** → importa o arquivo '*.aet*' ou '*.aep*' do template selecionado para o projeto.
-- **atualizar lista** → verifica e atualiza a lista de templates disponíveis.
-- **abrir pasta** → abre a pasta raiz de templates.
-- **criar** → inicia a execução do preenchimento automático.
 
 ---
 
@@ -514,8 +526,9 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   O script pesquisará no conteúdo de todos os layers de texto do projeto pelo termo buscado.
 
-  > 📟 *interface de busca:*\
-  > ![busca](docs/images/busca_ui.png)
+  > 📟 *interface de busca:*
+  >
+  > ![busca](docs/images/busca_ui2.png)
 
   `◖ clique esquerdo` → Abre a interface de busca.\
   opções em ordem:
@@ -534,7 +547,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   > Por padrão a busca é feita ignorando acentuação e caixa do texto.\
   > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...
 
-<br>
+<!-- <br>
 
 ---
 
@@ -605,4 +618,4 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 ### SHOWS:
 
 - CIRCUITO SERTANEJO
-  - [RODAPE_ATRACAO](templates_disponiveis/SHOWS/CIRCUITO_SERTANEJO/RODAPE_ATRACAO.md)
+  - [RODAPE_ATRACAO](templates_disponiveis/SHOWS/CIRCUITO_SERTANEJO/RODAPE_ATRACAO.md) -->
