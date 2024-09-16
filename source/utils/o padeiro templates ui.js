@@ -647,6 +647,7 @@ function padeiroTemplateDialog() {
 			// Mas podem ser manipulados por um script externo posteriormente
 			if (templateData.prefix.match(/ignore/i)) {
 				newCompsArray.push(templateComp);
+				templateComp.openInViewer();
 				break;
 			}
 			// Texto a ser preenchido
@@ -662,6 +663,7 @@ function padeiroTemplateDialog() {
 				var inputLayerList = templateData.inputLayers;
 				// Pattern de separação de informações
 				var sPattern = new RegExp('[\\n\\r]' + templateData.separator + '[\\n\\r]', 'i');
+				if (templateData.separator == '\n') sPattern = new RegExp('[\\n\\r]', 'i');
 				// Array de informações
 				var infoArray = inputText.split(sPattern); // ex: título e subtítulo --> ['A.X.L', 'O CÃO ROBÔ']
 
