@@ -12,7 +12,7 @@
 
 */
 
-// Função para criar a interface de usuário do 'O Padeiro'
+// Interface de templates
 function padeiroTemplateDialog() {
 	// Título da janela
 	var scriptName = 'TEMPLATES';
@@ -40,7 +40,10 @@ function padeiroTemplateDialog() {
 	var newOutputsArray = []; // Array de módulos individuais de saída
 
 	// Janela principal
-	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
+	var PAD_TEMPLATES_w = new Window(
+		'dialog',
+		scriptName + ' ' + scriptVersion
+	);
 
 	// Grupo principal
 	var mainGrp = PAD_TEMPLATES_w.add('group');
