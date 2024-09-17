@@ -648,6 +648,14 @@ function padeiroTemplateDialog() {
 			if (templateData.prefix.match(/ignore/i)) {
 				newCompsArray.push(templateComp);
 				templateComp.openInViewer();
+
+				logCount++; // Incrementa número de templates processados
+
+				// Atualização da interface de progresso
+				infoHeaderLab.text = 'input:  ' + templateComp.name;
+				progressBar.value++;
+				PAD_TEMPLATES_w.update();
+
 				break;
 			}
 			// Texto a ser preenchido
