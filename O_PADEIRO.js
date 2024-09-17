@@ -38,15 +38,7 @@ function O_PADEIRO_UTL(thisObj) {
 					tips: [
 						lClick + 'abrir apontamento de projetos',
 					]
-				}//,
-				// diretorios: {
-				// 	type: 'iconButton',
-				// 	labelTxt: 'Diretórios',
-				// 	icon: PAD_PASTA_ICON,
-				// 	tips: [
-				// 		lClick + 'abrir lista de diretórios da rede',
-				// 	]
-				// }
+				}
 			}
 		},
 		mainGrp: {
@@ -111,17 +103,7 @@ function O_PADEIRO_UTL(thisObj) {
 						lClick + 'abrir a BUSCA em layers de texto'
 					]
 				}
-			}//,
-			// section5: {
-			// 	atalhos: {
-			// 		type: 'imageButton',
-			// 		labelTxt: 'Atalhos',
-			// 		icon: PAD_ATALHOS_ICON,
-			// 		tips: [
-			// 			lClick + 'abrir a planilha do apontamento de projetos no navegador'
-			// 		]
-			// 	}
-			// }
+			}
 		}
 	};
 
