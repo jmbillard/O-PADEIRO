@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.50';
+	var scriptVersion = 'v1.51';
 
 	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
 	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
