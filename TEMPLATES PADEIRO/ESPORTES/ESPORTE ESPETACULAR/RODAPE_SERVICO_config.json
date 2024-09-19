@@ -1,0 +1,20 @@
+{
+	"configName": "ESPORTE ESPETACULAR RODAPE SERVICO",
+	"exemple": "AMANHÃ 9:20",
+	"tip": "digite o texto em 1 linha.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template selecionado.",
+	"compName": "RDP - SERVICO TEMPLATE",
+	"prefix": "RDP",
+	"refTime": 2,
+	"separator": "---",
+	"textCase": "upperCase",
+	"inputLayers": [
+		{
+			"layerIndex": 1,
+			"method": "textContent"
+		}
+	],
+	"importPath": "~/Downloads",
+	"outputPath": [
+		"//10.228.183.174/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/ESPORTE ESPETACULAR/2024/SERVICO"
+	]
+}
