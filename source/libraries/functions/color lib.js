@@ -99,7 +99,9 @@ function rgbStr(val) {
 
 // Converte uma string hexadecimal (com ou sem '#') para um array RGB normalizado.
 function hexToRGB(hex) {
-	// Remove o caractere '#' se estiver presente
+	if (hex == undefined) return [Math.random(), Math.random(), Math.random()];
+
+	// Remove o '#' se estiver presente
 	hex = hex.replace('#', '');
 
 	// Extrai os componentes RGB do hexadecimal e converte para valores de 0 a 255

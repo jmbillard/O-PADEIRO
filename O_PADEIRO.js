@@ -4,13 +4,28 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.51';
+	var scriptVersion = 'v1.52';
 
+	try {
+		scriptMainPath = scriptMainPath;
+	
+	} catch (err) {
+		var startMsg = 'você instalou o arquivo ".jsxbin"!\
+o script funcionará normalmente, mas você não terá:\n\
+    - atualizações automáticas\
+    - lista inicial de produções com templates\
+    - novos recursos e correções de bugs.';
+		alert(startMsg);
+		scriptMainPath = Folder.userData.fullName + '/O PADEIRO script/';
+	}
+	
+	#include 'source/libraries/PROT lib.js';        // Inclui funções que estendem objetos JavaScript (prototype)
 	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
 	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
 	#include 'source/libraries/FUNC lib.js';        // Inclui funções utilitárias gerais
-	#include 'source/libraries/PROT lib.js';        // Inclui funções que estendem objetos JavaScript (prototype)
+
 	#include 'source/globals.js';                   // Inclui variáveis globais (usadas em todo o script)
+
 	#include 'source/libraries/functions/color lib.js';
 	#include 'source/libraries/functions/ctrl anim lib.js';
 	#include 'source/libraries/functions/file system lib.js';
@@ -21,11 +36,11 @@ function O_PADEIRO_UTL(thisObj) {
 	#include 'source/libraries/functions/metadata lib.js';
 
 	// utilidades com interface
-	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 	#include 'source/Utils/o padeiro templates ui.js'; // Sistema de templates
-	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
 	#include 'source/Utils/o padeiro maker ui.js';     // Editor de templates
+	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
 	#include 'source/Utils/find ui.js';                 // Busca em layers de texto
+	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 
 	// estrutura de 'ctrlProperties'
 	var PAD_mainGrpUiStructure = {
