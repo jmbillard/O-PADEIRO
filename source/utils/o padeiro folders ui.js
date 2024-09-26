@@ -36,13 +36,13 @@ function padProdFoldersDialog(prodArray) {
 
 		var prodIconBtn = prodDataGrp.add('iconbutton', undefined, undefined, {
 			style: 'toolbutton',
-			prodIcon: prodObj.icon,
+			prodIcon: prodObj.icon
 		});
 
 		try {
 			prodIconBtn.image = eval(iconImg);
-		//
-} catch (err) {
+
+		} catch (err) {
 			prodIconBtn.image = defaultProductionDataObj.PRODUCTIONS[0].icon;
 		}
 
@@ -51,7 +51,7 @@ function padProdFoldersDialog(prodArray) {
 
 		var prodPathLab = prodDataGrp.add('statictext', undefined, pathTxt, {
 			prodPath: prodObj.templatesPath,
-			truncate: 'middle',
+			truncate: 'middle'
 		});
 
 		prodPathLab.helpTip =
@@ -62,7 +62,7 @@ function padProdFoldersDialog(prodArray) {
 		// var deleteBtn = prodDataGrp.add('iconbutton', undefined, closeIcon.light, { style: 'toolbutton' });
 		var deleteBtn = new themeIconButton(prodDataGrp, {
 			icon: PAD_FECHAR_ICON,
-			tips: [lClick + 'deletar produção'],
+			tips: [lClick + 'deletar produção']
 		});
 
 		// =======
@@ -144,8 +144,8 @@ function padProdFoldersDialog(prodArray) {
 	for (var u = 0; u < prodArray.length; u++) {
 		try {
 			addProductionLine(prodArray[u]);
-		//
-} catch (err) {
+			//
+		} catch (err) {
 			prodArray[u].icon = defaultProductionDataObj.PRODUCTIONS[0].icon;
 			addProductionLine(prodArray[u]);
 		}
@@ -230,9 +230,7 @@ function padProdFoldersDialog(prodArray) {
 		if (tempConfigFile == null) return;
 
 		try {
-			var tempConfigObj = {
-				PRODUCTIONS: [],
-			};
+			var tempArray = [];
 
 			for (var u = 0; u < prodMainGrp.children.length; u++) {
 				var subGrp = prodMainGrp.children[u].children[1];
@@ -243,16 +241,16 @@ function padProdFoldersDialog(prodArray) {
 					templatesPath: subGrp.children[2].properties.prodPath,
 				};
 
-				tempConfigObj.PRODUCTIONS.push(tempObj);
+				tempArray.push(tempObj);
 			}
-			sortProdData(tempConfigObj.PRODUCTIONS);
 
-			var tempConfigContent = JSON.stringify(tempConfigObj, null, '\t');
-			writeFileContent(tempConfigFile, tempConfigContent);
+			var tempConfigContent = JSON.stringify({PRODUCTIONS: sortProdData(tempArray)}, null, '\t');
+			// alert(tempConfigContent);
+			saveTextFile(configContent, tempConfigFile.fullName);
 
 			PAD_CONFIG_w.close();
-		//
-} catch (err) {
+
+		} catch (err) {
 			alert(lol + '#PAD_014 - ' + err.message);
 		}
 	};
@@ -260,8 +258,8 @@ function padProdFoldersDialog(prodArray) {
 	prodNewBtn.leftClick.onClick = function () {
 		try {
 			addProductionLine(defaultProductionDataObj.PRODUCTIONS[0]);
-		//
-} catch (err) {
+
+		} catch (err) {
 			alert(lol + '#PAD_013 - ' + err.message);
 		}
 
@@ -271,9 +269,7 @@ function padProdFoldersDialog(prodArray) {
 
 	prodSaveBtn.leftClick.onClick = function () {
 		try {
-			var tempConfigObj = {
-				PRODUCTIONS: [],
-			};
+			var tempArray = [];
 
 			for (var u = 0; u < prodMainGrp.children.length; u++) {
 				var subGrp = prodMainGrp.children[u].children[1];
@@ -283,14 +279,14 @@ function padProdFoldersDialog(prodArray) {
 					icon: subGrp.children[1].properties.prodIcon,
 					templatesPath: subGrp.children[2].properties.prodPath,
 				};
-
-				tempConfigObj.PRODUCTIONS.push(tempObj);
+				alert(tempObj.templatesPath);
+				tempArray.push(tempObj);
 			}
-			sortProdData(tempConfigObj.PRODUCTIONS);
-			saveProdData(tempConfigObj.PRODUCTIONS);
+
+			configFile = saveProdData(sortProdData(tempArray));
 			PAD_CONFIG_w.close();
-		//
-} catch (err) {
+
+		} catch (err) {
 			alert(lol + '#PAD_016 - ' + err.message);
 		}
 	};
