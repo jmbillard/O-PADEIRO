@@ -8,8 +8,8 @@ a proposta de workflow é simples, são 3 etapas:\
 `1 buscar​` > ​`2 selecionar​` > ​`3 preencher​`
 
 > 📂 **arquivos:**\
-> • **O PADEIRO.jsx** → é o aquivo que deve ser instalado no after effects.\
-> • **O_PADEIRO_SOURCE.jsxbin** → é o arquivo que contém o binário do script.
+> • **O PADEIRO instalador.jsx** → aquivo que deve ser executado no after effects.\
+> • **O_PADEIRO_SOURCE.jsxbin** → arquivo que contém o binário do script.
 
 <br>
 
@@ -28,10 +28,16 @@ e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
 ## 📍 instalação
 
 instale o script pelo menu:\
-`File` > `Scrips` > `Install ScriptUI Panel...`
+`File` > `Scrips` > `Run Script File...`
 
 > 📋 *exemplo:*\
 > ![ui](docs/images/instalacao.png)
+
+> 📟 *interface do instalador:*
+>
+> ![ui](docs/images/instalador_ui.png)
+
+selecione a opção '*instalar*' e clique em '*avançar*'
 
 após a instalação, **reinicie** o After Effects e o `O PADEIRO` aparecerá na última seção do menu '*Window*' e poderá ser acoplado a qualquer painel da interface.
 
