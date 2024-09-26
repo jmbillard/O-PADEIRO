@@ -46,7 +46,7 @@ function padProdFoldersDialog(prodArray) {
 			prodIconBtn.image = defaultProductionDataObj.PRODUCTIONS[0].icon;
 		}
 
-		prodIconBtn.helpTip = 'ícone que aparecerá no menu';
+		prodIconBtn.helpTip = 'ícone, 24px x 24px, que aparecerá no menu (opcional)';
 		prodIconBtn.preferredSize = [36, 36];
 
 		var prodPathLab = prodDataGrp.add('statictext', undefined, pathTxt, {
@@ -55,7 +55,7 @@ function padProdFoldersDialog(prodArray) {
 		});
 
 		prodPathLab.helpTip =
-			'caminho da pasta de templates:\n\n' + prodObj.templatesPath;
+			'edite o caminho da pasta de templates:\n\n' + prodObj.templatesPath;
 		prodPathLab.preferredSize = [400, 24];
 		setCtrlHighlight(prodPathLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
@@ -146,7 +146,7 @@ function padProdFoldersDialog(prodArray) {
 			addProductionLine(prodArray[u]);
 		//
 } catch (err) {
-			prodArray[u].icon = defaultTemplateConfigObj.PRODUCTIONS[0].icon;
+			prodArray[u].icon = defaultProductionDataObj.PRODUCTIONS[0].icon;
 			addProductionLine(prodArray[u]);
 		}
 	}

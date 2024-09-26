@@ -15,25 +15,7 @@ function PadMakerDialog() {
 	var scriptName = 'EDITOR DE TEMPLATES';
 
 	// Objeto de configuração temporário
-	// [ ] unificar com o objeto padrão
-	var tempConfigObj = {
-		configName: 'NOME DA CONFIGURAÇÃO',
-		exemple: 'informação 1\ninformação 2',
-		tip: 'coloque aqui as instruções de preenchimento deste template.\nex:\
-\ndigite o texto em 1 ou 2 linhas.\
-\nuse a quebra de linha para separar "informação" 1 e "informação 2".\
-\nuse 1 linha vazia para criar mais de 1 versão do mesmo template selecionado.',
-
-		compName: 'COMP TEMPLATE',
-		prefix: 'TARJA',
-		refTime: 2,
-		separator: '\n',
-		textCase: 'lowerCase',
-		inputLayers: [],
-
-		importPath: '~/Downloads',
-		outputPath: ['~/Desktop'],
-	};
+	var tempConfigObj = defaultTemplateConfigObj;
 
 	// Adiciona os layers editáveis
 	function addLayers() {
@@ -786,15 +768,29 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			$.sleep(500);
 			previewImg.image = tempPreviewFile;
 			//
-		} catch (err) {
-			alert(lol + '#PAD_026 - ' + err.message); // Exibe uma mensagem de erro
-		}
+		} catch (err) { }
 
 		addLayers();
 		addOutputFolder();
 
 		separatorTxt.enabled = layersMainGrp.children.length > 1;
 		separatorLab.enabled = layersMainGrp.children.length > 1;
+
+		var prefix = prefixTxt.text
+			.trim()
+			.toUpperCase()
+			.replaceSpecialCharacters();
+
+		var inputTxt = exempleText.text
+			.split(/\n{2,}/)[0]
+			.split(separatorTxt.text)
+			.join(' ');
+
+		infoText2.text = infoText2.helpTip = [
+			prefix,
+			separator,
+			inputTxt
+		].join(' ').toUpperCase().replaceSpecialCharacters();
 
 		layersMainGrp.layout.layout(true);
 		outputMainGrp.layout.layout(true);
@@ -855,7 +851,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.split(/\n{2,}/)[0]
 			.split(separatorTxt.text)
 			.join(' ');
-		
+
 		infoText2.text = infoText2.helpTip = [
 			prefix,
 			separator,
@@ -884,7 +880,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			tempPreviewFile.remove();
 
 		} catch (err) {
-			alert(lol + '#PAD_025 - ' + err.message); // Exibe uma mensagem de erro
+			alert(lol + '#PAD_025 - ' + err.message);
 		}
 
 		try {
@@ -894,9 +890,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			$.sleep(300);
 			previewImg.image = tempPreviewFile;
 
-		} catch (err) {
-			alert(lol + '#PAD_023 - ' + err.message); // Exibe uma mensagem de erro
-		}
+		} catch (err) { }
 
 		PAD_MAKER_w.layout.layout(true);
 	};
