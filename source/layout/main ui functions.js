@@ -53,7 +53,7 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.prodDrop = uiObj.prodGrp.add(
 		'dropdownlist',
 		undefined,
-		getProdNames(PAD_prodArray),
+		getProdNames(PAD_prodArray)
 	);
 	uiObj.prodDrop.selection = 0; // Seleciona a produção padrão.
 	uiObj.prodDrop.maximumSize = [140, 24];
@@ -503,9 +503,7 @@ function populateMainIcons(imagesGrp) {
 				PAD_ui.prodDrop.removeAll(); // Limpa a lista de produções do menu.
 
 				// atualiza os dados das produções.
-				PAD_prodArray = updateProdData(
-					new File(scriptMainPath + 'O_PADEIRO_config.json'),
-				);
+				PAD_prodArray = updateProdData(configFile);
 
 				// Popula a lista de produções do menu
 				populateDropdownList(
@@ -675,14 +673,12 @@ function themeButton(sectionGrp, ctrlProperties) {
 	newUiCtrlObj.label.buttonColor = divColor1;
 	newUiCtrlObj.label.textColor = normalColor1;
 
-	if (ctrlProperties.buttonColor != undefined)
-		newUiCtrlObj.label.buttonColor = ctrlProperties.buttonColor;
-	if (ctrlProperties.textColor != undefined)
-		newUiCtrlObj.label.textColor = ctrlProperties.textColor;
+	if (ctrlProperties.hasOwnProperty('buttonColor')) newUiCtrlObj.label.buttonColor = ctrlProperties.buttonColor;
+	if (ctrlProperties.hasOwnProperty('textColor')) newUiCtrlObj.label.textColor = ctrlProperties.textColor;
 
 	newUiCtrlObj.label.preferredSize = [
 		newUiCtrlObj.label.width,
-		newUiCtrlObj.label.height,
+		newUiCtrlObj.label.height
 	];
 	newUiCtrlObj.label.minimumSize = [68, 34];
 	newUiCtrlObj.label.helpTip = tipTxt;
@@ -713,7 +709,7 @@ function drawThemeButton(button, hover) {
 	var textPen = g.newPen(
 		g.PenType.SOLID_COLOR,
 		hexToRGB(button.textColor),
-		1,
+		1
 	);
 	var fillBrush = g.newBrush(
 		g.BrushType.SOLID_COLOR,
@@ -732,7 +728,7 @@ function drawThemeButton(button, hover) {
 	button.onDraw = function () {
 		if (!this.enabled) {
 			textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRGB(divColor1), 1);
-			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRGB(bgColor));
+			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRGB(bgColor1));
 		}
 		g.newPath();
 		g.ellipsePath(0, 0, this.height, this.height);
@@ -751,34 +747,34 @@ function drawThemeButton(button, hover) {
 	};
 }
 
-// Cria botões de cor com base em um array de cores.
-function createColorButtons(colorArray, colorGrp) {
-	for (var c = 0; c < colorArray.length; c++) {
-		var hex = colorArray[c]; // Obtém o código hexadecimal da cor.
-		var rgb = hexToRGB(hex) * 255; // Converte para RGB (0-255).
+// // Cria botões de cor com base em um array de cores.
+// function createColorButtons(colorArray, colorGrp) {
+// 	for (var c = 0; c < colorArray.length; c++) {
+// 		var hex = colorArray[c]; // Obtém o código hexadecimal da cor.
+// 		var rgb = hexToRGB(hex) * 255; // Converte para RGB (0-255).
 
-		// Cria um botão com ícone, nomeado com o código hexadecimal e estilo 'toolbutton'.
-		var colorBtn = colorGrp.add('iconbutton', undefined, undefined, {
-			name: hex,
-			style: 'toolbutton',
-		});
+// 		// Cria um botão com ícone, nomeado com o código hexadecimal e estilo 'toolbutton'.
+// 		var colorBtn = colorGrp.add('iconbutton', undefined, undefined, {
+// 			name: hex,
+// 			style: 'toolbutton',
+// 		});
 
-		colorBtn.size = [20, 20]; // Define o tamanho do botão (20x20 pixels).
-		setUiCtrlColor(colorBtn, hex); // Define a cor de fundo do botão.
-		colorBtn.onDraw = customDraw; // Define a função de desenho personalizado.
+// 		colorBtn.size = [20, 20]; // Define o tamanho do botão (20x20 pixels).
+// 		setUiCtrlColor(colorBtn, hex); // Define a cor de fundo do botão.
+// 		colorBtn.onDraw = customDraw; // Define a função de desenho personalizado.
 
-		// Define o texto de ajuda (tooltip) com os valores RGB e hexadecimal da cor.
-		colorBtn.helpTip =
-			'R: ' +
-			rgb[0] +
-			'\nG: ' +
-			rgb[1] +
-			'\nB: ' +
-			rgb[2] +
-			'\nHEX: ' +
-			hex;
-	}
-}
+// 		// Define o texto de ajuda (tooltip) com os valores RGB e hexadecimal da cor.
+// 		colorBtn.helpTip =
+// 			'R: ' +
+// 			rgb[0] +
+// 			'\nG: ' +
+// 			rgb[1] +
+// 			'\nB: ' +
+// 			rgb[2] +
+// 			'\nHEX: ' +
+// 			hex;
+// 	}
+// }
 
 // Função para desenhar o botão personalizado.
 function customDraw() {
