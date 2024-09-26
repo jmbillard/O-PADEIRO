@@ -249,10 +249,7 @@ function PAD_UI_EVENTS(uiObj) {
 		PAD_launchBtn.enabled = templatesFolder.exists; // Habilita / Desabilita o botão "Abrir O Padeiro".
 
 		// Se a pasta de templates não existir.
-		if (!templatesFolder.exists)
-			alert(
-				lol + '#PAD_002 - a pasta de templates não foi localizada...',
-			);
+		if (!templatesFolder.exists) alert( lol + '#PAD_002 - pasta de templates não localizada...');
 	};
 
 	// Define a função a ser executada quando o botão "Abrir O Padeiro" for clicado.

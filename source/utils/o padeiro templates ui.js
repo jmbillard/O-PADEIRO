@@ -851,7 +851,7 @@ function padeiroTemplateDialog() {
 			infoHeaderLab.text = 'PASTA NÃO ENCONTRADA...';
 			PAD_TEMPLATES_w.update();
 
-			alert(lol + '#PAD_019 - o output não pode ser acessado!');
+			alert(lol + '#PAD_019 - output não pode ser acessado!');
 		}
 
 		// Atualização da interface de progresso

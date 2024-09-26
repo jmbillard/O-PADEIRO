@@ -245,7 +245,6 @@ function padProdFoldersDialog(prodArray) {
 			}
 
 			var tempConfigContent = JSON.stringify({PRODUCTIONS: sortProdData(tempArray)}, null, '\t');
-			// alert(tempConfigContent);
 			saveTextFile(configContent, tempConfigFile.fullName);
 
 			PAD_CONFIG_w.close();
@@ -279,7 +278,6 @@ function padProdFoldersDialog(prodArray) {
 					icon: subGrp.children[1].properties.prodIcon,
 					templatesPath: subGrp.children[2].properties.prodPath,
 				};
-				alert(tempObj.templatesPath);
 				tempArray.push(tempObj);
 			}
 

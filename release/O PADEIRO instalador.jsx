@@ -1,8 +1,11 @@
+// [ ] incluir download outomático do O_PADEIRO_SOURCE.jsxbin
+// [ ] incluir seletor do caminho do O_PADEIRO_SOURCE.jsxbin
+// [ ] navegar por etapas com "anterior" e "proximo"
 
 function installerUi() {
 
-	var scriptName = 'INSTALADOR DE SCRIPTS';
-	var scriptVersion = 'v0.1b';
+	var scriptName = 'INSTALADOR';
+	var scriptVersion = 'v0.2b';
 	// Determina o sistema operacional atual: 'Win' para Windows, 'Mac' para macOS.
 	var appOs = $.os.indexOf('Win') >= 0 ? 'Win' : 'Mac';
 
@@ -16,9 +19,10 @@ function installerUi() {
 	var prefName = 'Pref_SCRIPTING_FILE_NETWORK_SECURITY'; // Nome da preferência
 	var netConfigName = '"Allow Scripts to Write Files and Access Network"'; // nome da configuração
 
+	var sourcePath = new File(decodeURI($.fileName)).path;
 	var code = '\
 try {\
-	var scriptMainPath = \'//10.228.183.165/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/SCRIPTS FREE/O_PADEIRO/\';\
+	var scriptMainPath = \'' + sourcePath + '/\';\
 	var scriptMainFile = new File(scriptMainPath + \'O_PADEIRO_SOURCE.jsxbin\');\n\
 	scriptMainFile.open(\'r\');\
 	eval(scriptMainFile.read());\n\
