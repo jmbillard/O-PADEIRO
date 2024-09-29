@@ -669,12 +669,16 @@ function padeiroTemplateDialog() {
 
 				// Array de Layers editáveis
 				var inputLayerList = templateData.inputLayers;
-				// Pattern de separação de informações
-				var sPattern = new RegExp(templateData.separator.replace(/\s/g, '\\s'), 'i');
-				if (templateData.separator == '\n') sPattern = new RegExp('[\\n\\r]', 'i');
+				var infoArray = [inputText];
 
-				// Array de informações
-				var infoArray = inputText.split(sPattern); // ex: título e subtítulo --> ['A.X.L', 'O CÃO ROBÔ']
+				if (templateData.separator != '') {
+					// Pattern de separação de informações
+					var sPattern = new RegExp(templateData.separator.replace(/\s/g, '\\s'), 'i');
+					if (templateData.separator == '\n') sPattern = new RegExp('[\\n\\r]', 'i');
+
+					// Array de informações
+					infoArray = inputText.split(sPattern); // ex: título e subtítulo --> ['A.X.L', 'O CÃO ROBÔ']
+				}
 
 				// Define o valor do efeito
 				if (templateData.inputFx != null) {

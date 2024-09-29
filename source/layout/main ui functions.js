@@ -839,22 +839,22 @@ function setUiCtrlColor(ctrl, hex) {
 }
 
 // Altera a cor de um texto estático.
-function setFgColor(sTxt, hex) {
+function setFgColor(ctrl, hex) {
 	var color = hexToRGB(hex); // Converte a cor hexadecimal em RGB.
-	var pType = sTxt.graphics.PenType.SOLID_COLOR; // Define o tipo da caneta como cor sólida.
-	sTxt.graphics.foregroundColor = sTxt.graphics.newPen(pType, color, 1); // Cria uma nova caneta com a cor e a aplica ao texto.
+	var pType = ctrl.graphics.PenType.SOLID_COLOR; // Define o tipo da caneta como cor sólida.
+	ctrl.graphics.foregroundColor = ctrl.graphics.newPen(pType, color, 1); // Cria uma nova caneta com a cor e a aplica ao texto.
 }
 
 // Adiciona efeito de destaque (highlight) ao texto estático quando o mouse passa por cima.
-function setCtrlHighlight(sTxt, normalColor1, highlightColor1) {
-	setFgColor(sTxt, normalColor1); // Define a cor normal do texto.
+function setCtrlHighlight(ctrl, normalColor1, highlightColor1) {
+	setFgColor(ctrl, normalColor1); // Define a cor normal do texto.
 
-	sTxt.addEventListener('mouseover', function () {
+	ctrl.addEventListener('mouseover', function () {
 		// Ao passar o mouse por cima do texto:
-		setFgColor(sTxt, highlightColor1); // Muda para a cor de destaque.
+		setFgColor(ctrl, highlightColor1); // Muda para a cor de destaque.
 	});
-	sTxt.addEventListener('mouseout', function () {
+	ctrl.addEventListener('mouseout', function () {
 		// Ao tirar o mouse de cima do texto:
-		setFgColor(sTxt, normalColor1); // Retorna para a cor normal.
+		setFgColor(ctrl, normalColor1); // Retorna para a cor normal.
 	});
 }
