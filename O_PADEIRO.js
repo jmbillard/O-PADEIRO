@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.54';
+	var scriptVersion = 'v1.55';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -138,7 +138,7 @@ o script funcionará normalmente, mas você não terá:\n\
 	// Verifica o acesso à rede.
 	if (!netAccess()) {
 		// Se não houver acesso, exibe um alerta pedindo para habilitar o acesso à rede nas preferências.
-		alert('por favor, habilite a opção ' + netConfigName + ' nas preferencias');
+		alert('por favor, habilite a opção ' + AE_netConfigName + ' nas preferencias');
 
 		// Abre a janela de preferências do After Effects na seção de scripts.
 		app.executeCommand(3131);
