@@ -18,7 +18,7 @@ o script funcionará normalmente, mas você não terá:\n\
 		alert(startMsg);
 		scriptMainPath = Folder.userData.fullName + '/O PADEIRO script/';
 	}
-	
+
 	#include 'source/libraries/PROT lib.js';        // Inclui funções que estendem objetos JavaScript (prototype)
 	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
 	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
