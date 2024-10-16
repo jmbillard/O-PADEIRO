@@ -26,14 +26,10 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.mainLogo = uiObj.infoGrp.add('image', undefined, LOGO_IMG.light);
 	uiObj.mainLogo.maximumSize = [70, 24];
 	uiObj.mainLogo.minimumSize = [50, 24];
-	uiObj.mainLogo.helpTip = [
-		scriptName,
-		scriptVersion,
-		'| Jean-Marc Billard',
-	].join(' ');
+	uiObj.mainLogo.helpTip = [scriptName, scriptVersion, '| Jean-Marc Billard'].join(' ');
 
 	uiObj.vLab = uiObj.infoGrp.add('statictext', undefined, scriptVersion, {
-		truncate: 'end',
+		truncate: 'end'
 	});
 	uiObj.vLab.justify = 'center';
 	uiObj.vLab.helpTip = 'ajuda | DOCS';
@@ -50,11 +46,7 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.prodIconGrp.orientation = 'stack'; // Layout vertical
 	populateMainIcons(uiObj.prodIconGrp);
 
-	uiObj.prodDrop = uiObj.prodGrp.add(
-		'dropdownlist',
-		undefined,
-		getProdNames(PAD_prodArray)
-	);
+	uiObj.prodDrop = uiObj.prodGrp.add('dropdownlist', undefined, getProdNames(PAD_prodArray));
 	uiObj.prodDrop.selection = 0; // Seleciona a produção padrão.
 	uiObj.prodDrop.maximumSize = [140, 24];
 	uiObj.prodDrop.minimumSize = [52, 24];
@@ -74,11 +66,10 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	for (var pinSec in structureObj.pinGrp) {
 		var pinSection = structureObj['pinGrp'][pinSec];
 
-		if (sectionCounter > 0)
-			uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
+		if (sectionCounter > 0) uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
 
 		var pinSectionGrp = uiObj.mainGrp.add('group', undefined, {
-			name: 'sectionGrp',
+			name: 'sectionGrp'
 		}); // Grupo de botões superior
 		pinSectionGrp.alignment = ['center', 'top']; // Alinhamento
 		uiObj.sectionGrpArray.push(pinSectionGrp);
@@ -88,15 +79,10 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 			pinCtrlProperties.key = pinCtrl;
 
 			if (pinCtrlProperties.labelTxt == undefined)
-				pinCtrlProperties.labelTxt = pinCtrl
-					.replace(/_/g, ' ')
-					.toTitleCase();
+				pinCtrlProperties.labelTxt = pinCtrl.replace(/_/g, ' ').toTitleCase();
 
 			if (pinCtrlProperties.type == 'iconButton') {
-				uiObj[pinCtrl] = new themeIconButton(
-					uiObj['iconBtnGrp' + (ctrlCounter % 2)],
-					pinCtrlProperties,
-				);
+				uiObj[pinCtrl] = new themeIconButton(uiObj['iconBtnGrp' + (ctrlCounter % 2)], pinCtrlProperties);
 				uiObj.iconButtonArray.push(uiObj[pinCtrl]);
 			}
 			ctrlCounter++;
@@ -109,11 +95,10 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	for (var sec in structureObj.mainGrp) {
 		var section = structureObj['mainGrp'][sec];
 
-		if (sectionCounter > 0)
-			uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
+		if (sectionCounter > 0) uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
 
 		var sectionGrp = uiObj.mainGrp.add('group', undefined, {
-			name: 'sectionGrp',
+			name: 'sectionGrp'
 		}); // Grupo de botões superior
 		sectionGrp.alignment = ['center', 'top']; // Alinhamento
 		uiObj.sectionGrpArray.push(sectionGrp);
@@ -122,8 +107,7 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 			var ctrlProperties = section[ctrl];
 			ctrlProperties.key = ctrl;
 
-			if (ctrlProperties.labelTxt == undefined)
-				ctrlProperties.labelTxt = ctrl.replace(/_/g, ' ').toTitleCase();
+			if (ctrlProperties.labelTxt == undefined) ctrlProperties.labelTxt = ctrl.replace(/_/g, ' ').toTitleCase();
 
 			if (ctrlProperties.type == 'imageButton') {
 				uiObj[ctrl] = new themeImageButton(sectionGrp, ctrlProperties);
@@ -167,8 +151,7 @@ function PAD_LAYOUT(uiObj) {
 	var infoGap = isRow ? 110 : 56;
 	var iconGap = uiObj.iconButtonArray.length * 28;
 
-	if (!isRow && uiObj.window.size.width >= 70)
-		iconGap = Math.ceil(uiObj.iconButtonArray.length / 2) * 28;
+	if (!isRow && uiObj.window.size.width >= 70) iconGap = Math.ceil(uiObj.iconButtonArray.length / 2) * 28;
 	pinGap += iconGap;
 
 	try {
@@ -203,9 +186,7 @@ function PAD_LAYOUT(uiObj) {
 				btn.label.size = btn.label.preferredSize;
 			}
 		}
-		uiObj.mainGrp.margins = isRow
-			? [pinGap, 0, infoGap, 0]
-			: [4, pinGap, 4, infoGap];
+		uiObj.mainGrp.margins = isRow ? [pinGap, 0, infoGap, 0] : [4, pinGap, 4, infoGap];
 		uiObj.mainGrp.spacing = uiObj.window.size.height < 44 ? 24 : 16;
 
 		uiObj.pinGrp.alignment = isRow ? 'left' : 'top';
@@ -249,7 +230,7 @@ function PAD_UI_EVENTS(uiObj) {
 		PAD_launchBtn.enabled = templatesFolder.exists; // Habilita / Desabilita o botão "Abrir O Padeiro".
 
 		// Se a pasta de templates não existir.
-		if (!templatesFolder.exists) alert( lol + '#PAD_002 - pasta de templates não localizada...');
+		if (!templatesFolder.exists) alert(lol + '#PAD_002 - pasta de templates não localizada...');
 	};
 
 	// Define a função a ser executada quando o botão "Abrir O Padeiro" for clicado.
@@ -270,7 +251,7 @@ function PAD_UI_EVENTS(uiObj) {
 		if (app.project.numItems == 0) return;
 		var aItem = app.project.activeItem;
 		if (aItem == null) return;
-		
+
 		try {
 			PadMakerDialog();
 			//
@@ -338,9 +319,7 @@ function PAD_UI_EVENTS(uiObj) {
 			return;
 		}
 		// Obtém o último item da fila de renderização.
-		var item = app.project.renderQueue.item(
-			app.project.renderQueue.numItems,
-		);
+		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
 
 		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
 		var outputModule = item.outputModule(1);
@@ -485,11 +464,7 @@ function populateMainIcons(imagesGrp) {
 			//Em caso de erro...
 			newIcon.image = defaultProductionDataObj.PRODUCTIONS[0].icon;
 		}
-		newIcon.helpTip =
-			PAD_prodArray[0].name +
-			'\n\n' +
-			dClick +
-			' para editar a lista de produções';
+		newIcon.helpTip = PAD_prodArray[0].name + '\n\n' + dClick + ' para editar a lista de produções';
 		newIcon.preferredSize = [24, 24];
 		newIcon.visible = i == 0;
 
@@ -503,10 +478,7 @@ function populateMainIcons(imagesGrp) {
 				PAD_prodArray = updateProdData(configFile);
 
 				// Popula a lista de produções do menu
-				populateDropdownList(
-					getProdNames(PAD_prodArray),
-					imagesGrp.parent.children[1],
-				);
+				populateDropdownList(getProdNames(PAD_prodArray), imagesGrp.parent.children[1]);
 				populateMainIcons(imagesGrp);
 
 				PAD_ui.prodDrop.selection = 0; // Seleciona a primeira produção.
@@ -531,8 +503,7 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 	var newUiCtrlObj = {};
 	var tipTxt = ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
 
-	if (ctrlProperties.icon.hover == undefined)
-		ctrlProperties.icon.hover = ctrlProperties.icon.normal;
+	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
 
 	var btnGroup = sectionGrp.add('group'); // Grupo de botões superior
 
@@ -551,11 +522,7 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 	hoverImg.helpTip = tipTxt; // Dica de ajuda
 	hoverImg.visible = false;
 
-	var normalImg = iconGroup.add(
-		'image',
-		undefined,
-		ctrlProperties.icon.normal,
-	);
+	var normalImg = iconGroup.add('image', undefined, ctrlProperties.icon.normal);
 	normalImg.helpTip = tipTxt; // Dica de ajuda
 
 	btnGroup.addEventListener('mouseover', function () {
@@ -581,7 +548,7 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 // as propriedades 'ctrlProperties' estão definidas na estrutura da ui 'structureObj'
 function themeImageButton(sectionGrp, ctrlProperties) {
 	var newUiCtrlObj = {};
-	var newBtn = newUiCtrlObj[ctrlProperties.key] = {};
+	var newBtn = (newUiCtrlObj[ctrlProperties.key] = {});
 	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
 
 	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
@@ -599,27 +566,14 @@ function themeImageButton(sectionGrp, ctrlProperties) {
 	newBtn.rightClick.size = [0, 0];
 	newBtn.rightClick.visible = false;
 
-	newBtn.hoverImg = newBtn.iconGroup.add(
-		'image',
-		undefined,
-		ctrlProperties.icon.hover,
-	);
+	newBtn.hoverImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.hover);
 	newBtn.hoverImg.helpTip = tipTxt; // Dica de ajuda
 	newBtn.hoverImg.visible = false;
 
-	newBtn.normalImg = newBtn.iconGroup.add(
-		'image',
-		undefined,
-		ctrlProperties.icon.normal,
-	);
+	newBtn.normalImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.normal);
 	newBtn.normalImg.helpTip = tipTxt; // Dica de ajuda
 
-	newBtn.label = newBtn.btnGroup.add(
-		'statictext',
-		undefined,
-		ctrlProperties.labelTxt,
-		{ truncate: 'end' },
-	); // Texto do botão
+	newBtn.label = newBtn.btnGroup.add('statictext', undefined, ctrlProperties.labelTxt, { truncate: 'end' }); // Texto do botão
 	newBtn.label.maximumSize = [60, 18]; // Dica de ajuda
 	newBtn.label.helpTip = tipTxt; // Dica de ajuda
 
@@ -651,104 +605,125 @@ function themeImageButton(sectionGrp, ctrlProperties) {
 }
 
 function themeButton(sectionGrp, ctrlProperties) {
-	var newUiCtrlObj = {};
-	var tipTxt = ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
-	var newBtnGrp = sectionGrp.add('group');
-	newBtnGrp.orientation = 'stack';
+	try {
+		if (ctrlProperties.buttonColor === undefined) ctrlProperties.buttonColor = divColor1;
+		if (ctrlProperties.textColor === undefined) ctrlProperties.textColor = normalColor1;
+	
+		var newUiCtrlObj = {};
+		var tipTxt = ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
+		var newBtnGrp = sectionGrp.add('group');
+		newBtnGrp.orientation = 'stack';
 
-	newUiCtrlObj.leftClick = newBtnGrp.add('button', undefined, '');
-	newUiCtrlObj.leftClick.size = [0, 0];
-	newUiCtrlObj.leftClick.visible = false;
-	newUiCtrlObj.rightClick = newBtnGrp.add('button', undefined, '');
-	newUiCtrlObj.rightClick.size = [0, 0];
-	newUiCtrlObj.rightClick.visible = false;
+		newUiCtrlObj.leftClick = newBtnGrp.add('button', undefined, '');
+		newUiCtrlObj.leftClick.size = [0, 0];
+		newUiCtrlObj.leftClick.visible = false;
+		newUiCtrlObj.rightClick = newBtnGrp.add('button', undefined, '');
+		newUiCtrlObj.rightClick.size = [0, 0];
+		newUiCtrlObj.rightClick.visible = false;
 
-	newUiCtrlObj.label = newBtnGrp.add('customButton');
-	newUiCtrlObj.label.width = ctrlProperties.width;
-	newUiCtrlObj.label.height = ctrlProperties.height;
-	newUiCtrlObj.label.text = ctrlProperties.labelTxt;
-	newUiCtrlObj.label.buttonColor = divColor1;
-	newUiCtrlObj.label.textColor = normalColor1;
+		newUiCtrlObj.label = newBtnGrp.add('customButton');
+		newUiCtrlObj.label.size = [ctrlProperties.width, ctrlProperties.height];
 
-	if (ctrlProperties.hasOwnProperty('buttonColor')) newUiCtrlObj.label.buttonColor = ctrlProperties.buttonColor;
-	if (ctrlProperties.hasOwnProperty('textColor')) newUiCtrlObj.label.textColor = ctrlProperties.textColor;
+		newUiCtrlObj.label.text = ctrlProperties.labelTxt;
+		newUiCtrlObj.label.buttonColor = hexToRgb(ctrlProperties.buttonColor);
+		newUiCtrlObj.label.textColor = hexToRgb(ctrlProperties.textColor);
+	
+		newUiCtrlObj.label.minimumSize = [68, 34];
+		newUiCtrlObj.label.helpTip = tipTxt;
 
-	newUiCtrlObj.label.preferredSize = [
-		newUiCtrlObj.label.width,
-		newUiCtrlObj.label.height
-	];
-	newUiCtrlObj.label.minimumSize = [68, 34];
-	newUiCtrlObj.label.helpTip = tipTxt;
+		drawThemeButton(newUiCtrlObj.label);
 
-	drawThemeButton(newUiCtrlObj.label, false);
+		newUiCtrlObj.label.addEventListener('mouseover', function () {
+			this.textColor = [1, 1, 1, 1];
+			this.buttonColor = hexToRgb(highlightColor1);
 
-	newUiCtrlObj.label.addEventListener('mouseover', function () {
-		drawThemeButton(this, true);
-	});
+			drawThemeButton(this);
+		});
 
-	newUiCtrlObj.label.addEventListener('mouseout', function () {
-		drawThemeButton(this, false);
-	});
+		newUiCtrlObj.label.addEventListener('mouseout', function () {
+			this.textColor = hexToRgb(ctrlProperties.textColor);
+			this.buttonColor = hexToRgb(ctrlProperties.buttonColor);
 
-	newUiCtrlObj.label.onClick = function () {
-		this.parent.children[0].notify();
-	};
+			drawThemeButton(this);
+		});
 
-	newUiCtrlObj.label.addEventListener('click', function (c) {
-		if (c.button == 2) this.parent.children[1].notify();
-	});
+		newUiCtrlObj.label.onClick = function () {
+			this.parent.children[0].notify();
+		};
 
-	return newUiCtrlObj;
-}
+		newUiCtrlObj.label.addEventListener('click', function (c) {
+			if (c.button == 2) this.parent.children[1].notify();
+		});
 
-function drawThemeButton(button, hover) {
-	var g = button.graphics;
-	var textPen = g.newPen(
-		g.PenType.SOLID_COLOR,
-		hexToRGB(button.textColor),
-		1
-	);
-	var fillBrush = g.newBrush(
-		g.BrushType.SOLID_COLOR,
-		hexToRGB(button.buttonColor),
-	);
-	var textSize = g.measureString(button.text);
-
-	if (hover) {
-		textPen = g.newPen(g.PenType.SOLID_COLOR, [1, 1, 1, 1], 1);
-		fillBrush = g.newBrush(
-			g.BrushType.SOLID_COLOR,
-			hexToRGB(highlightColor1),
-		);
+		return newUiCtrlObj;
+	}	catch (err) {
+		alert(err.message);
 	}
+}
 
+
+function drawThemeButton(button) {
+	var g = button.graphics;
+	var textPen = g.newPen(g.PenType.SOLID_COLOR, button.textColor, 1);
+	var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, button.buttonColor);
+	
 	button.onDraw = function () {
-		if (!this.enabled) {
-			textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRGB(divColor1), 1);
-			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRGB(bgColor1));
-		}
-		g.newPath();
-		g.ellipsePath(0, 0, this.height, this.height);
-		g.fillPath(fillBrush);
-		g.ellipsePath(this.width - this.height, 0, this.height, this.height);
-		g.rectPath(this.height / 2, 0, this.width - this.height, this.height);
-		// g.strokePath(textPen);
+		var h = this.size.height;
+		var w = this.size.width;
+
+		g.ellipsePath(0, 0, h, h);
+		g.ellipsePath(w - h, 0, h, h);
+		g.rectPath(h / 2, 0, w - h, h);
 		g.fillPath(fillBrush);
 
-		g.drawString(
-			this.text,
-			textPen,
-			(this.width - textSize.width) / 2,
-			this.height / 2 - textSize.height,
-		);
+		var textLinesArray = this.text.split('\n');
+		var pyInc = 12;
+
+		for (var l = 0; l < textLinesArray.length; l++) {
+			var textSize = g.measureString(textLinesArray[l]);
+			var px = (w - textSize.width) / 2;
+			var py = l == 0 ? - (textLinesArray.length - 1) / 2 * pyInc : (py += pyInc);
+
+			if (appV > 24 && l == 0) py += 8;
+			// alert(textSize.width);
+			g.drawString(textLinesArray[l], textPen, px, py);
+		}
 	};
 }
+
+// function drawThemeButton(button, hover) {
+// 	var g = button.graphics;
+// 	var textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(button.textColor), 1);
+// 	var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(button.buttonColor));
+// 	var textSize = g.measureString(button.text);
+
+// 	if (hover) {
+// 		textPen = g.newPen(g.PenType.SOLID_COLOR, [1, 1, 1, 1], 1);
+// 		fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(highlightColor1));
+// 	}
+
+// 	button.onDraw = function () {
+// 		if (!this.enabled) {
+// 			textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(divColor1), 1);
+// 			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(bgColor1));
+// 		}
+// 		g.newPath();
+// 		g.ellipsePath(0, 0, this.height, this.height);
+// 		g.fillPath(fillBrush);
+// 		g.ellipsePath(this.width - this.height, 0, this.height, this.height);
+// 		g.rectPath(this.height / 2, 0, this.width - this.height, this.height);
+// 		// g.strokePath(textPen);
+// 		g.fillPath(fillBrush);
+
+// 		g.drawString(this.text, textPen, (this.width - textSize.width) / 2, this.height / 2 - textSize.height);
+// 	};
+// }
 
 // // Cria botões de cor com base em um array de cores.
 // function createColorButtons(colorArray, colorGrp) {
 // 	for (var c = 0; c < colorArray.length; c++) {
 // 		var hex = colorArray[c]; // Obtém o código hexadecimal da cor.
-// 		var rgb = hexToRGB(hex) * 255; // Converte para RGB (0-255).
+// 		var rgb = hexToRgb(hex) * 255; // Converte para RGB (0-255).
 
 // 		// Cria um botão com ícone, nomeado com o código hexadecimal e estilo 'toolbutton'.
 // 		var colorBtn = colorGrp.add('iconbutton', undefined, undefined, {
@@ -811,7 +786,7 @@ function drawRoundedRect(g, brush, width, height, radius, x, y) {
 		x + radius / 2,
 		height - y,
 		x,
-		height - y - radius / 2,
+		height - y - radius / 2
 	];
 
 	for (var i = 0; i <= coords.length - 1; i += 2) {
@@ -826,21 +801,21 @@ function drawRoundedRect(g, brush, width, height, radius, x, y) {
 
 // Altera a cor de fundo da janela.
 function setBgColor(w, hex) {
-	var color = hexToRGB(hex); // Converte a cor hexadecimal em RGB.
+	var color = hexToRgb(hex); // Converte a cor hexadecimal em RGB.
 	var bType = w.graphics.BrushType.SOLID_COLOR; // Define o tipo do pincel como cor sólida.
 	w.graphics.backgroundColor = w.graphics.newBrush(bType, color); // Aplica o pincel com a nova cor à janela.
 }
 
 // Define a cor de um botão.
 function setUiCtrlColor(ctrl, hex) {
-	var color = hexToRGB(hex); // Converte a cor hexadecimal em RGB.
+	var color = hexToRgb(hex); // Converte a cor hexadecimal em RGB.
 	var bType = ctrl.graphics.BrushType.SOLID_COLOR; // Define o tipo do pincel como cor sólida.
 	ctrl.fillBrush = ctrl.graphics.newBrush(bType, color); // Cria um novo pincel com a cor e o aplica ao botão.
 }
 
 // Altera a cor de um texto estático.
 function setFgColor(ctrl, hex) {
-	var color = hexToRGB(hex); // Converte a cor hexadecimal em RGB.
+	var color = hexToRgb(hex); // Converte a cor hexadecimal em RGB.
 	var pType = ctrl.graphics.PenType.SOLID_COLOR; // Define o tipo da caneta como cor sólida.
 	ctrl.graphics.foregroundColor = ctrl.graphics.newPen(pType, color, 1); // Cria uma nova caneta com a cor e a aplica ao texto.
 }

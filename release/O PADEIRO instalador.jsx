@@ -53,7 +53,7 @@ try {\
 	// -----------------------------------------------------
 
 	// Converte string hexadecimal em array RGB normalizado
-	function hexToRGB(hex) {
+	function hexToRgb(hex) {
 		if (hex == undefined) return [Math.random(), Math.random(), Math.random()];
 
 		// Remove o '#' se estiver presente
@@ -72,7 +72,7 @@ try {\
 
 	// Altera a cor de um texto estático.
 	function setFgColor(ctrl, hex) {
-		var color = hexToRGB(hex); // Converte a cor hexadecimal em RGB.
+		var color = hexToRgb(hex); // Converte a cor hexadecimal em RGB.
 		var pType = ctrl.graphics.PenType.SOLID_COLOR; // Define o tipo da caneta como cor sólida.
 		ctrl.graphics.foregroundColor = ctrl.graphics.newPen(pType, color, 1); // Cria uma nova caneta com a cor e a aplica ao texto.
 	}

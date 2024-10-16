@@ -9,7 +9,6 @@
 */
 
 function findDialog() {
-	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'BUSCA';
 	var scriptVersion = 'v2.2';
 
@@ -29,11 +28,9 @@ function findDialog() {
 
 	var findEdTxt = inputGrp.add('edittext', [0, 0, 240, 32]);
 
-	// var findBtn = inputGrp.add('iconbutton', iconSize, findIcon.light, { style: 'toolbutton' });
-	// findBtn.helpTip = '◖ → buscar';
 	var findBtn = new themeIconButton(inputGrp, {
 		icon: PAD_BUSCAR_ICON,
-		tips: [lClick + 'buscar'],
+		tips: [lClick + 'buscar']
 	});
 
 	//---------------------------------------------------------
@@ -61,8 +58,7 @@ function findDialog() {
 	optCkb1.value = false;
 
 	var optTxt1 = optGrp1.add('statictext', undefined, 'Tt');
-	optCkb1.helpTip = optTxt1.helpTip =
-		'⦿  → considerar maiúsculas e minúsculas';
+	optCkb1.helpTip = optTxt1.helpTip = '⦿  → considerar maiúsculas e minúsculas';
 
 	//---------------------------------------------------------
 
@@ -86,16 +82,13 @@ function findDialog() {
 	optCkb4.value = false;
 
 	var optTxt4 = optGrp4.add('statictext', undefined, '!=');
-	optCkb4.helpTip = optTxt4.helpTip =
-		'⦿  → apenas textos que NÃO possuem o termo buscado';
+	optCkb4.helpTip = optTxt4.helpTip = '⦿  → apenas textos que NÃO possuem o termo buscado';
 
 	//---------------------------------------------------------
 
-	// var infoBtn = optMainGrp.add('iconbutton', undefined, PAD_INFO_ICON.light, { style: 'toolbutton' });
-	// infoBtn.helpTip = 'ajuda | DOCS';
 	var infoBtn = new themeIconButton(optMainGrp, {
 		icon: PAD_INFO_ICON,
-		tips: [lClick + 'ajuda | DOCS'],
+		tips: [lClick + 'ajuda | DOCS']
 	});
 
 	var findProgressBar = findW.add('progressbar', [0, 0, 280, 1], undefined);
@@ -104,7 +97,7 @@ function findDialog() {
 	var resultTree = findW.add('treeview', [0, 0, 320, 0]);
 	resultTree.visible = false;
 
-	setBgColor(findW, bgColor1); // Cor de fundo da janela
+	setBgColor(findW, bgColor1);
 
 	//---------------------------------------------------------
 	findW.onShow = function () {
@@ -112,8 +105,6 @@ function findDialog() {
 	};
 
 	findEdTxt.onEnterKey = findBtn.leftClick.onClick = function () {
-		// starting timer...
-		// timer();
 		findW.text = 'BUSCANDO...';
 		resultTree.visible = false;
 		resultTree.size.height = 0;
@@ -129,9 +120,9 @@ function findDialog() {
 			vis: optCkb5.value,
 			matchCase: optCkb1.value,
 			matchAccent: optCkb2.value,
-			invert: optCkb4.value,
+			invert: optCkb4.value
 		};
-		var compsArray = getComps(); // → [all comps]
+		var compsArray = getComps();
 		buildTxtSearchTree(resultTree, optObj, compsArray, findProgressBar);
 		var count = expandNodes(resultTree);
 

@@ -41,7 +41,6 @@ function padProdFoldersDialog(prodArray) {
 
 		try {
 			prodIconBtn.image = eval(iconImg);
-
 		} catch (err) {
 			prodIconBtn.image = defaultProductionDataObj.PRODUCTIONS[0].icon;
 		}
@@ -54,8 +53,7 @@ function padProdFoldersDialog(prodArray) {
 			truncate: 'middle'
 		});
 
-		prodPathLab.helpTip =
-			'edite o caminho da pasta de templates:\n\n' + prodObj.templatesPath;
+		prodPathLab.helpTip = 'edite o caminho da pasta de templates:\n\n' + prodObj.templatesPath;
 		prodPathLab.preferredSize = [400, 24];
 		setCtrlHighlight(prodPathLab, normalColor2, highlightColor1); // Cor de destaque do texto
 
@@ -68,11 +66,7 @@ function padProdFoldersDialog(prodArray) {
 		// =======
 
 		prodIconBtn.onClick = function () {
-			var newIconFile = File.openDialog(
-				'selecione o ícone',
-				'*.png',
-				false,
-			);
+			var newIconFile = File.openDialog('selecione o ícone', '*.png', false);
 
 			if (newIconFile != null) {
 				this.properties.prodIcon = fileToBinary(newIconFile);
@@ -83,17 +77,13 @@ function padProdFoldersDialog(prodArray) {
 
 		prodPathLab.addEventListener('mousedown', function () {
 			var newTemplatesFolder = new Folder(this.properties.prodPath);
-			var newTemplatesPath = newTemplatesFolder.selectDlg(
-				'selecione a pasta de templates',
-			); // Abre a janela de seleção de pastas
+			var newTemplatesPath = newTemplatesFolder.selectDlg('selecione a pasta de templates'); // Abre a janela de seleção de pastas
 
 			if (newTemplatesPath == null) return; // Se a janela foi cancelada, não faz nada
 
 			this.properties.prodPath = newTemplatesPath.fullName;
 			this.text = newTemplatesPath.fullName;
-			this.helpTip =
-				'caminho da pasta de templates:\n\n' +
-				newTemplatesPath.fullName;
+			this.helpTip = 'caminho da pasta de templates:\n\n' + newTemplatesPath.fullName;
 		});
 
 		deleteBtn.leftClick.onClick = function () {
@@ -134,7 +124,7 @@ function padProdFoldersDialog(prodArray) {
 	// infoBtn.helpTip = 'ajuda | DOCS'; // Define a dica da ferramenta
 	var infoBtn = new themeIconButton(infoGrp, {
 		icon: PAD_INFO_ICON,
-		tips: [lClick + 'ajuda | DOCS'],
+		tips: [lClick + 'ajuda | DOCS']
 	});
 
 	var prodMainGrp = PAD_CONFIG_w.add('group', undefined);
@@ -171,21 +161,21 @@ function padProdFoldersDialog(prodArray) {
 		width: 80,
 		height: 32,
 		labelTxt: 'importar',
-		tips: [lClick + 'importar uma lista de produções'],
+		tips: [lClick + 'importar uma lista de produções']
 	});
 
 	var prodExportBtn = new themeButton(bGrp1, {
 		width: 80,
 		height: 32,
 		labelTxt: 'exportar',
-		tips: [lClick + 'exportar a lista completa de produções'],
+		tips: [lClick + 'exportar a lista completa de produções']
 	});
 
 	var prodNewBtn = new themeButton(bGrp2, {
 		width: 120,
 		height: 32,
 		labelTxt: '+ nova produção',
-		tips: [lClick + 'criar nova produção'],
+		tips: [lClick + 'criar nova produção']
 	});
 
 	var prodSaveBtn = new themeButton(bGrp2, {
@@ -194,15 +184,13 @@ function padProdFoldersDialog(prodArray) {
 		textColor: bgColor1,
 		buttonColor: normalColor1,
 		labelTxt: 'salvar lista',
-		tips: [lClick + 'salvar a lista de produções'],
+		tips: [lClick + 'salvar a lista de produções']
 	});
 
 	setBgColor(PAD_CONFIG_w, bgColor1); // Cor de fundo da janela
 
 	infoBtn.leftClick.onClick = function () {
-		var siteUrl =
-			repoURL +
-			'/blob/main/README.md#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
+		var siteUrl = repoURL + '/blob/main/README.md#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
 		openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
 	};
 
@@ -238,17 +226,16 @@ function padProdFoldersDialog(prodArray) {
 				var tempObj = {
 					name: subGrp.children[0].text,
 					icon: subGrp.children[1].properties.prodIcon,
-					templatesPath: subGrp.children[2].properties.prodPath,
+					templatesPath: subGrp.children[2].properties.prodPath
 				};
 
 				tempArray.push(tempObj);
 			}
 
-			var tempConfigContent = JSON.stringify({PRODUCTIONS: sortProdData(tempArray)}, null, '\t');
+			var configContent = JSON.stringify({ PRODUCTIONS: sortProdData(tempArray) }, null, '\t');
 			saveTextFile(configContent, tempConfigFile.fullName);
 
 			PAD_CONFIG_w.close();
-
 		} catch (err) {
 			alert(lol + '#PAD_014 - ' + err.message);
 		}
@@ -257,7 +244,6 @@ function padProdFoldersDialog(prodArray) {
 	prodNewBtn.leftClick.onClick = function () {
 		try {
 			addProductionLine(defaultProductionDataObj.PRODUCTIONS[0]);
-
 		} catch (err) {
 			alert(lol + '#PAD_013 - ' + err.message);
 		}
@@ -276,14 +262,13 @@ function padProdFoldersDialog(prodArray) {
 				var tempObj = {
 					name: subGrp.children[0].text,
 					icon: subGrp.children[1].properties.prodIcon,
-					templatesPath: subGrp.children[2].properties.prodPath,
+					templatesPath: subGrp.children[2].properties.prodPath
 				};
 				tempArray.push(tempObj);
 			}
 
 			configFile = saveProdData(sortProdData(tempArray));
 			PAD_CONFIG_w.close();
-
 		} catch (err) {
 			alert(lol + '#PAD_016 - ' + err.message);
 		}

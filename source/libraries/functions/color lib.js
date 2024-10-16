@@ -87,7 +87,7 @@ function rgbStr(val) {
 	return 'rgb(' + r + ', ' + g + ', ' + b + ')';
 }
 
-// function hexToRGB(hex) {
+// function hexToRgb(hex) {
 // 	hex = hex.replace('#', '');
 
 // 	var r = ('0x' + hex[0] + hex[1]) | 0;
@@ -98,7 +98,7 @@ function rgbStr(val) {
 // }
 
 // Converte uma string hexadecimal (com ou sem '#') para um array RGB normalizado.
-function hexToRGB(hex) {
+function hexToRgb(hex) {
 	if (hex == undefined) return [Math.random(), Math.random(), Math.random()];
 
 	// Remove o '#' se estiver presente

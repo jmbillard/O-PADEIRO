@@ -110,9 +110,7 @@ if (!Array.prototype.indexOf) {
 		var k;
 
 		if (this == null) {
-			throw new TypeError(
-				'"this" é nulo (null) ou não foi definido (undefined)',
-			);
+			throw new TypeError('"this" é nulo (null) ou não foi definido (undefined)');
 		}
 		var O = Object(this);
 		var aSize = O.length >>> 0;

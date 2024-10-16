@@ -17,12 +17,7 @@ function tagDialog() {
 	wTag.alignChildren = 'left';
 
 	var subCustomGrp = wTag.add('group');
-	var tagCustomBtn = subCustomGrp.add(
-		'iconbutton',
-		iconTogSize,
-		solTogIcon.light,
-		{ style: 'toolbutton' },
-	);
+	var tagCustomBtn = subCustomGrp.add('iconbutton', iconTogSize, solTogIcon.light, { style: 'toolbutton' });
 	var tagCustomTxt = subCustomGrp.add('edittext');
 	tagCustomTxt.size = [60, 24];
 	tagCustomBtn.helpTip = 'custom tag';
@@ -45,7 +40,7 @@ function tagDialog() {
 			var subGrp = mainGrp.add('group');
 			var tagBtn = subGrp.add('iconbutton', iconTogSize, ico.light, {
 				style: 'toolbutton',
-				name: tag,
+				name: tag
 			});
 			var tagTxt = subGrp.add('statictext', undefined, tag);
 			tagBtn.helpTip = "'" + tag + "' comp comment tag";
@@ -78,10 +73,7 @@ function tagDialog() {
 		if (app.project.selection.length == 0) return;
 
 		for (var i = 0; i < app.project.selection.length; i++) {
-			if (
-				app.project.selection[i] instanceof CompItem ||
-				app.project.selection[i] instanceof FootageItem
-			) {
+			if (app.project.selection[i] instanceof CompItem || app.project.selection[i] instanceof FootageItem) {
 				app.project.selection[i].comment = this.text.toUpperCase();
 				this.text = this.text.toUpperCase();
 			}
@@ -92,12 +84,8 @@ function tagDialog() {
 		if (app.project.selection.length == 0) return;
 
 		for (var i = 0; i < app.project.selection.length; i++) {
-			if (
-				app.project.selection[i] instanceof CompItem ||
-				app.project.selection[i] instanceof FootageItem
-			) {
-				app.project.selection[i].comment =
-					tagCustomTxt.text.toUpperCase();
+			if (app.project.selection[i] instanceof CompItem || app.project.selection[i] instanceof FootageItem) {
+				app.project.selection[i].comment = tagCustomTxt.text.toUpperCase();
 				tagCustomTxt.text = tagCustomTxt.text.toUpperCase();
 			}
 		}

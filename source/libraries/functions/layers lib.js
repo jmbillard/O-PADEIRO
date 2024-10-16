@@ -68,7 +68,7 @@ function shpAdjustment(comp) {
 
 // 	// Itera sobre as cores do array
 // 	for (var c = 0; c < colorArray.length; c++) {
-// 		var color = hexToRGB(colorArray[c]); // Converte a cor hexadecimal para RGB
+// 		var color = hexToRgb(colorArray[c]); // Converte a cor hexadecimal para RGB
 // 		var Hex = rgbToHEX(color); // Converte a cor RGB de volta para hexadecimal (para o nome)
 
 // 		// Cria um grupo para a amostra de cor e seus elementos

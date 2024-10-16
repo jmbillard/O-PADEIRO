@@ -40,10 +40,7 @@ function padeiroTemplateDialog() {
 	var newOutputsArray = []; // Array de módulos individuais de saída
 
 	// Janela principal
-	var PAD_TEMPLATES_w = new Window(
-		'dialog',
-		scriptName + ' ' + scriptVersion
-	);
+	var PAD_TEMPLATES_w = new Window('dialog', scriptName + ' ' + scriptVersion);
 
 	// Grupo principal
 	var mainGrp = PAD_TEMPLATES_w.add('group');
@@ -57,21 +54,12 @@ function padeiroTemplateDialog() {
 	optionsMainGrp.visible = false;
 
 	// Rótulo de informações
-	var infoHeaderLab = optionsMainGrp.add(
-		'statictext',
-		[0, 0, 320, 18]
-	);
+	var infoHeaderLab = optionsMainGrp.add('statictext', [0, 0, 320, 18]);
 	setFgColor(infoHeaderLab, normalColor1); // Define a cor do texto
 	// Barra de progresso
-	var progressBar = optionsMainGrp.add(
-		'progressbar',
-		[0, 0, 320, 1]
-	);
+	var progressBar = optionsMainGrp.add('progressbar', [0, 0, 320, 1]);
 	// Lista de templates de render
-	var renderDrop = optionsMainGrp.add(
-		'dropdownlist',
-		[0, 0, 320, 24]
-	);
+	var renderDrop = optionsMainGrp.add('dropdownlist', [0, 0, 320, 24]);
 	renderDrop.visible = false;
 	renderDrop.enabled = false;
 
@@ -86,32 +74,26 @@ function padeiroTemplateDialog() {
 	optBtnMainGrpL.spacing = 16;
 
 	// Botão de cancelar fila de render
-	var cancelBtn = new themeButton(
-		optBtnMainGrpL,
-		{
-			width: 80,
-			height: 32,
-			labelTxt: 'cancelar',
-			tips: [lClick + 'cancelar a criação da fila de render']
-		}
-	);
+	var cancelBtn = new themeButton(optBtnMainGrpL, {
+		width: 80,
+		height: 32,
+		labelTxt: 'cancelar',
+		tips: [lClick + 'cancelar a criação da fila de render']
+	});
 
 	var optBtnMainGrpR = optBtnMainGrp.add('group');
 	optBtnMainGrpR.alignment = 'right';
 	optBtnMainGrpR.spacing = 16;
 
 	// Botão de criar fila de render
-	var nextBtn = new themeButton(
-		optBtnMainGrpR,
-		{
-			width: 100,
-			height: 32,
-			textColor: bgColor1,
-			buttonColor: normalColor1,
-			labelTxt: 'continuar',
-			tips: [lClick + 'criar fila de render']
-		}
-	);
+	var nextBtn = new themeButton(optBtnMainGrpR, {
+		width: 100,
+		height: 32,
+		textColor: bgColor1,
+		buttonColor: normalColor1,
+		labelTxt: 'continuar',
+		tips: [lClick + 'criar fila de render']
+	});
 
 	// ----------------------------------------------------------------------------
 
@@ -146,11 +128,7 @@ function padeiroTemplateDialog() {
 	templateLabGrp.alignment = 'left';
 
 	// Cria o rótulo 'BUSCA:'
-	var templateLab = templateLabGrp.add(
-		'statictext',
-		undefined,
-		'BUSCA:'
-	);
+	var templateLab = templateLabGrp.add('statictext', undefined, 'BUSCA:');
 	setFgColor(templateLab, normalColor1); // Define a cor do rótulo
 
 	// Cria um grupo para o botão de informações
@@ -158,13 +136,10 @@ function padeiroTemplateDialog() {
 	infoGrp.alignment = ['right', 'center'];
 
 	// Botão de ajuda
-	var infoBtn = new themeIconButton(
-		infoGrp,
-		{
-			icon: PAD_INFO_ICON,
-			tips: [lClick + 'ajuda | DOCS']
-		}
-	);
+	var infoBtn = new themeIconButton(infoGrp, {
+		icon: PAD_INFO_ICON,
+		tips: [lClick + 'ajuda | DOCS']
+	});
 
 	// Grupo da árvore de templates
 	var treeGrp = vGrp1.add('group');
@@ -172,16 +147,9 @@ function padeiroTemplateDialog() {
 	treeGrp.spacing = 4;
 
 	// Cria a caixa de pesquisa
-	var searchBox = treeGrp.add(
-		'edittext',
-		[0, 0, 320, 24],
-		''
-	);
+	var searchBox = treeGrp.add('edittext', [0, 0, 320, 24], '');
 	// Cria a árvore de templates
-	var templateTree = treeGrp.add(
-		'treeview',
-		[0, 0, 320, 464]
-	);
+	var templateTree = treeGrp.add('treeview', [0, 0, 320, 464]);
 	setFgColor(templateTree, monoColor2);
 	buildTree(templatesFolder, templateTree, fileFilter); // Cria a árvore de templates
 
@@ -196,21 +164,15 @@ function padeiroTemplateDialog() {
 	lBtnGrp1.alignment = 'left';
 	lBtnGrp1.spacing = 16;
 	// Botão de atualizar
-	var refreshBtn = new themeIconButton(
-		lBtnGrp1,
-		{
-			icon: PAD_ATUALIZAR_ICON,
-			tips: [lClick + 'atualizar lista de templates']
-		}
-	);
+	var refreshBtn = new themeIconButton(lBtnGrp1, {
+		icon: PAD_ATUALIZAR_ICON,
+		tips: [lClick + 'atualizar lista de templates']
+	});
 	// Botão de abrir pasta
-	var openFldBtn = new themeIconButton(
-		lBtnGrp1,
-		{
-			icon: PAD_PASTA_ICON,
-			tips: [lClick + 'abrir pasta de templates']
-		}
-	);
+	var openFldBtn = new themeIconButton(lBtnGrp1, {
+		icon: PAD_PASTA_ICON,
+		tips: [lClick + 'abrir pasta de templates']
+	});
 
 	//---------------------------------------------------------
 
@@ -224,11 +186,7 @@ function padeiroTemplateDialog() {
 	previewLabGrp.alignment = 'left';
 
 	// Rótulo PREVIEW
-	var previewLab = previewLabGrp.add(
-		'statictext',
-		undefined,
-		'PREVIEW:'
-	);
+	var previewLab = previewLabGrp.add('statictext', undefined, 'PREVIEW:');
 	setFgColor(previewLab, normalColor1); // Define a cor do texto
 
 	// Grupo da imagem preview
@@ -237,11 +195,7 @@ function padeiroTemplateDialog() {
 	previewGrp.alignChildren = 'left';
 
 	// Imagem de preview
-	var previewImg = previewGrp.add(
-		'image',
-		[0, 0, 440, 250],
-		no_preview
-	);
+	var previewImg = previewGrp.add('image', [0, 0, 440, 250], no_preview);
 
 	// ----------------------------------------------------------------------------
 
@@ -280,20 +234,11 @@ function padeiroTemplateDialog() {
 	inputLabGrp.alignment = 'left'; // Alinhamento à esquerda
 
 	// Rótulo INPUT
-	var inputLab = inputLabGrp.add(
-		'statictext',
-		undefined,
-		'INPUT:'
-	);
+	var inputLab = inputLabGrp.add('statictext', undefined, 'INPUT:');
 	setFgColor(inputLab, normalColor1); // Define a cor do texto
 
 	// Caixa de texto INPUT
-	var inputTxt = txtInputGrp.add(
-		'edittext',
-		[0, 0, 316, 192],
-		'',
-		{ multiline: true }
-	);
+	var inputTxt = txtInputGrp.add('edittext', [0, 0, 316, 192], '', { multiline: true });
 
 	// ----------------------------------------------------------------------------
 
@@ -307,19 +252,10 @@ function padeiroTemplateDialog() {
 	tipLabGrp.alignment = 'left';
 
 	// Rótulo DICAS
-	var tipLab = tipLabGrp.add(
-		'statictext',
-		undefined,
-		'DICAS:'
-	);
+	var tipLab = tipLabGrp.add('statictext', undefined, 'DICAS:');
 	setFgColor(tipLab, normalColor1); // Define a cor do rótulo
 	// Texto com o conteúdo das dicas
-	var tipTxt = tipGrp.add(
-		'statictext',
-		[0, 0, 180, 192],
-		tipContent,
-		{ multiline: true }
-	);
+	var tipTxt = tipGrp.add('statictext', [0, 0, 180, 192], tipContent, { multiline: true });
 	setFgColor(tipTxt, normalColor2); // Define a cor do texto
 
 	// ----------------------------------------------------------------------------
@@ -335,17 +271,14 @@ function padeiroTemplateDialog() {
 	rBtnGrp2.spacing = 16;
 
 	// Botão de processar preenchimento
-	var processBtn = new themeButton(
-		rBtnGrp2,
-		{
-			width: 120,
-			height: 32,
-			textColor: bgColor1,
-			buttonColor: normalColor1,
-			labelTxt: 'processar: 1',
-			tips: [lClick + 'criar e preencher o template selecionado']
-		}
-	);
+	var processBtn = new themeButton(rBtnGrp2, {
+		width: 120,
+		height: 32,
+		textColor: bgColor1,
+		buttonColor: normalColor1,
+		labelTxt: 'processar: 1',
+		tips: [lClick + 'criar e preencher o template selecionado']
+	});
 
 	setBgColor(PAD_TEMPLATES_w, bgColor1); // Define a cor de fundo da janela
 
@@ -387,15 +320,11 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	searchBox.onChange = function () {
-
 		// Aborta se a pesquisa estiver vazia
 		if (this.text.trim() == '') return;
 
 		// Formatação do texto de pesquisa
-		searchBox.text = searchBox.text
-			.trim()
-			.toUpperCase()
-			.replaceSpecialCharacters();
+		searchBox.text = searchBox.text.trim().toUpperCase().replaceSpecialCharacters();
 
 		// Atualiza a árvore de templates
 		buildTree(templatesFolder, templateTree, fileFilter);
@@ -408,7 +337,6 @@ function padeiroTemplateDialog() {
 
 		// Expande as pastas para mostrar os resultados da pesquisa
 		for (var n = 0; n < items.length; n++) {
-
 			var s = items[n];
 
 			if (s.type == 'node') s.expanded = true;
@@ -452,7 +380,6 @@ function padeiroTemplateDialog() {
 
 		if (previewFile.exists) {
 			previewImg.image = previewFile;
-
 		} else {
 			previewImg.image = no_preview;
 		}
@@ -476,7 +403,6 @@ function padeiroTemplateDialog() {
 
 				// Verifica as configurações
 				for (var o in defaultTemplateConfigObj) {
-
 					if (templateData.hasOwnProperty(o)) continue;
 
 					templateData[o] = defaultTemplateConfigObj[o];
@@ -494,7 +420,6 @@ function padeiroTemplateDialog() {
 
 			if (!hasInputData) inputTxt.text = exemple;
 			tipTxt.text = tipContent;
-
 		} catch (err) {
 			alert(lol + '#PAD_017 - esse template não tem um arquivo de configuração válido!');
 			return;
@@ -508,7 +433,6 @@ function padeiroTemplateDialog() {
 	};
 
 	templateTree.onActivate = function () {
-
 		hasInputData = inputTxt.text.trim() != '' && inputTxt.text != exemple;
 
 		// Se não houver dados, define o texto de entrada como o exemplo
@@ -522,7 +446,6 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	inputTxt.onChanging = function () {
-
 		var count = this.text.split(/[\n\r]{2,}/).length;
 
 		hasInputData = inputTxt.text.trim() != '';
@@ -537,7 +460,6 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	processBtn.leftClick.onClick = function () {
-
 		// Verificações Iniciais
 		if (inputTxt.text.trim() == '') return; // Aborta se não houver texto de entrada
 		if (!projectFile.exists) return; // Aborta se o arquivo do template não existir
@@ -576,7 +498,6 @@ function padeiroTemplateDialog() {
 			var IO = new ImportOptions(projectFile);
 
 			app.project.importFile(IO);
-
 		} catch (err) {
 			alert(lol + '#PAD_018 - ' + err.message);
 			return;
@@ -624,7 +545,6 @@ function padeiroTemplateDialog() {
 
 			progressBar.value++;
 			PAD_TEMPLATES_w.update();
-
 		} catch (err) {
 			alert(lol + '#PAD_017 - ' + err.message);
 			return;
@@ -642,7 +562,6 @@ function padeiroTemplateDialog() {
 
 		// Loop no Array de textos de input
 		for (var n = 0; n < inputTextArray.length; n++) {
-
 			// Templates com prefixo 'ignore' não são processados
 			// Mas podem ser manipulados por um script externo posteriormente
 			if (templateData.prefix.match(/ignore/i)) {
@@ -663,7 +582,6 @@ function padeiroTemplateDialog() {
 
 			// Loop no Array de efeitos
 			for (var f = 0; f < suffixArray.length; f++) {
-
 				// Comp duplicada que será editada
 				template = templateComp.duplicate();
 
@@ -706,7 +624,6 @@ function padeiroTemplateDialog() {
 
 					// Aplica a informação como conteúdo do layer (apenas para layers de texto)
 					if (inputLayerList[l].method == 'textContent') {
-
 						// Verifica se o layer editável é um layer de texto
 						if (!(inputLayer instanceof TextLayer)) continue;
 
@@ -732,8 +649,8 @@ function padeiroTemplateDialog() {
 
 				// Define o nome do template
 				if (!overwriteCompName(template)) {
-
-					template.name = [prefix, separator, info, suffix].join(' ')
+					template.name = [prefix, separator, info, suffix]
+						.join(' ')
 						.trim()
 						.toUpperCase()
 						.replace(/^-+|-+$/g, '')
@@ -778,7 +695,6 @@ function padeiroTemplateDialog() {
 		// os Logs ainda não são 100% confiáveis devido a
 		// variação nas configurações do sistema (formatos de data e hora)
 		try {
-
 			// Cria um objeto File para o arquivo de log na pasta de templates
 			var logFile = new File(templatesPath + '/log padeiro.csv');
 
@@ -794,18 +710,11 @@ function padeiroTemplateDialog() {
 
 			// Cria um registro de log com as informações:
 			// configuração usada, número de templates criados, nome do usuário, data e hora
-			var logData = [
-				templateData.configName,
-				logCount,
-				system.userName,
-				dateStr,
-				timeStr,
-			].join(',');
+			var logData = [templateData.configName, logCount, system.userName, dateStr, timeStr].join(',');
 
 			// Salva o registro de log no arquivo
 			saveLogData(logFile, logData);
-
-		} catch (err) { }
+		} catch (err) {}
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'REGISTRANDO METADADOS...';
@@ -826,7 +735,6 @@ function padeiroTemplateDialog() {
 	};
 
 	nextBtn.leftClick.onClick = function () {
-
 		var padOutputTemplate = renderDrop.selection.toString();
 		var outputPathArray = templateData.outputPath;
 
@@ -843,7 +751,6 @@ function padeiroTemplateDialog() {
 
 		// Verifica as pastas de output
 		for (var o = 0; o < outputPathArray.length; o++) {
-
 			var outputFolder = new Folder(outputPathArray[o]);
 
 			if (outputFolder.exists) continue;
@@ -866,7 +773,6 @@ function padeiroTemplateDialog() {
 
 		// Cria a fila de render
 		for (var r = 0; r < newCompsArray.length; r++) {
-
 			if (padOutputTemplate == '') break;
 
 			template = newCompsArray[r];
@@ -887,7 +793,6 @@ function padeiroTemplateDialog() {
 					outputModule.file = outputFile;
 					outputModule.applyTemplate(padOutputTemplate);
 					newOutputsArray.push(outputModule);
-
 				} catch (err) {
 					alert(lol + '#PAD_020 - ' + err.message); // Mensagem de erro
 				}
@@ -899,16 +804,13 @@ function padeiroTemplateDialog() {
 		}
 
 		PAD_TEMPLATES_w.close();
-
-	}
+	};
 
 	cancelBtn.leftClick.onClick = function () {
-
 		PAD_TEMPLATES_w.close();
-	}
+	};
 
 	PAD_TEMPLATES_w.onClose = function () {
-
 		// Execução de Script Personalizado (se houver)
 		if (!scriptFile.exists) return;
 
@@ -922,11 +824,10 @@ function padeiroTemplateDialog() {
 			eval(scriptFile.read());
 
 			scriptFile.close();
-
 		} catch (err) {
 			alert(lol + '#PAD_021 - ' + err.message);
 		}
-	}
+	};
 
 	templateTree.onDoubleClick = function () {
 		try {
@@ -944,7 +845,6 @@ function padeiroTemplateDialog() {
 			setXMPData('source', decodeURI(projectFile.path).toString());
 			//
 		} catch (err) {
-
 			alert(lol + '#PAD_022 - ' + err.message);
 		}
 
@@ -954,7 +854,6 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	refreshBtn.leftClick.onClick = function () {
-
 		buildTree(templatesFolder, templateTree, fileFilter);
 
 		templateTree.expanded = true;
@@ -962,7 +861,6 @@ function padeiroTemplateDialog() {
 		var branches = templateTree.items;
 
 		for (var i = 0; i < branches.length; i++) {
-
 			if (branches[i].type == 'node') {
 				branches[i].expanded = true;
 			}
@@ -972,17 +870,13 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	openFldBtn.leftClick.onClick = function () {
-
 		if (!templatesFolder.exists) {
-
 			templatesFolder.create();
 		}
 		openFolder(templatesPath);
 	};
 
-
 	infoBtn.leftClick.onClick = function () {
-
 		openWebSite(repoURL + '/blob/main/README.md#-preenchendo-templates');
 	};
 
