@@ -94,7 +94,7 @@ function padProdFoldersDialog(prodArray) {
 	}
 
 	// window...
-	var PAD_CONFIG_w = new Window('dialog', scriptName + ' - ' + scriptVersion);
+	var PAD_CONFIG_w = new Window('dialog', scriptName + ' ' + scriptVersion);
 	PAD_CONFIG_w.orientation = 'column';
 	PAD_CONFIG_w.alignChildren = ['center', 'top'];
 	PAD_CONFIG_w.spacing = 12;

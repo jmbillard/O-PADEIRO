@@ -635,13 +635,16 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var inputTxt = exempleText.text
 			.split(/\n{2,}/)[0]
+			.replace(/\n|\r/g, ' ')
 			.split(separatorTxt.text)
-			.join(' ');
-
-		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
 			.join(' ')
-			.toUpperCase()
 			.replaceSpecialCharacters();
+
+		var namePreview = [prefix, '-', inputTxt]
+			.join(' ')
+			.toUpperCase();
+		
+		infoText2.text = infoText2.helpTip = namePreview;
 
 		layersMainGrp.layout.layout(true);
 		outputMainGrp.layout.layout(true);
@@ -657,26 +660,28 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		var prefix = this.text.trim().toUpperCase().replaceSpecialCharacters();
 		var inputTxt = exempleText.text
 			.split(/\n{2,}/)[0]
+			.replace(/\n|\r/g, ' ')
 			.split(separatorTxt.text)
-			.join(' ');
+			.join(' ')
+			.replaceSpecialCharacters();
 
 		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
 			.join(' ')
-			.toUpperCase()
-			.replaceSpecialCharacters();
+			.toUpperCase();
 	};
 
 	separatorTxt.onChanging = function () {
 		var prefix = prefixTxt.text.trim().toUpperCase().replaceSpecialCharacters();
 		var inputTxt = exempleText.text
 			.split(/\n{2,}/)[0]
+			.replace(/\n|\r/g, ' ')
 			.split(this.text)
-			.join(' ');
+			.join(' ')
+			.replaceSpecialCharacters();
 
 		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
 			.join(' ')
-			.toUpperCase()
-			.replaceSpecialCharacters();
+			.toUpperCase();
 	};
 
 	prefixTxt.onChange = function () {
@@ -687,13 +692,14 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		var prefix = prefixTxt.text.toUpperCase().replaceSpecialCharacters();
 		var inputTxt = this.text
 			.split(/\n{2,}/)[0]
+			.replace(/\n|\r/g, ' ')
 			.split(separatorTxt.text)
-			.join(' ');
+			.join(' ')
+			.replaceSpecialCharacters();
 
 		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
 			.join(' ')
-			.toUpperCase()
-			.replaceSpecialCharacters();
+			.toUpperCase();
 	};
 
 	captureBtn.leftClick.onClick = function () {

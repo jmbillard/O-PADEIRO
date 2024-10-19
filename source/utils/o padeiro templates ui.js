@@ -653,7 +653,7 @@ function padeiroTemplateDialog() {
 						.join(' ')
 						.trim()
 						.toUpperCase()
-						.replace(/^-+|-+$/g, '')
+						.replace(/^-+|-+$/, '')
 						.replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 				}
 

@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.55';
+	var scriptVersion = 'v1.56';
 
 	try {
 		scriptMainPath = scriptMainPath;
