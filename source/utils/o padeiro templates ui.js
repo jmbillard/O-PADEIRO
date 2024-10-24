@@ -644,7 +644,7 @@ function padeiroTemplateDialog() {
 				}
 
 				var prefix = templateData.prefix;
-				var info = infoArray.join(' ').replace(/\s*-+\s*/g, ' ');
+				var info = infoArray.join(' ').replace(/[\s\-]+/g, ' ');
 				var suffix = suffixArray[f];
 
 				// Define o nome do template
@@ -653,7 +653,7 @@ function padeiroTemplateDialog() {
 						.join(' ')
 						.trim()
 						.toUpperCase()
-						.replace(/^-+|-+$/, '')
+						// .replace(/^-+|-+$/, '')
 						.replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 				}
 
