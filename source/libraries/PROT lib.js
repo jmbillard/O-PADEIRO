@@ -52,7 +52,8 @@ String.prototype.replaceSpecialCharacters = function () {
 		.replace(/ç|\u00E7/g, 'c')
 		.replace(/[^\w\-\s]/g, ' ') // replaces any letter character except space...
 		.replace(/[\s_]+/g, ' ') // replaces 2 or more spaces...
-		.trim();
+		.trim()
+		.replace(/^\W+|\W+$/, '');
 };
 /* cSpell:enable */
 

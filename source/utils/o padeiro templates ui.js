@@ -651,9 +651,7 @@ function padeiroTemplateDialog() {
 				if (!overwriteCompName(template)) {
 					template.name = [prefix, separator, info, suffix]
 						.join(' ')
-						.trim()
 						.toUpperCase()
-						// .replace(/^-+|-+$/, '')
 						.replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 				}
 
