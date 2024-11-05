@@ -22,6 +22,14 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.infoGrp = uiObj.window.add('group');
 	uiObj.infoGrp.spacing = 0;
 	uiObj.sectionGrpArray.push(uiObj.infoGrp);
+	uiObj.testBtn = new menuButton(uiObj.infoGrp, {
+		width: 120,
+		height: 32,
+		text: 'teste',
+		normalIcon: new File('~/O-PADEIRO/icons/main/busca1.png'),
+		hoverIcon: new File('~/O-PADEIRO/icons/main/busca0.png'),
+		tips: [lClick + 'criar e preencher o template selecionado']
+	});
 
 	uiObj.mainLogo = uiObj.infoGrp.add('image', undefined, LOGO_IMG.light);
 	uiObj.mainLogo.maximumSize = [70, 24];
@@ -832,4 +840,82 @@ function setCtrlHighlight(ctrl, normalColor1, highlightColor1) {
 		// Ao tirar o mouse de cima do texto:
 		setFgColor(ctrl, normalColor1); // Retorna para a cor normal.
 	});
+}
+
+function menuButton(sectionGrp, ctrlProperties) {
+	// if (ctrlProperties.buttonColor === undefined) ctrlProperties.buttonColor = divColor1;
+	if (ctrlProperties.textColor === undefined) ctrlProperties.textColor = normalColor1;
+
+	var newUiCtrlObj = {};
+
+	newUiCtrlObj.button = sectionGrp.add('customButton');
+	newUiCtrlObj.button.size = [ctrlProperties.width, ctrlProperties.height];
+	newUiCtrlObj.button.text = ctrlProperties.text;
+	newUiCtrlObj.button.image = ctrlProperties.normalIcon;
+	newUiCtrlObj.button.hoverImage = ctrlProperties.hoverIcon;
+	// newUiCtrlObj.button.buttonColor = hexToRgb(ctrlProperties.buttonColor);
+	newUiCtrlObj.button.textColor = hexToRgb(ctrlProperties.textColor);
+
+	drawMenuButton(newUiCtrlObj.button);
+
+	newUiCtrlObj.button.addEventListener('mouseover', function () {
+		this.textColor = [1, 1, 1, 1];
+		this.image = ctrlProperties.hoverIcon;
+		drawMenuButton(this);
+	});
+
+	newUiCtrlObj.button.addEventListener('mouseout', function () {
+		this.textColor = hexToRgb(ctrlProperties.textColor);
+		this.image = ctrlProperties.normalIcon;
+		drawMenuButton(this);
+	});
+
+	return newUiCtrlObj;
+}
+
+function drawMenuButton(button) {
+	var g = button.graphics;
+	var textPen = g.newPen(g.PenType.SOLID_COLOR, button.textColor, 1);
+	// var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, button.buttonColor);
+	var margin = 6;
+
+	button.onDraw = function () {
+		var h = this.size.height;
+		var w = this.size.width;
+
+		// g.ellipsePath(0, 0, h, h);
+		// g.ellipsePath(w - h, 0, h, h);
+		// g.rectPath(h / 2, 0, w - h, h);
+		// g.fillPath(fillBrush);
+
+		g.drawImage(this.image, 0, 0);
+
+		if (this.text.trim() == '') return;
+		if (w < margin * 2 + 6) return;
+
+		var textLinesArray = this.text.split('\n');
+		var pyInc = 12;
+
+		for (var l = 0; l < textLinesArray.length; l++) {
+			var txtW = g.measureString(textLinesArray[l]).width;
+
+			if (txtW > w - margin * 2) {
+				textLinesArray[l] = textLinesArray[l].substring(0, textLinesArray[l].length - 2);
+
+				while (txtW > w - 6 - margin * 2) {
+					var end = textLinesArray[l].length - 1;
+					textLinesArray[l] = textLinesArray[l].substring(0, end);
+
+					txtW = parseInt(g.measureString(textLinesArray[l]));
+				}
+				textLinesArray[l] += '...';
+			}
+			var px = (w - txtW) / 2;
+			var py = l == 0 ? (-(textLinesArray.length - 1) / 2) * pyInc : (py += pyInc);
+
+			if (appV > 24 && l == 0) py += 8;
+
+			g.drawString(textLinesArray[l], textPen, px, py);
+		}
+	};
 }
