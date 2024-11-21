@@ -266,6 +266,21 @@ function padeiroTemplateDialog() {
 	mainBtnGrp2.alignment = 'fill';
 
 	// Grupo dos botões esquerdo
+	var lBtnGrp2 = mainBtnGrp2.add('group');
+	lBtnGrp2.alignment = 'left';
+	lBtnGrp2.spacing = 16;
+
+	// Botão de processar preenchimento
+	var outputBtn = new themeButton(lBtnGrp2, {
+		width: 80,
+		height: 32,
+		// textColor: bgColor1,
+		// buttonColor: normalColor1,
+		labelTxt: 'output',
+		tips: [lClick + 'abrir a pasta de output do template selecionado']
+	});
+
+	// Grupo dos botões esquerdo
 	var rBtnGrp2 = mainBtnGrp2.add('group');
 	rBtnGrp2.alignment = 'right';
 	rBtnGrp2.spacing = 16;
@@ -872,6 +887,20 @@ function padeiroTemplateDialog() {
 			templatesFolder.create();
 		}
 		openFolder(templatesPath);
+	};
+
+	outputBtn.leftClick.onClick = function () {
+
+		var outputPathArray = templateData.outputPath;
+
+		for (var o = 0; o < outputPathArray.length; o++) {
+
+			var outputFolder = new Folder(outputPathArray[o]);
+
+			if (!outputFolder.exists) continue;
+
+			openFolder(outputPathArray[o]);
+		}
 	};
 
 	infoBtn.leftClick.onClick = function () {

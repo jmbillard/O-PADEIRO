@@ -368,6 +368,7 @@ o script executará as seguintes tarefas em ordem:
 - **texto** → campo de texto editável multifuncional, é o responsável pelo preenchimento de qualquer possível campo de texto do template selecionado.
 - **adicionar a fila de render** → se habilitado, adiciona as comps criadas e o seus caminhos corretos no output automaticamente.
 - **dicas** → tópicos curtos explicando o preenchimento do template selecionado.
+- **output** → abre as pastas de output do template selecionado.
 - **processar** → inicia a execução do preenchimento automático.
 
 > 🚩 *obs:*\
