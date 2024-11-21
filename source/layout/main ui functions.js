@@ -24,8 +24,8 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.sectionGrpArray.push(uiObj.infoGrp);
 	uiObj.testBtn = new menuButton(uiObj.infoGrp, {
 		width: 120,
-		height: 32,
-		text: 'teste',
+		height: 44,
+		text: 'teste maior',
 		normalIcon: new File('~/O-PADEIRO/icons/main/busca1.png'),
 		hoverIcon: new File('~/O-PADEIRO/icons/main/busca0.png'),
 		tips: [lClick + 'criar e preencher o template selecionado']
@@ -853,13 +853,12 @@ function menuButton(sectionGrp, ctrlProperties) {
 	newUiCtrlObj.button.text = ctrlProperties.text;
 	newUiCtrlObj.button.image = ctrlProperties.normalIcon;
 	newUiCtrlObj.button.hoverImage = ctrlProperties.hoverIcon;
-	// newUiCtrlObj.button.buttonColor = hexToRgb(ctrlProperties.buttonColor);
 	newUiCtrlObj.button.textColor = hexToRgb(ctrlProperties.textColor);
 
 	drawMenuButton(newUiCtrlObj.button);
 
 	newUiCtrlObj.button.addEventListener('mouseover', function () {
-		this.textColor = [1, 1, 1, 1];
+		this.textColor = hexToRgb(highlightColor1);
 		this.image = ctrlProperties.hoverIcon;
 		drawMenuButton(this);
 	});
@@ -876,25 +875,25 @@ function menuButton(sectionGrp, ctrlProperties) {
 function drawMenuButton(button) {
 	var g = button.graphics;
 	var textPen = g.newPen(g.PenType.SOLID_COLOR, button.textColor, 1);
-	// var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, button.buttonColor);
 	var margin = 6;
+	button.parent.layout.layout(true);
 
 	button.onDraw = function () {
 		var h = this.size.height;
 		var w = this.size.width;
+		var isRow = this.parent.orientation == 'row';
 
-		// g.ellipsePath(0, 0, h, h);
-		// g.ellipsePath(w - h, 0, h, h);
-		// g.rectPath(h / 2, 0, w - h, h);
-		// g.fillPath(fillBrush);
+		this.preferredSize = isRow ? [100, 44] : [120, 32];
+		this.maximumSize = isRow ? [100, 44] : [120, 32];
 
-		g.drawImage(this.image, 0, 0);
+		var px_Img = isRow ? (w - 32) / 2 : 0;
+		g.drawImage(this.image, px_Img, 0, 32, 32);
 
 		if (this.text.trim() == '') return;
-		if (w < margin * 2 + 6) return;
+		// if (w < margin * 2 + 6) return;
 
 		var textLinesArray = this.text.split('\n');
-		var pyInc = 12;
+		var py_TxtInc = 12;
 
 		for (var l = 0; l < textLinesArray.length; l++) {
 			var txtW = g.measureString(textLinesArray[l]).width;
@@ -910,12 +909,13 @@ function drawMenuButton(button) {
 				}
 				textLinesArray[l] += '...';
 			}
-			var px = (w - txtW) / 2;
-			var py = l == 0 ? (-(textLinesArray.length - 1) / 2) * pyInc : (py += pyInc);
 
-			if (appV > 24 && l == 0) py += 8;
+			var px_Txt = isRow ? (w - txtW) / 2 : 36;
+			var py_Txt = l == 0 ? (-(textLinesArray.length - 1) / 2) * py_TxtInc : (py_Txt += py_TxtInc);
+			if (appV > 24 && l == 0) py_Txt += 8;
+			if (isRow) py_Txt += 24;
 
-			g.drawString(textLinesArray[l], textPen, px, py);
+			g.drawString(textLinesArray[l], textPen, px_Txt, py_Txt);
 		}
 	};
 }
