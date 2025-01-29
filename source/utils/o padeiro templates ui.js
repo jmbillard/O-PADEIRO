@@ -705,21 +705,27 @@ function padeiroTemplateDialog() {
 		PAD_TEMPLATES_w.update();
 
 		// Registro de Dados (Log)
-		// os Logs ainda não são 100% confiáveis devido a
-		// variação nas configurações do sistema (formatos de data e hora)
 		try {
 			// Cria um objeto File para o arquivo de log na pasta de templates
 			var logFile = new File(templatesPath + '/log padeiro.csv');
 
-			// Obtém data e hora atual do sistema usando comandos do sistema operacional (Windows)
-			var dateStr = system
-				.callSystem('cmd.exe /c date /t')
-				.replace(/[^\d\/]/gi, '')
-				.trim(); // Obtém a data e remove caracteres não numéricos
-			var timeStr = system
-				.callSystem('cmd.exe /c time /t')
-				.replace(/[^\d\:]/gi, '')
-				.trim(); // Obtém a hora e remove 'AM' se presente
+			// Obtém data e hora atual
+			var dt = new Date(Date(0));
+
+			var y = dt.getFullYear();
+			var m = dt.getMonth() + 1;
+			var d = dt.getDay();
+			var hr = dt.getHours();
+			var mi = dt.getMinutes();
+
+			// formatação de data e hora para o padrão 'dd/mm/yyyy hh:mm'
+			if (m < 10) m = '0' + m;
+			if (d < 10) d = '0' + d;
+			if (hr < 10) hr = '0' + hr;
+			if (mi < 10) mi = '0' + mi;
+
+			var dateStr = [d, m, y].join('/'); // data
+			var timeStr = hr + ':' + mi; // hora
 
 			// Cria um registro de log com as informações:
 			// configuração usada, número de templates criados, nome do usuário, data e hora
@@ -727,7 +733,7 @@ function padeiroTemplateDialog() {
 
 			// Salva o registro de log no arquivo
 			saveLogData(logFile, logData);
-		} catch (err) {}
+		} catch (err) { }
 
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'REGISTRANDO METADADOS...';

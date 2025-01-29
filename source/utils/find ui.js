@@ -10,7 +10,7 @@
 
 function findDialog() {
 	var scriptName = 'BUSCA';
-	var scriptVersion = 'v2.2';
+	var scriptVersion = 'v2.3';
 
 	var findW = new Window('palette', scriptName + ' ' + scriptVersion);
 	findW.spacing = 4;

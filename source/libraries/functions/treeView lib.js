@@ -61,8 +61,8 @@ function optimizeHierarchy(nodeTree) {
 						newItem.image = item.image;
 						newItem.file = item.file;
 						subfolder.remove(0);
-					//
-} catch (err) {}
+						//
+					} catch (err) { }
 				}
 				nodeTree.remove(subfolder); // Remove a subpasta agora vazia
 			}
@@ -96,8 +96,8 @@ function createHierarchy(array, node, fileTypes) {
 					templateItem.image = PAD_AE_ICON; // Define o ícone do arquivo
 					templateItem.file = array[n]; // Define o ícone do arquivo
 				}
-			//
-} catch (err) {}
+				//
+			} catch (err) { }
 		}
 	}
 }
@@ -141,84 +141,88 @@ function buildTxtSearchTree(tree, obj, compArray, progressBar) {
 	while (tree.items.length > 0) {
 		tree.remove(tree.items[0]);
 	}
-
 	// Inicializa a barra de progresso e a contagem de itens da árvore
 	progressBar.maxvalue = compArray.length;
 	progressBar.value = 0;
 
 	// Itera sobre todas as composições no projeto
+	
 	for (i = 0; i < compArray.length; i++) {
-		var comp = compArray[i];
-		var compName = limitNameSize(comp.name, 45); // Limita o tamanho do nome da composição
-		var compItem = tree.add('node', compName); // Adiciona o item da composição na árvore
+		try {
+			var comp = compArray[i];
+			var compName = limitNameSize(comp.name, 45); // Limita o tamanho do nome da composição
+			var compItem = tree.add('node', compName); // Adiciona o item da composição na árvore
 
-		compItem.image = compTogIcon.light;
-		compItem.comp = comp;
+			compItem.image = compTogIcon.light;
+			compItem.comp = comp;
 
-		// Itera sobre todas as camadas em cada composição
-		for (var l = 1; l <= comp.numLayers; l++) {
-			var txtLayer = comp.layer(l); // Camada de texto atual
+			// Itera sobre todas as camadas em cada composição
+			for (var l = 1; l <= comp.numLayers; l++) {
+				var txtLayer = comp.layer(l); // Camada de texto atual
 
-			// Pula se layer atual não for um layer de texto
-			if (!(txtLayer instanceof TextLayer)) continue;
+				// Pula se layer atual não for um layer de texto
+				if (!(txtLayer instanceof TextLayer)) continue;
 
-			// Ignora camadas ocultas se a opção estiver desmarcada
-			if (vis && !txtLayer.enabled) continue;
+				// Ignora camadas ocultas se a opção estiver desmarcada
+				if (vis && !txtLayer.enabled) continue;
 
-			var matchResult = false;
-			var doc = txtLayer
-				.property('ADBE Text Properties')
-				.property('ADBE Text Document'); // Propriedade de texto da camada
-			var refTime =
-				comp.duration < 1
-					? 0
-					: txtLayer.inPoint +
-					  (txtLayer.outPoint - txtLayer.inPoint) / 2;
-			var layerName =
-				'#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
+				var matchResult = false;
+				var doc = txtLayer
+					.property('ADBE Text Properties')
+					.property('ADBE Text Document'); // Propriedade de texto da camada
+				var refTime =
+					comp.duration < 1
+						? 0
+						: txtLayer.inPoint +
+						(txtLayer.outPoint - txtLayer.inPoint) / 2;
+				var layerName =
+					'#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
 
-			if (refTime > comp.duration)
-				refTime = comp.duration - comp.frameDuration;
+				if (refTime > comp.duration)
+					refTime = comp.duration - comp.frameDuration;
 
-			// Se a propriedade de texto tiver uma expressão
-			if (doc.expression != '') comp.time = refTime; // Define o tempo para antes do ponto de saída da camada
+				// Se a propriedade de texto tiver uma expressão
+				if (doc.expression != '') comp.time = refTime; // Define o tempo para antes do ponto de saída da camada
 
-			var sTxt = getTextLayerContent(txtLayer);
+				var sTxt = getTextLayerContent(txtLayer);
 
-			if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-			if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-			if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-			if (sTxt.match(sKey)) matchResult = true;
-			if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
+				if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
+				if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
+				if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
+				if (sTxt.match(sKey)) matchResult = true;
+				if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
 
-			var txtItem = compItem.add('item', layerName);
-			txtItem.comp = comp;
-			txtItem.refTime = comp.time;
-			txtItem.txtLayer = txtLayer;
+				var txtItem = compItem.add('item', layerName);
+				txtItem.comp = comp;
+				txtItem.refTime = comp.time;
+				txtItem.txtLayer = txtLayer;
 
-			// Se a propriedade de texto tiver keyframes
-			if (doc.numKeys > 0) {
-				compItem.remove(txtItem);
+				// Se a propriedade de texto tiver keyframes
+				if (doc.numKeys > 0) {
+					compItem.remove(txtItem);
 
-				for (var k = 1; k <= doc.numKeys; k++) {
-					comp.time = doc.keyTime(k); // Define o tempo da composição para o keyframe atual
+					for (var k = 1; k <= doc.numKeys; k++) {
+						comp.time = doc.keyTime(k); // Define o tempo da composição para o keyframe atual
 
-					sTxt = getTextLayerContent(txtLayer);
+						sTxt = getTextLayerContent(txtLayer);
 
-					if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-					if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-					if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-					if (sTxt.match(sKey)) matchResult = true;
-					if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
+						if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
+						if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
+						if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
+						if (sTxt.match(sKey)) matchResult = true;
+						if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
 
-					var txtItem = compItem.add('item', layerName);
-					txtItem.comp = comp;
-					txtItem.refTime = comp.time;
-					txtItem.txtLayer = txtLayer;
+						var txtItem = compItem.add('item', layerName);
+						txtItem.comp = comp;
+						txtItem.refTime = comp.time;
+						txtItem.txtLayer = txtLayer;
+					}
 				}
 			}
+			progressBar.value++; // Incrementa a barra de progresso
+		} catch (err) {
+			alert(lol + '#FND_019 - comp: ' + comp.name + '\n' + err.message);
 		}
-		progressBar.value++; // Incrementa a barra de progresso
 	}
 	cleanHierarchy(tree);
 }
