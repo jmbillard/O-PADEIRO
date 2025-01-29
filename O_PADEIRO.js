@@ -4,11 +4,11 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.58';
+	var scriptVersion = 'v2.0';
 
 	try {
 		scriptMainPath = scriptMainPath;
-	
+
 	} catch (err) {
 		var startMsg = 'você instalou o arquivo ".jsxbin"!\
 o script funcionará normalmente, mas você não terá:\n\
@@ -60,8 +60,9 @@ o script funcionará normalmente, mas você não terá:\n\
 			section1: {
 				templates: {
 					type: 'imageButton',
-					labelTxt: 'Templates',
-					icon: PAD_TEMPLATES_ICON,
+					text: 'Templates',
+					normalIcon: new File('~/O-PADEIRO/icons/main/templates1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/templates0.png'),
 					tips: [
 						lClick + 'preencher templates',
 						rClick + 'criar novo template'
@@ -69,8 +70,9 @@ o script funcionará normalmente, mas você não terá:\n\
 				},
 				fontes: {
 					type: 'imageButton',
-					labelTxt: 'Fontes',
-					icon: PAD_FONTES_ICON,
+					text: 'Fontes',
+					normalIcon: new File('~/O-PADEIRO/icons/main/fontes1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/fontes0.png'),
 					tips: [
 						lClick + 'instalar as fontes usadas no template',
 						rClick + 'fazer o collect das fontes usadas no projeto'
@@ -80,8 +82,9 @@ o script funcionará normalmente, mas você não terá:\n\
 			section2: {
 				pastas: {
 					type: 'imageButton',
-					labelTxt: 'Pastas',
-					icon: PAD_PASTAS_ICON,
+					text: 'Pastas',
+					normalIcon: new File('~/O-PADEIRO/icons/main/pastas1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/pastas0.png'),
 					tips: [
 						lClick + 'abir a pasta do último item da fila de render',
 						rClick + 'abir a pasta do projeto (caso esteja salvo)'
@@ -91,8 +94,9 @@ o script funcionará normalmente, mas você não terá:\n\
 			section3: {
 				renomear: {
 					type: 'imageButton',
-					labelTxt: 'Renomear',
-					icon: PAD_RENOMEAR_ICON,
+					text: 'Renomear',
+					normalIcon: new File('~/O-PADEIRO/icons/main/renomear1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/renomear0.png'),
 					tips: [
 						lClick + 'renomear comps selecionadas',
 						rClick + 'renomear TODAS as saídas de render'
@@ -100,8 +104,9 @@ o script funcionará normalmente, mas você não terá:\n\
 				},
 				organizar: {
 					type: 'imageButton',
-					labelTxt: 'Organizar',
-					icon: PAD_ORGANIZAR_ICON,
+					text: 'Organizar',
+					normalIcon: new File('~/O-PADEIRO/icons/main/organizar1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/organizar0.png'),
 					tips: [
 						'selecione as comps que serão\nRENDERIZADAS primeiro!',
 						lClick + 'organizar o projeto',
@@ -112,8 +117,9 @@ o script funcionará normalmente, mas você não terá:\n\
 			section4: {
 				buscar: {
 					type: 'imageButton',
-					labelTxt: 'Buscar',
-					icon: PAD_BUSCAR_ICON,
+					text: 'Busca',
+					normalIcon: new File('~/O-PADEIRO/icons/main/busca1.png'),
+					hoverIcon: new File('~/O-PADEIRO/icons/main/busca0.png'),
 					tips: [
 						lClick + 'abrir a BUSCA em layers de texto'
 					]

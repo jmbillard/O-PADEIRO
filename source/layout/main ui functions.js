@@ -22,14 +22,6 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.infoGrp = uiObj.window.add('group');
 	uiObj.infoGrp.spacing = 0;
 	uiObj.sectionGrpArray.push(uiObj.infoGrp);
-	uiObj.testBtn = new menuButton(uiObj.infoGrp, {
-		width: 120,
-		height: 44,
-		text: 'teste maior',
-		normalIcon: new File('~/O-PADEIRO/icons/main/busca1.png'),
-		hoverIcon: new File('~/O-PADEIRO/icons/main/busca0.png'),
-		tips: [lClick + 'criar e preencher o template selecionado']
-	});
 
 	uiObj.mainLogo = uiObj.infoGrp.add('image', undefined, LOGO_IMG.light);
 	uiObj.mainLogo.maximumSize = [70, 24];
@@ -112,13 +104,14 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		uiObj.sectionGrpArray.push(sectionGrp);
 
 		for (var ctrl in section) {
+		
 			var ctrlProperties = section[ctrl];
 			ctrlProperties.key = ctrl;
 
 			if (ctrlProperties.labelTxt == undefined) ctrlProperties.labelTxt = ctrl.replace(/_/g, ' ').toTitleCase();
 
 			if (ctrlProperties.type == 'imageButton') {
-				uiObj[ctrl] = new themeImageButton(sectionGrp, ctrlProperties);
+				uiObj[ctrl] = new menuButton(sectionGrp, ctrlProperties);
 				uiObj.imageButtonArray.push(uiObj[ctrl]);
 			}
 		}
@@ -173,27 +166,6 @@ function PAD_LAYOUT(uiObj) {
 			div.size = [1, 1];
 			div.alignment = isRow ? ['center', 'fill'] : ['fill', 'center'];
 		}
-		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
-			var btn = uiObj.imageButtonArray[b];
-			btn.btnGroup.orientation = btnOrientation;
-			btn.btnGroup.spacing = isRow ? 0 : 8; // Espaçamento entre botões
-
-			btn.normalImg.size = btn.hoverImg.size = [32, 32];
-
-			btn.label.justify = isRow ? 'center' : 'left'; // Alinhamento central
-			btn.label.size = [uiObj.window.size.width - 60, 18];
-
-			if (uiObj.window.size.width < 88 || uiObj.window.size.height < 72) {
-				btn.btnGroup.spacing = 0;
-				btn.label.size = [0, 0];
-			}
-
-			if (uiObj.window.size.height < 44) {
-				btn.btnGroup.spacing = 0;
-				btn.hoverImg.size = btn.normalImg.size = [0, 0];
-				btn.label.size = btn.label.preferredSize;
-			}
-		}
 		uiObj.mainGrp.margins = isRow ? [pinGap, 0, infoGap, 0] : [4, pinGap, 4, infoGap];
 		uiObj.mainGrp.spacing = uiObj.window.size.height < 44 ? 24 : 16;
 
@@ -222,230 +194,6 @@ function PAD_LAYOUT(uiObj) {
 }
 
 function PAD_UI_EVENTS(uiObj) {
-	// Adiciona um "ouvinte" de evento ao rótulo de versão (vLab).
-	uiObj.vLab.addEventListener('mousedown', function () {
-		// Define o URL do site de documentação.
-		var siteUrl = repoURL + '/blob/main/README.md#-o-padeiro-script';
-		openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
-	});
-
-	uiObj.prodDrop.onChange = function () {
-		var i = this.selection.index;
-		changeIcon(i, uiObj.prodIconGrp);
-
-		templatesPath = PAD_prodArray[i].templatesPath;
-		templatesFolder = new Folder(PAD_prodArray[i].templatesPath); // pasta de templates.
-		PAD_launchBtn.enabled = templatesFolder.exists; // Habilita / Desabilita o botão "Abrir O Padeiro".
-
-		// Se a pasta de templates não existir.
-		if (!templatesFolder.exists) alert(lol + '#PAD_002 - pasta de templates não localizada...');
-	};
-
-	// Define a função a ser executada quando o botão "Abrir O Padeiro" for clicado.
-	uiObj.templates.leftClick.onClick = function () {
-		// Verifica se há acesso à rede.
-		if (!netAccess()) {
-			// Se não houver acesso, exibe um alerta informando que a funcionalidade será limitada e encerra a função.
-			alert(lol + '#PAD_003 - sem acesso a rede...');
-			return;
-		}
-
-		// Se houver acesso à internet, chama a função padeiroTemplateDialog() para exibir a interface de templates.
-		padeiroTemplateDialog();
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Abrir O Padeiro".
-	uiObj.templates.rightClick.onClick = function () {
-		if (app.project.numItems == 0) return;
-		var aItem = app.project.activeItem;
-		if (aItem == null) return;
-
-		try {
-			PadMakerDialog();
-			//
-		} catch (err) {
-			alert(lol + '#PAD_MAKER - ' + '' + err.message);
-		}
-	};
-
-	uiObj.fontes.leftClick.onClick = function () {
-		// Define a função a ser executada quando o botão "Instalar Fontes" for clicado.
-
-		// Verifica se há acesso à rede.
-		if (!netAccess()) {
-			alert(lol + '#PAD_004 - sem acesso a rede...');
-			return;
-		}
-
-		// Obtém o caminho da pasta do template a partir dos metadados XMP do projeto.
-		var folderPath = getXMPData('source');
-		var templateFontsPath = folderPath + '/FONTS';
-
-		// Se o caminho da pasta não for encontrado, a função é interrompida.
-		if (folderPath == '') {
-			alert(lol + '#PAD_005 - esse não foi preenchido pelo padeiro...');
-			return;
-		}
-		// Cria um objeto "Folder" para a pasta de fontes do template.
-		var templateFontsFolder = new Folder(templateFontsPath);
-
-		// Verifica se a pasta de fontes existe.
-		if (!templateFontsFolder.exists) {
-			alert(lol + '#PAD_006 - a pasta de fontes não foi localizada...');
-			return;
-		}
-		// Se a pasta de fontes existe e o sistema operacional for Windows, instala as fontes.
-		if (appOs == 'Win') installWinFonts(templateFontsPath);
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Instalar Fontes".
-	uiObj.fontes.rightClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return;
-
-		var savePath = Folder.selectDialog(); // Abre a janela de seleção de pastas
-
-		if (savePath == null) return; // Se a janela foi cancelada, não faz nada
-
-		var currentProjPath = decodeURI(savePath.fullName) + '/FONTS'; // caminho final do collect
-		var fontsPath = fontCollect(currentProjPath);
-
-		openFolder(fontsPath);
-	};
-
-	// Define a função a ser executada quando o botão "Abrir Pasta de Saída" for clicado.
-	uiObj.pastas.leftClick.onClick = function () {
-		// Verifica se há acesso à internet.
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
-		}
-
-		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems < 1) {
-			alert(lol + '#PAD_008 - a fila de render está vazia...');
-			return;
-		}
-		// Obtém o último item da fila de renderização.
-		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-		var outputModule = item.outputModule(1);
-
-		// Obtém o caminho completo da pasta de saída.
-		var outputPath = decodeURI(outputModule.file.path);
-
-		// Cria um objeto "Folder" para representar a pasta de saída.
-		var fld = new Folder(outputPath);
-
-		// Verifica se a pasta de saída existe.
-		if (!fld.exists) {
-			alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
-			return; // Encerra a função se a pasta não existir.
-		}
-
-		// Abre a pasta de saída no sistema operacional do usuário.
-		openFolder(outputPath);
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Abrir Pasta de Saída".
-	uiObj.pastas.rightClick.onClick = function () {
-		// Verifica se o botão clicado foi o botão direito do mouse (código 2).
-
-		// Verifica se há acesso à internet.
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
-		}
-		var currentProj = app.project.file;
-
-		if (currentProj == null) {
-			alert(lol + '#PAD_010 - o projeto atual ainda não foi salvo...');
-			return;
-		}
-
-		var currentProjPath = decodeURI(currentProj.path);
-		var fld = new Folder(currentProjPath);
-
-		if (!fld.exists) {
-			alert(lol + '#PAD_011 - a pasta não foi encontrada...');
-			return;
-		}
-		openFolder(decodeURI(fld.fullName));
-	};
-
-	// Define a função a ser executada quando o botão "Renomear Comps" for clicado.
-	uiObj.renomear.leftClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
-
-		// Inicia um grupo de desfazer para que a operação de renomeação possa ser desfeita.
-		app.beginUndoGroup('renomear comps');
-
-		// Chama a função renamePromoComps para renomear as composições selecionadas.
-		renamePromoComps(app.project.selection);
-
-		// Finaliza o grupo de desfazer.
-		app.endUndoGroup();
-	};
-
-	uiObj.renomear.rightClick.onClick = function () {
-		app.beginUndoGroup('renomear outputs');
-
-		renameOutputs(); // renomeia todas as saídas
-
-		app.endUndoGroup();
-	};
-
-	uiObj.organizar.leftClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
-
-		// grupo de desfazer
-		app.beginUndoGroup('organização automática do projeto');
-
-		// Se houver itens selecionados na janela projeto
-		if (app.project.selection.length > 0) {
-			// Itera sobre os itens selecionados
-			for (var i = 0; i < app.project.selection.length; i++) {
-				var aItem = app.project.selection[i]; // item selecionado
-
-				// Se o item selecionado for uma composição sem tag
-				if (aItem instanceof CompItem && aItem.comment == '') {
-					aItem.comment = 'EXPORTAR'; // Adiciona a tag 'EXPORTAR' como comentário
-				}
-			}
-		}
-
-		deleteProjectFolders(); // Deleta as pastas existentes
-		populateProjectFolders(); // Cria as pastas novas e organiza os itens
-		deleteEmptyProjectFolders(); // Deleta as pastas vazias
-
-		app.endUndoGroup();
-	};
-
-	uiObj.buscar.leftClick.onClick = function () {
-		findDialog();
-	};
-
-	uiObj.organizar.rightClick.onClick = function () {
-		app.beginUndoGroup('criar pastas do projeto');
-
-		projectTemplateFolders(); // cria a estrutura de pastas do projeto
-
-		app.endUndoGroup();
-	};
-
-	uiObj.links.leftClick.onClick = function () {
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
-		}
-		var apontamento =
-			'"https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i"';
-
-		openWebSite(apontamento);
-	};
 }
 
 // Recebe um índice 'imageIndex' e um grupo de imagens 'imagesGrp'
@@ -552,66 +300,6 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 	return newUiCtrlObj;
 }
 
-// Recebe um grupo 'sectionGrp' e um objeto 'ctrlProperties'
-// as propriedades 'ctrlProperties' estão definidas na estrutura da ui 'structureObj'
-function themeImageButton(sectionGrp, ctrlProperties) {
-	var newUiCtrlObj = {};
-	var newBtn = (newUiCtrlObj[ctrlProperties.key] = {});
-	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
-
-	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
-
-	newBtn.btnGroup = sectionGrp.add('group'); // Grupo de botões superior
-
-	newBtn.iconGroup = newBtn.btnGroup.add('group'); // Grupo de botões superior
-	newBtn.iconGroup.orientation = 'stack'; // Alinhamento central
-
-	newBtn.leftClick = newBtn.iconGroup.add('button', undefined, '');
-	newBtn.leftClick.size = [0, 0];
-	newBtn.leftClick.visible = false;
-
-	newBtn.rightClick = newBtn.iconGroup.add('button', undefined, '');
-	newBtn.rightClick.size = [0, 0];
-	newBtn.rightClick.visible = false;
-
-	newBtn.hoverImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.hover);
-	newBtn.hoverImg.helpTip = tipTxt; // Dica de ajuda
-	newBtn.hoverImg.visible = false;
-
-	newBtn.normalImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.normal);
-	newBtn.normalImg.helpTip = tipTxt; // Dica de ajuda
-
-	newBtn.label = newBtn.btnGroup.add('statictext', undefined, ctrlProperties.labelTxt, { truncate: 'end' }); // Texto do botão
-	newBtn.label.maximumSize = [60, 18]; // Dica de ajuda
-	newBtn.label.helpTip = tipTxt; // Dica de ajuda
-
-	setFgColor(newBtn.label, normalColor1); // Cor de destaque do texto
-
-	newBtn.btnGroup.addEventListener('mouseover', function () {
-		setFgColor(this.children[1], highlightColor1);
-		this.children[0].children[3].visible = false;
-		this.children[0].children[2].visible = true;
-	});
-
-	newBtn.btnGroup.addEventListener('mouseout', function () {
-		setFgColor(this.children[1], normalColor1);
-		this.children[0].children[2].visible = false;
-		this.children[0].children[3].visible = true;
-	});
-
-	newBtn.label.addEventListener('click', function (c) {
-		if (c.button == 0) this.parent.children[0].children[0].notify();
-		if (c.button == 2) this.parent.children[0].children[1].notify();
-	});
-
-	newBtn.hoverImg.addEventListener('click', function (c) {
-		if (c.button == 0) this.parent.children[0].notify();
-		if (c.button == 2) this.parent.children[1].notify();
-	});
-
-	return newBtn;
-}
-
 function themeButton(sectionGrp, ctrlProperties) {
 	try {
 		if (ctrlProperties.buttonColor === undefined) ctrlProperties.buttonColor = divColor1;
@@ -698,63 +386,6 @@ function drawThemeButton(button) {
 		}
 	};
 }
-
-// function drawThemeButton(button, hover) {
-// 	var g = button.graphics;
-// 	var textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(button.textColor), 1);
-// 	var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(button.buttonColor));
-// 	var textSize = g.measureString(button.text);
-
-// 	if (hover) {
-// 		textPen = g.newPen(g.PenType.SOLID_COLOR, [1, 1, 1, 1], 1);
-// 		fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(highlightColor1));
-// 	}
-
-// 	button.onDraw = function () {
-// 		if (!this.enabled) {
-// 			textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(divColor1), 1);
-// 			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(bgColor1));
-// 		}
-// 		g.newPath();
-// 		g.ellipsePath(0, 0, this.height, this.height);
-// 		g.fillPath(fillBrush);
-// 		g.ellipsePath(this.width - this.height, 0, this.height, this.height);
-// 		g.rectPath(this.height / 2, 0, this.width - this.height, this.height);
-// 		// g.strokePath(textPen);
-// 		g.fillPath(fillBrush);
-
-// 		g.drawString(this.text, textPen, (this.width - textSize.width) / 2, this.height / 2 - textSize.height);
-// 	};
-// }
-
-// // Cria botões de cor com base em um array de cores.
-// function createColorButtons(colorArray, colorGrp) {
-// 	for (var c = 0; c < colorArray.length; c++) {
-// 		var hex = colorArray[c]; // Obtém o código hexadecimal da cor.
-// 		var rgb = hexToRgb(hex) * 255; // Converte para RGB (0-255).
-
-// 		// Cria um botão com ícone, nomeado com o código hexadecimal e estilo 'toolbutton'.
-// 		var colorBtn = colorGrp.add('iconbutton', undefined, undefined, {
-// 			name: hex,
-// 			style: 'toolbutton',
-// 		});
-
-// 		colorBtn.size = [20, 20]; // Define o tamanho do botão (20x20 pixels).
-// 		setUiCtrlColor(colorBtn, hex); // Define a cor de fundo do botão.
-// 		colorBtn.onDraw = customDraw; // Define a função de desenho personalizado.
-
-// 		// Define o texto de ajuda (tooltip) com os valores RGB e hexadecimal da cor.
-// 		colorBtn.helpTip =
-// 			'R: ' +
-// 			rgb[0] +
-// 			'\nG: ' +
-// 			rgb[1] +
-// 			'\nB: ' +
-// 			rgb[2] +
-// 			'\nHEX: ' +
-// 			hex;
-// 	}
-// }
 
 // Função para desenhar o botão personalizado.
 function customDraw() {
@@ -849,7 +480,8 @@ function menuButton(sectionGrp, ctrlProperties) {
 	var newUiCtrlObj = {};
 
 	newUiCtrlObj.button = sectionGrp.add('customButton');
-	newUiCtrlObj.button.size = [ctrlProperties.width, ctrlProperties.height];
+	// newUiCtrlObj.button.size = [ctrlProperties.width, ctrlProperties.height];
+	// newUiCtrlObj.button.size = [ctrlProperties.width, ctrlProperties.height];
 	newUiCtrlObj.button.text = ctrlProperties.text;
 	newUiCtrlObj.button.image = ctrlProperties.normalIcon;
 	newUiCtrlObj.button.hoverImage = ctrlProperties.hoverIcon;
@@ -875,7 +507,7 @@ function menuButton(sectionGrp, ctrlProperties) {
 function drawMenuButton(button) {
 	var g = button.graphics;
 	var textPen = g.newPen(g.PenType.SOLID_COLOR, button.textColor, 1);
-	var margin = 6;
+	var margin = 10;
 	button.parent.layout.layout(true);
 
 	button.onDraw = function () {
@@ -887,7 +519,8 @@ function drawMenuButton(button) {
 		this.maximumSize = isRow ? [100, 44] : [120, 32];
 
 		var px_Img = isRow ? (w - 32) / 2 : 0;
-		g.drawImage(this.image, px_Img, 0, 32, 32);
+		var py_Img = isRow ? -8 : 0;
+		g.drawImage(this.image, px_Img, py_Img, 32, 32);
 
 		if (this.text.trim() == '') return;
 		// if (w < margin * 2 + 6) return;
@@ -913,7 +546,7 @@ function drawMenuButton(button) {
 			var px_Txt = isRow ? (w - txtW) / 2 : 36;
 			var py_Txt = l == 0 ? (-(textLinesArray.length - 1) / 2) * py_TxtInc : (py_Txt += py_TxtInc);
 			if (appV > 24 && l == 0) py_Txt += 8;
-			if (isRow) py_Txt += 24;
+			if (isRow) py_Txt += 20;
 
 			g.drawString(textLinesArray[l], textPen, px_Txt, py_Txt);
 		}
