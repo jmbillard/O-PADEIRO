@@ -709,13 +709,13 @@ function padeiroTemplateDialog() {
 			var logFile = new File(templatesPath + '/log padeiro.csv');
 
 			// Obtém data e hora atual
-			var dt = new Date(Date(0));
+			var dt = new Date();
 
-			var y = dt.getFullYear();
-			var m = dt.getMonth() + 1;
-			var d = dt.getDay();
-			var hr = dt.getHours();
-			var mi = dt.getMinutes();
+			var y = dt.getFullYear(); // -> 2021 (ano)
+			var m = dt.getMonth() + 1; // -> 1 (mês)
+			var d = dt.getDate(); // -> 15 (dia)
+			var hr = dt.getHours(); // -> 10 (hora)
+			var mi = dt.getMinutes(); // -> 30 (minuto)
 
 			// formatação de data e hora para o padrão 'dd/mm/yyyy hh:mm'
 			if (m < 10) m = '0' + m;
