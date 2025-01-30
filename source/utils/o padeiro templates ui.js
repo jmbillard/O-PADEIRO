@@ -274,8 +274,6 @@ function padeiroTemplateDialog() {
 	var outputBtn = new themeButton(lBtnGrp2, {
 		width: 80,
 		height: 32,
-		// textColor: bgColor1,
-		// buttonColor: normalColor1,
 		labelTxt: 'output',
 		tips: [lClick + 'abrir a pasta de output do template selecionado']
 	});
@@ -292,7 +290,7 @@ function padeiroTemplateDialog() {
 		textColor: bgColor1,
 		buttonColor: normalColor1,
 		labelTxt: 'processar: 1',
-		tips: [lClick + 'criar e preencher o template selecionado']
+		tips: [lClick + 'importar e preencher o template selecionado']
 	});
 
 	setBgColor(PAD_TEMPLATES_w, bgColor1); // Define a cor de fundo da janela
@@ -560,6 +558,7 @@ function padeiroTemplateDialog() {
 
 			progressBar.value++;
 			PAD_TEMPLATES_w.update();
+
 		} catch (err) {
 			alert(lol + '#PAD_017 - ' + err.message);
 			return;
@@ -903,9 +902,12 @@ function padeiroTemplateDialog() {
 
 			var outputFolder = new Folder(outputPathArray[o]);
 
-			if (!outputFolder.exists) continue;
+			if (outputFolder.exists) {
+				openFolder(outputPathArray[o]);
+				continue;
+			};
 
-			openFolder(outputPathArray[o]);
+			alert(lol + '#PAD_019 - output não pode ser acessado!');
 		}
 	};
 
