@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.61';
+	var scriptVersion = 'v1.62';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -19,12 +19,13 @@ o script funcionará normalmente, mas você não terá:\n\
 		scriptMainPath = Folder.userData.fullName + '/O PADEIRO script/';
 	}
 
+	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
 	#include 'source/libraries/PROT lib.js';        // Inclui funções que estendem objetos JavaScript (prototype)
 	#include 'source/libraries/ICON lib.js';        // Inclui ícones codificados para a interface
-	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON
-	#include 'source/libraries/FUNC lib.js';        // Inclui funções utilitárias gerais
-
+	
 	#include 'source/globals.js';                   // Inclui variáveis globais (usadas em todo o script)
+
+	#include 'source/libraries/FUNC lib.js';        // Inclui funções utilitárias gerais
 
 	#include 'source/libraries/functions/color lib.js';
 	#include 'source/libraries/functions/ctrl anim lib.js';

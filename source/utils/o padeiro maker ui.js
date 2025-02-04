@@ -665,7 +665,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.join(' ')
 			.replaceSpecialCharacters();
 
-		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
+		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
 			.toUpperCase();
 	};
@@ -679,7 +679,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.join(' ')
 			.replaceSpecialCharacters();
 
-		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
+		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
 			.toUpperCase();
 	};
@@ -697,7 +697,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.join(' ')
 			.replaceSpecialCharacters();
 
-		infoText2.text = infoText2.helpTip = [prefix, separator, inputTxt]
+		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
 			.toUpperCase();
 	};

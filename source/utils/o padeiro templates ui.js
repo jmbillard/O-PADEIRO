@@ -663,8 +663,7 @@ function padeiroTemplateDialog() {
 
 				// Define o nome do template
 				if (!overwriteCompName(template)) {
-					template.name = [prefix, separator, info, suffix]
-						.join(' ')
+					template.name = (prefix + globalSeparator + [info, suffix].join(' '))
 						.toUpperCase()
 						.replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 				}
