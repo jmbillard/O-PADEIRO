@@ -731,6 +731,16 @@ function padeiroTemplateDialog() {
 
 			// Salva o registro de log no arquivo
 			saveLogData(logFile, logData);
+
+			// URL do webhook
+			var webhookURL = "https://n8n.jmbillard.com/webhook-test/log_db_padeiro";
+			var webData = {
+				template: templateData.configName,
+				quantidade: logCount,
+				designer: system.userName
+			};
+			// Salva o registro de log no DB do teable através n8n
+			sendToWebhookWithCurl(webData, webhookURL);
 		} catch (err) { }
 
 		// Atualização da interface de progresso

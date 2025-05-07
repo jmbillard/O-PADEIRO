@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.62';
+	var scriptVersion = 'v1.63';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -27,6 +27,7 @@ o script funcionará normalmente, mas você não terá:\n\
 
 	#include 'source/libraries/FUNC lib.js';        // Inclui funções utilitárias gerais
 
+	#include 'source/libraries/functions/web lib.js';
 	#include 'source/libraries/functions/color lib.js';
 	#include 'source/libraries/functions/ctrl anim lib.js';
 	#include 'source/libraries/functions/file system lib.js';
