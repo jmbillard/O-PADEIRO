@@ -733,7 +733,7 @@ function padeiroTemplateDialog() {
 			saveLogData(logFile, logData);
 
 			// URL do webhook
-			var webhookURL = "https://n8n.jmbillard.com/webhook-test/log_db_padeiro";
+			var webhookURL = "https://n8n.jmbillard.com/webhook/log_db_padeiro";
 			var webData = {
 				template: templateData.configName,
 				quantidade: logCount,
