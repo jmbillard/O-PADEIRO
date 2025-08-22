@@ -737,7 +737,8 @@ function padeiroTemplateDialog() {
 			var webData = {
 				template: templateData.configName,
 				quantidade: logCount,
-				designer: system.userName
+				designer: system.userName,
+				work_station: system.machineName
 			};
 			// Salva o registro de log no DB do teable através n8n
 			sendToWebhookWithCurl(webData, webhookURL);
