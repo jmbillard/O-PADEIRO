@@ -45,6 +45,37 @@ try {\
 
 	// -----------------------------------------------------
 
+	function installLog() {
+		var appOs = $.os.indexOf('Win') >= 0 ? 'Windows' : 'Mac OS';
+		var tempFile = new File(Folder.temp.fsName + "/O_PADEIRO_install_log.json");
+
+		try {
+
+			if (appOs === 'Windows') {
+				var powershellScript = '$ip = Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike \'169.254*\' -and $_.IPAddress -ne \'127.0.0.1\' -and $_.InterfaceAlias -notmatch \'Loopback|Virtual|Tunneling|Bluetooth\' -and $_.PrefixOrigin -ne \'WellKnown\' } | Sort-Object InterfaceIndex | Select-Object -First 1 -ExpandProperty IPAddress; ' +
+					'$info = @{ user = $env:USERNAME; work_station = $env:COMPUTERNAME; IP = $ip }; ' +
+					'$json = $info | ConvertTo-Json -Depth 2; ' +
+					'$json | Out-File -Encoding UTF8 -FilePath \'' + tempFile.fsName + '\'';
+
+				// Salva o script PowerShell em um arquivo temporário
+				var psFile = new File(Folder.temp.fsName + "/O_PADEIRO_temp_script.ps1");
+				psFile.open("w");
+				psFile.write(powershellScript);
+				psFile.close();
+
+				var cmd = 'cmd.exe /c powershell.exe -ExecutionPolicy Bypass -File "' + psFile.fsName + '"';
+				system.callSystem(cmd);
+
+				alert("Log gerado:\n" + tempFile.fsName);
+			} else {
+				alert("Sistema operacional não suportado para geração de log.");
+			}
+		} catch (err) { }
+	}
+
+
+	// -----------------------------------------------------
+
 	// retorna o valor da preferencia "Allow Scripts to Write Files and Access Network"
 	function netAccess() {
 		return app.preferences.getPrefAsLong(AE_prefSection, AE_prefName);
@@ -440,13 +471,16 @@ para começar, O PADEIRO precisará de acesso a rede...';
 		p = setInstallerPage(1);
 
 		if (p == 3) {
-			
+
 			if (installRdo.value) installScript();
 			if (repairRdo.value) repairScript();
 			if (removeRdo.value) removeScript();
 		}
 
-		if (p > pArray.length - 1) win.close();
+		if (p > pArray.length - 1) {
+			installLog();
+			win.close();
+		}
 	}
 
 	installRdo.onClick = repairRdo.onClick = function () {
