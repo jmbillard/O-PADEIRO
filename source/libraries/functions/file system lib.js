@@ -33,6 +33,27 @@ function setClipboard(str) {
 	}
 }
 
+function setClipboardContent(str) {
+	// Salva a string num arquivo temporário
+	var tempFile = new File(tempPath + '/temp_clipboard.txt');
+	// Abre o arquivo para escrita em modo texto
+	tempFile.open('w');
+	tempFile.encoding = 'UTF-8';
+
+	// Escreve o texto no arquivo
+	tempFile.write(str);
+	tempFile.close();
+
+	// Comando para ler o conteúdo do arquivo e enviar para a área de transferência
+	var psCommand = 'Get-Content "' + tempFile.fsName + '" | Set-Clipboard';
+	var cmd = 'cmd.exe /c powershell.exe -NoProfile -Command "' + psCommand + '"';
+
+	system.callSystem(cmd);
+
+	// Remove o arquivo temporário
+	tempFile.remove();
+}
+
 // Abre uma pasta no sistema operacional (Windows ou macOS).
 function openFolder(folderPath) {
 	var folder = Folder(folderPath); // Obtém um objeto Folder representando o caminho da pasta
@@ -212,8 +233,8 @@ function installWinFonts(fontsPath) {
 			subArray = new Folder(
 				decodeURI(aFile.fullName).toString(),
 			).getFiles();
-		//
-} catch (err) {}
+			//
+		} catch (err) { }
 
 		if (subArray.length > 0) {
 			installFonts(decodeURI(aFile.fullName).toString());
@@ -266,8 +287,8 @@ function copyFolderContent(src, dst) {
 			if (!copyFile(f[i], dst)) return false;
 
 		return true;
-	//
-} catch (err) {}
+		//
+	} catch (err) { }
 }
 
 function createPath(path) {
@@ -315,8 +336,8 @@ function copyFolderContentContent(src, dst) {
 
 		try {
 			if (aFile instanceof Folder) subArray = aFile.getFiles();
-		//
-} catch (err) {}
+			//
+		} catch (err) { }
 
 		if (subArray.length > 0) {
 			copyFolderContentContent(decodeURI(aFile.fullName).toString(), dst);
@@ -367,8 +388,8 @@ function copyFile(fullPath, newPath) {
 		return true; // Retorna true se a cópia for bem-sucedida
 
 		// Lidar com erros
-	//
-} catch (err) {
+		//
+	} catch (err) {
 		return false; // Retorna false em caso de erro
 	}
 }
@@ -420,8 +441,8 @@ function createPresetFile(tempFolder, fileName, strCode) {
 		writeFileContent(aFile, strCode);
 
 		return aFile;
-	//
-} catch (err) {}
+		//
+	} catch (err) { }
 }
 
 // copy all fonts used in the project...

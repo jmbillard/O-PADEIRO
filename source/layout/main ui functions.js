@@ -307,10 +307,10 @@ function PAD_UI_EVENTS(uiObj) {
 
 	// Define a função a ser executada quando o botão "Abrir Pasta de Saída" for clicado.
 	uiObj.pastas.leftClick.onClick = function () {
-		// Verifica se há acesso à internet.
+		// Verifica se há acesso à rede.
 		if (!netAccess()) {
 			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
+			return; // Encerra a função se não houver acesso à rede.
 		}
 
 		// Verifica se há itens na fila de renderização.
@@ -342,28 +342,31 @@ function PAD_UI_EVENTS(uiObj) {
 
 	// Adiciona um ouvinte de evento de clique ao botão "Abrir Pasta de Saída".
 	uiObj.pastas.rightClick.onClick = function () {
-		// Verifica se o botão clicado foi o botão direito do mouse (código 2).
 
-		// Verifica se há acesso à internet.
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
-		}
-		var currentProj = app.project.file;
-
-		if (currentProj == null) {
-			alert(lol + '#PAD_010 - o projeto atual ainda não foi salvo...');
+		// Verifica se há itens na fila de renderização.
+		if (app.project.renderQueue.numItems < 1) {
+			alert(lol + '#PAD_008 - a fila de render está vazia...');
 			return;
 		}
+		// Obtém o último item da fila de renderização.
+		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
 
-		var currentProjPath = decodeURI(currentProj.path);
-		var fld = new Folder(currentProjPath);
+		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
+		var outputModule = item.outputModule(1);
 
+		
+		// Cria um objeto "Folder" para representar a pasta de saída.
+		var fld = outputModule.file.parent;
+
+		// Verifica se a pasta de saída existe.
 		if (!fld.exists) {
-			alert(lol + '#PAD_011 - a pasta não foi encontrada...');
-			return;
+			alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
+			return; // Encerra a função se a pasta não existir.
 		}
-		openFolder(decodeURI(fld.fullName));
+		// Obtém o caminho completo da pasta de saída.
+		var outputPath = fld.fsName;
+
+		setClipboard(outputPath); // Copia o caminho da pasta de saída para a área de transferência.
 	};
 
 	// Define a função a ser executada quando o botão "Renomear Comps" for clicado.
@@ -419,6 +422,41 @@ function PAD_UI_EVENTS(uiObj) {
 	uiObj.buscar.leftClick.onClick = function () {
 		findDialog();
 	};
+
+	// uiObj.mensagem.leftClick.onClick = function () {
+
+	// 	// Verifica se há acesso à rede.
+	// 	if (!netAccess()) {
+	// 		alert(lol + '#PAD_007 - sem acesso a rede...');
+	// 		return; // Encerra a função se não houver acesso à rede.
+	// 	}
+
+	// 	// Verifica se há itens na fila de renderização.
+	// 	if (app.project.renderQueue.numItems < 1) {
+	// 		alert(lol + '#PAD_008 - a fila de render está vazia...');
+	// 		return;
+	// 	}
+	// 	// Obtém o último item da fila de renderização.
+	// 	var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
+
+	// 	// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
+	// 	var outputModule = item.outputModule(1);
+
+	// 	// Obtém o caminho completo da pasta de saída.
+	// 	var outputPath = decodeURI(outputModule.file.path);
+
+	// 	// Cria um objeto "Folder" para representar a pasta de saída.
+	// 	var fld = new Folder(outputPath);
+
+	// 	// Verifica se a pasta de saída existe.
+	// 	if (!fld.exists) {
+	// 		alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
+	// 		return; // Encerra a função se a pasta não existir.
+	// 	}
+
+	// 	var msg = 'segue o caminho:\n- *' + outputPath + '*';
+	// 	setClipboardContent(msg);
+	// };
 
 	uiObj.organizar.rightClick.onClick = function () {
 		app.beginUndoGroup('criar pastas do projeto');

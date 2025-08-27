@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.66';
+	var scriptVersion = 'v1.67';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -86,7 +86,7 @@ o script funcionará normalmente, mas você não terá:\n\
 					icon: PAD_PASTAS_ICON,
 					tips: [
 						lClick + 'abir a pasta do último item da fila de render',
-						rClick + 'abir a pasta do projeto (caso esteja salvo)'
+						rClick + 'copiar para o clipboard o caminho do último item da fila de render'
 					]
 				}
 			},
@@ -120,6 +120,16 @@ o script funcionará normalmente, mas você não terá:\n\
 						lClick + 'abrir a BUSCA em layers de texto'
 					]
 				}
+			// },
+			// section5: {
+			// 	mensagem: {
+			// 		type: 'imageButton',
+			// 		labelTxt: 'Mensagem',
+			// 		icon: PAD_BUSCAR_ICON,
+			// 		tips: [
+			// 			lClick + 'copiar mensagem padrão para o clipboard'
+			// 		]
+			// 	}
 			}
 		}
 	};

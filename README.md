@@ -457,9 +457,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   *O script analisa a fila de render e puxa o último caminho do último item disponível e em seguida abre a respectiva pasta.*
 
-  `◗ clique direito` → Abre a pasta do projeto atual, caso tenha sido salvo anteriormente.
-
-  *O script verifica se o projeto já foi salvo. Se sim, ele abre a pasta.*
+  `◗ clique direito` → Copia para o clipboard o caminho do **primeiro arquivo** de saída do **último item** da fila de render.
 
   > 🚩 *obs:*\
   > Caso o caminho não seja encontrado por falta de permissão ou falha no mapeamento da rede, o script não retornara o caminho.
