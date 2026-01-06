@@ -642,7 +642,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var namePreview = [prefix, '-', inputTxt]
 			.join(' ')
-			.toUpperCase();
+			.toUpperCase()
+			.replace(/\s+/g, ' ');
 		
 		infoText2.text = infoText2.helpTip = namePreview;
 
@@ -667,7 +668,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
-			.toUpperCase();
+			.toUpperCase()
+			.replace(/\s+/g, ' ');
 	};
 
 	separatorTxt.onChanging = function () {
@@ -681,7 +683,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
-			.toUpperCase();
+			.toUpperCase()
+			.replace(/\s+/g, ' ');
 	};
 
 	prefixTxt.onChange = function () {
@@ -699,7 +702,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
 			.join(' ')
-			.toUpperCase();
+			.toUpperCase()
+			.replace(/\s+/g, ' ');
 	};
 
 	captureBtn.leftClick.onClick = function () {

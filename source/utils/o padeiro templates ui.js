@@ -483,9 +483,6 @@ function padeiroTemplateDialog() {
 		var template; // Comp duplicada que será editada
 		var renderTemplateArray; // Array de templates de render
 
-		// Array com os textos de input
-		inputTextArray = inputTxt.text.split(/[\n\r]{2,}/);
-
 		// Preparação da Interface para o processamento
 		templatesMainGrp.visible = false;
 		optionsMainGrp.visible = true;
@@ -499,6 +496,10 @@ function padeiroTemplateDialog() {
 		if (templateData.textCase == 'upperCase') inputTxt.text = inputTxt.text.toUpperCase();
 		if (templateData.textCase == 'lowerCase') inputTxt.text = inputTxt.text.toLowerCase();
 		if (templateData.textCase == 'titleCase') inputTxt.text = inputTxt.text.toTitleCase();
+
+		// Array com os textos de input
+		inputTextArray = inputTxt.text.split(/[\n\r]{2,}/);
+		// alert(inputTxt.text);
 
 		// Define configurações do projeto
 		app.project.bitsPerChannel = 8;
