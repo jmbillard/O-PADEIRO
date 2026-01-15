@@ -10,62 +10,50 @@
 
 */
 
-// Função para remover pastas vazias da árvore de diretórios (recursivamente)
 function cleanHierarchy(nodeTree) {
-	// Obtém todos os subitens (arquivos ou pastas) do nó atual
 	var branches = nodeTree.items;
+	var itemsToRemove = [];
 
-	// Percorre os subitens em ordem reversa para remover com segurança enquanto iteramos
-	for (var i = branches.length - 1; i >= 0; i--) {
-		// Se o subitem não for uma pasta ("node"), ignora e passa para o próximo
+	for (var i = 0; i < branches.length; i++) {
 		if (branches[i].type != 'node') continue;
 
-		// Chama a função recursivamente para limpar as subpastas
 		var wasEmpty = cleanHierarchy(branches[i]);
 
-		// Se o subitem era uma pasta e agora está vazio (ou já estava), remove-o
 		if (wasEmpty) {
-			nodeTree.remove(branches[i]);
+			itemsToRemove.push(branches[i]);
 		}
 	}
 
-	// Retorna se o nó atual ficou vazio após a limpeza (exceto se for a raiz)
+	for (var j = 0; j < itemsToRemove.length; j++) {
+		nodeTree.remove(itemsToRemove[j]);
+	}
+
 	return nodeTree.items.length == 0 && nodeTree.parent != null;
 }
 
-// Otimiza a hierarquia da árvore, combinando pastas com apenas uma subpasta
 function optimizeHierarchy(nodeTree) {
 	var branches = nodeTree.items;
 
-	for (var i = branches.length - 1; i >= 0; i--) {
-		// Pula itens que não são pastas
+	for (var i = 0; i < branches.length; i++) {
 		if (branches[i].type != 'node') continue;
 
-		// Se a pasta tiver mais de um item, chama a função recursivamente para otimizar as subpastas
 		if (branches[i].items.length > 1) {
 			optimizeHierarchy(branches[i]);
-		} else {
-			// Se a pasta tiver apenas uma subpasta, combina os nomes e move os itens
-			if (
-				branches[i].items.length == 1 &&
-				branches[i].items[0].type == 'node'
-			) {
-				var subfolder = branches[i].items[0];
-				branches[i].text += ' / ' + subfolder.text; // Combina os nomes
+		} else if (branches[i].items.length == 1 && branches[i].items[0].type == 'node') {
+			var subfolder = branches[i].items[0];
+			branches[i].text += ' / ' + subfolder.text;
 
-				while (subfolder.items.length > 0) {
-					var item = subfolder.items[0];
-					try {
-						// Move o item para a pasta pai, preservando o tipo, texto e imagem
-						var newItem = branches[i].add(item.type, item.text);
-						newItem.image = item.image;
-						newItem.file = item.file;
-						subfolder.remove(0);
-						//
-					} catch (err) { }
-				}
-				nodeTree.remove(subfolder); // Remove a subpasta agora vazia
+			while (subfolder.items.length > 0) {
+				var item = subfolder.items[0];
+				try {
+					var newItem = branches[i].add(item.type, item.text);
+					newItem.image = item.image;
+					newItem.file = item.file;
+					subfolder.remove(0);
+				} catch (err) { }
 			}
+			branches[i].remove(subfolder);
+			optimizeHierarchy(branches[i]);
 		}
 	}
 }
@@ -102,28 +90,19 @@ function createHierarchy(array, node, fileTypes) {
 	}
 }
 
-// refreshes the main 'tree view' node...
-// Constrói a árvore de arquivos e pastas na interface do usuário
 function buildTree(folder, tree, fileTypes) {
-	// Remove todos os itens da árvore (limpa a árvore)
-	tree.remove(tree.items[0]);
+	// Remove todos os itens
+	while (tree.items.length > 0) {
+		tree.remove(tree.items[0]);
+	}
 
-	// Obtém todos os arquivos e pastas dentro da pasta especificada
 	var folderContentArray = folder.getFiles();
-
-	// Adiciona a pasta raiz (folder) como um novo nó na árvore
 	var folderNode = tree.add('node', folder.displayName);
 
-	// Chama a função createHierarchy para popular a árvore recursivamente,
-	// começando pela pasta raiz e filtrando pelos tipos de arquivo permitidos
 	createHierarchy(folderContentArray, folderNode, fileTypes);
 
-	// Remove pastas vazias da árvore (limpa a hierarquia)
-	cleanHierarchy(tree);
-
-	// A linha abaixo é opcional e pode ser utilizada para otimizar a hierarquia,
-	// combinando pastas com apenas um único item
-	optimizeHierarchy(tree);
+	cleanHierarchy(folderNode);
+	optimizeHierarchy(folderNode);
 }
 
 // Constrói a árvore de resultados da busca
@@ -146,7 +125,7 @@ function buildTxtSearchTree(tree, obj, compArray, progressBar) {
 	progressBar.value = 0;
 
 	// Itera sobre todas as composições no projeto
-	
+
 	for (i = 0; i < compArray.length; i++) {
 		try {
 			var comp = compArray[i];

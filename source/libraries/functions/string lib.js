@@ -104,3 +104,16 @@ function limitNameSize(name, limit) {
 		return name1 + '...' + name2;
 	}
 }
+
+/**
+ * Escapa caracteres especiais para uso em ExtendScript
+ * @param {string} str - String a ser escapada
+ * @returns {string} String escapada
+ */
+function escapeForExtendScript(str) {
+    return str
+        .replace(/#/g, "\\#")
+        .replace(/&/g, "\\&")
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"');
+}

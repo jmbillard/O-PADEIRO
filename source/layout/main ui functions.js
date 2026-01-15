@@ -270,7 +270,7 @@ function PAD_UI_EVENTS(uiObj) {
 		}
 
 		// Obtém o caminho da pasta do template a partir dos metadados XMP do projeto.
-		var folderPath = getXMPData('source');
+		var folderPath = normalizeNetworkPath(getXMPData('source'));
 		var templateFontsPath = folderPath + '/FONTS';
 
 		// Se o caminho da pasta não for encontrado, a função é interrompida.
@@ -325,7 +325,7 @@ function PAD_UI_EVENTS(uiObj) {
 		var outputModule = item.outputModule(1);
 
 		// Obtém o caminho completo da pasta de saída.
-		var outputPath = decodeURI(outputModule.file.path);
+		var outputPath = normalizeNetworkPath(decodeURI(outputModule.file.path));
 
 		// Cria um objeto "Folder" para representar a pasta de saída.
 		var fld = new Folder(outputPath);

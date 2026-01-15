@@ -501,3 +501,322 @@ function saveLogData(aFile, dataStr) {
 
 	saveTextFile(data, decodeURI(aFile.fullName));
 }
+
+// -------------------------------------------------------
+
+/**
+ * Converte caminho UNC do Windows para caminho do macOS
+ * Exemplo:
+ * //servidor/EDIT_IN_PLACE/pasta/arquivo
+ * -> /Volumes/EDIT_IN_PLACE/pasta/arquivo
+ */
+function windowsPathToMac(uncPath) {
+
+	if (!uncPath || uncPath === "") return "";
+
+	// Normaliza barras
+	var path = uncPath.replace(/\\/g, "/")
+		.replace(/^\/+/, "");
+
+	// Separa partes
+	var parts = path.split("/");
+
+	// parts[0] = servidor
+	// parts[1] = share (volume no mac)
+	if (parts.length < 2) return "";
+
+	var volumeName = parts[1];
+
+	// Monta caminho mac
+	var macPath = "/Volumes/" + volumeName;
+
+	for (var i = 2; i < parts.length; i++) {
+		macPath += "/" + parts[i];
+	}
+
+	// Escapa caracteres problemáticos no ExtendScript
+	macPath = macPath
+		.replace(/#/g, "\\#")
+		.replace(/&/g, "\\&");
+
+	return macPath;
+}
+
+/**
+ * Normaliza caminhos de rede para o sistema atual (Windows ou macOS)
+ * Compatível com After Effects ExtendScript
+ * 
+ * SEMPRE retorna caminhos com forward slashes (/) para máxima compatibilidade
+ * - Windows: //servidor/share/pasta (formato UNC com /)
+ * - Mac: /Volumes/share/pasta (formato nativo Mac)
+ * 
+ * ExtendScript aceita ambos os formatos de barra, mas forward slash é mais portável
+ * 
+ * @param {string} pathStr - Caminho a ser normalizado
+ * @param {Object} options - Opções de configuração
+ * @param {string} options.defaultServer - Nome do servidor para conversões Mac→Win
+ * @param {Object} options.serverMap - Mapa de shares para servidores específicos
+ * @returns {string} Caminho normalizado ou string vazia se inválido
+ * 
+ * @example
+ * // Windows drive letter → UNC com forward slashes
+ * normalizeNetworkPath("L:\\Projetos\\2024\\arquivo.aep");
+ * // Retorna: "//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Projetos/2024/arquivo.aep"
+ * 
+ * // Windows UNC com backslashes → forward slashes
+ * normalizeNetworkPath("\\\\vfx-ml-sp.servicos.corp.tvglobo.com.br\\VFX\\renders\\output.mov");
+ * // Retorna: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/renders/output.mov"
+ * 
+ * // Mac /Volumes → compatível com Windows
+ * normalizeNetworkPath("/Volumes/VFX/projetos/projeto.aep");
+ * // Retorna: "//smb-srvegpamvpprdpp.servicos.corp.tvglobo.com.br/VFX/projetos/projeto.aep"
+ */
+function normalizeNetworkPath(pathStr, options) {
+	// Validação inicial
+	if (!pathStr || typeof pathStr !== "string" || pathStr === "") {
+		return "";
+	}
+
+	// Configuração padrão
+	var opts = options || {};
+	var defaultServer = opts.defaultServer || "smb-srvegpamvpprdpp.servicos.corp.tvglobo.com.br";
+	var serverMap = opts.serverMap || {
+		"VFX": "smb-srvegpamvpprdpp.servicos.corp.tvglobo.com.br",
+		"cdesign": "egcdesign01.servicos.corp.tvglobo.com.br",
+		"drive_l": "vfx-ml-hp.servicos.corp.tvglobo.com.br",
+		"drive_k": "vfx-ml-hp.servicos.corp.tvglobo.com.br",
+		"drive_p": "vfx-ml-sp.servicos.corp.tvglobo.com.br"
+	};
+
+	// Usa a variável global appOs definida previamente
+	// var appOs = $.os.indexOf('Win') >= 0 ? 'Win' : 'Mac';
+	var isMac = (appOs === 'Mac');
+	var isWin = (appOs === 'Win');
+
+	var path = pathStr.replace(/^\s+|\s+$/g, ""); // trim
+
+	// WINDOWS: Converte drive letter → UNC
+	if (isWin) {
+		// Detecta drive letter: "L:" ou "L:\"
+		var driveMatch = path.match(/^([A-Z]):/i);
+		if (driveMatch) {
+			var driveLetter = driveMatch[1].toUpperCase();
+			if (DRIVE_MAP[driveLetter]) {
+				var uncBase = DRIVE_MAP[driveLetter];
+				var subPath = path.substring(2); // Remove "X:"
+				// Normaliza barras para backslash no Windows
+				subPath = subPath.replace(/\//g, "\\");
+				path = uncBase + subPath;
+			}
+		}
+	}
+
+	// Identificação do tipo de caminho
+	var isUNC = /^\\\\|^\/\//.test(path);
+	var isWindowsDrive = /^[a-zA-Z]:[\\\/]/.test(path);
+	var isMacVolumes = /^\/Volumes\//i.test(path);
+	var isMacRoot = /^\/[^\/]/.test(path) && !isMacVolumes;
+
+	// CONVERSÃO: WINDOWS UNC → MAC /Volumes
+	if (isMac && isUNC) {
+		var parts = path.replace(/^\/+/, "").split("/").filter(function (p) {
+			return p !== "";
+		});
+
+		// Valida estrutura mínima: //servidor/share
+		if (parts.length < 2) {
+			return ""; // Caminho UNC inválido
+		}
+
+		// parts[0] = servidor (ignorado no Mac)
+		// parts[1] = share (nome do volume no Mac)
+		var shareName = parts[1];
+		var subPath = parts.slice(2).join("/");
+
+		var macPath = "/Volumes/" + shareName;
+		if (subPath) {
+			macPath += "/" + subPath;
+		}
+
+		// Escape de caracteres especiais para ExtendScript
+		macPath = escapeForExtendScript(macPath);
+
+		if (!pathExists(macPath)) alert('O VOLUME NÃO ESTÁ MONTADO');
+
+		return macPath;
+	}
+
+	// CONVERSÃO: MAC /Volumes → WINDOWS UNC
+	if (isWin && isMacVolumes) {
+		var macParts = path.split("/").filter(function (p) {
+			return p !== "";
+		});
+
+		// Valida estrutura: /Volumes/SHARE/...
+		if (macParts.length < 2) {
+			return path; // Mantém original se inválido
+		}
+
+		// macParts[0] = "Volumes"
+		// macParts[1] = nome do share
+		var shareName = macParts[1];
+
+		// Determina servidor (via mapa ou padrão)
+		var serverName = serverMap[shareName] || defaultServer;
+
+		var winPath = "//" + serverName + "/" + shareName;
+
+		// Adiciona subpastas
+		for (var i = 2; i < macParts.length; i++) {
+			winPath += "/" + macParts[i];
+		}
+
+		return winPath;
+	}
+
+	// NORMALIZAÇÃO SEM CONVERSÃO
+
+	// Mac: sempre faz escape mesmo se não converteu
+	if (isMac && !isWindowsDrive) {
+		path = escapeForExtendScript(path);
+	}
+
+	return path;
+}
+
+
+/**
+ * Valida se um caminho normalizado existe (ExtendScript)
+ * @param {string} path - Caminho a validar
+ * @returns {boolean} true se existe
+ */
+function pathExists(path) {
+	if (!path) return false;
+
+	try {
+		var f = new File(path);
+		var exists = f.exists;
+		f.close();
+		return exists;
+	} catch (e) {
+		return false;
+	}
+}
+
+// ========================================
+// EXEMPLO DE USO NO AFTER EFFECTS
+// ========================================
+
+/*
+// ==========================================
+// TESTE 1: Normalizar caminho do projeto atual
+// ==========================================
+if (app.project.file) {
+	var projectPath = app.project.file.fsName;
+	var normalized = normalizeNetworkPath(projectPath);
+    
+	alert("Projeto:\n" + 
+		  "Original: " + projectPath + "\n" +
+		  "Normalizado: " + normalized);
+}
+
+// ==========================================
+// TESTE 2: Converter todos os footages
+// ==========================================
+function logAllFootagePaths() {
+	var report = "=== CAMINHOS DE FOOTAGE ===\n\n";
+    
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+	    
+		if (item instanceof FootageItem && item.file) {
+			var original = item.file.fsName;
+			var normalized = normalizeNetworkPath(original);
+		    
+			report += "Item: " + item.name + "\n";
+			report += "Original: " + original + "\n";
+			report += "Normalizado: " + normalized + "\n";
+			report += "Existe: " + (pathExists(normalized) ? "SIM" : "NÃO") + "\n";
+			report += "---\n";
+		}
+	}
+    
+	// Salvar relatório em arquivo
+	var reportFile = new File(Folder.desktop + "/ae_paths_report.txt");
+	reportFile.open("w");
+	reportFile.write(report);
+	reportFile.close();
+    
+	alert("Relatório salvo em:\n" + reportFile.fsName);
+}
+
+// Executar
+// logAllFootagePaths();
+
+// ==========================================
+// TESTE 3: Validação de conectividade
+// ==========================================
+function testServerConnectivity() {
+	var testPaths = [
+		"L:\\test",
+		"K:\\test",
+		"T:\\test",
+		"V:\\test",
+		"Y:\\test",
+		"P:\\test"
+	];
+    
+	var results = "=== TESTE DE SERVIDORES ===\n\n";
+    
+	for (var i = 0; i < testPaths.length; i++) {
+		var testPath = testPaths[i];
+		var normalized = normalizeNetworkPath(testPath);
+		var accessible = false;
+	    
+		try {
+			// Tenta acessar o caminho raiz do servidor
+			var serverPath = normalized.substring(0, normalized.lastIndexOf("\\"));
+			var testFolder = new Folder(serverPath);
+			accessible = testFolder.exists;
+		} catch(e) {
+			accessible = false;
+		}
+	    
+		results += testPath + "\n";
+		results += normalized + "\n";
+		results += "Status: " + (accessible ? "✓ ACESSÍVEL" : "✗ INACESSÍVEL") + "\n\n";
+	}
+    
+	alert(results);
+}
+
+// Executar
+// testServerConnectivity();
+
+// ==========================================
+// TESTE 4: Exemplo prático - Render output
+// ==========================================
+function setRenderOutput() {
+	var comp = app.project.activeItem;
+	if (!comp || !(comp instanceof CompItem)) {
+		alert("Selecione uma composição primeiro!");
+		return;
+	}
+    
+	// Define output em drive letter (será convertido para UNC)
+	var outputPath = "L:\\Renders\\2024\\" + comp.name + "_[####].png";
+	var normalizedOutput = normalizeNetworkPath(outputPath);
+    
+	// Configura render queue
+	var renderQueueItem = app.project.renderQueue.items.add(comp);
+	var outputModule = renderQueueItem.outputModule(1);
+    
+	// Usa o caminho normalizado
+	outputModule.file = new File(normalizedOutput);
+    
+	alert("Render configurado:\n" + normalizedOutput);
+}
+
+// Executar
+// setRenderOutput();
+*/

@@ -152,7 +152,6 @@ function padeiroTemplateDialog() {
 	var templateTree = treeGrp.add('treeview', [0, 0, 320, 464]);
 	setFgColor(templateTree, monoColor2);
 	buildTree(templatesFolder, templateTree, fileFilter); // Cria a árvore de templates
-
 	// Grupo principal de botões
 	var mainBtnGrp1 = vGrp1.add('group');
 	mainBtnGrp1.orientation = 'stack';
