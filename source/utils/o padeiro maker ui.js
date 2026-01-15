@@ -73,7 +73,7 @@ function PadMakerDialog() {
 			layerLab.addEventListener('mousedown', function () {
 				try {
 					this.properties.selectedLayer.selected = !this.properties.selectedLayer.selected;
-				} catch (err) {}
+				} catch (err) { }
 			});
 
 			excludeLayerBtn.leftClick.onClick = function () {
@@ -159,7 +159,7 @@ function PadMakerDialog() {
 				var selectedLayer = layerGrp.children[0].properties.selectedLayer;
 
 				templateLayersArray.push([selectedLayer, methodArray[m]]);
-			} catch (err) {}
+			} catch (err) { }
 		}
 
 		return templateLayersArray;
@@ -602,7 +602,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		try {
 			tempPreviewFile.remove();
 			//
-		} catch (err) {}
+		} catch (err) { }
 	};
 
 	PAD_MAKER_w.onShow = function () {
@@ -623,7 +623,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			$.sleep(500);
 			previewImg.image = tempPreviewFile;
 			//
-		} catch (err) {}
+		} catch (err) { }
 
 		addLayers();
 		addOutputFolder();
@@ -644,7 +644,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			.join(' ')
 			.toUpperCase()
 			.replace(/\s+/g, ' ');
-		
+
 		infoText2.text = infoText2.helpTip = namePreview;
 
 		layersMainGrp.layout.layout(true);
@@ -732,7 +732,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			$.sleep(300);
 			previewImg.image = tempPreviewFile;
-		} catch (err) {}
+		} catch (err) { }
 
 		PAD_MAKER_w.layout.layout(true);
 	};
@@ -839,7 +839,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 					layerIndex: templateLayers[b][0].index,
 					method: templateLayers[b][1]
 				});
-			} catch (err) {}
+			} catch (err) { }
 		}
 
 		tempConfigObj.importPath = importPathLab.properties.importPath;
@@ -850,7 +850,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 				var outputGrp = outputMainGrp.children[o];
 				var outputPath = outputGrp.children[0].properties.outputPath;
 				tempConfigObj.outputPath.push(outputPath);
-			} catch (err) {}
+			} catch (err) { }
 		}
 		var isSaved = app.project.saveWithDialog();
 

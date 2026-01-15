@@ -850,16 +850,20 @@ function padeiroTemplateDialog() {
 		PAD_TEMPLATES_w.update();
 
 		try {
-			scriptFile.open('r');
-			eval(scriptFile.read());
+			// scriptFile.open('r');
+			// eval(scriptFile.read());
 
-			scriptFile.close();
+			// scriptFile.close();
+			if (scriptFile.exists) $.evalFile(scriptFile);
+
 		} catch (err) {
 			alert(lol + '#PAD_021 - ' + err.message);
 		}
 	};
 
 	templateTree.onDoubleClick = function () {
+		app.beginUndoGroup('Importar Template');
+
 		try {
 			// Tentar importar o template
 			var IO = new ImportOptions(projectFile); // Opções de importação
@@ -876,6 +880,9 @@ function padeiroTemplateDialog() {
 			//
 		} catch (err) {
 			alert(lol + '#PAD_022 - ' + err.message);
+
+		} finally {
+			app.endUndoGroup();
 		}
 
 		PAD_TEMPLATES_w.close(); // Fecha a janela da interface do 'O Padeiro'
