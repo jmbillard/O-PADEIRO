@@ -743,7 +743,7 @@ function padeiroTemplateDialog() {
 				caminho: projectFile.fsName
 			};
 			// Salva o registro de log no DB do teable através n8n
-			sendToWebhookWithCurl(webData, webhookURL);
+			// sendToWebhookWithCurl(webData, webhookURL);
 		} catch (err) { }
 
 		// Atualização da interface de progresso
