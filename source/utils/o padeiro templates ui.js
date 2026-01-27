@@ -705,7 +705,7 @@ function padeiroTemplateDialog() {
 		// Registro de Dados (Log)
 		try {
 			// Cria um objeto File para o arquivo de log na pasta de templates
-			var logFile = new File(templatesPath + '/log padeiro.csv');
+			// var logFile = new File(templatesPath + '/log padeiro.csv');
 
 			// Obtém data e hora atual
 			var dt = new Date();
@@ -730,7 +730,7 @@ function padeiroTemplateDialog() {
 			var logData = [templateData.configName, logCount, system.userName, dateStr, timeStr].join(',');
 
 			// Salva o registro de log no arquivo
-			saveLogData(logFile, logData);
+			// saveLogData(logFile, logData);
 
 			// URL do webhook
 			var webhookURL = "https://workflows.jmbillard.com/webhook/log_db_padeiro";
