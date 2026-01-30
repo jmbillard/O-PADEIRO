@@ -225,8 +225,8 @@ function PAD_UI_EVENTS(uiObj) {
 		var i = this.selection.index;
 		changeIcon(i, uiObj.prodIconGrp);
 
-		templatesPath = PAD_prodArray[i].templatesPath;
-		templatesFolder = new Folder(PAD_prodArray[i].templatesPath); // pasta de templates.
+		templatesPath = normalizeNetworkPath(PAD_prodArray[i].templatesPath);
+		templatesFolder = new Folder(templatesPath); // pasta de templates.
 		PAD_launchBtn.enabled = templatesFolder.exists; // Habilita / Desabilita o botão "Abrir O Padeiro".
 
 		// Se a pasta de templates não existir.
@@ -288,6 +288,7 @@ function PAD_UI_EVENTS(uiObj) {
 		}
 		// Se a pasta de fontes existe e o sistema operacional for Windows, instala as fontes.
 		if (appOs == 'Win') installWinFonts(templateFontsPath);
+		if (appOs == 'Mac') installMacFonts(templateFontsPath);
 	};
 
 	// Adiciona um ouvinte de evento de clique ao botão "Instalar Fontes".
@@ -343,30 +344,25 @@ function PAD_UI_EVENTS(uiObj) {
 	// Adiciona um ouvinte de evento de clique ao botão "Abrir Pasta de Saída".
 	uiObj.pastas.rightClick.onClick = function () {
 
+		var outputPath = '';
 		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems < 1) {
-			alert(lol + '#PAD_008 - a fila de render está vazia...');
-			return;
+		if (app.project.renderQueue.numItems >= 1) {
+
+			// Obtém o último item da fila de renderização.
+			var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
+
+			// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
+			var outputModule = item.outputModule(1);
+
+
+			// Cria um objeto "Folder" para representar a pasta de saída.
+			var fld = outputModule.file.parent;
+			// Obtém o caminho completo da pasta de saída.
+			if (fld.exists) {
+				outputPath = fld.fsName;
+			}
 		}
-		// Obtém o último item da fila de renderização.
-		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-		var outputModule = item.outputModule(1);
-
-		
-		// Cria um objeto "Folder" para representar a pasta de saída.
-		var fld = outputModule.file.parent;
-
-		// Verifica se a pasta de saída existe.
-		if (!fld.exists) {
-			alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
-			return; // Encerra a função se a pasta não existir.
-		}
-		// Obtém o caminho completo da pasta de saída.
-		var outputPath = fld.fsName;
-
-		setClipboard(outputPath); // Copia o caminho da pasta de saída para a área de transferência.
+		pathDialog(outputPath);
 	};
 
 	// Define a função a ser executada quando o botão "Renomear Comps" for clicado.
@@ -422,41 +418,6 @@ function PAD_UI_EVENTS(uiObj) {
 	uiObj.buscar.leftClick.onClick = function () {
 		findDialog();
 	};
-
-	// uiObj.mensagem.leftClick.onClick = function () {
-
-	// 	// Verifica se há acesso à rede.
-	// 	if (!netAccess()) {
-	// 		alert(lol + '#PAD_007 - sem acesso a rede...');
-	// 		return; // Encerra a função se não houver acesso à rede.
-	// 	}
-
-	// 	// Verifica se há itens na fila de renderização.
-	// 	if (app.project.renderQueue.numItems < 1) {
-	// 		alert(lol + '#PAD_008 - a fila de render está vazia...');
-	// 		return;
-	// 	}
-	// 	// Obtém o último item da fila de renderização.
-	// 	var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-	// 	// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-	// 	var outputModule = item.outputModule(1);
-
-	// 	// Obtém o caminho completo da pasta de saída.
-	// 	var outputPath = decodeURI(outputModule.file.path);
-
-	// 	// Cria um objeto "Folder" para representar a pasta de saída.
-	// 	var fld = new Folder(outputPath);
-
-	// 	// Verifica se a pasta de saída existe.
-	// 	if (!fld.exists) {
-	// 		alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
-	// 		return; // Encerra a função se a pasta não existir.
-	// 	}
-
-	// 	var msg = 'segue o caminho:\n- *' + outputPath + '*';
-	// 	setClipboardContent(msg);
-	// };
 
 	uiObj.organizar.rightClick.onClick = function () {
 		app.beginUndoGroup('criar pastas do projeto');
@@ -646,7 +607,7 @@ function themeButton(sectionGrp, ctrlProperties) {
 	try {
 		if (ctrlProperties.buttonColor === undefined) ctrlProperties.buttonColor = divColor1;
 		if (ctrlProperties.textColor === undefined) ctrlProperties.textColor = normalColor1;
-	
+
 		var newUiCtrlObj = {};
 		var tipTxt = ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
 		var newBtnGrp = sectionGrp.add('group');
@@ -665,7 +626,7 @@ function themeButton(sectionGrp, ctrlProperties) {
 		newUiCtrlObj.label.text = ctrlProperties.labelTxt;
 		newUiCtrlObj.label.buttonColor = hexToRgb(ctrlProperties.buttonColor);
 		newUiCtrlObj.label.textColor = hexToRgb(ctrlProperties.textColor);
-	
+
 		newUiCtrlObj.label.minimumSize = [68, 34];
 		newUiCtrlObj.label.helpTip = tipTxt;
 
@@ -694,7 +655,7 @@ function themeButton(sectionGrp, ctrlProperties) {
 		});
 
 		return newUiCtrlObj;
-	}	catch (err) {
+	} catch (err) {
 		alert(err.message);
 	}
 }
@@ -704,7 +665,7 @@ function drawThemeButton(button) {
 	var g = button.graphics;
 	var textPen = g.newPen(g.PenType.SOLID_COLOR, button.textColor, 1);
 	var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, button.buttonColor);
-	
+
 	button.onDraw = function () {
 		var h = this.size.height;
 		var w = this.size.width;
@@ -728,63 +689,6 @@ function drawThemeButton(button) {
 		}
 	};
 }
-
-// function drawThemeButton(button, hover) {
-// 	var g = button.graphics;
-// 	var textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(button.textColor), 1);
-// 	var fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(button.buttonColor));
-// 	var textSize = g.measureString(button.text);
-
-// 	if (hover) {
-// 		textPen = g.newPen(g.PenType.SOLID_COLOR, [1, 1, 1, 1], 1);
-// 		fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(highlightColor1));
-// 	}
-
-// 	button.onDraw = function () {
-// 		if (!this.enabled) {
-// 			textPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(divColor1), 1);
-// 			fillBrush = g.newBrush(g.BrushType.SOLID_COLOR, hexToRgb(bgColor1));
-// 		}
-// 		g.newPath();
-// 		g.ellipsePath(0, 0, this.height, this.height);
-// 		g.fillPath(fillBrush);
-// 		g.ellipsePath(this.width - this.height, 0, this.height, this.height);
-// 		g.rectPath(this.height / 2, 0, this.width - this.height, this.height);
-// 		// g.strokePath(textPen);
-// 		g.fillPath(fillBrush);
-
-// 		g.drawString(this.text, textPen, (this.width - textSize.width) / 2, this.height / 2 - textSize.height);
-// 	};
-// }
-
-// // Cria botões de cor com base em um array de cores.
-// function createColorButtons(colorArray, colorGrp) {
-// 	for (var c = 0; c < colorArray.length; c++) {
-// 		var hex = colorArray[c]; // Obtém o código hexadecimal da cor.
-// 		var rgb = hexToRgb(hex) * 255; // Converte para RGB (0-255).
-
-// 		// Cria um botão com ícone, nomeado com o código hexadecimal e estilo 'toolbutton'.
-// 		var colorBtn = colorGrp.add('iconbutton', undefined, undefined, {
-// 			name: hex,
-// 			style: 'toolbutton',
-// 		});
-
-// 		colorBtn.size = [20, 20]; // Define o tamanho do botão (20x20 pixels).
-// 		setUiCtrlColor(colorBtn, hex); // Define a cor de fundo do botão.
-// 		colorBtn.onDraw = customDraw; // Define a função de desenho personalizado.
-
-// 		// Define o texto de ajuda (tooltip) com os valores RGB e hexadecimal da cor.
-// 		colorBtn.helpTip =
-// 			'R: ' +
-// 			rgb[0] +
-// 			'\nG: ' +
-// 			rgb[1] +
-// 			'\nB: ' +
-// 			rgb[2] +
-// 			'\nHEX: ' +
-// 			hex;
-// 	}
-// }
 
 // Função para desenhar o botão personalizado.
 function customDraw() {

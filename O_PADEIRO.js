@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.69';
+	var scriptVersion = 'v1.72';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -42,6 +42,7 @@ o script funcionará normalmente, mas você não terá:\n\
 	#include 'source/Utils/o padeiro maker ui.js';     // Editor de templates
 	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
 	#include 'source/Utils/find ui.js';                 // Busca em layers de texto
+	#include 'source/Utils/path ui.js';                 // Busca em layers de texto
 	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 
 	// estrutura de 'ctrlProperties'

@@ -112,8 +112,6 @@ function limitNameSize(name, limit) {
  */
 function escapeForExtendScript(str) {
     return str
-        .replace(/#/g, "\\#")
-        .replace(/&/g, "\\&")
         .replace(/'/g, "\\'")
         .replace(/"/g, '\\"');
 }

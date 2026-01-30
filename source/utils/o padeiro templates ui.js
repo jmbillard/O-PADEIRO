@@ -705,7 +705,7 @@ function padeiroTemplateDialog() {
 		// Registro de Dados (Log)
 		try {
 			// Cria um objeto File para o arquivo de log na pasta de templates
-			var logFile = new File(templatesPath + '/log padeiro.csv');
+			// var logFile = new File(templatesPath + '/log padeiro.csv');
 
 			// Obtém data e hora atual
 			var dt = new Date();
@@ -730,7 +730,7 @@ function padeiroTemplateDialog() {
 			var logData = [templateData.configName, logCount, system.userName, dateStr, timeStr].join(',');
 
 			// Salva o registro de log no arquivo
-			saveLogData(logFile, logData);
+			// saveLogData(logFile, logData);
 
 			// URL do webhook
 			var webhookURL = "https://workflows.jmbillard.com/webhook/log_db_padeiro";
@@ -778,9 +778,11 @@ function padeiroTemplateDialog() {
 		progressBar.maxvalue = newCompsArray.length * outputPathArray.length;
 		progressBar.value = 0;
 		PAD_TEMPLATES_w.update();
+		// alert(normalizeNetworkPath(outputPathArray.join('\n')));
 
 		// Verifica as pastas de output
 		for (var o = 0; o < outputPathArray.length; o++) {
+			outputPathArray[o] = normalizeNetworkPath(outputPathArray[o]);
 			var outputFolder = new Folder(outputPathArray[o]);
 
 			if (outputFolder.exists) continue;
@@ -794,7 +796,6 @@ function padeiroTemplateDialog() {
 
 			alert(lol + '#PAD_019 - output não pode ser acessado!');
 		}
-
 		// Atualização da interface de progresso
 		PAD_TEMPLATES_w.text = 'CRIANDO FILA DE RENDER...';
 		PAD_TEMPLATES_w.size = [compactWidth, 60];

@@ -149,3 +149,30 @@ if (!Array.prototype.pop) {
 		return lastElement;
 	};
 }
+
+// Polyfill para Array.prototype.filter (compatível com ExtendScript)
+if (!Array.prototype.filter) {
+    Array.prototype.filter = function(callback, thisArg) {
+        if (this == null) {
+            throw new TypeError('Array.prototype.filter called on null or undefined');
+        }
+        if (typeof callback !== 'function') {
+            throw new TypeError(callback + ' is not a function');
+        }
+        
+        var result = [];
+        var obj = Object(this);
+        var len = obj.length >>> 0;
+        
+        for (var i = 0; i < len; i++) {
+            if (i in obj) {
+                var val = obj[i];
+                if (callback.call(thisArg, val, i, obj)) {
+                    result.push(val);
+                }
+            }
+        }
+        
+        return result;
+    };
+}
