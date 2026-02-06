@@ -4,13 +4,16 @@ function sendToWebhookWithCurl(data, webhookURL) {
 
 	if (appOs === "Mac") {
 		// macOS — escapa aspas simples
-		// jsonData = jsonData.replace(/'/g, "'\\''");
+		jsonData = jsonData.replace(/'/g, "'\\''");
 
-		// curlCmd =
-		// 	'/usr/bin/curl -k --tlsv1.2 -X POST ' +
-		// 	'"' + webhookURL + '" ' +
-		// 	'-H "Content-Type: application/json" ' +
-		// 	"-d '" + jsonData + "'";
+		curlCmd =
+			"echo '" + jsonData + "' | " +
+			"/usr/bin/curl --connect-timeout 3 --max-time 5 " +
+			"-k --tlsv1.2 -X POST " +
+			'"' + webhookURL + '" ' +
+			'-H "Content-Type: application/json" ' +
+			"-d @-";
+
 
 	} else {
 		// Windows — escapa aspas duplas

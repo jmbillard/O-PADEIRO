@@ -700,16 +700,13 @@ function padeiroTemplateDialog() {
 		deleteEmptyProjectFolders();
 
 		// Atualização da interface de progresso
-		PAD_TEMPLATES_w.text = 'SALVANDO LOG...';
+		PAD_TEMPLATES_w.text = 'REGISTRANDO LOG...';
 		infoHeaderLab.text = logCount + ' TEMPLATES PROCESSADOS';
 		progressBar.value = 0;
 		PAD_TEMPLATES_w.update();
 
 		// Registro de Dados (Log)
 		try {
-			// Cria um objeto File para o arquivo de log na pasta de templates
-			// var logFile = new File(templatesPath + '/log padeiro.csv');
-
 			// Obtém data e hora atual
 			var dt = new Date();
 
@@ -728,20 +725,13 @@ function padeiroTemplateDialog() {
 			var dateStr = [d, m, y].join('/'); // data
 			var timeStr = hr + ':' + mi; // hora
 
-			// Cria um registro de log com as informações:
-			// configuração usada, número de templates criados, nome do usuário, data e hora
-			var logData = [templateData.configName, logCount, system.userName, dateStr, timeStr].join(',');
-
-			// Salva o registro de log no arquivo
-			// saveLogData(logFile, logData);
-
 			// URL do webhook
 			var webhookURL = "https://workflows.jmbillard.com/webhook/log_db_padeiro";
 			var webData = {
 				template: templateData.configName,
 				quantidade: logCount,
 				user: system.userName,
-				work_station: system.machineName,
+				work_station: system.machineName.replaceSpecialCharacters(),
 				data: [y, m, d].join('-') + ' ' + timeStr,
 				caminho: projectFile.fsName
 			};
