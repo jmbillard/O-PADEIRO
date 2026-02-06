@@ -12,6 +12,11 @@
 */
 
 /*
+MAC caminho:
+- /Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/SUPERCOPA/SUPERCOPA REI 2026/LETTERINGS APLICADOS
+
+Windows caminho:
+- //vfx-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/SUPERCOPA/SUPERCOPA REI 2026/LETTERINGS APLICADOS
 
 ---------------------------------------------------------------
 > command line
@@ -215,13 +220,13 @@ function installWinFonts(fontsPath) {
 
 		try {
 			subArray = new Folder(
-				decodeURI(aFile.fullName).toString(),
+				decodeURI(aFile.fsName).toString(),
 			).getFiles();
 			//
 		} catch (err) { }
 
 		if (subArray.length > 0) {
-			installFonts(decodeURI(aFile.fullName).toString());
+			installFonts(decodeURI(aFile.fsName).toString());
 
 			continue;
 		} else {
@@ -296,12 +301,12 @@ function installMacFonts(fontsPath) {
 		// Verifica se é uma subpasta
 		var subArray = [];
 		try {
-			subArray = new Folder(decodeURI(aFile.fullName).toString()).getFiles();
+			subArray = new Folder(decodeURI(aFile.fsName).toString()).getFiles();
 		} catch (err) { }
 
 		// Recursão para subpastas
 		if (subArray.length > 0) {
-			installMacFonts(decodeURI(aFile.fullName).toString());
+			installMacFonts(decodeURI(aFile.fsName).toString());
 			continue;
 		}
 
@@ -444,7 +449,7 @@ function copyFolderContentContent(src, dst) {
 		} catch (err) { }
 
 		if (subArray.length > 0) {
-			copyFolderContentContent(decodeURI(aFile.fullName).toString(), dst);
+			copyFolderContentContent(decodeURI(aFile.fsName).toString(), dst);
 		} else {
 			if (!dstFolder.exists) continue;
 
@@ -603,7 +608,7 @@ function saveLogData(aFile, dataStr) {
 
 	data += '\n' + dataStr;
 
-	saveTextFile(data, decodeURI(aFile.fullName));
+	saveTextFile(data, decodeURI(aFile.fsName));
 }
 
 // -------------------------------------------------------
@@ -939,6 +944,20 @@ function convertToDriveLetter(uncPath) {
     return uncPath;
 }
 
+/**
+ * Copia um caminho formatado para Windows Explorer para a área de transferência
+ * (Função utilitária extra)
+ * @param {string} path - Caminho a ser copiado
+ * @returns {string} Caminho formatado para Explorer
+ */
+function getExplorerPath(path) {
+    return normalizeNetworkPath(path, {
+        forceWin: true,
+        forceBackslash: true,
+        forceDriveLetter: true
+    });
+}
+
 
 /**
  * Valida se um caminho normalizado existe (ExtendScript)
@@ -957,3 +976,121 @@ function pathExists(path) {
 		return false;
 	}
 }
+
+// ========================================
+// EXEMPLO DE USO NO AFTER EFFECTS
+// ========================================
+
+/*
+// ==========================================
+// TESTE 1: Normalizar caminho do projeto atual
+// ==========================================
+if (app.project.file) {
+	var projectPath = app.project.file.fsName;
+	var normalized = normalizeNetworkPath(projectPath);
+    
+	alert("Projeto:\n" + 
+		  "Original: " + projectPath + "\n" +
+		  "Normalizado: " + normalized);
+}
+
+// ==========================================
+// TESTE 2: Converter todos os footages
+// ==========================================
+function logAllFootagePaths() {
+	var report = "=== CAMINHOS DE FOOTAGE ===\n\n";
+    
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+	    
+		if (item instanceof FootageItem && item.file) {
+			var original = item.file.fsName;
+			var normalized = normalizeNetworkPath(original);
+		    
+			report += "Item: " + item.name + "\n";
+			report += "Original: " + original + "\n";
+			report += "Normalizado: " + normalized + "\n";
+			report += "Existe: " + (pathExists(normalized) ? "SIM" : "NÃO") + "\n";
+			report += "---\n";
+		}
+	}
+    
+	// Salvar relatório em arquivo
+	var reportFile = new File(Folder.desktop + "/ae_paths_report.txt");
+	reportFile.open("w");
+	reportFile.write(report);
+	reportFile.close();
+    
+	alert("Relatório salvo em:\n" + reportFile.fsName);
+}
+
+// Executar
+// logAllFootagePaths();
+
+// ==========================================
+// TESTE 3: Validação de conectividade
+// ==========================================
+function testServerConnectivity() {
+	var testPaths = [
+		"L:\\test",
+		"K:\\test",
+		"T:\\test",
+		"V:\\test",
+		"Y:\\test",
+		"P:\\test"
+	];
+    
+	var results = "=== TESTE DE SERVIDORES ===\n\n";
+    
+	for (var i = 0; i < testPaths.length; i++) {
+		var testPath = testPaths[i];
+		var normalized = normalizeNetworkPath(testPath);
+		var accessible = false;
+	    
+		try {
+			// Tenta acessar o caminho raiz do servidor
+			var serverPath = normalized.substring(0, normalized.lastIndexOf("\\"));
+			var testFolder = new Folder(serverPath);
+			accessible = testFolder.exists;
+		} catch(e) {
+			accessible = false;
+		}
+	    
+		results += testPath + "\n";
+		results += normalized + "\n";
+		results += "Status: " + (accessible ? "✓ ACESSÍVEL" : "✗ INACESSÍVEL") + "\n\n";
+	}
+    
+	alert(results);
+}
+
+// Executar
+// testServerConnectivity();
+
+// ==========================================
+// TESTE 4: Exemplo prático - Render output
+// ==========================================
+function setRenderOutput() {
+	var comp = app.project.activeItem;
+	if (!comp || !(comp instanceof CompItem)) {
+		alert("Selecione uma composição primeiro!");
+		return;
+	}
+    
+	// Define output em drive letter (será convertido para UNC)
+	var outputPath = "L:\\Renders\\2024\\" + comp.name + "_[####].png";
+	var normalizedOutput = normalizeNetworkPath(outputPath);
+    
+	// Configura render queue
+	var renderQueueItem = app.project.renderQueue.items.add(comp);
+	var outputModule = renderQueueItem.outputModule(1);
+    
+	// Usa o caminho normalizado
+	outputModule.file = new File(normalizedOutput);
+    
+	alert("Render configurado:\n" + normalizedOutput);
+}
+
+// Executar
+// setRenderOutput();
+*/

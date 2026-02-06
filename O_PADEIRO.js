@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.72';
+	var scriptVersion = 'v1.74';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -16,7 +16,7 @@ o script funcionará normalmente, mas você não terá:\n\
     - lista inicial de produções com templates\
     - novos recursos e correções de bugs.';
 		alert(startMsg);
-		scriptMainPath = Folder.userData.fullName + '/O PADEIRO script/';
+		scriptMainPath = Folder.userData.fsName + '/O PADEIRO script/';
 	}
 
 	#include 'source/libraries/JSON lib.js';        // Inclui funções para trabalhar com dados JSON

@@ -16,6 +16,7 @@
 function padeiroTemplateDialog() {
 	// Título da janela
 	var scriptName = 'TEMPLATES';
+	var isRunning = false; // Indica se o script está em execução
 
 	var compactWidth; // Largura da janela sem a pré-visualização
 	var extendedWidth; // Largura da janela com a pré-visualização
@@ -472,6 +473,8 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	processBtn.leftClick.onClick = function () {
+		isRunning = true;
+
 		// Verificações Iniciais
 		if (inputTxt.text.trim() == '') return; // Aborta se não houver texto de entrada
 		if (!projectFile.exists) return; // Aborta se o arquivo do template não existir
@@ -843,6 +846,7 @@ function padeiroTemplateDialog() {
 
 	PAD_TEMPLATES_w.onClose = function () {
 		// Execução de Script Personalizado (se houver)
+		if (!isRunning) return;
 		if (!scriptFile.exists) return;
 
 		// Atualização da interface de progresso
@@ -919,6 +923,8 @@ function padeiroTemplateDialog() {
 		var outputPathArray = templateData.outputPath;
 
 		for (var o = 0; o < outputPathArray.length; o++) {
+
+			outputPathArray[o] = normalizeNetworkPath(outputPathArray[o]);
 
 			var outputFolder = new Folder(outputPathArray[o]);
 

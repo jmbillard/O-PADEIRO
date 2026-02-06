@@ -1,16 +1,15 @@
 function pathDialog(path) {
 
-    macPath = appOs == 'Mac' ? path : normalizeNetworkPath(path, { forceMac: true });
-    winPath = appOs == 'Win' ? path : normalizeNetworkPath(path, {
-        forceWin: true,
-        forceBackslash: true
-        //forceDriveLetter: true
-    });
-
+    macPath = appOs == 'Mac'
+        ? path
+        : normalizeNetworkPath(path, { forceMac: true });
+    winPath = appOs == 'Win'
+        ? normalizeNetworkPath(path, { forceBackslash: true }).replace(/^c\//, 'C:\\')
+        : normalizeNetworkPath(path, { forceWin: true, forceBackslash: true }).replace(/^\\Users\\/, 'C:\\Users\\');
     // PALETTE
     // =======
     var palette = new Window("palette");
-    palette.text = "Caminhos v1";
+    palette.text = "Pastas v1";
     palette.orientation = "column";
     palette.alignChildren = ["center", "top"];
     palette.spacing = 10;
@@ -82,15 +81,15 @@ function pathDialog(path) {
 
     winPathTxt.onEnterKey = function () {
 
-        macPath = normalizeNetworkPath(winPathTxt.text, { forceMac: true });
+        macPath = normalizeNetworkPath(winPathTxt.text.replace(/^C:\\/, '\\'), { forceMac: true });
         macPathTxt.text = macPath;
     }
 
     macPathTxt.onEnterKey = function () {
 
         winPath = normalizeNetworkPath(macPathTxt.text, { forceWin: true })
-            .replace(/\//g, '\\')
-            .replace(/^\\Users/, 'C:\\Users');
+            .replace(/^\/Users\//, 'C:/Users/')  // Primeiro substitui com barras normais
+            .replace(/\//g, '\\');               // Depois converte todas as barras
 
         winPathTxt.text = winPath;
     }

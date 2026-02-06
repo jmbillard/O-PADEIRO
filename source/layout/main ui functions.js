@@ -300,7 +300,7 @@ function PAD_UI_EVENTS(uiObj) {
 
 		if (savePath == null) return; // Se a janela foi cancelada, não faz nada
 
-		var currentProjPath = decodeURI(savePath.fullName) + '/FONTS'; // caminho final do collect
+		var currentProjPath = decodeURI(savePath.fsName) + '/FONTS'; // caminho final do collect
 		var fontsPath = fontCollect(currentProjPath);
 
 		openFolder(fontsPath);

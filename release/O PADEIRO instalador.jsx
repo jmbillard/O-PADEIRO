@@ -3,7 +3,7 @@
 function installerUi() {
 
 	var scriptName = 'INSTALADOR';
-	var scriptVersion = 'v0.3b';
+	var scriptVersion = 'v0.4b';
 
 	var pArray = [];
 	var p = 0;
@@ -11,8 +11,8 @@ function installerUi() {
 	// Determina o sistema operacional atual
 	var appOs = $.os.indexOf('Win') >= 0 ? 'Win' : 'Mac';
 
-	var appPath = Folder.appPackage.fullName;
-	var userPath = Folder.userData.fullName;
+	var appPath = Folder.appPackage.fsName;
+	var userPath = Folder.userData.fsName;
 	var localAePath = '/Adobe/After Effects';
 	var localScriptsPanelPath = '/Scripts/ScriptUI Panels';
 
@@ -42,37 +42,6 @@ try {\
 }\
 ';
 	}
-
-	// -----------------------------------------------------
-
-	function installLog() {
-		var appOs = $.os.indexOf('Win') >= 0 ? 'Windows' : 'Mac OS';
-		var tempFile = new File(Folder.temp.fsName + "/O_PADEIRO_install_log.json");
-
-		try {
-
-			if (appOs === 'Windows') {
-				var powershellScript = '$ip = Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike \'169.254*\' -and $_.IPAddress -ne \'127.0.0.1\' -and $_.InterfaceAlias -notmatch \'Loopback|Virtual|Tunneling|Bluetooth\' -and $_.PrefixOrigin -ne \'WellKnown\' } | Sort-Object InterfaceIndex | Select-Object -First 1 -ExpandProperty IPAddress; ' +
-					'$info = @{ user = $env:USERNAME; work_station = $env:COMPUTERNAME; IP = $ip }; ' +
-					'$json = $info | ConvertTo-Json -Depth 2; ' +
-					'$json | Out-File -Encoding UTF8 -FilePath \'' + tempFile.fsName + '\'';
-
-				// Salva o script PowerShell em um arquivo temporário
-				var psFile = new File(Folder.temp.fsName + "/O_PADEIRO_temp_script.ps1");
-				psFile.open("w");
-				psFile.write(powershellScript);
-				psFile.close();
-
-				var cmd = 'cmd.exe /c powershell.exe -ExecutionPolicy Bypass -File "' + psFile.fsName + '"';
-				system.callSystem(cmd);
-
-				alert("Log gerado:\n" + tempFile.fsName);
-			} else {
-				alert("Sistema operacional não suportado para geração de log.");
-			}
-		} catch (err) { }
-	}
-
 
 	// -----------------------------------------------------
 
@@ -292,41 +261,47 @@ para começar, O PADEIRO precisará de acesso a rede...';
 
 	function installScript() {
 
-		if (appOs == 'Mac') return;
-
-		var localAeFolder = new Folder(userPath + localAePath);
-		var vFolderArray = localAeFolder.getFiles();
-		var msg = 'script instalado';
-
-		progressBar.maxvalue = vFolderArray.length;
-		progressBar.value = 0;
-
-		try {
-
-			for (var i = 0; i < vFolderArray.length; i++) {
-
-				var vFolder = vFolderArray[i];
-				progressLab.text = vFolder.displayName;
-				progressBar.value++;
-				win.update();
-
-				if (!(vFolder instanceof Folder)) continue;
-				if (vFolder.name.match(/logs/i)) continue;
-
-				var scriptPanelsPath = vFolder.fullName + localScriptsPanelPath;
-				var scriptPanelsFolder = new Folder(scriptPanelsPath);
-
-				if (!scriptPanelsFolder.exists) scriptPanelsFolder.create();
-
-				saveTextFile(codeContent(sourceFile), scriptPanelsFolder.fullName + '/O PADEIRO.jsx');
+		if (appOs == 'Win') {
+			
+			var localAeFolder = new Folder(userPath + localAePath);
+			var vFolderArray = localAeFolder.getFiles();
+			var msg = 'script instalado';
+	
+			progressBar.maxvalue = vFolderArray.length;
+			progressBar.value = 0;
+	
+			try {
+	
+				for (var i = 0; i < vFolderArray.length; i++) {
+	
+					var vFolder = vFolderArray[i];
+					progressLab.text = vFolder.displayName;
+					progressBar.value++;
+					win.update();
+	
+					if (!(vFolder instanceof Folder)) continue;
+					if (vFolder.name.match(/logs/i)) continue;
+	
+					var scriptPanelsPath = vFolder.fsName + localScriptsPanelPath;
+					var scriptPanelsFolder = new Folder(scriptPanelsPath);
+	
+					if (!scriptPanelsFolder.exists) scriptPanelsFolder.create();
+	
+					saveTextFile(codeContent(sourceFile), scriptPanelsFolder.fsName + '/O PADEIRO.jsx');
+				}
+	
+			} catch (err) {
+	
+				msg = err.message;
 			}
+	
+			progressLab.text = msg;
 
-		} catch (err) {
+		} else {
 
-			msg = err.message;
+			alert('(っ °Д °;)っ      Instalação não suportada no Mac OS neste momento.');
 		}
 
-		progressLab.text = msg;
 	}
 
 	// -----------------------------------------------------
@@ -354,7 +329,7 @@ para começar, O PADEIRO precisará de acesso a rede...';
 				if (!(vFolder instanceof Folder)) continue;
 				if (vFolder.name.match(/logs/i)) continue;
 
-				var scriptPanelsPath = vFolder.fullName + localScriptsPanelPath;
+				var scriptPanelsPath = vFolder.fsName + localScriptsPanelPath;
 				var scriptPanelsFolder = new Folder(scriptPanelsPath);
 
 				if (!scriptPanelsFolder.exists) continue;
@@ -430,7 +405,7 @@ para começar, O PADEIRO precisará de acesso a rede...';
 
 		if (p == 2) {
 
-			pathTxt.text = sourceFile.exists ? decodeURI(sourceFile.fullName) : 'selecione o arquivo "O_PADEIRO_SOURCE.jsxbin"';
+			pathTxt.text = sourceFile.exists ? decodeURI(sourceFile.fsName) : 'selecione o arquivo "O_PADEIRO_SOURCE.jsxbin"';
 		}
 
 		if (p == 0) nextBtn.enabled = true;
@@ -447,7 +422,7 @@ para começar, O PADEIRO precisará de acesso a rede...';
 
 		if (p < 3) progressBar.value = 0;
 
-		pathTxt.text = sourceFile.exists ? decodeURI(sourceFile.fullName) : 'selecione o arquivo "O_PADEIRO_SOURCE.jsxbin"';
+		pathTxt.text = sourceFile.exists ? decodeURI(sourceFile.fsName) : 'selecione o arquivo "O_PADEIRO_SOURCE.jsxbin"';
 
 		return p;
 	}
@@ -478,7 +453,6 @@ para começar, O PADEIRO precisará de acesso a rede...';
 		}
 
 		if (p > pArray.length - 1) {
-			installLog();
 			win.close();
 		}
 	}
@@ -502,7 +476,7 @@ para começar, O PADEIRO precisará de acesso a rede...';
 		if (!installRdo.value && !repairRdo.value && !removeRdo.value) repairRdo.value = true;
 
 		sourceFile = tempFile;
-		pathTxt.text = decodeURI(sourceFile.fullName);
+		pathTxt.text = decodeURI(sourceFile.fsName);
 
 		nextBtn.enabled = sourceFile.exists;
 		installRdo.enabled = nextBtn.enabled;

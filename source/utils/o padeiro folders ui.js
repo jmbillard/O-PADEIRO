@@ -81,9 +81,9 @@ function padProdFoldersDialog(prodArray) {
 
 			if (newTemplatesPath == null) return; // Se a janela foi cancelada, não faz nada
 
-			this.properties.prodPath = newTemplatesPath.fullName;
-			this.text = newTemplatesPath.fullName;
-			this.helpTip = 'caminho da pasta de templates:\n\n' + newTemplatesPath.fullName;
+			this.properties.prodPath = newTemplatesPath.fsName;
+			this.text = newTemplatesPath.fsName;
+			this.helpTip = 'caminho da pasta de templates:\n\n' + newTemplatesPath.fsName;
 		});
 
 		deleteBtn.leftClick.onClick = function () {
@@ -233,7 +233,7 @@ function padProdFoldersDialog(prodArray) {
 			}
 
 			var configContent = JSON.stringify({ PRODUCTIONS: sortProdData(tempArray) }, null, '\t');
-			saveTextFile(configContent, tempConfigFile.fullName);
+			saveTextFile(configContent, tempConfigFile.fsName);
 
 			PAD_CONFIG_w.close();
 		} catch (err) {

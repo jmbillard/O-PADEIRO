@@ -134,9 +134,10 @@ function PadMakerDialog() {
 
 			if (newOutputPath == null) return;
 
-			this.properties.outputPath = newOutputPath.fullName;
-			this.text = newOutputPath.fullName;
-			this.helpTip = 'caminho da pasta de output:\n\n' + newOutputPath.fullName;
+			newOutputPath = normalizeNetworkPath(newOutputPath.fsName);
+			this.properties.outputPath = newOutputPath;
+			this.text = newOutputPath;
+			this.helpTip = 'caminho da pasta de output:\n\n' + newOutputPath;
 		});
 
 		excludeOutputBtn.leftClick.onClick = function () {
@@ -757,9 +758,10 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		if (newImportPath == null) return;
 
-		this.properties.importPath = newImportPath.fullName;
-		this.text = newImportPath.fullName;
-		this.helpTip = 'caminho da pasta de mídias:\n\n' + newImportPath.fullName;
+		newImportPath = normalizeNetworkPath(newImportPath.fsName);
+		this.properties.importPath = newImportPath;
+		this.text = newImportPath;
+		this.helpTip = 'caminho da pasta de mídias:\n\n' + newImportPath;
 	});
 
 	testBtn.leftClick.onClick = function () {
@@ -858,7 +860,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 		var currentProj = app.project.file;
 		var currentTemplateFolder = currentProj.parent;
-		var currentProjBase = decodeURI(currentProj.fullName).replace(/\.ae[pt]/, '');
+		var currentProjBase = decodeURI(currentProj.fsName).replace(/\.ae[pt]/, '');
 
 		try {
 			var configContent = JSON.stringify(tempConfigObj, null, '\t');
@@ -866,11 +868,11 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 			tempPreviewFile.copy(templateImg);
 			saveTextFile(configContent, currentProjBase + '_config.json');
-			fontCollect(decodeURI(currentTemplateFolder.fullName) + '/FONTS');
+			fontCollect(decodeURI(currentTemplateFolder.fsName) + '/FONTS');
 
 			tempPreviewFile.remove();
 
-			openFolder(decodeURI(currentTemplateFolder.fullName));
+			openFolder(decodeURI(currentTemplateFolder.fsName));
 		} catch (err) {
 			alert(lol + '#PAD_028 - ' + err.message);
 		}
