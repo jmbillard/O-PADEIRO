@@ -745,7 +745,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		// Verifica se o volume está montado
 		if (typeof pathExists === "function" && !pathExists("/Volumes/" + shareName)) {
-			if (!silent) {
+			if (!silent && appOs === 'Mac') {
 				alert("O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
 					"Servidor: " + serverName + "\n" +
 					"Monte o volume antes de continuar.");

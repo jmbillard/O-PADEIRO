@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.75';
+	var scriptVersion = 'v1.76';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -87,7 +87,7 @@ o script funcionará normalmente, mas você não terá:\n\
 					icon: PAD_PASTAS_ICON,
 					tips: [
 						lClick + 'abir a pasta do último item da fila de render',
-						rClick + 'copiar para o clipboard o caminho do último item da fila de render'
+						rClick + 'abrir o conversor de caminhos Windows/MacOs'
 					]
 				}
 			},
