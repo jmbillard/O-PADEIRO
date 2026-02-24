@@ -3,7 +3,7 @@
 function installerUi() {
 
 	var scriptName = 'INSTALADOR';
-	var scriptVersion = 'v0.4b';
+	var scriptVersion = 'v0.5b';
 
 	var pArray = [];
 	var p = 0;
@@ -12,7 +12,7 @@ function installerUi() {
 	var appOs = $.os.indexOf('Win') >= 0 ? 'Win' : 'Mac';
 
 	var appPath = Folder.appPackage.fsName;
-	var userPath = Folder.userData.fsName;
+	var userPath = appOs == 'Win' ? Folder.userData.fsName : Folder.userData.fsName.replace(/Application Support$/, 'Preferences');
 	var localAePath = '/Adobe/After Effects';
 	var localScriptsPanelPath = '/Scripts/ScriptUI Panels';
 
@@ -30,9 +30,11 @@ function installerUi() {
 	// -----------------------------------------------------
 
 	function codeContent(newSourceFile) {
+		var path = appOs == 'Win' ? ecodeURI(newSourceFile.path) : newSourceFile.path;
+
 		return '\
 try {\
-	var scriptMainPath = \'' + decodeURI(newSourceFile.path) + '/\';\
+	var scriptMainPath = \'' + path + '/\';\
 	var scriptMainFile = new File(scriptMainPath + \'' + newSourceFile.displayName + '\');\n\
 	scriptMainFile.open(\'r\');\
 	eval(scriptMainFile.read());\n\
@@ -261,54 +263,44 @@ para começar, O PADEIRO precisará de acesso a rede...';
 
 	function installScript() {
 
-		if (appOs == 'Win') {
-			
-			var localAeFolder = new Folder(userPath + localAePath);
-			var vFolderArray = localAeFolder.getFiles();
-			var msg = 'script instalado';
-	
-			progressBar.maxvalue = vFolderArray.length;
-			progressBar.value = 0;
-	
-			try {
-	
-				for (var i = 0; i < vFolderArray.length; i++) {
-	
-					var vFolder = vFolderArray[i];
-					progressLab.text = vFolder.displayName;
-					progressBar.value++;
-					win.update();
-	
-					if (!(vFolder instanceof Folder)) continue;
-					if (vFolder.name.match(/logs/i)) continue;
-	
-					var scriptPanelsPath = vFolder.fsName + localScriptsPanelPath;
-					var scriptPanelsFolder = new Folder(scriptPanelsPath);
-	
-					if (!scriptPanelsFolder.exists) scriptPanelsFolder.create();
-	
-					saveTextFile(codeContent(sourceFile), scriptPanelsFolder.fsName + '/O PADEIRO.jsx');
-				}
-	
-			} catch (err) {
-	
-				msg = err.message;
+		var localAeFolder = new Folder(userPath + localAePath);
+		var vFolderArray = localAeFolder.getFiles();
+		var msg = 'script instalado';
+
+		progressBar.maxvalue = vFolderArray.length;
+		progressBar.value = 0;
+
+		try {
+
+			for (var i = 0; i < vFolderArray.length; i++) {
+
+				var vFolder = vFolderArray[i];
+				progressLab.text = vFolder.displayName;
+				progressBar.value++;
+				win.update();
+
+				if (!(vFolder instanceof Folder)) continue;
+				if (vFolder.name.match(/logs/i)) continue;
+
+				var scriptPanelsPath = vFolder.fsName + localScriptsPanelPath;
+				var scriptPanelsFolder = new Folder(scriptPanelsPath);
+
+				if (!scriptPanelsFolder.exists) scriptPanelsFolder.create();
+
+				saveTextFile(codeContent(sourceFile), scriptPanelsFolder.fsName + '/O PADEIRO.jsx');
 			}
-	
-			progressLab.text = msg;
 
-		} else {
+		} catch (err) {
 
-			alert('(っ °Д °;)っ      Instalação não suportada no Mac OS neste momento.');
+			msg = err.message;
 		}
 
+		progressLab.text = msg;
 	}
 
 	// -----------------------------------------------------
 
 	function removeScript() {
-
-		if (appOs == 'Mac') return;
 
 		var localAeFolder = new Folder(userPath + localAePath);
 		var vFolderArray = localAeFolder.getFiles();
