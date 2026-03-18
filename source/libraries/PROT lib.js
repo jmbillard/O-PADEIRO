@@ -42,8 +42,8 @@ String.prototype.replaceSpecialCharacters = function () {
 		.replace(/\u00E0|\u00E1|\u00E2|\u00E3|\u00E4|[àáâãä]/g, 'a')
 		.replace(/\u00C8|\u00C9|\u00CA|\u00CB|[ÈÉÊË]/g, 'E')
 		.replace(/\u00E8|\u00E9|\u00EA|\u00EB|[èéêë]/g, 'e')
-		.replace(/\u00CC|\u00CD|\u00CE|\u00CF|[ÍÍîï]/g, 'I')
-		.replace(/\u00EC|\u00ED|\u00EE|\u00EF|[ííîï]/g, 'i')
+		.replace(/\u00CC|\u00CD|\u00CE|\u00CF|[ÌÍîï]/g, 'I')
+		.replace(/\u00EC|\u00ED|\u00EE|\u00EF|[ìíîï]/g, 'i')
 		.replace(/\u00D2|\u00D3|\u00D4|\u00D5|\u00D6|[ÒÓÔÕÖ]/g, 'O')
 		.replace(/\u00F2|\u00F3|\u00F4|\u00F5|\u00F6|[òóôõö]/g, 'o')
 		.replace(/\u00D9|\u00DA|\u00DB|\u00DC|[ÙÚÛÜ]/g, 'U')
@@ -52,8 +52,8 @@ String.prototype.replaceSpecialCharacters = function () {
 		.replace(/ç|\u00E7/g, 'c')
 		.replace(/[^\w\s-]/g, ' ') // replaces any letter character except space...
 		.replace(/[\s_]+/g, ' ') // replaces 2 or more spaces...
-		.trim()
-		.replace(/^\W+|\W+$/, '');
+		.replace(/^\W+|\W+$/, '')
+		.trim();
 };
 /* cSpell:enable */
 

@@ -9,3 +9,4 @@ eslint.config.mjs
 .prettierrc
 .eslintrc.json
 .markdownlint.json
+.DS_Store
