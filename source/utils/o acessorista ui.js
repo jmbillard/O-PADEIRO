@@ -16,7 +16,8 @@ var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
 var PS_MIN_QUERY = 2; // mínimo de caracteres para a busca
 var PS_MAX_RESULTS = 12; // máximo de atrações exibidas (a janela não tem scroll)
-var PS_MAX_PATH_CHARS = 76;
+var PS_WIDTH = 640; // largura fixa da janela (px)
+var PS_MAX_PATH_CHARS = 90;
 
 var PS_SMB = {
 	sp: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
@@ -27,9 +28,9 @@ var PS_SMB = {
 
 // prioridade: Teams > Trello > Atrações
 var PS_CATEGORIES = [
-	{ key: 'atracoes_teams', label: 'Teams', color: normalColor1 },
-	{ key: 'atracoes_trello', label: 'Trello', color: normalColor2 },
-	{ key: 'atracoes', label: 'Atrações', color: highlightColor2 }
+	{ key: 'atracoes_teams', label: 'TEAMS', color: normalColor1 },
+	{ key: 'atracoes_trello', label: 'TRELLO', color: normalColor1 },
+	{ key: 'atracoes', label: 'ATRAÇÕES', color: normalColor1 }
 ];
 
 // Registros que não vêm do webhook.
@@ -414,7 +415,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.2';
+	var scriptVersion = 'v3.3';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -425,11 +426,14 @@ function pathSearchDialog() {
 	var index = [];
 	var indexReady = false;
 
-	var pathW = new Window('palette', scriptName + ' ' + scriptVersion, undefined, { resizeable: true });
+	var pathW = new Window('palette', scriptName + ' ' + scriptVersion);
 	pathW.orientation = 'column';
 	pathW.alignChildren = ['fill', 'top'];
 	pathW.spacing = 8;
 	pathW.margins = 12;
+	pathW.preferredSize.width = PS_WIDTH;
+
+	var contentWidth = PS_WIDTH - pathW.margins.left - pathW.margins.right;
 
 	var searchGrp = pathW.add('group');
 	searchGrp.alignChildren = ['fill', 'center'];
@@ -443,6 +447,7 @@ function pathSearchDialog() {
 	refreshBtn.alignment = ['right', 'center'];
 
 	var statusTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
+	statusTxt.preferredSize.width = contentWidth;
 	setFgColor(statusTxt, monoColor1);
 
 	var resultsGrp;
@@ -466,7 +471,7 @@ function pathSearchDialog() {
 
 		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
 
-		pathW.size = [pathW.size.width, height];
+		pathW.size = [PS_WIDTH, height];
 		pathW.layout.layout(true);
 	}
 
@@ -489,7 +494,7 @@ function pathSearchDialog() {
 		var displayPath = psToPlatform(path);
 		var lab = parent.add('statictext', undefined, 'Caminho: ' + psTruncateMiddle(displayPath, PS_MAX_PATH_CHARS));
 
-		lab.alignment = ['fill', 'top'];
+		lab.preferredSize.width = contentWidth;
 		lab.helpTip = 'clique para abrir:\n' + displayPath;
 		setCtrlHighlight(lab, monoColor1, normalColor2);
 
@@ -505,7 +510,8 @@ function pathSearchDialog() {
 		rowGrp.alignChildren = ['fill', 'top'];
 		rowGrp.spacing = 4;
 
-		var nameTxt = rowGrp.add('statictext', undefined, group.name);
+		var nameTxt = rowGrp.add('statictext', undefined, group.name, { truncate: 'end' });
+		nameTxt.preferredSize.width = contentWidth;
 		setFgColor(nameTxt, monoColor1);
 
 		var btnGrp = rowGrp.add('group');
@@ -607,16 +613,13 @@ function pathSearchDialog() {
 
 	refreshBtn.onClick = function () {
 		loadIndex(true);
-	};
-
-	pathW.onResizing = pathW.onResize = function () {
-		this.layout.resize();
+		searchEdTxt.active = true;
 	};
 
 	pathW.onShow = function () {
-		searchEdTxt.active = true;
 		relayout();
 		loadIndex(false);
+		searchEdTxt.active = true; // por último: o carregamento do índice pode tirar o foco do campo
 	};
 
 	pathW.center();
