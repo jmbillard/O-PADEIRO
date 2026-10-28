@@ -292,6 +292,25 @@ function psMatchingFolder(group, query) {
 	return null;
 }
 
+// Descreve onde o termo casou (nome da atração ou o primeiro campo de caminho que o contém).
+function psMatchSource(group, query) {
+	if (psNormalize(group.name).indexOf(query) >= 0) return 'nome da atração';
+
+	var fields = [
+		['projeto', group.projetos],
+		['output', group.outputs],
+		['caminho', group.caminhos]
+	];
+
+	for (var i = 0; i < fields.length; i++) {
+		for (var j = 0; j < fields[i][1].length; j++) {
+			if (psNormalize(fields[i][1][j]).indexOf(query) >= 0) return fields[i][0] + ': ' + psTruncateMiddle(psToPlatform(fields[i][1][j]), PS_MAX_PATH_CHARS - 12);
+		}
+	}
+
+	return '?';
+}
+
 // Montagem SMB sob demanda (macOS) -----------------------------
 
 function psMountedSharePath(server, share) {
@@ -415,7 +434,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.3';
+	var scriptVersion = 'v3.4';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -513,6 +532,10 @@ function pathSearchDialog() {
 		var nameTxt = rowGrp.add('statictext', undefined, group.name, { truncate: 'end' });
 		nameTxt.preferredSize.width = contentWidth;
 		setFgColor(nameTxt, monoColor1);
+
+		var matchTxt = rowGrp.add('statictext', undefined, 'casou em ' + psMatchSource(group, query), { truncate: 'end' });
+		matchTxt.preferredSize.width = contentWidth;
+		setFgColor(matchTxt, monoColor3);
 
 		var btnGrp = rowGrp.add('group');
 		btnGrp.alignChildren = ['left', 'center'];
