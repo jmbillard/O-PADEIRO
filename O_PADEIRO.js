@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.77';
+	var scriptVersion = 'v1.78';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -42,7 +42,8 @@ o script funcionará normalmente, mas você não terá:\n\
 	#include 'source/Utils/o padeiro maker ui.js';     // Editor de templates
 	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
 	#include 'source/Utils/find ui.js';                 // Busca em layers de texto
-	#include 'source/Utils/path ui.js';                 // Busca em layers de texto
+	#include 'source/Utils/path ui.js';                 // Conversor de caminhos Windows / MacOS
+	#include 'source/Utils/path search ui.js';          // Busca de caminhos de atrações
 	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 
 	// estrutura de 'ctrlProperties'
@@ -118,7 +119,8 @@ o script funcionará normalmente, mas você não terá:\n\
 					labelTxt: 'Buscar',
 					icon: PAD_BUSCAR_ICON,
 					tips: [
-						lClick + 'abrir a BUSCA em layers de texto'
+						lClick + 'abrir a BUSCA em layers de texto',
+						rClick + 'abrir a BUSCA de caminhos de atrações'
 					]
 				}
 			// },

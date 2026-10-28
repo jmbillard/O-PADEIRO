@@ -127,6 +127,9 @@ ferramentas disponíveis em ordem:
 `◖ clique esquerdo` → abre a janela de busca.
   > *a busca funciona apenas no conteúdo dos layers de texto do projeto.*
 
+`◗ clique direito` → abre a busca de caminhos de atrações (Teams, Trello e atrações).
+  > *pesquise por atração, projeto, output ou caminho e abra a pasta direto no Explorer / Finder. no macOS, os volumes de rede são montados automaticamente quando necessário. o índice fica em cache por 10 minutos (botão 'Atualizar' força o download).*
+
 <!-- - **APONTAMENTO**:\
 `◖ clique esquerdo` → abre a planilha de apontamento de projetos. -->
 
