@@ -220,7 +220,6 @@ function psBuildIndex(data) {
 		var records = psAsArray(data[PS_CATEGORIES[c].key]);
 		var groups = [];
 		var groupsByKey = {};
-		var sampleKeys = [];
 
 		for (var r = 0; r < records.length; r++) {
 			var rec = records[r];
@@ -236,11 +235,13 @@ function psBuildIndex(data) {
 				? String(rec.atracao)
 				: psLastFolderName(caminho) || psLastFolderName(projeto) || psLastFolderName(output) || 'Resultado ' + (r + 1);
 
-			var key = rec.atracao
-				? 'a:' + psNormalize(name)
-				: caminho ? 'c:' + psPathKey(caminho) : 'r:' + r;
+			// if/else em vez de ternário encadeado: o ExtendScript avalia 'a ? b : c ? d : e'
+			// como '(a ? b : c) ? d : e', o que juntava todas as atrações sem caminho num grupo só.
+			var key;
 
-			if (sampleKeys.length < 3) sampleKeys.push(key);
+			if (rec.atracao) key = 'a:' + psNormalize(name);
+			else if (caminho) key = 'c:' + psPathKey(caminho);
+			else key = 'r:' + r;
 
 			var group = groupsByKey[key];
 
@@ -267,7 +268,7 @@ function psBuildIndex(data) {
 			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
 		}
 
-		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups, records: records.length, sampleKeys: sampleKeys });
+		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups });
 	}
 
 	return index;
@@ -293,25 +294,6 @@ function psMatchingFolder(group, query) {
 	}
 
 	return null;
-}
-
-// Descreve onde o termo casou (nome da atração ou o primeiro campo de caminho que o contém).
-function psMatchSource(group, query) {
-	if (psNormalize(group.name).indexOf(query) >= 0) return 'nome da atração';
-
-	var fields = [
-		['projeto', group.projetos],
-		['output', group.outputs],
-		['caminho', group.caminhos]
-	];
-
-	for (var i = 0; i < fields.length; i++) {
-		for (var j = 0; j < fields[i][1].length; j++) {
-			if (psNormalize(fields[i][1][j]).indexOf(query) >= 0) return fields[i][0] + ': ' + psTruncateMiddle(psToPlatform(fields[i][1][j]), PS_MAX_PATH_CHARS - 12);
-		}
-	}
-
-	return '?';
 }
 
 // Montagem SMB sob demanda (macOS) -----------------------------
@@ -437,7 +419,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.6';
+	var scriptVersion = 'v3.7';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -472,10 +454,6 @@ function pathSearchDialog() {
 	statusTxt.preferredSize.width = contentWidth;
 	setFgColor(statusTxt, monoColor1);
 
-	var diagTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
-	diagTxt.preferredSize.width = contentWidth;
-	setFgColor(diagTxt, monoColor3);
-
 	var resultsGrp;
 
 	function newResultsGrp() {
@@ -493,7 +471,7 @@ function pathSearchDialog() {
 	function relayout() {
 		pathW.layout.layout(true);
 
-		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height + pathW.spacing + diagTxt.size.height;
+		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height;
 
 		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
 
@@ -539,10 +517,6 @@ function pathSearchDialog() {
 		var nameTxt = rowGrp.add('statictext', undefined, group.name, { truncate: 'end' });
 		nameTxt.preferredSize.width = contentWidth;
 		setFgColor(nameTxt, monoColor1);
-
-		var matchTxt = rowGrp.add('statictext', undefined, 'casou em ' + psMatchSource(group, query), { truncate: 'end' });
-		matchTxt.preferredSize.width = contentWidth;
-		setFgColor(matchTxt, monoColor3);
 
 		var btnGrp = rowGrp.add('group');
 		btnGrp.alignChildren = ['left', 'center'];
@@ -628,16 +602,6 @@ function pathSearchDialog() {
 			index = psBuildIndex(psReadJSON(cacheFile));
 			indexReady = true;
 
-			// registros → grupos por categoria (ajuda a diagnosticar agrupamentos errados)
-			var counts = [];
-			var keys = [];
-
-			for (var k = 0; k < index.length; k++) {
-				counts.push(index[k].category.label + ' ' + index[k].records + '→' + index[k].groups.length);
-				keys.push(index[k].sampleKeys.join(','));
-			}
-
-			diagTxt.text = counts.join(' | ') + '  ::  ' + keys.join(' / ');
 			statusTxt.text = downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
 		} catch (err) {
 			indexReady = false;
