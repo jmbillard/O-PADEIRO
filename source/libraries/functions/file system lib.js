@@ -43,9 +43,70 @@ function setClipboardPath(str) {
 }
 
 
+/**
+ * macOS: quando um volume de rede já está montado, uma nova montagem do mesmo share
+ * recebe um sufixo (/Volumes/VFX-1, /Volumes/VFX-2 ... /Volumes/VFX-5).
+ * Retorna o caminho que realmente existe, testando o volume sem sufixo e as variantes -1 a -5.
+ * Se nenhuma variante contém o caminho completo (ex: pasta de output ainda não criada),
+ * escolhe o volume onde existe o maior trecho do caminho.
+ * No Windows, ou fora de /Volumes, devolve o caminho original.
+ * @param {string} pathStr - Caminho do macOS (/Volumes/SHARE/...)
+ * @returns {string} Caminho existente (ou o original, se nada for encontrado)
+ */
+function resolveMacVolumePath(pathStr) {
+	if (appOs != 'Mac' || !pathStr || typeof pathStr !== 'string') return pathStr;
+
+	var match = pathStr.match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+
+	if (!match) return pathStr;
+
+	// o caminho original (ou a variante já informada) tem prioridade
+	if (new Folder(pathStr).exists) return pathStr;
+
+	var baseName = match[1].replace(/-[1-5]$/, '');
+	var parts = (match[2] || '').split('/').filter(function (p) {
+		return p !== '';
+	});
+	var candidates = [match[1]];
+
+	for (var i = 0; i <= 5; i++) {
+		var name = i == 0 ? baseName : baseName + '-' + i;
+
+		if (name != match[1]) candidates.push(name);
+	}
+
+	var bestPath = pathStr;
+	var bestDepth = -1;
+
+	for (var c = 0; c < candidates.length; c++) {
+		var current = '/Volumes/' + candidates[c];
+
+		if (!new Folder(current).exists) continue;
+
+		var depth = 0;
+
+		for (var p = 0; p < parts.length; p++) {
+			current += '/' + parts[p];
+
+			if (!new Folder(current).exists) break;
+			depth++;
+		}
+
+		// caminho completo encontrado
+		if (depth == parts.length) return current;
+
+		if (depth > bestDepth) {
+			bestDepth = depth;
+			bestPath = '/Volumes/' + candidates[c] + (parts.length > 0 ? '/' + parts.join('/') : '');
+		}
+	}
+
+	return bestPath;
+}
+
 // Abre uma pasta no sistema operacional (Windows ou macOS).
 function openFolder(folderPath) {
-	var folder = Folder(folderPath); // Obtém um objeto Folder representando o caminho da pasta
+	var folder = Folder(resolveMacVolumePath(folderPath)); // Obtém um objeto Folder representando o caminho da pasta (já ajustado para o volume montado)
 
 	if (appOs == 'Win') {
 		// Comando para abrir a pasta no Windows Explorer
@@ -738,13 +799,16 @@ function normalizeNetworkPath(pathStr, options) {
 			macPath += "/" + subPathParts.join("/");
 		}
 
+		// Usa o volume realmente montado (VOLUME, VOLUME-1 ... VOLUME-5)
+		macPath = resolveMacVolumePath(macPath);
+
 		// Escape de caracteres especiais para ExtendScript
 		if (typeof escapeForExtendScript === "function") {
 			macPath = escapeForExtendScript(macPath);
 		}
 
 		// Verifica se o volume está montado
-		if (typeof pathExists === "function" && !pathExists("/Volumes/" + shareName)) {
+		if (typeof pathExists === "function" && !pathExists(macPath.replace(/^(\/Volumes\/[^\/]+).*$/, "$1"))) {
 			if (!silent && appOs === 'Mac') {
 				alert("O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
 					"Servidor: " + serverName + "\n" +
@@ -802,6 +866,9 @@ function normalizeNetworkPath(pathStr, options) {
 	}
 
 	// NORMALIZAÇÃO FINAL
+
+	// Mac: usa o volume realmente montado (VOLUME, VOLUME-1 ... VOLUME-5)
+	if (isMac) normalizedPath = resolveMacVolumePath(normalizedPath);
 
 	// Mac: sempre faz escape mesmo se não converteu
 	if (isMac && typeof escapeForExtendScript === "function") {

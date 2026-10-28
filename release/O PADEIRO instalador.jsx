@@ -3,7 +3,7 @@
 function installerUi() {
 
 	var scriptName = 'INSTALADOR';
-	var scriptVersion = 'v0.5b';
+	var scriptVersion = 'v0.6b';
 
 	var pArray = [];
 	var p = 0;
@@ -30,19 +30,45 @@ function installerUi() {
 	// -----------------------------------------------------
 
 	function codeContent(newSourceFile) {
-		var path = appOs == 'Win' ? ecodeURI(newSourceFile.path) : newSourceFile.path;
+		var path = decodeURI(newSourceFile.path);
 
-		return '\
-try {\
-	var scriptMainPath = \'' + path + '/\';\
-	var scriptMainFile = new File(scriptMainPath + \'' + newSourceFile.displayName + '\');\n\
-	scriptMainFile.open(\'r\');\
-	eval(scriptMainFile.read());\n\
-	scriptMainFile.close();\n\
-} catch (err) {\
-	alert(\'(っ °Д °;)っ      #PAD_001 - \' + err.message);\
-}\
-';
+		// macOS: grava o volume sem o sufixo de montagem (/Volumes/VFX-1 → /Volumes/VFX),
+		// o launcher procura a variante montada na hora da execução.
+		if (appOs == 'Mac') path = path.replace(/^(\/Volumes\/[^\/]+?)-[1-5](\/|$)/, '$1$2');
+
+		path = path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+		var fileName = decodeURI(newSourceFile.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+		return [
+			'try {',
+			"\tvar scriptMainPath = '" + path + "/';",
+			"\tvar scriptMainName = '" + fileName + "';",
+			'',
+			'\t// macOS: o volume de rede pode estar montado como VOLUME-1 ... VOLUME-5',
+			'\tif (!new File(scriptMainPath + scriptMainName).exists) {',
+			'\t\tvar volMatch = scriptMainPath.match(/^\\/Volumes\\/([^\\/]+)(\\/.*)$/);',
+			'',
+			'\t\tfor (var v = 0; volMatch && v <= 5; v++) {',
+			"\t\t\tvar volPath = '/Volumes/' + volMatch[1] + (v > 0 ? '-' + v : '') + volMatch[2];",
+			'',
+			'\t\t\tif (new File(volPath + scriptMainName).exists) {',
+			'\t\t\t\tscriptMainPath = volPath;',
+			'\t\t\t\tbreak;',
+			'\t\t\t}',
+			'\t\t}',
+			'\t}',
+			'',
+			'\tvar scriptMainFile = new File(scriptMainPath + scriptMainName);',
+			'',
+			"\tif (!scriptMainFile.exists) throw new Error('arquivo não encontrado:\\n' + scriptMainFile.fsName);",
+			'',
+			"\tscriptMainFile.open('r');",
+			'\teval(scriptMainFile.read());',
+			'\tscriptMainFile.close();',
+			'} catch (err) {',
+			"\talert('(っ °Д °;)っ      #PAD_001 - ' + err.message);",
+			'}'
+		].join('\n');
 	}
 
 	// -----------------------------------------------------

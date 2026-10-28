@@ -354,24 +354,11 @@ function psMountShare(server, share) {
 	return psMountedSharePath(server, share);
 }
 
-// O macOS acrescenta -1, -2... ao nome do volume quando ele já existe.
+// Caminho existente (volume com ou sem sufixo -1 a -5) ou '' se a pasta não existir.
 function psExistingVolumeVariant(path) {
-	if (new Folder(path).exists) return path;
+	var resolved = resolveMacVolumePath(path);
 
-	var match = path.match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
-
-	if (!match) return '';
-
-	var base = match[1].replace(/-[1-5]$/, '');
-	var rest = match[2] || '';
-
-	for (var i = 1; i <= 5; i++) {
-		var candidate = '/Volumes/' + base + '-' + i + rest;
-
-		if (new Folder(candidate).exists) return candidate;
-	}
-
-	return '';
+	return new Folder(resolved).exists ? resolved : '';
 }
 
 function psResolveOnMac(path, fixedServer, fixedShare) {
