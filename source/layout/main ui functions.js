@@ -419,6 +419,10 @@ function PAD_UI_EVENTS(uiObj) {
 		findDialog();
 	};
 
+	uiObj.buscar.rightClick.onClick = function () {
+		pathSearchDialog();
+	};
+
 	uiObj.organizar.rightClick.onClick = function () {
 		app.beginUndoGroup('criar pastas do projeto');
 
