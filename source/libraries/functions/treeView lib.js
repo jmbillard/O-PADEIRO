@@ -31,78 +31,136 @@ function cleanHierarchy(nodeTree) {
 	return nodeTree.items.length == 0 && nodeTree.parent != null;
 }
 
-function optimizeHierarchy(nodeTree) {
-	var branches = nodeTree.items;
+// Lê a pasta uma única vez e monta a árvore em memória: { type, text, children | file }.
+// Mesma limpeza do treeview (sem pastas vazias) e mesma otimização (pasta com uma única subpasta
+// vira 'PASTA / SUBPASTA'), para que a busca possa filtrar sem acessar a rede de novo.
+function buildTreeData(folder, fileTypes) {
+	var root = { type: 'node', text: folder.displayName, children: readTreeData(folder.getFiles(), fileTypes) };
 
-	for (var i = 0; i < branches.length; i++) {
-		if (branches[i].type != 'node') continue;
-
-		if (branches[i].items.length > 1) {
-			optimizeHierarchy(branches[i]);
-		} else if (branches[i].items.length == 1 && branches[i].items[0].type == 'node') {
-			var subfolder = branches[i].items[0];
-			branches[i].text += ' / ' + subfolder.text;
-
-			while (subfolder.items.length > 0) {
-				var item = subfolder.items[0];
-				try {
-					var newItem = branches[i].add(item.type, item.text);
-					newItem.image = item.image;
-					newItem.file = item.file;
-					subfolder.remove(0);
-				} catch (err) { }
-			}
-			branches[i].remove(subfolder);
-			optimizeHierarchy(branches[i]);
-		}
+	for (var i = 0; i < root.children.length; i++) {
+		optimizeTreeData(root.children[i]);
 	}
+
+	return root;
 }
 
-// Cria a hierarquia de arquivos e pastas na árvore da interface do usuário
-function createHierarchy(array, node, fileTypes) {
+function readTreeData(array, fileTypes) {
+	var children = [];
+
 	for (var n = 0; n < array.length; n++) {
-		var nodeName = array[n].displayName; // Nome do item atual
+		var nodeName = array[n].displayName;
 
-		// Verifica se o item atual é uma pasta (Folder)
 		if (array[n] instanceof Folder) {
-			var subArray = array[n].getFiles(); // Obtém os arquivos e subpastas da pasta atual
+			var subChildren = readTreeData(array[n].getFiles(), fileTypes);
 
-			// Se a pasta possui conteúdo (arquivos ou subpastas)
-			if (subArray.length > 0) {
-				var nodeItem = node.add('node', nodeName); // Adiciona um nó de pasta na árvore
-				// nodeItem.image = fldTogIcon.light;  // Opcional: define o ícone da pasta
-
-				// Chama recursivamente a função para processar o conteúdo da pasta
-				createHierarchy(subArray, nodeItem, fileTypes);
-			}
+			// pastas sem templates não entram na árvore
+			if (subChildren.length > 0) children.push({ type: 'node', text: nodeName, children: subChildren });
 		} else {
-			// Se o item atual não for uma pasta (é um arquivo)
 			try {
-				// Filtra os arquivos com base nas extensões permitidas em fileTypes
-				if (fileTypes.indexOf(getFileExt(nodeName)) >= 0) {
-					var templateItem = node.add('item', nodeName); // Adiciona um nó de arquivo na árvore
-					templateItem.image = PAD_AE_ICON; // Define o ícone do arquivo
-					templateItem.file = array[n]; // Define o ícone do arquivo
-				}
-				//
+				if (fileTypes.indexOf(getFileExt(nodeName)) >= 0) children.push({ type: 'item', text: nodeName, file: array[n] });
 			} catch (err) { }
 		}
 	}
+
+	return children;
 }
 
-function buildTree(folder, tree, fileTypes) {
-	// Remove todos os itens
+function optimizeTreeData(node) {
+	if (node.type != 'node') return;
+
+	while (node.children.length == 1 && node.children[0].type == 'node') {
+		node.text += ' / ' + node.children[0].text;
+		node.children = node.children[0].children;
+	}
+
+	for (var i = 0; i < node.children.length; i++) {
+		optimizeTreeData(node.children[i]);
+	}
+}
+
+// Texto normalizado para comparação (maiúsculas, sem acentos).
+function treeSearchText(str) {
+	return String(str).trim().toUpperCase().replaceSpecialCharacters();
+}
+
+// Retorna uma cópia de 'node' só com o que casa com 'query' (já normalizada por treeSearchText).
+// Pasta que casa entra inteira; pasta que não casa entra só com os descendentes que casam.
+function filterTreeData(node, query) {
+	var children = [];
+
+	for (var i = 0; i < node.children.length; i++) {
+		var child = node.children[i];
+
+		if (treeSearchText(child.text).indexOf(query) >= 0) {
+			children.push(child);
+		} else if (child.type == 'node') {
+			var filtered = filterTreeData(child, query);
+
+			if (filtered.children.length > 0) children.push(filtered);
+		}
+	}
+
+	return { type: 'node', text: node.text, children: children };
+}
+
+// Recria o treeview a partir da árvore em memória.
+// expandAll: expande todas as pastas (resultado de busca); senão, só a raiz e o primeiro nível.
+function populateTree(tree, data, expandAll) {
 	while (tree.items.length > 0) {
 		tree.remove(tree.items[0]);
 	}
 
-	var folderContentArray = folder.getFiles();
-	var folderNode = tree.add('node', folder.displayName);
+	var root = tree.add('node', data.text);
 
-	createHierarchy(folderContentArray, folderNode, fileTypes);
+	addTreeDataItems(root, data.children, expandAll);
+	root.expanded = true;
 
-	cleanHierarchy(folderNode);
-	optimizeHierarchy(folderNode);
+	if (!expandAll) {
+		for (var i = 0; i < root.items.length; i++) {
+			if (root.items[i].type == 'node') root.items[i].expanded = true;
+		}
+	}
+
+	return root;
+}
+
+function addTreeDataItems(parentNode, children, expandAll) {
+	for (var i = 0; i < children.length; i++) {
+		var child = children[i];
+
+		if (child.type == 'node') {
+			var nodeItem = parentNode.add('node', child.text);
+
+			addTreeDataItems(nodeItem, child.children, expandAll);
+			if (expandAll) nodeItem.expanded = true;
+		} else {
+			var templateItem = parentNode.add('item', child.text);
+
+			templateItem.image = PAD_AE_ICON;
+			templateItem.file = child.file;
+		}
+	}
+}
+
+// Primeiro item (não pasta) da árvore, em profundidade.
+function firstTreeItem(node) {
+	for (var i = 0; i < node.items.length; i++) {
+		if (node.items[i].type != 'node') return node.items[i];
+
+		var found = firstTreeItem(node.items[i]);
+
+		if (found) return found;
+	}
+
+	return null;
+}
+
+function buildTree(folder, tree, fileTypes) {
+	var data = buildTreeData(folder, fileTypes);
+
+	populateTree(tree, data, false);
+
+	return data;
 }
 
 // Constrói a árvore de resultados da busca
@@ -220,32 +278,4 @@ function expandNodes(nodeTree) {
 		count++;
 	}
 	return count;
-}
-
-// Função recursiva que percorre uma 'árvore de exibição' (tree view)
-// e adiciona os nós que contêm uma determinada string na lista de resultados
-function findItem(nodeTree, list, searchTxt) {
-	// Obtém os nodes do nó atual
-	var branches = nodeTree.items;
-
-	// Percorre cada node
-	for (var i = 0; i < branches.length; i++) {
-		// Se o node for um nó (node), chama a função recursivamente para o seu node
-		if (branches[i].type == 'node') findItem(branches[i], list, searchTxt);
-
-		// Verifica se o texto do node contém a string procurada
-		if (
-			branches[i].text
-				.trim()
-				.toUpperCase()
-				.replaceSpecialCharacters()
-				.match(searchTxt)
-		) {
-			// Adiciona o node na lista de resultados
-			list.push(branches[i]);
-		}
-	}
-
-	// Retorna a lista de resultados
-	return list;
 }

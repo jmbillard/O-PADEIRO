@@ -344,7 +344,7 @@ o script executará as seguintes tarefas em ordem:
 
 > ![ui](docs/images/templates_ui.png)
 
-- **busca** → retorna os templates ou pastas com o termo buscado.
+- **busca** → filtra a lista enquanto você digita, mostrando apenas os templates ou pastas com o termo buscado (sem diferenciar maiúsculas e acentos). `Enter` seleciona o primeiro template encontrado.
 - **lista de templates** → árvore com todos os templates disponíveis na pasta de templates do script.
 - **ajuda | DOCS** → acessa a documentação provisória do script e seus templates disponíveis.
 - **atualizar lista** → verifica e atualiza a lista de templates disponíveis.
