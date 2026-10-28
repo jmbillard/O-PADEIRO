@@ -4,7 +4,7 @@
 /*
 
 ---------------------------------------------------------------
-> 🪟 UI dialogs - busca de caminhos de atrações
+> 🪟 UI dialogs - O ACESSORISTA (busca de caminhos de atrações)
 ---------------------------------------------------------------
 
 */
@@ -13,7 +13,7 @@
 
 var PS_WEBHOOK_URL = 'https://workflows.jmbillard.com/webhook/path-search';
 var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
-var PS_CACHE_TTL = 10 * 60 * 1000; // idade máxima (ms) do índice local antes de baixar de novo
+var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
 var PS_MIN_QUERY = 2; // mínimo de caracteres para a busca
 var PS_MAX_RESULTS = 12; // máximo de atrações exibidas (a janela não tem scroll)
 var PS_MAX_PATH_CHARS = 76;
@@ -426,8 +426,8 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 // Interface ----------------------------------------------------
 
 function pathSearchDialog() {
-	var scriptName = 'CAMINHOS';
-	var scriptVersion = 'v3.0';
+	var scriptName = 'O ACESSORISTA';
+	var scriptVersion = 'v3.1';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -465,9 +465,13 @@ function pathSearchDialog() {
 
 	setBgColor(pathW, bgColor1);
 
+	// Reajusta a janela ao conteúdo: ela cresce com os resultados e volta a encolher quando eles somem.
 	function relayout() {
+		var width = pathW.size.width;
+
 		pathW.layout.layout(true);
-		pathW.layout.resize();
+		pathW.size = [Math.max(width, pathW.preferredSize.width), pathW.preferredSize.height];
+		pathW.layout.layout(true);
 	}
 
 	function clearResults() {
