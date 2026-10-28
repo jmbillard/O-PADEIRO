@@ -128,7 +128,7 @@ ferramentas disponíveis em ordem:
   > *a busca funciona apenas no conteúdo dos layers de texto do projeto.*
 
 `◗ clique direito` → abre **O ACESSORISTA**, a busca de caminhos de atrações (Teams, Trello e atrações).
-  > *pesquise por atração, projeto, output ou caminho e abra a pasta direto no Explorer / Finder. no macOS, os volumes de rede são montados automaticamente quando necessário. o índice fica em cache por apenas 30 segundos, para sempre trazer os caminhos mais atuais do Teams (botão 'Atualizar' força o download).*
+  > *pesquise por atração, projeto, output ou caminho e abra a pasta direto no Explorer / Finder. no macOS, os volumes de rede são montados automaticamente quando necessário. o índice fica em cache por apenas 30 segundos, para sempre trazer os caminhos mais atuais do Teams (a lupa força o download). os checkboxes abaixo da busca incluem ou removem cada categoria (TEAMS, TRELLO, ATRAÇÕES, SERVIDOR...) dos resultados.*
 
 <!-- - **APONTAMENTO**:\
 `◖ clique esquerdo` → abre a planilha de apontamento de projetos. -->

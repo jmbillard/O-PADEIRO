@@ -16,7 +16,6 @@ var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
 var PS_MIN_QUERY = 2; // mínimo de caracteres para a busca
 var PS_MAX_RESULTS = 12; // máximo de atrações exibidas (a janela não tem scroll)
-var PS_WIDTH = 640; // largura fixa da janela (px)
 var PS_MAX_PATH_CHARS = 90;
 
 var PS_SMB = {
@@ -26,30 +25,60 @@ var PS_SMB = {
 	cppSp: 'cpp-ml-sp.servicos.corp.tvglobo.com.br'
 };
 
-// prioridade: Teams > Trello > Atrações
+// Categorias conhecidas, na ordem de exibição. Qualquer outra lista que vier no JSON do workflow
+// (ou em PS_LOCAL_SOURCES) vira uma categoria nova automaticamente, com o nome da chave como rótulo.
 var PS_CATEGORIES = [
-	{ key: 'atracoes_teams', label: 'TEAMS', color: normalColor1 },
-	{ key: 'atracoes_trello', label: 'TRELLO', color: normalColor1 },
-	{ key: 'atracoes', label: 'ATRAÇÕES', color: normalColor1 }
+	{ key: 'atracoes_teams', label: 'TEAMS' },
+	{ key: 'atracoes_trello', label: 'TRELLO' },
+	{ key: 'atracoes', label: 'ATRAÇÕES' },
+	{ key: 'servidor', label: 'SERVIDOR' }
 ];
 
-// Registros que não vêm do webhook.
-var PS_FIXED_RECORDS = [
-	{
-		atracao: '#INGEST',
-		mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
-		win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' },
-		fixedShareServer: PS_SMB.cppSp,
-		fixedShare: 'PROMO_REDE'
-	},
-	{
-		atracao: 'BASES VALENDO',
-		mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' },
-		win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' },
-		fixedShareServer: PS_SMB.cppSp,
-		fixedShare: 'PROMO_REDE'
+// Listas locais, que não vêm do webhook. Cada chave é uma categoria (somada à lista do webhook
+// de mesmo nome, se existir). Ex. futuro: filmes: [ { atracao: '...', mac: {...}, win: {...} } ]
+var PS_LOCAL_SOURCES = {
+	servidor: [
+		{
+			atracao: '#INGEST',
+			mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
+			win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' },
+			fixedShareServer: PS_SMB.cppSp,
+			fixedShare: 'PROMO_REDE'
+		},
+		{
+			atracao: 'BASES VALENDO',
+			mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' },
+			win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' },
+			fixedShareServer: PS_SMB.cppSp,
+			fixedShare: 'PROMO_REDE'
+		}
+	]
+};
+
+// Rótulo de uma categoria nova: 'atracoes_filmes' → 'FILMES'
+function psCategoryLabel(key) {
+	return key.replace(/^atracoes_/, '').replace(/_/g, ' ').toUpperCase();
+}
+
+// Categorias presentes nos dados: primeiro as conhecidas (na ordem de PS_CATEGORIES), depois as demais.
+function psCategoryList(data) {
+	var list = [];
+	var known = {};
+
+	for (var i = 0; i < PS_CATEGORIES.length; i++) {
+		known[PS_CATEGORIES[i].key] = true;
+
+		if (psAsArray(data[PS_CATEGORIES[i].key]).length > 0) list.push(PS_CATEGORIES[i]);
 	}
-];
+
+	for (var key in data) {
+		if (known[key] || !(data[key] instanceof Array) || data[key].length == 0) continue;
+
+		list.push({ key: key, label: psCategoryLabel(key) });
+	}
+
+	return list;
+}
 
 // Texto e caminhos ---------------------------------------------
 
@@ -201,23 +230,18 @@ function psDownloadIndex(cacheFile) {
 // atrações agrupadas e textos já normalizados para a busca.
 function psBuildIndex(data) {
 	data = data || {};
-	data.atracoes = psAsArray(data.atracoes);
 
-	var known = {};
-
-	for (var i = 0; i < data.atracoes.length; i++) {
-		if (data.atracoes[i]) known[psNormalize(data.atracoes[i].atracao)] = true;
+	// listas locais somadas às do webhook
+	for (var src in PS_LOCAL_SOURCES) {
+		data[src] = psAsArray(data[src]).concat(PS_LOCAL_SOURCES[src]);
 	}
 
-	for (var f = 0; f < PS_FIXED_RECORDS.length; f++) {
-		if (!known[psNormalize(PS_FIXED_RECORDS[f].atracao)]) data.atracoes.push(PS_FIXED_RECORDS[f]);
-	}
-
+	var categories = psCategoryList(data);
 	var platform = appOs == 'Mac' ? 'mac' : 'win';
 	var index = [];
 
-	for (var c = 0; c < PS_CATEGORIES.length; c++) {
-		var records = psAsArray(data[PS_CATEGORIES[c].key]);
+	for (var c = 0; c < categories.length; c++) {
+		var records = psAsArray(data[categories[c].key]);
 		var groups = [];
 		var groupsByKey = {};
 
@@ -268,7 +292,7 @@ function psBuildIndex(data) {
 			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
 		}
 
-		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups });
+		if (groups.length > 0) index.push({ category: categories[c], groups: groups });
 	}
 
 	return index;
@@ -419,7 +443,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.7';
+	var scriptVersion = 'v3.8';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -429,26 +453,29 @@ function pathSearchDialog() {
 	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
 	var index = [];
 	var indexReady = false;
+	var hiddenCategories = {}; // categorias desmarcadas nos filtros (por chave)
 
 	var pathW = new Window('palette', scriptName + ' ' + scriptVersion);
 	pathW.orientation = 'column';
 	pathW.alignChildren = ['fill', 'top'];
 	pathW.spacing = 8;
 	pathW.margins = 12;
-	pathW.preferredSize.width = PS_WIDTH;
+	pathW.preferredSize.width = PAD_SEARCH_UI_WIDTH;
 
-	var contentWidth = PS_WIDTH - pathW.margins.left - pathW.margins.right;
+	var contentWidth = PAD_SEARCH_UI_WIDTH - pathW.margins.left - pathW.margins.right;
 
-	var searchGrp = pathW.add('group');
-	searchGrp.alignChildren = ['fill', 'center'];
+	var header = themeSearchHeader(pathW, contentWidth, [lClick + 'baixar os caminhos atualizados e buscar']);
+	var searchGrp = header.grp;
+	var searchEdTxt = header.edit;
+	var refreshBtn = header.btn;
 
-	var searchEdTxt = searchGrp.add('edittext', undefined, '');
-	searchEdTxt.characters = 36;
 	searchEdTxt.helpTip = 'pesquise por atração, caminho, projeto ou output';
 
-	var refreshBtn = searchGrp.add('button', undefined, 'Atualizar');
-	refreshBtn.helpTip = 'baixa o índice de caminhos novamente';
-	refreshBtn.alignment = ['right', 'center'];
+	// Filtros por categoria (montados a partir do índice carregado)
+	var filterGrp = pathW.add('group');
+	filterGrp.orientation = 'row';
+	filterGrp.alignChildren = ['left', 'center'];
+	filterGrp.spacing = 16;
 
 	var statusTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
 	statusTxt.preferredSize.width = contentWidth;
@@ -473,9 +500,11 @@ function pathSearchDialog() {
 
 		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height;
 
+		if (filterGrp.children.length > 0) height += pathW.spacing + filterGrp.size.height;
+
 		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
 
-		pathW.size = [PS_WIDTH, height];
+		pathW.size = [PAD_SEARCH_UI_WIDTH, height];
 		pathW.layout.layout(true);
 	}
 
@@ -533,13 +562,48 @@ function pathSearchDialog() {
 		}
 	}
 
+	// Um checkbox por categoria do índice. A escolha é mantida ao atualizar o índice.
+	function buildCategoryFilters() {
+		while (filterGrp.children.length > 0) {
+			filterGrp.remove(filterGrp.children[0]);
+		}
+
+		for (var c = 0; c < index.length; c++) {
+			addCategoryFilter(index[c].category);
+		}
+	}
+
+	function addCategoryFilter(category) {
+		var optGrp = filterGrp.add('group');
+		optGrp.alignChildren = ['left', 'center'];
+		optGrp.spacing = 2;
+
+		var ckb = optGrp.add('checkbox');
+		ckb.value = !hiddenCategories[category.key];
+
+		var lab = optGrp.add('statictext', undefined, category.label);
+		setFgColor(lab, normalColor1);
+		ckb.helpTip = lab.helpTip = 'incluir ' + category.label + ' na busca';
+
+		ckb.onClick = function () {
+			hiddenCategories[category.key] = !ckb.value;
+			doSearch();
+		};
+
+		// clicar no rótulo também marca / desmarca
+		lab.addEventListener('click', function () {
+			ckb.value = !ckb.value;
+			ckb.onClick();
+		});
+	}
+
 	function doSearch() {
 		clearResults();
 
 		var query = psNormalize(searchEdTxt.text);
 
 		if (!indexReady) {
-			statusTxt.text = 'índice de caminhos indisponível. clique em "Atualizar".';
+			statusTxt.text = 'índice de caminhos indisponível. clique na lupa para baixar de novo.';
 		} else if (query.length < PS_MIN_QUERY) {
 			statusTxt.text = 'digite ao menos ' + PS_MIN_QUERY + ' caracteres para pesquisar.';
 		} else {
@@ -548,6 +612,8 @@ function pathSearchDialog() {
 			var sections = 0;
 
 			for (var c = 0; c < index.length; c++) {
+				if (hiddenCategories[index[c].category.key]) continue;
+
 				var matches = [];
 
 				for (var g = 0; g < index[c].groups.length; g++) {
@@ -567,7 +633,7 @@ function pathSearchDialog() {
 				sectionGrp.spacing = 5;
 
 				var headTxt = sectionGrp.add('statictext', undefined, index[c].category.label + ' (' + matches.length + ')');
-				setFgColor(headTxt, index[c].category.color);
+				setFgColor(headTxt, normalColor1);
 
 				for (var m = 0; m < matches.length && shown < PS_MAX_RESULTS; m++, shown++) {
 					if (m > 0) themeDivider(sectionGrp);
@@ -601,6 +667,7 @@ function pathSearchDialog() {
 		try {
 			index = psBuildIndex(psReadJSON(cacheFile));
 			indexReady = true;
+			buildCategoryFilters();
 
 			statusTxt.text = downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
 		} catch (err) {
@@ -614,7 +681,7 @@ function pathSearchDialog() {
 	searchEdTxt.onChanging = doSearch;
 	searchEdTxt.onEnterKey = doSearch;
 
-	refreshBtn.onClick = function () {
+	refreshBtn.leftClick.onClick = function () {
 		loadIndex(true);
 		searchEdTxt.active = true;
 	};

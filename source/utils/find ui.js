@@ -10,32 +10,27 @@
 
 function findDialog() {
 	var scriptName = 'BUSCA';
-	var scriptVersion = 'v2.4';
+	var scriptVersion = 'v2.5';
 
 	var findW = new Window('palette', scriptName + ' ' + scriptVersion);
-	findW.spacing = 4;
-	findW.margins = 0;
+	findW.orientation = 'column';
+	findW.alignChildren = ['left', 'top'];
+	findW.spacing = 8;
+	findW.margins = 12;
+
+	var contentWidth = PAD_SEARCH_UI_WIDTH - findW.margins.left - findW.margins.right;
 
 	//---------------------------------------------------------
 
-	var searchMainGrp = findW.add('group');
-	searchMainGrp.orientation = 'column';
-	searchMainGrp.alignChildren = ['center', 'top'];
+	var header = themeSearchHeader(findW, contentWidth, [lClick + 'ler os textos do projeto e buscar']);
+	var findEdTxt = header.edit;
+	var findBtn = header.btn;
 
-	var inputGrp = searchMainGrp.add('group');
-	inputGrp.spacing = 8;
-	inputGrp.margins = 8;
-
-	var findEdTxt = inputGrp.add('edittext', [0, 0, 240, 32]);
-
-	var findBtn = new themeIconButton(inputGrp, {
-		icon: PAD_BUSCAR_ICON,
-		tips: [lClick + 'buscar']
-	});
+	findEdTxt.helpTip = 'Enter lê os textos do projeto; depois a busca filtra enquanto você digita';
 
 	//---------------------------------------------------------
 
-	var optMainGrp = searchMainGrp.add('group');
+	var optMainGrp = findW.add('group');
 	optMainGrp.spacing = 30;
 
 	var optGrp5 = optMainGrp.add('group');
@@ -91,10 +86,10 @@ function findDialog() {
 		tips: [lClick + 'ajuda | DOCS']
 	});
 
-	var findProgressBar = findW.add('progressbar', [0, 0, 280, 1], undefined);
+	var findProgressBar = findW.add('progressbar', [0, 0, contentWidth, 1], undefined);
 	findProgressBar.value = 100;
 
-	var resultTree = findW.add('treeview', [0, 0, 320, 0]);
+	var resultTree = findW.add('treeview', [0, 0, contentWidth, 0]);
 	resultTree.visible = false;
 
 	setBgColor(findW, bgColor1);

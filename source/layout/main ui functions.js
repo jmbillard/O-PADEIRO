@@ -545,6 +545,26 @@ function themeStackIcon(parentGrp, icon, tipTxt) {
 	return stackIcon;
 }
 
+// Largura das janelas de busca (textos e caminhos), para que as duas tenham as mesmas dimensões.
+var PAD_SEARCH_UI_WIDTH = 640;
+
+// Cabeçalho padrão das janelas de busca: campo de texto + botão de lupa.
+// 'width' é a largura total disponível. Retorna { grp, edit, btn }.
+function themeSearchHeader(parentGrp, width, tips) {
+	var header = {};
+
+	header.grp = parentGrp.add('group');
+	header.grp.orientation = 'row';
+	header.grp.alignChildren = ['left', 'center'];
+	header.grp.spacing = 8;
+	header.grp.margins = 0;
+
+	header.edit = header.grp.add('edittext', [0, 0, width - 40, 32]); // 40 = lupa (32) + espaçamento (8)
+	header.btn = themeIconButton(header.grp, { icon: PAD_BUSCAR_ICON, tips: tips });
+
+	return header;
+}
+
 // Botão de ícone (sem rótulo). Usado na ui principal e nas demais janelas.
 function themeIconButton(sectionGrp, ctrlProperties) {
 	var btnGroup = sectionGrp.add('group');
