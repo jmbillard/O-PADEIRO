@@ -264,7 +264,7 @@ function psBuildIndex(data) {
 			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
 		}
 
-		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups });
+		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups, records: records.length });
 	}
 
 	return index;
@@ -434,7 +434,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.4';
+	var scriptVersion = 'v3.5';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -620,9 +620,15 @@ function pathSearchDialog() {
 		try {
 			index = psBuildIndex(psReadJSON(cacheFile));
 			indexReady = true;
-			statusTxt.text = downloaded
-				? 'índice atualizado. digite um termo para pesquisar.'
-				: 'sem conexão com o workflow - usando o último índice salvo.';
+
+			// registros → grupos por categoria (ajuda a diagnosticar agrupamentos errados)
+			var counts = [];
+
+			for (var k = 0; k < index.length; k++) {
+				counts.push(index[k].category.label + ' ' + index[k].records + '→' + index[k].groups.length);
+			}
+
+			statusTxt.text = (downloaded ? 'índice atualizado' : 'sem conexão - usando o último índice salvo') + ' (' + counts.join(' | ') + ')';
 		} catch (err) {
 			indexReady = false;
 			statusTxt.text = 'não foi possível carregar o índice. verifique a conexão e o workflow.';
