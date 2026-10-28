@@ -220,6 +220,7 @@ function psBuildIndex(data) {
 		var records = psAsArray(data[PS_CATEGORIES[c].key]);
 		var groups = [];
 		var groupsByKey = {};
+		var sampleKeys = [];
 
 		for (var r = 0; r < records.length; r++) {
 			var rec = records[r];
@@ -238,6 +239,8 @@ function psBuildIndex(data) {
 			var key = rec.atracao
 				? 'a:' + psNormalize(name)
 				: caminho ? 'c:' + psPathKey(caminho) : 'r:' + r;
+
+			if (sampleKeys.length < 3) sampleKeys.push(key);
 
 			var group = groupsByKey[key];
 
@@ -264,7 +267,7 @@ function psBuildIndex(data) {
 			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
 		}
 
-		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups, records: records.length });
+		if (groups.length > 0) index.push({ category: PS_CATEGORIES[c], groups: groups, records: records.length, sampleKeys: sampleKeys });
 	}
 
 	return index;
@@ -434,7 +437,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.5';
+	var scriptVersion = 'v3.6';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -469,6 +472,10 @@ function pathSearchDialog() {
 	statusTxt.preferredSize.width = contentWidth;
 	setFgColor(statusTxt, monoColor1);
 
+	var diagTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
+	diagTxt.preferredSize.width = contentWidth;
+	setFgColor(diagTxt, monoColor3);
+
 	var resultsGrp;
 
 	function newResultsGrp() {
@@ -486,7 +493,7 @@ function pathSearchDialog() {
 	function relayout() {
 		pathW.layout.layout(true);
 
-		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height;
+		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height + pathW.spacing + diagTxt.size.height;
 
 		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
 
@@ -623,12 +630,15 @@ function pathSearchDialog() {
 
 			// registros → grupos por categoria (ajuda a diagnosticar agrupamentos errados)
 			var counts = [];
+			var keys = [];
 
 			for (var k = 0; k < index.length; k++) {
 				counts.push(index[k].category.label + ' ' + index[k].records + '→' + index[k].groups.length);
+				keys.push(index[k].sampleKeys.join(','));
 			}
 
-			statusTxt.text = (downloaded ? 'índice atualizado' : 'sem conexão - usando o último índice salvo') + ' (' + counts.join(' | ') + ')';
+			diagTxt.text = counts.join(' | ') + '  ::  ' + keys.join(' / ');
+			statusTxt.text = downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
 		} catch (err) {
 			indexReady = false;
 			statusTxt.text = 'não foi possível carregar o índice. verifique a conexão e o workflow.';
