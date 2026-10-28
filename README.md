@@ -541,10 +541,9 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   `◖ clique esquerdo` → Abre a interface de busca.\
   opções em ordem:
 
-  - buscar apenas em layers visíveis.
-  - respeitar a caixa de texto (MAIÚSCULAS e minúsculas).
-  - respeitar acentuação.
-  - inverter busca, busca por layers de texto que **NÃO** contenham o termo buscado.
+  - **APENAS VISÍVEIS** → buscar apenas em layers visíveis.
+  - **IGNORAR ACENTOS** → 'amazonia' também encontra 'Amazônia' (ligado por padrão).
+  - **INVERTER** → busca por layers de texto que **NÃO** contenham o termo buscado.
 
   <br>
 
@@ -554,5 +553,5 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   `Enter` (ou o botão de busca) lê o texto de todos os layers do projeto. depois disso, a lista é filtrada enquanto você digita ou muda as opções. pressione `Enter` de novo para reler o projeto depois de alterar os textos.
 
   > 🚩 *obs:*\
-  > Por padrão a busca é feita ignorando acentuação e caixa do texto.\
+  > A busca sempre ignora a caixa do texto (MAIÚSCULAS e minúsculas) e, por padrão, a acentuação.\
   > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...

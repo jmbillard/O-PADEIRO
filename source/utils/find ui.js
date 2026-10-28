@@ -10,7 +10,7 @@
 
 function findDialog() {
 	var scriptName = 'BUSCA';
-	var scriptVersion = 'v2.5';
+	var scriptVersion = 'v2.6';
 
 	var findW = new Window('palette', scriptName + ' ' + scriptVersion);
 	findW.orientation = 'column';
@@ -30,61 +30,13 @@ function findDialog() {
 
 	//---------------------------------------------------------
 
-	var optMainGrp = findW.add('group');
-	optMainGrp.spacing = 30;
+	var options = themeSearchOptions(findW);
 
-	var optGrp5 = optMainGrp.add('group');
-	optGrp5.alignChildren = ['center', 'top'];
-	optGrp5.spacing = 2;
+	var visCkb = options.add('APENAS VISÍVEIS', false, 'buscar apenas em layers visíveis (ligados)');
+	var accentCkb = options.add('IGNORAR ACENTOS', true, '"amazonia" também encontra "Amazônia"');
+	var invertCkb = options.add('INVERTER', false, 'apenas textos que NÃO possuem o termo buscado');
 
-	var optCkb5 = optGrp5.add('checkbox');
-	optCkb5.value = false;
-
-	var optIco5 = optGrp5.add('image', undefined, eyeOpenLabelIcon);
-	optCkb5.helpTip = optIco5.helpTip = '⦿  → apenas layers visíveis';
-
-	//---------------------------------------------------------
-
-	var optGrp1 = optMainGrp.add('group');
-	optGrp1.alignChildren = ['center', 'top'];
-	optGrp1.spacing = 2;
-
-	var optCkb1 = optGrp1.add('checkbox');
-	optCkb1.value = false;
-
-	var optTxt1 = optGrp1.add('statictext', undefined, 'Tt');
-	optCkb1.helpTip = optTxt1.helpTip = '⦿  → considerar maiúsculas e minúsculas';
-
-	//---------------------------------------------------------
-
-	var optGrp2 = optMainGrp.add('group');
-	optGrp2.alignChildren = ['center', 'top'];
-	optGrp2.spacing = 2;
-
-	var optCkb2 = optGrp2.add('checkbox');
-	optCkb2.value = false;
-
-	var optTxt2 = optGrp2.add('statictext', undefined, 'àê');
-	optCkb2.helpTip = optTxt2.helpTip = '⦿  → considerar acentuação';
-
-	//---------------------------------------------------------
-
-	var optGrp4 = optMainGrp.add('group');
-	optGrp4.alignChildren = ['center', 'top'];
-	optGrp4.spacing = 2;
-
-	var optCkb4 = optGrp4.add('checkbox');
-	optCkb4.value = false;
-
-	var optTxt4 = optGrp4.add('statictext', undefined, '!=');
-	optCkb4.helpTip = optTxt4.helpTip = '⦿  → apenas textos que NÃO possuem o termo buscado';
-
-	//---------------------------------------------------------
-
-	var infoBtn = new themeIconButton(optMainGrp, {
-		icon: PAD_INFO_ICON,
-		tips: [lClick + 'ajuda | DOCS']
-	});
+	options.addHelp(repoURL + '/blob/main/README.md#busca');
 
 	var findProgressBar = findW.add('progressbar', [0, 0, contentWidth, 1], undefined);
 	findProgressBar.value = 100;
@@ -106,10 +58,10 @@ function findDialog() {
 	function getSearchOptions() {
 		return {
 			sKey: findEdTxt.text,
-			vis: optCkb5.value,
-			matchCase: optCkb1.value,
-			matchAccent: optCkb2.value,
-			invert: optCkb4.value
+			vis: visCkb.value,
+			matchCase: false, // maiúsculas e minúsculas são sempre ignoradas
+			matchAccent: !accentCkb.value,
+			invert: invertCkb.value
 		};
 	}
 
@@ -160,7 +112,7 @@ function findDialog() {
 		if (textIndex != null) showResults();
 	};
 
-	optCkb1.onClick = optCkb2.onClick = optCkb4.onClick = optCkb5.onClick = function () {
+	visCkb.onClick = accentCkb.onClick = invertCkb.onClick = function () {
 		if (textIndex != null) showResults();
 	};
 
@@ -192,12 +144,6 @@ function findDialog() {
 			// a comp ou o layer pode ter sido apagado depois da busca
 			alert(lol + '#FND_020 - o item não existe mais. busque novamente (Enter).');
 		}
-	};
-
-	//---------------------------------------------------------
-
-	infoBtn.leftClick.onClick = function () {
-		openWebSite(repoURL + '/blob/main/README.md#busca');
 	};
 
 	findW.show();

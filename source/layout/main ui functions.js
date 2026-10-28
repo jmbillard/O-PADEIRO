@@ -565,6 +565,57 @@ function themeSearchHeader(parentGrp, width, tips) {
 	return header;
 }
 
+// Linha de opções das janelas de busca: retorna o grupo onde entram as opções (themeSearchOption)
+// e o botão de ajuda, sempre no fim da linha.
+function themeSearchOptions(parentGrp) {
+	var options = {};
+
+	options.grp = parentGrp.add('group');
+	options.grp.orientation = 'row';
+	options.grp.alignChildren = ['left', 'center'];
+	options.grp.spacing = 12;
+	options.grp.margins = 0;
+
+	options.add = function (label, value, tip) {
+		return themeSearchOption(options.grp, label, value, tip);
+	};
+
+	options.addHelp = function (url) {
+		var infoBtn = themeIconButton(options.grp, { icon: PAD_INFO_ICON, tips: [lClick + 'ajuda | DOCS'] });
+
+		infoBtn.leftClick.onClick = function () {
+			openWebSite(url);
+		};
+
+		return infoBtn;
+	};
+
+	return options;
+}
+
+// Checkbox com rótulo clicável. A margem do grupo deixa espaço para o contorno de foco do checkbox
+// (sem ela o contorno azul aparece cortado). Retorna o checkbox.
+function themeSearchOption(parentGrp, label, value, tip) {
+	var optGrp = parentGrp.add('group');
+	optGrp.alignChildren = ['left', 'center'];
+	optGrp.spacing = 4;
+	optGrp.margins = 4;
+
+	var ckb = optGrp.add('checkbox');
+	ckb.value = value;
+
+	var lab = optGrp.add('statictext', undefined, label);
+	ckb.helpTip = lab.helpTip = tip || label;
+
+	// clicar no rótulo também marca / desmarca
+	lab.addEventListener('click', function () {
+		ckb.value = !ckb.value;
+		if (ckb.onClick) ckb.onClick();
+	});
+
+	return ckb;
+}
+
 // Botão de ícone (sem rótulo). Usado na ui principal e nas demais janelas.
 function themeIconButton(sectionGrp, ctrlProperties) {
 	var btnGroup = sectionGrp.add('group');

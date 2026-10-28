@@ -443,7 +443,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.8';
+	var scriptVersion = 'v3.9';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -471,11 +471,15 @@ function pathSearchDialog() {
 
 	searchEdTxt.helpTip = 'pesquise por atração, caminho, projeto ou output';
 
-	// Filtros por categoria (montados a partir do índice carregado)
-	var filterGrp = pathW.add('group');
+	// Filtros por categoria (montados a partir do índice carregado) + ajuda
+	var options = themeSearchOptions(pathW);
+	var filterGrp = options.grp.add('group');
 	filterGrp.orientation = 'row';
 	filterGrp.alignChildren = ['left', 'center'];
-	filterGrp.spacing = 16;
+	filterGrp.spacing = 12;
+	filterGrp.margins = 0;
+
+	options.addHelp(repoURL + '/blob/main/README.md#busca');
 
 	var statusTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
 	statusTxt.preferredSize.width = contentWidth;
@@ -500,7 +504,7 @@ function pathSearchDialog() {
 
 		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height;
 
-		if (filterGrp.children.length > 0) height += pathW.spacing + filterGrp.size.height;
+		height += pathW.spacing + options.grp.size.height;
 
 		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
 
@@ -574,27 +578,12 @@ function pathSearchDialog() {
 	}
 
 	function addCategoryFilter(category) {
-		var optGrp = filterGrp.add('group');
-		optGrp.alignChildren = ['left', 'center'];
-		optGrp.spacing = 2;
-
-		var ckb = optGrp.add('checkbox');
-		ckb.value = !hiddenCategories[category.key];
-
-		var lab = optGrp.add('statictext', undefined, category.label);
-		setFgColor(lab, normalColor1);
-		ckb.helpTip = lab.helpTip = 'incluir ' + category.label + ' na busca';
+		var ckb = themeSearchOption(filterGrp, category.label, !hiddenCategories[category.key], 'incluir ' + category.label + ' na busca');
 
 		ckb.onClick = function () {
 			hiddenCategories[category.key] = !ckb.value;
 			doSearch();
 		};
-
-		// clicar no rótulo também marca / desmarca
-		lab.addEventListener('click', function () {
-			ckb.value = !ckb.value;
-			ckb.onClick();
-		});
 	}
 
 	function doSearch() {
@@ -668,6 +657,7 @@ function pathSearchDialog() {
 			index = psBuildIndex(psReadJSON(cacheFile));
 			indexReady = true;
 			buildCategoryFilters();
+			options.grp.layout.layout(true);
 
 			statusTxt.text = downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
 		} catch (err) {
