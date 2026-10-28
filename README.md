@@ -551,6 +551,8 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   > 📋 *exemplo:*\
   > ![busca](docs/gifs/busca.gif)
 
+  `Enter` (ou o botão de busca) lê o texto de todos os layers do projeto. depois disso, a lista é filtrada enquanto você digita ou muda as opções. pressione `Enter` de novo para reler o projeto depois de alterar os textos.
+
   > 🚩 *obs:*\
   > Por padrão a busca é feita ignorando acentuação e caixa do texto.\
   > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...

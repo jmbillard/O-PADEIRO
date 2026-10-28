@@ -10,27 +10,6 @@
 
 */
 
-function cleanHierarchy(nodeTree) {
-	var branches = nodeTree.items;
-	var itemsToRemove = [];
-
-	for (var i = 0; i < branches.length; i++) {
-		if (branches[i].type != 'node') continue;
-
-		var wasEmpty = cleanHierarchy(branches[i]);
-
-		if (wasEmpty) {
-			itemsToRemove.push(branches[i]);
-		}
-	}
-
-	for (var j = 0; j < itemsToRemove.length; j++) {
-		nodeTree.remove(itemsToRemove[j]);
-	}
-
-	return nodeTree.items.length == 0 && nodeTree.parent != null;
-}
-
 // Lê a pasta uma única vez e monta a árvore em memória: { type, text, children | file }.
 // Mesma limpeza do treeview (sem pastas vazias) e mesma otimização (pasta com uma única subpasta
 // vira 'PASTA / SUBPASTA'), para que a busca possa filtrar sem acessar a rede de novo.
@@ -163,105 +142,114 @@ function buildTree(folder, tree, fileTypes) {
 	return data;
 }
 
-// Constrói a árvore de resultados da busca
-function buildTxtSearchTree(tree, obj, compArray, progressBar) {
-	var sKey = obj.sKey; // Palavra-chave de busca
-	var vis = obj.vis; // Incluir camadas ocultas? (true/false)
-	var matchCase = obj.matchCase; // Diferenciar maiúsculas/minúsculas? (true/false)
-	var matchAccent = obj.matchAccent; // Diferenciar acentos? (true/false)
-	var invert = !obj.invert; // Inverter a busca (não incluir a palavra-chave)? (true/false)
+// Lê o texto de todos os layers de texto das comps, uma única vez, para a busca filtrar em memória.
+// Cada entrada: { comp, layer, label, text, enabled, refTime }. Layers com keyframes de texto geram
+// uma entrada por keyframe. Os valores são lidos com valueAtTime (sem mover a agulha das comps).
+function buildTextLayerIndex(compArray, progressBar) {
+	var index = [];
 
-	if (!matchCase) sKey = sKey.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-	if (!matchAccent) sKey = sKey.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-
-	// Remove todos os itens da árvore para começar do zero
-	while (tree.items.length > 0) {
-		tree.remove(tree.items[0]);
-	}
-	// Inicializa a barra de progresso e a contagem de itens da árvore
-	progressBar.maxvalue = compArray.length;
+	progressBar.maxvalue = Math.max(compArray.length, 1);
 	progressBar.value = 0;
 
-	// Itera sobre todas as composições no projeto
+	for (var c = 0; c < compArray.length; c++) {
+		var comp = compArray[c];
 
-	for (i = 0; i < compArray.length; i++) {
 		try {
-			var comp = compArray[i];
-			var compName = limitNameSize(comp.name, 45); // Limita o tamanho do nome da composição
-			var compItem = tree.add('node', compName); // Adiciona o item da composição na árvore
-
-			compItem.image = compTogIcon.light;
-			compItem.comp = comp;
-
-			// Itera sobre todas as camadas em cada composição
 			for (var l = 1; l <= comp.numLayers; l++) {
-				var txtLayer = comp.layer(l); // Camada de texto atual
+				var txtLayer = comp.layer(l);
 
-				// Pula se layer atual não for um layer de texto
 				if (!(txtLayer instanceof TextLayer)) continue;
 
-				// Ignora camadas ocultas se a opção estiver desmarcada
-				if (vis && !txtLayer.enabled) continue;
+				var doc = txtLayer.property('ADBE Text Properties').property('ADBE Text Document');
+				var label = '#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35);
 
-				var matchResult = false;
-				var doc = txtLayer
-					.property('ADBE Text Properties')
-					.property('ADBE Text Document'); // Propriedade de texto da camada
-				var refTime =
-					comp.duration < 1
-						? 0
-						: txtLayer.inPoint +
-						(txtLayer.outPoint - txtLayer.inPoint) / 2;
-				var layerName =
-					'#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
-
-				if (refTime > comp.duration)
-					refTime = comp.duration - comp.frameDuration;
-
-				// Se a propriedade de texto tiver uma expressão
-				if (doc.expression != '') comp.time = refTime; // Define o tempo para antes do ponto de saída da camada
-
-				var sTxt = getTextLayerContent(txtLayer);
-
-				if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-				if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-				if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-				if (sTxt.match(sKey)) matchResult = true;
-				if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
-
-				var txtItem = compItem.add('item', layerName);
-				txtItem.comp = comp;
-				txtItem.refTime = comp.time;
-				txtItem.txtLayer = txtLayer;
-
-				// Se a propriedade de texto tiver keyframes
 				if (doc.numKeys > 0) {
-					compItem.remove(txtItem);
-
 					for (var k = 1; k <= doc.numKeys; k++) {
-						comp.time = doc.keyTime(k); // Define o tempo da composição para o keyframe atual
+						var keyTime = doc.keyTime(k);
 
-						sTxt = getTextLayerContent(txtLayer);
-
-						if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-						if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-						if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-						if (sTxt.match(sKey)) matchResult = true;
-						if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
-
-						var txtItem = compItem.add('item', layerName);
-						txtItem.comp = comp;
-						txtItem.refTime = comp.time;
-						txtItem.txtLayer = txtLayer;
+						index.push(textLayerEntry(comp, txtLayer, label, doc.valueAtTime(keyTime, false), keyTime));
 					}
+				} else if (doc.expression != '') {
+					// texto vindo de expressão: lê no meio do layer, como antes
+					var refTime = comp.duration < 1 ? 0 : txtLayer.inPoint + (txtLayer.outPoint - txtLayer.inPoint) / 2;
+
+					if (refTime > comp.duration) refTime = comp.duration - comp.frameDuration;
+
+					index.push(textLayerEntry(comp, txtLayer, label, doc.valueAtTime(refTime, false), refTime));
+				} else {
+					index.push(textLayerEntry(comp, txtLayer, label, doc.value, comp.time));
 				}
 			}
-			progressBar.value++; // Incrementa a barra de progresso
 		} catch (err) {
 			alert(lol + '#FND_019 - comp: ' + comp.name + '\n' + err.message);
 		}
+
+		progressBar.value++;
 	}
-	cleanHierarchy(tree);
+
+	return index;
+}
+
+function textLayerEntry(comp, txtLayer, label, textDoc, refTime) {
+	var text = String(textDoc.text).trim();
+
+	if (textDoc.allCaps) text = text.toUpperCase(); // o texto aparece em caixa alta na comp
+
+	return { comp: comp, layer: txtLayer, label: label, text: text, enabled: txtLayer.enabled, refTime: refTime };
+}
+
+// Normaliza o texto conforme as opções da busca.
+function normalizeSearchText(str, matchCase, matchAccent) {
+	if (!matchCase) str = str.toLowerCase();
+	if (!matchAccent) str = str.replaceSpecialCharacters();
+
+	return str;
+}
+
+// Filtra o índice. obj: { sKey, vis, matchCase, matchAccent, invert }
+// A busca é literal: caracteres como '(', '.', '?' são procurados como texto.
+function filterTextLayerIndex(index, obj) {
+	var sKey = normalizeSearchText(obj.sKey, obj.matchCase, obj.matchAccent);
+	var results = [];
+
+	for (var i = 0; i < index.length; i++) {
+		var entry = index[i];
+
+		if (obj.vis && !entry.enabled) continue; // apenas layers visíveis
+
+		var found = normalizeSearchText(entry.text, obj.matchCase, obj.matchAccent).indexOf(sKey) >= 0;
+
+		if (found != !!obj.invert) results.push(entry);
+	}
+
+	return results;
+}
+
+// Monta a árvore de resultados: um nó por comp com os layers encontrados.
+function populateTxtSearchTree(tree, results) {
+	while (tree.items.length > 0) {
+		tree.remove(tree.items[0]);
+	}
+
+	var currentComp = null;
+	var compItem = null;
+
+	for (var i = 0; i < results.length; i++) {
+		var entry = results[i];
+
+		// o índice é montado comp a comp, então os resultados da mesma comp são consecutivos
+		if (entry.comp !== currentComp) {
+			currentComp = entry.comp;
+			compItem = tree.add('node', limitNameSize(currentComp.name, 45));
+			compItem.image = compTogIcon.light;
+			compItem.comp = currentComp;
+		}
+
+		var txtItem = compItem.add('item', entry.label);
+		txtItem.comp = entry.comp;
+		txtItem.txtLayer = entry.layer;
+		txtItem.refTime = entry.refTime;
+	}
 }
 
 // Expande todos os nós de uma 'árvore de exibição' (tree view).

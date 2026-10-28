@@ -10,7 +10,7 @@
 
 function findDialog() {
 	var scriptName = 'BUSCA';
-	var scriptVersion = 'v2.3';
+	var scriptVersion = 'v2.4';
 
 	var findW = new Window('palette', scriptName + ' ' + scriptVersion);
 	findW.spacing = 4;
@@ -104,58 +104,99 @@ function findDialog() {
 		findEdTxt.active = true;
 	};
 
-	findEdTxt.onEnterKey = findBtn.leftClick.onClick = function () {
-		findW.text = 'BUSCANDO...';
-		resultTree.visible = false;
-		resultTree.size.height = 0;
-		findW.layout.layout(true);
+	// Índice com o texto de todos os layers de texto (montado ao buscar com Enter / botão).
+	// Enquanto a janela está aberta, digitar ou mudar as opções filtra esse índice na hora.
+	var textIndex = null;
 
-		var sKey = findEdTxt.text;
-		if (sKey == '' || app.project.numItems == 0) {
-			findW.text = 'BUSCAR...';
-			return;
-		}
-		var optObj = {
-			sKey: sKey,
+	function getSearchOptions() {
+		return {
+			sKey: findEdTxt.text,
 			vis: optCkb5.value,
 			matchCase: optCkb1.value,
 			matchAccent: optCkb2.value,
 			invert: optCkb4.value
 		};
-		var compsArray = getComps();
-		buildTxtSearchTree(resultTree, optObj, compsArray, findProgressBar);
+	}
+
+	function showResults() {
+		resultTree.visible = false;
+		resultTree.size.height = 0;
+
+		if (textIndex == null || findEdTxt.text == '') {
+			findW.text = textIndex == null ? 'BUSCAR...' : 'ÍNDICE: ' + textIndex.length + ' textos';
+			findW.layout.layout(true);
+			return;
+		}
+
+		populateTxtSearchTree(resultTree, filterTextLayerIndex(textIndex, getSearchOptions()));
+
 		var count = expandNodes(resultTree);
 
 		if (count < 1) {
 			findW.text = 'SEM MATCHES... (っ °Д °;)っ';
+		} else {
+			resultTree.visible = true;
+			resultTree.size.height = count >= 16 ? 320 : count * 21 + 5;
+			findW.text = 'BUSCA CONCLUÍDA...  (o °▽ °)o☆';
+		}
+
+		findW.layout.layout(true);
+	}
+
+	// Lê novamente o texto dos layers do projeto (Enter ou botão buscar).
+	findEdTxt.onEnterKey = findBtn.leftClick.onClick = function () {
+		if (findEdTxt.text == '' || app.project.numItems == 0) {
+			findW.text = 'BUSCAR...';
 			return;
 		}
-		resultTree.visible = true;
-		resultTree.size.height = count >= 16 ? 320 : count * 21 + 5;
-		findW.text = 'BUSCA CONCLUÍDA...  (o °▽ °)o☆';
+
+		findW.text = 'LENDO OS TEXTOS DO PROJETO...';
+		resultTree.visible = false;
+		resultTree.size.height = 0;
 		findW.layout.layout(true);
+		findW.update();
+
+		textIndex = buildTextLayerIndex(getComps(), findProgressBar);
+		showResults();
+	};
+
+	// Busca dinâmica sobre o índice já lido
+	findEdTxt.onChanging = function () {
+		if (textIndex != null) showResults();
+	};
+
+	optCkb1.onClick = optCkb2.onClick = optCkb4.onClick = optCkb5.onClick = function () {
+		if (textIndex != null) showResults();
 	};
 
 	//---------------------------------------------------------
 
 	resultTree.onChange = function () {
-		var comp = resultTree.selection.comp;
+		var sel = resultTree.selection;
+
+		if (sel == null) return;
+
+		var comp = sel.comp;
 		var t = comp.time;
-		var txtLayer;
 
-		if (resultTree.selection.type == 'item') {
-			txtLayer = resultTree.selection.txtLayer;
+		try {
+			if (sel.type == 'item') {
+				var txtLayer = sel.txtLayer;
 
-			for (var l = 1; l <= comp.numLayers; l++) {
-				comp.layer(l).selected = false;
+				for (var l = 1; l <= comp.numLayers; l++) {
+					comp.layer(l).selected = false;
+				}
+
+				t = sel.refTime;
+				comp.hideShyLayers = !txtLayer.shy;
+				txtLayer.selected = true;
 			}
-
-			t = resultTree.selection.refTime;
-			comp.hideShyLayers = !txtLayer.shy;
-			txtLayer.selected = true;
+			comp.openInViewer();
+			comp.time = t;
+		} catch (err) {
+			// a comp ou o layer pode ter sido apagado depois da busca
+			alert(lol + '#FND_020 - o item não existe mais. busque novamente (Enter).');
 		}
-		comp.openInViewer();
-		comp.time = t;
 	};
 
 	//---------------------------------------------------------
