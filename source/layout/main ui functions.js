@@ -248,9 +248,11 @@ function PAD_UI_EVENTS(uiObj) {
 
 	// Adiciona um ouvinte de evento de clique ao botão "Abrir O Padeiro".
 	uiObj.templates.rightClick.onClick = function () {
-		if (app.project.numItems == 0) return;
-		var aItem = app.project.activeItem;
-		if (aItem == null) return;
+		// O editor precisa da comp principal do template aberta
+		if (!(app.project.activeItem instanceof CompItem)) {
+			alert(lol + '#PAD_031 - abra a comp principal do template antes de criar um novo template.');
+			return;
+		}
 
 		try {
 			PadMakerDialog();
