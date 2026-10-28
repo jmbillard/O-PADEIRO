@@ -414,7 +414,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.1';
+	var scriptVersion = 'v3.2';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -445,26 +445,35 @@ function pathSearchDialog() {
 	var statusTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
 	setFgColor(statusTxt, monoColor1);
 
-	var resultsGrp = pathW.add('group');
-	resultsGrp.orientation = 'column';
-	resultsGrp.alignChildren = ['fill', 'top'];
-	resultsGrp.spacing = 6;
+	var resultsGrp;
 
+	function newResultsGrp() {
+		resultsGrp = pathW.add('group');
+		resultsGrp.orientation = 'column';
+		resultsGrp.alignChildren = ['fill', 'top'];
+		resultsGrp.spacing = 6;
+	}
+
+	newResultsGrp();
 	setBgColor(pathW, bgColor1);
 
-	// Reajusta a janela ao conteúdo: ela cresce com os resultados e volta a encolher quando eles somem.
+	// Reajusta a altura da janela ao conteúdo: ela cresce com os resultados e volta a encolher quando eles somem.
+	// O 'preferredSize' da janela guarda o maior tamanho já usado, então a altura é somada a partir dos filhos.
 	function relayout() {
-		var width = pathW.size.width;
-
 		pathW.layout.layout(true);
-		pathW.size = [Math.max(width, pathW.preferredSize.width), pathW.preferredSize.height];
+
+		var height = pathW.margins.top + pathW.margins.bottom + searchGrp.size.height + pathW.spacing + statusTxt.size.height;
+
+		if (resultsGrp.children.length > 0) height += pathW.spacing + resultsGrp.preferredSize.height;
+
+		pathW.size = [pathW.size.width, height];
 		pathW.layout.layout(true);
 	}
 
+	// Recria o grupo (em vez de esvaziá-lo) para que o tamanho preferido do conteúdo anterior não fique em cache.
 	function clearResults() {
-		while (resultsGrp.children.length > 0) {
-			resultsGrp.remove(resultsGrp.children[0]);
-		}
+		pathW.remove(resultsGrp);
+		newResultsGrp();
 	}
 
 	function addFolderBtn(parent, label, path, group) {
