@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.88';
+	var scriptVersion = 'v1.89';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -46,7 +46,8 @@ o script funcionará normalmente, mas você não terá:\n\
 	#include 'source/Utils/o acessorista ui.js';          // O Acessorista: busca de caminhos de atrações
 	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 
-	// estrutura de 'ctrlProperties'
+	// Estrutura da ui principal: cada botão declara rótulo, ícone, dicas e as ações
+	// de clique esquerdo / direito (funções em PAD_ACTIONS, 'main ui functions.js').
 	var PAD_mainGrpUiStructure = {
 		pinGrp: {
 			section0: {
@@ -55,8 +56,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					labelTxt: 'Links',
 					icon: PAD_LINKS_ICON,
 					tips: [
-						lClick + 'abrir apontamento de projetos',
-					]
+						lClick + 'abrir apontamento de projetos'
+					],
+					leftClick: PAD_ACTIONS.abrirApontamento
 				}
 			}
 		},
@@ -69,7 +71,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					tips: [
 						lClick + 'preencher templates',
 						rClick + 'criar novo template'
-					]
+					],
+					leftClick: PAD_ACTIONS.preencherTemplates,
+					rightClick: PAD_ACTIONS.criarTemplate
 				},
 				fontes: {
 					type: 'imageButton',
@@ -78,7 +82,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					tips: [
 						lClick + 'instalar as fontes usadas no template',
 						rClick + 'fazer o collect das fontes usadas no projeto'
-					]
+					],
+					leftClick: PAD_ACTIONS.instalarFontes,
+					rightClick: PAD_ACTIONS.coletarFontes
 				}
 			},
 			section2: {
@@ -89,7 +95,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					tips: [
 						lClick + 'abir a pasta do último item da fila de render',
 						rClick + 'abrir o conversor de caminhos Windows/MacOs'
-					]
+					],
+					leftClick: PAD_ACTIONS.abrirPastaOutput,
+					rightClick: PAD_ACTIONS.abrirConversorCaminhos
 				}
 			},
 			section3: {
@@ -100,7 +108,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					tips: [
 						lClick + 'renomear comps selecionadas',
 						rClick + 'renomear TODAS as saídas de render'
-					]
+					],
+					leftClick: PAD_ACTIONS.renomearComps,
+					rightClick: PAD_ACTIONS.renomearOutputs
 				},
 				organizar: {
 					type: 'imageButton',
@@ -110,7 +120,9 @@ o script funcionará normalmente, mas você não terá:\n\
 						'selecione as comps que serão\nRENDERIZADAS primeiro!',
 						lClick + 'organizar o projeto',
 						rClick + 'criar estrutura de pastas do projeto'
-					]
+					],
+					leftClick: PAD_ACTIONS.organizarProjeto,
+					rightClick: PAD_ACTIONS.criarPastasProjeto
 				}
 			},
 			section4: {
@@ -121,7 +133,9 @@ o script funcionará normalmente, mas você não terá:\n\
 					tips: [
 						lClick + 'abrir a BUSCA em layers de texto',
 						rClick + 'abrir a BUSCA de caminhos de atrações'
-					]
+					],
+					leftClick: PAD_ACTIONS.buscarTextos,
+					rightClick: PAD_ACTIONS.buscarCaminhos
 				}
 			// },
 			// section5: {
