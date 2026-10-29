@@ -19,7 +19,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
 	var MAX_RESULTS = 12; // máximo de atrações exibidas
-	var MAX_PATH_CHARS = 90;
+	var MAX_PATH_CHARS = 180;
 	var MAX_TEXT_ROWS = 300; // máximo de textos exibidos
 	var COMPS_PER_CHUNK = 4;
 	var TAB_REQUEST_TTL = 15000; // ms: pedido de aba da barra considerado "recente" ao abrir o painel
@@ -760,6 +760,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   busca, a altura que cabe os resultados (até um limite)
 	   ========================================================= */
 
+	var FIT_MIN_WIDTH = 720;
+	var FIT_WIDE_ITEMS = '.path-line, .result-name, .comp-title span:first-child';
 	var fitMinHeight = 360;
 	var fitTimer = null;
 	var refitOnResize = false;
@@ -776,7 +778,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (!results || !results.children.length) return;
 
-		// primeiro a largura: os toggles cabem numa linha só (a janela só alarga, nunca estreita)
+		// primeiro a largura (a janela só alarga, nunca estreita): os toggles numa linha só e os
+		// caminhos e nomes sem reticências, até 70% da largura da tela
 		var opts = $('opts-' + state.tab);
 		var chips = opts.children;
 		var natural = 0;
@@ -785,10 +788,19 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		natural += Math.max(0, chips.length - 1) * parseFloat(getComputedStyle(opts).columnGap || 0);
 
-		if (natural > opts.clientWidth + 1) {
-			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho perde uma linha)
+		var extra = Math.max(0, natural - opts.clientWidth);
+
+		Array.prototype.forEach.call(results.querySelectorAll(FIT_WIDE_ITEMS), function (item) {
+			extra = Math.max(extra, item.scrollWidth - item.clientWidth);
+		});
+
+		var maxWidth = Math.max(FIT_MIN_WIDTH, Math.round((window.screen.availWidth || 1440) * 0.7));
+		var width = Math.min(maxWidth, Math.max(FIT_MIN_WIDTH, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
+
+		if (width > window.innerWidth + 1) {
+			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho pode perder uma linha)
 			refitOnResize = true;
-			PAD_BRIDGE.resizeWindow(window.innerWidth + Math.ceil(natural - opts.clientWidth) + 2, window.innerHeight);
+			PAD_BRIDGE.resizeWindow(width, window.innerHeight);
 			return;
 		}
 
