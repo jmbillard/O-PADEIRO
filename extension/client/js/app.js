@@ -150,7 +150,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		selected: null, // nó do template selecionado
 		info: null, // retorno de templateInfo
 		example: '', // texto de exemplo atual (para saber se o usuário digitou algo)
-		run: null // execução em andamento
+		run: null, // execução em andamento
+		editor: null // editor de config aberto
 	};
 
 	var app = $('app-shell');
@@ -234,7 +235,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// Acompanha a produção escolhida na barra do script e a conexão com o After Effects.
 	async function watchProduction() {
-		if (document.hidden || state.busy || runIsOpen() || state.loading) return;
+		if (document.hidden || state.busy || runIsOpen() || state.loading || state.editor) return;
 
 		var name;
 
@@ -500,11 +501,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	function showView(name) {
-		['readonly', 'input', 'run'].forEach(function (view) {
+		['readonly', 'input', 'config', 'run'].forEach(function (view) {
 			$('view-' + view).hidden = view !== name;
 		});
 
 		$('queue-actions').hidden = name !== 'input';
+		$('btn-edit-config').hidden = name === 'run';
+		$('btn-edit-config').classList.toggle('is-active', name === 'config');
+		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
 	}
 
 	// Pasta do template relativa à pasta de templates da produção (ex.: 'PROGRAMAS / ENCONTRO').
@@ -543,6 +547,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return;
 		}
 
+		if (!leaveEditor()) return;
+
 		// clicar de novo no template selecionado desmarca (e o painel de trabalho some)
 		if (state.selected && state.selected.uri === node.uri) return deselectTemplate();
 
@@ -576,7 +582,76 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 	}
 
+	/* =========================================================
+	   Editor de config
+	   ========================================================= */
+
+	// Fecha o editor para trocar de template / desmarcar. Retorna false (com aviso) se há alterações não salvas.
+	function leaveEditor() {
+		if (!state.editor) return true;
+
+		if (state.editor.isDirty()) {
+			notify('warning', 'Há alterações não salvas na config. Use “Salvar config” ou “Cancelar” antes de trocar de template.');
+			return false;
+		}
+
+		closeEditor();
+
+		return true;
+	}
+
+	function closeEditor() {
+		if (!state.editor) return;
+
+		state.editor.destroy();
+		state.editor = null;
+	}
+
+	function openEditor() {
+		if (!state.info || runIsOpen() || state.busy) return;
+
+		if (state.editor) {
+			if (state.editor.isDirty()) return notify('warning', 'Há alterações não salvas. Use “Salvar config” ou “Cancelar”.');
+
+			closeEditor();
+			showTemplate(state.info);
+
+			return;
+		}
+
+		var info = state.info;
+
+		clearNotices();
+
+		state.editor = PAD_CONFIG_EDITOR.mount($('view-config'), {
+			info: info,
+			pickFolder: PAD_BRIDGE.pickFolder,
+			normalizePath: async function (path) {
+				return (await call('normalizePath', { path: path })).path;
+			},
+			onCancel: function () {
+				closeEditor();
+				showTemplate(state.info);
+			},
+			onSave: async function (config) {
+				var res = await call('saveTemplateConfig', { uri: info.uri, config: config });
+
+				state.info = await call('templateInfo', { uri: info.uri });
+				closeEditor();
+				showTemplate(state.info);
+				clearNotices();
+				notify('success', 'Config salva: ' + res.path);
+			}
+		});
+
+		showView('config');
+		$('view-config').scrollTop = 0;
+
+		if (info.configError) notify('warning', 'O arquivo de config atual é inválido: o formulário começou com os valores padrão e salvar substitui o arquivo.');
+	}
+
 	function deselectTemplate() {
+		closeEditor();
 		state.selected = null;
 		state.info = null;
 		state.run = null;
@@ -595,7 +670,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setStage('2 · preencher', info.name, relativeFolder());
 
 		if (info.configError) return showReadonly(info.configError);
-		if (!info.hasConfig) return showReadonly('Clique em “importar template” e edite o template manualmente.');
+		if (!info.hasConfig) return showReadonly('Esse template ainda não tem config. Use o lápis ao lado do nome para criar uma, ou importe o template e edite manualmente.');
 		if (!info.hasInputLayers) return showReadonly('Esse template não possui inputs. Clique em “importar template” e edite manualmente.');
 
 		var cfg = info.config;
@@ -1125,7 +1200,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		// clicar fora de um template (fundo da lista ou da coluna) ou apertar Esc também desmarca
 		function deselectFromUi() {
-			if (!state.selected || runIsOpen() || state.busy) return;
+			if (!state.selected || runIsOpen() || state.busy || !leaveEditor()) return;
 
 			deselectTemplate();
 		}
@@ -1143,6 +1218,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			if (active === search && search.value) return; // o Esc da busca só limpa o texto
 			if (active && active.tagName === 'TEXTAREA') return;
+			if (active && active.closest && active.closest('#view-config')) return;
 			if ($('app-menu').hasAttribute('open')) return;
 
 			deselectFromUi();
@@ -1172,6 +1248,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) startFill();
 		});
 
+		$('btn-edit-config').addEventListener('click', openEditor);
 		$('btn-fill').addEventListener('click', startFill);
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);

@@ -92,7 +92,12 @@
 				<div class="queue-header">
 					<div class="queue-title-row">
 						<p class="section-eyebrow" id="stage-eyebrow">2 · preencher</p>
-						<h2 id="queue-title">Template</h2>
+						<div class="queue-title-line">
+							<h2 id="queue-title">Template</h2>
+							<button type="button" class="icon-button is-light" id="btn-edit-config" title="editar config" aria-label="editar config" aria-pressed="false">
+								<svg viewBox="0 0 24 24" class="anim-pencil"><path d="M4 20h4L19.2 8.8a2.1 2.1 0 0 0 0-3l-1-1a2.1 2.1 0 0 0-3 0L4 16z" /><path d="m13.5 6.5 4 4" /></svg>
+							</button>
+						</div>
 						<p class="queue-state-message" id="queue-message"></p>
 					</div>
 					<div class="queue-actions" id="queue-actions">
@@ -140,6 +145,9 @@
 						<button type="button" class="button button-primary" id="btn-fill">Preencher: 1</button>
 					</div>
 				</div>
+
+				<!-- editor de config do template -->
+				<div class="view view-stack" id="view-config" hidden></div>
 
 				<!-- execução -->
 				<div class="view" id="view-run" hidden>
@@ -202,6 +210,7 @@
 
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
+	<script src="js/config-editor.js"></script>
 	<script src="js/app.js"></script>
 </body>
 

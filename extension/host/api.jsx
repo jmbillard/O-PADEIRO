@@ -246,6 +246,7 @@ PADX.templateInfo = function (a) {
 		hasConfig: files.config.exists,
 		hasScript: files.script.exists,
 		hasInputLayers: false,
+		defaults: defaultTemplateConfigObj,
 		config: null,
 		configError: null
 	};
@@ -267,6 +268,57 @@ PADX.templateInfo = function (a) {
 	}
 
 	return info;
+};
+
+// Caminho no formato do sistema atual (rede Windows / macOS), como o criador de templates grava.
+PADX.normalizePath = function (a) {
+	return { path: padPath(a.path) };
+};
+
+// Grava o '_config.json' do template (cria o arquivo se ele ainda não existir).
+// a: { uri, config }
+PADX.saveTemplateConfig = function (a) {
+	var projectFile = new File(a.uri);
+
+	if (!projectFile.exists) throw new Error('#PAD_018 - arquivo do template não encontrado');
+
+	var cfg = a.config;
+	var cases = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'];
+
+	if (!cfg || typeof cfg !== 'object') throw new Error('configuração inválida');
+	if (String(cfg.configName).trim() == '') throw new Error('preencha o nome da configuração');
+	if (String(cfg.compName).trim() == '') throw new Error('preencha o nome da comp principal');
+	if (cases.indexOf(cfg.textCase) < 0) throw new Error('tipo de caixa de texto inválido: ' + cfg.textCase);
+	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('tempo de referência inválido');
+	if (!(cfg.inputLayers instanceof Array)) throw new Error('lista de layers inválida');
+	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) throw new Error('informe ao menos uma pasta de output');
+
+	for (var l = 0; l < cfg.inputLayers.length; l++) {
+		var layer = cfg.inputLayers[l];
+
+		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('índice de layer inválido na informação ' + (l + 1));
+		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('método inválido na informação ' + (l + 1));
+	}
+
+	// efeito de variações é opcional
+	if (cfg.inputFx == null) {
+		delete cfg.inputFx;
+	} else if (!(cfg.inputFx.options instanceof Array) || cfg.inputFx.options.length == 0 || String(cfg.inputFx.fxName).trim() == '') {
+		throw new Error('efeito de variações incompleto');
+	}
+
+	var configFile = padTemplateFiles(projectFile).config;
+
+	try {
+		saveTextFile(JSON.stringify(cfg, null, '\t'), configFile.fsName);
+
+		// confere o que foi gravado
+		JSON.parse(readFileContent(new File(configFile.fsName)));
+	} catch (err) {
+		throw new Error('não foi possível gravar o arquivo de configuração: ' + err.message);
+	}
+
+	return { path: configFile.fsName };
 };
 
 // Importa o template para o projeto e organiza (duplo clique na lista).

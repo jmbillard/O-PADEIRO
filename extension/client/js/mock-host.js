@@ -94,14 +94,28 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		templateInfo: function (a) {
 			var name = a.uri.split('/').pop().replace(/\.aep$/, '');
 			var cfg = configs[name];
-			var info = { uri: a.uri, name: name, folder: a.uri.replace(/\/[^/]+$/, ''), preview: name === 'TARJA DUPLA' ? null : previewSvg(), video: window.PAD_MOCK_VIDEO && name === 'TARJA SIMPLES' ? window.PAD_MOCK_VIDEO : null, hasConfig: !!cfg, hasScript: false, hasInputLayers: false, config: null, configError: null };
+			var info = { uri: a.uri, name: name, folder: a.uri.replace(/\/[^/]+$/, ''), preview: name === 'TARJA DUPLA' ? null : previewSvg(), video: window.PAD_MOCK_VIDEO && name === 'TARJA SIMPLES' ? window.PAD_MOCK_VIDEO : null, hasConfig: !!cfg, hasScript: false, hasInputLayers: false, defaults: { configName: 'NOME DA CONFIGURAÇÃO', exemple: 'INFORMAÇÃO 1\nINFORMAÇÃO 2', tip: 'coloque aqui as instruções de preenchimento deste template.', compName: 'COMP TEMPLATE', prefix: 'TARJA', refTime: 2, separator: '\n', textCase: 'upperCase', inputLayers: [], importPath: '~/Downloads', outputPath: ['~/Desktop'] }, config: null, configError: null };
 
 			if (cfg) {
-				info.config = Object.assign({ prefix: 'TARJA', separator: '\n', textCase: 'upperCase', refTime: 2, inputLayers: [{ layerIndex: 1 }, { layerIndex: 2 }] }, cfg);
+				info.config = Object.assign({ compName: 'COMP TEMPLATE', prefix: 'TARJA', separator: '\n', textCase: 'upperCase', refTime: 2, importPath: '~/Downloads', inputLayers: [{ layerIndex: 1, method: 'textContent' }, { layerIndex: 2, method: 'textContent' }] }, JSON.parse(JSON.stringify(cfg)));
 				info.hasInputLayers = true;
 			}
 
 			return info;
+		},
+
+		normalizePath: function (a) {
+			return { path: a.path };
+		},
+
+		saveTemplateConfig: async function (a) {
+			await wait(delay);
+
+			if (mode === 'fail') throw new Error('não foi possível gravar o arquivo de configuração: sem permissão');
+
+			configs[a.uri.split('/').pop().replace(/\.aep$/, '')] = a.config;
+
+			return { path: a.uri.replace(/\.aep$/, '_config.json') };
 		},
 
 		importTemplate: function (a) {

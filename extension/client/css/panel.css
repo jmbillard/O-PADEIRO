@@ -1120,3 +1120,364 @@ body {
   background: var(--blue-500);
   content: "";
 }
+
+/* =========================================================
+   Editor de config do template
+   ========================================================= */
+
+.queue-title-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.queue-title-line h2 {
+  min-width: 0;
+  margin: 0;
+}
+
+/* botão de ícone sobre fundo claro */
+.icon-button.is-light {
+  width: 32px;
+  height: 32px;
+  border-color: var(--border);
+  background: white;
+  color: var(--text-secondary);
+}
+
+.icon-button.is-light:hover,
+.icon-button.is-light.is-active {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.icon-button.is-light svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* lápis: dá uma "escrita" a cada hover */
+.icon-button:hover .anim-pencil {
+  animation: icon-write 620ms var(--ease-soft);
+}
+
+@keyframes icon-write {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+
+  25% {
+    transform: translate(-1.5px, 1.5px) rotate(-14deg);
+  }
+
+  50% {
+    transform: translate(1px, 0) rotate(8deg);
+  }
+
+  75% {
+    transform: translate(-1px, 1px) rotate(-6deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+#view-config {
+  gap: 0;
+}
+
+.cfg-form {
+  display: grid;
+  gap: 16px;
+}
+
+.cfg-alert:empty {
+  display: none;
+}
+
+.cfg-alert .notice {
+  margin: 0;
+}
+
+.cfg-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface-soft);
+}
+
+.cfg-card-head {
+  display: grid;
+  gap: 3px;
+}
+
+.cfg-title {
+  margin: 0;
+  color: var(--blue-500);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cfg-hint {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.cfg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.cfg-grid[hidden] {
+  display: none;
+}
+
+.cfg-field {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 6px;
+}
+
+.cfg-label {
+  color: #4e5a6f;
+  font-size: 0.72rem;
+  font-weight: 680;
+}
+
+.cfg-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  background: white;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.84rem;
+  outline: none;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.cfg-input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+}
+
+.cfg-textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.cfg-num {
+  width: 84px;
+  flex: 0 0 auto;
+}
+
+.cfg-field.has-error .cfg-input,
+.cfg-field.has-error .select select {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
+}
+
+.cfg-preview {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px dashed var(--blue-200);
+  border-radius: var(--radius-small);
+  background: var(--blue-50);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.cfg-preview-label {
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.cfg-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.cfg-row,
+.cfg-path {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg-row {
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  background: white;
+}
+
+.cfg-row .select {
+  min-width: 160px;
+  flex: 1;
+}
+
+.cfg-row-label {
+  min-width: 96px;
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.cfg-row-prefix {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+}
+
+.cfg-row-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.cfg-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-small);
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+.mini-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 220ms var(--ease-soft);
+}
+
+.mini-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.mini-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+  transform: translateY(-1px);
+}
+
+.mini-button:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.mini-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.cfg-card>.button {
+  justify-self: start;
+}
+
+.cfg-path .cfg-input {
+  flex: 1;
+}
+
+/* interruptor */
+.cfg-switch {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.cfg-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cfg-switch-track {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  transition: background-color 220ms ease;
+}
+
+.cfg-switch-track::after {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 5px rgb(32 45 82 / 22%);
+  content: "";
+  transition: transform 260ms var(--ease-soft);
+}
+
+.cfg-switch input:checked+.cfg-switch-track {
+  background: linear-gradient(135deg,
+      var(--blue-400),
+      var(--blue-600));
+}
+
+.cfg-switch input:checked+.cfg-switch-track::after {
+  transform: translateX(16px);
+}
+
+.cfg-switch input:focus-visible+.cfg-switch-track {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.cfg-switch-label {
+  color: #4e5a6f;
+  font-size: 0.78rem;
+  font-weight: 650;
+}

@@ -17,6 +17,7 @@ o fluxo principal de templates: `1 buscar` > `2 selecionar` > `3 preencher` > `4
 - **fila de render** com escolha do template de output e verificação das pastas de saída;
 - script do template (`_script.js`), log, metadados XMP e organização do projeto, como no script;
 - duplo clique no template importa e organiza o projeto.
+- **editor de config** (lápis ao lado do nome do template): formulário para o `_config.json` com nome, comp, prefixo, caixa de texto, separador, tempo de referência, exemplo, dicas, layers editáveis (com ordem), variações de layout (`inputFx`) e pastas de import / output. mostra o nome final da comp com o exemplo, valida antes de salvar e preserva chaves que o formulário não conhece. em template sem config, o mesmo botão cria o arquivo.
 
 ficam para as próximas versões: editor de produções, criador de templates, fontes, renomear, organizar, buscas, O Acessorista e conversor de caminhos.
 

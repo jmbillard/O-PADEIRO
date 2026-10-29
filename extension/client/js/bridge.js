@@ -57,6 +57,15 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
 	}
 
+	// Seletor de pasta do CEP. Retorna o caminho ou null.
+	function pickFolder(title, startPath) {
+		if (!cep || !window.cep || !window.cep.fs) return null;
+
+		var res = window.cep.fs.showOpenDialogEx(false, true, title, startPath || '');
+
+		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
+	}
+
 	function openUrl(url) {
 		if (window.cep && window.cep.util) {
 			window.cep.util.openURLInDefaultBrowser(url);
@@ -65,5 +74,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, openUrl: openUrl };
+	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, openUrl: openUrl };
 })();
