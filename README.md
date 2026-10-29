@@ -203,7 +203,7 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![aviso de fontes](docs/images/templates-aviso-fontes.webp)
 
-- **instalar** (no aviso) → instala as fontes que faltam, ali mesmo.
+- **instalar** (no aviso) → instala as fontes que faltam, ali mesmo. o resultado aparece no próprio aviso, que se fecha no ×.
 - **preencher** (ou importar) com fontes faltando → segue normalmente, sem a janela '*Resolve Fonts*' do After Effects (as fontes que faltam são trocadas pela padrão).
 
 > 🚩 *obs:*\

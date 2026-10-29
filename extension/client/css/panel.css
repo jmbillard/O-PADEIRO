@@ -1841,26 +1841,18 @@ body.motion-ready .eyebrow {
 .fonts-warning {
   display: flex;
   width: 100%;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-  padding: 10px 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
   border: 1px solid #f1d9a6;
   border-radius: var(--radius-medium);
   background: var(--waiting-bg);
   color: var(--waiting);
-  cursor: pointer;
-  font: inherit;
   font-size: 0.74rem;
-  text-align: left;
   transition:
-    border-color 180ms ease,
-    transform 220ms var(--ease-soft);
-}
-
-.fonts-warning:hover {
-  border-color: #e4bd6b;
-  transform: translateY(-1px);
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease;
 }
 
 .fonts-warning[hidden] {
@@ -1869,11 +1861,32 @@ body.motion-ready .eyebrow {
 
 .fonts-warning.is-installing {
   cursor: progress;
-  opacity: 0.75;
-  transform: none;
+}
+
+.fonts-warning.is-installing strong {
+  animation: fonts-pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes fonts-pulse {
+  to {
+    opacity: 0.45;
+  }
+}
+
+.fonts-warning.is-success {
+  border-color: #bde5d2;
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.fonts-warning.is-error {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .fonts-warning strong {
+  flex: 0 0 auto;
   font-weight: 750;
 }
 
@@ -1886,10 +1899,48 @@ body.motion-ready .eyebrow {
   white-space: nowrap;
 }
 
-.fonts-warning em {
-  font-style: normal;
+.fonts-warning .fonts-note {
+  color: inherit;
+  font-weight: 650;
+  white-space: normal;
+}
+
+.fonts-action,
+.fonts-close {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
   font-weight: 750;
+}
+
+.fonts-action {
+  padding: 2px 4px;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.fonts-close {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition:
+    opacity 160ms ease,
+    background-color 160ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.fonts-close:hover {
+  background: rgb(0 0 0 / 6%);
+  opacity: 1;
+  transform: rotate(90deg);
 }
 

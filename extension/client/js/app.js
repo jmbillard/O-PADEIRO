@@ -1109,36 +1109,86 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return state.fonts && state.selected && state.fonts.uri === state.selected.uri ? state.fonts.missing : [];
 	}
 
+	// Abre / fecha o aviso deslizando: o que está embaixo acompanha a altura (e o espaço entre os itens).
+	function slideStrip(box, open) {
+		var gap = parseFloat(getComputedStyle(box.parentNode).rowGap) || 0;
+		var closed = { height: '0px', paddingTop: '0px', paddingBottom: '0px', borderTopWidth: '0px', borderBottomWidth: '0px', marginBottom: -gap + 'px', opacity: 0 };
+
+		if (box._slide) box._slide.cancel();
+
+		if (open) box.hidden = false;
+
+		var full = { height: box.offsetHeight + 'px', paddingTop: '', paddingBottom: '', borderTopWidth: '', borderBottomWidth: '', marginBottom: '0px', opacity: 1 };
+
+		box.style.overflow = 'hidden';
+		box._slide = box.animate(open ? [closed, full] : [full, closed], { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+		box._slide.onfinish = function () {
+			box._slide = null;
+			box.style.overflow = '';
+			if (!open) box.hidden = true;
+		};
+	}
+
+	function stripButton(className, text, title, onClick) {
+		var btn = el('button', className, text);
+
+		btn.type = 'button';
+		btn.title = title;
+		btn.setAttribute('aria-label', title);
+		btn.addEventListener('click', onClick);
+
+		return btn;
+	}
+
+	// O aviso mostra as fontes faltando e, no mesmo lugar, o resultado da instalação.
 	function renderFontsWarning() {
 		var box = $('fonts-warning');
 		var missing = missingFonts();
-		var installing = !!state.fontsInstalling;
+		var note = state.fontsNote && state.selected && state.fontsNote.uri === state.selected.uri ? state.fontsNote : null;
+		var show = !!note || missing.length > 0;
+		var wasShown = !box.hidden && !(box._slide && box._closing);
 
-		box.hidden = !missing.length;
 		box.textContent = '';
-		box.disabled = installing;
-		box.classList.toggle('is-installing', installing);
+		box.className = 'fonts-warning' + (note ? ' is-' + note.kind : '') + (state.fontsInstalling ? ' is-installing' : '');
 
-		if (!missing.length) return;
-
-		if (installing) {
+		if (state.fontsInstalling) {
 			box.appendChild(el('strong', null, 'instalando fontes…'));
 			box.appendChild(el('span', null, missing.join(' · ')));
-			return;
+		} else if (note) {
+			box.appendChild(el('span', 'fonts-note', note.text));
+			if (note.kind !== 'success' && missing.length) box.appendChild(stripButton('fonts-action', 'instalar', 'tentar instalar de novo', installFonts));
+			box.appendChild(stripButton('fonts-close', '×', 'fechar aviso', closeFontsNote));
+		} else if (missing.length) {
+			box.appendChild(el('strong', null, plural(missing.length, 'fonte não instalada', 'fontes não instaladas')));
+			box.appendChild(el('span', null, missing.join(' · ')));
+			box.appendChild(stripButton('fonts-action', 'instalar', 'instalar: ' + missing.join(', '), installFonts));
 		}
 
-		box.appendChild(el('strong', null, plural(missing.length, 'fonte não instalada', 'fontes não instaladas')));
-		box.appendChild(el('span', null, missing.join(' · ')));
+		if (show && !wasShown) {
+			box._closing = false;
+			slideStrip(box, true);
+		} else if (!show && wasShown) {
+			box._closing = true;
+			slideStrip(box, false);
+		} else if (!show) {
+			box.hidden = true;
+		}
+	}
 
-		box.appendChild(el('em', null, 'instalar'));
-		box.title = 'instalar: ' + missing.join(', ');
+	function closeFontsNote() {
+		clearTimeout(state.fontsNoteTimer);
+		state.fontsNote = null;
+		renderFontsWarning();
 	}
 
 	async function installFonts() {
 		if (state.fontsInstalling || !state.selected) return;
 
 		var uri = state.selected.uri;
+		var note;
 
+		clearTimeout(state.fontsNoteTimer);
+		state.fontsNote = null;
 		state.fontsInstalling = true;
 		renderFontsWarning();
 
@@ -1148,14 +1198,20 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			if (state.selected && state.selected.uri === uri) state.fonts = { uri: uri, missing: missing, total: res.data.total };
 
-			if (!missing.length) notify('success', 'Fontes instaladas. Se o After Effects ainda não mostrar alguma, reinicie-o.');
-			else notify('warning', (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Ainda não aparecem como instaladas: ' + missing.join(', '));
+			note = !missing.length
+				? { kind: 'success', text: 'Fontes instaladas. Se precisar, reinicie o After Effects e/ou a máquina.' }
+				: { kind: 'warning', text: (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Ainda não aparecem como instaladas: ' + missing.join(', ') };
 		} catch (err) {
-			notify('error', err.message);
+			note = { kind: 'error', text: err.message };
 		}
 
+		note.uri = uri;
+		state.fontsNote = note;
 		state.fontsInstalling = false;
 		renderFontsWarning();
+
+		// o aviso de sucesso fecha sozinho (os outros esperam o ×)
+		if (note.kind === 'success') state.fontsNoteTimer = setTimeout(closeFontsNote, 7000);
 	}
 
 	// Antes de importar o template selecionado: confere de novo (alguém pode ter instalado as fontes).
@@ -1671,7 +1727,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			startFill();
 		});
 
-		$('fonts-warning').addEventListener('click', installFonts);
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);

@@ -92,18 +92,26 @@ body.bar-page {
 }
 
 .bar-loaf {
-  width: 46px;
-  height: 31px;
+  width: 37px;
+  height: 25px;
   overflow: visible;
   filter: drop-shadow(0 6px 10px rgb(24 43 113 / 28%));
   transition: transform 300ms var(--ease-soft);
 }
 
+/* contorno, linha da base e ranhuras no mesmo traço (como o ícone de pão das produções) */
+.bar-loaf .loaf-body,
+.bar-loaf .loaf-line,
+.bar-loaf .loaf-scores {
+  stroke: rgb(140 72 18 / 72%);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.bar-loaf .loaf-line,
 .bar-loaf .loaf-scores {
   fill: none;
-  stroke: rgb(140 72 18 / 62%);
-  stroke-linecap: round;
-  stroke-width: 2.6;
 }
 
 .bar-logo:hover .bar-loaf {
