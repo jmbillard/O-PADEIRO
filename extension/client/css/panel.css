@@ -13,6 +13,10 @@ body {
   height: 100%;
 }
 
+:root {
+  --search-width: 460px;
+}
+
 body {
   display: block;
   padding: 0;
@@ -41,7 +45,7 @@ body {
 
 /* busca (esquerda) e trabalho (direita) rolam separadamente */
 .app-shell.is-expanded .workspace {
-  grid-template-columns: minmax(320px, 0.8fr) minmax(420px, 1.2fr);
+  grid-template-columns: var(--search-width) minmax(0, 1fr);
 }
 
 .upload-side,
@@ -50,7 +54,7 @@ body {
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  padding: 22px 20px;
+  padding: 16px 14px;
 }
 
 .upload-side-content,
@@ -950,7 +954,6 @@ body {
 }
 
 /* o painel ocupa toda a largura disponível (sem as larguras máximas da versão web) */
-.upload-side-content,
 .queue-header,
 .progress-section,
 .summary-grid,
@@ -963,4 +966,23 @@ body {
 
 .hero {
   max-width: none;
+}
+
+/* a busca tem largura fixa: centralizada no início e à esquerda com um template escolhido */
+.upload-side-content {
+  width: 100%;
+  max-width: var(--search-width);
+  margin-inline: auto;
+}
+
+.app-shell.is-expanded .upload-side-content {
+  max-width: none;
+  margin-inline: 0;
+}
+
+@media (max-width: 900px) {
+  .app-shell.is-expanded .upload-side-content {
+    max-width: var(--search-width);
+    margin-inline: auto;
+  }
 }

@@ -138,7 +138,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	var state = {
-		configPath: store.get('configPath') || '',
+		configPath: '',
 		productions: [],
 		production: 0,
 		loading: false,
@@ -402,7 +402,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			btn.appendChild(svgIcon('file'));
 			btn.appendChild(el('span', 'tree-label', node.text.replace(/\.[a-z0-9]+$/i, '')));
 			btn.appendChild(el('span', 'tree-ext', ext));
-			btn.addEventListener('click', function () {
+			btn.addEventListener('click', function (e) {
+				if (e.detail > 1) return; // o duplo clique só importa, sem alternar a seleção
+
 				selectTemplate(node);
 			});
 			btn.addEventListener('dblclick', function () {
@@ -496,8 +498,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('queue-actions').hidden = name !== 'input';
 	}
 
+	function folderName() {
+		var folder = state.info ? state.info.folder : '';
+
+		return folder.split(/[\\/]/).filter(Boolean).pop() || '';
+	}
+
+	// O rótulo acima do título é a pasta do template (o 1º argumento, antes a etapa, não é mais usado).
 	function setStage(eyebrow, title, message) {
-		$('stage-eyebrow').textContent = eyebrow;
+		$('stage-eyebrow').textContent = folderName();
 		if (title != null) $('queue-title').textContent = title;
 		if (message != null) $('queue-message').textContent = message;
 	}
@@ -516,9 +525,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return;
 		}
 
-		if (state.selected && state.selected.uri === node.uri && state.info && !state.run) return;
+		// clicar de novo no template selecionado desmarca (e o painel de trabalho some)
+		if (state.selected && state.selected.uri === node.uri) return deselectTemplate();
 
 		state.selected = node;
+		state.info = null;
 		state.run = null;
 		markSelected();
 		clearNotices();
@@ -545,6 +556,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (window.matchMedia('(max-width: 900px)').matches && queueSide.scrollIntoView) {
 			queueSide.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
+	}
+
+	function deselectTemplate() {
+		state.selected = null;
+		state.info = null;
+		state.run = null;
+		markSelected();
+		clearNotices();
+		app.classList.remove('is-expanded');
 	}
 
 	function showReadonly(message) {
@@ -973,27 +993,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
 		if (action === 'reload') location.reload();
-
-		if (action === 'config-file') {
-			var picked = PAD_BRIDGE.pickFile('Arquivo da lista de produções', ['json']);
-
-			if (!picked) {
-				if (!PAD_BRIDGE.inCep()) pickerMessage('error', 'o seletor de arquivo só funciona dentro do After Effects');
-				return;
-			}
-
-			state.configPath = picked;
-			store.set('configPath', picked);
-			pickerMessage('success', 'arquivo de produções: ' + picked);
-			await loadProductions();
-		}
-
-		if (action === 'config-reset') {
-			state.configPath = '';
-			store.set('configPath', null);
-			pickerMessage('success', 'usando o arquivo de produções padrão');
-			await loadProductions();
-		}
 	}
 
 	function bindEvents() {
