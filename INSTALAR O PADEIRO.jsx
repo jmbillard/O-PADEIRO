@@ -207,6 +207,7 @@ Instalar / atualizar:
 	var COLOR_WARN = [0.98, 0.76, 0.33];
 	var COLOR_LINK = [0.35, 0.68, 1];
 	var COLOR_LINK_HOVER = [0.62, 0.55, 1];
+	var STATE_COLORS = { ok: COLOR_OK, bad: COLOR_BAD, warn: COLOR_WARN };
 
 	function setColor(ctrl, rgb) {
 		ctrl.graphics.foregroundColor = ctrl.graphics.newPen(ctrl.graphics.PenType.SOLID_COLOR, rgb, 1);
@@ -297,7 +298,18 @@ Instalar / atualizar:
 		row.orientation = 'row';
 		row.alignChildren = ['left', 'center'];
 		row.spacing = 8;
-		checks[c].dot = row.add('statictext', undefined, '●');
+		// uma bolinha por estado, coloridas antes de abrir a janela (no macOS, trocar a cor depois não redesenha)
+		var dots = row.add('group');
+
+		dots.orientation = 'stack';
+		checks[c].dots = {};
+
+		for (var state in STATE_COLORS) {
+			checks[c].dots[state] = dots.add('statictext', undefined, '●');
+			setColor(checks[c].dots[state], STATE_COLORS[state]);
+			checks[c].dots[state].visible = false;
+		}
+
 		checks[c].text = row.add('statictext', undefined, checks[c].label);
 		checks[c].text.preferredSize.width = WIDTH - 24;
 	}
@@ -375,7 +387,9 @@ Instalar / atualizar:
 		for (var i = 0; i < checks.length; i++) {
 			var pass = checks[i].test();
 
-			setColor(checks[i].dot, pass ? COLOR_OK : checks[i].required ? COLOR_BAD : COLOR_WARN);
+			var state = pass ? 'ok' : checks[i].required ? 'bad' : 'warn';
+
+			for (var d in checks[i].dots) checks[i].dots[d].visible = d === state;
 
 			if (!pass) help.push(checks[i].help);
 			if (!pass && checks[i].required) ok = false;
