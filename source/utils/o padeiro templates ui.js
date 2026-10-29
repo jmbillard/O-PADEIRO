@@ -152,7 +152,7 @@ function padeiroTemplateDialog() {
 	// Cria a árvore de templates
 	var templateTree = treeGrp.add('treeview', [0, 0, 320, 464]);
 	setFgColor(templateTree, monoColor2);
-	buildTree(templatesFolder, templateTree, fileFilter); // Cria a árvore de templates
+	var templatesTreeData = buildTree(templatesFolder, templateTree, fileFilter); // Cria a árvore de templates (e guarda a estrutura para a busca)
 	// Grupo principal de botões
 	var mainBtnGrp1 = vGrp1.add('group');
 	mainBtnGrp1.orientation = 'stack';
@@ -325,44 +325,32 @@ function padeiroTemplateDialog() {
 
 	//---------------------------------------------------------
 
-	searchBox.onEnterKey = function () {
-		templateLab.active = true;
-		templateTree.active = true;
-	};
+	// Filtra a árvore em memória conforme o texto da busca (sem reler a pasta na rede).
+	function filterTemplateTree() {
+		var query = treeSearchText(searchBox.text);
+		var hadSelection = templateTree.selection != null;
 
-	//---------------------------------------------------------
-
-	searchBox.onChange = function () {
-		// Aborta se a pesquisa estiver vazia
-		if (this.text.trim() == '') return;
-
-		// Formatação do texto de pesquisa
-		searchBox.text = searchBox.text.trim().toUpperCase().replaceSpecialCharacters();
-
-		// Atualiza a árvore de templates
-		buildTree(templatesFolder, templateTree, fileFilter);
-
-		// Encontra os itens na árvore
-		var items = findItem(templateTree, [], searchBox.text);
-
-		// Aborta se nenhum item for encontrado
-		if (items.length == 0) return;
-
-		// Expande as pastas para mostrar os resultados da pesquisa
-		for (var n = 0; n < items.length; n++) {
-			var s = items[n];
-
-			if (s.type == 'node') s.expanded = true;
-
-			// Expande as pastas do item até a raiz
-			while (s.parent.constructor.name != 'TreeView') {
-				s.parent.expanded = true;
-				s = s.parent;
-			}
+		if (query == '') {
+			populateTree(templateTree, templatesTreeData, false);
+		} else {
+			populateTree(templateTree, filterTreeData(templatesTreeData, query), true);
 		}
 
+		// a seleção some ao recriar a árvore: fecha o preview do template anterior
+		if (hadSelection) templateTree.onChange();
+	}
+
+	// Busca dinâmica: filtra a cada tecla
+	searchBox.onChanging = filterTemplateTree;
+
+	// Enter seleciona o primeiro template encontrado
+	searchBox.onEnterKey = function () {
+		var first = firstTreeItem(templateTree);
+
 		templateLab.active = true;
 		templateTree.active = true;
+
+		if (first) templateTree.selection = first;
 	};
 
 	//---------------------------------------------------------
@@ -886,17 +874,8 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	refreshBtn.leftClick.onClick = function () {
-		buildTree(templatesFolder, templateTree, fileFilter);
-
-		templateTree.expanded = true;
-
-		var branches = templateTree.items;
-
-		for (var i = 0; i < branches.length; i++) {
-			if (branches[i].type == 'node') {
-				branches[i].expanded = true;
-			}
-		}
+		templatesTreeData = buildTreeData(templatesFolder, fileFilter);
+		filterTemplateTree(); // mantém o filtro atual da busca
 	};
 
 	//---------------------------------------------------------

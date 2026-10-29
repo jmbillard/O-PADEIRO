@@ -10,200 +10,246 @@
 
 */
 
-function cleanHierarchy(nodeTree) {
-	var branches = nodeTree.items;
-	var itemsToRemove = [];
+// Lê a pasta uma única vez e monta a árvore em memória: { type, text, children | file }.
+// Mesma limpeza do treeview (sem pastas vazias) e mesma otimização (pasta com uma única subpasta
+// vira 'PASTA / SUBPASTA'), para que a busca possa filtrar sem acessar a rede de novo.
+function buildTreeData(folder, fileTypes) {
+	var root = { type: 'node', text: folder.displayName, children: readTreeData(folder.getFiles(), fileTypes) };
 
-	for (var i = 0; i < branches.length; i++) {
-		if (branches[i].type != 'node') continue;
-
-		var wasEmpty = cleanHierarchy(branches[i]);
-
-		if (wasEmpty) {
-			itemsToRemove.push(branches[i]);
-		}
+	for (var i = 0; i < root.children.length; i++) {
+		optimizeTreeData(root.children[i]);
 	}
 
-	for (var j = 0; j < itemsToRemove.length; j++) {
-		nodeTree.remove(itemsToRemove[j]);
-	}
-
-	return nodeTree.items.length == 0 && nodeTree.parent != null;
+	return root;
 }
 
-function optimizeHierarchy(nodeTree) {
-	var branches = nodeTree.items;
+function readTreeData(array, fileTypes) {
+	var children = [];
 
-	for (var i = 0; i < branches.length; i++) {
-		if (branches[i].type != 'node') continue;
-
-		if (branches[i].items.length > 1) {
-			optimizeHierarchy(branches[i]);
-		} else if (branches[i].items.length == 1 && branches[i].items[0].type == 'node') {
-			var subfolder = branches[i].items[0];
-			branches[i].text += ' / ' + subfolder.text;
-
-			while (subfolder.items.length > 0) {
-				var item = subfolder.items[0];
-				try {
-					var newItem = branches[i].add(item.type, item.text);
-					newItem.image = item.image;
-					newItem.file = item.file;
-					subfolder.remove(0);
-				} catch (err) { }
-			}
-			branches[i].remove(subfolder);
-			optimizeHierarchy(branches[i]);
-		}
-	}
-}
-
-// Cria a hierarquia de arquivos e pastas na árvore da interface do usuário
-function createHierarchy(array, node, fileTypes) {
 	for (var n = 0; n < array.length; n++) {
-		var nodeName = array[n].displayName; // Nome do item atual
+		var nodeName = array[n].displayName;
 
-		// Verifica se o item atual é uma pasta (Folder)
 		if (array[n] instanceof Folder) {
-			var subArray = array[n].getFiles(); // Obtém os arquivos e subpastas da pasta atual
+			var subChildren = readTreeData(array[n].getFiles(), fileTypes);
 
-			// Se a pasta possui conteúdo (arquivos ou subpastas)
-			if (subArray.length > 0) {
-				var nodeItem = node.add('node', nodeName); // Adiciona um nó de pasta na árvore
-				// nodeItem.image = fldTogIcon.light;  // Opcional: define o ícone da pasta
-
-				// Chama recursivamente a função para processar o conteúdo da pasta
-				createHierarchy(subArray, nodeItem, fileTypes);
-			}
+			// pastas sem templates não entram na árvore
+			if (subChildren.length > 0) children.push({ type: 'node', text: nodeName, children: subChildren });
 		} else {
-			// Se o item atual não for uma pasta (é um arquivo)
 			try {
-				// Filtra os arquivos com base nas extensões permitidas em fileTypes
-				if (fileTypes.indexOf(getFileExt(nodeName)) >= 0) {
-					var templateItem = node.add('item', nodeName); // Adiciona um nó de arquivo na árvore
-					templateItem.image = PAD_AE_ICON; // Define o ícone do arquivo
-					templateItem.file = array[n]; // Define o ícone do arquivo
-				}
-				//
+				if (fileTypes.indexOf(getFileExt(nodeName)) >= 0) children.push({ type: 'item', text: nodeName, file: array[n] });
 			} catch (err) { }
 		}
 	}
+
+	return children;
+}
+
+function optimizeTreeData(node) {
+	if (node.type != 'node') return;
+
+	while (node.children.length == 1 && node.children[0].type == 'node') {
+		node.text += ' / ' + node.children[0].text;
+		node.children = node.children[0].children;
+	}
+
+	for (var i = 0; i < node.children.length; i++) {
+		optimizeTreeData(node.children[i]);
+	}
+}
+
+// Texto normalizado para comparação (maiúsculas, sem acentos).
+function treeSearchText(str) {
+	return String(str).trim().toUpperCase().replaceSpecialCharacters();
+}
+
+// Retorna uma cópia de 'node' só com o que casa com 'query' (já normalizada por treeSearchText).
+// Pasta que casa entra inteira; pasta que não casa entra só com os descendentes que casam.
+function filterTreeData(node, query) {
+	var children = [];
+
+	for (var i = 0; i < node.children.length; i++) {
+		var child = node.children[i];
+
+		if (treeSearchText(child.text).indexOf(query) >= 0) {
+			children.push(child);
+		} else if (child.type == 'node') {
+			var filtered = filterTreeData(child, query);
+
+			if (filtered.children.length > 0) children.push(filtered);
+		}
+	}
+
+	return { type: 'node', text: node.text, children: children };
+}
+
+// Recria o treeview a partir da árvore em memória.
+// expandAll: expande todas as pastas (resultado de busca); senão, só a raiz e o primeiro nível.
+function populateTree(tree, data, expandAll) {
+	while (tree.items.length > 0) {
+		tree.remove(tree.items[0]);
+	}
+
+	var root = tree.add('node', data.text);
+
+	addTreeDataItems(root, data.children, expandAll);
+	root.expanded = true;
+
+	if (!expandAll) {
+		for (var i = 0; i < root.items.length; i++) {
+			if (root.items[i].type == 'node') root.items[i].expanded = true;
+		}
+	}
+
+	return root;
+}
+
+function addTreeDataItems(parentNode, children, expandAll) {
+	for (var i = 0; i < children.length; i++) {
+		var child = children[i];
+
+		if (child.type == 'node') {
+			var nodeItem = parentNode.add('node', child.text);
+
+			addTreeDataItems(nodeItem, child.children, expandAll);
+			if (expandAll) nodeItem.expanded = true;
+		} else {
+			var templateItem = parentNode.add('item', child.text);
+
+			templateItem.image = PAD_AE_ICON;
+			templateItem.file = child.file;
+		}
+	}
+}
+
+// Primeiro item (não pasta) da árvore, em profundidade.
+function firstTreeItem(node) {
+	for (var i = 0; i < node.items.length; i++) {
+		if (node.items[i].type != 'node') return node.items[i];
+
+		var found = firstTreeItem(node.items[i]);
+
+		if (found) return found;
+	}
+
+	return null;
 }
 
 function buildTree(folder, tree, fileTypes) {
-	// Remove todos os itens
-	while (tree.items.length > 0) {
-		tree.remove(tree.items[0]);
-	}
+	var data = buildTreeData(folder, fileTypes);
 
-	var folderContentArray = folder.getFiles();
-	var folderNode = tree.add('node', folder.displayName);
+	populateTree(tree, data, false);
 
-	createHierarchy(folderContentArray, folderNode, fileTypes);
-
-	cleanHierarchy(folderNode);
-	optimizeHierarchy(folderNode);
+	return data;
 }
 
-// Constrói a árvore de resultados da busca
-function buildTxtSearchTree(tree, obj, compArray, progressBar) {
-	var sKey = obj.sKey; // Palavra-chave de busca
-	var vis = obj.vis; // Incluir camadas ocultas? (true/false)
-	var matchCase = obj.matchCase; // Diferenciar maiúsculas/minúsculas? (true/false)
-	var matchAccent = obj.matchAccent; // Diferenciar acentos? (true/false)
-	var invert = !obj.invert; // Inverter a busca (não incluir a palavra-chave)? (true/false)
+// Lê o texto de todos os layers de texto das comps, uma única vez, para a busca filtrar em memória.
+// Cada entrada: { comp, layer, label, text, enabled, refTime }. Layers com keyframes de texto geram
+// uma entrada por keyframe. Os valores são lidos com valueAtTime (sem mover a agulha das comps).
+function buildTextLayerIndex(compArray, progressBar) {
+	var index = [];
 
-	if (!matchCase) sKey = sKey.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-	if (!matchAccent) sKey = sKey.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-
-	// Remove todos os itens da árvore para começar do zero
-	while (tree.items.length > 0) {
-		tree.remove(tree.items[0]);
-	}
-	// Inicializa a barra de progresso e a contagem de itens da árvore
-	progressBar.maxvalue = compArray.length;
+	progressBar.maxvalue = Math.max(compArray.length, 1);
 	progressBar.value = 0;
 
-	// Itera sobre todas as composições no projeto
+	for (var c = 0; c < compArray.length; c++) {
+		var comp = compArray[c];
 
-	for (i = 0; i < compArray.length; i++) {
 		try {
-			var comp = compArray[i];
-			var compName = limitNameSize(comp.name, 45); // Limita o tamanho do nome da composição
-			var compItem = tree.add('node', compName); // Adiciona o item da composição na árvore
-
-			compItem.image = compTogIcon.light;
-			compItem.comp = comp;
-
-			// Itera sobre todas as camadas em cada composição
 			for (var l = 1; l <= comp.numLayers; l++) {
-				var txtLayer = comp.layer(l); // Camada de texto atual
+				var txtLayer = comp.layer(l);
 
-				// Pula se layer atual não for um layer de texto
 				if (!(txtLayer instanceof TextLayer)) continue;
 
-				// Ignora camadas ocultas se a opção estiver desmarcada
-				if (vis && !txtLayer.enabled) continue;
+				var doc = txtLayer.property('ADBE Text Properties').property('ADBE Text Document');
+				var label = '#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35);
 
-				var matchResult = false;
-				var doc = txtLayer
-					.property('ADBE Text Properties')
-					.property('ADBE Text Document'); // Propriedade de texto da camada
-				var refTime =
-					comp.duration < 1
-						? 0
-						: txtLayer.inPoint +
-						(txtLayer.outPoint - txtLayer.inPoint) / 2;
-				var layerName =
-					'#' + txtLayer.index + '  ' + limitNameSize(txtLayer.name, 35); // Limita o tamanho do nome da camada
-
-				if (refTime > comp.duration)
-					refTime = comp.duration - comp.frameDuration;
-
-				// Se a propriedade de texto tiver uma expressão
-				if (doc.expression != '') comp.time = refTime; // Define o tempo para antes do ponto de saída da camada
-
-				var sTxt = getTextLayerContent(txtLayer);
-
-				if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-				if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-				if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-				if (sTxt.match(sKey)) matchResult = true;
-				if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
-
-				var txtItem = compItem.add('item', layerName);
-				txtItem.comp = comp;
-				txtItem.refTime = comp.time;
-				txtItem.txtLayer = txtLayer;
-
-				// Se a propriedade de texto tiver keyframes
 				if (doc.numKeys > 0) {
-					compItem.remove(txtItem);
-
 					for (var k = 1; k <= doc.numKeys; k++) {
-						comp.time = doc.keyTime(k); // Define o tempo da composição para o keyframe atual
+						var keyTime = doc.keyTime(k);
 
-						sTxt = getTextLayerContent(txtLayer);
-
-						if (doc.value.allCaps) sTxt = sTxt.toUpperCase(); // Ajusta a palavra-chave para maiúsculas se a opção estiver marcada
-						if (!matchCase) sTxt = sTxt.toLowerCase(); // Ajusta a palavra-chave para minúsculas se a opção estiver desmarcada
-						if (!matchAccent) sTxt = sTxt.replaceSpecialCharacters(); // Remove acentos da palavra-chave se a opção estiver desmarcada
-						if (sTxt.match(sKey)) matchResult = true;
-						if (matchResult != invert) continue; // Ignora a correspondência se a opção de inverter estiver marcada
-
-						var txtItem = compItem.add('item', layerName);
-						txtItem.comp = comp;
-						txtItem.refTime = comp.time;
-						txtItem.txtLayer = txtLayer;
+						index.push(textLayerEntry(comp, txtLayer, label, doc.valueAtTime(keyTime, false), keyTime));
 					}
+				} else if (doc.expression != '') {
+					// texto vindo de expressão: lê no meio do layer, como antes
+					var refTime = comp.duration < 1 ? 0 : txtLayer.inPoint + (txtLayer.outPoint - txtLayer.inPoint) / 2;
+
+					if (refTime > comp.duration) refTime = comp.duration - comp.frameDuration;
+
+					index.push(textLayerEntry(comp, txtLayer, label, doc.valueAtTime(refTime, false), refTime));
+				} else {
+					index.push(textLayerEntry(comp, txtLayer, label, doc.value, comp.time));
 				}
 			}
-			progressBar.value++; // Incrementa a barra de progresso
 		} catch (err) {
 			alert(lol + '#FND_019 - comp: ' + comp.name + '\n' + err.message);
 		}
+
+		progressBar.value++;
 	}
-	cleanHierarchy(tree);
+
+	return index;
+}
+
+function textLayerEntry(comp, txtLayer, label, textDoc, refTime) {
+	var text = String(textDoc.text).trim();
+
+	if (textDoc.allCaps) text = text.toUpperCase(); // o texto aparece em caixa alta na comp
+
+	return { comp: comp, layer: txtLayer, label: label, text: text, enabled: txtLayer.enabled, refTime: refTime };
+}
+
+// Normaliza o texto conforme as opções da busca.
+function normalizeSearchText(str, matchCase, matchAccent) {
+	if (!matchCase) str = str.toLowerCase();
+	if (!matchAccent) str = str.replaceSpecialCharacters();
+
+	return str;
+}
+
+// Filtra o índice. obj: { sKey, vis, matchCase, matchAccent, invert }
+// A busca é literal: caracteres como '(', '.', '?' são procurados como texto.
+function filterTextLayerIndex(index, obj) {
+	var sKey = normalizeSearchText(obj.sKey, obj.matchCase, obj.matchAccent);
+	var results = [];
+
+	for (var i = 0; i < index.length; i++) {
+		var entry = index[i];
+
+		if (obj.vis && !entry.enabled) continue; // apenas layers visíveis
+
+		var found = normalizeSearchText(entry.text, obj.matchCase, obj.matchAccent).indexOf(sKey) >= 0;
+
+		if (found != !!obj.invert) results.push(entry);
+	}
+
+	return results;
+}
+
+// Monta a árvore de resultados: um nó por comp com os layers encontrados.
+function populateTxtSearchTree(tree, results) {
+	while (tree.items.length > 0) {
+		tree.remove(tree.items[0]);
+	}
+
+	var currentComp = null;
+	var compItem = null;
+
+	for (var i = 0; i < results.length; i++) {
+		var entry = results[i];
+
+		// o índice é montado comp a comp, então os resultados da mesma comp são consecutivos
+		if (entry.comp !== currentComp) {
+			currentComp = entry.comp;
+			compItem = tree.add('node', limitNameSize(currentComp.name, 45));
+			compItem.image = compTogIcon.light;
+			compItem.comp = currentComp;
+		}
+
+		var txtItem = compItem.add('item', entry.label);
+		txtItem.comp = entry.comp;
+		txtItem.txtLayer = entry.layer;
+		txtItem.refTime = entry.refTime;
+	}
 }
 
 // Expande todos os nós de uma 'árvore de exibição' (tree view).
@@ -220,32 +266,4 @@ function expandNodes(nodeTree) {
 		count++;
 	}
 	return count;
-}
-
-// Função recursiva que percorre uma 'árvore de exibição' (tree view)
-// e adiciona os nós que contêm uma determinada string na lista de resultados
-function findItem(nodeTree, list, searchTxt) {
-	// Obtém os nodes do nó atual
-	var branches = nodeTree.items;
-
-	// Percorre cada node
-	for (var i = 0; i < branches.length; i++) {
-		// Se o node for um nó (node), chama a função recursivamente para o seu node
-		if (branches[i].type == 'node') findItem(branches[i], list, searchTxt);
-
-		// Verifica se o texto do node contém a string procurada
-		if (
-			branches[i].text
-				.trim()
-				.toUpperCase()
-				.replaceSpecialCharacters()
-				.match(searchTxt)
-		) {
-			// Adiciona o node na lista de resultados
-			list.push(branches[i]);
-		}
-	}
-
-	// Retorna a lista de resultados
-	return list;
 }

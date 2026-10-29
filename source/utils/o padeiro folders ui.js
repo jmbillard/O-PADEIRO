@@ -195,7 +195,7 @@ function padProdFoldersDialog(prodArray) {
 	};
 
 	prodImportBtn.leftClick.onClick = function () {
-		tempConfigFile = File.openDialog('selecione o ícone', '*.json', false);
+		tempConfigFile = File.openDialog('selecione a lista de produções', '*.json', false);
 
 		if (tempConfigFile == null || !(tempConfigFile instanceof File)) return;
 
@@ -209,7 +209,6 @@ function padProdFoldersDialog(prodArray) {
 			addProductionLine(tempArray[j]);
 		}
 		PAD_CONFIG_w.layout.layout(true);
-		updateThemeButton(prodSaveBtn, true);
 	};
 
 	prodExportBtn.leftClick.onClick = function () {

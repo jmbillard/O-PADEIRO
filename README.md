@@ -28,7 +28,7 @@ e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
 ## 📍 instalação
 
 instale o script pelo menu:\
-`File` > `Scrips` > `Run Script File...`
+`File` > `Scripts` > `Run Script File...`
 
 > 📋 *exemplo:*\
 > ![ui](docs/images/instalacao.png)
@@ -40,6 +40,10 @@ instale o script pelo menu:\
 selecione a opção '*instalar*' e clique em '*avançar*'
 
 após a instalação, **reinicie** o After Effects e o `O PADEIRO` aparecerá na última seção do menu '*Window*' e poderá ser acoplado a qualquer painel da interface.
+
+> 🚩 *obs:*\
+> • no macOS, o atalho instalado encontra o script mesmo quando o volume de rede é montado com sufixo (ex: `/Volumes/VFX-1`). quem instalou uma versão antiga deve executar o instalador novamente com a opção '*reparar*'.\
+> • os caminhos de rede de todo o script seguem a mesma regra: se `/Volumes/VFX` não existir, as variantes `VFX-1` a `VFX-5` são testadas.
 
 > 📋 *exemplo:*\
 > ![ui](docs/gifs/ui1.gif)
@@ -110,8 +114,7 @@ ferramentas disponíveis em ordem:
 
 - **ABRIR PASTAS**:\
 `◖ clique esquerdo` → abre a pasta de output do último item da fila de render.\
-`◗ clique direito` → abre a pasta do projeto atual.
-  > *se o projeto já foi salvo.*
+`◗ clique direito` → abre o conversor de caminhos Windows / MacOS.
 
 - **RENOMEAR**:\
 `◖ clique esquerdo` → renomeia comps selecionadas.\
@@ -121,14 +124,12 @@ ferramentas disponíveis em ordem:
 - **ORGANIZAR**:\
 `◖ clique esquerdo` → organiza o projeto.\
 `◗ clique direito` → cria apenas a estrutura de pastas no projeto.
-  > *antes de clicar,selecione as comps principais (as que devem ser renderizadas) para que elas sejam adicionadas a pasta '01 COMPS'*
+  > *antes de clicar, selecione as comps principais (as que devem ser renderizadas) para que elas sejam adicionadas à pasta '01 COMPS'.*
 
 - **BUSCA**:\
-`◖ clique esquerdo` → abre a janela de busca.
-  > *a busca funciona apenas no conteúdo dos layers de texto do projeto.*
-
-`◗ clique direito` → abre a busca de caminhos de atrações (Teams, Trello e atrações).
-  > *pesquise por atração, projeto, output ou caminho e abra a pasta direto no Explorer / Finder. no macOS, os volumes de rede são montados automaticamente quando necessário. o índice fica em cache por 10 minutos (botão 'Atualizar' força o download).*
+`◖ clique esquerdo` → abre a busca no conteúdo dos layers de texto do projeto.\
+`◗ clique direito` → abre **O ACESSORISTA**, a busca de caminhos de atrações (Teams, Trello, atrações e servidor).
+  >
 
 <!-- - **APONTAMENTO**:\
 `◖ clique esquerdo` → abre a planilha de apontamento de projetos. -->
@@ -150,14 +151,14 @@ um template do padeiro é um conjunto de arquivos que inclui: um *projeto* do af
 > ![ui](docs/images/maker_ui2.png)
 
 1. limpe o projeto, remova tudo o que não for necessário para a comp principal.
-2. `◗ clique direito` no botão com ícone de paninho para abrir a interface do criador de templates.
+2. abra a comp principal e `◗ clique direito` no botão com ícone de paninho para abrir a interface do criador de templates.
 3. preencha o '*nome da configuração*', as '*dicas*' e o '*exemplo de preenchimento*'.
 4. posicione a agulha da timeline em um frame de referência e clique no botão '*capturar preview*'.
 5. selecione / preencha o padrão de '*caixa de texto*' do projeto, o '*prefixo*' e o '*separador*' de informações.
-6. selecione os layers editáveis em ordem de preenchimento e clique no botão '*selecionar layers*'.
+6. selecione os layers editáveis em ordem de preenchimento e clique no botão '*+ layers*' (os layers que já estiverem selecionados ao abrir o criador entram automaticamente).
 7. edite a '*pasta de mídia: (opcional)*' e as '*pastas de output*'.
 8. use o botão '*testar agora*' para verificar o preenchimento das informações inseridas no '*exemplo de preenchimento*'.
-9. clique no botão '*salvar template*' para salvar o template,preferencialmente com a extensão '.aet'.
+9. clique no botão '*salvar template*' para salvar o template, preferencialmente com a extensão '.aet'.
 
 <br>
 
@@ -205,7 +206,7 @@ o script executará as seguintes tarefas em ordem:
 > para evitar essa conversão selecione a opção '*livre*'.\
 > • o separador só será usado caso exista mais de um layer editável no template.\
 > • os layers editáveis serão sempre preenchidos na ordem em que foram selecionados.\
-> • ao clicar em '*testar*' um novo preview será capturado e o texto do exemplo de preenchimento terá sua caixa de texto convertida.
+> • ao clicar em '*testar agora*' os layers editáveis são preenchidos com o primeiro bloco do exemplo (com a caixa de texto selecionada) e um novo preview é capturado. o texto do exemplo não é alterado.
 
 ### caminhos
 
@@ -218,7 +219,7 @@ o script executará as seguintes tarefas em ordem:
 <br>
 
 - **comp principal** → comp principal do projeto.
-- **preview da nomenclatura** → nome que a comp principal receberá ao ser preenchida com o exemplo de preenchimento.
+- **preview da nomenclatura** → nome que a comp principal receberá ao ser preenchida com o exemplo de preenchimento (atualizado enquanto você edita o prefixo, o separador, o exemplo ou a caixa de texto).
 - **fontes usadas** → lista com o nome de todas as fontes usadas no projeto.
 
 <br>
@@ -227,7 +228,9 @@ o script executará as seguintes tarefas em ordem:
 
 > 🚩 *obs:*\
 > • todo template pode ter múltiplas pastas de output.\
-> use essa opção para criar cópias do mesmo render em varias pastas.\
+> use essa opção para criar cópias do mesmo render em várias pastas.\
+> • pastas de output não escolhidas são ignoradas; sem nenhuma, vale o output padrão.\
+> • antes de salvar, o criador confere se a comp principal existe e se o '*nome da configuração*' foi preenchido, e avisa caso nenhum layer editável tenha sido adicionado.
 
 > 📋 *exemplo de arquivo de configuração:* *"RODAPE CONVIDADO_config.json"*
 >
@@ -281,7 +284,7 @@ caso não exista nenhum template disponível, a lista aparecerá vazia, mostrand
 > ![ui](docs/images/o_padeiro_ui2.png)
 
 1. `◖ clique esquerdo`  no botão com ícone de paninho para abrir interface de templates.
-2. faca uma busca ou navegue pela estrutura da lista.
+2. faça uma busca ou navegue pela estrutura da lista.
 3. selecione o template desejado.
 4. preencha o campo '**input**' seguindo as '**dicas**'.
 5. habilite ou não a opção '**adicionar a fila de render**'.
@@ -330,7 +333,7 @@ o script executará as seguintes tarefas em ordem:
 2. duplicar as comps necessárias.
 3. preencher as informações inseridas no input.
 4. renomear as comps com base no seu conteúdo.
-5. organizar o projeto seguindo0 o padrão da PROMO.
+5. organizar o projeto seguindo o padrão da PROMO.
 6. adicionar as comps criadas a fila de render
 7. setar os caminhos para o output.
 
@@ -344,7 +347,7 @@ o script executará as seguintes tarefas em ordem:
 
 > ![ui](docs/images/templates_ui.png)
 
-- **busca** → retorna os templates ou pastas com o termo buscado.
+- **busca** → filtra a lista enquanto você digita, mostrando apenas os templates ou pastas com o termo buscado (sem diferenciar maiúsculas e acentos). `Enter` seleciona o primeiro template encontrado.
 - **lista de templates** → árvore com todos os templates disponíveis na pasta de templates do script.
 - **ajuda | DOCS** → acessa a documentação provisória do script e seus templates disponíveis.
 - **atualizar lista** → verifica e atualiza a lista de templates disponíveis.
@@ -409,6 +412,23 @@ o sistema de templates possui padrões internos caso não seja especificado um c
 ---
 <br>
 
+## 🛠️ manutenção do script
+
+pontos do código onde ficam as configurações mais comuns:
+
+- **botões da interface principal** → `PAD_mainGrpUiStructure` (`O_PADEIRO.js`). cada botão declara rótulo, ícone, dicas e as ações `leftClick` / `rightClick`, que ficam em `PAD_ACTIONS` (`source/layout/main ui functions.js`).
+- **tipos de renomeação** (prefixos e termos) → `renameRefArray` (`source/globals.js`). a lógica fica em `source/libraries/functions/rename lib.js`.
+- **estrutura de pastas do projeto** → `PROJECT_FOLDERS` (`source/libraries/functions/project lib.js`).
+- **categorias do acessorista** → `PS_CATEGORIES` (ordem e rótulos) e `PS_LOCAL_SOURCES` (listas locais, como `servidor`) em `source/utils/o acessorista ui.js`. qualquer lista nova no JSON do workflow (ex: `atracoes_filmes`) ou em `PS_LOCAL_SOURCES` vira uma categoria e um filtro automaticamente.
+- **largura das janelas de busca e do conversor** → `PAD_SEARCH_UI_WIDTH` (`source/layout/main ui functions.js`).
+
+> 🚩 *obs:*\
+> • alguns arquivos (`globals.js`, `FUNC lib.js`, `JSON lib.js`, `bin ui.js`) usam codificação UTF-16 LE: mantenha essa codificação ao editá-los.\
+> • o ExtendScript avalia ternários encadeados (`a ? b : c ? d : e`) de forma diferente do JavaScript atual: use parênteses ou if / else.
+
+---
+<br>
+
 ## ✨ dicas
 
 a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necessário se preocupar com o uso de letras **maiúsculas** ou **minúsculas**, o script fará a conversão do texto.
@@ -427,7 +447,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   `◖ clique esquerdo` → Instala as fontes que o template do padeiro precisa para funcionar corretamente.
 
-  *Ao preencher o template pela interface do padeiro o script armazena no campo '**Source**' dos metadados do projeto o caminho dos arquivos do template, assim é possível fazer a instalação das fontes necessárias facilmente. Após clicar no botão um script de **powershell** copia todos os arquivos de fontes do projeto para a pasta de fontes do sistema.*
+  *Ao preencher o template pela interface do padeiro o script armazena no campo '**Source**' dos metadados do projeto o caminho dos arquivos do template, assim é possível fazer a instalação das fontes necessárias facilmente. Após clicar no botão, as fontes da pasta `FONTS` do template (incluindo subpastas) são instaladas: no Windows por um script de **powershell**, no macOS copiadas para `~/Library/Fonts`. Fontes já instaladas são ignoradas.*
   > 📋 *exemplo:*\
   > ![instalar fontes](docs/gifs/instalar-fontes.gif)
 
@@ -444,13 +464,13 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   `◗ clique direito` → Copia todos os arquivos de fontes usadas nos layers de texto do projeto em uma pasta selecionada pelo usuário.
 
-  *O script varre todas os layers de texto de todas as comps do projeto e armazena todas as fontes usadas, em seguida, copia os seus arquivos para uma pasta a sua escolha.*
+  *O script varre todos os layers de texto de todas as comps do projeto (incluindo fontes usadas apenas em keyframes de texto) e copia os arquivos dessas fontes para uma pasta a sua escolha.*
 
   > 📋 *exemplo:*\
   > ![collect fontes](docs/gifs/collect-de-fontes.gif)
 
   > 🚩 *obs:*\
-  > Algumas fontes instaladas apenas na pasta do usuário podem retornar um erro na hora da cópia. Nesse caso, o script alertará quais fontes não puderam ser copiadas.
+  > Fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas. Nesse caso, o script alertará quais fontes não puderam ser copiadas.
 
   <br><br>
 
@@ -460,10 +480,12 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   *O script analisa a fila de render e puxa o último caminho do último item disponível e em seguida abre a respectiva pasta.*
 
-  `◗ clique direito` → Copia para o clipboard o caminho do **primeiro arquivo** de saída do **último item** da fila de render.
-
   > 🚩 *obs:*\
-  > Caso o caminho não seja encontrado por falta de permissão ou falha no mapeamento da rede, o script não retornara o caminho.
+  > Se a pasta ainda não existir (antes do render), o script abre a pasta mais próxima que existe.
+
+  `◗ clique direito` → Abre o **conversor de caminhos** com a pasta de saída do último item da fila de render.
+
+  *Cole ou digite um caminho no campo MacOS ou Windows e o outro é convertido na hora. Aceita caminhos com aspas (copiar como caminho do Windows), letras de drive mapeadas (ex: `L:\`) e endereços `smb://` do Finder. Os botões 'copiar' enviam o caminho para a área de transferência e 'abrir pasta' abre o caminho no sistema atual.*
 
   <br><br>
 
@@ -472,7 +494,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   `◖ clique esquerdo` → Altera o nome das comps selecionadas na janela do projeto.
 
   *O script remove caracteres especiais dos nomes, convertendo tudo em MAIÚSCULAS.\
-  Caso as comps selecionadas estejam dentro de uma pasta com de nome específico ou o nome da respectiva comp já possuir algum prefixo / sufixo conhecido, todas comps receberão um prefixo no nome.*
+  Caso as comps selecionadas estejam dentro de uma pasta cujo nome comece com um tipo conhecido (ex: `RODAPES`, `LETTERING - JOGO`) ou o nome da comp já possuir algum prefixo / sufixo conhecido, as comps receberão o prefixo do tipo no nome. O nome da pasta tem prioridade sobre o nome da comp.*
 
   > 📋 *exemplo:*\
   > ![renomear comps](docs/gifs/renomear-comps.gif)
@@ -490,19 +512,23 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   > ![renomear output](docs/gifs/renomear-output.gif)
 
   > 🚩 *obs:*\
-  > O NOME DAS COMPS NÃO SERÁ ALTERADO!
-  > No momento, outputs em sequânica de imagens não suportam subpastas.
+  > O NOME DAS COMPS NÃO SERÁ ALTERADO!\
+  > Cada saída continua na pasta em que já estava. Itens já renderizados não são alterados e nomes repetidos na mesma pasta recebem um sufixo (`_2`, `_3`...) para um render não sobrescrever o outro.
 
-  **lista de prefixos e termos reconhecidos**:
-  - **RDP** → *RODAPE*
-  - **CRT** → *CARTAO, CARTOES, CARTELA, CTO, CTL*
-  - **LETT** → *LETTERING*
-  - **CONFRONTO**
-  - **TRJ** → *TARJA, TAR*
-  - **VHT** → *VINHETA*
-  - **ASSINA** → *ASSINATURA, ASS*
-  - **PASSAGEM** → *PASSAGENS, TRANSICAO, LAPADA*
-  - **REF** → *REFERENCIA, PREVIEW*
+  **lista de prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento):
+  - **RDP** → *RODAPE, RDP*
+  - **CRT** → *CARTAO, CARTOES, CRT*
+  - **LETT** → *LETTERING, LETT, LET*
+  - **CONFRONTO** → *CONFRONTO*
+  - **TARJA** → *TARJA, TRJ, TAR*
+  - **PASSAGEM** → *PASSAGEM, TRANSICAO, TRANSICOES, LAPADA*
+  - **ASSINA** → *ASSINATURA, ASSINA, ASS*
+  - **FOTO** → *FOTO, IMG, IMAGEM, IMAGENS*
+  - **REF** → *REFERENCIA, PREVIEW, REF, PREV*
+
+  > 🚩 *obs:*\
+  > Os termos são reconhecidos como palavras inteiras, separadas por espaço, `_` ou `-` (ex: 'ASS' não casa com 'CLASSICO').\
+  > Comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer.
 
   <br><br>
 
@@ -518,12 +544,15 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   > 🚩 *obs:*\
   > Você deve selecionar as comps principais (as que serão renderizadas) antes de clicar.\
-  > Todas as comps selecionadas no momento da organização serão colocadas na pasta '01 COMPS'.\
-  > As comps renomeadas pelo script também serão organizadas na pasta '01 COMPS' caso possuam algum termo reconhecido em seu nome e/ou nome da pasta em que estejam contidas.
+  > As comps selecionadas sem comentário recebem o comentário 'EXPORTAR' e vão para a pasta '01 COMPS'.\
+  > Comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo RENOMEAR) vão para uma subpasta com esse nome.\
+  > As demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
+  > Footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. O texto do comentário antes de ':' vira subpasta.\
+  > Pastas que ficarem vazias são removidas.
 
   <br>
 
-  `◗ clique direito` → Cria apenas a estrutura de pastas no projeto de acordo com o modelo da PROMO.
+  `◗ clique direito` → Cria apenas a estrutura de pastas no projeto de acordo com o modelo da PROMO (pastas que já existem são reaproveitadas, não duplicadas).
 
   > 📋 *exemplo:*\
   > ![estrutura projeto](docs/images/estrutura_projeto_promo.png)
@@ -541,16 +570,37 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   `◖ clique esquerdo` → Abre a interface de busca.\
   opções em ordem:
 
-  - buscar apenas em layers visíveis.
-  - respeitar a caixa de texto (MAIÚSCULAS e minúsculas).
-  - respeitar acentuação.
-  - inverter busca, busca por layers de texto que **NÃO** contenham o termo buscado.
+  - **APENAS VISÍVEIS** → buscar apenas em layers visíveis.
+  - **IGNORAR ACENTOS** → 'amazonia' também encontra 'Amazônia' (ligado por padrão).
+  - **INVERTER** → busca por layers de texto que **NÃO** contenham o termo buscado.
 
   <br>
 
   > 📋 *exemplo:*\
   > ![busca](docs/gifs/busca.gif)
 
+  `Enter` (ou o botão de busca) lê o texto de todos os layers do projeto. depois disso, a lista é filtrada enquanto você digita ou muda as opções. pressione `Enter` de novo para reler o projeto depois de alterar os textos.
+
   > 🚩 *obs:*\
-  > Por padrão a busca é feita ignorando acentuação e caixa do texto.\
-  > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...
+  > A busca sempre ignora a caixa do texto (MAIÚSCULAS e minúsculas) e, por padrão, a acentuação.\
+  > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...\
+  > O termo é procurado como texto: caracteres como '(', '.' ou '?' não têm significado especial.\
+  > Clique em um resultado para abrir a comp com o layer selecionado (textos com keyframes ou expressão abrem no tempo em que o texto encontrado aparece).
+
+  <br>
+
+  `◗ clique direito` → Abre **O ACESSORISTA**, a busca de caminhos de atrações.
+
+  *Pesquise por atração, projeto, output ou caminho (a partir de 2 caracteres, enquanto você digita) e abra as pastas direto no Explorer / Finder.*
+
+  - **lupa** → baixa os caminhos atualizados e refaz a busca.
+  - **filtros** → um checkbox para cada categoria (TEAMS, TRELLO, ATRAÇÕES, SERVIDOR...) inclui ou remove a categoria dos resultados.
+  - **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
+  - **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
+  - **caminho** → clique no caminho para abrir a pasta.
+
+  > 🚩 *obs:*\
+  > Os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. Sem conexão, o último índice salvo é usado.\
+  > A categoria SERVIDOR reúne caminhos fixos (ex: '#INGEST', 'BASES VALENDO').\
+  > No macOS, os volumes de rede necessários são montados automaticamente ao abrir uma pasta.\
+  > São exibidas no máximo 12 atrações por busca: refine o termo para ver as demais.

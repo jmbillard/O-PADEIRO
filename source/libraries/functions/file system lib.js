@@ -23,29 +23,106 @@ Windows caminho:
 ---------------------------------------------------------------
 
 */
-// Define o conteúdo da área de transferência no Windows ou macOS.
-function setClipboardPath(str) {
-	var cmd;
+// Copia um texto para a área de transferência (Windows ou macOS).
+// O texto vai por um arquivo temporário em UTF-8 para acentos e caracteres como & e # passarem intactos.
+function copyToClipboard(str) {
+	var tempFile = new File(tempPath + '/clipboard.txt');
+
+	tempFile.encoding = 'UTF-8';
+
 	if (appOs == 'Win') {
-		// Comando PowerShell para Windows
-		var setClipboardPath = "Set-Clipboard -Value '" + str + "'";
-		cmd = 'cmd.exe /c powershell.exe -c "' + setClipboardPath + '"';
-		system.callSystem(cmd);
-	} else if (appOs == 'Mac') {
-		// Comando pbcopy para macOS
-		var winPath = normalizeNetworkPath(str, {
-			forceWin: true
-		});
-		str = 'MacOS caminho:\n- ' + str + '\n\nWindows caminho:\n- ' + winPath;
-		cmd = 'echo "' + str + '" | pbcopy';
-		system.callSystem(cmd);
+		writeFileContent(tempFile, '﻿' + str);
+		system.callSystem(
+			'cmd.exe /c powershell.exe -NoProfile -c "Get-Content -Raw -Encoding UTF8 -LiteralPath \'' +
+				tempFile.fsName.replace(/'/g, "''") +
+				'\' | Set-Clipboard"'
+		);
+	} else {
+		writeFileContent(tempFile, str);
+		system.callSystem("LANG=en_US.UTF-8 pbcopy < '" + tempFile.fsName.replace(/'/g, "'\\''") + "'");
 	}
+
+	try {
+		tempFile.remove();
+	} catch (err) { }
 }
 
+// A pasta do caminho ou, se ela ainda não existir, a pasta pai mais próxima que existe.
+// Retorna null se nada no caminho existir (ex: volume não montado).
+function nearestExistingFolder(path) {
+	var folder = new Folder(path);
+
+	while (folder != null && !folder.exists) {
+		folder = folder.parent;
+	}
+
+	return folder;
+}
+
+/**
+ * macOS: quando um volume de rede já está montado, uma nova montagem do mesmo share
+ * recebe um sufixo (/Volumes/VFX-1, /Volumes/VFX-2 ... /Volumes/VFX-5).
+ * Retorna o caminho que realmente existe, testando o volume sem sufixo e as variantes -1 a -5.
+ * Se nenhuma variante contém o caminho completo (ex: pasta de output ainda não criada),
+ * escolhe o volume onde existe o maior trecho do caminho.
+ * No Windows, ou fora de /Volumes, devolve o caminho original.
+ * @param {string} pathStr - Caminho do macOS (/Volumes/SHARE/...)
+ * @returns {string} Caminho existente (ou o original, se nada for encontrado)
+ */
+function resolveMacVolumePath(pathStr) {
+	if (appOs != 'Mac' || !pathStr || typeof pathStr !== 'string') return pathStr;
+
+	var match = pathStr.match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+
+	if (!match) return pathStr;
+
+	// o caminho original (ou a variante já informada) tem prioridade
+	if (new Folder(pathStr).exists) return pathStr;
+
+	var baseName = match[1].replace(/-[1-5]$/, '');
+	var parts = (match[2] || '').split('/').filter(function (p) {
+		return p !== '';
+	});
+	var candidates = [match[1]];
+
+	for (var i = 0; i <= 5; i++) {
+		var name = i == 0 ? baseName : baseName + '-' + i;
+
+		if (name != match[1]) candidates.push(name);
+	}
+
+	var bestPath = pathStr;
+	var bestDepth = -1;
+
+	for (var c = 0; c < candidates.length; c++) {
+		var current = '/Volumes/' + candidates[c];
+
+		if (!new Folder(current).exists) continue;
+
+		var depth = 0;
+
+		for (var p = 0; p < parts.length; p++) {
+			current += '/' + parts[p];
+
+			if (!new Folder(current).exists) break;
+			depth++;
+		}
+
+		// caminho completo encontrado
+		if (depth == parts.length) return current;
+
+		if (depth > bestDepth) {
+			bestDepth = depth;
+			bestPath = '/Volumes/' + candidates[c] + (parts.length > 0 ? '/' + parts.join('/') : '');
+		}
+	}
+
+	return bestPath;
+}
 
 // Abre uma pasta no sistema operacional (Windows ou macOS).
 function openFolder(folderPath) {
-	var folder = Folder(folderPath); // Obtém um objeto Folder representando o caminho da pasta
+	var folder = Folder(resolveMacVolumePath(folderPath)); // Obtém um objeto Folder representando o caminho da pasta (já ajustado para o volume montado)
 
 	if (appOs == 'Win') {
 		// Comando para abrir a pasta no Windows Explorer
@@ -195,186 +272,6 @@ function zipContent(path, zipPath) {
 	}
 }
 
-function installWinFonts(fontsPath) {
-	var srcFolder = new Folder(fontsPath);
-	var filesArray = [];
-	var filter = ['.ttf', '.otf', '.TTF', '.OTF'];
-
-	if (!srcFolder.exists) return;
-
-	filesArray = srcFolder.getFiles();
-
-	if (filesArray.length == 0) return;
-
-	var installFontsPS =
-		"Write-Host '------------- O PADEIRO script -------------'";
-	installFontsPS += ' -ForegroundColor white -BackgroundColor DarkRed;';
-	installFontsPS += "Write-Host '                (u.u )...zzz';";
-	installFontsPS +=
-		'$Destination = (New-Object -ComObject Shell.Application).Namespace(0x14);';
-
-	for (var i = 0; i < filesArray.length; i++) {
-		var aFile = filesArray[i];
-		var aFileName = File.decode(aFile.displayName).toString();
-		var subArray = [];
-
-		try {
-			subArray = new Folder(
-				decodeURI(aFile.fsName).toString(),
-			).getFiles();
-			//
-		} catch (err) { }
-
-		if (subArray.length > 0) {
-			installFonts(decodeURI(aFile.fsName).toString());
-
-			continue;
-		} else {
-			if (filter.indexOf(getFileExt(aFileName)) >= 0) {
-				var driveLetter = fontsPath.split(/\//)[1];
-				var driveStr =
-					driveLetter.match(/\w{1}/) && driveLetter.length == 1
-						? driveLetter + ':/'
-						: null;
-
-				if (driveLetter != null)
-					fontsPath = fontsPath.replace(/^\/\w\//i, driveStr);
-
-				var aFontPath = fontsPath.replace(
-					/^~/,
-					'C:/Users/' + system.userName.toString(),
-				);
-				aFontPath = aFontPath.replace(/\//g, '\\');
-				installFontsPS +=
-					"$Destination.CopyHere('" +
-					aFontPath +
-					'\\' +
-					aFileName +
-					"');";
-				installFontsPS +=
-					"Write-Host '> installing " + aFileName + "...';";
-			} else continue;
-		}
-	}
-	var cmdStr = 'cmd.exe /c powershell.exe -c "' + installFontsPS + '"';
-	system.callSystem(cmdStr);
-}
-
-/**
- * Instala arquivos de fonte no macOS
- * Copia fontes para ~/Library/Fonts (usuário atual)
- * @param {string} fontsPath - Caminho da pasta contendo as fontes
- * @returns {boolean} true se instalou com sucesso
- */
-function installMacFonts(fontsPath) {
-	var srcFolder = new Folder(fontsPath);
-	var filesArray = [];
-	var filter = ['.ttf', '.otf', '.TTF', '.OTF'];
-
-	if (!srcFolder.exists) {
-		alert('Pasta de fontes não encontrada:\n' + fontsPath);
-		return false;
-	}
-
-	filesArray = srcFolder.getFiles();
-	if (filesArray.length == 0) {
-		alert('Nenhum arquivo encontrado na pasta de fontes');
-		return false;
-	}
-
-	// Destino: pasta de fontes do usuário (não requer sudo)
-	var userFontsPath = '~/Library/Fonts';
-	var destFolder = new Folder(userFontsPath);
-
-	if (!destFolder.exists) {
-		alert('Pasta ~/Library/Fonts não encontrada');
-		return false;
-	}
-
-	var installedCount = 0;
-	var errors = [];
-
-	for (var i = 0; i < filesArray.length; i++) {
-		var aFile = filesArray[i];
-		var aFileName = File.decode(aFile.displayName).toString();
-
-		// Verifica se é uma subpasta
-		var subArray = [];
-		try {
-			subArray = new Folder(decodeURI(aFile.fsName).toString()).getFiles();
-		} catch (err) { }
-
-		// Recursão para subpastas
-		if (subArray.length > 0) {
-			installMacFonts(decodeURI(aFile.fsName).toString());
-			continue;
-		}
-
-		// Verifica extensão
-		if (filter.indexOf(getFileExt(aFileName)) >= 0) {
-			try {
-				var sourcePath = escapeForShell(aFile.fsName);
-				var destPath = escapeForShell(userFontsPath + '/' + aFileName);
-
-				// Usa 'cp' para copiar o arquivo
-				var cmdStr = 'cp ' + sourcePath + ' ' + destPath;
-				var result = system.callSystem(cmdStr);
-
-				if (result == 0) {
-					installedCount++;
-					$.writeln('✓ Instalada: ' + aFileName);
-				} else {
-					errors.push(aFileName);
-					$.writeln('✗ Erro ao instalar: ' + aFileName);
-				}
-
-			} catch (err) {
-				errors.push(aFileName + ' (' + err.toString() + ')');
-				$.writeln('✗ Exceção: ' + aFileName + ' - ' + err.toString());
-			}
-		}
-	}
-
-	// Atualiza cache de fontes do sistema
-	if (installedCount > 0) {
-		try {
-			// Force reinicia o servidor de fontes
-			system.callSystem('atsutil databases -remove');
-			system.callSystem('atsutil server -shutdown');
-			system.callSystem('atsutil server -ping');
-
-			alert('✓ Fontes instaladas: ' + installedCount +
-				(errors.length > 0 ? '\n✗ Erros: ' + errors.length : ''));
-		} catch (err) {
-			$.writeln('Aviso: Não foi possível atualizar cache de fontes');
-		}
-	} else {
-		alert('Nenhuma fonte foi instalada');
-	}
-
-	return installedCount > 0;
-}
-
-/**
- * Escapa caracteres especiais para uso no shell do macOS
- * @param {string} path - Caminho a escapar
- * @returns {string} Caminho escapado com aspas
- */
-function escapeForShell(path) {
-	// Expande ~ para home directory
-	if (path.indexOf('~') === 0) {
-		path = path.replace('~', '/Users/' + system.userName);
-	}
-
-	// Escapa caracteres especiais e envolve em aspas simples
-	return "'" + path.replace(/'/g, "'\\''") + "'";
-}
-
-/**
- * Extrai extensão do arquivo
- * @param {string} fileName - Nome do arquivo
- * @returns {string} Extensão (ex: '.ttf')
- */
 function getFileExt(fileName) {
 	var dotIndex = fileName.lastIndexOf('.');
 	if (dotIndex === -1) return '';
@@ -554,52 +451,6 @@ function createPresetFile(tempFolder, fileName, strCode) {
 }
 
 // copy all fonts used in the project...
-function fontCollect(savePath) {
-	var saveFolder = new Folder(savePath); // collect folder...
-	var fontArray = []; // copied fonts array...
-	var failArray = []; // failed copy array...
-	var compArray = getComps(); // all project comps...
-
-	if (!saveFolder.exists) saveFolder.create();
-
-	for (var c = 0; c < compArray.length; c++) {
-		var comp = compArray[c]; // current comp...
-
-		for (var l = 1; l <= comp.numLayers; l++) {
-			var aLayer = comp.layer(l); // current layer...
-
-			if (!(aLayer instanceof TextLayer)) continue;
-			// current text layer...
-			var textDoc = aLayer
-				.property('ADBE Text Properties')
-				.property('ADBE Text Document').value;
-			var fontName = textDoc.font; // font name...
-			var fontSrcFile = new File(decodeURI(textDoc.fontLocation)); // font file...
-
-			if (!fontSrcFile.exists) {
-				if (failArray.indexOf(fontName) < 0) failArray.push(fontName); // no font file...
-				continue;
-			}
-			if (fontArray.indexOf(fontName) > 0) continue; // already copied...
-
-			var fontFileName = fontSrcFile.displayName;
-
-			if (!fontFileName.match(/(\.ttf|\.otf)$/i))
-				fontFileName = 'cc_' + fontName + '.ttf';
-
-			var fontCopyFile = new File(savePath + '/' + fontFileName);
-
-			fontArray.push(fontName);
-			fontSrcFile.copy(fontCopyFile);
-		}
-	}
-	if (saveFolder.getFiles().length == 0) saveFolder.remove();
-
-	if (failArray.length > 0) alert(failArray.toString() + ' cant be copied');
-
-	return savePath;
-}
-
 // -------------------------------------------------------
 
 function saveLogData(aFile, dataStr) {
@@ -738,13 +589,16 @@ function normalizeNetworkPath(pathStr, options) {
 			macPath += "/" + subPathParts.join("/");
 		}
 
+		// Usa o volume realmente montado (VOLUME, VOLUME-1 ... VOLUME-5)
+		macPath = resolveMacVolumePath(macPath);
+
 		// Escape de caracteres especiais para ExtendScript
 		if (typeof escapeForExtendScript === "function") {
 			macPath = escapeForExtendScript(macPath);
 		}
 
 		// Verifica se o volume está montado
-		if (typeof pathExists === "function" && !pathExists("/Volumes/" + shareName)) {
+		if (typeof pathExists === "function" && !pathExists(macPath.replace(/^(\/Volumes\/[^\/]+).*$/, "$1"))) {
 			if (!silent && appOs === 'Mac') {
 				alert("O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
 					"Servidor: " + serverName + "\n" +
@@ -802,6 +656,9 @@ function normalizeNetworkPath(pathStr, options) {
 	}
 
 	// NORMALIZAÇÃO FINAL
+
+	// Mac: usa o volume realmente montado (VOLUME, VOLUME-1 ... VOLUME-5)
+	if (isMac) normalizedPath = resolveMacVolumePath(normalizedPath);
 
 	// Mac: sempre faz escape mesmo se não converteu
 	if (isMac && typeof escapeForExtendScript === "function") {

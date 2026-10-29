@@ -1,4 +1,3 @@
-/* eslint-disable no-with */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /*
@@ -9,16 +8,201 @@
 
 */
 
-// Recebe a estrutura da ui 'structureObj' e um objeto para interação 'uiObj'
-// Cria os controles da interface e define os eventos entre eles
-function PAD_BUILD_UI(structureObj, uiObj) {
-	// // Configurações da janela
-	uiObj.window.margins = 4; // Margens internas
-	uiObj.window.orientation = 'stack'; // Layout vertical
+// Arquivo de saída do último item da fila de render que tem um (ou null).
+function getLastOutputFile() {
+	var rq = app.project.renderQueue;
 
-	uiObj.mainGrp = uiObj.window.add('group'); // Grupo principal
+	for (var i = rq.numItems; i >= 1; i--) {
+		try {
+			var outputFile = rq.item(i).outputModule(1).file;
+
+			if (outputFile != null) return outputFile;
+		} catch (err) { }
+	}
+
+	return null;
+}
+
+// Ações dos botões da interface principal.
+// Cada botão da estrutura 'PAD_mainGrpUiStructure' (O_PADEIRO.js) aponta para estas funções
+// em 'leftClick' / 'rightClick', então a dica, o ícone e a ação de cada botão ficam juntos.
+var PAD_ACTIONS = {
+	abrirApontamento: function () {
+		if (!netAccess()) {
+			alert(lol + '#PAD_007 - sem acesso a rede...');
+			return; // Encerra a função se não houver acesso à internet.
+		}
+		var apontamento =
+			'"https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i"';
+
+		openWebSite(apontamento);
+	},
+
+	preencherTemplates: function () {
+		// Verifica se há acesso à rede.
+		if (!netAccess()) {
+			// Se não houver acesso, exibe um alerta informando que a funcionalidade será limitada e encerra a função.
+			alert(lol + '#PAD_003 - sem acesso a rede...');
+			return;
+		}
+
+		// Se houver acesso à internet, chama a função padeiroTemplateDialog() para exibir a interface de templates.
+		padeiroTemplateDialog();
+	},
+
+	criarTemplate: function () {
+		// O editor precisa da comp principal do template aberta
+		if (!(app.project.activeItem instanceof CompItem)) {
+			alert(lol + '#PAD_031 - abra a comp principal do template antes de criar um novo template.');
+			return;
+		}
+
+		try {
+			PadMakerDialog();
+			//
+		} catch (err) {
+			alert(lol + '#PAD_MAKER - ' + '' + err.message);
+		}
+	},
+
+	instalarFontes: function () {
+		// Define a função a ser executada quando o botão "Instalar Fontes" for clicado.
+
+		// Verifica se há acesso à rede.
+		if (!netAccess()) {
+			alert(lol + '#PAD_004 - sem acesso a rede...');
+			return;
+		}
+
+		// Obtém o caminho da pasta do template a partir dos metadados XMP do projeto.
+		var folderPath = normalizeNetworkPath(getXMPData('source'));
+		var templateFontsPath = folderPath + '/FONTS';
+
+		// Se o caminho da pasta não for encontrado, a função é interrompida.
+		if (folderPath == '') {
+			alert(lol + '#PAD_005 - esse projeto não foi preenchido pelo padeiro...');
+			return;
+		}
+		// Cria um objeto "Folder" para a pasta de fontes do template.
+		var templateFontsFolder = new Folder(templateFontsPath);
+
+		// Verifica se a pasta de fontes existe.
+		if (!templateFontsFolder.exists) {
+			alert(lol + '#PAD_006 - a pasta de fontes não foi localizada...');
+			return;
+		}
+		installFonts(templateFontsPath); // Windows ou macOS
+	},
+
+	coletarFontes: function () {
+		// Verifica se há itens no projeto.
+		if (app.project.numItems == 0) return;
+
+		var savePath = Folder.selectDialog(); // Abre a janela de seleção de pastas
+
+		if (savePath == null) return; // Se a janela foi cancelada, não faz nada
+
+		var currentProjPath = decodeURI(savePath.fsName) + '/FONTS'; // caminho final do collect
+		var fontsPath = fontCollect(currentProjPath);
+
+		if (fontsPath != '') openFolder(fontsPath);
+	},
+
+	abrirPastaOutput: function () {
+		if (!netAccess()) {
+			alert(lol + '#PAD_007 - sem acesso a rede...');
+			return;
+		}
+
+		var outputFile = getLastOutputFile();
+
+		if (outputFile == null) {
+			alert(lol + '#PAD_008 - a fila de render está vazia...');
+			return;
+		}
+
+		var outputPath = normalizeNetworkPath(decodeURI(outputFile.path));
+		var folder = nearestExistingFolder(outputPath);
+
+		if (folder == null) {
+			alert(lol + '#PAD_009 - a pasta não foi encontrada...\n\n' + outputPath);
+			return;
+		}
+
+		// antes do render a pasta de saída pode ainda não existir: abre a mais próxima
+		openFolder(folder.fsName);
+	},
+
+	abrirConversorCaminhos: function () {
+		var outputFile = getLastOutputFile();
+
+		pathDialog(outputFile ? decodeURI(outputFile.parent.fsName) : '');
+	},
+
+	renomearComps: function () {
+		// Verifica se há itens no projeto.
+		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
+
+		// Inicia um grupo de desfazer para que a operação de renomeação possa ser desfeita.
+		app.beginUndoGroup('renomear comps');
+
+		// Chama a função renamePromoComps para renomear as composições selecionadas.
+		renamePromoComps(app.project.selection);
+
+		// Finaliza o grupo de desfazer.
+		app.endUndoGroup();
+	},
+
+	renomearOutputs: function () {
+		app.beginUndoGroup('renomear outputs');
+
+		renameOutputs(); // renomeia todas as saídas
+
+		app.endUndoGroup();
+	},
+
+	organizarProjeto: function () {
+		if (app.project.numItems == 0) return;
+
+		app.beginUndoGroup('organização automática do projeto');
+
+		try {
+			organizeProject(); // comps selecionadas sem comentário entram como 'EXPORTAR'
+		} catch (err) {
+			alert(lol + '#PAD_036 - ' + err.message);
+		} finally {
+			app.endUndoGroup();
+		}
+	},
+
+	criarPastasProjeto: function () {
+		app.beginUndoGroup('criar pastas do projeto');
+
+		projectTemplateFolders(); // cria a estrutura de pastas do projeto
+
+		app.endUndoGroup();
+	},
+
+	buscarTextos: function () {
+		findDialog();
+	},
+
+	buscarCaminhos: function () {
+		pathSearchDialog();
+	}
+};
+
+// Recebe a estrutura da ui 'structureObj' e um objeto para interação 'uiObj'
+// Cria os controles da interface e liga as ações declaradas na estrutura
+function PAD_BUILD_UI(structureObj, uiObj) {
+	uiObj.window.margins = 4;
+	uiObj.window.orientation = 'stack';
+
+	// Grupo principal: seções de botões com imagem
+	uiObj.mainGrp = uiObj.window.add('group');
 	uiObj.sectionGrpArray.push(uiObj.mainGrp);
 
+	// Logo e versão
 	uiObj.infoGrp = uiObj.window.add('group');
 	uiObj.infoGrp.spacing = 0;
 	uiObj.sectionGrpArray.push(uiObj.infoGrp);
@@ -28,102 +212,68 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.mainLogo.minimumSize = [50, 24];
 	uiObj.mainLogo.helpTip = [scriptName, scriptVersion, '| Jean-Marc Billard'].join(' ');
 
-	uiObj.vLab = uiObj.infoGrp.add('statictext', undefined, scriptVersion, {
-		truncate: 'end'
-	});
+	uiObj.vLab = uiObj.infoGrp.add('statictext', undefined, scriptVersion, { truncate: 'end' });
 	uiObj.vLab.justify = 'center';
 	uiObj.vLab.helpTip = 'ajuda | DOCS';
 
-	uiObj.pinGrp = uiObj.window.add('group'); // Grupo de botões superior
-	uiObj.pinGrp.alignment = ['center', 'top']; // Alinhamento
-	uiObj.pinGrp.spacing = 16; // Espaçamento entre botões
+	// Grupo fixo: produção + botões de ícone
+	uiObj.pinGrp = uiObj.window.add('group');
+	uiObj.pinGrp.alignment = ['center', 'top'];
+	uiObj.pinGrp.spacing = 16;
 	uiObj.sectionGrpArray.push(uiObj.pinGrp);
 
 	uiObj.prodGrp = uiObj.pinGrp.add('group');
 	uiObj.sectionGrpArray.push(uiObj.prodGrp);
 
 	uiObj.prodIconGrp = uiObj.prodGrp.add('group');
-	uiObj.prodIconGrp.orientation = 'stack'; // Layout vertical
-	populateMainIcons(uiObj.prodIconGrp);
+	uiObj.prodIconGrp.orientation = 'stack';
 
 	uiObj.prodDrop = uiObj.prodGrp.add('dropdownlist', undefined, getProdNames(PAD_prodArray));
 	uiObj.prodDrop.selection = 0; // Seleciona a produção padrão.
 	uiObj.prodDrop.maximumSize = [140, 24];
 	uiObj.prodDrop.minimumSize = [52, 24];
-	uiObj.prodDrop.helpTip = 'PRODUÇÃO SELECIONADA'; // Dica de ajuda
+	uiObj.prodDrop.helpTip = 'PRODUÇÃO SELECIONADA';
 
+	populateMainIcons(uiObj);
+
+	// Os botões de ícone se alternam entre duas colunas (ficam em 2 x N no layout vertical)
 	uiObj.iconBtnMainGrp = uiObj.pinGrp.add('group');
-
 	uiObj.iconBtnGrp0 = uiObj.iconBtnMainGrp.add('group');
-	uiObj.sectionGrpArray.push(uiObj.iconBtnGrp0);
-
 	uiObj.iconBtnGrp1 = uiObj.iconBtnMainGrp.add('group');
-	uiObj.sectionGrpArray.push(uiObj.iconBtnGrp1);
+	uiObj.sectionGrpArray.push(uiObj.iconBtnGrp0, uiObj.iconBtnGrp1);
 
-	var sectionCounter = 0;
-	var ctrlCounter = 0;
+	var iconCount = 0;
 
-	for (var pinSec in structureObj.pinGrp) {
-		var pinSection = structureObj['pinGrp'][pinSec];
+	forEachUiCtrl(structureObj.pinGrp, null, function (key, ctrlProperties) {
+		var btn = themeIconButton(uiObj['iconBtnGrp' + (iconCount % 2)], ctrlProperties);
 
-		if (sectionCounter > 0) uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
+		uiObj.iconButtonArray.push(btn);
+		bindUiCtrl(uiObj, key, btn, ctrlProperties);
+		iconCount++;
+	});
 
-		var pinSectionGrp = uiObj.mainGrp.add('group', undefined, {
-			name: 'sectionGrp'
-		}); // Grupo de botões superior
-		pinSectionGrp.alignment = ['center', 'top']; // Alinhamento
-		uiObj.sectionGrpArray.push(pinSectionGrp);
+	// Seções do grupo principal, separadas por divisores
+	forEachUiCtrl(structureObj.mainGrp, function (sectionIndex) {
+		if (sectionIndex > 0) uiObj.divArray.push(themeDivider(uiObj.mainGrp));
 
-		for (var pinCtrl in pinSection) {
-			var pinCtrlProperties = pinSection[pinCtrl];
-			pinCtrlProperties.key = pinCtrl;
-
-			if (pinCtrlProperties.labelTxt == undefined)
-				pinCtrlProperties.labelTxt = pinCtrl.replace(/_/g, ' ').toTitleCase();
-
-			if (pinCtrlProperties.type == 'iconButton') {
-				uiObj[pinCtrl] = new themeIconButton(uiObj['iconBtnGrp' + (ctrlCounter % 2)], pinCtrlProperties);
-				uiObj.iconButtonArray.push(uiObj[pinCtrl]);
-			}
-			ctrlCounter++;
-		}
-		sectionCounter++;
-	}
-
-	sectionCounter = 0;
-
-	for (var sec in structureObj.mainGrp) {
-		var section = structureObj['mainGrp'][sec];
-
-		if (sectionCounter > 0) uiObj.divArray.push(new themeDivider(uiObj.mainGrp));
-
-		var sectionGrp = uiObj.mainGrp.add('group', undefined, {
-			name: 'sectionGrp'
-		}); // Grupo de botões superior
-		sectionGrp.alignment = ['center', 'top']; // Alinhamento
+		var sectionGrp = uiObj.mainGrp.add('group', undefined, { name: 'sectionGrp' });
+		sectionGrp.alignment = ['center', 'top'];
 		uiObj.sectionGrpArray.push(sectionGrp);
 
-		for (var ctrl in section) {
-			var ctrlProperties = section[ctrl];
-			ctrlProperties.key = ctrl;
+		return sectionGrp;
+	}, function (key, ctrlProperties, sectionGrp) {
+		var btn = themeImageButton(sectionGrp, ctrlProperties);
 
-			if (ctrlProperties.labelTxt == undefined) ctrlProperties.labelTxt = ctrl.replace(/_/g, ' ').toTitleCase();
+		uiObj.imageButtonArray.push(btn);
+		bindUiCtrl(uiObj, key, btn, ctrlProperties);
+	});
 
-			if (ctrlProperties.type == 'imageButton') {
-				uiObj[ctrl] = new themeImageButton(sectionGrp, ctrlProperties);
-				uiObj.imageButtonArray.push(uiObj[ctrl]);
-			}
-		}
-		sectionCounter++;
-	}
-
-	uiObj.window.layout.layout(true); // Aplica o layout
+	uiObj.window.layout.layout(true);
 
 	// Estilização da interface
-	setCtrlHighlight(uiObj.vLab, monoColor0, highlightColor1); // Cor de destaque do texto
-	setBgColor(uiObj.window, bgColor1); // Cor de fundo da janela
+	setCtrlHighlight(uiObj.vLab, monoColor0, highlightColor1);
+	setBgColor(uiObj.window, bgColor1);
 
-	// Define uma função a ser executada quando a janela é exibida ou redimensionada.
 	uiObj.window.onShow = function () {
 		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
 			var btn = uiObj.imageButtonArray[b];
@@ -138,6 +288,35 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	};
 
 	PAD_UI_EVENTS(uiObj);
+}
+
+// Percorre 'sections' ({ secao: { controle: propriedades } }) na ordem em que foram declaradas.
+// onSection(indice) é chamada no início de cada seção e o retorno dela é repassado a onCtrl.
+function forEachUiCtrl(sections, onSection, onCtrl) {
+	var sectionIndex = 0;
+
+	for (var sec in sections) {
+		var section = sections[sec];
+		var sectionData = onSection ? onSection(sectionIndex) : null;
+
+		for (var key in section) {
+			var ctrlProperties = section[key];
+
+			ctrlProperties.key = key;
+			if (ctrlProperties.labelTxt == undefined) ctrlProperties.labelTxt = key.replace(/_/g, ' ').toTitleCase();
+
+			onCtrl(key, ctrlProperties, sectionData);
+		}
+		sectionIndex++;
+	}
+}
+
+// Registra o botão em 'uiObj[key]' e liga as ações declaradas na estrutura.
+function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
+	uiObj[key] = btn;
+
+	if (ctrlProperties.leftClick) btn.leftClick.onClick = ctrlProperties.leftClick;
+	if (ctrlProperties.rightClick) btn.rightClick.onClick = ctrlProperties.rightClick;
 }
 
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
@@ -186,8 +365,12 @@ function PAD_LAYOUT(uiObj) {
 				btn.label.size = btn.label.preferredSize;
 			}
 		}
-		uiObj.mainGrp.margins = isRow ? [pinGap, 0, infoGap, 0] : [4, pinGap, 4, infoGap];
 		uiObj.mainGrp.spacing = uiObj.window.size.height < 44 ? 24 : 16;
+
+		// + spacing: mantém a posição das seções igual à versão anterior, que tinha um grupo vazio
+		// antes da primeira seção
+		pinGap += uiObj.mainGrp.spacing;
+		uiObj.mainGrp.margins = isRow ? [pinGap, 0, infoGap, 0] : [4, pinGap, 4, infoGap];
 
 		uiObj.pinGrp.alignment = isRow ? 'left' : 'top';
 		uiObj.pinGrp.spacing = 20;
@@ -214,232 +397,22 @@ function PAD_LAYOUT(uiObj) {
 }
 
 function PAD_UI_EVENTS(uiObj) {
-	// Adiciona um "ouvinte" de evento ao rótulo de versão (vLab).
+	// Rótulo da versão abre a documentação
 	uiObj.vLab.addEventListener('mousedown', function () {
-		// Define o URL do site de documentação.
-		var siteUrl = repoURL + '/blob/main/README.md#-o-padeiro-script';
-		openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
+		openWebSite(repoURL + '/blob/main/README.md#-o-padeiro-script');
 	});
 
 	uiObj.prodDrop.onChange = function () {
+		if (this.selection == null) return;
+
 		var i = this.selection.index;
 		changeIcon(i, uiObj.prodIconGrp);
 
 		templatesPath = normalizeNetworkPath(PAD_prodArray[i].templatesPath);
 		templatesFolder = new Folder(templatesPath); // pasta de templates.
-		PAD_launchBtn.enabled = templatesFolder.exists; // Habilita / Desabilita o botão "Abrir O Padeiro".
 
 		// Se a pasta de templates não existir.
 		if (!templatesFolder.exists) alert(lol + '#PAD_002 - pasta de templates não localizada...');
-	};
-
-	// Define a função a ser executada quando o botão "Abrir O Padeiro" for clicado.
-	uiObj.templates.leftClick.onClick = function () {
-		// Verifica se há acesso à rede.
-		if (!netAccess()) {
-			// Se não houver acesso, exibe um alerta informando que a funcionalidade será limitada e encerra a função.
-			alert(lol + '#PAD_003 - sem acesso a rede...');
-			return;
-		}
-
-		// Se houver acesso à internet, chama a função padeiroTemplateDialog() para exibir a interface de templates.
-		padeiroTemplateDialog();
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Abrir O Padeiro".
-	uiObj.templates.rightClick.onClick = function () {
-		if (app.project.numItems == 0) return;
-		var aItem = app.project.activeItem;
-		if (aItem == null) return;
-
-		try {
-			PadMakerDialog();
-			//
-		} catch (err) {
-			alert(lol + '#PAD_MAKER - ' + '' + err.message);
-		}
-	};
-
-	uiObj.fontes.leftClick.onClick = function () {
-		// Define a função a ser executada quando o botão "Instalar Fontes" for clicado.
-
-		// Verifica se há acesso à rede.
-		if (!netAccess()) {
-			alert(lol + '#PAD_004 - sem acesso a rede...');
-			return;
-		}
-
-		// Obtém o caminho da pasta do template a partir dos metadados XMP do projeto.
-		var folderPath = normalizeNetworkPath(getXMPData('source'));
-		var templateFontsPath = folderPath + '/FONTS';
-
-		// Se o caminho da pasta não for encontrado, a função é interrompida.
-		if (folderPath == '') {
-			alert(lol + '#PAD_005 - esse não foi preenchido pelo padeiro...');
-			return;
-		}
-		// Cria um objeto "Folder" para a pasta de fontes do template.
-		var templateFontsFolder = new Folder(templateFontsPath);
-
-		// Verifica se a pasta de fontes existe.
-		if (!templateFontsFolder.exists) {
-			alert(lol + '#PAD_006 - a pasta de fontes não foi localizada...');
-			return;
-		}
-		// Se a pasta de fontes existe e o sistema operacional for Windows, instala as fontes.
-		if (appOs == 'Win') installWinFonts(templateFontsPath);
-		if (appOs == 'Mac') installMacFonts(templateFontsPath);
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Instalar Fontes".
-	uiObj.fontes.rightClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return;
-
-		var savePath = Folder.selectDialog(); // Abre a janela de seleção de pastas
-
-		if (savePath == null) return; // Se a janela foi cancelada, não faz nada
-
-		var currentProjPath = decodeURI(savePath.fsName) + '/FONTS'; // caminho final do collect
-		var fontsPath = fontCollect(currentProjPath);
-
-		openFolder(fontsPath);
-	};
-
-	// Define a função a ser executada quando o botão "Abrir Pasta de Saída" for clicado.
-	uiObj.pastas.leftClick.onClick = function () {
-		// Verifica se há acesso à rede.
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à rede.
-		}
-
-		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems < 1) {
-			alert(lol + '#PAD_008 - a fila de render está vazia...');
-			return;
-		}
-		// Obtém o último item da fila de renderização.
-		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-		var outputModule = item.outputModule(1);
-
-		// Obtém o caminho completo da pasta de saída.
-		var outputPath = normalizeNetworkPath(decodeURI(outputModule.file.path));
-
-		// Cria um objeto "Folder" para representar a pasta de saída.
-		var fld = new Folder(outputPath);
-
-		// Verifica se a pasta de saída existe.
-		if (!fld.exists) {
-			alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
-			return; // Encerra a função se a pasta não existir.
-		}
-
-		// Abre a pasta de saída no sistema operacional do usuário.
-		openFolder(outputPath);
-	};
-
-	// Adiciona um ouvinte de evento de clique ao botão "Abrir Pasta de Saída".
-	uiObj.pastas.rightClick.onClick = function () {
-
-		var outputPath = '';
-		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems >= 1) {
-
-			// Obtém o último item da fila de renderização.
-			var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-			// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-			var outputModule = item.outputModule(1);
-
-
-			// Cria um objeto "Folder" para representar a pasta de saída.
-			var fld = outputModule.file.parent;
-			// Obtém o caminho completo da pasta de saída.
-			if (fld.exists) {
-				outputPath = fld.fsName;
-			}
-		}
-		pathDialog(outputPath);
-	};
-
-	// Define a função a ser executada quando o botão "Renomear Comps" for clicado.
-	uiObj.renomear.leftClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
-
-		// Inicia um grupo de desfazer para que a operação de renomeação possa ser desfeita.
-		app.beginUndoGroup('renomear comps');
-
-		// Chama a função renamePromoComps para renomear as composições selecionadas.
-		renamePromoComps(app.project.selection);
-
-		// Finaliza o grupo de desfazer.
-		app.endUndoGroup();
-	};
-
-	uiObj.renomear.rightClick.onClick = function () {
-		app.beginUndoGroup('renomear outputs');
-
-		renameOutputs(); // renomeia todas as saídas
-
-		app.endUndoGroup();
-	};
-
-	uiObj.organizar.leftClick.onClick = function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
-
-		// grupo de desfazer
-		app.beginUndoGroup('organização automática do projeto');
-
-		// Se houver itens selecionados na janela projeto
-		if (app.project.selection.length > 0) {
-			// Itera sobre os itens selecionados
-			for (var i = 0; i < app.project.selection.length; i++) {
-				var aItem = app.project.selection[i]; // item selecionado
-
-				// Se o item selecionado for uma composição sem tag
-				if (aItem instanceof CompItem && aItem.comment == '') {
-					aItem.comment = 'EXPORTAR'; // Adiciona a tag 'EXPORTAR' como comentário
-				}
-			}
-		}
-
-		deleteProjectFolders(); // Deleta as pastas existentes
-		populateProjectFolders(); // Cria as pastas novas e organiza os itens
-		deleteEmptyProjectFolders(); // Deleta as pastas vazias
-
-		app.endUndoGroup();
-	};
-
-	uiObj.buscar.leftClick.onClick = function () {
-		findDialog();
-	};
-
-	uiObj.buscar.rightClick.onClick = function () {
-		pathSearchDialog();
-	};
-
-	uiObj.organizar.rightClick.onClick = function () {
-		app.beginUndoGroup('criar pastas do projeto');
-
-		projectTemplateFolders(); // cria a estrutura de pastas do projeto
-
-		app.endUndoGroup();
-	};
-
-	uiObj.links.leftClick.onClick = function () {
-		if (!netAccess()) {
-			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à internet.
-		}
-		var apontamento =
-			'"https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i"';
-
-		openWebSite(apontamento);
 	};
 }
 
@@ -451,44 +424,47 @@ function changeIcon(imageIndex, imagesGrp) {
 	}
 }
 
-// Recebe uma lista de produções 'prodDataArray' e um grupo de imagens 'imagesGrp'
-// Popula o grupo de imagens com os ícones das produções
-function populateMainIcons(imagesGrp) {
+// Popula o grupo de ícones das produções (um ícone por produção, só o selecionado fica visível).
+// Clique duplo no ícone abre o editor da lista de produções.
+function populateMainIcons(uiObj) {
+	var imagesGrp = uiObj.prodIconGrp;
+
 	while (imagesGrp.children.length > 0) {
 		imagesGrp.remove(imagesGrp.children[0]);
 	}
 
+	var selected = uiObj.prodDrop.selection == null ? 0 : uiObj.prodDrop.selection.index;
+
 	for (var i = 0; i < PAD_prodArray.length; i++) {
 		var newIcon = imagesGrp.add('image', undefined, undefined);
+
 		try {
 			newIcon.image = eval(PAD_prodArray[i].icon);
-			//
 		} catch (err) {
-			//Em caso de erro...
 			newIcon.image = defaultProductionDataObj.PRODUCTIONS[0].icon;
 		}
-		newIcon.helpTip = PAD_prodArray[0].name + '\n\n' + dClick + ' para editar a lista de produções';
+		newIcon.helpTip = PAD_prodArray[i].name + '\n\n' + dClick + ' para editar a lista de produções';
 		newIcon.preferredSize = [24, 24];
-		newIcon.visible = i == 0;
+		newIcon.visible = i == selected;
 
 		newIcon.addEventListener('click', function (c) {
-			// Verifica se aconteceu um clique duplo (detail == 2).
-			if (c.detail == 2) {
-				padProdFoldersDialog(PAD_prodArray); // Chama a janela de configuração.
-				PAD_ui.prodDrop.removeAll(); // Limpa a lista de produções do menu.
-
-				// atualiza os dados das produções.
-				PAD_prodArray = updateProdData(configFile);
-
-				// Popula a lista de produções do menu
-				populateDropdownList(getProdNames(PAD_prodArray), imagesGrp.parent.children[1]);
-				populateMainIcons(imagesGrp);
-
-				PAD_ui.prodDrop.selection = 0; // Seleciona a primeira produção.
-				imagesGrp.layout.layout(true);
-			}
+			if (c.detail == 2) editProductions(uiObj); // clique duplo
 		});
 	}
+}
+
+// Abre o editor de produções e recarrega o menu e os ícones.
+function editProductions(uiObj) {
+	padProdFoldersDialog(PAD_prodArray);
+
+	PAD_prodArray = updateProdData(configFile);
+
+	uiObj.prodDrop.removeAll();
+	populateDropdownList(getProdNames(PAD_prodArray), uiObj.prodDrop);
+	populateMainIcons(uiObj);
+
+	uiObj.prodDrop.selection = 0; // dispara o onChange, que atualiza a pasta de templates
+	uiObj.prodIconGrp.layout.layout(true);
 }
 
 // Recebe um grupo 'sectionGrp' e um objeto para interação 'uiObj'
@@ -501,110 +477,163 @@ function themeDivider(sectionGrp) {
 	return newDiv;
 }
 
-// Recebe um grupo 'sectionGrp', um objeto 'ctrlProperties'
-function themeIconButton(sectionGrp, ctrlProperties) {
-	var newUiCtrlObj = {};
-	var tipTxt = ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
+// Ícone com estado de hover e cliques esquerdo / direito.
+// leftClick e rightClick são botões invisíveis: quem usa o componente define 'onClick' neles
+// (ex: btn.leftClick.onClick = ...), e o clique na imagem chama 'notify()' do botão certo.
+function themeStackIcon(parentGrp, icon, tipTxt) {
+	var stackIcon = {};
 
-	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
+	if (icon.hover == undefined) icon.hover = icon.normal;
 
-	var btnGroup = sectionGrp.add('group'); // Grupo de botões superior
+	stackIcon.iconGroup = parentGrp.add('group');
+	stackIcon.iconGroup.orientation = 'stack';
 
-	var iconGroup = btnGroup.add('group'); // Grupo de botões superior
-	iconGroup.orientation = 'stack'; // Alinhamento central
+	stackIcon.leftClick = stackIcon.iconGroup.add('button', undefined, '');
+	stackIcon.leftClick.size = [0, 0];
+	stackIcon.leftClick.visible = false;
 
-	newUiCtrlObj.leftClick = iconGroup.add('button', undefined, '');
-	newUiCtrlObj.leftClick.size = [0, 0];
-	newUiCtrlObj.leftClick.visible = false;
+	stackIcon.rightClick = stackIcon.iconGroup.add('button', undefined, '');
+	stackIcon.rightClick.size = [0, 0];
+	stackIcon.rightClick.visible = false;
 
-	newUiCtrlObj.rightClick = iconGroup.add('button', undefined, '');
-	newUiCtrlObj.rightClick.size = [0, 0];
-	newUiCtrlObj.rightClick.visible = false;
+	stackIcon.hoverImg = stackIcon.iconGroup.add('image', undefined, icon.hover);
+	stackIcon.hoverImg.helpTip = tipTxt;
+	stackIcon.hoverImg.visible = false;
 
-	var hoverImg = iconGroup.add('image', undefined, ctrlProperties.icon.hover);
-	hoverImg.helpTip = tipTxt; // Dica de ajuda
-	hoverImg.visible = false;
+	stackIcon.normalImg = stackIcon.iconGroup.add('image', undefined, icon.normal);
+	stackIcon.normalImg.helpTip = tipTxt;
 
-	var normalImg = iconGroup.add('image', undefined, ctrlProperties.icon.normal);
-	normalImg.helpTip = tipTxt; // Dica de ajuda
+	stackIcon.setHover = function (isHover) {
+		stackIcon.hoverImg.visible = isHover;
+		stackIcon.normalImg.visible = !isHover;
+	};
 
-	btnGroup.addEventListener('mouseover', function () {
-		this.children[0].children[3].visible = false;
-		this.children[0].children[2].visible = true;
-	});
+	// botão 0 = esquerdo, botão 2 = direito
+	stackIcon.click = function (c) {
+		if (c.button == 0) stackIcon.leftClick.notify();
+		if (c.button == 2) stackIcon.rightClick.notify();
+	};
 
-	// Ao tirar o mouse de cima
-	btnGroup.addEventListener('mouseout', function () {
-		this.children[0].children[2].visible = false;
-		this.children[0].children[3].visible = true;
-	});
+	stackIcon.hoverImg.addEventListener('click', stackIcon.click);
 
-	hoverImg.addEventListener('click', function (c) {
-		if (c.button == 0) this.parent.children[0].notify();
-		if (c.button == 2) this.parent.children[1].notify();
-	});
-
-	return newUiCtrlObj;
+	return stackIcon;
 }
 
-// Recebe um grupo 'sectionGrp' e um objeto 'ctrlProperties'
-// as propriedades 'ctrlProperties' estão definidas na estrutura da ui 'structureObj'
+// Largura das janelas de busca (textos e caminhos), para que as duas tenham as mesmas dimensões.
+var PAD_SEARCH_UI_WIDTH = 640;
+
+// Cabeçalho padrão das janelas de busca: campo de texto + botão de lupa.
+// 'width' é a largura total disponível. Retorna { grp, edit, btn }.
+function themeSearchHeader(parentGrp, width, tips) {
+	var header = {};
+
+	header.grp = parentGrp.add('group');
+	header.grp.orientation = 'row';
+	header.grp.alignChildren = ['left', 'center'];
+	header.grp.spacing = 8;
+	header.grp.margins = 0;
+
+	header.edit = header.grp.add('edittext', [0, 0, width - 40, 32]); // 40 = lupa (32) + espaçamento (8)
+	header.btn = themeIconButton(header.grp, { icon: PAD_BUSCAR_ICON, tips: tips });
+
+	return header;
+}
+
+// Linha de opções das janelas de busca: retorna o grupo onde entram as opções (themeSearchOption)
+// e o botão de ajuda, sempre no fim da linha.
+function themeSearchOptions(parentGrp) {
+	var options = {};
+
+	options.grp = parentGrp.add('group');
+	options.grp.orientation = 'row';
+	options.grp.alignChildren = ['left', 'center'];
+	options.grp.spacing = 20; // separa um filtro do outro
+	options.grp.margins = 0;
+
+	options.add = function (label, value, tip) {
+		return themeSearchOption(options.grp, label, value, tip);
+	};
+
+	options.addHelp = function (url) {
+		var infoBtn = themeIconButton(options.grp, { icon: PAD_INFO_ICON, tips: [lClick + 'ajuda | DOCS'] });
+
+		infoBtn.leftClick.onClick = function () {
+			openWebSite(url);
+		};
+
+		return infoBtn;
+	};
+
+	return options;
+}
+
+// Checkbox com rótulo clicável. A margem do grupo deixa espaço para o contorno de foco do checkbox
+// (sem ela o contorno azul aparece cortado). Retorna o checkbox.
+function themeSearchOption(parentGrp, label, value, tip) {
+	var optGrp = parentGrp.add('group');
+	optGrp.alignChildren = ['left', 'center'];
+	optGrp.spacing = 2; // rótulo colado ao seu checkbox
+	optGrp.margins = 4;
+
+	var ckb = optGrp.add('checkbox');
+	ckb.value = value;
+	ckb.preferredSize.width = 18; // sem texto o checkbox reserva uma área maior que a caixa
+
+	var lab = optGrp.add('statictext', undefined, label);
+	ckb.helpTip = lab.helpTip = tip || label;
+
+	// clicar no rótulo também marca / desmarca
+	lab.addEventListener('click', function () {
+		ckb.value = !ckb.value;
+		if (ckb.onClick) ckb.onClick();
+	});
+
+	return ckb;
+}
+
+// Botão de ícone (sem rótulo). Usado na ui principal e nas demais janelas.
+function themeIconButton(sectionGrp, ctrlProperties) {
+	var btnGroup = sectionGrp.add('group');
+	var btn = themeStackIcon(btnGroup, ctrlProperties.icon, ctrlProperties.tips.join('\n\n'));
+
+	btn.btnGroup = btnGroup;
+
+	btnGroup.addEventListener('mouseover', function () {
+		btn.setHover(true);
+	});
+	btnGroup.addEventListener('mouseout', function () {
+		btn.setHover(false);
+	});
+
+	return btn;
+}
+
+// Botão de imagem com rótulo (seções da ui principal).
+// As propriedades 'ctrlProperties' estão definidas na estrutura da ui 'structureObj'.
 function themeImageButton(sectionGrp, ctrlProperties) {
-	var newUiCtrlObj = {};
-	var newBtn = (newUiCtrlObj[ctrlProperties.key] = {});
-	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n'); // Dica de ajuda;
+	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n');
+	var btnGroup = sectionGrp.add('group');
+	var btn = themeStackIcon(btnGroup, ctrlProperties.icon, tipTxt);
 
-	if (ctrlProperties.icon.hover == undefined) ctrlProperties.icon.hover = ctrlProperties.icon.normal;
+	btn.btnGroup = btnGroup;
 
-	newBtn.btnGroup = sectionGrp.add('group'); // Grupo de botões superior
+	btn.label = btnGroup.add('statictext', undefined, ctrlProperties.labelTxt, { truncate: 'end' });
+	btn.label.maximumSize = [60, 18];
+	btn.label.helpTip = tipTxt;
+	setFgColor(btn.label, normalColor1);
 
-	newBtn.iconGroup = newBtn.btnGroup.add('group'); // Grupo de botões superior
-	newBtn.iconGroup.orientation = 'stack'; // Alinhamento central
-
-	newBtn.leftClick = newBtn.iconGroup.add('button', undefined, '');
-	newBtn.leftClick.size = [0, 0];
-	newBtn.leftClick.visible = false;
-
-	newBtn.rightClick = newBtn.iconGroup.add('button', undefined, '');
-	newBtn.rightClick.size = [0, 0];
-	newBtn.rightClick.visible = false;
-
-	newBtn.hoverImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.hover);
-	newBtn.hoverImg.helpTip = tipTxt; // Dica de ajuda
-	newBtn.hoverImg.visible = false;
-
-	newBtn.normalImg = newBtn.iconGroup.add('image', undefined, ctrlProperties.icon.normal);
-	newBtn.normalImg.helpTip = tipTxt; // Dica de ajuda
-
-	newBtn.label = newBtn.btnGroup.add('statictext', undefined, ctrlProperties.labelTxt, { truncate: 'end' }); // Texto do botão
-	newBtn.label.maximumSize = [60, 18]; // Dica de ajuda
-	newBtn.label.helpTip = tipTxt; // Dica de ajuda
-
-	setFgColor(newBtn.label, normalColor1); // Cor de destaque do texto
-
-	newBtn.btnGroup.addEventListener('mouseover', function () {
-		setFgColor(this.children[1], highlightColor1);
-		this.children[0].children[3].visible = false;
-		this.children[0].children[2].visible = true;
+	btnGroup.addEventListener('mouseover', function () {
+		setFgColor(btn.label, highlightColor1);
+		btn.setHover(true);
+	});
+	btnGroup.addEventListener('mouseout', function () {
+		setFgColor(btn.label, normalColor1);
+		btn.setHover(false);
 	});
 
-	newBtn.btnGroup.addEventListener('mouseout', function () {
-		setFgColor(this.children[1], normalColor1);
-		this.children[0].children[2].visible = false;
-		this.children[0].children[3].visible = true;
-	});
+	btn.label.addEventListener('click', btn.click);
 
-	newBtn.label.addEventListener('click', function (c) {
-		if (c.button == 0) this.parent.children[0].children[0].notify();
-		if (c.button == 2) this.parent.children[0].children[1].notify();
-	});
-
-	newBtn.hoverImg.addEventListener('click', function (c) {
-		if (c.button == 0) this.parent.children[0].notify();
-		if (c.button == 2) this.parent.children[1].notify();
-	});
-
-	return newBtn;
+	return btn;
 }
 
 function themeButton(sectionGrp, ctrlProperties) {
@@ -696,12 +725,11 @@ function drawThemeButton(button) {
 
 // Função para desenhar o botão personalizado.
 function customDraw() {
-	with (this) {
-		// Refere-se ao próprio botão (this).
-		graphics.drawOSControl(); // Desenha o contorno padrão do botão.
-		graphics.rectPath(0, 0, size[0], size[1]); // Define o caminho de um retângulo no tamanho do botão.
-		graphics.fillPath(fillBrush); // Preenche o retângulo com a cor definida em 'fillBrush'.
-	}
+	var g = this.graphics;
+
+	g.drawOSControl(); // Desenha o contorno padrão do botão.
+	g.rectPath(0, 0, this.size[0], this.size[1]); // Retângulo no tamanho do botão.
+	g.fillPath(this.fillBrush); // Preenche com a cor definida em 'fillBrush'.
 }
 
 function drawRoundedRect(g, brush, width, height, radius, x, y) {

@@ -14,137 +14,189 @@ function PadMakerDialog() {
 	// Título da janela
 	var scriptName = 'EDITOR DE TEMPLATES';
 
-	// Objeto de configuração temporário
-	var tempConfigObj = defaultTemplateConfigObj;
+	// Cópia do objeto de configuração padrão: editar o original alteraria os valores
+	// padrão usados pela ui de templates (ex: output de fallback) até reiniciar o AE.
+	var tempConfigObj = JSON.parse(JSON.stringify(defaultTemplateConfigObj));
 
-	// Adiciona os layers editáveis
+	var TEXT_CASES = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'];
+	var LAYER_METHODS = ['layerName', 'textContent'];
+
+	// Marca usada para não adicionar o mesmo layer duas vezes
+	var LAYER_MARK = 'TEMPLATE LAYER';
+
+	// Quebras de linha do edittext variam entre \r, \n e \r\n conforme o sistema.
+	function normalizeLineBreaks(str) {
+		return String(str).replace(/\r\n|\r/g, '\n');
+	}
+
+	// Primeiro bloco do exemplo (os blocos são separados por linhas vazias).
+	function firstExampleBlock() {
+		return normalizeLineBreaks(exempleText.text).split(/\n{2,}/)[0];
+	}
+
+	// Separador como será salvo: '\n' digitado vira quebra de linha; sem separador ou
+	// com apenas 1 layer editável, o texto inteiro vai para um único layer.
+	function getSeparator() {
+		if (separatorTxt.text == '' || layersMainGrp.children.length < 2) return '---';
+
+		return separatorTxt.text.replace(/\\n|\\r/g, '\n');
+	}
+
+	function applyTextCase(str) {
+		var textCase = TEXT_CASES[caseDrop.selection.index];
+
+		if (textCase == 'upperCase') return str.toUpperCase();
+		if (textCase == 'lowerCase') return str.toLowerCase();
+		if (textCase == 'titleCase') return str.toTitleCase();
+
+		return str;
+	}
+
+	// Mesma regra de nome usada pela ui de templates ao preencher: PREFIXO - INFO 1 INFO 2
+	function updateNamePreview() {
+		var prefix = prefixTxt.text.trim();
+		var info = applyTextCase(firstExampleBlock())
+			.split(getSeparator())
+			.join(' ')
+			.replace(/[\s\-]+/g, ' ')
+			.trim();
+
+		infoText2.text = infoText2.helpTip = (prefix + globalSeparator + info).toUpperCase().replaceSpecialCharacters();
+	}
+
+	function updateSeparatorState() {
+		var hasManyLayers = layersMainGrp.children.length > 1;
+
+		separatorTxt.enabled = hasManyLayers;
+		separatorLab.enabled = hasManyLayers;
+	}
+
+	function refreshLayout() {
+		layersMainGrp.layout.layout(true);
+		outputMainGrp.layout.layout(true);
+		tipsGrp.layout.layout(true);
+		exempleGrp.layout.layout(true);
+		layoutMainGrp2.layout.layout(true);
+		layoutMainGrp3.layout.layout(true);
+		layoutMainGrp4.layout.layout(true);
+		PAD_MAKER_w.layout.layout(true);
+	}
+
+	// Com mais de 4 layers a coluna do meio cresce: as caixas de texto do formulário
+	// acompanham para as colunas continuarem alinhadas.
+	function syncFormHeight(delta) {
+		if (layersMainGrp.children.length <= 4) return;
+
+		tipsText.size.height += delta;
+		exempleText.size.height += delta;
+	}
+
+	// Adiciona os layers selecionados na comp ativa como layers editáveis
 	function addLayers() {
-		// Item selecionado no painel do projeto
 		var aItem = app.project.activeItem;
 
-		if (aItem == null) return; // Aborta se não houver item selecionado
+		if (!(aItem instanceof CompItem) || aItem.selectedLayers.length == 0) {
+			alert(lol + '#PAD_023 - selecione os layers editáveis na comp principal.');
+			return;
+		}
 
-		// Layers selecionados
 		var selLayers = aItem.selectedLayers;
 
-		if (selLayers.length == 0) return; // Aborta se não houver layers selecionados
-
-		// Loop para cada layer selecionado
 		for (var i = 0; i < selLayers.length; i++) {
-			var selLayer = selLayers[i];
+			// Ignora layers que já foram adicionados
+			if (selLayers[i].comment == LAYER_MARK) continue;
 
-			// Ignora layers com o comentário 'TEMPLATE LAYER'
-			if (selLayer.comment == 'TEMPLATE LAYER') continue;
-
-			// Grupo do layer
-			var layerGrp = layersMainGrp.add('group');
-			layerGrp.orientation = 'row';
-			layerGrp.alignChildren = ['left', 'center'];
-			layerGrp.spacing = 10;
-
-			// Rotulo do layer --> '1   Ctrl'
-			var layerLab = layerGrp.add('statictext', undefined, selLayer.index + '   ' + selLayer.name, {
-				selectedLayer: selLayer,
-				truncate: 'end'
-			});
-			layerLab.preferredSize.width = 95;
-			setCtrlHighlight(layerLab, normalColor2, highlightColor1); // Define o texto como link
-
-			// Array com os métodos de preenchimento
-			// Método 'nome' serve para qualquer tipo de layer
-			var layerDrop_array = ['nome'];
-
-			// Método 'conteúdo' serve para layers de texto
-			if (selLayer instanceof TextLayer) layerDrop_array.push('conteúdo');
-
-			// Lista de métodos de preenchimento
-			var layerDrop = layerGrp.add('dropdownlist', undefined, layerDrop_array);
-			// Define o método de preenchimento
-			layerDrop.selection = selLayer instanceof TextLayer ? 1 : 0;
-			layerDrop.preferredSize.width = 90;
-
-			// Botão excluir layer
-			var excludeLayerBtn = new themeIconButton(layerGrp, {
-				icon: PAD_FECHAR_ICON,
-				tips: [lClick + 'remover layer']
-			});
-
-			// Eventos
-			layerLab.addEventListener('mousedown', function () {
-				try {
-					this.properties.selectedLayer.selected = !this.properties.selectedLayer.selected;
-				} catch (err) { }
-			});
-
-			excludeLayerBtn.leftClick.onClick = function () {
-				try {
-					this.parent.parent.parent.children[0].properties.selectedLayer.comment = '';
-				} catch (err) {
-					alert(lol + '#PAD_024 - ' + err.message);
-				}
-
-				if (this.parent.parent.parent.parent.children.length > 4) {
-					tipsText.size.height -= 18;
-					exempleText.size.height -= 18;
-				}
-
-				this.parent.parent.parent.parent.remove(this.parent.parent.parent);
-
-				PAD_MAKER_w.layout.layout(true);
-				layoutMainGrp3.layout.layout(true);
-				layersMainGrp.layout.layout(true);
-
-				separatorTxt.enabled = layersMainGrp.children.length > 1;
-				separatorLab.enabled = layersMainGrp.children.length > 1;
-			};
-			if (layersMainGrp.children.length > 4) {
-				tipsText.size.height += 18;
-				exempleText.size.height += 18;
-			}
-			selLayer.comment = 'TEMPLATE LAYER';
+			addLayerRow(selLayers[i]);
 		}
+
+		updateSeparatorState();
+		updateNamePreview();
+	}
+
+	function addLayerRow(selLayer) {
+		var layerGrp = layersMainGrp.add('group');
+		layerGrp.orientation = 'row';
+		layerGrp.alignChildren = ['left', 'center'];
+		layerGrp.spacing = 10;
+		layerGrp.templateLayer = selLayer;
+
+		// Rotulo do layer --> '1   Ctrl'
+		var layerLab = layerGrp.add('statictext', undefined, selLayer.index + '   ' + selLayer.name, { truncate: 'end' });
+		layerLab.preferredSize.width = 95;
+		layerLab.helpTip = 'clique para selecionar / desselecionar o layer na comp';
+		setCtrlHighlight(layerLab, normalColor2, highlightColor1); // Define o texto como link
+
+		// Método 'nome' serve para qualquer tipo de layer, 'conteúdo' apenas para layers de texto
+		var isText = selLayer instanceof TextLayer;
+		var methods = isText ? ['nome', 'conteúdo'] : ['nome'];
+
+		var layerDrop = layerGrp.add('dropdownlist', undefined, methods);
+		layerDrop.selection = isText ? 1 : 0;
+		layerDrop.preferredSize.width = 90;
+		layerGrp.methodDrop = layerDrop;
+
+		var excludeLayerBtn = new themeIconButton(layerGrp, {
+			icon: PAD_FECHAR_ICON,
+			tips: [lClick + 'remover layer']
+		});
+
+		layerLab.addEventListener('mousedown', function () {
+			try {
+				selLayer.selected = !selLayer.selected;
+			} catch (err) { }
+		});
+
+		excludeLayerBtn.leftClick.onClick = function () {
+			try {
+				selLayer.comment = '';
+			} catch (err) { } // o layer pode ter sido apagado da comp
+
+			syncFormHeight(-18);
+			layersMainGrp.remove(layerGrp);
+
+			updateSeparatorState();
+			updateNamePreview();
+			refreshLayout();
+		};
+
+		syncFormHeight(18);
+		selLayer.comment = LAYER_MARK;
 	}
 
 	// Adiciona uma pasta de output
 	function addOutputFolder() {
-		// Grupo principal da pasta de output
 		var outputGrp = outputMainGrp.add('group');
 		outputGrp.orientation = 'row';
 		outputGrp.alignChildren = ['left', 'center'];
 		outputGrp.spacing = 10;
+		outputGrp.outputPath = '';
 
-		// Rotulo da pasta de output
-		var outputPathLab = outputGrp.add('statictext', [0, 0, 190, 24], 'caminho da pasta...', {
-			outputPath: '~/Desktop',
-			truncate: 'middle'
-		});
-		outputPathLab.helpTip = 'caminho da pasta:';
+		var outputPathLab = outputGrp.add('statictext', [0, 0, 190, 24], 'clique para escolher a pasta...', { truncate: 'middle' });
+		outputPathLab.helpTip = 'caminho da pasta de output';
 		setCtrlHighlight(outputPathLab, normalColor2, highlightColor1); // Define o texto como link
 
-		// Botão excluir pasta de output
 		var excludeOutputBtn = new themeIconButton(outputGrp, {
 			icon: PAD_FECHAR_ICON,
 			tips: [lClick + 'remover output']
 		});
 
-		// Eventos
 		outputPathLab.addEventListener('mousedown', function () {
-			var newOutputFolder = new Folder(this.properties.outputPath);
-			var newOutputPath = newOutputFolder.selectDlg('selecione a pasta de output');
+			var startFolder = new Folder(outputGrp.outputPath || '~/Desktop');
+			var newOutputFolder = startFolder.selectDlg('selecione a pasta de output');
 
-			if (newOutputPath == null) return;
+			if (newOutputFolder == null) return;
 
-			newOutputPath = normalizeNetworkPath(newOutputPath.fsName);
-			this.properties.outputPath = newOutputPath;
-			this.text = newOutputPath;
-			this.helpTip = 'caminho da pasta de output:\n\n' + newOutputPath;
+			outputGrp.outputPath = normalizeNetworkPath(newOutputFolder.fsName);
+			outputPathLab.text = outputGrp.outputPath;
+			outputPathLab.helpTip = 'caminho da pasta de output:\n\n' + outputGrp.outputPath;
 		});
 
 		excludeOutputBtn.leftClick.onClick = function () {
-			if (this.parent.parent.parent.parent.children.length <= 2) return;
+			// mantém pelo menos uma pasta de output (o primeiro filho é o rótulo)
+			if (outputMainGrp.children.length <= 2) return;
 
-			this.parent.parent.parent.parent.remove(this.parent.parent.parent);
-			PAD_MAKER_w.layout.layout(true);
+			outputMainGrp.remove(outputGrp);
+			refreshLayout();
 		};
 	}
 
@@ -153,17 +205,56 @@ function PadMakerDialog() {
 		var templateLayersArray = [];
 
 		for (var i = 0; i < layersMainGrp.children.length; i++) {
-			try {
-				var layerGrp = layersMainGrp.children[i];
-				var methodArray = ['layerName', 'textContent'];
-				var m = layerGrp.children[1].selection.index;
-				var selectedLayer = layerGrp.children[0].properties.selectedLayer;
+			var layerGrp = layersMainGrp.children[i];
 
-				templateLayersArray.push([selectedLayer, methodArray[m]]);
+			try {
+				templateLayersArray.push([layerGrp.templateLayer, LAYER_METHODS[layerGrp.methodDrop.selection.index]]);
 			} catch (err) { }
 		}
 
 		return templateLayersArray;
+	}
+
+	function getOutputPaths() {
+		var paths = [];
+
+		for (var o = 0; o < outputMainGrp.children.length; o++) {
+			if (outputMainGrp.children[o].outputPath) paths.push(outputMainGrp.children[o].outputPath);
+		}
+
+		return paths;
+	}
+
+	// Salva o frame atual da comp ativa como preview e define a comp principal / tempo de referência.
+	function capturePreview() {
+		var tempItem = app.project.activeItem;
+
+		if (!(tempItem instanceof CompItem)) {
+			alert(lol + '#PAD_025 - abra a comp principal do template para capturar o preview.');
+			return;
+		}
+
+		infoText1.text = tempItem.name;
+		infoText1.properties.comp = tempItem;
+		infoText1.properties.ref_time = tempItem.time;
+
+		var tempPreviewName = tempItem.name.toUpperCase().replaceSpecialCharacters().replace(/\s+/g, '_') + '_preview.png';
+
+		try {
+			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
+			if (tempPreviewFile.exists) tempPreviewFile.remove();
+
+			tempItem.saveFrameToPng(tempItem.time, tempPreviewFile);
+
+			// saveFrameToPng grava o arquivo em segundo plano: espera ele aparecer (até ~3 s)
+			for (var w = 0; w < 30 && !tempPreviewFile.exists; w++) {
+				$.sleep(100);
+			}
+
+			if (tempPreviewFile.exists) previewImg.image = tempPreviewFile;
+		} catch (err) { }
+
+		PAD_MAKER_w.layout.layout(true);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -217,8 +308,8 @@ function PadMakerDialog() {
 
 	var instructionsTxt =
 		'limpe o projeto!\nremova tudo o que não for necessário para a comp principal.\n\
-preencha o os dados do formulário.\n\
-posicione a agulha da timeline em um frame de referencia, e capture a imagem de preview do template.\n\
+preencha os dados do formulário.\n\
+posicione a agulha da timeline em um frame de referência, e capture a imagem de preview do template.\n\
 edite os demais parâmetros do projeto.\n\
 selecione os layers editáveis do template, esses layers receberão o texto das informações preenchidas no input.\n\
 caso o texto esteja em uma pre-comp, adicione a propriedade "source text" ao painel "essential graphics" e use um layer de texto na comp principal para controlar o texto.\n\
@@ -392,7 +483,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 
 	var caseDrop_array = ['alta', 'baixa', 'título', 'livre'];
 	var caseDrop = textCaseGrp.add('dropdownlist', undefined, caseDrop_array);
-	caseDrop.selection = 0;
+	caseDrop.selection = Math.max(0, TEXT_CASES.indexOf(tempConfigObj.textCase));
 	caseDrop.preferredSize.width = 90;
 
 	var prefixGrp = projGeneralGrp.add('group', undefined);
@@ -474,8 +565,8 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	importLab.preferredSize.height = 18;
 	setFgColor(importLab, monoColor0);
 
-	var importPathLab = importMainGrp.add('statictext', [0, 0, 230, 24], 'caminho da pasta...', {
-		importPath: tempConfigObj.importPath,
+	var importPathLab = importMainGrp.add('statictext', [0, 0, 230, 24], 'clique para escolher a pasta...', {
+		importPath: '',
 		truncate: 'middle'
 	});
 	importPathLab.helpTip = 'caminho da pasta:';
@@ -597,242 +688,137 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		var templateLayers = getTemplateLayers();
 
 		for (var i = 0; i < templateLayers.length; i++) {
-			templateLayers[i][0].comment = '';
+			try {
+				templateLayers[i][0].comment = '';
+			} catch (err) { }
 		}
 
 		try {
 			tempPreviewFile.remove();
-			//
 		} catch (err) { }
 	};
 
 	PAD_MAKER_w.onShow = function () {
-		var tempItem = app.project.activeItem;
+		capturePreview();
 
-		if (tempItem == null) return;
+		// os layers já selecionados na comp entram automaticamente
+		var aItem = app.project.activeItem;
+		if (aItem instanceof CompItem && aItem.selectedLayers.length > 0) addLayers();
 
-		var tempPreviewName =
-			tempItem.name.toUpperCase().replaceSpecialCharacters().replace(/\s+/g, '_') + '_preview.png';
-
-		infoText1.properties.comp = tempItem;
-		infoText1.properties.ref_time = tempItem.time;
-
-		try {
-			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
-			tempItem.saveFrameToPng(tempItem.time, tempPreviewFile);
-
-			$.sleep(500);
-			previewImg.image = tempPreviewFile;
-			//
-		} catch (err) { }
-
-		addLayers();
 		addOutputFolder();
-
-		separatorTxt.enabled = layersMainGrp.children.length > 1;
-		separatorLab.enabled = layersMainGrp.children.length > 1;
-
-		var prefix = prefixTxt.text.trim().toUpperCase().replaceSpecialCharacters();
-
-		var inputTxt = exempleText.text
-			.split(/\n{2,}/)[0]
-			.replace(/\n|\r/g, ' ')
-			.split(separatorTxt.text)
-			.join(' ')
-			.replaceSpecialCharacters();
-
-		var namePreview = [prefix, '-', inputTxt]
-			.join(' ')
-			.toUpperCase()
-			.replace(/\s+/g, ' ');
-
-		infoText2.text = infoText2.helpTip = namePreview;
-
-		layersMainGrp.layout.layout(true);
-		outputMainGrp.layout.layout(true);
-		tipsGrp.layout.layout(true);
-		exempleGrp.layout.layout(true);
-		layoutMainGrp2.layout.layout(true);
-		layoutMainGrp3.layout.layout(true);
-		layoutMainGrp4.layout.layout(true);
-		PAD_MAKER_w.layout.layout(true);
+		updateSeparatorState();
+		updateNamePreview();
+		refreshLayout();
 	};
 
-	prefixTxt.onChanging = function () {
-		var prefix = this.text.trim().toUpperCase().replaceSpecialCharacters();
-		var inputTxt = exempleText.text
-			.split(/\n{2,}/)[0]
-			.replace(/\n|\r/g, ' ')
-			.split(separatorTxt.text)
-			.join(' ')
-			.replaceSpecialCharacters();
-
-		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
-			.join(' ')
-			.toUpperCase()
-			.replace(/\s+/g, ' ');
-	};
-
-	separatorTxt.onChanging = function () {
-		var prefix = prefixTxt.text.trim().toUpperCase().replaceSpecialCharacters();
-		var inputTxt = exempleText.text
-			.split(/\n{2,}/)[0]
-			.replace(/\n|\r/g, ' ')
-			.split(this.text)
-			.join(' ')
-			.replaceSpecialCharacters();
-
-		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
-			.join(' ')
-			.toUpperCase()
-			.replace(/\s+/g, ' ');
-	};
+	prefixTxt.onChanging = separatorTxt.onChanging = exempleText.onChanging = caseDrop.onChange = updateNamePreview;
 
 	prefixTxt.onChange = function () {
 		this.text = this.text.trim().toUpperCase().replaceSpecialCharacters();
+		updateNamePreview();
 	};
 
-	exempleText.onChanging = function () {
-		var prefix = prefixTxt.text.toUpperCase().replaceSpecialCharacters();
-		var inputTxt = this.text
-			.split(/\n{2,}/)[0]
-			.replace(/\n|\r/g, ' ')
-			.split(separatorTxt.text)
-			.join(' ')
-			.replaceSpecialCharacters();
-
-		infoText2.text = infoText2.helpTip = [prefix, globalSeparator, inputTxt]
-			.join(' ')
-			.toUpperCase()
-			.replace(/\s+/g, ' ');
-	};
-
-	captureBtn.leftClick.onClick = function () {
-		var tempItem = app.project.activeItem;
-
-		if (tempItem == null) return;
-
-		var tempPreviewName =
-			tempItem.name.toUpperCase().replaceSpecialCharacters().replace(/\s+/g, '_') + '_preview.png';
-
-		infoText1.text = tempItem.name;
-
-		infoText1.properties.comp = tempItem;
-		infoText1.properties.ref_time = tempItem.time;
-
-		try {
-			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
-			tempPreviewFile.remove();
-		} catch (err) {
-			alert(lol + '#PAD_025 - ' + err.message);
-		}
-
-		try {
-			tempPreviewFile = new File(tempPath + '/' + tempPreviewName);
-			tempItem.saveFrameToPng(tempItem.time, tempPreviewFile);
-
-			$.sleep(300);
-			previewImg.image = tempPreviewFile;
-		} catch (err) { }
-
-		PAD_MAKER_w.layout.layout(true);
-	};
+	captureBtn.leftClick.onClick = capturePreview;
 
 	selectLayersBtn.leftClick.onClick = function () {
 		addLayers();
-
-		separatorTxt.enabled = layersMainGrp.children.length > 1;
-		separatorLab.enabled = layersMainGrp.children.length > 1;
-
-		tipsGrp.layout.layout(true);
-		exempleGrp.layout.layout(true);
-		layoutMainGrp2.layout.layout(true);
-		layersMainGrp.layout.layout(true);
-		layoutMainGrp3.layout.layout(true);
-		PAD_MAKER_w.layout.layout(true);
+		refreshLayout();
 	};
 
 	importPathLab.addEventListener('mousedown', function () {
-		var newImportFolder = new Folder(this.properties.importPath);
-		var newImportPath = newImportFolder.selectDlg('selecione a pasta de mídias');
+		var startFolder = new Folder(this.properties.importPath || '~/Downloads');
+		var newImportFolder = startFolder.selectDlg('selecione a pasta de mídias');
 
-		if (newImportPath == null) return;
+		if (newImportFolder == null) return;
 
-		newImportPath = normalizeNetworkPath(newImportPath.fsName);
+		var newImportPath = normalizeNetworkPath(newImportFolder.fsName);
 		this.properties.importPath = newImportPath;
 		this.text = newImportPath;
 		this.helpTip = 'caminho da pasta de mídias:\n\n' + newImportPath;
 	});
 
+	// Preenche os layers editáveis com o primeiro bloco do exemplo (sem alterar o exemplo digitado)
 	testBtn.leftClick.onClick = function () {
-		var inputTxt = exempleText.text.split(/\n{2,}/)[0];
-		var txtCase = caseDrop.selection.index;
 		var templateLayers = getTemplateLayers();
-		var separador = separatorTxt.text.replace(/\\n|\\r/g, '\n');
 
-		if (separatorTxt.text == '' || templateLayers.length < 2) separador = '---';
+		if (templateLayers.length == 0) {
+			alert(lol + '#PAD_026 - adicione pelo menos um layer editável para testar.');
+			return;
+		}
 
-		if (txtCase == 0) inputTxt = exempleText.text = inputTxt.toUpperCase();
-		if (txtCase == 1) inputTxt = exempleText.text = inputTxt.toLowerCase();
-		if (txtCase == 2) inputTxt = exempleText.text = inputTxt.toTitleCase();
-
-		var inputArray = inputTxt.split(separador);
-
-		if (templateLayers.length == 0) return;
+		var inputArray = applyTextCase(firstExampleBlock()).split(getSeparator());
 
 		app.beginUndoGroup('PADEIRO - testar preenchimento');
 
-		for (var i = 0; i < templateLayers.length; i++) {
-			var selectedLayer = templateLayers[i][0];
-			var method = templateLayers[i][1];
-			selectedLayer.enabled = i < inputArray.length;
+		try {
+			for (var i = 0; i < templateLayers.length; i++) {
+				var selectedLayer = templateLayers[i][0];
+				var method = templateLayers[i][1];
 
-			if (i > inputArray.length - 1) continue;
+				// layers sem informação correspondente ficam desligados, como no preenchimento real
+				selectedLayer.enabled = i < inputArray.length;
 
-			if (method == 'textContent') {
-				selectedLayer
-					.property('ADBE Text Properties')
-					.property('ADBE Text Document')
-					.setValue(inputArray[i].trim());
+				if (i >= inputArray.length) continue;
+
+				if (method == 'textContent') {
+					selectedLayer.property('ADBE Text Properties').property('ADBE Text Document').setValue(inputArray[i].trim());
+				}
+				if (method == 'layerName') selectedLayer.name = inputArray[i].trim();
 			}
-			if (method == 'layerName') {
-				selectedLayer.name = inputArray[i].trim();
-			}
+		} catch (err) {
+			alert(lol + '#PAD_027 - ' + err.message);
+		} finally {
+			app.endUndoGroup();
 		}
-		app.endUndoGroup();
-		captureBtn.leftClick.notify();
+
+		capturePreview();
 	};
 
 	newOutputBtn.leftClick.onClick = function () {
 		addOutputFolder();
-
-		outputMainGrp.layout.layout(true);
-		layoutMainGrp4.layout.layout(true);
-		PAD_MAKER_w.layout.layout(true);
+		refreshLayout();
 	};
 
 	makeBtn.leftClick.onClick = function () {
-		app.beginUndoGroup('PADEIRO - criar template');
+		var templateComp = infoText1.properties.comp;
+		var configName = configText.text.trim();
+
+		// Validações antes de salvar
+		try {
+			templateComp.name; // a comp pode ter sido apagada
+		} catch (err) {
+			templateComp = null;
+		}
+
+		if (!(templateComp instanceof CompItem)) {
+			alert(lol + '#PAD_028 - comp principal não encontrada.\nabra a comp e clique em "capturar preview".');
+			return;
+		}
+
+		if (configName == '' || configName == defaultTemplateConfigObj.configName) {
+			alert(lol + '#PAD_029 - preencha o nome da configuração.');
+			configText.active = true;
+			return;
+		}
 
 		var templateLayers = getTemplateLayers();
 
-		for (var i = 0; i < templateLayers.length; i++) {
-			templateLayers[i][0].comment = '';
-		}
+		if (templateLayers.length == 0 && !confirm('nenhum layer editável foi adicionado.\no template não terá inputs. continuar?')) return;
 
-		infoText1.properties.comp.comment = 'TEMPLATE';
+		var outputPaths = getOutputPaths();
 
-		tempConfigObj.configName = configText.text;
+		if (outputPaths.length == 0) outputPaths = defaultTemplateConfigObj.outputPath.slice();
+
+		tempConfigObj.configName = configName;
 		tempConfigObj.exemple = exempleText.text;
 		tempConfigObj.tip = tipsText.text;
-		tempConfigObj.compName = infoText1.properties.comp.name;
-		tempConfigObj.prefix = prefixTxt.text;
+		tempConfigObj.compName = templateComp.name;
+		tempConfigObj.prefix = prefixTxt.text.trim();
 		tempConfigObj.refTime = infoText1.properties.ref_time;
-
-		tempConfigObj.separator = separatorTxt.text.replace(/\\n|\\r/g, '\n');
-		if (separatorTxt.text == '' || templateLayers.length < 2) tempConfigObj.separator = '---';
-
-		tempConfigObj.textCase = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'][caseDrop.selection.index];
+		tempConfigObj.separator = getSeparator();
+		tempConfigObj.textCase = TEXT_CASES[caseDrop.selection.index];
+		tempConfigObj.importPath = importPathLab.properties.importPath || defaultTemplateConfigObj.importPath;
+		tempConfigObj.outputPath = outputPaths;
 		tempConfigObj.inputLayers = [];
 
 		for (var b = 0; b < templateLayers.length; b++) {
@@ -844,39 +830,41 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 			} catch (err) { }
 		}
 
-		tempConfigObj.importPath = importPathLab.properties.importPath;
-		tempConfigObj.outputPath = [];
-
-		for (var o = 0; o < outputMainGrp.children.length; o++) {
-			try {
-				var outputGrp = outputMainGrp.children[o];
-				var outputPath = outputGrp.children[0].properties.outputPath;
-				tempConfigObj.outputPath.push(outputPath);
-			} catch (err) { }
-		}
-		var isSaved = app.project.saveWithDialog();
-
-		if (!isSaved) return;
-
-		var currentProj = app.project.file;
-		var currentTemplateFolder = currentProj.parent;
-		var currentProjBase = decodeURI(currentProj.fsName).replace(/\.ae[pt]/, '');
+		app.beginUndoGroup('PADEIRO - criar template');
 
 		try {
-			var configContent = JSON.stringify(tempConfigObj, null, '\t');
-			var templateImg = new File(currentProjBase + '_preview.png');
+			// as marcas dos layers não podem ir para o projeto salvo
+			for (var i = 0; i < templateLayers.length; i++) {
+				templateLayers[i][0].comment = '';
+			}
+			templateComp.comment = 'TEMPLATE';
 
-			tempPreviewFile.copy(templateImg);
-			saveTextFile(configContent, currentProjBase + '_config.json');
+			if (!app.project.saveWithDialog()) {
+				// salvamento cancelado: restaura as marcas para continuar editando
+				for (var r = 0; r < templateLayers.length; r++) {
+					templateLayers[r][0].comment = LAYER_MARK;
+				}
+				return;
+			}
+
+			var currentProj = app.project.file;
+			var currentTemplateFolder = currentProj.parent;
+			var currentProjBase = decodeURI(currentProj.fsName).replace(/\.ae[pt]$/i, '');
+
+			saveTextFile(JSON.stringify(tempConfigObj, null, '\t'), currentProjBase + '_config.json');
+
+			if (tempPreviewFile && tempPreviewFile.exists) {
+				tempPreviewFile.copy(new File(currentProjBase + '_preview.png'));
+				tempPreviewFile.remove();
+			}
+
 			fontCollect(decodeURI(currentTemplateFolder.fsName) + '/FONTS');
-
-			tempPreviewFile.remove();
-
 			openFolder(decodeURI(currentTemplateFolder.fsName));
 		} catch (err) {
-			alert(lol + '#PAD_028 - ' + err.message);
+			alert(lol + '#PAD_030 - ' + err.message);
+		} finally {
+			app.endUndoGroup();
 		}
-		app.endUndoGroup();
 	};
 
 	infoBtn.leftClick.onClick = function () {
