@@ -47,17 +47,16 @@ o padeiro é uma **extensão** do After Effects: um conjunto de painéis que pod
 
 requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
-1. abra a **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
-2. dê dois cliques no instalador do seu sistema:
-   - macOS → `INSTALAR macOS.command`
-   - Windows → `INSTALAR Windows.bat`
-3. **reinicie** o After Effects.
-4. abra os painéis pelo menu `Window` > `Extensions` e acople onde preferir. comece pelo **O PADEIRO** (a barra): os outros abrem pelos botões dela.
+1. habilite o acesso à rede nas preferências do After Effects (veja [abaixo](#habilitando-o-acesso-à-rede)).
+2. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
+3. clique em '*Instalar*' (ou '*Atualizar*', se já estiver instalado).
+4. **reinicie** o After Effects.
+5. abra os painéis pelo menu `Window` > `Extensions` e acople onde preferir. comece pelo **O PADEIRO** (a barra): os outros abrem pelos botões dela.
 
 > 🚩 *obs:*\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
-> • para **atualizar**, rode o instalador de novo e reinicie o After Effects.\
-> • no macOS, se o Finder bloquear o instalador, clique com o botão direito nele e escolha '*Abrir*'.\
+> • para **atualizar**, rode o instalador de novo e reinicie o After Effects. o mesmo instalador também **remove** a extensão.\
+> • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
 > • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
 
 ### habilitando o acesso à rede

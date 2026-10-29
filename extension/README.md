@@ -25,8 +25,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 
 ```text
 O-PADEIRO/
-├─ INSTALAR macOS.command        → dois cliques: instala / atualiza (macOS)
-├─ INSTALAR Windows.bat          → dois cliques: instala / atualiza (Windows)
+├─ INSTALAR O PADEIRO.jsx        → instalador (File > Scripts > Run Script File... no After Effects)
 ├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
@@ -54,7 +53,7 @@ O-PADEIRO/
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores (install-mac.sh, install-win.ps1)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
 ```
 
 <br>
@@ -95,6 +94,8 @@ a **lista de produções** é sempre o `O_PADEIRO_config.json` compartilhado: o 
 ## 📍 desenvolvimento
 
 ### instalar a partir do repositório
+
+para usar, o caminho é o mesmo da equipe: `INSTALAR O PADEIRO.jsx` (cópia da pasta `extension/`, `PlayerDebugMode`, ponteiro da lista compartilhada e remoção da versão antiga). para desenvolver, os scripts de `extension/scripts/` fazem o mesmo pelo terminal:
 
 ```bash
 ./extension/scripts/install-mac.sh
