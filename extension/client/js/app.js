@@ -14,7 +14,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	var call = PAD_BRIDGE.call;
 
-	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-preenchendo-templates';
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/templates.md';
 
 	/* =========================================================
 	   Utilidades

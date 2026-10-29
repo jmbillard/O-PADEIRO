@@ -15,7 +15,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var call = PAD_BRIDGE.call;
 
-	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-acessorista';
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/acessorista.md';
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
 	var MAX_RESULTS = 12; // máximo de atrações exibidas

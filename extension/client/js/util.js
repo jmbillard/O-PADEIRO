@@ -120,5 +120,27 @@
 		}, ms || (kind === 'error' ? 9000 : 4500));
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText };
+	// Menu "⋯" dos painéis: ajuda (a documentação do painel) e recarregar.
+	function bindMenu(menu, docsUrl) {
+		menu.addEventListener('click', function (e) {
+			var btn = e.target.closest('button[data-action]');
+
+			if (!btn) return;
+
+			menu.removeAttribute('open');
+
+			if (btn.dataset.action === 'docs') PAD_BRIDGE.openUrl(docsUrl);
+			if (btn.dataset.action === 'reload') location.reload();
+		});
+
+		document.addEventListener('click', function (e) {
+			if (!menu.contains(e.target)) menu.removeAttribute('open');
+		});
+
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') menu.removeAttribute('open');
+		});
+	}
+
+	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu };
 })();

@@ -15,6 +15,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var call = PAD_BRIDGE.call;
 
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/producoes.md';
 	var ICON_SIZE = 24; // ícone da produção: 24 x 24 px
 
 	var state = {
@@ -621,6 +622,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').addEventListener('click', save);
 		$('btn-import').addEventListener('click', importList);
 		$('btn-export').addEventListener('click', exportList);
+		PAD_UTIL.bindMenu($('app-menu'), DOCS_URL);
+
 		$('btn-reload').addEventListener('click', function () {
 			confirmDiscard(load);
 		});

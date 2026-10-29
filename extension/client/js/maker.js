@@ -15,7 +15,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	var call = PAD_BRIDGE.call;
 
-	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-criando-um-novo-template';
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/criador.md';
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
 	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
@@ -730,9 +730,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('btn-save').addEventListener('click', save);
 		$('btn-reset').addEventListener('click', resetForm);
 		$('btn-retry').addEventListener('click', start);
-		$('btn-help').addEventListener('click', function () {
-			PAD_BRIDGE.openUrl(DOCS_URL);
-		});
+		PAD_UTIL.bindMenu($('app-menu'), DOCS_URL);
 
 		// ao voltar para o painel: atualiza nomes dos layers e tenta de novo se não havia comp
 		window.addEventListener('focus', function () {

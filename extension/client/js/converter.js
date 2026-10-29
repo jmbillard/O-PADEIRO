@@ -15,7 +15,7 @@ pede (botão 'pastas', clique direito).
 
 	var call = PAD_BRIDGE.call;
 
-	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-conversor-de-caminhos';
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/conversor.md';
 		var REQUEST_TTL = 15000; // ms: um pedido da barra feito há pouco vale ao abrir o painel
 
 	var state = { os: 'Mac', seq: 0, lastStamp: 0, timer: null };

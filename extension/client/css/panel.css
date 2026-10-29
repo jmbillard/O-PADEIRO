@@ -2020,3 +2020,9 @@ body.motion-ready .eyebrow {
   opacity: 1;
   transform: rotate(90deg);
 }
+
+/* "⋯" no cabeçalho (criador, produções): só os três pontos, menu abre para baixo à direita */
+.header-menu>summary.icon-button {
+  border-color: transparent;
+  background: transparent;
+}
