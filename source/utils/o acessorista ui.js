@@ -443,7 +443,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.10';
+	var scriptVersion = 'v3.11';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -481,9 +481,9 @@ function pathSearchDialog() {
 
 	options.addHelp(repoURL + '/blob/main/README.md#busca');
 
-	// separa a busca dos resultados
-	var searchDiv = themeDivider(pathW);
-	searchDiv.alignment = ['fill', 'center'];
+	// separa a busca dos resultados: mesma linha (barra de progresso de 1 px) da busca de textos
+	var searchDiv = pathW.add('progressbar', [0, 0, contentWidth, 1], undefined);
+	searchDiv.value = 100;
 
 	var statusTxt = pathW.add('statictext', undefined, '', { truncate: 'end' });
 	statusTxt.preferredSize.width = contentWidth;
