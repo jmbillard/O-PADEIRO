@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v2.0b1';
+	var scriptVersion = 'v2.0b2';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -157,7 +157,11 @@ o script funcionará normalmente, mas você não terá:\n\
 	function PAD_WINDOW(thisObj) {
 		PAD_ui.window = thisObj;
 
-		if (!(thisObj instanceof Panel)) PAD_ui.window = new Window('palette', scriptName + ' ' + scriptVersion); // Cria uma nova janela
+		// Fora de um painel (ex: executado pelo menu File > Scripts), cria uma janela redimensionável
+		if (!(thisObj instanceof Panel)) {
+			PAD_ui.window = new Window('palette', scriptName + ' ' + scriptVersion, undefined, { resizeable: true });
+			PAD_ui.isFloating = true;
+		}
 
 		PAD_BUILD_UI(PAD_mainGrpUiStructure, PAD_ui);
 

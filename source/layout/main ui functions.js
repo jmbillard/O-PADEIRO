@@ -275,6 +275,12 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	setBgColor(uiObj.window, bgColor1);
 
 	uiObj.window.onShow = function () {
+		// janela flutuante: começa no layout horizontal e pode ser reduzida até o modo compacto
+		if (uiObj.isFloating) {
+			uiObj.window.minimumSize = [40, 40];
+			uiObj.window.size = PAD_FLOATING_SIZE;
+		}
+
 		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
 			var btn = uiObj.imageButtonArray[b];
 			if (btn.label) btn.label.preferredSize = btn.label.size;
@@ -284,6 +290,9 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	};
 
 	uiObj.window.onResizing = uiObj.window.onResize = function () {
+		// o PAD_LAYOUT ajusta o tamanho da janela flutuante, o que dispara este evento de novo
+		if (uiObj.isLayouting) return;
+
 		PAD_LAYOUT(uiObj);
 	};
 
@@ -319,9 +328,18 @@ function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
 	if (ctrlProperties.rightClick) btn.rightClick.onClick = ctrlProperties.rightClick;
 }
 
+// Tamanho inicial da janela flutuante (fora de um painel)
+var PAD_FLOATING_SIZE = [640, 80];
+
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
 // Aplica o layout dos controles dependendo das dimensões da janela
 function PAD_LAYOUT(uiObj) {
+	uiObj.isLayouting = true;
+
+	// janela flutuante: guarda o tamanho escolhido pelo usuário (o layout(true) volta a janela
+	// para o tamanho preferido, desfazendo o redimensionamento)
+	var keepSize = uiObj.isFloating ? [uiObj.window.size.width, uiObj.window.size.height] : null;
+
 	var isRow = uiObj.window.size.width > uiObj.window.size.height;
 	var grpOrientation = isRow ? 'row' : 'column';
 	var btnOrientation = isRow ? 'column' : 'row';
@@ -407,7 +425,10 @@ function PAD_LAYOUT(uiObj) {
 	} //Em caso de erro...
 
 	uiObj.window.layout.layout(true);
+	if (keepSize) uiObj.window.size = keepSize;
 	uiObj.window.layout.resize();
+
+	uiObj.isLayouting = false;
 }
 
 function PAD_UI_EVENTS(uiObj) {
