@@ -8,6 +8,7 @@
 		<Extension Id="com.jmbillard.opadeiro.finder" Version="0.1.0" />
 		<Extension Id="com.jmbillard.opadeiro.converter" Version="0.1.0" />
 		<Extension Id="com.jmbillard.opadeiro.productions" Version="0.1.0" />
+		<Extension Id="com.jmbillard.opadeiro.maker" Version="0.1.0" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -169,6 +170,36 @@
 						<MinSize>
 							<Width>320</Width>
 							<Height>320</Height>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- criador de templates -->
+		<Extension Id="com.jmbillard.opadeiro.maker">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/maker.html</MainPath>
+					<ScriptPath>./host/index.jsx</ScriptPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>O PADEIRO criar template</Menu>
+					<Geometry>
+						<Size>
+							<Width>980</Width>
+							<Height>780</Height>
+						</Size>
+						<MinSize>
+							<Width>340</Width>
+							<Height>420</Height>
 						</MinSize>
 					</Geometry>
 				</UI>

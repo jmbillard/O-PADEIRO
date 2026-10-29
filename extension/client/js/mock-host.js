@@ -255,6 +255,59 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { entries: entries, errors: [] };
 		},
 
+		makerReady: function () {
+			if (/nocomp/.test(location.search)) throw new Error('#PAD_031 - abra a comp principal do template antes de criar um novo template.');
+
+			return { ok: true };
+		},
+
+		makerState: function () {
+			if (/nocomp/.test(location.search) && !window.PAD_MOCK_COMP) return { hasComp: false };
+
+			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 102, index: 2, name: 'cargo', isText: true }] };
+		},
+
+		makerCapture: async function () {
+			await wait(delay);
+			window.PAD_MOCK_COMP = true;
+
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 102, index: 2, name: 'cargo', isText: true }, { id: 103, index: 3, name: 'fundo', isText: false }] };
+		},
+
+		makerFonts: async function () {
+			await wait(delay);
+
+			return { fonts: ['Gotham Bold', 'Gotham Book', 'Globo Sans Condensed'] };
+		},
+
+		makerSelection: function () {
+			return { hasComp: true, selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 103, index: 3, name: 'fundo', isText: false }] };
+		},
+
+		makerToggleLayer: function () {
+			return { selected: true };
+		},
+
+		makerLayers: function (a) {
+			return { layers: a.layerIds.map(function (id) { return id === 103 && /missing/.test(location.search) ? null : { id: id, index: id - 100, name: 'layer ' + id, isText: id !== 103 }; }) };
+		},
+
+		makerTest: async function () {
+			await wait(delay);
+
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [] };
+		},
+
+		makerSave: async function (a) {
+			await wait(delay);
+
+			if (/cancel/.test(location.search)) return { messages: [], data: { saved: false } };
+
+			window.PAD_MOCK_SAVED = a;
+
+			return { messages: [], data: { saved: true, path: '/mock/TARJA/TARJA TEMPLATE_config.json', folder: '/mock/TARJA' } };
+		},
+
 		requestConverter: function () {
 			window.PAD_MOCK_CONVERTER = { stamp: Date.now(), path: '/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS' };
 

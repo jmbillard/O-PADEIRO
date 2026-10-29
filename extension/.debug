@@ -25,4 +25,9 @@
 			<Host Name="AEFT" Port="8092" />
 		</HostList>
 	</Extension>
+	<Extension Id="com.jmbillard.opadeiro.maker">
+		<HostList>
+			<Host Name="AEFT" Port="8093" />
+		</HostList>
+	</Extension>
 </ExtensionList>

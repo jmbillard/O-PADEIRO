@@ -1,0 +1,638 @@
+/*
+
+---------------------------------------------------------------
+> CRIAR TEMPLATE
+---------------------------------------------------------------
+
+Mesmo fluxo do criador de templates do script: a comp ativa vira a comp principal, os layers
+selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta escolhida junto de
+'<nome>_config.json', '<nome>_preview.png' e da pasta FONTS.
+
+*/
+
+(function () {
+	'use strict';
+
+	var call = PAD_BRIDGE.call;
+
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-criando-um-novo-template';
+	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
+	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
+
+	var METHODS = [
+		['textContent', 'conteúdo do texto'],
+		['layerName', 'nome do layer']
+	];
+
+	var state = {
+		comp: null, // { id, name, time }
+		layers: [], // { id, index, name, isText, method, missing }
+		outputs: [''],
+		emptyConfirm: null,
+		saving: false,
+		busy: false
+	};
+
+	/* =========================================================
+	   Utilidades
+	   ========================================================= */
+
+	function $(id) {
+		return document.getElementById(id);
+	}
+
+	function el(tag, className, text) {
+		var node = document.createElement(tag);
+
+		if (className) node.className = className;
+		if (text != null) node.textContent = text;
+
+		return node;
+	}
+
+	function svg(paths) {
+		var node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+		node.setAttribute('viewBox', '0 0 24 24');
+
+		paths.forEach(function (d) {
+			var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+			path.setAttribute('d', d);
+			node.appendChild(path);
+		});
+
+		return node;
+	}
+
+	var ICONS = {
+		up: ['m6 14 6-6 6 6'],
+		down: ['m6 10 6 6 6-6'],
+		remove: ['M6 6l12 12M18 6 6 18'],
+		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
+	};
+
+	function miniButton(icon, title, onClick) {
+		var btn = el('button', 'mini-button');
+
+		btn.type = 'button';
+		btn.title = title;
+		btn.setAttribute('aria-label', title);
+		btn.appendChild(svg(ICONS[icon]));
+		btn.addEventListener('click', onClick);
+
+		return btn;
+	}
+
+	var toastTimer = null;
+
+	function toast(kind, text) {
+		var box = $('toast');
+
+		clearTimeout(toastTimer);
+		box.className = 'finder-toast' + (kind ? ' is-' + kind : '');
+		box.textContent = text;
+		box.hidden = false;
+		toastTimer = setTimeout(function () {
+			box.hidden = true;
+		}, kind === 'error' ? 8000 : 4800);
+	}
+
+	function normalizeBreaks(str) {
+		return String(str).replace(/\r\n|\r/g, '\n');
+	}
+
+	// Mesma limpeza de nomes do host (String.replaceSpecialCharacters).
+	function cleanName(str) {
+		return str
+			.normalize('NFD')
+			.replace(/[̀-ͯ]/g, '')
+			.replace(/[^\w\s-]/g, ' ')
+			.replace(/[\s_]+/g, ' ')
+			.trim();
+	}
+
+	function titleCase(str) {
+		return str.toLowerCase().replace(/\s(.)/g, function (m) {
+			return m.toUpperCase();
+		}).replace(/^(.)/, function (m) {
+			return m.toUpperCase();
+		});
+	}
+
+	function formatTime(seconds) {
+		var s = Math.max(0, seconds || 0);
+		var min = Math.floor(s / 60);
+
+		return (min ? min + 'min ' : '') + (s - min * 60).toFixed(2) + 's';
+	}
+
+	/* =========================================================
+	   Formulário (regras do script: separador, caixa, nome final)
+	   ========================================================= */
+
+	// '\n' digitado vira quebra de linha; sem separador ou com menos de 2 layers, o texto inteiro
+	// vai para um único layer ('---', como o script grava).
+	function getSeparator() {
+		var sep = $('f-separator').value;
+
+		if (sep === '' || state.layers.length < 2) return '---';
+
+		return sep.replace(/\\n|\\r/g, '\n');
+	}
+
+	function applyTextCase(str) {
+		var kind = $('f-case').value;
+
+		if (kind === 'upperCase') return str.toUpperCase();
+		if (kind === 'lowerCase') return str.toLowerCase();
+		if (kind === 'titleCase') return titleCase(str);
+
+		return str;
+	}
+
+	function firstExampleBlock() {
+		return normalizeBreaks($('f-example').value).split(/\n{2,}/)[0];
+	}
+
+	// Informações do exemplo, uma por layer (a mesma divisão do teste e do preenchimento).
+	function exampleInputs() {
+		return applyTextCase(firstExampleBlock()).split(getSeparator());
+	}
+
+	function updateNamePreview() {
+		var info = exampleInputs().join(' ').replace(/[\s-]+/g, ' ').trim();
+		var name = cleanName(($('f-prefix').value.trim() + GLOBAL_SEPARATOR + info).toUpperCase());
+		var box = $('name-preview');
+
+		box.textContent = '';
+		box.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));
+		box.appendChild(el('strong', null, name));
+	}
+
+	function updateSeparatorState() {
+		var many = state.layers.length > 1;
+
+		$('f-separator').disabled = !many;
+		$('sep-hint').textContent = many
+			? 'use \\n para uma informação por linha (cada informação vai para um layer).'
+			: 'com 1 layer só, o texto inteiro vai para ele (o separador fica desligado).';
+	}
+
+	/* =========================================================
+	   Layers editáveis
+	   ========================================================= */
+
+	function renderLayers() {
+		var list = $('layers');
+
+		list.textContent = '';
+
+		if (!state.layers.length) {
+			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
+		}
+
+		state.layers.forEach(function (layer, i) {
+			var row = el('div', 'cfg-row' + (layer.missing ? ' is-missing' : ''));
+			var name = el('button', 'maker-layer-name', '#' + layer.index + '  ' + layer.name);
+			var selWrap = el('span', 'select select-large');
+			var select = el('select');
+			var options = layer.isText ? METHODS : [METHODS[1]]; // 'conteúdo' só para layers de texto
+
+			name.type = 'button';
+			name.title = layer.missing ? 'o layer não existe mais na comp' : 'clique para selecionar / desselecionar o layer na comp';
+			name.addEventListener('click', function () {
+				call('makerToggleLayer', { compId: state.comp.id, layerId: layer.id }).catch(function (err) {
+					toast('error', err.message);
+				});
+			});
+
+			options.forEach(function (o) {
+				var option = el('option', null, o[1]);
+
+				option.value = o[0];
+				select.appendChild(option);
+			});
+
+			select.value = layer.method;
+			selWrap.appendChild(select);
+			select.addEventListener('change', function () {
+				layer.method = select.value;
+			});
+
+			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
+			row.appendChild(name);
+			row.appendChild(selWrap);
+
+			var actions = el('span', 'cfg-row-actions');
+			var up = miniButton('up', 'subir', function () {
+				state.layers.splice(i - 1, 0, state.layers.splice(i, 1)[0]);
+				renderLayers();
+			});
+			var down = miniButton('down', 'descer', function () {
+				state.layers.splice(i + 1, 0, state.layers.splice(i, 1)[0]);
+				renderLayers();
+			});
+
+			up.disabled = i === 0;
+			down.disabled = i === state.layers.length - 1;
+			actions.appendChild(up);
+			actions.appendChild(down);
+			actions.appendChild(
+				miniButton('remove', 'remover layer', function () {
+					state.layers.splice(i, 1);
+					renderLayers();
+				})
+			);
+			row.appendChild(actions);
+			list.appendChild(row);
+
+			PAD_DROPDOWN.enhance(select);
+		});
+
+		updateSeparatorState();
+		updateNamePreview();
+	}
+
+	function addLayerInfos(infos) {
+		var added = 0;
+
+		infos.forEach(function (info) {
+			if (state.layers.some(function (l) { return l.id === info.id; })) return;
+
+			state.layers.push({ id: info.id, index: info.index, name: info.name, isText: info.isText, method: info.isText ? 'textContent' : 'layerName', missing: false });
+			added++;
+		});
+
+		renderLayers();
+
+		return added;
+	}
+
+	async function addSelectedLayers() {
+		if (!state.comp) return toast('error', '#PAD_025 - capture o preview com a comp principal aberta primeiro.');
+
+		try {
+			var res = await call('makerSelection', { compId: state.comp.id });
+
+			if (!addLayerInfos(res.selected)) toast(null, 'esses layers já estão na lista.');
+		} catch (err) {
+			toast('error', err.message);
+		}
+	}
+
+	// Nomes e posições mudam na comp: atualiza a lista (e avisa dos layers apagados).
+	async function refreshLayers() {
+		if (!state.comp || !state.layers.length) return;
+
+		try {
+			var res = await call('makerLayers', { compId: state.comp.id, layerIds: state.layers.map(function (l) { return l.id; }) });
+
+			res.layers.forEach(function (info, i) {
+				var layer = state.layers[i];
+
+				layer.missing = !info;
+
+				if (info) {
+					layer.index = info.index;
+					layer.name = info.name;
+				}
+			});
+
+			renderLayers();
+		} catch (err) { }
+	}
+
+	/* =========================================================
+	   Preview / comp principal
+	   ========================================================= */
+
+	function showPreview(path) {
+		var img = $('preview');
+		var card = $('preview-card');
+
+		card.classList.remove('has-image');
+		img.hidden = true;
+
+		if (!path) return;
+
+		img.onload = function () {
+			img.hidden = false;
+			card.classList.add('has-image');
+		};
+		img.onerror = function () {
+			img.hidden = true;
+		};
+		var url = PAD_UTIL.fileUrl(path);
+
+		// o arquivo é reescrito a cada captura: o parâmetro evita a imagem antiga em cache
+		img.src = /^data:/.test(url) ? url : url + '?t=' + Date.now();
+	}
+
+	function showComp() {
+		$('comp-name').textContent = state.comp ? state.comp.name : '—';
+		$('comp-time').textContent = state.comp ? 'tempo de referência: ' + formatTime(state.comp.time) : '';
+	}
+
+	async function loadFonts() {
+		try {
+			var res = await call('makerFonts');
+			var list = $('fonts-list');
+
+			list.textContent = '';
+			res.fonts.forEach(function (name) {
+				var li = el('li', null, name);
+
+				li.title = name;
+				list.appendChild(li);
+			});
+			$('fonts').hidden = res.fonts.length === 0;
+		} catch (err) { }
+	}
+
+	async function capture(silent) {
+		try {
+			var res = await call('makerCapture');
+
+			if (state.comp && state.comp.id !== res.compId && state.layers.length) {
+				state.layers = [];
+				renderLayers();
+				toast(null, 'a comp principal mudou: a lista de layers foi limpa.');
+			}
+
+			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			showComp();
+			showPreview(res.preview);
+			loadFonts();
+
+			return res;
+		} catch (err) {
+			if (!silent) toast('error', err.message);
+
+			throw err;
+		}
+	}
+
+	/* =========================================================
+	   Pastas
+	   ========================================================= */
+
+	async function pickPathInto(input, title) {
+		var picked = PAD_BRIDGE.pickFolder(title, input.value);
+
+		if (!picked) return false;
+
+		try {
+			input.value = (await call('canonicalPath', { path: picked })).path;
+		} catch (err) {
+			input.value = picked;
+		}
+
+		return true;
+	}
+
+	function renderOutputs() {
+		var list = $('outputs');
+
+		list.textContent = '';
+
+		state.outputs.forEach(function (path, i) {
+			var line = el('div', 'cfg-path');
+			var input = el('input', 'cfg-input');
+			var pick = miniButton('folder', 'escolher pasta', async function () {
+				if (await pickPathInto(input, 'Selecione a pasta de output')) state.outputs[i] = input.value;
+			});
+			var remove = miniButton('remove', 'remover output', function () {
+				state.outputs.splice(i, 1);
+				renderOutputs();
+			});
+
+			input.type = 'text';
+			input.value = path;
+			input.placeholder = 'pasta de output';
+			input.spellcheck = false;
+			input.setAttribute('aria-label', 'pasta de output ' + (i + 1));
+			input.addEventListener('input', function () {
+				state.outputs[i] = input.value;
+			});
+
+			remove.disabled = state.outputs.length === 1; // mantém ao menos uma pasta
+			line.appendChild(input);
+			line.appendChild(pick);
+			line.appendChild(remove);
+			list.appendChild(line);
+		});
+	}
+
+	/* =========================================================
+	   Testar e salvar
+	   ========================================================= */
+
+	async function testNow() {
+		if (!state.comp) return toast('error', '#PAD_025 - capture o preview com a comp principal aberta primeiro.');
+		if (!state.layers.length) return toast('error', '#PAD_026 - adicione pelo menos um layer editável para testar.');
+
+		var btn = $('btn-test');
+
+		btn.disabled = true;
+
+		try {
+			var res = await call('makerTest', {
+				compId: state.comp.id,
+				layers: state.layers.map(function (l) {
+					return { id: l.id, method: l.method };
+				}),
+				inputs: exampleInputs()
+			});
+
+			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			showComp();
+			showPreview(res.preview);
+		} catch (err) {
+			toast('error', '#PAD_027 - ' + err.message.replace(/^#PAD_027 - /, ''));
+		} finally {
+			btn.disabled = false;
+		}
+	}
+
+	function buildConfig() {
+		return {
+			configName: $('f-config').value.trim(),
+			exemple: normalizeBreaks($('f-example').value),
+			tip: normalizeBreaks($('f-tip').value),
+			prefix: $('f-prefix').value.trim(),
+			refTime: state.comp ? state.comp.time : 2,
+			separator: getSeparator(),
+			textCase: $('f-case').value,
+			importPath: $('f-import').value.trim(),
+			outputPath: state.outputs
+				.map(function (p) {
+					return p.trim();
+				})
+				.filter(Boolean)
+		};
+	}
+
+	function setHint(text) {
+		$('save-hint').textContent = text || '';
+	}
+
+	async function save() {
+		if (state.saving) return;
+
+		if (!state.comp) return toast('error', '#PAD_028 - comp principal não encontrada: abra a comp e capture o preview.');
+
+		var cfg = buildConfig();
+
+		if (cfg.configName === '' || cfg.configName === DEFAULT_CONFIG_NAME) {
+			$('f-config').focus();
+			return toast('error', '#PAD_029 - preencha o nome da configuração.');
+		}
+
+		// sem layers editáveis o template não terá inputs: pede um segundo clique
+		if (!state.layers.length && !state.emptyConfirm) {
+			setHint('nenhum layer editável: clique de novo para salvar mesmo assim');
+			state.emptyConfirm = setTimeout(function () {
+				state.emptyConfirm = null;
+				setHint('');
+			}, 4500);
+
+			return;
+		}
+
+		clearTimeout(state.emptyConfirm);
+		state.emptyConfirm = null;
+		setHint('');
+
+		state.saving = true;
+		$('btn-save').disabled = true;
+		$('btn-save').textContent = 'Salvando…';
+
+		try {
+			var res = await call('makerSave', {
+				compId: state.comp.id,
+				layers: state.layers.map(function (l) {
+					return { id: l.id, method: l.method };
+				}),
+				config: cfg
+			});
+
+			if (!res.data.saved) {
+				toast(null, 'salvamento cancelado.');
+			} else if (res.messages.length) {
+				toast('error', res.messages.join('\n'));
+			} else {
+				toast('success', 'template salvo: ' + res.data.path);
+			}
+		} catch (err) {
+			toast('error', err.message);
+		} finally {
+			state.saving = false;
+			$('btn-save').disabled = false;
+			$('btn-save').textContent = 'Salvar template';
+		}
+	}
+
+	/* =========================================================
+	   Início
+	   ========================================================= */
+
+	function showForm(hasComp) {
+		$('form').hidden = !hasComp;
+		$('bar').hidden = !hasComp;
+		$('state-nocomp').hidden = hasComp;
+	}
+
+	// Como o script ao abrir: captura o preview, traz os layers já selecionados e deixa um output vazio.
+	async function start() {
+		try {
+			var st = await call('makerState');
+
+			showForm(st.hasComp);
+
+			if (!st.hasComp) return;
+
+			var res = await capture(true);
+
+			addLayerInfos(res.selected);
+		} catch (err) {
+			showForm(false);
+		}
+	}
+
+	function resetForm() {
+		$('f-config').value = '';
+		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
+		$('f-tip').value = '';
+		$('f-prefix').value = 'TARJA';
+		$('f-case').value = 'upperCase';
+		PAD_DROPDOWN.refresh($('f-case'));
+		$('f-separator').value = '\\n';
+		$('f-import').value = '';
+		state.layers = [];
+		state.outputs = [''];
+		state.comp = null;
+		renderLayers();
+		renderOutputs();
+		showComp();
+		showPreview(null);
+		start();
+	}
+
+	function init() {
+		PAD_DROPDOWN.enhance($('f-case'));
+
+		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {
+			$(id).addEventListener('input', updateNamePreview);
+		});
+		$('f-case').addEventListener('change', updateNamePreview);
+		$('f-prefix').addEventListener('change', function () {
+			this.value = cleanName(this.value.trim().toUpperCase());
+			updateNamePreview();
+		});
+		$('f-example').addEventListener('change', function () {
+			this.value = this.value.replace(/[\n\r]{3,}/g, '\n\n');
+		});
+
+		$('btn-capture').addEventListener('click', async function () {
+			this.disabled = true;
+
+			try {
+				await capture(false);
+			} catch (err) { }
+
+			this.disabled = false;
+		});
+		$('btn-layers').addEventListener('click', addSelectedLayers);
+		$('btn-test').addEventListener('click', testNow);
+		$('btn-output').addEventListener('click', function () {
+			state.outputs.push('');
+			renderOutputs();
+
+			var inputs = $('outputs').querySelectorAll('input');
+
+			inputs[inputs.length - 1].focus();
+		});
+		$('pick-import').addEventListener('click', function () {
+			pickPathInto($('f-import'), 'Selecione a pasta de mídias');
+		});
+		$('btn-save').addEventListener('click', save);
+		$('btn-reset').addEventListener('click', resetForm);
+		$('btn-retry').addEventListener('click', start);
+		$('btn-help').addEventListener('click', function () {
+			PAD_BRIDGE.openUrl(DOCS_URL);
+		});
+
+		// ao voltar para o painel: atualiza nomes dos layers e tenta de novo se não havia comp
+		window.addEventListener('focus', function () {
+			if (!state.comp) start();
+			else refreshLayers();
+		});
+
+		renderLayers();
+		renderOutputs();
+		start();
+	}
+
+	init();
+})();

@@ -68,5 +68,20 @@
 		return box;
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader };
+	// Caminho do sistema → URL de arquivo (preview).
+	function fileUrl(path) {
+		if (/^(data|file|https?):/.test(path)) return path;
+
+		var s = String(path).replace(/\\/g, '/');
+		var drive = /^[A-Za-z]:\//.test(s) ? s.slice(0, 2) : '';
+		var rest = drive ? s.slice(2) : s;
+		var encoded = rest.split('/').map(encodeURIComponent).join('/');
+
+		if (s.indexOf('//') === 0) return 'file:' + encoded; // UNC → file://servidor/share/...
+		if (drive) return 'file:///' + drive + encoded;
+
+		return 'file://' + encoded;
+	}
+
+	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl };
 })();

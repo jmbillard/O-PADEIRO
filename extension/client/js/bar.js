@@ -20,6 +20,7 @@ aparecem como "em breve".
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
 	var PRODUCTIONS_PANEL_ID = 'com.jmbillard.opadeiro.productions';
+	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
@@ -164,6 +165,12 @@ aparecem como "em breve".
 			report(await call('createProjectFolders'), 'estrutura de pastas criada.');
 		},
 
+		// criador de templates: precisa da comp principal aberta (a comp ativa)
+		createTemplate: async function () {
+			await call('makerReady');
+			PAD_BRIDGE.openPanel(MAKER_PANEL_ID);
+		},
+
 		// O ACESSORISTA, a busca de caminhos (esquerdo, aba principal), e a busca em layers de texto (direito):
 		// um painel só, que abre na aba pedida
 		searchTexts: async function () {
@@ -199,9 +206,9 @@ aparecem como "em breve".
 				key: 'templates',
 				label: 'Templates',
 				icon: 'templates',
-				tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template (em breve)'],
+				tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
 				left: actions.templates,
-				right: soon('criar template')
+				right: actions.createTemplate
 			},
 			{
 				key: 'fontes',
