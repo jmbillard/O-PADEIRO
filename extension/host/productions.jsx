@@ -42,6 +42,9 @@ function padWriteProductions(file, list) {
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
 	var file = padConfigFile();
+
+	if (!file) throw new Error(padNoSharedListError());
+
 	var clean = padCleanProductions(a.productions);
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {

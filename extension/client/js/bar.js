@@ -380,6 +380,8 @@ aparecem como "em breve".
 			state.productions = list.productions;
 			state.stamp = list.stamp;
 			chosen = (await call('selectedProduction')).name;
+
+			if (list.error) toast('error', list.error, 9000);
 		} catch (err) {
 			toast('error', err.message);
 		}
@@ -407,15 +409,15 @@ aparecem como "em breve".
 
 	// Acompanha mudanças feitas por fora (por exemplo, pelo script ScriptUI).
 	async function watchProduction() {
-		if (document.hidden || !state.productions.length) return;
+		if (document.hidden) return;
 
 		try {
 			var selected = await call('selectedProduction');
 			var name = selected.name;
 			var select = $('production');
 
-			// a lista foi editada (editor, script ou outra pessoa): lê de novo
-			if (selected.stamp && selected.stamp !== state.stamp) return loadProductions();
+			// a lista foi editada (editor, script ou outra pessoa) ou voltou a ficar acessível: lê de novo
+			if (selected.stamp !== state.stamp) return loadProductions();
 
 			if (name && name !== select.value && state.productions.some(function (p) { return p.name === name; })) {
 				select.value = name;

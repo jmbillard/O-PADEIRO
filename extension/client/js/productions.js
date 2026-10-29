@@ -426,11 +426,31 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		info.textContent = '';
 		info.appendChild(el('span', null, res.configPath));
-		info.appendChild(el('span', 'prods-tag' + (res.shared ? '' : ' is-local'), res.shared ? 'compartilhada' : 'cópia local'));
-		info.title = res.shared
-			? res.configPath
-			: 'não encontrei a lista compartilhada (a que fica junto do padeiro na rede): usando uma cópia local. instale a extensão a partir da pasta do padeiro.';
+		info.appendChild(el('span', 'prods-tag' + (res.shared ? '' : ' is-local'), res.shared ? 'compartilhada' : 'inacessível'));
+		info.title = res.shared ? res.configPath : 'a lista compartilhada (junto do padeiro, na rede) não está acessível.';
 		info.hidden = false;
+	}
+
+	// Sem a lista compartilhada não há o que editar: a lista é uma só para a equipe (nada de cópia local).
+	function setAvailable(available) {
+		state.available = available;
+		['btn-new', 'btn-save', 'btn-import', 'btn-export'].forEach(function (id) {
+			$(id).disabled = !available;
+		});
+	}
+
+	function showUnavailable(message) {
+		var list = $('list');
+		var box = el('div', 'prods-unavailable');
+		var retry = el('button', 'button button-primary', 'Tentar de novo');
+
+		retry.type = 'button';
+		retry.addEventListener('click', load);
+		box.appendChild(el('strong', null, 'lista compartilhada inacessível'));
+		box.appendChild(el('span', null, message));
+		box.appendChild(retry);
+		list.textContent = '';
+		list.appendChild(box);
 	}
 
 	/* =========================================================
@@ -441,17 +461,29 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		try {
 			var res = await call('productions', {});
 
+			showFileInfo(res);
+
+			if (!res.shared) {
+				state.rows = [];
+				state.snapshot = currentSnapshot();
+				setAvailable(false);
+				updateDirty();
+				showUnavailable(res.error || '');
+				return;
+			}
+
+			setAvailable(true);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 
-			showFileInfo(res);
-
 			if (res.error) toast('error', 'lista de produções: ' + res.error);
 		} catch (err) {
 			state.rows = [];
+			setAvailable(false);
 			showFileInfo({ configPath: '', shared: false });
-			toast('error', err.message);
+			showUnavailable(err.message);
+			return;
 		}
 
 		render();
@@ -490,7 +522,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	async function save() {
-		if (state.saving) return;
+		if (state.saving || !state.available) return;
 
 		if (!state.rows.length) return toast('error', 'a lista de produções não pode ficar vazia.');
 
@@ -644,6 +676,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 				return true;
 			}
+		});
+
+		// a rede voltou? ao voltar para o painel, tenta ler a lista compartilhada de novo
+		window.addEventListener('focus', function () {
+			if (state.available === false) load();
 		});
 
 		load();

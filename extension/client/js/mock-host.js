@@ -88,9 +88,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				};
 			}
 
+			// ?mock=local: a lista compartilhada não está acessível (rede fora)
+			if (mode === 'local' && !window.PAD_MOCK_NETBACK) {
+				return { configPath: '//servidor/padeiro/O_PADEIRO_config.json', shared: false, stamp: 0, productions: [], error: '#PAD_LISTA - lista de produções compartilhada não encontrada: //servidor/padeiro/O_PADEIRO_config.json. verifique a conexão com a rede (o arquivo fica junto do padeiro).' };
+			}
+
 			return {
 				configPath: '//servidor/padeiro/O_PADEIRO_config.json',
-				shared: mode !== 'local',
+				shared: true,
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
@@ -110,6 +115,21 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			window.PAD_MOCK_LIST.stamp += 1000;
 
 			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+		},
+
+		templateLists: function (a) {
+			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
+
+			return all[a.production] || { favorites: [], recents: [] };
+		},
+
+		saveTemplateLists: function (a) {
+			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
+
+			all[a.production] = { favorites: a.favorites, recents: a.recents };
+			sessionStorage.setItem('mock.templateLists', JSON.stringify(all));
+
+			return { ok: true };
 		},
 
 		readProductionsFile: function () {
@@ -355,7 +375,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		selectedProduction: function () {
-			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA', stamp: window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.stamp : 1000 };
+			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA', stamp: mode === 'local' && !window.PAD_MOCK_NETBACK ? 0 : window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.stamp : 1000 };
 		},
 
 		listDir: async function (a) {

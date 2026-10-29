@@ -85,8 +85,8 @@ body.prods-page {
 }
 
 .prods-tag.is-local {
-  background: var(--waiting-bg);
-  color: var(--waiting);
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .prods-list {
@@ -338,4 +338,27 @@ body.prods-page {
 .prods-filter .picker-clear {
   width: 24px;
   height: 24px;
+}
+
+/* lista compartilhada inacessível */
+.prods-unavailable {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.prods-unavailable strong {
+  color: var(--danger);
+  font-size: 1rem;
+}
+
+.prods-unavailable .button {
+  margin-top: 10px;
 }

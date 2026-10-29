@@ -98,7 +98,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	var state = {
-		configPath: '',
 		productions: [],
 		production: 0,
 		loading: false,
@@ -166,10 +165,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// compartilhado e o painel acompanha (host: PADX.selectedProduction).
 	async function loadProductions() {
 		try {
-			var res = await call('productions', { configPath: state.configPath });
+			var res = await call('productions', {});
 
 			state.productions = res.productions;
 			state.listStamp = res.stamp;
+			state.listError = res.shared ? '' : res.error;
 
 			if (res.error) pickerMessage('error', 'lista de produções: ' + res.error);
 		} catch (err) {
@@ -208,6 +208,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			state.listStamp = res.stamp;
 			state.productions = res.productions;
+			state.listError = res.shared ? '' : res.error;
 		} catch (err) {
 			return;
 		}
@@ -301,6 +302,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var loadId = ++state.loadId;
 
+		await loadLists();
+
 		try {
 			var res = await readTemplateTree(
 				prod.templatesPath,
@@ -350,29 +353,48 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	/* =========================================================
-	   Fixados e recentes (por produção, só neste computador)
+	   Fixados e recentes (por produção, só neste computador:
+	   'O PADEIRO script/temp/template_lists.json', gravado pelo host)
 	   ========================================================= */
 
 	var MAX_RECENTS = 5;
 
-	function prodKey(kind) {
+	function productionName() {
 		var prod = state.productions[state.production];
 
-		return kind + '.' + (prod ? prod.name : '');
+		return prod ? prod.name : '';
+	}
+
+	async function loadLists() {
+		var name = productionName();
+
+		state.lists = { favorites: [], recents: [] };
+
+		if (!name) return;
+
+		try {
+			var res = await call('templateLists', { production: name });
+
+			if (name === productionName()) state.lists = { favorites: res.favorites, recents: res.recents };
+		} catch (err) { }
 	}
 
 	function readList(kind) {
-		try {
-			var list = JSON.parse(store.get(prodKey(kind)) || '[]');
-
-			return Array.isArray(list) ? list : [];
-		} catch (err) {
-			return [];
-		}
+		return (state.lists && state.lists[kind]) || [];
 	}
 
 	function writeList(kind, list) {
-		store.set(prodKey(kind), JSON.stringify(list));
+		var name = productionName();
+
+		if (!state.lists) state.lists = { favorites: [], recents: [] };
+
+		state.lists[kind] = list;
+
+		if (!name) return;
+
+		call('saveTemplateLists', { production: name, favorites: state.lists.favorites, recents: state.lists.recents }).catch(function (err) {
+			pickerMessage('error', 'não foi possível gravar fixados / recentes: ' + err.message);
+		});
 	}
 
 	function isFavorite(uri) {
@@ -692,7 +714,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		if (state.treeStatus === 'empty' || !state.tree) {
-			list.appendChild(treeState('nenhum template encontrado', state.productions.length ? state.templatesPath : 'a lista de produções está vazia'));
+			list.appendChild(treeState('nenhum template encontrado', state.productions.length ? state.templatesPath : state.listError ? 'a lista de produções compartilhada está inacessível: o painel tenta de novo sozinho' : 'a lista de produções está vazia'));
 			return;
 		}
 

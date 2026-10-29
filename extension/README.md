@@ -63,7 +63,7 @@ o mesmo vocabulário em todos os painéis:
 | `Ctrl/Cmd+Enter` | preenche (painel de templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
-- **templates:** `←` `→` fecham e abrem as pastas; digitar com a lista em foco leva as letras para a busca. a ★ fixa o template no topo (**fixados**) e os últimos usados aparecem em **recentes**, por produção e só neste computador;
+- **templates:** `←` `→` fecham e abrem as pastas; digitar com a lista em foco leva as letras para a busca. a ★ fixa o template no topo (**fixados**) e os últimos usados aparecem em **recentes**, por produção. essas duas listas são de cada máquina: ficam em `O PADEIRO script/temp/template_lists.json`, na pasta de dados do usuário;
 - **barra:** `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito;
 - **dropdowns:** com a lista aberta, digite para filtrar (útil com muitas produções);
 - **conversor:** cole um caminho em qualquer lugar do painel: o tipo é reconhecido e o outro lado é convertido;
@@ -87,7 +87,7 @@ powershell -ExecutionPolicy Bypass -File extension\scripts\install-win.ps1
 
 reinicie o After Effects e abra `Window` > `Extensions` > `O PADEIRO`.
 
-> 📍 **lista de produções compartilhada:** instale a extensão **a partir da pasta do padeiro na rede**, com a pasta `extension/` ao lado do `O_PADEIRO_config.json`. o instalador grava o caminho desse arquivo (`O PADEIRO script/shared_config.txt`, na pasta de dados do usuário), então a extensão usa a mesma lista do script mesmo rodando de uma cópia local. sem ele, ela usa uma cópia local da lista.
+> 📍 **lista de produções compartilhada:** instale a extensão **a partir da pasta do padeiro na rede**, com a pasta `extension/` ao lado do `O_PADEIRO_config.json`. o instalador grava o caminho desse arquivo (`O PADEIRO script/shared_config.txt`, na pasta de dados do usuário), então a extensão usa a mesma lista do script mesmo rodando de uma cópia local. **não existe cópia local da lista:** se o arquivo compartilhado não estiver acessível (rede fora), a barra e os painéis avisam e voltam a ler sozinhos quando a rede voltar; o editor de produções fica bloqueado até lá.
 
 > 🚩 *obs:*\
 > • sem assinatura (`.zxp`), o CEP só carrega extensões com o `PlayerDebugMode` ligado, o que os scripts acima fazem.\

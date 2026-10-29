@@ -108,6 +108,21 @@ function padSortProductions(list) {
 // do 'O_PADEIRO_SOURCE.jsxbin', ao lado da pasta da extensão. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
 //   2. o arquivo na pasta que contém a pasta da extensão.
+// Caminho esperado da lista compartilhada: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
+function padSharedConfigPath() {
+	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
+
+	if (pointer.exists) {
+		try {
+			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
+
+			if (path != '') return path;
+		} catch (err) { }
+	}
+
+	return new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json';
+}
+
 function padSharedConfigFile() {
 	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
 
@@ -124,24 +139,14 @@ function padSharedConfigFile() {
 	return sibling.exists ? sibling : null;
 }
 
-// Arquivo da lista de produções: o compartilhado; sem ele (ex: instalação fora da rede), uma cópia local
-// criada a partir da lista que acompanha a extensão.
-function padConfigFile(customPath) {
-	if (customPath) return new File(customPath);
+// Arquivo da lista de produções: sempre o compartilhado na rede (todos usam a lista mais atual).
+// Sem ele não há lista: nada de cópia local, que ficaria desatualizada.
+function padConfigFile() {
+	return padSharedConfigFile();
+}
 
-	var shared = padSharedConfigFile();
-
-	if (shared) return shared;
-
-	var configFile = new File(scriptPreferencesPath + '/O_PADEIRO_config.json');
-
-	if (!configFile.exists) {
-		var bundled = new File(PADX_HOST_PATH + '/data/O_PADEIRO_config.json');
-
-		if (bundled.exists) bundled.copy(configFile.fsName);
-	}
-
-	return configFile;
+function padNoSharedListError() {
+	return '#PAD_LISTA - lista de produções compartilhada não encontrada: ' + padSharedConfigPath() + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
 // Config do template: o que está no arquivo + o que falta, do padrão.
@@ -216,10 +221,12 @@ PADX.ping = function () {
 };
 
 // Lista de produções (nome, pasta de templates e ícone).
-PADX.productions = function (a) {
-	var configFile = padConfigFile(a.configPath);
+PADX.productions = function () {
+	var configFile = padConfigFile();
 	var list;
 	var error = null;
+
+	if (!configFile) return { configPath: padSharedConfigPath(), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
 		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
@@ -240,7 +247,7 @@ PADX.productions = function (a) {
 
 	return {
 		configPath: configFile.fsName,
-		shared: padSharedConfigFile() != null,
+		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
 		error: error
@@ -251,7 +258,7 @@ PADX.productions = function (a) {
 PADX.selectedProduction = function () {
 	var file = new File(scriptPreferencesPath + '/selected_production.json');
 	var list = padConfigFile();
-	var stamp = list.exists ? list.modified.getTime() : 0; // a lista mudou (editor, script ou outra pessoa)?
+	var stamp = list && list.exists ? list.modified.getTime() : 0; // a lista mudou (editor, script ou outra pessoa)?
 	var name = null;
 
 	if (file.exists) {
@@ -268,6 +275,43 @@ PADX.setProduction = function (a) {
 	saveTextFile(JSON.stringify({ name: a.name }), scriptPreferencesPath + '/selected_production.json');
 
 	return { name: a.name };
+};
+
+// Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp local
+// ({ "<produção>": { favorites: [uri], recents: [uri] } }). A lista de produções é que é compartilhada.
+function padTemplateListsFile() {
+	return new File(tempPath + '/template_lists.json');
+}
+
+function padReadTemplateLists() {
+	var file = padTemplateListsFile();
+
+	if (!file.exists) return {};
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data && typeof data == 'object' ? data : {};
+	} catch (err) {
+		return {};
+	}
+}
+
+// a: { production }
+PADX.templateLists = function (a) {
+	var item = padReadTemplateLists()[a.production] || {};
+
+	return { favorites: item.favorites || [], recents: item.recents || [] };
+};
+
+// a: { production, favorites, recents }
+PADX.saveTemplateLists = function (a) {
+	var all = padReadTemplateLists();
+
+	all[a.production] = { favorites: a.favorites || [], recents: a.recents || [] };
+	saveTextFile(JSON.stringify(all, null, '\t'), padTemplateListsFile().fsName);
+
+	return { ok: true };
 };
 
 PADX.openFolder = function (a) {
