@@ -111,7 +111,8 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 
 > 🚩 *obs:*\
 > • o formulário mostra o nome final da comp com o exemplo e confere tudo antes de salvar.\
-> • chaves do arquivo que o formulário não conhece são preservadas.
+> • chaves do arquivo que o formulário não conhece são preservadas.\
+> • ao salvar, o aviso aparece acima do input (no mesmo lugar do aviso das fontes), com o caminho do arquivo relativo à pasta de templates.
 
 <br>
 

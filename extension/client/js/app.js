@@ -944,7 +944,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				closeEditor();
 				showTemplate(state.info);
 				clearNotices();
-				notify('success', 'Config salva: ' + res.path);
+
+				// aviso no mesmo lugar do das fontes, com o caminho relativo à pasta de templates
+				var file = String(res.path).split(/[\\/]/).pop();
+				var where = relativeFolder();
+				var text = 'Config salva: ' + (where ? where + ' / ' : '') + file;
+
+				if ($('view-input').hidden) notify('success', text);
+				else showStripNote('success', text);
 			}
 		});
 
@@ -1234,6 +1241,17 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		// o aviso de sucesso fecha sozinho (os outros esperam o ×)
 		if (note.kind === 'success') state.fontsNoteTimer = setTimeout(closeFontsNote, 7000);
+	}
+
+	// Mostra um aviso no lugar do aviso das fontes (acima do input), para o template selecionado.
+	function showStripNote(kind, text) {
+		if (!state.selected) return;
+
+		clearTimeout(state.fontsNoteTimer);
+		state.fontsNote = { uri: state.selected.uri, kind: kind, text: text };
+		renderFontsWarning();
+
+		if (kind === 'success') state.fontsNoteTimer = setTimeout(closeFontsNote, 7000);
 	}
 
 	// Antes de importar o template selecionado: confere de novo (alguém pode ter instalado as fontes).
