@@ -339,24 +339,42 @@ function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
 // Tamanho inicial da janela flutuante (fora de um painel)
 var PAD_FLOATING_SIZE = [640, 80];
 
-// Espera (ms) depois do último evento de redimensionamento para aplicar o layout completo
+// Intervalo (ms) das checagens do tamanho da janela flutuante durante o redimensionamento
 var PAD_FLOATING_LAYOUT_DELAY = 250;
 
-// Agenda o layout completo da janela flutuante para quando o arrasto parar: cada evento de
-// redimensionamento cancela o agendamento anterior. O app.scheduleTask executa o texto no
-// escopo global, então a função fica em $.global.
+// Aplica o layout completo da janela flutuante só quando o redimensionamento terminar.
+// O After Effects não dispara onResizing de forma contínua durante o arrasto (às vezes só no
+// início), então a tarefa agendada compara o tamanho da janela entre uma checagem e outra:
+// se mudou, o usuário ainda está arrastando e a checagem é agendada de novo; se ficou igual,
+// o layout completo é aplicado. O app.scheduleTask executa o texto no escopo global, por isso
+// a função fica em $.global.
 function scheduleFloatingLayout(uiObj) {
-	$.global.PAD_FLOATING_LAYOUT = function () {
-		$.global.PAD_FLOATING_LAYOUT_TASK = null;
+	var g = $.global;
+
+	g.PAD_FLOATING_LAYOUT = function () {
+		g.PAD_FLOATING_LAYOUT_TASK = null;
 
 		try {
+			var size = uiObj.window.size;
+			var last = g.PAD_FLOATING_LAST_SIZE;
+
+			if (!last || last[0] != size.width || last[1] != size.height) {
+				// ainda redimensionando: confere de novo depois do intervalo
+				g.PAD_FLOATING_LAST_SIZE = [size.width, size.height];
+				g.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
+				return;
+			}
+
+			g.PAD_FLOATING_LAST_SIZE = null;
 			PAD_LAYOUT(uiObj);
 		} catch (err) { }
 	};
 
-	if ($.global.PAD_FLOATING_LAYOUT_TASK) app.cancelTask($.global.PAD_FLOATING_LAYOUT_TASK);
+	// já existe uma checagem em andamento: ela mesma acompanha o tamanho até estabilizar
+	if (g.PAD_FLOATING_LAYOUT_TASK) return;
 
-	$.global.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
+	g.PAD_FLOATING_LAST_SIZE = [uiObj.window.size.width, uiObj.window.size.height];
+	g.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
 }
 
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
