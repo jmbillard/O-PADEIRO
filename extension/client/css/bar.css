@@ -436,6 +436,40 @@ body.bar-page {
   }
 }
 
+/* 100% vertical (só cabe uma coluna): rótulo ao lado do ícone, em lista */
+@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
+  .bar-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .bar-btn {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 7px 10px;
+  }
+
+  .bar-btn .bar-label {
+    overflow: hidden;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bar-btn svg {
+    flex: 0 0 auto;
+  }
+
+  .bar-pin {
+    gap: 6px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .bar-btn.is-busy,

@@ -75,11 +75,14 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 
 		// posição: abaixo do botão, ou acima se não couber
 		var rect = trigger.getBoundingClientRect();
+
+		popover.style.maxWidth = window.innerWidth - 16 + 'px'; // nada fora do painel: o CEP corta
+		popover.style.minWidth = Math.min(rect.width, window.innerWidth - 16) + 'px';
+
 		var height = Math.min(popover.offsetHeight, window.innerHeight - 16);
 		var below = window.innerHeight - rect.bottom - 8;
 		var top = below >= height || below >= rect.top ? rect.bottom + 6 : rect.top - height - 6;
 
-		popover.style.minWidth = rect.width + 'px';
 		popover.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - popover.offsetWidth - 8)) + 'px';
 		popover.style.top = Math.max(8, top) + 'px';
 		popover.style.maxHeight = window.innerHeight - 16 + 'px';
