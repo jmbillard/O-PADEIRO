@@ -82,18 +82,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return svg;
 	}
 
-	var toastTimer = null;
-
 	function toast(kind, text, ms) {
-		var box = $('toast');
-
-		clearTimeout(toastTimer);
-		box.className = 'bar-toast' + (kind ? ' is-' + kind : '');
-		box.textContent = text;
-		box.hidden = false;
-		toastTimer = setTimeout(function () {
-			box.hidden = true;
-		}, ms || (kind === 'error' ? 7000 : 4200));
+		PAD_UTIL.toast($('toast'), 'bar-toast', kind, text, ms);
 	}
 
 	/* =========================================================
@@ -462,7 +452,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);
 			}
 		} catch (err) {
-			toast('error', 'sem conexão com o After Effects: ' + err.message);
+			toast('error', err.message);
 			window.addEventListener('focus', function () {
 				location.reload();
 			});

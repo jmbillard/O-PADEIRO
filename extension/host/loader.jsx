@@ -28,7 +28,7 @@ function PADX_hostSignature(folder) {
 function PADX_hostState(hostPath) {
 	var folder = new Folder(hostPath);
 
-	if (!folder.exists) return 'erro: a pasta do padeiro na rede não está acessível (' + hostPath + ')';
+	if (!folder.exists) return 'erro: #PAD_066 - a pasta do padeiro na rede não está acessível (' + hostPath + ')';
 
 	$.global.PADX_PENDING_SIG = PADX_hostSignature(folder);
 
@@ -39,7 +39,7 @@ function PADX_hostState(hostPath) {
 
 // Chamado logo depois de avaliar index.jsx.
 function PADX_hostLoaded() {
-	if (typeof PADX_call != 'function') return 'erro: o host não carregou';
+	if (typeof PADX_call != 'function') return 'erro: #PAD_067 - o host não carregou';
 
 	$.global.PADX_HOST_SIG = $.global.PADX_PENDING_SIG;
 

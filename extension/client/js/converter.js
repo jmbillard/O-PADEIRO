@@ -27,7 +27,7 @@ pede (botão 'pastas', clique direito).
 	function status(text, isError) {
 		var node = $('cv-status');
 
-		node.textContent = text || '';
+		node.textContent = isError ? PAD_UTIL.errorText(text) : text || '';
 		node.classList.toggle('is-error', !!isError);
 	}
 
@@ -180,7 +180,7 @@ pede (botão 'pastas', clique direito).
 		try {
 			var res = await call('lastOutputFolder');
 
-			if (!res.path) return status('a fila de render está vazia.', true);
+			if (!res.path) return status('#PAD_008 - a fila de render está vazia.', true);
 
 			setPath(res.path);
 		} catch (err) {
@@ -259,7 +259,7 @@ pede (botão 'pastas', clique direito).
 		try {
 			state.os = (await call('ping')).os;
 		} catch (err) {
-			status('sem conexão com o After Effects: ' + err.message, true);
+			status(err.message, true);
 		}
 
 		$(state.os === 'Mac' ? 'cv-mac' : 'cv-win').focus();

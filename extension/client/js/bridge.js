@@ -41,11 +41,11 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 
 	async function loadHost() {
 		var host = literal(hostFolder());
-		var state = await evalScript('try{$.evalFile(new File(' + host + '+"/loader.jsx"));PADX_hostState(' + host + ')}catch(e){"erro: "+e}');
+		var state = await evalScript('try{$.evalFile(new File(' + host + '+"/loader.jsx"));PADX_hostState(' + host + ')}catch(e){"erro: #PAD_067 - "+e}');
 
-		if (state === 'load') state = await evalScript('try{$.evalFile(new File(' + host + '+"/index.jsx"));PADX_hostLoaded()}catch(e){"erro: "+e}');
+		if (state === 'load') state = await evalScript('try{$.evalFile(new File(' + host + '+"/index.jsx"));PADX_hostLoaded()}catch(e){"erro: #PAD_067 - "+e}');
 
-		if (state !== 'ok' && state !== 'loaded') throw new Error(String(state).replace(/^erro: /, '') || 'o host do After Effects não carregou');
+		if (state !== 'ok' && state !== 'loaded') throw new Error(String(state).replace(/^erro: /, '') || '#PAD_067 - o host do After Effects não carregou');
 	}
 
 	function ensureHost() {
@@ -71,7 +71,7 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		try {
 			res = JSON.parse(raw);
 		} catch (err) {
-			throw new Error('o host do After Effects não respondeu (' + String(raw).slice(0, 80) + ')');
+			throw new Error('#PAD_068 - o host do After Effects não respondeu (' + String(raw).slice(0, 80) + ')');
 		}
 
 		if (!res.ok) throw new Error(res.error);

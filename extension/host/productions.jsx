@@ -12,7 +12,7 @@ Como mais de uma pessoa pode editar, salvar confere se o arquivo mudou desde que
 
 // Valida e normaliza uma lista vinda do painel / de um arquivo importado. Lança Error com a mensagem.
 function padCleanProductions(list) {
-	if (!(list instanceof Array) || list.length == 0) throw new Error('a lista de produções não pode ficar vazia.');
+	if (!(list instanceof Array) || list.length == 0) throw new Error('#PAD_051 - a lista de produções não pode ficar vazia.');
 
 	var seen = {};
 	var clean = [];
@@ -21,9 +21,9 @@ function padCleanProductions(list) {
 		var name = String(list[i].name == null ? '' : list[i].name).replace(/^\s+|\s+$/g, '');
 		var path = String(list[i].templatesPath == null ? '' : list[i].templatesPath).replace(/^\s+|\s+$/g, '');
 
-		if (name == '') throw new Error('produção ' + (i + 1) + ': preencha o nome.');
-		if (path == '') throw new Error('"' + name + '": preencha a pasta de templates.');
-		if (seen[name.toUpperCase()]) throw new Error('"' + name + '": já existe uma produção com esse nome.');
+		if (name == '') throw new Error('#PAD_052 - produção ' + (i + 1) + ': preencha o nome.');
+		if (path == '') throw new Error('#PAD_053 - "' + name + '": preencha a pasta de templates.');
+		if (seen[name.toUpperCase()]) throw new Error('#PAD_054 - "' + name + '": já existe uma produção com esse nome.');
 
 		seen[name.toUpperCase()] = true;
 		clean.push({ name: name, icon: list[i].icon ? String(list[i].icon) : '', templatesPath: path });
@@ -48,7 +48,7 @@ PADX.saveProductions = function (a) {
 	var clean = padCleanProductions(a.productions);
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
-		throw new Error('#PAD_CONFLITO - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
+		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 	}
 
 	// uma cópia da lista anterior, por segurança (lista compartilhada pela equipe)
@@ -61,7 +61,7 @@ PADX.saveProductions = function (a) {
 	try {
 		padWriteProductions(file, clean);
 	} catch (err) {
-		throw new Error('não foi possível gravar a lista: ' + err.message);
+		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
 
 	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, configPath: file.fsName };
@@ -71,14 +71,14 @@ PADX.saveProductions = function (a) {
 PADX.readProductionsFile = function (a) {
 	var file = new File(a.path);
 
-	if (!file.exists) throw new Error('arquivo não encontrado.');
+	if (!file.exists) throw new Error('#PAD_056 - arquivo não encontrado.');
 
 	var data;
 
 	try {
 		data = JSON.parse(readFileContent(file));
 	} catch (err) {
-		throw new Error('o arquivo não é uma lista de produções válida.');
+		throw new Error('#PAD_057 - o arquivo não é uma lista de produções válida.');
 	}
 
 	return { productions: padCleanProductions(data.PRODUCTIONS) };

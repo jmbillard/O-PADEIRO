@@ -122,7 +122,7 @@ PADX.makerToggleLayer = function (a) {
 	var comp = padMakerComp(a.compId);
 	var layer = padLayerById(comp, a.layerId);
 
-	if (!layer) throw new Error('o layer não existe mais na comp.');
+	if (!layer) throw new Error('#PAD_063 - o layer não existe mais na comp.');
 
 	layer.selected = !layer.selected;
 

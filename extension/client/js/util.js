@@ -83,5 +83,42 @@
 		return 'file://' + encoded;
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl };
+	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados.
+	function errorText(text) {
+		text = String(text || '');
+
+		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+	}
+
+	// Aviso flutuante dos painéis (barra, acessorista, produções, criador): texto + botão de fechar.
+	// Some sozinho depois de 'ms' (erros ficam mais tempo).
+	function toast(box, baseClass, kind, text, ms) {
+		clearTimeout(box._timer);
+
+		var close = document.createElement('button');
+		var body = document.createElement('span');
+
+		body.className = 'toast-text';
+		body.textContent = kind === 'error' ? errorText(text) : text;
+		close.type = 'button';
+		close.className = 'toast-close';
+		close.textContent = '×';
+		close.title = 'fechar aviso';
+		close.setAttribute('aria-label', 'fechar aviso');
+		close.addEventListener('click', function () {
+			clearTimeout(box._timer);
+			box.hidden = true;
+		});
+
+		box.className = baseClass + (kind ? ' is-' + kind : '');
+		box.textContent = '';
+		box.appendChild(body);
+		box.appendChild(close);
+		box.hidden = false;
+		box._timer = setTimeout(function () {
+			box.hidden = true;
+		}, ms || (kind === 'error' ? 9000 : 4500));
+	}
+
+	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText };
 })();

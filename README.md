@@ -33,6 +33,7 @@ o padeiro é uma **extensão** do After Effects: um conjunto de painéis que pod
 - [conversor de caminhos](#-conversor-de-caminhos)
 - [outras ferramentas da barra](#-outras-ferramentas-da-barra)
 - [teclado e atalhos](#-teclado-e-atalhos)
+- [códigos de erro](#-códigos-de-erro)
 - [🚨 atenção!](#-atenção)
 - [✨ dicas](#-dicas)
 - [manutenção](#-manutenção)
@@ -505,6 +506,47 @@ o mesmo vocabulário em todos os painéis:
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.
 - **listas suspensas** → com a lista aberta, digite para filtrar (útil com muitas produções).
 - **produções** → `↑` `↓` em um campo vão para o mesmo campo da linha de cima / de baixo.
+
+<br>
+
+---
+
+<br>
+
+## 📍 códigos de erro
+
+todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no ×). use o código para achar a causa:
+
+| código | o que aconteceu |
+| --- | --- |
+| `#PAD_003` `#PAD_004` `#PAD_007` `#PAD_012` `#PAD_PATH_003` | sem acesso à rede: habilite '*Allow Scripts to Write Files and Access Network*' |
+| `#PAD_005` | o projeto não foi preenchido pelo padeiro (instalar fontes depende disso) |
+| `#PAD_006` `#PAD_035` | a pasta `FONTS` do template não existe ou não tem `.ttf` / `.otf` |
+| `#PAD_008` | a fila de render está vazia |
+| `#PAD_009` `#PAD_019` `#PAD_062` | pasta de output (ou caminho) não encontrada |
+| `#PAD_017` | o `_config.json` do template é inválido |
+| `#PAD_018` `#PAD_022` | o arquivo do template não foi encontrado |
+| `#PAD_021` | um layer editável da config não existe no template |
+| `#PAD_023` `#PAD_025` `#PAD_026` `#PAD_028` `#PAD_031` `#PAD_063` | criador de templates: comp principal ou layers editáveis faltando |
+| `#PAD_027` | criador de templates: o teste de preenchimento falhou |
+| `#PAD_029` | criador de templates: falta o nome da configuração |
+| `#PAD_032` `#PAD_033` | renomear: nada selecionado / saídas que não puderam ser renomeadas |
+| `#PAD_034` | algumas fontes não puderam ser copiadas (ex: Adobe Fonts) |
+| `#PAD_036` | organizar: erro ao organizar o projeto |
+| `#PAD_043` | o painel pediu uma ação que o host não conhece (painel e host de versões diferentes: reabra o painel) |
+| `#PAD_044` `#PAD_045` | editor de config: dado inválido / não foi possível gravar o arquivo |
+| `#PAD_046` | o input está vazio |
+| `#PAD_047` `#PAD_048` `#PAD_049` | preenchimento / fila de render fora de ordem (comece de novo) |
+| `#PAD_050` | o projeto está vazio |
+| `#PAD_051` a `#PAD_057` | lista de produções: dado inválido, falha ao gravar ou arquivo de importação inválido |
+| `#PAD_058` | não foi possível baixar o índice de caminhos do acessorista |
+| `#PAD_059` `#PAD_060` `#PAD_069` | busca de textos: a comp ou o layer não existe mais (atualize a busca) |
+| `#PAD_061` | conversor: nenhum caminho informado |
+| `#PAD_064` | a lista de produções compartilhada (na rede) não está acessível |
+| `#PAD_065` | outra pessoa salvou a lista de produções depois que você abriu o editor |
+| `#PAD_066` `#PAD_067` `#PAD_068` | o painel não conseguiu carregar o padeiro da rede |
+| `#PAD_070` `#PAD_071` `#PAD_072` `#PAD_PATH_001` `#PAD_PATH_002` | caminho de rede inválido, volume não montado ou pasta inacessível |
+| `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>
 

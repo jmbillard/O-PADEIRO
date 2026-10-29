@@ -27,11 +27,14 @@ function PADX_call(method, argsJson) {
 	try {
 		var args = argsJson ? JSON.parse(argsJson) : {};
 
-		if (typeof PADX[method] !== 'function') throw new Error('método desconhecido: ' + method);
+		if (typeof PADX[method] !== 'function') throw new Error('#PAD_043 - método desconhecido: ' + method);
 
 		res = { ok: true, data: PADX[method](args) };
 	} catch (err) {
-		res = { ok: false, error: err.message || String(err) };
+		var msg = err.message || String(err);
+
+		// todo erro chega ao painel com um código: os sem código são inesperados
+		res = { ok: false, error: /^#PAD_/.test(msg) ? msg : '#PAD_099 - erro inesperado: ' + msg };
 	}
 
 	return JSON.stringify(res);
@@ -147,7 +150,7 @@ function padConfigFile() {
 }
 
 function padNoSharedListError() {
-	return '#PAD_LISTA - lista de produções compartilhada não encontrada: ' + padSharedConfigPath() + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
+	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padSharedConfigPath() + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
 // Config do template: o que está no arquivo + o que falta, do padrão.
@@ -397,26 +400,26 @@ PADX.saveTemplateConfig = function (a) {
 	var cfg = a.config;
 	var cases = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'];
 
-	if (!cfg || typeof cfg !== 'object') throw new Error('configuração inválida');
-	if (String(cfg.configName).trim() == '') throw new Error('preencha o nome da configuração');
-	if (String(cfg.compName).trim() == '') throw new Error('preencha o nome da comp principal');
-	if (cases.indexOf(cfg.textCase) < 0) throw new Error('tipo de caixa de texto inválido: ' + cfg.textCase);
-	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('tempo de referência inválido');
-	if (!(cfg.inputLayers instanceof Array)) throw new Error('lista de layers inválida');
-	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) throw new Error('informe ao menos uma pasta de output');
+	if (!cfg || typeof cfg !== 'object') throw new Error('#PAD_044 - configuração inválida');
+	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o nome da configuração');
+	if (String(cfg.compName).trim() == '') throw new Error('#PAD_044 - preencha o nome da comp principal');
+	if (cases.indexOf(cfg.textCase) < 0) throw new Error('#PAD_044 - tipo de caixa de texto inválido: ' + cfg.textCase);
+	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
+	if (!(cfg.inputLayers instanceof Array)) throw new Error('#PAD_044 - lista de layers inválida');
+	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) throw new Error('#PAD_044 - informe ao menos uma pasta de output');
 
 	for (var l = 0; l < cfg.inputLayers.length; l++) {
 		var layer = cfg.inputLayers[l];
 
-		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('índice de layer inválido na informação ' + (l + 1));
-		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('método inválido na informação ' + (l + 1));
+		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('#PAD_044 - índice de layer inválido na informação ' + (l + 1));
+		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('#PAD_044 - método inválido na informação ' + (l + 1));
 	}
 
 	// efeito de variações é opcional
 	if (cfg.inputFx == null) {
 		delete cfg.inputFx;
 	} else if (!(cfg.inputFx.options instanceof Array) || cfg.inputFx.options.length == 0 || String(cfg.inputFx.fxName).trim() == '') {
-		throw new Error('efeito de variações incompleto');
+		throw new Error('#PAD_044 - efeito de variações incompleto');
 	}
 
 	var configFile = padTemplateFiles(projectFile).config;
@@ -427,7 +430,7 @@ PADX.saveTemplateConfig = function (a) {
 		// confere o que foi gravado
 		JSON.parse(readFileContent(new File(configFile.fsName)));
 	} catch (err) {
-		throw new Error('não foi possível gravar o arquivo de configuração: ' + err.message);
+		throw new Error('#PAD_045 - não foi possível gravar o arquivo de configuração: ' + err.message);
 	}
 
 	return { path: configFile.fsName };
@@ -581,7 +584,7 @@ PADX.fillBegin = function (a) {
 	var templateData = padReadTemplateConfig(files.config);
 	var text = String(a.text);
 
-	if (text.trim() == '') throw new Error('o texto de input está vazio');
+	if (text.trim() == '') throw new Error('#PAD_046 - o texto de input está vazio');
 
 	// Ajusta a caixa do texto
 	if (templateData.textCase == 'upperCase') text = text.toUpperCase();
@@ -686,7 +689,7 @@ PADX.fillBegin = function (a) {
 PADX.fillStep = function (a) {
 	var run = PADX_run;
 
-	if (!run) throw new Error('nenhum preenchimento em andamento');
+	if (!run) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
 
 	var job = run.jobs[a.index];
 	var templateData = run.templateData;
@@ -790,7 +793,7 @@ PADX.fillStep = function (a) {
 PADX.fillFinish = function () {
 	var run = PADX_run;
 
-	if (!run) throw new Error('nenhum preenchimento em andamento');
+	if (!run) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
 
 	var warnings = [];
 
@@ -860,8 +863,8 @@ PADX.fillFinish = function () {
 PADX.queueBegin = function (a) {
 	var run = PADX_run;
 
-	if (!run) throw new Error('nenhum preenchimento em andamento');
-	if (!a.outputTemplate) throw new Error('selecione um template de output');
+	if (!run) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
+	if (!a.outputTemplate) throw new Error('#PAD_048 - selecione um template de output');
 
 	var warnings = [];
 	var outputs = [];
@@ -889,7 +892,7 @@ PADX.queueBegin = function (a) {
 PADX.queueStep = function (a) {
 	var run = PADX_run;
 
-	if (!run || !run.outputs) throw new Error('fila de render não iniciada');
+	if (!run || !run.outputs) throw new Error('#PAD_049 - fila de render não iniciada');
 
 	return padGroup('O PADEIRO: fila de render', function () {
 		var comp = run.newComps[a.index];
@@ -1015,7 +1018,7 @@ PADX.installFonts = function () {
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }
 PADX.collectFonts = function (a) {
-	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
 		var fontsPath = fontCollect(decodeURI(a.path) + '/FONTS');
@@ -1027,7 +1030,7 @@ PADX.collectFonts = function (a) {
 };
 
 PADX.renameComps = function () {
-	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
 		padGroup('renomear comps', function () {
@@ -1045,7 +1048,7 @@ PADX.renameOutputs = function () {
 };
 
 PADX.organizeProject = function () {
-	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
 		try {

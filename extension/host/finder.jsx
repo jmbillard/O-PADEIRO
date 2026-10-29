@@ -49,7 +49,7 @@ PADX.pathsIndex = function (a) {
 	try {
 		return { index: psBuildIndex(psReadJSON(cacheFile)), downloaded: downloaded, platform: appOs };
 	} catch (err) {
-		throw new Error('não foi possível carregar o índice. verifique a conexão e o workflow.');
+		throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
 	}
 };
 
@@ -135,7 +135,7 @@ PADX.textIndexChunk = function (a) {
 				}
 			}
 		} catch (err) {
-			errors.push('#FND_019 - comp: ' + comp.name + ' · ' + err.message);
+			errors.push('#PAD_069 - comp: ' + comp.name + ' · ' + err.message);
 		}
 	}
 
@@ -148,7 +148,7 @@ PADX.openTextResult = function (a) {
 	var comp = app.project.itemByID(a.compId);
 
 	try {
-		if (!(comp instanceof CompItem)) throw new Error('comp não encontrada');
+		if (!(comp instanceof CompItem)) throw new Error('#PAD_059 - comp não encontrada');
 
 		var t = comp.time;
 
@@ -167,7 +167,7 @@ PADX.openTextResult = function (a) {
 		comp.openInViewer();
 		comp.time = t;
 	} catch (err) {
-		throw new Error('#FND_020 - o item não existe mais. atualize a busca.');
+		throw new Error('#PAD_060 - o item não existe mais. atualize a busca.');
 	}
 
 	return { ok: true };
@@ -234,11 +234,11 @@ PADX.convertPaths = function (a) {
 PADX.openConvertedPath = function (a) {
 	var fldPath = appOs == 'Mac' ? toMacPath(a.text) : toWinPath(a.text);
 
-	if (fldPath == '') throw new Error('informe um caminho.');
+	if (fldPath == '') throw new Error('#PAD_061 - informe um caminho.');
 
 	var folder = nearestExistingFolder(fldPath);
 
-	if (folder == null) throw new Error('pasta não encontrada (o volume / servidor está acessível?)');
+	if (folder == null) throw new Error('#PAD_062 - pasta não encontrada (o volume / servidor está acessível?)');
 
 	var exact = decodeURI(folder.fsName) == decodeURI(new Folder(fldPath).fsName);
 

@@ -75,18 +75,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return btn;
 	}
 
-	var toastTimer = null;
-
 	function toast(kind, text) {
-		var box = $('toast');
-
-		clearTimeout(toastTimer);
-		box.className = 'finder-toast' + (kind ? ' is-' + kind : '');
-		box.textContent = text;
-		box.hidden = false;
-		toastTimer = setTimeout(function () {
-			box.hidden = true;
-		}, kind === 'error' ? 8000 : 4200);
+		PAD_UTIL.toast($('toast'), 'finder-toast', kind, text);
 	}
 
 	/* =========================================================
@@ -477,7 +467,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 
-			if (res.error) toast('error', 'lista de produções: ' + res.error);
+			if (res.error) toast('error', res.error);
 		} catch (err) {
 			state.rows = [];
 			setAvailable(false);
@@ -502,17 +492,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			if (row.name.trim() === '') {
 				row.error = true;
-				problems.push('preencha o nome de todas as produções.');
+				problems.push('#PAD_052 - preencha o nome de todas as produções.');
 			} else if (names[key]) {
 				row.error = true;
-				problems.push('"' + row.name.trim() + '": já existe uma produção com esse nome.');
+				problems.push('#PAD_054 - "' + row.name.trim() + '": já existe uma produção com esse nome.');
 			}
 
 			names[key] = true;
 
 			if (row.path.trim() === '') {
 				row.error = true;
-				problems.push((row.name.trim() ? '"' + row.name.trim() + '": ' : '') + 'preencha a pasta de templates.');
+				problems.push('#PAD_053 - ' + (row.name.trim() ? '"' + row.name.trim() + '": ' : '') + 'preencha a pasta de templates.');
 			}
 		});
 
@@ -524,7 +514,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	async function save() {
 		if (state.saving || !state.available) return;
 
-		if (!state.rows.length) return toast('error', 'a lista de produções não pode ficar vazia.');
+		if (!state.rows.length) return toast('error', '#PAD_051 - a lista de produções não pode ficar vazia.');
 
 		var problems = validate();
 

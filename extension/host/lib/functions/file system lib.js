@@ -264,7 +264,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		// Valida estrutura mínima: //servidor/share
 		if (parts.length < 2) {
-			if (!silent) alert("Caminho UNC inválido: estrutura mínima não encontrada");
+			if (!silent) alert("#PAD_070 - Caminho UNC inválido: estrutura mínima não encontrada");
 			return "";
 		}
 
@@ -291,7 +291,7 @@ function normalizeNetworkPath(pathStr, options) {
 		// Verifica se o volume está montado
 		if (typeof pathExists === "function" && !pathExists(macPath.replace(/^(\/Volumes\/[^\/]+).*$/, "$1"))) {
 			if (!silent && appOs === 'Mac') {
-				alert("O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
+				alert("#PAD_071 - O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
 					"Servidor: " + serverName + "\n" +
 					"Monte o volume antes de continuar.");
 			}
@@ -321,7 +321,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		if (!serverName) {
 			if (!silent) {
-				alert("Share '" + shareName + "' não encontrado no mapeamento.\n" +
+				alert("#PAD_072 - Share '" + shareName + "' não encontrado no mapeamento.\n" +
 					"Usando servidor padrão.");
 			}
 			serverName = "vfx-ml-sp.servicos.corp.tvglobo.com.br";

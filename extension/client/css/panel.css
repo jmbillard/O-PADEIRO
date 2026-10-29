@@ -1972,3 +1972,51 @@ body.motion-ready .eyebrow {
   right: 0;
   left: auto;
 }
+
+/* avisos flutuantes (barra, acessorista, produções, criador): texto + botão de fechar */
+.bar-toast,
+.finder-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bar-toast[hidden],
+.finder-toast[hidden] {
+  display: none;
+}
+
+.toast-text {
+  min-width: 0;
+  flex: 1;
+  white-space: pre-line;
+}
+
+.toast-close {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin: -2px -4px -2px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1;
+  opacity: 0.7;
+  transition:
+    opacity 160ms ease,
+    background-color 160ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.toast-close:hover {
+  background: rgb(0 0 0 / 6%);
+  opacity: 1;
+  transform: rotate(90deg);
+}

@@ -84,18 +84,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		return btn;
 	}
 
-	var toastTimer = null;
-
 	function toast(kind, text) {
-		var box = $('toast');
-
-		clearTimeout(toastTimer);
-		box.className = 'finder-toast' + (kind ? ' is-' + kind : '');
-		box.textContent = text;
-		box.hidden = false;
-		toastTimer = setTimeout(function () {
-			box.hidden = true;
-		}, kind === 'error' ? 8000 : 4800);
+		PAD_UTIL.toast($('toast'), 'finder-toast', kind, text);
 	}
 
 	function normalizeBreaks(str) {
@@ -309,7 +299,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	// Exemplo montado com o que está nos layers agora: o texto (ou o nome, conforme o método) de cada um,
 	// na ordem da lista, unidos pelo separador.
 	async function exampleFromLayers() {
-		if (!state.layers.length) return toast('error', 'adicione os layers editáveis primeiro (“+ layers”).');
+		if (!state.layers.length) return toast('error', '#PAD_026 - adicione os layers editáveis primeiro (“+ layers”).');
 
 		await refreshLayers();
 

@@ -123,7 +123,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Avisos
 	   ========================================================= */
 
+	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados.
+	function errorText(text) {
+		text = String(text || '');
+
+		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+	}
+
 	function notify(kind, text) {
+		if (kind === 'error') text = errorText(text);
+
 		var box = el('div', 'notice is-' + kind);
 		var close = el('button', 'notice-close', '×');
 
@@ -152,6 +161,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (!text) return;
 
+		if (kind === 'error') text = errorText(text);
+
 		var msg = el('p', 'validation-message' + (kind === 'success' ? ' is-success' : ''), text);
 
 		box.appendChild(msg);
@@ -171,7 +182,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			state.listStamp = res.stamp;
 			state.listError = res.shared ? '' : res.error;
 
-			if (res.error) pickerMessage('error', 'lista de produções: ' + res.error);
+			if (res.error) pickerMessage('error', res.error);
 		} catch (err) {
 			state.productions = [];
 			pickerMessage('error', err.message);

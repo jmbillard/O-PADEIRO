@@ -90,7 +90,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			// ?mock=local: a lista compartilhada não está acessível (rede fora)
 			if (mode === 'local' && !window.PAD_MOCK_NETBACK) {
-				return { configPath: '//servidor/padeiro/O_PADEIRO_config.json', shared: false, stamp: 0, productions: [], error: '#PAD_LISTA - lista de produções compartilhada não encontrada: //servidor/padeiro/O_PADEIRO_config.json. verifique a conexão com a rede (o arquivo fica junto do padeiro).' };
+				return { configPath: '//servidor/padeiro/O_PADEIRO_config.json', shared: false, stamp: 0, productions: [], error: '#PAD_064 - lista de produções compartilhada não encontrada: //servidor/padeiro/O_PADEIRO_config.json. verifique a conexão com a rede (o arquivo fica junto do padeiro).' };
 			}
 
 			return {
@@ -107,7 +107,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		saveProductions: async function (a) {
 			await wait(delay);
 
-			if (mode === 'conflict') throw new Error('#PAD_CONFLITO - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
+			if (mode === 'conflict') throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 
 			window.PAD_MOCK_LIST.items = a.productions.slice().sort(function (x, y) {
 				return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;

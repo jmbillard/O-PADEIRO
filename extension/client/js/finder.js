@@ -159,18 +159,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return p.replace(/\//g, '\\');
 	}
 
-	var toastTimer = null;
-
 	function toast(kind, text) {
-		var box = $('toast');
-
-		clearTimeout(toastTimer);
-		box.className = 'finder-toast' + (kind ? ' is-' + kind : '');
-		box.textContent = text;
-		box.hidden = false;
-		toastTimer = setTimeout(function () {
-			box.hidden = true;
-		}, kind === 'error' ? 7000 : 4200);
+		PAD_UTIL.toast($('toast'), 'finder-toast', kind, text);
 	}
 
 	var store = {
