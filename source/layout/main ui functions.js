@@ -573,7 +573,7 @@ function themeSearchOptions(parentGrp) {
 	options.grp = parentGrp.add('group');
 	options.grp.orientation = 'row';
 	options.grp.alignChildren = ['left', 'center'];
-	options.grp.spacing = 12;
+	options.grp.spacing = 20; // separa um filtro do outro
 	options.grp.margins = 0;
 
 	options.add = function (label, value, tip) {
@@ -598,11 +598,12 @@ function themeSearchOptions(parentGrp) {
 function themeSearchOption(parentGrp, label, value, tip) {
 	var optGrp = parentGrp.add('group');
 	optGrp.alignChildren = ['left', 'center'];
-	optGrp.spacing = 4;
+	optGrp.spacing = 2; // rótulo colado ao seu checkbox
 	optGrp.margins = 4;
 
 	var ckb = optGrp.add('checkbox');
 	ckb.value = value;
+	ckb.preferredSize.width = 18; // sem texto o checkbox reserva uma área maior que a caixa
 
 	var lab = optGrp.add('statictext', undefined, label);
 	ckb.helpTip = lab.helpTip = tip || label;
