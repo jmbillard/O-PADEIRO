@@ -299,6 +299,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				state.treeStatus = 'missing';
 			} else {
 				state.tree = res.tree;
+				annotateTrail(res.tree, []);
 				state.treeStatus = countTemplates(res.tree) > 0 ? 'ok' : 'empty';
 			}
 		} catch (err) {
@@ -308,6 +309,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.loading = false;
 		renderTree();
+	}
+
+	// Cada template guarda a trilha de pastas até ele (sem a pasta raiz).
+	function annotateTrail(node, trail) {
+		node.children.forEach(function (child) {
+			if (child.type === 'node') annotateTrail(child, trail.concat(child.text));
+			else child.folderTrail = trail;
+		});
 	}
 
 	function countTemplates(node) {
@@ -498,6 +507,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('queue-actions').hidden = name !== 'input';
 	}
 
+	// Pasta do template relativa à pasta de templates da produção (ex.: 'PROGRAMAS / ENCONTRO').
+	function relativeFolder() {
+		var node = state.selected;
+
+		if (node && node.folderTrail && node.folderTrail.length) return node.folderTrail.join(' / ');
+
+		return state.tree ? state.tree.text : '';
+	}
+
 	function folderName() {
 		var folder = state.info ? state.info.folder : '';
 
@@ -568,13 +586,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function showReadonly(message) {
-		setStage('2 · preencher', null, state.info ? state.info.folder : '');
+		setStage('2 · preencher', null, relativeFolder());
 		$('readonly-message').textContent = message;
 		showView('readonly');
 	}
 
 	function showTemplate(info) {
-		setStage('2 · preencher', info.name, info.folder);
+		setStage('2 · preencher', info.name, relativeFolder());
 
 		if (info.configError) return showReadonly(info.configError);
 		if (!info.hasConfig) return showReadonly('Clique em “importar template” e edite o template manualmente.');
@@ -759,7 +777,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			begin = await call('fillBegin', { uri: state.info.uri, text: text });
 		} catch (err) {
 			setBusy(false);
-			setStage('2 · preencher', null, state.info.folder);
+			setStage('2 · preencher', null, relativeFolder());
 			updateInputCount();
 			notify('error', err.message);
 			return;
