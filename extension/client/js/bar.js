@@ -59,7 +59,7 @@ aparecem como "em breve".
 			// redondo "negativo" mesmo quando a letra ocupa o espaço todo
 			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10" cy="10" r="5.5" /></clipPath></defs>' +
 			'<circle cx="10" cy="10" r="7.2" /><path d="m15.300 15.300 5.200 5.200" />' +
-			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10" y="14.200" text-anchor="middle">A</text></g></g>',
+			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10" y="18.300" text-anchor="middle">A</text></g></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
 
