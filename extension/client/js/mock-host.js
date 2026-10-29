@@ -130,6 +130,89 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [] };
 		},
 
+		requestTab: function (a) {
+			window.PAD_MOCK_TAB = { tab: a.tab, stamp: Date.now() };
+
+			return { tab: a.tab };
+		},
+
+		requestedTab: function () {
+			var req = window.PAD_MOCK_TAB || (/tab=texts/.test(location.search) ? { tab: 'texts', stamp: Date.now() } : { tab: null, stamp: 0 });
+
+			return { tab: req.tab, stamp: req.stamp, now: Date.now() };
+		},
+
+		pathsIndex: async function (a) {
+			await wait(delay * 2);
+
+			function group(name, extra) {
+				var g = Object.assign({ name: name, projetos: [], outputs: [], caminhos: [], server: '', share: '' }, extra);
+
+				g.haystack = [name].concat(g.projetos, g.outputs, g.caminhos).join('|').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9|]/g, '');
+
+				return g;
+			}
+
+			return {
+				downloaded: true,
+				platform: 'Mac',
+				index: [
+					{
+						category: { key: 'atracoes_teams', label: 'TEAMS' },
+						groups: [
+							group('Domingo com Huck', { projetos: ['/Volumes/VFX/projetos/DOMINGO COM HUCK'], outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/HUCK'], caminhos: ['/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/PROGRAMAS/DOMINGO COM HUCK/2026/OUTUBRO/Chamadas'] }),
+							group('Encontro com Patrícia Poeta', { projetos: ['/Volumes/VFX/projetos/ENCONTRO'], outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/ENCONTRO'], caminhos: [] }),
+							group('Fantástico', { projetos: ['/Volumes/VFX/projetos/FANTASTICO'], outputs: [], caminhos: [] })
+						]
+					},
+					{
+						category: { key: 'atracoes_trello', label: 'TRELLO' },
+						groups: [group('Fantástico — pauta de domingo', { caminhos: ['/Volumes/VFX/trello/FANTASTICO/PAUTA DE DOMINGO'] })]
+					},
+					{
+						category: { key: 'servidor', label: 'SERVIDOR' },
+						groups: [group('#INGEST', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST'], server: 'cpp-ml-sp', share: 'PROMO_REDE' }), group('BASES VALENDO', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO'], server: 'cpp-ml-sp', share: 'PROMO_REDE' })]
+					}
+				]
+			};
+		},
+
+		openPath: async function (a) {
+			await wait(150);
+
+			return { messages: a.path.indexOf('INGEST') >= 0 ? ['#PAD_PATH_001 - a pasta não foi encontrada ou não está acessível:\n' + a.path] : [] };
+		},
+
+		textCompList: function () {
+			return { comps: [{ id: 1, name: 'RDP - CONVIDADO' }, { id: 2, name: 'TARJA - JOAO BOSCO' }, { id: 3, name: 'LETTERING AMAZÔNIA' }, { id: 4, name: 'FUNDO' }, { id: 5, name: 'ASSINATURA' }] };
+		},
+
+		textIndexChunk: async function (a) {
+			await wait(delay);
+
+			var all = {
+				1: [{ label: '#2  nome', text: 'Cássio Gabus Mendes\nAtor', enabled: true, refTime: 2 }, { label: '#3  info', text: 'AMAZÔNIA: a floresta que respira', enabled: false, refTime: 2 }],
+				2: [{ label: '#1  nome', text: 'João Bosco', enabled: true, refTime: 1 }, { label: '#2  cargo', text: 'Repórter', enabled: true, refTime: 1 }],
+				3: [{ label: '#1  titulo', text: 'Amazonia Viva', enabled: true, refTime: 3 }],
+				4: [],
+				5: [{ label: '#1  assina', text: 'Globo Repórter — sexta, 22h30', enabled: true, refTime: 0 }]
+			};
+			var names = { 1: 'RDP - CONVIDADO', 2: 'TARJA - JOAO BOSCO', 3: 'LETTERING AMAZÔNIA', 4: 'FUNDO', 5: 'ASSINATURA' };
+			var entries = [];
+
+			a.ids.forEach(function (id) {
+				all[id].forEach(function (e, i) {
+					entries.push(Object.assign({ compId: id, compName: names[id], layerIndex: i + 1 }, e));
+				});
+			});
+
+			return { entries: entries, errors: [] };
+		},
+
+		openTextResult: function () {
+			return { ok: true };
+		},
+
 		selectedProduction: function () {
 			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA' };
 		},

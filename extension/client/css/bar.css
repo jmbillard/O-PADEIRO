@@ -255,15 +255,62 @@ body.bar-page {
 
 /* ---------- animações dos ícones (a cada hover) ---------- */
 
-/* templates, buscar e apontamento: leve giro e zoom */
+/* templates e apontamento: leve giro e zoom */
 .bar-btn[data-icon="templates"]:hover:not(:disabled) svg,
-.bar-btn[data-icon="search"]:hover:not(:disabled) svg,
 .bar-icon:hover:not(:disabled) svg {
   transform: scale(1.1) rotate(-4deg);
 }
 
 .bar-btn svg * {
   transform-box: fill-box;
+}
+
+/* buscar: letras aleatórias passam pelo vidro da lupa */
+.lens-letter {
+  fill: currentcolor;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 8.500px;
+  font-weight: 800;
+  opacity: 0;
+  stroke: none;
+}
+
+.lens-letter.is-passing {
+  animation: lens-pass 620ms linear;
+}
+
+.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search>circle,
+.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search>path {
+  animation: lens-nudge 620ms ease-in-out infinite;
+}
+
+@keyframes lens-pass {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  22%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes lens-nudge {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(.5px, -.5px);
+  }
 }
 
 /* pastas: a frente da pasta se abre */

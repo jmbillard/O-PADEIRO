@@ -17,6 +17,7 @@ aparecem como "em breve".
 	var call = PAD_BRIDGE.call;
 
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
+	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
@@ -53,6 +54,10 @@ aparecem como "em breve".
 			'<g class="anim-type"><rect x="2.5" y="6.5" width="19" height="11" rx="3" />' +
 			'<path class="type-char" d="M6 12h2.4" /><path class="type-char" d="M10.3 12h2.4" /><path class="type-char" d="M14.6 12h2.4" />' +
 			'<path class="type-caret" d="M18.6 9.6v4.8" /></g>',
+		search:
+			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10.5" cy="10.5" r="5.6" /></clipPath></defs>' +
+			'<circle cx="10.5" cy="10.5" r="6.6" /><path d="m15.600 15.600 4.400 4.400" />' +
+			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10.500" y="13.600" text-anchor="middle">A</text></g></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
 
@@ -155,6 +160,19 @@ aparecem como "em breve".
 			report(await call('createProjectFolders'), 'estrutura de pastas criada.');
 		},
 
+		// busca em layers de texto (esquerdo) e O ACESSORISTA, a busca de caminhos (direito):
+		// um painel só, que abre na aba pedida
+		searchTexts: async function () {
+			await call('requestTab', { tab: 'texts' });
+			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
+		},
+
+		searchPaths: async function () {
+			await requireNetwork('PAD_PATH_003');
+			await call('requestTab', { tab: 'paths' });
+			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
+		},
+
 		links: async function () {
 			await requireNetwork('PAD_007');
 			PAD_BRIDGE.openUrl(APONTAMENTO_URL);
@@ -217,10 +235,9 @@ aparecem como "em breve".
 				key: 'buscar',
 				label: 'Buscar',
 				icon: 'search',
-				tips: [L_CLICK + 'abrir a BUSCA em layers de texto (em breve)', R_CLICK + 'abrir a BUSCA de caminhos de atrações (em breve)'],
-				left: soon('busca em layers de texto'),
-				right: soon('busca de caminhos'),
-				soon: true
+				tips: [L_CLICK + 'abrir a BUSCA em layers de texto', R_CLICK + 'abrir a BUSCA de caminhos de atrações (O ACESSORISTA)'],
+				left: actions.searchTexts,
+				right: actions.searchPaths
 			}
 		]
 	];
@@ -252,6 +269,30 @@ aparecem como "em breve".
 		});
 	}
 
+	// Lupa: a cada hover, letras aleatórias passam pelo vidro (uma nova a cada passada).
+	var LENS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#&';
+
+	function bindLensLetters(btn) {
+		var letter = btn.querySelector('.lens-letter');
+		var timer = null;
+
+		function pass() {
+			letter.textContent = LENS_LETTERS.charAt(Math.floor(Math.random() * LENS_LETTERS.length));
+			letter.classList.remove('is-passing');
+			void letter.getBoundingClientRect(); // reinicia a animação
+			letter.classList.add('is-passing');
+		}
+
+		btn.addEventListener('mouseenter', function () {
+			pass();
+			timer = setInterval(pass, 620);
+		});
+
+		btn.addEventListener('mouseleave', function () {
+			clearInterval(timer);
+		});
+	}
+
 	function buildTools() {
 		var tools = $('tools');
 
@@ -271,6 +312,7 @@ aparecem como "em breve".
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
 				bind(btn, def.left, def.right);
+				if (def.icon === 'search') bindLensLetters(btn);
 
 				group.appendChild(btn);
 			});

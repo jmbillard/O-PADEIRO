@@ -32,3 +32,4 @@ cp "$root/O_PADEIRO_config.json" "$root/extension/host/data/O_PADEIRO_config.jso
 echo "ok  O_PADEIRO_config.json (lista inicial de produções)"
 
 python3 "$root/extension/scripts/extract_globals.py"
+python3 "$root/extension/scripts/extract_acessorista.py"

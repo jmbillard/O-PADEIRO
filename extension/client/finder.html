@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O ACESSORISTA</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/loader.css">
+	<link rel="stylesheet" href="css/finder.css">
+</head>
+
+<body class="finder-page">
+	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+		<symbol id="i-search" viewBox="0 0 24 24">
+			<circle cx="11" cy="11" r="6.5" />
+			<path d="m16 16 4 4" />
+		</symbol>
+	</svg>
+
+	<main class="finder" id="finder">
+		<header class="finder-top">
+			<div class="tabs" id="tabs" role="tablist">
+				<span class="tab-pill" id="tab-pill"></span>
+				<button type="button" class="tab" role="tab" id="tab-paths" data-tab="paths" aria-selected="true">CAMINHOS</button>
+				<button type="button" class="tab" role="tab" id="tab-texts" data-tab="texts" aria-selected="false">TEXTOS</button>
+			</div>
+
+			<button type="button" class="icon-button" id="btn-refresh" title="Atualizar" aria-label="Atualizar">
+				<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+			</button>
+		</header>
+
+		<!-- caminhos (O ACESSORISTA) -->
+		<section class="finder-pane" id="pane-paths" role="tabpanel">
+			<div class="picker-search">
+				<svg viewBox="0 0 24 24"><use href="#i-search" /></svg>
+				<input type="search" id="q-paths" placeholder="buscar atração, projeto, output ou caminho" autocomplete="off" spellcheck="false" aria-label="Buscar caminhos">
+				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden>×</button>
+			</div>
+			<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
+			<p class="finder-status" id="status-paths" aria-live="polite"></p>
+			<div class="finder-results" id="results-paths"></div>
+		</section>
+
+		<!-- textos dos layers -->
+		<section class="finder-pane" id="pane-texts" role="tabpanel" hidden>
+			<div class="picker-search">
+				<svg viewBox="0 0 24 24"><use href="#i-search" /></svg>
+				<input type="search" id="q-texts" placeholder="buscar nos textos do projeto" autocomplete="off" spellcheck="false" aria-label="Buscar textos">
+				<button type="button" class="picker-clear" id="clear-texts" aria-label="Limpar busca" hidden>×</button>
+			</div>
+			<div class="finder-options" id="opts-texts" aria-label="Opções">
+				<button type="button" class="chip" id="chip-vis" aria-pressed="false" title="buscar apenas em layers visíveis (ligados)"><span class="chip-check"></span>APENAS VISÍVEIS</button>
+				<button type="button" class="chip is-on" id="chip-accent" aria-pressed="true" title='"amazonia" também encontra "Amazônia"'><span class="chip-check"></span>IGNORAR ACENTOS</button>
+				<button type="button" class="chip" id="chip-invert" aria-pressed="false" title="apenas textos que NÃO possuem o termo buscado"><span class="chip-check"></span>INVERTER</button>
+			</div>
+			<p class="finder-status" id="status-texts" aria-live="polite"></p>
+			<div class="finder-results" id="results-texts"></div>
+		</section>
+
+		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>
+	</main>
+
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/finder.js"></script>
+</body>
+
+</html>
