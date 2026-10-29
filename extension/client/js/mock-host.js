@@ -65,7 +65,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '0.1.0' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '0.1.0', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -78,6 +78,48 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: null }
 				]
 			};
+		},
+
+		setProduction: function (a) {
+			window.PAD_MOCK_PRODUCTION = a.name;
+
+			return { name: a.name };
+		},
+
+		openLastOutput: function () {
+			return { messages: [], data: { path: '/mock/output' } };
+		},
+
+		installFonts: async function () {
+			await wait(delay);
+
+			return { messages: ['3 fonte(s) enviadas para instalação.'] };
+		},
+
+		collectFonts: async function () {
+			await wait(delay);
+
+			return { messages: [], data: { path: '/mock/FONTS' } };
+		},
+
+		renameComps: async function () {
+			await wait(delay);
+
+			if (mode === 'fail') throw new Error('#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
+
+			return { messages: [] };
+		},
+
+		renameOutputs: function () {
+			return { messages: ['#PAD_033 - 1 saída(s) não foram renomeadas (já renderizadas ou bloqueadas).'] };
+		},
+
+		organizeProject: function () {
+			return { messages: [] };
+		},
+
+		createProjectFolders: function () {
+			return { messages: [] };
 		},
 
 		selectedProduction: function () {

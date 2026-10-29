@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O PADEIRO</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/bar.css">
+</head>
+
+<body class="bar-page">
+	<!-- ícones (traço) -->
+	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+		<symbol id="i-brand" viewBox="0 0 24 24">
+			<path d="M4.5 11.2C4.5 8 7.8 5.8 12 5.8s7.5 2.2 7.5 5.4c0 1.1-.6 2-1.6 2.5v3.6a1.6 1.6 0 0 1-1.6 1.6H7.7a1.6 1.6 0 0 1-1.6-1.6v-3.6c-1-.5-1.6-1.4-1.6-2.5z" />
+			<path d="m9.4 9.4 1.2 2.4M13 8.9l1.2 2.5" />
+		</symbol>
+		<symbol id="i-templates" viewBox="0 0 24 24">
+			<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+			<path d="M3.5 9.5h17M9 9.5v10" />
+		</symbol>
+		<symbol id="i-fonts" viewBox="0 0 24 24">
+			<path d="M5 8V5.5h14V8M12 5.5v13M9 18.5h6" />
+		</symbol>
+		<symbol id="i-folders" viewBox="0 0 24 24">
+			<path d="M3.5 17.5v-10A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" />
+			<path d="M3.8 18.5 6 12.8a1.5 1.5 0 0 1 1.4-1h13a1 1 0 0 1 .95 1.3l-1.8 4.9a1.5 1.5 0 0 1-1.4 1H5.2a1.4 1.4 0 0 1-1.4-1.5z" />
+		</symbol>
+		<symbol id="i-rename" viewBox="0 0 24 24">
+			<path d="M9 4.5h6M9 19.5h6M12 4.5v15" />
+			<path d="M4 9.5v5M20 9.5v5" />
+		</symbol>
+		<symbol id="i-organize" viewBox="0 0 24 24">
+			<path d="m12 4.5-8.5 4.5 8.5 4.5L20.5 9z" />
+			<path d="m3.5 13.5 8.5 4.5 8.5-4.5" />
+		</symbol>
+		<symbol id="i-search" viewBox="0 0 24 24">
+			<circle cx="11" cy="11" r="6.5" />
+			<path d="m16 16 4 4" />
+		</symbol>
+		<symbol id="i-link" viewBox="0 0 24 24">
+			<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+			<path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+		</symbol>
+	</svg>
+
+	<main class="bar" id="bar">
+		<div class="bar-group bar-info">
+			<button type="button" class="bar-logo" id="logo" title="O PADEIRO · ajuda | DOCS" aria-label="O PADEIRO">
+				<span class="brand-symbol"><svg viewBox="0 0 24 24"><use href="#i-brand" /></svg></span>
+				<span class="bar-version" id="version">v0.1.0</span>
+			</button>
+		</div>
+
+		<span class="bar-divider"></span>
+
+		<div class="bar-group bar-pin">
+			<div class="bar-prod">
+				<img class="bar-prod-icon" id="prod-icon" alt="" hidden>
+				<span class="select">
+					<select id="production" aria-label="Produção" title="PRODUÇÃO SELECIONADA"></select>
+				</span>
+			</div>
+			<button type="button" class="bar-icon" id="btn-links" aria-label="Apontamento">
+				<svg viewBox="0 0 24 24"><use href="#i-link" /></svg>
+			</button>
+		</div>
+
+		<span class="bar-divider"></span>
+
+		<div class="bar-group bar-tools" id="tools"></div>
+
+		<div class="bar-toast" id="toast" role="status" aria-live="polite" hidden></div>
+	</main>
+
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/dropdown.js"></script>
+	<script src="js/bar.js"></script>
+</body>
+
+</html>

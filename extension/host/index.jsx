@@ -28,5 +28,6 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "lib/functions/metadata lib.js"
 #include "lib/functions/web lib.js"
 #include "lib/functions/treeView lib.js"
+#include "lib/functions/fonts lib.js"
 
 #include "api.jsx"

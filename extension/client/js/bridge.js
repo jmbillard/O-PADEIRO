@@ -66,6 +66,15 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
 	}
 
+	// Abre (ou traz para a frente) outro painel da extensão pelo Id do manifest.
+	function openPanel(extensionId) {
+		if (cep && cep.requestOpenExtension) {
+			cep.requestOpenExtension(extensionId, '');
+		} else {
+			console.log('[mock] abrir painel', extensionId);
+		}
+	}
+
 	function openUrl(url) {
 		if (window.cep && window.cep.util) {
 			window.cep.util.openURLInDefaultBrowser(url);
@@ -74,5 +83,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, openUrl: openUrl };
+	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, openPanel: openPanel, openUrl: openUrl };
 })();

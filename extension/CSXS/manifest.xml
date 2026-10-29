@@ -3,6 +3,7 @@
 	ExtensionBundleName="O PADEIRO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<ExtensionList>
+		<Extension Id="com.jmbillard.opadeiro.bar" Version="0.1.0" />
 		<Extension Id="com.jmbillard.opadeiro.panel" Version="0.1.0" />
 	</ExtensionList>
 
@@ -19,6 +20,38 @@
 	</ExecutionEnvironment>
 
 	<DispatchInfoList>
+		<!-- barra principal -->
+		<Extension Id="com.jmbillard.opadeiro.bar">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/bar.html</MainPath>
+					<ScriptPath>./host/index.jsx</ScriptPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>O PADEIRO</Menu>
+					<Geometry>
+						<Size>
+							<Width>640</Width>
+							<Height>84</Height>
+						</Size>
+						<MinSize>
+							<Width>56</Width>
+							<Height>56</Height>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+
+		<!-- painel de templates -->
 		<Extension Id="com.jmbillard.opadeiro.panel">
 			<DispatchInfo>
 				<Resources>
@@ -34,7 +67,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Panel</Type>
-					<Menu>O PADEIRO</Menu>
+					<Menu>O PADEIRO templates</Menu>
 					<Geometry>
 						<Size>
 							<Width>560</Width>

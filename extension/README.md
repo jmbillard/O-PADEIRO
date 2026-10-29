@@ -6,11 +6,29 @@ Painel CEP do **O PADEIRO** para o After Effects, com a mesma lógica de templat
 
 <br>
 
-## 📍 o que já tem (v0.1.0)
+## 📍 os painéis
+
+a extensão tem dois painéis, que podem ser acoplados separadamente (`Window` > `Extensions`):
+
+- **O PADEIRO** → a barra principal (degradê azul, horizontal ou vertical conforme o tamanho). escolhe a **produção** e tem os mesmos botões do script, com clique esquerdo e direito:
+  - `templates` abre o painel de templates;
+  - `fontes` instala as fontes do template / faz o collect das fontes do projeto;
+  - `pastas` abre a pasta do último item da fila de render;
+  - `renomear` renomeia as comps selecionadas / todas as saídas de render;
+  - `organizar` organiza o projeto / cria só a estrutura de pastas;
+  - o ícone de corrente abre o apontamento de projetos.
+  - o que depende de uma tela ainda não portada (criar template, conversor de caminhos, buscas, editor de produções) avisa "em breve".
+- **O PADEIRO templates** → o painel de templates, descrito abaixo.
+
+a produção escolhida na barra é gravada em `O PADEIRO script/selected_production.json` (o script ScriptUI grava o mesmo arquivo) e o painel de templates acompanha.
+
+<br>
+
+## 📍 o que já tem no painel de templates (v0.1.0)
 
 o fluxo principal de templates: `1 buscar` > `2 selecionar` > `3 preencher` > `4 fila de render`.
 
-- **produção** escolhida na barra do script (main ui): o script grava a escolha em `O PADEIRO script/selected_production.json` e o painel acompanha, então o painel precisa do script aberto para trocar de produção (sem ele, usa a primeira da lista);
+- **produção** escolhida na barra principal (da extensão ou do script): sem nenhuma das duas, usa a primeira da lista;
 - leitura da pasta de templates, com busca dinâmica;
 - **preview**, dicas e exemplo do template (`_preview.png` e `_config.json`). se existir `_preview.webm` ou `_preview.mp4` ao lado do template, o preview toca em loop e o mouse navega pelos quadros (como o thumbnail do Premiere); sem vídeo, usa o png. o `webm` (VP8/VP9) é o mais seguro: o suporte a `mp4` (H.264) depende da versão do CEP;
 - **preencher** com status, progresso e erro por item (uma comp por linha da fila);
@@ -52,7 +70,10 @@ extension/
 ├─ client/                  → painel (HTML / CSS / JS)
 │  ├─ css/styles.css        → tokens e componentes da linguagem visual
 │  ├─ css/panel.css         → componentes do padeiro (busca, input, fila)
-│  └─ js/                   → app.js (interface), bridge.js (ponte), mock-host.js (dev)
+│  ├─ css/bar.css           → barra principal
+│  ├─ index.html, js/app.js → painel de templates
+│  ├─ bar.html, js/bar.js   → barra principal
+│  └─ js/                   → bridge.js (ponte), dropdown.js, config-editor.js, util.js, mock-host.js (dev)
 ├─ host/                    → ExtendScript (roda dentro do After Effects)
 │  ├─ index.jsx             → entrada: includes
 │  ├─ api.jsx               → métodos chamados pelo painel (PADX.*)
@@ -72,9 +93,9 @@ o painel chama `PADX_call('método', json)` no host (`client/js/bridge.js`) e re
 ./extension/scripts/sync-libs.sh
 ```
 
-**interface sem o After Effects** — abra `extension/client/index.html` no navegador: sem o AE o painel usa o `mock-host.js`, com templates de mentira. `?mock=slow` deixa as respostas lentas e `?mock=fail` simula erros.
+**interface sem o After Effects** — abra `extension/client/index.html` (templates) ou `bar.html` (barra) no navegador: sem o AE o painel usa o `mock-host.js`, com templates de mentira. `?mock=slow` deixa as respostas lentas e `?mock=fail` simula erros.
 
-**depurar no AE** — o `.debug` abre a porta `8088`: acesse `http://localhost:8088` no Chrome com o painel aberto.
+**depurar no AE** — o `.debug` abre as portas `8088` (templates) e `8089` (barra): acesse `http://localhost:8088` no Chrome com o painel aberto.
 
 <br>
 

@@ -45,6 +45,39 @@ function PADX_call(method, argsJson) {
 
 */
 
+// Acesso a rede / arquivos do After Effects ('Allow Scripts to Write Files and Access Network').
+function netAccess() {
+	return app.preferences.getPrefAsLong('Main Pref Section', 'Pref_SCRIPTING_FILE_NETWORK_SECURITY') == 1;
+}
+
+// As libs do script ScriptUI avisam o usuário com alert(). Aqui as mensagens são recolhidas
+// (sem emoticons) e devolvidas ao painel, que mostra no próprio visual.
+var PADX_alerts = null;
+var PADX_nativeAlert = alert;
+
+alert = function (msg) {
+	if (PADX_alerts === null) return PADX_nativeAlert(msg);
+
+	PADX_alerts.push(String(msg).replace(lol, '').replace(relax, '').replace(/^\s+|\s+$/g, ''));
+};
+
+// Executa 'fn' recolhendo os alerts. Retorna { messages, data }.
+function padCollect(fn) {
+	var data;
+	var messages;
+
+	PADX_alerts = [];
+
+	try {
+		data = fn();
+	} finally {
+		messages = PADX_alerts;
+		PADX_alerts = null;
+	}
+
+	return { messages: messages, data: data };
+}
+
 // Lista de comps do projeto (FUNC lib do script ScriptUI).
 function getComps() {
 	var compArray = [];
@@ -153,7 +186,8 @@ PADX.ping = function () {
 		app: app.appName,
 		build: app.buildName,
 		os: appOs,
-		version: PADX_VERSION
+		version: PADX_VERSION,
+		network: netAccess()
 	};
 };
 
@@ -194,6 +228,13 @@ PADX.selectedProduction = function () {
 	} catch (err) {
 		return { name: null };
 	}
+};
+
+// Grava a produção escolhida (a barra principal escolhe, o painel de templates acompanha).
+PADX.setProduction = function (a) {
+	saveTextFile(JSON.stringify({ name: a.name }), scriptPreferencesPath + '/selected_production.json');
+
+	return { name: a.name };
 };
 
 PADX.openFolder = function (a) {
@@ -728,4 +769,121 @@ PADX.openOutputs = function (a) {
 	}
 
 	return { opened: opened, missing: missing };
+};
+
+/*
+
+---------------------------------------------------------------
+> ações da barra principal (as que não têm tela própria)
+---------------------------------------------------------------
+
+Mesma lógica de PAD_ACTIONS ('main ui functions.js'). Cada uma devolve { messages, data }.
+
+*/
+
+// Arquivo de saída do último item da fila de render que tem um (ou null).
+function getLastOutputFile() {
+	var rq = app.project.renderQueue;
+
+	for (var i = rq.numItems; i >= 1; i--) {
+		try {
+			var outputFile = rq.item(i).outputModule(1).file;
+
+			if (outputFile != null) return outputFile;
+		} catch (err) { }
+	}
+
+	return null;
+}
+
+function padRequireNetwork(code) {
+	if (!netAccess()) throw new Error('#' + code + ' - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" nas preferências');
+}
+
+// Abre a pasta do último item da fila de render (ou a mais próxima que existe).
+PADX.openLastOutput = function () {
+	padRequireNetwork('PAD_007');
+
+	var outputFile = getLastOutputFile();
+
+	if (outputFile == null) throw new Error('#PAD_008 - a fila de render está vazia...');
+
+	var outputPath = normalizeNetworkPath(decodeURI(outputFile.path), { silent: true });
+	var folder = nearestExistingFolder(outputPath);
+
+	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + outputPath);
+
+	openFolder(folder.fsName);
+
+	return { messages: [], data: { path: folder.fsName } };
+};
+
+// Instala as fontes da pasta FONTS do template que preencheu o projeto.
+PADX.installFonts = function () {
+	padRequireNetwork('PAD_004');
+
+	var folderPath = normalizeNetworkPath(getXMPData('source'), { silent: true });
+
+	if (folderPath == '') throw new Error('#PAD_005 - esse projeto não foi preenchido pelo padeiro...');
+
+	var fontsPath = folderPath + '/FONTS';
+
+	if (!new Folder(fontsPath).exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+
+	return padCollect(function () {
+		installFonts(fontsPath); // Windows ou macOS
+	});
+};
+
+// Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }
+PADX.collectFonts = function (a) {
+	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+
+	return padCollect(function () {
+		var fontsPath = fontCollect(decodeURI(a.path) + '/FONTS');
+
+		if (fontsPath != '') openFolder(fontsPath);
+
+		return { path: fontsPath };
+	});
+};
+
+PADX.renameComps = function () {
+	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+
+	return padCollect(function () {
+		padGroup('renomear comps', function () {
+			renamePromoComps(app.project.selection);
+		});
+	});
+};
+
+PADX.renameOutputs = function () {
+	return padCollect(function () {
+		padGroup('renomear outputs', function () {
+			renameOutputs();
+		});
+	});
+};
+
+PADX.organizeProject = function () {
+	if (app.project.numItems == 0) throw new Error('o projeto está vazio.');
+
+	return padCollect(function () {
+		try {
+			padGroup('organização automática do projeto', function () {
+				organizeProject(); // comps selecionadas sem comentário entram como 'EXPORTAR'
+			});
+		} catch (err) {
+			throw new Error('#PAD_036 - ' + err.message);
+		}
+	});
+};
+
+PADX.createProjectFolders = function () {
+	return padCollect(function () {
+		padGroup('criar pastas do projeto', function () {
+			projectTemplateFolders(); // cria a estrutura de pastas do projeto
+		});
+	});
 };

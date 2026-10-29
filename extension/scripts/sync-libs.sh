@@ -18,6 +18,7 @@ libs=(
 	"functions/metadata lib.js"
 	"functions/web lib.js"
 	"functions/treeView lib.js"
+	"functions/fonts lib.js"
 )
 
 mkdir -p "$dst/functions"
