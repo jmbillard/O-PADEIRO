@@ -133,6 +133,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function notify(kind, text) {
 		if (kind === 'error') text = errorText(text);
 
+		// com o template à vista, o aviso vai para baixo do preview (o mesmo lugar do aviso das fontes)
+		if (state.selected && !$('view-input').hidden) return showStripNote(kind, text);
+
 		var box = el('div', 'notice is-' + kind);
 		var close = el('button', 'notice-close', '×');
 
@@ -1185,7 +1188,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			box.appendChild(el('span', null, missing.join(' · ')));
 		} else if (note) {
 			box.appendChild(el('span', 'fonts-note', note.text));
-			if (note.kind !== 'success' && missing.length) box.appendChild(stripButton('fonts-action', 'instalar', 'tentar instalar de novo', installFonts));
+			if (note.fonts && note.kind !== 'success' && missing.length) box.appendChild(stripButton('fonts-action', 'instalar', 'tentar instalar de novo', installFonts));
 			box.appendChild(stripButton('fonts-close', '×', 'fechar aviso', closeFontsNote));
 		} else if (missing.length) {
 			box.appendChild(el('strong', null, plural(missing.length, 'fonte não instalada', 'fontes não instaladas')));
@@ -1235,6 +1238,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		note.uri = uri;
+		note.fonts = true;
 		state.fontsNote = note;
 		state.fontsInstalling = false;
 		renderFontsWarning();
@@ -1244,11 +1248,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	// Mostra um aviso no lugar do aviso das fontes (acima do input), para o template selecionado.
+	// Avisos seguidos do mesmo tipo se juntam (uma linha cada, sem repetir).
 	function showStripNote(kind, text) {
 		if (!state.selected) return;
 
+		var open = state.fontsNote && state.fontsNote.uri === state.selected.uri && state.fontsNote.kind === kind ? state.fontsNote.text.split('\n') : [];
+
+		if (open.indexOf(text) < 0) open.push(text);
+
 		clearTimeout(state.fontsNoteTimer);
-		state.fontsNote = { uri: state.selected.uri, kind: kind, text: text };
+		state.fontsNote = { uri: state.selected.uri, kind: kind, text: open.join('\n') };
 		renderFontsWarning();
 
 		if (kind === 'success') state.fontsNoteTimer = setTimeout(closeFontsNote, 7000);

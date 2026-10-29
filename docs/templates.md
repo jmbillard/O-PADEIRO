@@ -62,6 +62,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
 - **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
 - **dicas** → como preencher esse template.
 - **abrir output** → abre as pastas de output do template.
+- **avisos** → com o template à vista, os avisos (erros de output, config salva, fontes) aparecem logo abaixo do preview, sem repetir mensagens iguais, e fecham no ×.
 - **importar template** → importa o template para o projeto, sem preencher.
 - **✎ editar config** → abre o editor do arquivo de configuração (veja [editor de config](#editor-de-config)).
 

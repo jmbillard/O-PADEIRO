@@ -1897,7 +1897,13 @@ body.motion-ready .eyebrow {
 .fonts-warning .fonts-note {
   color: inherit;
   font-weight: 650;
-  white-space: normal;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.fonts-warning.is-error,
+.fonts-warning.is-warning {
+  align-items: flex-start;
 }
 
 .fonts-action,

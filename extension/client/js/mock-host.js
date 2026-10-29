@@ -507,7 +507,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { script: null };
 		},
 
-		openOutputs: function () {
+		// ?mock=nooutput: a pasta de output não pode ser acessada (aparece 2 vezes, como na rede)
+		openOutputs: function (a) {
+			if (mode === 'nooutput') return { opened: 0, missing: [a.paths[0], a.paths[0]] };
+
 			return { opened: 1, missing: [] };
 		},
 
