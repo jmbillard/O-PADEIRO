@@ -608,30 +608,104 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!typed) textarea.value = cfg.exemple;
 
 		$('tip').textContent = cfg.tip;
-		setPreview(info.preview);
+		setPreview(info);
 		updateInputCount();
 		showView('input');
 	}
 
-	function setPreview(path) {
+	// Preview: vídeo (autoplay, em loop) quando existir; senão o png. Se o vídeo não carregar, cai para o png.
+	function setPreview(info) {
 		var img = $('preview');
+		var video = $('preview-video');
 		var card = $('preview-card');
 
-		card.classList.remove('has-image');
+		card.classList.remove('has-image', 'has-video', 'is-scrubbing');
 		img.hidden = true;
 		img.removeAttribute('src');
+		video.hidden = true;
+		video.pause();
+		video.removeAttribute('src');
+		video.load();
 
-		if (!path) return;
+		function showImage() {
+			if (!info.preview) return;
 
-		img.onload = function () {
-			img.hidden = false;
-			card.classList.add('has-image');
+			img.onload = function () {
+				img.hidden = false;
+				card.classList.add('has-image');
+			};
+			img.onerror = function () {
+				img.hidden = true;
+				card.classList.remove('has-image');
+			};
+			img.src = fileUrl(info.preview);
+		}
+
+		if (!info.video) return showImage();
+
+		video.onloadeddata = function () {
+			video.hidden = false;
+			card.classList.add('has-video');
+
+			var playing = video.play();
+
+			if (playing && playing.catch) playing.catch(function () { });
 		};
-		img.onerror = function () {
-			img.hidden = true;
-			card.classList.remove('has-image');
+		video.onerror = function () {
+			video.hidden = true;
+			card.classList.remove('has-video');
+			showImage();
 		};
-		img.src = fileUrl(path);
+		video.src = fileUrl(info.video);
+	}
+
+	// Passar o mouse sobre o vídeo pausa e navega pelos quadros (como o thumbnail do Premiere).
+	function bindPreviewScrub() {
+		var card = $('preview-card');
+		var video = $('preview-video');
+		var bar = $('preview-scrub').firstElementChild;
+		var pending = null;
+
+		function seek(e) {
+			if (!card.classList.contains('has-video') || !isFinite(video.duration)) return;
+
+			// o primeiro movimento sobre o vídeo pausa a reprodução e liga a navegação
+			if (!card.classList.contains('is-scrubbing')) {
+				video.pause();
+				card.classList.add('is-scrubbing');
+			}
+
+			var rect = card.getBoundingClientRect();
+			var ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+
+			bar.style.width = ratio * 100 + '%';
+			pending = ratio * video.duration;
+
+			if (video.seeking) return;
+
+			video.currentTime = pending;
+			pending = null;
+		}
+
+		video.addEventListener('seeked', function () {
+			if (pending == null) return;
+
+			video.currentTime = pending;
+			pending = null;
+		});
+
+		card.addEventListener('mousemove', seek);
+
+		card.addEventListener('mouseleave', function () {
+			if (!card.classList.contains('has-video')) return;
+
+			pending = null;
+			card.classList.remove('is-scrubbing');
+
+			var playing = video.play();
+
+			if (playing && playing.catch) playing.catch(function () { });
+		});
 	}
 
 	function countInputs() {
@@ -1014,6 +1088,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function bindEvents() {
+		bindPreviewScrub();
+
 		var search = $('search');
 
 		search.addEventListener('input', function () {

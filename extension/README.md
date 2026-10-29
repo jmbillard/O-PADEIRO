@@ -12,7 +12,7 @@ o fluxo principal de templates: `1 buscar` > `2 selecionar` > `3 preencher` > `4
 
 - **produção** escolhida na barra do script (main ui): o script grava a escolha em `O PADEIRO script/selected_production.json` e o painel acompanha, então o painel precisa do script aberto para trocar de produção (sem ele, usa a primeira da lista);
 - leitura da pasta de templates, com busca dinâmica;
-- **preview**, dicas e exemplo do template (`_preview.png` e `_config.json`);
+- **preview**, dicas e exemplo do template (`_preview.png` e `_config.json`). se existir `_preview.webm` ou `_preview.mp4` ao lado do template, o preview toca em loop e o mouse navega pelos quadros (como o thumbnail do Premiere); sem vídeo, usa o png. o `webm` (VP8/VP9) é o mais seguro: o suporte a `mp4` (H.264) depende da versão do CEP;
 - **preencher** com status, progresso e erro por item (uma comp por linha da fila);
 - **fila de render** com escolha do template de output e verificação das pastas de saída;
 - script do template (`_script.js`), log, metadados XMP e organização do projeto, como no script;

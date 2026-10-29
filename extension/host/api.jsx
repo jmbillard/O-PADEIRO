@@ -106,6 +106,8 @@ function padTemplateFiles(projectFile) {
 
 	return {
 		preview: new File(base + '_preview.png'),
+		// vídeo de preview (opcional): '_preview.webm' ou '_preview.mp4'; sem vídeo, vale o png
+		videos: [new File(base + '_preview.webm'), new File(base + '_preview.mp4')],
 		config: new File(base + '_config.json'),
 		script: new File(base + '_script.js')
 	};
@@ -240,12 +242,20 @@ PADX.templateInfo = function (a) {
 		name: deleteFileExt(projectFile.displayName),
 		folder: Folder.decode(projectFile.parent.fsName),
 		preview: files.preview.exists ? files.preview.fsName : null,
+		video: null,
 		hasConfig: files.config.exists,
 		hasScript: files.script.exists,
 		hasInputLayers: false,
 		config: null,
 		configError: null
 	};
+
+	for (var v = 0; v < files.videos.length; v++) {
+		if (files.videos[v].exists) {
+			info.video = files.videos[v].fsName;
+			break;
+		}
+	}
 
 	if (files.config.exists) {
 		try {

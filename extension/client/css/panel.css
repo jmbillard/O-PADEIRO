@@ -578,7 +578,8 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-.preview-card img {
+.preview-card img,
+.preview-card video {
   display: block;
   width: 100%;
   height: 100%;
@@ -607,7 +608,8 @@ body {
   stroke-width: 1.5;
 }
 
-.preview-card.has-image .preview-fallback {
+.preview-card.has-image .preview-fallback,
+.preview-card.has-video .preview-fallback {
   display: none;
 }
 
@@ -984,5 +986,92 @@ body {
   .app-shell.is-expanded .upload-side-content {
     max-width: var(--search-width);
     margin-inline: auto;
+  }
+}
+
+/* =========================================================
+   Preview em vídeo (navegação pelo mouse)
+   ========================================================= */
+
+.preview-card.has-video {
+  cursor: ew-resize;
+}
+
+.preview-scrub {
+  position: absolute;
+  height: 4px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgb(255 255 255 / 30%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.preview-scrub span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg,
+      var(--blue-400),
+      var(--blue-600));
+}
+
+.preview-card.is-scrubbing .preview-scrub {
+  opacity: 1;
+}
+
+/* =========================================================
+   Ícones animados nos botões de ícone (a cada hover)
+   ========================================================= */
+
+.icon-button svg * {
+  transform-box: fill-box;
+}
+
+/* seta: uma volta completa */
+.icon-button:hover .anim-refresh {
+  animation: icon-spin 650ms var(--ease-soft);
+}
+
+/* pasta: a frente se abre */
+.anim-folder .folder-front {
+  transform-origin: 50% 100%;
+  transition: transform 260ms var(--ease-soft);
+}
+
+.icon-button:hover .anim-folder .folder-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+/* três pontos: quicam em sequência, como "digitando" */
+.icon-button:hover .anim-dots circle {
+  animation: icon-dot 560ms var(--ease-soft);
+}
+
+.icon-button:hover .anim-dots circle:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.icon-button:hover .anim-dots circle:nth-child(3) {
+  animation-delay: 220ms;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes icon-dot {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-4px);
   }
 }
