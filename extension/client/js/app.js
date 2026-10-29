@@ -161,7 +161,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Produções
 	   ========================================================= */
 
-	// A produção é escolhida na barra do script (main ui): ela grava a escolha em um arquivo
+	// A produção é escolhida na barra principal: ela grava a escolha em um arquivo
 	// compartilhado e o painel acompanha (host: PADX.selectedProduction).
 	async function loadProductions() {
 		try {
@@ -198,7 +198,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('search').placeholder = prod ? 'buscar em ' + prod.name : 'buscar template';
 	}
 
-	// Acompanha a produção escolhida na barra do script e a conexão com o After Effects.
+	// Acompanha a produção escolhida na barra e a conexão com o After Effects.
 	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
 	async function refreshProductionList(selectedName) {
 		var current = state.productions[state.production];
@@ -437,7 +437,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 	}
 
-	// Pasta com uma única subpasta vira 'PASTA / SUBPASTA' (mesma otimização do script).
+	// Pasta com uma única subpasta vira 'PASTA / SUBPASTA' (menos níveis na árvore).
 	function optimizeTree(node) {
 		if (node.type !== 'node') return;
 
@@ -961,7 +961,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.example = cfg.exemple;
 
-		// o que o usuário já digitou é mantido ao trocar de template (como no script)
+		// o que o usuário já digitou é mantido ao trocar de template 
 		if (!typed) textarea.value = cfg.exemple;
 
 		var tipList = $('tip');

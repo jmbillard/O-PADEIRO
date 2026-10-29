@@ -7,17 +7,6 @@
 */
 
 // string to camel case...
-String.prototype.toCamelCase = function () {
-	return this.toLowerCase()
-		.replace(/\s(.)/g, function ($1) {
-			return $1.toUpperCase();
-		})
-		.replace(/\s/g, '')
-		.replace(/^(.)/, function ($1) {
-			return $1.toLowerCase();
-		});
-};
-// string to camel case...
 String.prototype.toTitleCase = function () {
 	return this.toLowerCase()
 		.replace(/\s(.)/g, function ($1) {
@@ -56,49 +45,6 @@ String.prototype.replaceSpecialCharacters = function () {
 		.trim();
 };
 /* cSpell:enable */
-
-// date shortener...
-String.prototype.toShortDate = function () {
-	return this.replaceSpecialCharacters()
-		.replace(/SEGUNDA/, 'SEG')
-		.replace(/TERCA/, 'TER')
-		.replace(/QUARTA/, 'QUA')
-		.replace(/QUINTA/, 'QUI')
-		.replace(/SEXTA/, 'SEX')
-		.replace(/SABADO/, 'SAB')
-		.replace(/DOMINGO/, 'DOM')
-		.replace(/DE /, '')
-		.replace(/JANEIRO/, 'JAN')
-		.replace(/FEVEREIRO/, 'FEV')
-		.replace(/MARCO/, 'MAR')
-		.replace(/ABRIL/, 'ABR')
-		.replace(/MAIO/, 'MAI')
-		.replace(/JUNHO/, 'JUN')
-		.replace(/JULHO/, 'JUL')
-		.replace(/AGOSTO/, 'AGO')
-		.replace(/SETEMBRO/, 'SET')
-		.replace(/OUTUBRO/, 'OUT')
-		.replace(/NOVEMBRO/, 'NOV')
-		.replace(/DEZEMBRO/, 'DEZ');
-};
-
-// image resize to fit dimensions...
-if (typeof Image !== 'undefined') {
-	Image.prototype.onDraw = function () {
-		// 'this' is the container and 'this.image' is the graphic
-		if (!this.image) return;
-		var WH = this.size,
-			wh = this.image.size,
-			k = Math.min(WH[0] / wh[0], WH[1] / wh[1]),
-			xy;
-		// Resize proportionally...
-		wh = [k * wh[0], k * wh[1]];
-		// Center...
-		xy = [(WH[0] - wh[0]) / 2, (WH[1] - wh[1]) / 2];
-		this.graphics.drawImage(this.image, xy[0], xy[1], wh[0], wh[1]);
-		WH = wh = xy = null;
-	};
-}
 
 // Array.isArray(obj) definition...
 if (typeof Array.isArray == 'undefined') {

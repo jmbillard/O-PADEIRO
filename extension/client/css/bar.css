@@ -245,14 +245,6 @@ body.bar-page {
   animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 
-.bar-btn.is-soon {
-  opacity: 0.55;
-}
-
-.bar-btn.is-soon:hover:not(:disabled) {
-  transform: none;
-}
-
 /* ---------- animações dos ícones (a cada hover) ---------- */
 
 /* templates e apontamento: leve giro e zoom */

@@ -1,14 +1,11 @@
-﻿// GERADO por extension/scripts/extract_acessorista.py a partir de source/utils/o acessorista ui.js — não edite.
+﻿// O ACESSORISTA: índice de caminhos das atrações (webhook + cache), abertura de pastas (montagem SMB no macOS)
+// e conversão de caminhos Windows / macOS.
 
 var PS_WEBHOOK_URL = 'https://workflows.jmbillard.com/webhook/path-search';
 
 var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 
 var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
-
-var PS_MIN_QUERY = 2; // mínimo de caracteres para a busca
-
-var PS_MAX_RESULTS = 12; // máximo de atrações exibidas (a janela não tem scroll)
 
 var PS_SMB = {
 	sp: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',

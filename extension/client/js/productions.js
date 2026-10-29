@@ -4,7 +4,7 @@
 > LISTA DE PRODUÇÕES — editor
 ---------------------------------------------------------------
 
-Edita o 'O_PADEIRO_config.json' compartilhado pela equipe (o mesmo do script ScriptUI):
+Edita o 'O_PADEIRO_config.json' compartilhado pela equipe:
 nome do menu, ícone (24 x 24 px, opcional) e pasta de templates de cada produção.
 Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado).
 
@@ -15,7 +15,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var call = PAD_BRIDGE.call;
 
-	var ICON_SIZE = 24; // o script ScriptUI mostra o ícone em 24 x 24 px
+	var ICON_SIZE = 24; // ícone da produção: 24 x 24 px
 
 	var state = {
 		rows: [], // { id, name, icon, path, exists: null | true | false, error }
@@ -91,7 +91,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	/* =========================================================
 	   Ícones (PNG 24 x 24 guardado como literal de string binária,
-	   o formato que o script ScriptUI lê com eval)
+	   o formato da lista compartilhada)
 	   ========================================================= */
 
 	function bytesToLiteral(bytes) {

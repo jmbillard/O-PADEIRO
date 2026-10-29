@@ -697,13 +697,6 @@ body {
   text-transform: uppercase;
 }
 
-.tip-text {
-  color: #4e5a6f;
-  font-size: 0.76rem;
-  line-height: 1.6;
-  white-space: pre-line;
-}
-
 .action-bar {
   display: flex;
   flex-wrap: wrap;
@@ -762,12 +755,6 @@ body {
 
 .button-primary:disabled {
   box-shadow: none;
-}
-
-.button-large {
-  min-height: 46px;
-  padding-inline: 20px;
-  font-size: 0.84rem;
 }
 
 /* =========================================================
@@ -833,27 +820,6 @@ body {
    ========================================================= */
 
 /* o resumo tem 4 estados: em telas estreitas vira uma grade 2 × 2 */
-@media (max-width: 680px) {
-  .summary-card,
-  .summary-card:nth-child(odd) {
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .summary-card:nth-child(odd) {
-    border-right: 1px solid var(--border);
-  }
-
-  .summary-card:nth-last-child(-n + 2) {
-    border-bottom: 0;
-  }
-
-  .summary-card:last-child {
-    grid-column: auto;
-    border-top: 0;
-    border-right: 0;
-  }
-}
 
 .render-options {
   position: relative;
@@ -958,16 +924,11 @@ body {
 /* o painel ocupa toda a largura disponível (sem as larguras máximas da versão web) */
 .queue-header,
 .progress-section,
-.summary-grid,
 .queue-content,
 .render-options {
   width: 100%;
   max-width: none;
   margin-inline: 0;
-}
-
-.hero {
-  max-width: none;
 }
 
 /* a busca tem largura fixa: centralizada no início e à esquerda com um template escolhido */
@@ -1704,11 +1665,6 @@ body.motion-ready .eyebrow {
    Foco pelo teclado (vale para todos os painéis)
    :where() não pesa na especificidade: os anéis próprios de cada botão continuam valendo.
    ========================================================= */
-
-:where(button, a, summary, [tabindex]):focus-visible {
-  outline: 2px solid rgb(79 130 255 / 55%);
-  outline-offset: 2px;
-}
 
 /* =========================================================
    Fixados e recentes (árvore de templates)

@@ -5,8 +5,7 @@
 > O ACESSORISTA — busca de caminhos e de textos (host)
 ---------------------------------------------------------------
 
-Caminhos: o índice (webhook + cache local) e a abertura de pastas usam a mesma lógica do script
-ScriptUI (lib/acessorista.shared.js). Textos: o painel pede os layers de texto em lotes de comps.
+Caminhos: o índice (webhook + cache local) e a abertura de pastas ficam em lib/acessorista.js. Textos: o painel pede os layers de texto em lotes de comps.
 
 */
 
@@ -180,7 +179,7 @@ PADX.openTextResult = function (a) {
 > conversor de caminhos Windows / macOS
 ---------------------------------------------------------------
 
-Mesma conversão do script (path ui.js → cleanPathInput / toMacPath / toWinPath).
+Conversão em lib/acessorista.js (cleanPathInput / toMacPath / toWinPath).
 
 */
 

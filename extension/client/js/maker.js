@@ -4,7 +4,7 @@
 > CRIAR TEMPLATE
 ---------------------------------------------------------------
 
-Mesmo fluxo do criador de templates do script: a comp ativa vira a comp principal, os layers
+A comp ativa vira a comp principal, os layers
 selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta escolhida junto de
 '<nome>_config.json', '<nome>_preview.png' e da pasta FONTS.
 

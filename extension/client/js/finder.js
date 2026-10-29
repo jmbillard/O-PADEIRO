@@ -39,10 +39,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return node;
 	}
 
-	function plural(n, one, many) {
-		return n + ' ' + (n === 1 ? one : many);
-	}
-
 	function yieldUi() {
 		return new Promise(function (resolve) {
 			setTimeout(resolve, 0);
@@ -68,7 +64,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return String(str).normalize('NFD').replace(/[̀-ͯ]/g, '');
 	}
 
-	// minúsculas, sem acentos e sem nada além de a-z / 0-9 (mesma regra do script).
+	// minúsculas, sem acentos e sem nada além de a-z / 0-9 (mesma regra do índice).
 	function psNormalize(value) {
 		return stripAccents(String(value || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
 	}

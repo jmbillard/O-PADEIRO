@@ -133,145 +133,6 @@ function openFolder(folderPath) {
 	}
 }
 
-// Abre um URL no navegador padrão do sistema operacional (Windows ou macOS).
-function openWebSite(url) {
-	if (appOs == 'Win') {
-		// Comando para abrir o URL no Windows Explorer (que também pode abrir URLs)
-		system.callSystem('explorer ' + url);
-	} else if (appOs == 'Mac') {
-		// Comando para abrir o URL no navegador padrão do macOS
-		system.callSystem('open ' + url);
-	}
-}
-
-// Faz o download de conteúdo de URLs em um array para arquivos em um array de destinos (Windows e macOS).
-function getURLContent(urlArray, dstArray) {
-	// Verifica se os arrays têm o mesmo tamanho
-	if (urlArray.length != dstArray.length) {
-		alert('Os arrays de URLs e destinos devem ter o mesmo tamanho.');
-		return;
-	}
-
-	var cmd = ''; // Comando a ser executado
-
-	if (appOs == 'Win') {
-		// PowerShell (Windows)
-
-		// Cabeçalho em destaque
-		cmd +=
-			"Write-Host '------------- O PADEIRO script -------------' -ForegroundColor white -BackgroundColor DarkRed;";
-
-		// Itera sobre as URLs e prepara os comandos de download
-		for (var i = 0; i < urlArray.length; i++) {
-			var fileName = decodeURI(
-				urlArray[i].match(/[^\\|\/]*$/i)[0],
-			).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
-			cmd += "Write-Host '> baixando " + fileName + "...';"; // Mensagem de download
-			cmd +=
-				"curl '" +
-				urlArray[i] +
-				"' -OutFile '" +
-				dstArray[i] +
-				'/' +
-				fileName +
-				"';"; // Comando curl
-		}
-
-		// Executa o comando PowerShell no cmd.exe
-		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
-		system.callSystem(cmdStr);
-	} else if (appOs == 'Mac') {
-		// Terminal (macOS)
-
-		// Itera sobre as URLs e prepara os comandos de download
-		for (var i = 0; i < urlArray.length; i++) {
-			var fileName = decodeURI(
-				urlArray[i].match(/[^\\|\/]*$/i)[0],
-			).replace(/[?].*$/, ''); // Extrai o nome do arquivo da URL
-			cmd +=
-				"curl -o '" +
-				dstArray[i] +
-				'/' +
-				fileName +
-				"' '" +
-				urlArray[i] +
-				"';"; // Comando curl
-		}
-
-		// Executa o comando no terminal
-		system.callSystem(cmd);
-	}
-}
-
-// Descompacta um arquivo ZIP em um diretório de destino (Windows e macOS).
-function unzipContent(zipPath, dstPath) {
-	// Extrai o nome do arquivo ZIP
-	var fileName = decodeURI(zipPath.match(/[^\\|\/]*$/i)[0]).replace(
-		/[?].*$/,
-		'',
-	);
-
-	var cmd = ''; // Comando a ser executado
-
-	if (appOs == 'Win') {
-		// PowerShell (Windows)
-
-		// Cabeçalho em destaque
-		cmd +=
-			"Write-Host '------------- O PADEIRO script -------------' -ForegroundColor white -BackgroundColor DarkRed;";
-
-		// Mensagem de extração
-		cmd += "Write-Host '> extraindo " + fileName + "...';";
-
-		// Descompacta o arquivo ZIP usando Expand-Archive
-		cmd +=
-			"Expand-Archive -Path '" +
-			zipPath +
-			"' -DestinationPath '" +
-			dstPath +
-			"' -Force;";
-
-		// Executa o comando PowerShell no cmd.exe
-		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
-		system.callSystem(cmdStr);
-	} else if (appOs == 'Mac') {
-		// Terminal (macOS)
-
-		// Descompacta o arquivo ZIP usando unzip
-		cmd = "unzip -o '" + zipPath + "' -d '" + dstPath + "'";
-
-		// Executa o comando no terminal
-		system.callSystem(cmd);
-	}
-}
-
-function zipContent(path, zipPath) {
-	if (appOs == 'Win') {
-		// get only the NOT '\' OR '/' at the end...
-		var fileName = decodeURI(zipPath.match(/[^\\|\/]*$/i));
-		// removes any character after the '?' at the end...
-		fileName = fileName.replace(/[?].*$/, '');
-
-		// powershell command string...
-		// header...
-		var cmd = "Write-Host '------------- O PADEIRO script -------------'";
-		cmd += ' -ForegroundColor white -BackgroundColor DarkRed;';
-		// current action description...
-		cmd += "Write-Host '> compressing " + fileName + "...';";
-		// zip file...
-		cmd +=
-			"Compress-Archive -Path '" +
-			path +
-			"' -DestinationPath '" +
-			zipPath;
-		cmd += "' -CompressionLevel Optimal -Force;";
-		// pass the powershell command thru cmd...
-		var cmdStr = 'cmd.exe /c powershell.exe -c "' + cmd + '"';
-
-		system.callSystem(cmdStr);
-	}
-}
-
 function getFileExt(fileName) {
 	var dotIndex = fileName.lastIndexOf('.');
 	if (dotIndex === -1) return '';
@@ -285,88 +146,6 @@ function getFileExt(fileName) {
 
 */
 
-function copyFolderContent(src, dst) {
-	try {
-		var f = new Folder(src).getFiles();
-
-		for (var i = 0; i < f.length; i++)
-			if (!copyFile(f[i], dst)) return false;
-
-		return true;
-		//
-	} catch (err) { }
-}
-
-function createPath(path) {
-	var folder = new Folder(path);
-
-	if (!folder.exists) {
-		var f = new Folder(folder.path);
-
-		if (!f.exists) if (!createPath(folder.path)) return false;
-		if (!folder.create()) return false;
-	}
-	return true;
-}
-
-function removeFolder(folder) {
-	if (!folder.exists) return;
-
-	var files = folder.getFiles();
-
-	for (var n = 0; n < files.length; n++) {
-		if (files[n] instanceof File) {
-			files[n].remove();
-		} else {
-			removeFolder(files[n]);
-		}
-	}
-	folder.remove();
-}
-
-function copyFolderContentContent(src, dst) {
-	var srcFolder = new Folder(src);
-	var dstFolder = new Folder(dst);
-	var filesArray = [];
-
-	if (!srcFolder.exists) return;
-
-	filesArray = srcFolder.getFiles();
-
-	if (filesArray.length == 0) return;
-
-	for (var i = 0; i < filesArray.length; i++) {
-		var aFile = filesArray[i];
-		var aFileName = File.decode(aFile.displayName).toString();
-		var subArray = [];
-
-		try {
-			if (aFile instanceof Folder) subArray = aFile.getFiles();
-			//
-		} catch (err) { }
-
-		if (subArray.length > 0) {
-			copyFolderContentContent(decodeURI(aFile.fsName).toString(), dst);
-		} else {
-			if (!dstFolder.exists) continue;
-
-			var cFile = new File(dst + '/' + aFileName);
-			aFile.copy(cFile);
-		}
-	}
-}
-
-function createPathFolders(path) {
-	var folderNamesArray = path.split('/');
-	var parentFolderName = '';
-
-	for (var f = 0; f < folderNamesArray.length; f++) {
-		parentFolderName += '/' + folderNamesArray[f];
-		createPath(parentFolderName);
-	}
-	return new Folder(parentFolderName);
-}
-
 /*
 
 ---------------------------------------------------------------
@@ -374,30 +153,6 @@ function createPathFolders(path) {
 ---------------------------------------------------------------
 
 */
-// Copia um arquivo para um novo caminho.
-function copyFile(fullPath, newPath) {
-	try {
-		var file = new File(fullPath); // Cria um objeto File para o arquivo de origem
-		// Verifica se o caminho original é uma pasta (length < 0 indica que é um diretório)
-		if (file.length < 0) {
-			// Se for uma pasta, cria o caminho de destino e copia o conteúdo recursivamente
-			if (!createPath(newPath + '/' + file.name)) return false; // Cria a pasta de destino
-			if (!copyFolderContent(fullPath, newPath + '/' + file.name))
-				return false; // Copia o conteúdo da pasta
-		} else {
-			// Se o caminho original for um arquivo
-			// Cria o caminho de destino e copia o arquivo
-			if (!createPath(newPath)) return false; // Cria a pasta de destino
-			if (!file.copy(newPath + '/' + file.name)) return false; // Copia o arquivo
-		}
-
-		return true; // Retorna true se a cópia for bem-sucedida
-
-		// Lidar com erros
-	} catch (err) {
-		return false; // Retorna false em caso de erro
-	}
-}
 
 function readFileContent(file) {
 	var fileContent;
@@ -417,19 +172,6 @@ function saveTextFile(fileContent, filePath) {
 	return writeFileContent(newFile, fileContent);
 }
 
-function fileToBinary(aFile) {
-	aFile.open('r');
-	aFile.encoding = 'binary';
-
-	var bin = aFile.read();
-	var strCode = bin.toSource().toString();
-
-	strCode = strCode.substring(13, strCode.length - 3);
-	aFile.close();
-
-	return "'" + strCode.replace(/'/g, "\\'").replace(/\\"/g, '"') + "'";
-}
-
 function writeFileContent(newFile, fileContent) {
 	newFile.open('w');
 	newFile.write(fileContent);
@@ -438,28 +180,8 @@ function writeFileContent(newFile, fileContent) {
 	return newFile;
 }
 
-function createPresetFile(tempFolder, fileName, strCode) {
-	try {
-		var aFile = new File(tempFolder + '/' + fileName);
-
-		aFile.encoding = 'BINARY';
-		writeFileContent(aFile, strCode);
-
-		return aFile;
-		//
-	} catch (err) { }
-}
-
 // copy all fonts used in the project...
 // -------------------------------------------------------
-
-function saveLogData(aFile, dataStr) {
-	var data = readFileContent(aFile);
-
-	data += '\n' + dataStr;
-
-	saveTextFile(data, decodeURI(aFile.fsName));
-}
 
 // -------------------------------------------------------
 
@@ -469,37 +191,6 @@ function saveLogData(aFile, dataStr) {
  * //servidor/EDIT_IN_PLACE/pasta/arquivo
  * -> /Volumes/EDIT_IN_PLACE/pasta/arquivo
  */
-function windowsPathToMac(uncPath) {
-
-	if (!uncPath || uncPath === "") return "";
-
-	// Normaliza barras
-	var path = uncPath.replace(/\\/g, "/")
-		.replace(/^\/+/, "");
-
-	// Separa partes
-	var parts = path.split("/");
-
-	// parts[0] = servidor
-	// parts[1] = share (volume no mac)
-	if (parts.length < 2) return "";
-
-	var volumeName = parts[1];
-
-	// Monta caminho mac
-	var macPath = "/Volumes/" + volumeName;
-
-	for (var i = 2; i < parts.length; i++) {
-		macPath += "/" + parts[i];
-	}
-
-	// Escapa caracteres problemáticos no ExtendScript
-	macPath = macPath
-		.replace(/#/g, "\\#")
-		.replace(/&/g, "\\&");
-
-	return macPath;
-}
 
 /**
  * Normaliza caminhos de rede para o sistema atual (Windows ou macOS)

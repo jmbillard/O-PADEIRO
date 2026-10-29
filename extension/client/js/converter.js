@@ -5,7 +5,7 @@
 ---------------------------------------------------------------
 
 Cole um caminho em qualquer lugar do painel: o tipo é reconhecido, o caminho vai para o campo
-certo e o outro é convertido na hora (host: lógica do script, 'path ui.js'). Abre já com a pasta da última saída da fila de render quando a barra principal
+certo e o outro é convertido na hora (host: lib/acessorista.js). Abre já com a pasta da última saída da fila de render quando a barra principal
 pede (botão 'pastas', clique direito).
 
 */

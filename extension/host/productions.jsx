@@ -5,7 +5,7 @@
 > editor da lista de produções (host)
 ---------------------------------------------------------------
 
-A lista é o 'O_PADEIRO_config.json' compartilhado pela equipe (o mesmo do script ScriptUI).
+A lista é o 'O_PADEIRO_config.json' compartilhado pela equipe.
 Como mais de uma pessoa pode editar, salvar confere se o arquivo mudou desde que o editor o leu.
 
 */
@@ -48,7 +48,7 @@ PADX.saveProductions = function (a) {
 	var clean = padCleanProductions(a.productions);
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
-		throw new Error('#PAD_CONFLITO - a lista foi alterada por outra pessoa (ou pelo script) depois que você abriu o editor. use "recarregar" e refaça as alterações.');
+		throw new Error('#PAD_CONFLITO - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 	}
 
 	// uma cópia da lista anterior, por segurança (lista compartilhada pela equipe)

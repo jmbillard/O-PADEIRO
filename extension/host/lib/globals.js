@@ -1,4 +1,4 @@
-﻿// GERADO por extension/scripts/extract_globals.py a partir de source/globals.js — não edite.
+﻿// Constantes globais: mapa das letras de drive da rede, termos de renomeação e config padrão dos templates.
 
 var DRIVE_MAP = {
 	L: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l",

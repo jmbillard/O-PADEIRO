@@ -4,10 +4,8 @@
 > O PADEIRO — barra principal
 ---------------------------------------------------------------
 
-Mesmos botões e ações do script ScriptUI ('main ui functions.js' e 'O_PADEIRO.js'):
-clique esquerdo e direito fazem ações diferentes, e a dica de cada botão lista as duas.
-Ações sem tela própria rodam no host; as que dependem de uma tela ainda não portada
-aparecem como "em breve".
+Clique esquerdo e direito fazem ações diferentes, e a dica de cada botão lista as duas.
+Ações sem tela própria rodam no host; as outras abrem o painel correspondente.
 
 */
 
@@ -110,12 +108,6 @@ aparecem como "em breve".
 		else if (doneText) toast('success', doneText);
 	}
 
-	function soon(label) {
-		return function () {
-			toast(null, label + ': ainda não disponível na extensão (em breve).');
-		};
-	}
-
 	async function requireNetwork(code) {
 		var info = await call('ping');
 
@@ -198,7 +190,7 @@ aparecem como "em breve".
 	};
 
 	/* =========================================================
-	   Estrutura da barra (espelha PAD_mainGrpUiStructure)
+	   Estrutura da barra
 	   ========================================================= */
 
 	var SECTIONS = [
@@ -328,7 +320,7 @@ aparecem como "em breve".
 			var group = el('div', 'bar-section');
 
 			section.forEach(function (def) {
-				var btn = el('button', 'bar-btn' + (def.soon ? ' is-soon' : ''));
+				var btn = el('button', 'bar-btn');
 
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
@@ -407,7 +399,7 @@ aparecem como "em breve".
 		updateProdIcon(select.value);
 	}
 
-	// Acompanha mudanças feitas por fora (por exemplo, pelo script ScriptUI).
+	// Acompanha mudanças feitas por fora (lista editada, produção escolhida em outro painel).
 	async function watchProduction() {
 		if (document.hidden) return;
 

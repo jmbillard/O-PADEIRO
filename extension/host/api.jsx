@@ -50,7 +50,7 @@ function netAccess() {
 	return app.preferences.getPrefAsLong('Main Pref Section', 'Pref_SCRIPTING_FILE_NETWORK_SECURITY') == 1;
 }
 
-// As libs do script ScriptUI avisam o usuário com alert(). Aqui as mensagens são recolhidas
+// As libs avisam o usuário com alert(). Aqui as mensagens são recolhidas
 // (sem emoticons) e devolvidas ao painel, que mostra no próprio visual.
 var PADX_alerts = null;
 var PADX_nativeAlert = alert;
@@ -78,7 +78,7 @@ function padCollect(fn) {
 	return { messages: messages, data: data };
 }
 
-// Lista de comps do projeto (FUNC lib do script ScriptUI).
+// Lista de comps do projeto.
 function getComps() {
 	var compArray = [];
 
@@ -104,8 +104,8 @@ function padSortProductions(list) {
 	});
 }
 
-// Lista de produções COMPARTILHADA (a mesma do script ScriptUI, 'O_PADEIRO_config.json'): fica na pasta
-// do 'O_PADEIRO_SOURCE.jsxbin', ao lado da pasta da extensão. Procura, nesta ordem:
+// Lista de produções COMPARTILHADA ('O_PADEIRO_config.json'): fica na pasta do padeiro na rede,
+// ao lado da pasta da extensão. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
 //   2. o arquivo na pasta que contém a pasta da extensão.
 // Caminho esperado da lista compartilhada: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
@@ -175,23 +175,6 @@ function padTemplateFiles(projectFile) {
 	};
 }
 
-function padSerializeTree(node) {
-	var out = { type: node.type, text: node.text };
-
-	if (node.type == 'node') {
-		out.children = [];
-
-		for (var i = 0; i < node.children.length; i++) {
-			out.children.push(padSerializeTree(node.children[i]));
-		}
-	} else {
-		out.uri = node.file.absoluteURI;
-		out.fsName = node.file.fsName;
-	}
-
-	return out;
-}
-
 function padGroup(name, fn) {
 	app.beginUndoGroup(name);
 
@@ -254,7 +237,7 @@ PADX.productions = function () {
 	};
 };
 
-// Produção escolhida na barra do script (main ui), gravada em 'selected_production.json'.
+// Produção escolhida na barra principal, gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
 	var file = new File(scriptPreferencesPath + '/selected_production.json');
 	var list = padConfigFile();
@@ -324,12 +307,6 @@ PADX.openFolder = function (a) {
 	return true;
 };
 
-PADX.openUrl = function (a) {
-	openWebSite(a.url);
-
-	return true;
-};
-
 /*
 
 ---------------------------------------------------------------
@@ -337,16 +314,6 @@ PADX.openUrl = function (a) {
 ---------------------------------------------------------------
 
 */
-
-// Lê a pasta de templates e devolve a árvore (pastas e arquivos .aep / .aet).
-PADX.templateTree = function (a) {
-	var path = padPath(a.path);
-	var folder = new Folder(path);
-
-	if (!folder.exists) return { exists: false, path: path, tree: null };
-
-	return { exists: true, path: path, tree: padSerializeTree(buildTreeData(folder, PADX_TEMPLATE_EXT)) };
-};
 
 // Lista UMA pasta (sem descer nas subpastas), na ordem do sistema: { exists, path, name, entries }.
 // O painel percorre a árvore pasta a pasta, em chamadas curtas, para o After Effects não ficar

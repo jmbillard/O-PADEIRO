@@ -5,9 +5,8 @@
 > ambiente do host
 ---------------------------------------------------------------
 
-Equivalente enxuto do 'globals.js' do script ScriptUI: só o que as libs compartilhadas
-(file system, projeto, metadados...) esperam encontrar. Constantes de rede, regras de
-renomeação e configuração padrão de templates vêm de lib/globals.shared.js.
+Nome, versão, sistema e pastas de dados que as libs (file system, projeto, metadados...) usam.
+Constantes de rede, regras de renomeação e configuração padrão de templates ficam em lib/globals.js.
 
 */
 
@@ -19,7 +18,7 @@ var repoURL = 'https://github.com/jmbillard/O-PADEIRO';
 var appOs = $.os.indexOf('Win') >= 0 ? 'Win' : 'Mac';
 var appV = parseInt(app.buildName.substring(0, 2), 10);
 
-// Pasta de dados do usuário (mesma do script ScriptUI, assim as duas versões compartilham a lista de produções)
+// Pasta de dados do usuário: produção escolhida, ponteiro da lista compartilhada, temp e cache
 var userPath = Folder.userData.fsName;
 var scriptPreferencesPath = userPath + '/O PADEIRO script';
 var scriptPreferencesFolder = new Folder(scriptPreferencesPath);
