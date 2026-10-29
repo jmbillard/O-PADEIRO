@@ -13,10 +13,6 @@
 <body class="bar-page">
 	<!-- ícones (traço) -->
 	<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-		<symbol id="i-brand" viewBox="0 0 24 24">
-			<path d="M4.5 11.2C4.5 8 7.8 5.8 12 5.8s7.5 2.2 7.5 5.4c0 1.1-.6 2-1.6 2.5v3.6a1.6 1.6 0 0 1-1.6 1.6H7.7a1.6 1.6 0 0 1-1.6-1.6v-3.6c-1-.5-1.6-1.4-1.6-2.5z" />
-			<path d="m9.4 9.4 1.2 2.4M13 8.9l1.2 2.5" />
-		</symbol>
 		<symbol id="i-templates" viewBox="0 0 24 24">
 			<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
 			<path d="M3.5 9.5h17M9 9.5v10" />
@@ -49,7 +45,17 @@
 	<main class="bar" id="bar">
 		<div class="bar-group bar-info">
 			<button type="button" class="bar-logo" id="logo" title="O PADEIRO · ajuda | DOCS" aria-label="O PADEIRO">
-				<span class="brand-symbol"><svg viewBox="0 0 24 24"><use href="#i-brand" /></svg></span>
+				<svg class="bar-loaf" viewBox="0 0 48 32" aria-hidden="true">
+					<defs>
+						<linearGradient id="loaf-grad" x1="0" y1="0" x2="0" y2="1">
+							<stop offset="0" stop-color="#fbd697" />
+							<stop offset="1" stop-color="#e29a4c" />
+						</linearGradient>
+					</defs>
+					<path class="loaf-body" d="M3 26.5C3 12.5 12 4 24 4s21 8.500 21 22.500c0 2-1.500 3.500-3.500 3.500h-35C4.500 30 3 28.500 3 26.500z" fill="url(#loaf-grad)" />
+					<path d="M3.200 25h41.600c-.3 2.800-1.500 5-3.300 5h-35c-1.800 0-3-2.200-3.300-5z" fill="rgb(150 80 20 / 24%)" />
+					<path class="loaf-scores" d="m15.500 12 3 8.500M23.500 9.500l3 9.500M31.500 12l3 8.500" />
+				</svg>
 				<span class="bar-version" id="version">v0.1.0</span>
 			</button>
 		</div>

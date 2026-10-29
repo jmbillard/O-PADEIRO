@@ -38,7 +38,7 @@
 .oven {
   position: relative;
   width: 204px;
-  height: 118px;
+  height: 112px;
   margin-bottom: 8px;
 }
 
@@ -49,64 +49,98 @@
   will-change: transform, opacity;
 }
 
-/* corpo do forno */
+/* corpo do forno: painel de controle com 3 botões e porta com alça e visor */
 .oven-body {
-  top: 24px;
+  top: 20px;
   left: 6px;
   width: 88px;
-  height: 72px;
+  height: 84px;
   border: 2px solid var(--oven-line);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--oven-fill);
 }
 
-.oven-window {
-  top: 16px;
-  left: 14px;
-  width: 46px;
-  height: 36px;
+.oven-body>*,
+.oven-panel>*,
+.oven-door>* {
+  position: absolute;
+}
+
+.oven-panel {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 24px;
+  border-bottom: 2px solid var(--oven-line);
+}
+
+.oven-knob {
+  top: 5px;
+  width: 11px;
+  height: 11px;
   border: 2px solid var(--oven-line);
-  border-radius: 11px;
+  border-radius: 50%;
+  animation: knob-turn 2.8s ease-in-out infinite alternate;
+}
+
+.oven-knob::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 2px;
+  margin: -1px 0 0 -3.5px;
+  border-radius: 1px;
+  background: var(--oven-line);
+  content: "";
+}
+
+.oven-knob.k1 {
+  left: 12px;
+}
+
+.oven-knob.k2 {
+  left: 35px;
+  animation-delay: -0.9s;
+}
+
+.oven-knob.k3 {
+  left: 58px;
+  animation-delay: -1.8s;
+}
+
+.oven-door {
+  top: 30px;
+  left: 8px;
+  width: 68px;
+  height: 42px;
+  border: 2px solid var(--oven-line);
+  border-radius: 10px;
+}
+
+.oven-handle {
+  top: 5px;
+  left: 17px;
+  width: 30px;
+  height: 5px;
+  border: 2px solid var(--oven-line);
+  border-radius: 5px;
+}
+
+.oven-window {
+  top: 17px;
+  right: 6px;
+  bottom: 5px;
+  left: 6px;
+  border-radius: 6px;
   background: linear-gradient(160deg, #ffe39a, #f7a24a);
   opacity: 0.9;
   animation: oven-flicker 1.5s ease-in-out infinite alternate;
 }
 
-.oven-knob {
-  top: 5px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--oven-line);
-}
-
-.oven-knob.k1 {
-  left: 58px;
-}
-
-.oven-knob.k2 {
-  left: 70px;
-}
-
-.oven-leg {
-  top: 96px;
-  width: 14px;
-  height: 6px;
-  border-radius: 0 0 4px 4px;
-  background: var(--oven-line);
-}
-
-.oven-leg.a {
-  left: 16px;
-}
-
-.oven-leg.b {
-  left: 72px;
-}
-
 /* calor saindo pela boca do forno */
 .oven-glow {
-  top: 40px;
+  top: 44px;
   left: 62px;
   width: 54px;
   height: 54px;
@@ -264,6 +298,16 @@
   }
 }
 
+@keyframes knob-turn {
+  from {
+    transform: rotate(-35deg);
+  }
+
+  to {
+    transform: rotate(35deg);
+  }
+}
+
 @keyframes oven-flicker {
   from {
     opacity: 0.72;
@@ -279,6 +323,7 @@
   .loaf,
   .steam,
   .oven-glow,
+  .oven-knob,
   .oven-window {
     animation-duration: 0.01ms !important;
   }

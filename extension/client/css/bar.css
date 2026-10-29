@@ -68,16 +68,41 @@ body.bar-page {
   cursor: pointer;
 }
 
-.bar-logo .brand-symbol {
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  box-shadow: 0 7px 18px rgb(24 43 113 / 28%);
-  transition: transform 260ms var(--ease-soft);
+.bar-loaf {
+  width: 46px;
+  height: 31px;
+  overflow: visible;
+  filter: drop-shadow(0 6px 10px rgb(24 43 113 / 28%));
+  transition: transform 300ms var(--ease-soft);
 }
 
-.bar-logo:hover .brand-symbol {
-  transform: translateY(-2px) rotate(-4deg);
+.bar-loaf .loaf-scores {
+  fill: none;
+  stroke: rgb(140 72 18 / 62%);
+  stroke-linecap: round;
+  stroke-width: 2.6;
+}
+
+.bar-logo:hover .bar-loaf {
+  animation: loaf-hop 560ms var(--ease-soft);
+}
+
+@keyframes loaf-hop {
+  0% {
+    transform: translateY(0) rotate(0);
+  }
+
+  35% {
+    transform: translateY(-5px) rotate(-6deg);
+  }
+
+  65% {
+    transform: translateY(0) rotate(3deg) scale(1.04, 0.94);
+  }
+
+  100% {
+    transform: translateY(0) rotate(0);
+  }
 }
 
 .bar-version {
