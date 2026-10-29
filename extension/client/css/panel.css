@@ -1602,3 +1602,17 @@ body {
   margin-left: 12px;
   content: "✓";
 }
+
+/* =========================================================
+   Entrada mais curta (o loader precisa aparecer logo)
+   ========================================================= */
+
+.app-shell {
+  animation-duration: 420ms;
+}
+
+body.motion-ready .upload-section,
+body.motion-ready .eyebrow {
+  animation-duration: 380ms;
+  animation-delay: 0ms;
+}

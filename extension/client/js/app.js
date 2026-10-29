@@ -102,6 +102,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		productions: [],
 		production: 0,
 		loading: false,
+		loadId: 0,
+		loadHint: '',
 		tree: null, // árvore em memória { type, text, children | uri }
 		treeStatus: 'loading', // loading | ok | missing | empty | error
 		templatesPath: '',
@@ -241,6 +243,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var prod = state.productions[state.production];
 
 		state.loading = true;
+		state.loadHint = 'pastas de rede podem demorar um pouco';
 		state.tree = null;
 		state.templatesPath = prod ? prod.templatesPath : '';
 		state.treeStatus = prod ? 'loading' : 'empty';
@@ -251,8 +254,23 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return;
 		}
 
+		var loadId = ++state.loadId;
+
 		try {
-			var res = await call('templateTree', { path: prod.templatesPath });
+			var res = await readTemplateTree(
+				prod.templatesPath,
+				function (folders, name) {
+					if (loadId !== state.loadId) return;
+
+					state.loadHint = folders + (folders === 1 ? ' pasta lida' : ' pastas lidas') + ' · ' + name;
+					renderTree();
+				},
+				function () {
+					return loadId !== state.loadId;
+				}
+			);
+
+			if (loadId !== state.loadId) return; // outra leitura começou
 
 			state.templatesPath = res.path;
 
@@ -264,6 +282,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				state.treeStatus = countTemplates(res.tree) > 0 ? 'ok' : 'empty';
 			}
 		} catch (err) {
+			if (loadId !== state.loadId) return; // leitura antiga cancelada
+
 			state.treeStatus = 'error';
 			pickerMessage('error', err.message);
 		}
@@ -278,6 +298,61 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			if (child.type === 'node') annotateTrail(child, trail.concat(child.text));
 			else child.folderTrail = trail;
 		});
+	}
+
+	function yieldUi() {
+		return new Promise(function (resolve) {
+			setTimeout(resolve, 0);
+		});
+	}
+
+	// Pasta com uma única subpasta vira 'PASTA / SUBPASTA' (mesma otimização do script).
+	function optimizeTree(node) {
+		if (node.type !== 'node') return;
+
+		while (node.children.length === 1 && node.children[0].type === 'node') {
+			node.text += ' / ' + node.children[0].text;
+			node.children = node.children[0].children;
+		}
+
+		node.children.forEach(optimizeTree);
+	}
+
+	// Lê a árvore pasta a pasta (chamadas curtas ao host). Pastas sem templates não entram.
+	async function readTemplateTree(path, onProgress, isStale) {
+		var first = await call('listDir', { path: path });
+
+		if (!first.exists) return { exists: false, path: first.path, tree: null };
+
+		var folders = 0;
+		var root = { type: 'node', text: first.name, children: [] };
+
+		async function fill(node, listing) {
+			for (var i = 0; i < listing.entries.length; i++) {
+				var entry = listing.entries[i];
+
+				if (entry.type === 'item') {
+					node.children.push({ type: 'item', text: entry.name, uri: entry.uri, fsName: entry.fsName });
+					continue;
+				}
+
+				if (isStale()) throw new Error('leitura cancelada');
+
+				await yieldUi(); // deixa o painel respirar entre as chamadas
+
+				var child = { type: 'node', text: entry.name, children: [] };
+
+				await fill(child, await call('listDir', { uri: entry.uri }));
+				onProgress(++folders, entry.name);
+
+				if (child.children.length) node.children.push(child);
+			}
+		}
+
+		await fill(root, first);
+		root.children.forEach(optimizeTree);
+
+		return { exists: true, path: first.path, tree: root };
 	}
 
 	function countTemplates(node) {
@@ -387,6 +462,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return li;
 	}
 
+	// Loader temático: pães saindo do forninho (css/loader.css).
+	function ovenLoader(title, hint, light) {
+		var box = el('div', 'oven-loader' + (light ? ' is-light is-compact' : ''));
+
+		box.setAttribute('role', 'status');
+		box.innerHTML =
+			'<div class="oven" aria-hidden="true"><span class="oven-glow"></span>' +
+			'<span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span>' +
+			'<span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>' +
+			'<span class="oven-body"><span class="oven-window"></span><span class="oven-knob k1"></span><span class="oven-knob k2"></span></span>' +
+			'<span class="oven-leg a"></span><span class="oven-leg b"></span></div>' +
+			'<strong class="oven-title"></strong><span class="oven-hint"></span>';
+		box.querySelector('.oven-title').textContent = title;
+		box.querySelector('.oven-hint').textContent = hint || '';
+
+		return box;
+	}
+
 	function treeState(title, text) {
 		var box = el('div', 'picker-state');
 
@@ -400,11 +493,22 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var list = $('tree');
 		var total = $('picker-total');
 
-		list.textContent = '';
 		total.textContent = '';
 
+		if (state.treeStatus !== 'loading') list.textContent = '';
+
 		if (state.treeStatus === 'loading') {
-			list.appendChild(treeState('lendo a pasta de templates…', 'pastas de rede podem demorar um pouco'));
+			// o loader é reaproveitado entre as atualizações de progresso (recriar reiniciaria a animação)
+			var loader = list.querySelector('.oven-loader');
+
+			if (!loader) {
+				list.textContent = '';
+				loader = ovenLoader('assando a lista de templates…', state.loadHint);
+				list.appendChild(loader);
+			}
+
+			loader.querySelector('.oven-title').textContent = 'assando a lista de templates…';
+			loader.querySelector('.oven-hint').textContent = state.loadHint;
 			return;
 		}
 
@@ -461,12 +565,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	function showView(name) {
-		['readonly', 'input', 'config', 'run'].forEach(function (view) {
+		['readonly', 'input', 'config', 'run', 'loading'].forEach(function (view) {
 			$('view-' + view).hidden = view !== name;
 		});
 
 		$('queue-actions').hidden = name !== 'input';
-		$('btn-edit-config').hidden = name === 'run';
+		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
 		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
 	}
@@ -519,9 +623,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		clearNotices();
 
 		app.classList.add('is-expanded');
-		setStage('2 · preencher', node.text.replace(/\.[a-z0-9]+$/i, ''), 'lendo o template…');
-		showView('input');
-		$('view-input').hidden = true;
+		setStage('2 · preencher', node.text.replace(/\.[a-z0-9]+$/i, ''), '');
+		showView('loading');
 
 		try {
 			state.info = await call('templateInfo', { uri: node.uri });

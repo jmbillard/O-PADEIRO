@@ -1,0 +1,290 @@
+/* =========================================================
+   Loader temático: pães saindo do forninho
+   Tudo em HTML/CSS e só com transform / opacity, para
+   continuar fluido mesmo quando o painel está ocupado.
+   ========================================================= */
+
+.oven-loader {
+  --oven-line: rgb(255 255 255 / 88%);
+  --oven-fill: rgb(255 255 255 / 14%);
+  --oven-belt: rgb(255 255 255 / 40%);
+  --oven-steam: rgb(255 255 255 / 70%);
+  --oven-text: white;
+  --oven-hint: rgb(255 255 255 / 72%);
+
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 24px 18px;
+  text-align: center;
+}
+
+/* sobre fundo claro (painel de trabalho) */
+.oven-loader.is-light {
+  --oven-line: var(--blue-500);
+  --oven-fill: var(--blue-50);
+  --oven-belt: var(--blue-200);
+  --oven-steam: var(--blue-300);
+  --oven-text: var(--text-primary);
+  --oven-hint: var(--text-tertiary);
+}
+
+.oven-loader.is-compact .oven {
+  zoom: 0.72;
+}
+
+.oven {
+  position: relative;
+  width: 204px;
+  height: 118px;
+  margin-bottom: 8px;
+}
+
+.oven>*,
+.oven-body>*,
+.oven-belt>* {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+/* corpo do forno */
+.oven-body {
+  top: 24px;
+  left: 6px;
+  width: 88px;
+  height: 72px;
+  border: 2px solid var(--oven-line);
+  border-radius: 18px;
+  background: var(--oven-fill);
+}
+
+.oven-window {
+  top: 16px;
+  left: 14px;
+  width: 46px;
+  height: 36px;
+  border: 2px solid var(--oven-line);
+  border-radius: 11px;
+  background: linear-gradient(160deg, #ffe39a, #f7a24a);
+  opacity: 0.9;
+  animation: oven-flicker 1.5s ease-in-out infinite alternate;
+}
+
+.oven-knob {
+  top: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--oven-line);
+}
+
+.oven-knob.k1 {
+  left: 58px;
+}
+
+.oven-knob.k2 {
+  left: 70px;
+}
+
+.oven-leg {
+  top: 96px;
+  width: 14px;
+  height: 6px;
+  border-radius: 0 0 4px 4px;
+  background: var(--oven-line);
+}
+
+.oven-leg.a {
+  left: 16px;
+}
+
+.oven-leg.b {
+  left: 72px;
+}
+
+/* calor saindo pela boca do forno */
+.oven-glow {
+  top: 40px;
+  left: 62px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 207 120 / 85%), rgb(255 207 120 / 0%) 70%);
+  animation: oven-glow 1.5s ease-in-out infinite alternate;
+}
+
+/* esteira: recorta os pães na borda do forno, como se saíssem de dentro */
+.oven-belt {
+  top: 50px;
+  left: 94px;
+  width: 108px;
+  height: 52px;
+  overflow: hidden;
+}
+
+.oven-belt::after {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  left: 0;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--oven-belt);
+  content: "";
+}
+
+.loaf {
+  top: 20px;
+  left: 0;
+  width: 34px;
+  height: 20px;
+  border-radius: 50% 50% 22% 22% / 90% 90% 16% 16%;
+  background: linear-gradient(180deg, #fbd697, #e29a4c);
+  box-shadow: inset 0 -3px 0 rgb(150 80 20 / 22%);
+  opacity: 0;
+  animation: loaf-out 3.6s linear infinite;
+}
+
+.loaf::before,
+.loaf::after {
+  position: absolute;
+  top: 4px;
+  width: 2px;
+  height: 9px;
+  border-radius: 2px;
+  background: rgb(140 72 18 / 55%);
+  content: "";
+}
+
+.loaf::before {
+  left: 11px;
+  transform: rotate(24deg);
+}
+
+.loaf::after {
+  left: 19px;
+  transform: rotate(24deg);
+}
+
+.loaf.l2 {
+  animation-delay: -1.2s;
+}
+
+.loaf.l3 {
+  animation-delay: -2.4s;
+}
+
+/* vapor */
+.steam {
+  top: 40px;
+  width: 6px;
+  height: 14px;
+  border-radius: 6px;
+  background: var(--oven-steam);
+  opacity: 0;
+  animation: steam-up 2.4s ease-out infinite;
+}
+
+.steam.s1 {
+  left: 120px;
+}
+
+.steam.s2 {
+  left: 146px;
+  animation-delay: -0.8s;
+}
+
+.steam.s3 {
+  left: 172px;
+  animation-delay: -1.6s;
+}
+
+.oven-title {
+  color: var(--oven-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.oven-hint {
+  max-width: 260px;
+  color: var(--oven-hint);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+@keyframes loaf-out {
+  0% {
+    opacity: 0;
+    transform: translateX(-38px);
+  }
+
+  8% {
+    opacity: 1;
+    transform: translateX(-30px);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translateX(78px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(104px);
+  }
+}
+
+@keyframes steam-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scaleY(0.6);
+  }
+
+  30% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scaleY(1.15);
+  }
+}
+
+@keyframes oven-glow {
+  from {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes oven-flicker {
+  from {
+    opacity: 0.72;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .loaf,
+  .steam,
+  .oven-glow,
+  .oven-window {
+    animation-duration: 0.01ms !important;
+  }
+
+  .loaf.l1 {
+    opacity: 1;
+    transform: translateX(26px);
+  }
+}

@@ -271,6 +271,32 @@ PADX.templateTree = function (a) {
 	return { exists: true, path: path, tree: padSerializeTree(buildTreeData(folder, PADX_TEMPLATE_EXT)) };
 };
 
+// Lista UMA pasta (sem descer nas subpastas), na ordem do sistema: { exists, path, name, entries }.
+// O painel percorre a árvore pasta a pasta, em chamadas curtas, para o After Effects não ficar
+// ocupado por muito tempo de uma vez (o painel continua animando e mostra o andamento).
+// a: { path } (caminho de uma produção, normalizado aqui) ou { uri } (subpasta já listada)
+PADX.listDir = function (a) {
+	var path = a.uri ? a.uri : padPath(a.path);
+	var folder = new Folder(path);
+
+	if (!folder.exists) return { exists: false, path: path, name: '', entries: [] };
+
+	var items = folder.getFiles();
+	var entries = [];
+
+	for (var i = 0; i < items.length; i++) {
+		var name = items[i].displayName;
+
+		if (items[i] instanceof Folder) {
+			entries.push({ type: 'folder', name: name, uri: items[i].absoluteURI });
+		} else if (PADX_TEMPLATE_EXT.indexOf(getFileExt(name)) >= 0) {
+			entries.push({ type: 'item', name: name, uri: items[i].absoluteURI, fsName: items[i].fsName });
+		}
+	}
+
+	return { exists: true, path: path, name: folder.displayName, entries: entries };
+};
+
 // Preview, configuração e dicas de um template.
 PADX.templateInfo = function (a) {
 	var projectFile = new File(a.uri);

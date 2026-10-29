@@ -50,6 +50,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		]
 	};
 
+	(function tag(node, prefix) {
+		node.__id = prefix;
+
+		node.children.forEach(function (child, i) {
+			if (child.type === 'node') tag(child, prefix + '/' + i);
+		});
+	})(tree, 'node:');
+
 	var configs = {
 		'TARJA SIMPLES': {
 			configName: 'TARJA SIMPLES',
@@ -126,6 +134,38 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA' };
 		},
 
+		listDir: async function (a) {
+			await wait(mode === 'slow' ? 350 : 220);
+
+			function find(node, id) {
+				if (node.__id === id) return node;
+
+				for (var i = 0; i < (node.children || []).length; i++) {
+					var found = node.children[i].type === 'node' ? find(node.children[i], id) : null;
+
+					if (found) return found;
+				}
+
+				return null;
+			}
+
+			var node;
+
+			if (a.uri) node = find(tree, a.uri);
+			else if (/TESTES/.test(a.path)) node = { type: 'node', text: 'TESTES', children: [] };
+			else if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, name: '', entries: [] };
+			else node = tree;
+
+			return {
+				exists: true,
+				path: a.path || a.uri,
+				name: node.text,
+				entries: node.children.map(function (child) {
+					return child.type === 'node' ? { type: 'folder', name: child.text, uri: child.__id } : { type: 'item', name: child.text, uri: child.uri, fsName: child.fsName };
+				})
+			};
+		},
+
 		templateTree: function (a) {
 			if (/TESTES/.test(a.path)) return { exists: true, path: a.path, tree: { type: 'node', text: 'TESTES', children: [] } };
 			if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, tree: null };
@@ -133,7 +173,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { exists: true, path: a.path, tree: tree };
 		},
 
-		templateInfo: function (a) {
+		templateInfo: async function (a) {
+			await wait(mode === 'slow' ? 1600 : 80);
+
 			var name = a.uri.split('/').pop().replace(/\.aep$/, '');
 			var cfg = configs[name];
 			var info = { uri: a.uri, name: name, folder: a.uri.replace(/\/[^/]+$/, ''), preview: name === 'TARJA DUPLA' ? null : previewSvg(), video: window.PAD_MOCK_VIDEO && name === 'TARJA SIMPLES' ? window.PAD_MOCK_VIDEO : null, hasConfig: !!cfg, hasScript: false, hasInputLayers: false, defaults: { configName: 'NOME DA CONFIGURAÇÃO', exemple: 'INFORMAÇÃO 1\nINFORMAÇÃO 2', tip: 'coloque aqui as instruções de preenchimento deste template.', compName: 'COMP TEMPLATE', prefix: 'TARJA', refTime: 2, separator: '\n', textCase: 'upperCase', inputLayers: [], importPath: '~/Downloads', outputPath: ['~/Desktop'] }, config: null, configError: null };
