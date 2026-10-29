@@ -53,7 +53,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
    - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: habilite a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
    - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
    - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
-3. **reinicie** o After Effects.
+3. **reinicie** o After Effects. no macOS, se o padeiro não aparecer em `Window` > `Extensions`, reinicie o computador: a liberação de extensões sem assinatura às vezes só vale depois disso.
 4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
 > 🚩 *obs:*\

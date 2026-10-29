@@ -461,6 +461,7 @@ Instalar / atualizar:
 		resultText.text =
 			'O PADEIRO ' + (installed ? 'atualizado' : 'instalado') + '!\n\n' +
 			'reinicie o After Effects e abra a barra em:\nWindow > Extensions > O PADEIRO' +
+			(IS_MAC ? '\n\nse não aparecer, reinicie o computador (no macOS a liberação das extensões às vezes só vale depois disso).' : '') +
 			(notes.length ? '\n\n' + notes.join('\n') : '');
 	}
 
