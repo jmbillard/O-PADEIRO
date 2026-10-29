@@ -120,6 +120,29 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	var app = $('app-shell');
 
 	/* =========================================================
+	   Largura da janela: estreita só com a busca, larga com um template
+	   selecionado (como no script original)
+	   ========================================================= */
+
+	var COMPACT_WIDTH = 460;
+	var EXPANDED_WIDTH = 1000;
+	var compactWidth = null; // largura antes de alargar, para voltar a ela
+
+	function setExpanded(on) {
+		if (on === app.classList.contains('is-expanded')) return;
+
+		app.classList.toggle('is-expanded', on);
+
+		if (on && window.innerWidth < EXPANDED_WIDTH) {
+			compactWidth = window.innerWidth;
+			PAD_BRIDGE.resizeWindow(EXPANDED_WIDTH, window.innerHeight);
+		} else if (!on && compactWidth) {
+			PAD_BRIDGE.resizeWindow(compactWidth, window.innerHeight);
+			compactWidth = null;
+		}
+	}
+
+	/* =========================================================
 	   Avisos
 	   ========================================================= */
 
@@ -243,7 +266,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.selected = null;
 		state.info = null;
 		state.run = null;
-		app.classList.remove('is-expanded');
+		setExpanded(false);
 		clearNotices();
 		pickerMessage();
 		updateSearchPlaceholder();
@@ -287,7 +310,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.selected = null;
 		state.info = null;
 		state.run = null;
-		app.classList.remove('is-expanded');
+		setExpanded(false);
 		clearNotices();
 		pickerMessage();
 		updateSearchPlaceholder();
@@ -863,7 +886,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		markSelected();
 		clearNotices();
 
-		app.classList.add('is-expanded');
+		setExpanded(true);
 		setStage('2 · preencher', node.text.replace(/\.[a-z0-9]+$/i, ''), '');
 		showView('loading');
 
@@ -971,7 +994,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.run = null;
 		markSelected();
 		clearNotices();
-		app.classList.remove('is-expanded');
+		setExpanded(false);
 	}
 
 	function showReadonly(message) {
@@ -1814,6 +1837,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	async function init() {
+		// a janela abre estreita, só com a busca (a largura do manifest só muda reinstalando)
+		if (PAD_BRIDGE.inCep() && window.innerWidth > COMPACT_WIDTH) PAD_BRIDGE.resizeWindow(COMPACT_WIDTH, window.innerHeight);
+
 		bindEvents();
 		PAD_DROPDOWN.enhance($('render-template'));
 

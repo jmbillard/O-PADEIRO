@@ -304,7 +304,7 @@ PADX.saveTemplateLists = function (a) {
 PADX.openFolder = function (a) {
 	var folder = new Folder(padPath(a.path));
 
-	if (!folder.exists) throw new Error('#PAD_019 - pasta não encontrada: ' + a.path);
+	if (!folder.exists) throw new Error('#PAD_019 - pasta não encontrada: ' + folder.fsName);
 
 	openFolder(folder.fsName);
 
@@ -878,7 +878,8 @@ PADX.queueBegin = function (a) {
 
 		if (!new Folder(outputPath).exists) {
 			// Substitui o caminho inexistente pelo caminho padrão
-			warnings.push('#PAD_019 - output não pode ser acessado: ' + configured[o]);
+			// o caminho já convertido para este sistema (no macOS, /Volumes/...)
+			warnings.push('#PAD_019 - output não pode ser acessado: ' + new Folder(outputPath).fsName);
 			outputPath = defaultTemplateConfigObj.outputPath[0];
 		}
 
@@ -950,7 +951,7 @@ PADX.openOutputs = function (a) {
 			openFolder(folder.fsName);
 			opened++;
 		} else {
-			missing.push(paths[o]);
+			missing.push(folder.fsName);
 		}
 	}
 

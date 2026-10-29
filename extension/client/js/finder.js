@@ -19,7 +19,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
 	var MAX_RESULTS = 12; // máximo de atrações exibidas
-	var MAX_PATH_CHARS = 90;
+	var MAX_PATH_CHARS = 180;
 	var MAX_TEXT_ROWS = 300; // máximo de textos exibidos
 	var COMPS_PER_CHUNK = 4;
 	var TAB_REQUEST_TTL = 15000; // ms: pedido de aba da barra considerado "recente" ao abrir o painel
@@ -217,6 +217,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		// cada aba só carrega na primeira vez que aparece
 		if (tab === 'paths' && !state.paths.loaded) loadPaths(false);
 		if (tab === 'texts' && !state.texts.loaded) loadTexts();
+
+		scheduleFit();
 	}
 
 	/* =========================================================
@@ -753,7 +755,83 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		window.addEventListener('focus', watchRequestedTab);
 	}
 
+	/* =========================================================
+	   Altura da janela: só o suficiente para o loader e, com uma
+	   busca, a altura que cabe os resultados (até um limite)
+	   ========================================================= */
+
+	var FIT_MIN_WIDTH = 720;
+	var FIT_WIDE_ITEMS = '.path-line, .result-name, .comp-title span:first-child';
+	var fitMinHeight = 360;
+	var fitTimer = null;
+	var refitOnResize = false;
+
+	window.addEventListener('resize', function () {
+		if (!refitOnResize) return;
+
+		refitOnResize = false;
+		scheduleFit();
+	});
+
+	function fitHeight() {
+		var results = $('results-' + state.tab);
+
+		if (!results || !results.children.length) return;
+
+		// primeiro a largura (a janela só alarga, nunca estreita): os toggles numa linha só e os
+		// caminhos e nomes sem reticências, até 70% da largura da tela
+		var opts = $('opts-' + state.tab);
+		var chips = opts.children;
+		var natural = 0;
+
+		for (var c = 0; c < chips.length; c++) natural += chips[c].getBoundingClientRect().width;
+
+		natural += Math.max(0, chips.length - 1) * parseFloat(getComputedStyle(opts).columnGap || 0);
+
+		var extra = Math.max(0, natural - opts.clientWidth);
+
+		Array.prototype.forEach.call(results.querySelectorAll(FIT_WIDE_ITEMS), function (item) {
+			extra = Math.max(extra, item.scrollWidth - item.clientWidth);
+		});
+
+		var maxWidth = Math.max(FIT_MIN_WIDTH, Math.round((window.screen.availWidth || 1440) * 0.7));
+		var width = Math.min(maxWidth, Math.max(FIT_MIN_WIDTH, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
+
+		if (width > window.innerWidth + 1) {
+			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho pode perder uma linha)
+			refitOnResize = true;
+			PAD_BRIDGE.resizeWindow(width, window.innerHeight);
+			return;
+		}
+
+		// altura natural do conteúdo (a lista ocupa o espaço que sobra, então mede pelo último filho)
+		var top = results.getBoundingClientRect().top;
+		var bottom = 0;
+
+		Array.prototype.forEach.call(results.children, function (child) {
+			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
+		});
+
+		var content = bottom - top + results.scrollTop + parseFloat(getComputedStyle(results).paddingBottom);
+		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
+		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
+
+		// a altura do loader (a primeira medida) vira a mínima: a janela não encolhe depois de carregar
+		if (results.querySelector('.oven-loader')) fitMinHeight = Math.max(fitMinHeight, height);
+
+		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+	}
+
+	function scheduleFit() {
+		clearTimeout(fitTimer);
+		fitTimer = setTimeout(fitHeight, 120);
+	}
+
 	async function init() {
+		['paths', 'texts'].forEach(function (tab) {
+			new MutationObserver(scheduleFit).observe($('results-' + tab), { childList: true });
+		});
+
 		bindEvents();
 
 		var tab = 'paths'; // aba principal

@@ -4,7 +4,7 @@
 
 o painel **O PADEIRO templates**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida na barra. ele começa só com a busca e se abre em duas colunas quando você escolhe um template.
+o painel de templates mostra os templates da produção escolhida na barra. a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
 
 > 📟 *lista de templates:*
 >

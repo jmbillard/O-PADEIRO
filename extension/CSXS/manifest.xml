@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.0"
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.1"
 	ExtensionBundleName="O PADEIRO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<ExtensionList>
-		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.0" />
-		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.0" />
-		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.0" />
-		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.0" />
-		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.0" />
-		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.0" />
+		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.1" />
+		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.1" />
+		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.1" />
+		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.1" />
+		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.1" />
+		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.1" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -76,7 +76,7 @@
 					<Menu>O PADEIRO templates</Menu>
 					<Geometry>
 						<Size>
-							<Width>1000</Width>
+							<Width>460</Width>
 							<Height>760</Height>
 						</Size>
 						<MinSize>
@@ -111,8 +111,8 @@
 					<Menu>O ACESSORISTA</Menu>
 					<Geometry>
 						<Size>
-							<Width>520</Width>
-							<Height>720</Height>
+							<Width>720</Width>
+							<Height>400</Height>
 						</Size>
 						<MinSize>
 							<Width>300</Width>

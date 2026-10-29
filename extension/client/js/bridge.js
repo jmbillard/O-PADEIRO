@@ -128,6 +128,12 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
+	// Redimensiona a própria janela (só janelas Modeless; painéis acoplados ignoram).
+	function resizeWindow(width, height) {
+		if (cep && cep.resizeContent) cep.resizeContent(Math.round(width), Math.round(height));
+		else console.log('[mock] redimensionar janela', width, height);
+	}
+
 	// Fecha o próprio painel.
 	function closePanel() {
 		if (cep && cep.closeExtension) {
@@ -146,5 +152,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, openUrl: openUrl };
+	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
 })();

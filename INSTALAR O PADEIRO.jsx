@@ -256,6 +256,7 @@ Instalar / atualizar:
 
 	pages.orientation = 'stack';
 	pages.alignment = ['fill', 'top'];
+	pages.alignChildren = ['fill', 'top']; // páginas de alturas diferentes começam no topo
 	pages.margins = [14, 0, 14, 0];
 
 	function page() {
@@ -387,7 +388,10 @@ Instalar / atualizar:
 		for (var i = 0; i < checks.length; i++) {
 			var pass = checks[i].test();
 
-			var state = pass ? 'ok' : checks[i].required ? 'bad' : 'warn';
+			// sem ternário encadeado: o ExtendScript avalia 'a ? b : c ? d : e' como '(a ? b : c) ? d : e'
+			var state = 'ok';
+
+			if (!pass) state = checks[i].required ? 'bad' : 'warn';
 
 			for (var d in checks[i].dots) checks[i].dots[d].visible = d === state;
 
@@ -412,7 +416,11 @@ Instalar / atualizar:
 		cancelBtn.visible = n < 3;
 		progressLab.visible = progressBar.visible = n === 3;
 		nextBtn.enabled = true;
-		nextBtn.text = n === 0 ? 'começar' : n === 2 ? (removeRdo.value ? 'remover' : installRdo.text) : n === 3 ? 'concluir' : 'próximo';
+		nextBtn.text = 'próximo';
+
+		if (n === 0) nextBtn.text = 'começar';
+		if (n === 2) nextBtn.text = removeRdo.value ? 'remover' : installRdo.text;
+		if (n === 3) nextBtn.text = 'concluir';
 
 		if (n === 1) runChecks();
 
@@ -453,6 +461,7 @@ Instalar / atualizar:
 		resultText.text =
 			'O PADEIRO ' + (installed ? 'atualizado' : 'instalado') + '!\n\n' +
 			'reinicie o After Effects e abra a barra em:\nWindow > Extensions > O PADEIRO' +
+			(IS_MAC ? '\n\nse não aparecer, reinicie o computador (no macOS a liberação das extensões às vezes só vale depois disso).' : '') +
 			(notes.length ? '\n\n' + notes.join('\n') : '');
 	}
 
