@@ -78,13 +78,17 @@
 					<Menu>O PADEIRO templates</Menu>
 					<Geometry>
 						<Size>
-							<Width>560</Width>
+							<Width>1000</Width>
 							<Height>760</Height>
 						</Size>
 						<MinSize>
 							<Width>340</Width>
 							<Height>480</Height>
 						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
 					</Geometry>
 				</UI>
 			</DispatchInfo>
@@ -117,6 +121,10 @@
 							<Width>300</Width>
 							<Height>360</Height>
 						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
 					</Geometry>
 				</UI>
 			</DispatchInfo>
@@ -149,6 +157,10 @@
 							<Width>300</Width>
 							<Height>300</Height>
 						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
 					</Geometry>
 				</UI>
 			</DispatchInfo>
@@ -181,6 +193,10 @@
 							<Width>320</Width>
 							<Height>320</Height>
 						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
 					</Geometry>
 				</UI>
 			</DispatchInfo>
@@ -213,6 +229,10 @@
 							<Width>340</Width>
 							<Height>420</Height>
 						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
 					</Geometry>
 				</UI>
 			</DispatchInfo>
