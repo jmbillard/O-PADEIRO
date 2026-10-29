@@ -152,7 +152,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	function updateNamePreview() {
 		var info = exampleInputs().join(' ').replace(/[\s-]+/g, ' ').trim();
-		var name = cleanName(($('f-prefix').value.trim() + GLOBAL_SEPARATOR + info).toUpperCase());
+		var prefix = $('f-prefix').value.trim();
+		var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
 		var box = $('name-preview');
 
 		box.textContent = '';

@@ -222,7 +222,7 @@ são preservadas ao salvar.
 		var nameGrid = el('div', 'cfg-grid');
 
 		nameCard.appendChild(nameGrid);
-		field(nameGrid, 'prefix', 'Prefixo', input(base.prefix), 'início do nome de todas as comps criadas. "ignore" não preenche, só importa o template.');
+		field(nameGrid, 'prefix', 'Prefixo', input(base.prefix), 'início do nome de todas as comps criadas (opcional). "ignore" não preenche, só importa o template.');
 		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.');
 
 		var caseSel = select(CASES, base.textCase);
@@ -517,7 +517,6 @@ são preservadas ao salvar.
 
 			if (cfg.configName === '') bad('configName', 'preencha o nome da configuração.');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
-			if (cfg.prefix === '') bad('prefix', 'preencha o prefixo.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 
 			cfg.inputLayers.forEach(function (l, i) {
@@ -587,7 +586,8 @@ são preservadas ao salvar.
 			if (kind === 'upperCase') info = info.toUpperCase();
 			if (kind === 'lowerCase') info = info.toLowerCase();
 
-			var name = cleanName((text('prefix').trim() + GLOBAL_SEPARATOR + info).toUpperCase());
+			var prefix = text('prefix').trim();
+			var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
 
 			namePreview.textContent = '';
 			namePreview.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));

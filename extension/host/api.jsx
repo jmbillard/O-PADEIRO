@@ -640,7 +640,7 @@ PADX.fillBegin = function (a) {
 		}
 
 		var suffixArray = templateData.inputFx != null ? templateData.inputFx.options : [''];
-		var ignore = !!templateData.prefix.match(/ignore/i);
+		var ignore = !!String(templateData.prefix || '').match(/ignore/i);
 		var jobs = [];
 
 		if (ignore) {
@@ -767,7 +767,10 @@ PADX.fillStep = function (a) {
 
 			// Define o nome do template
 			if (!overwriteCompName(template)) {
-				template.name = (templateData.prefix + globalSeparator + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
+				// sem prefixo, o nome é só a informação (ex: 'JOAO BOSCO D')
+				var prefix = String(templateData.prefix || '').replace(/^\s+|\s+$/g, '');
+
+				template.name = ((prefix ? prefix + globalSeparator : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 			}
 
 			template.openInViewer(); // Abre a composição preenchida

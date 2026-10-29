@@ -47,7 +47,7 @@ ao salvar, o padeiro:
 - **nome da configuração** → identifica o template no log.
 - **exemplo de preenchimento** → idealmente, o texto usado no preview. '*puxar dos layers*' monta o exemplo com o texto atual dos layers editáveis.
 - **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.
-- **prefixo** → começo do nome de todas as comps criadas.
+- **prefixo** (opcional) → começo do nome de todas as comps criadas. vazio, o nome da comp é só a informação do input (ex: `JOAO BOSCO REPORTER` em vez de `TARJA - JOAO BOSCO REPORTER`).
 - **caixa de texto** → `CAIXA ALTA`, `caixa baixa`, `Título` ou `livre` (sem conversão).
 - **separador** → o texto que separa informações diferentes no input. use `\n` para uma informação por linha.
 
