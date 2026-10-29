@@ -262,7 +262,7 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 
 		return sectionGrp;
 	}, function (key, ctrlProperties, sectionGrp) {
-		var btn = themeImageButton(sectionGrp, ctrlProperties);
+		var btn = PAD_DRAWN_BUTTONS ? themeMenuButton(sectionGrp, ctrlProperties) : themeImageButton(sectionGrp, ctrlProperties);
 
 		uiObj.imageButtonArray.push(btn);
 		bindUiCtrl(uiObj, key, btn, ctrlProperties);
@@ -277,7 +277,7 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	uiObj.window.onShow = function () {
 		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
 			var btn = uiObj.imageButtonArray[b];
-			btn.label.preferredSize = btn.label.size;
+			if (btn.label) btn.label.preferredSize = btn.label.size;
 		}
 
 		PAD_LAYOUT(uiObj);
@@ -346,6 +346,20 @@ function PAD_LAYOUT(uiObj) {
 		}
 		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
 			var btn = uiObj.imageButtonArray[b];
+
+			// botão desenhado: um único controle, o modo define como ícone e rótulo são desenhados
+			if (btn.isDrawn) {
+				var mode;
+
+				if (uiObj.window.size.height < 44) mode = 'text';
+				else if (uiObj.window.size.width < 88 || uiObj.window.size.height < 72) mode = 'icon';
+				else if (isRow) mode = 'stacked';
+				else mode = 'inline';
+
+				btn.setMode(mode, uiObj.window.size.width);
+				continue;
+			}
+
 			btn.btnGroup.orientation = btnOrientation;
 			btn.btnGroup.spacing = isRow ? 0 : 8; // Espaçamento entre botões
 
@@ -606,6 +620,124 @@ function themeIconButton(sectionGrp, ctrlProperties) {
 	});
 
 	return btn;
+}
+
+// Botões da ui principal desenhados num único customButton (true) ou montados com grupos,
+// imagens e rótulo (false, versão 1.x). Mantido como chave para comparar as duas versões.
+var PAD_DRAWN_BUTTONS = true;
+
+var PAD_MENU_ICON_SIZE = 32;
+
+// Botão de imagem com rótulo desenhado num único 'customButton' (seções da ui principal).
+// O desenho usa o estado do mouse recebido pelo onDraw (hover), sem trocar controles.
+// Modos (definidos pelo PAD_LAYOUT):
+//   'stacked' → ícone em cima e rótulo embaixo (painel horizontal)
+//   'inline'  → ícone à esquerda e rótulo à direita (painel vertical)
+//   'icon'    → só o ícone (painel estreito ou baixo)
+//   'text'    → só o rótulo (painel muito baixo)
+// Retorna { isDrawn, button, leftClick, rightClick, setMode } — leftClick / rightClick
+// recebem 'onClick' como os demais botões do tema.
+function themeMenuButton(sectionGrp, ctrlProperties) {
+	var tipTxt = ctrlProperties.labelTxt + ':\n\n' + ctrlProperties.tips.join('\n\n');
+	var icon = ctrlProperties.icon;
+	var btn = { isDrawn: true };
+
+	function clickTarget() {
+		return {
+			onClick: null,
+			notify: function () {
+				if (this.onClick) this.onClick();
+			}
+		};
+	}
+
+	btn.leftClick = clickTarget();
+	btn.rightClick = clickTarget();
+
+	var button = sectionGrp.add('customButton');
+	var g = button.graphics;
+
+	button.helpTip = tipTxt;
+	button.labelTxt = ctrlProperties.labelTxt;
+	button.mode = 'stacked';
+	button.isHover = false;
+
+	button.normalImage = ScriptUI.newImage(icon.normal);
+	button.hoverImage = ScriptUI.newImage(icon.hover == undefined ? icon.normal : icon.hover);
+	button.normalPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(normalColor1), 1);
+	button.hoverPen = g.newPen(g.PenType.SOLID_COLOR, hexToRgb(highlightColor1), 1);
+
+	button.onDraw = drawMenuButton;
+
+	// o hover é marcado também pelos eventos, para os casos em que o onDraw não recebe o drawState
+	button.addEventListener('mouseover', function () {
+		this.isHover = true;
+	});
+	button.addEventListener('mouseout', function () {
+		this.isHover = false;
+	});
+
+	button.onClick = function () {
+		btn.leftClick.notify();
+	};
+	button.addEventListener('click', function (c) {
+		if (c.button == 2) btn.rightClick.notify();
+	});
+
+	btn.button = button;
+
+	// O tamanho é definido aqui (fora do onDraw): o customButton não tem tamanho próprio
+	// e o layout não é recalculado durante o desenho.
+	btn.setMode = function (mode, panelWidth) {
+		var textW = Math.ceil(g.measureString(button.labelTxt).width);
+		var size;
+
+		if (mode == 'stacked') size = [Math.max(PAD_MENU_ICON_SIZE, textW) + 8, PAD_MENU_ICON_SIZE + 22];
+		else if (mode == 'inline') size = [Math.max(PAD_MENU_ICON_SIZE + 8 + textW, Math.min(panelWidth - 16, 140)), PAD_MENU_ICON_SIZE];
+		else if (mode == 'icon') size = [PAD_MENU_ICON_SIZE, PAD_MENU_ICON_SIZE];
+		else size = [textW + 8, 20];
+
+		button.mode = mode;
+		button.preferredSize = button.minimumSize = button.maximumSize = size;
+		button.size = size;
+	};
+
+	return btn;
+}
+
+// onDraw do themeMenuButton ('this' é o customButton).
+function drawMenuButton(drawState) {
+	var g = this.graphics;
+	var w = this.size.width;
+	var h = this.size.height;
+	var isHover = this.isHover || (drawState != undefined && drawState.mouseOver);
+	var img = isHover ? this.hoverImage : this.normalImage;
+	var pen = isHover ? this.hoverPen : this.normalPen;
+	var iconSize = PAD_MENU_ICON_SIZE;
+	var text = this.labelTxt;
+
+	// drawString posiciona pelo topo do texto; nas versões anteriores ao AE 2024 o texto desce ~8 px
+	var textOffset = appV > 24 ? 8 : 16;
+
+	if (this.mode == 'icon') {
+		g.drawImage(img, (w - iconSize) / 2, (h - iconSize) / 2, iconSize, iconSize);
+		return;
+	}
+
+	if (this.mode == 'text') {
+		g.drawString(text, pen, (w - g.measureString(text).width) / 2, h / 2 - textOffset);
+		return;
+	}
+
+	if (this.mode == 'stacked') {
+		g.drawImage(img, (w - iconSize) / 2, 0, iconSize, iconSize);
+		g.drawString(text, pen, (w - g.measureString(text).width) / 2, iconSize + 11 - textOffset);
+		return;
+	}
+
+	// 'inline'
+	g.drawImage(img, 0, (h - iconSize) / 2, iconSize, iconSize);
+	g.drawString(text, pen, iconSize + 8, h / 2 - textOffset);
 }
 
 // Botão de imagem com rótulo (seções da ui principal).
