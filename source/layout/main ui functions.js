@@ -693,12 +693,15 @@ function themeMenuButton(sectionGrp, ctrlProperties) {
 		var size;
 
 		if (mode == 'stacked') size = [Math.max(PAD_MENU_ICON_SIZE, textW) + 8, PAD_MENU_ICON_SIZE + 22];
-		else if (mode == 'inline') size = [Math.max(PAD_MENU_ICON_SIZE + 8 + textW, Math.min(panelWidth - 16, 140)), PAD_MENU_ICON_SIZE];
+		// todos os botões com a mesma largura (a do painel): ícones alinhados e texto cortado com '...'
+		else if (mode == 'inline') size = [Math.max(PAD_MENU_ICON_SIZE, panelWidth - 16), PAD_MENU_ICON_SIZE];
 		else if (mode == 'icon') size = [PAD_MENU_ICON_SIZE, PAD_MENU_ICON_SIZE];
 		else size = [textW + 8, 20];
 
 		button.mode = mode;
-		button.preferredSize = button.minimumSize = button.maximumSize = size;
+		// sem minimumSize / maximumSize: limites fixos nos controles impedem o painel de ser
+		// redimensionado além deles (o painel para de seguir o mouse)
+		button.preferredSize = size;
 		button.size = size;
 	};
 
@@ -737,7 +740,18 @@ function drawMenuButton(drawState) {
 
 	// 'inline'
 	g.drawImage(img, 0, (h - iconSize) / 2, iconSize, iconSize);
-	g.drawString(text, pen, iconSize + 8, h / 2 - textOffset);
+	g.drawString(fitMenuText(g, text, w - iconSize - 8), pen, iconSize + 8, h / 2 - textOffset);
+}
+
+// Corta o texto com '...' para caber em 'maxWidth' (vazio se nem as reticências couberem).
+function fitMenuText(g, text, maxWidth) {
+	if (g.measureString(text).width <= maxWidth) return text;
+
+	while (text.length > 0 && g.measureString(text + '...').width > maxWidth) {
+		text = text.substring(0, text.length - 1);
+	}
+
+	return text.length > 0 ? text + '...' : '';
 }
 
 // Botão de imagem com rótulo (seções da ui principal).
