@@ -42,4 +42,13 @@ if (Test-Path $config) {
 	Write-Host "aviso: não achei $config - sem ele não há lista de produções (instale a partir da pasta do padeiro na rede)"
 }
 
+# versão antiga (script ScriptUI): o instalador dela gravava 'O PADEIRO.jsx' nas preferências de cada versão do AE
+Get-ChildItem (Join-Path $env:APPDATA 'Adobe\After Effects') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+	$old = Join-Path $_.FullName 'Scripts\ScriptUI Panels\O PADEIRO.jsx'
+	if (Test-Path $old) {
+		Remove-Item $old -Force
+		Write-Host "versão antiga (script) removida: $old"
+	}
+}
+
 Write-Host 'reinicie o After Effects e abra: Window > Extensions > O PADEIRO'

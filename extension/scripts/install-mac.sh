@@ -46,4 +46,12 @@ else
 	echo "aviso: não achei $config — sem ele não há lista de produções (instale a partir da pasta do padeiro na rede)"
 fi
 
+# versão antiga (script ScriptUI): o instalador dela gravava 'O PADEIRO.jsx' nas preferências de cada versão do AE
+shopt -s nullglob
+for old in "$HOME/Library/Preferences/Adobe/After Effects/"*"/Scripts/ScriptUI Panels/O PADEIRO.jsx"; do
+	rm -f "$old"
+	echo "versão antiga (script) removida: $old"
+done
+shopt -u nullglob
+
 echo "reinicie o After Effects e abra: Window > Extensions > O PADEIRO"

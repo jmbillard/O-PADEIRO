@@ -19,7 +19,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
 	var PRODUCTIONS_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
-	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
 	var L_CLICK = '◖  →  ';

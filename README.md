@@ -1,55 +1,74 @@
-# 🧾 O PADEIRO *script*
+# 🥖 O PADEIRO
 
-🗨️ **pt-BR** ⚡ Ferramenta de preenchimento em massa de templates e outras utilidades no After Effects ⚡
+🗨️ **pt-BR** ⚡ preenchimento em massa de templates e outras utilidades para o After Effects ⚡
 
-O script duplica comps, preenche conteúdo de texto e cria a fila de render em um projeto template. ideal para lidar com volumes grandes de "*artes iguais*" e caminhos de rede longos e confusos.
+o padeiro duplica comps, preenche os textos e cria a fila de render a partir de um projeto template. ideal para volumes grandes de "*artes iguais*" e caminhos de rede longos e confusos.
 
-a proposta de workflow é simples, são 3 etapas:\
-`1 buscar​` > ​`2 selecionar​` > ​`3 preencher​`
+o fluxo é simples, em 3 etapas:\
+`1 buscar` > `2 selecionar` > `3 preencher`
 
-> 📂 **arquivos:**\
-> • **O PADEIRO instalador.jsx** → aquivo que deve ser executado no after effects.\
-> • **O_PADEIRO_SOURCE.jsxbin** → arquivo que contém o binário do script.
+![barra principal](docs/images/barra.webp)
 
-> 🧩 **extensão (beta):** existe também uma versão em painel CEP, com interface HTML, na pasta [`extension/`](extension/README.md).\
-> ela convive com o script e usa a mesma lista de produções.
+o padeiro é uma **extensão** do After Effects: um conjunto de painéis que podem ser acoplados em qualquer lugar da interface, como os painéis nativos.
+
+| painel | para que serve |
+| --- | --- |
+| **O PADEIRO** | a barra principal: produção, ferramentas e atalhos para os outros painéis |
+| **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render |
+| **O PADEIRO criar template** | transformar a comp aberta em um novo template |
+| **O PADEIRO produções** | editar a lista de produções da equipe |
+| **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
+| **O PADEIRO conversor** | converter caminhos entre Windows e macOS |
 
 <br>
 
-## 📍 habilitando o acesso a rede
+## 📍 sumário
 
-para que o sistema de templates funcione é preciso habilitar o acesso a rede, acesse:\
-`Edit` > `Preferences` > `Scripting & Expressions...`\
-e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
+- [instalação](#-instalação)
+- [a barra principal](#-a-barra-principal)
+- [produções](#-produções)
+- [preenchendo templates](#-preenchendo-templates)
+- [criando um novo template](#-criando-um-novo-template)
+- [O ACESSORISTA](#-o-acessorista)
+- [conversor de caminhos](#-conversor-de-caminhos)
+- [outras ferramentas da barra](#-outras-ferramentas-da-barra)
+- [teclado e atalhos](#-teclado-e-atalhos)
+- [🚨 atenção!](#-atenção)
+- [✨ dicas](#-dicas)
+- [manutenção](#-manutenção)
 
-> 📋 *exemplo:*\
-> ![ui](docs/images/net_acssess.png)
-> ![ui](docs/images/scripting_preferences.png)
+<br>
+
+---
 
 <br>
 
 ## 📍 instalação
 
-instale o script pelo menu:\
-`File` > `Scripts` > `Run Script File...`
+requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
-> 📋 *exemplo:*\
-> ![ui](docs/images/instalacao.png)
-
-> 📟 *interface do instalador:*
->
-> ![ui](docs/images/instalador_ui.png)
-
-selecione a opção '*instalar*' e clique em '*avançar*'
-
-após a instalação, **reinicie** o After Effects e o `O PADEIRO` aparecerá na última seção do menu '*Window*' e poderá ser acoplado a qualquer painel da interface.
+1. abra a **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
+2. dê dois cliques no instalador do seu sistema:
+   - macOS → `INSTALAR macOS.command`
+   - Windows → `INSTALAR Windows.bat`
+3. **reinicie** o After Effects.
+4. abra os painéis pelo menu `Window` > `Extensions` e acople onde preferir. comece pelo **O PADEIRO** (a barra): os outros abrem pelos botões dela.
 
 > 🚩 *obs:*\
-> • no macOS, o atalho instalado encontra o script mesmo quando o volume de rede é montado com sufixo (ex: `/Volumes/VFX-1`). quem instalou uma versão antiga deve executar o instalador novamente com a opção '*reparar*'.\
-> • os caminhos de rede de todo o script seguem a mesma regra: se `/Volumes/VFX` não existir, as variantes `VFX-1` a `VFX-5` são testadas.
+> • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
+> • para **atualizar**, rode o instalador de novo e reinicie o After Effects.\
+> • no macOS, se o Finder bloquear o instalador, clique com o botão direito nele e escolha '*Abrir*'.\
+> • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
+
+### habilitando o acesso à rede
+
+o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes). para isso, acesse:\
+`Edit` > `Preferences` > `Scripting & Expressions...`\
+e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
 
 > 📋 *exemplo:*\
-> ![ui](docs/gifs/ui1.gif)
+> ![menu de preferências](docs/images/ae-menu-preferencias.png)
+> ![preferências de scripting](docs/images/ae-preferencias-scripting.png)
 
 <br>
 
@@ -57,29 +76,44 @@ após a instalação, **reinicie** o After Effects e o `O PADEIRO` aparecerá na
 
 <br>
 
-## 📍 adicionando pastas de produção
+## 📍 a barra principal
 
-uma pasta de produção é um pasta que contem ou irá conter templates do padeiro. cada pasta pode conter outras subpastas com um ou mais templates.
+a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado.
 
-ao executar o script pela primeira vez, o editor de pastas de produção será aberto automaticamente.\
-o arquivo da lista de produção será salvo na mesma pasta do script e compartilhado entre todos os usuários que executarem o script a partir desta mesma pasta, assim todos os membros de uma equipe terão a mesma lista de produções e seus respectivos templates.
+> ![barra principal](docs/images/barra.webp)
 
-> 📟 *interface do editor de pastas de produção:*
->
-> ![ui](docs/images/pastas_ui2.png)
+<img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-1. `◖ clique DUPLO esquerdo` no ícone da produção para abrir o editor.
-2. clique no botão '*+ nova produção*'.
-3. edite a pasta de templates.
-4. selecione um ícone para a produção.
-5. edite o nome da produção.
-6. clique no botão '*salvar lista*'.
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas.
+
+- **pãozinho** → abre esta documentação.
+- **produção** → escolhe a produção atual (a pasta de templates usada pelo painel de templates).\
+  `◖ clique DUPLO` no ícone da produção → abre o editor de produções.
+- **corrente** → abre a planilha de apontamento de projetos.
+- **templates**\
+  `◖` → abre o painel de templates.\
+  `◗` → abre o criador de templates (com a comp principal aberta).
+- **fontes**\
+  `◖` → instala as fontes do template que preencheu o projeto.\
+  `◗` → faz o collect das fontes usadas no projeto.
+- **pastas**\
+  `◖` → abre a pasta de output do último item da fila de render.\
+  `◗` → abre o conversor de caminhos Windows / macOS.
+- **renomear**\
+  `◖` → renomeia as comps selecionadas.\
+  `◗` → renomeia todas as saídas da fila de render.
+- **organizar**\
+  `◖` → organiza o projeto.\
+  `◗` → cria só a estrutura de pastas do projeto.
+- **buscar**\
+  `◖` → abre **O ACESSORISTA** na busca de caminhos.\
+  `◗` → abre **O ACESSORISTA** na busca de textos.
+
+<br clear="right">
 
 > 🚩 *obs:*\
-> • as produções serão sempre organizadas alfabeticamente na lista.\
-> • use caracteres especiais ou números no início do nome da produção para coloca-la no início da lista.\
-> • é possível **exportar** e **importar** a lista completa de produções, incluindo seus respectivos ícones.\
-> • as dimensões sugeridas para um ícone são **24 x 24 pixels**, imagens maiores serão cropadas no preview e redimensionadas ao salvar os dados da lista.
+> • a versão do padeiro aparece embaixo do pãozinho.\
+> • a produção escolhida vale para todos os painéis, que acompanham a troca na hora.
 
 <br>
 
@@ -87,189 +121,29 @@ o arquivo da lista de produção será salvo na mesma pasta do script e comparti
 
 <br>
 
-## 📍 a interface principal
+## 📍 produções
 
-a interface principal do padeiro pode assumir um layout vertical ou horizontal de acordo com o tamanho do painel.
+uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
 
-> 📟 launcher:
+a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config.json`, na pasta do padeiro na rede. quando alguém muda a lista, a barra e os painéis de todo mundo atualizam sozinhos.
+
+> 📟 *editor de produções* (`◖ clique DUPLO` no ícone da produção, na barra):
 >
-> ![ui](docs/images/ui2.png)
+> ![editor de produções](docs/images/producoes.webp)
 
-ferramentas disponíveis em ordem:
+1. clique em '*+ nova produção*'.
+2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates (o ponto ao lado do caminho fica verde quando a pasta existe).
+3. clique em '*Salvar lista*' (ou `Ctrl/Cmd+S`).
 
-- **ÍCONE DE PRODUÇÃO**:\
-`◖ clique DUPLO esquerdo` → abre o editor de pastas de produção.
-  >
-
-- **MENU DE PRODUÇÃO**:\
-`◖ clique esquerdo` → seleciona a pasta da produção atual.
-  >
-
-- **O PADEIRO**:\
-`◖ clique esquerdo` → abre a interface de templates.\
-`◗ clique direito` → abre a interface do criador de templates.
-  >
-
-- **RESOLVER FONTES**:\
-`◖ clique esquerdo` → instala as fontes necessárias para o template.\
-`◗ clique direito` → faz o collect dos arquivos de fonte do projeto.
-  >
-
-- **ABRIR PASTAS**:\
-`◖ clique esquerdo` → abre a pasta de output do último item da fila de render.\
-`◗ clique direito` → abre o conversor de caminhos Windows / MacOS.
-
-- **RENOMEAR**:\
-`◖ clique esquerdo` → renomeia comps selecionadas.\
-`◗ clique direito` → renomeia todos os itens da fila de render.
-  > *remove caracteres especiais, colocando tudo em CAIXA ALTA e acrescenta os prefixos para rodapés, cartões, letterings, etc.*
-
-- **ORGANIZAR**:\
-`◖ clique esquerdo` → organiza o projeto.\
-`◗ clique direito` → cria apenas a estrutura de pastas no projeto.
-  > *antes de clicar, selecione as comps principais (as que devem ser renderizadas) para que elas sejam adicionadas à pasta '01 COMPS'.*
-
-- **BUSCA**:\
-`◖ clique esquerdo` → abre a busca no conteúdo dos layers de texto do projeto.\
-`◗ clique direito` → abre **O ACESSORISTA**, a busca de caminhos de atrações (Teams, Trello, atrações e servidor).
-  >
-
-<!-- - **APONTAMENTO**:\
-`◖ clique esquerdo` → abre a planilha de apontamento de projetos. -->
+- **filtrar** → mostra só as produções com o termo no nome ou no caminho.
+- **importar / exportar** → lê ou grava uma lista completa, com os ícones.
+- **recarregar** → lê a lista de novo, descartando o que não foi salvo.
 
 > 🚩 *obs:*\
-> • a versão atual do script é sempre exibida na lateral direita para o layout horizontal e no canto inferior para o layout vertical.\
-> • para atualizar o script, caso exista uma nova versão disponível, basta fechar o script e executa-lo novamente.
-
----
-
-<br>
-
-## 📍 criando um novo template
-
-um template do padeiro é um conjunto de arquivos que inclui: um *projeto* do after effects com uma comp principal, preferencialmente salvo com a extensão '*.aet*', um arquivo de configuração '*_config.json*' com as informações necessárias para o preenchimento correto do template, uma imagem de preview '*_preview.png*' e uma pasta com todas os arquivos de fontes usadas no projeto.
-
-> 📟 *interface do criador de templates:*
->
-> ![ui](docs/images/maker_ui2.png)
-
-1. limpe o projeto, remova tudo o que não for necessário para a comp principal.
-2. abra a comp principal e `◗ clique direito` no botão com ícone de paninho para abrir a interface do criador de templates.
-3. preencha o '*nome da configuração*', as '*dicas*' e o '*exemplo de preenchimento*'.
-4. posicione a agulha da timeline em um frame de referência e clique no botão '*capturar preview*'.
-5. selecione / preencha o padrão de '*caixa de texto*' do projeto, o '*prefixo*' e o '*separador*' de informações.
-6. selecione os layers editáveis em ordem de preenchimento e clique no botão '*+ layers*' (os layers que já estiverem selecionados ao abrir o criador entram automaticamente).
-7. edite a '*pasta de mídia: (opcional)*' e as '*pastas de output*'.
-8. use o botão '*testar agora*' para verificar o preenchimento das informações inseridas no '*exemplo de preenchimento*'.
-9. clique no botão '*salvar template*' para salvar o template, preferencialmente com a extensão '.aet'.
-
-<br>
-
-o script executará as seguintes tarefas em ordem:
-
-1. adicionar o comentário 'TEMPLATE' na comp principal.
-2. salvar o projeto.
-3. gerar um arquivo de preview da comp principal.
-4. gerar um arquivo de configuração do template.
-5. copiar todos os arquivos de fontes usados no projeto.
-6. abrir a pasta com todos os arquivos do template.
-
-### formulário
-
-> ![ui](docs/images/formulario_ui.png)
-
-- **nome da configuração** → identificador da configuração do template.
-- **dicas** → instruções de como preencher o template.
-- **exemplo de preenchimento** → idealmente, será o input de texto usado para produzir a imagem do preview.
-
-> 🚩 *obs:*\
-> • o '*nome da configuração*' serve apenas para identificação do template no log do script.
-> • seja bastante claro nas dicas, inclua instruções para importar footages, controles de expressão e tudo o que for necessário.
-
-### preview e projeto
-
-> ![ui](docs/images/projeto_ui.png)
-
-- **capturar** → gera o preview do template.
-
-<br>
-
-- **caixa de texto**
-  - **alta** → converte a caixa de texto do projeto para caixa ALTA.
-  - **baixa** → converte a caixa de texto do projeto para caixa baixa.
-  - **título** → converte a caixa de texto do projeto para caixa Título.
-  - **livre** → não executa nenhuma conversão da caixa de texto do projeto.
-- **prefixo** → prefixo adicionado em todas as versões geradas do template.
-- **separador** → o texto usado para separar as informações de tipos diferentes.
-- **+ layers** → adiciona os layers selecionados da comp principal.
-- **testar agora** → preenche os layers selecionados com o exemplo de preenchimento.
-
-> 🚩 *obs:*\
-> • todos os textos serão convertidos para a '*caixa de texto*' selecionada.\
-> para evitar essa conversão selecione a opção '*livre*'.\
-> • o separador só será usado caso exista mais de um layer editável no template.\
-> • os layers editáveis serão sempre preenchidos na ordem em que foram selecionados.\
-> • ao clicar em '*testar agora*' os layers editáveis são preenchidos com o primeiro bloco do exemplo (com a caixa de texto selecionada) e um novo preview é capturado. o texto do exemplo não é alterado.
-
-### caminhos
-
-> ![ui](docs/images/caminhos_ui.png)
-
-- **pasta de mídia** → seleciona a pasta padrão para a importação de arquivos do projeto.
-- **pastas de output** → seleciona a pasta padrão de output do projeto.
-- **+ novo output** → adiciona uma nova pasta de output.
-
-<br>
-
-- **comp principal** → comp principal do projeto.
-- **preview da nomenclatura** → nome que a comp principal receberá ao ser preenchida com o exemplo de preenchimento (atualizado enquanto você edita o prefixo, o separador, o exemplo ou a caixa de texto).
-- **fontes usadas** → lista com o nome de todas as fontes usadas no projeto.
-
-<br>
-
-- **salvar template** → salva o projeto e gera todos os arquivos necessários para o template.
-
-> 🚩 *obs:*\
-> • todo template pode ter múltiplas pastas de output.\
-> use essa opção para criar cópias do mesmo render em várias pastas.\
-> • pastas de output não escolhidas são ignoradas; sem nenhuma, vale o output padrão.\
-> • antes de salvar, o criador confere se a comp principal existe e se o '*nome da configuração*' foi preenchido, e avisa caso nenhum layer editável tenha sido adicionado.
-
-> 📋 *exemplo de arquivo de configuração:* *"RODAPE CONVIDADO_config.json"*
->
-> ```json
-> // "\n" representa uma quebra de linha. :)
-> {
->  "configName": "CONVERSA COM BIAL TARJA RODAPÉ CONVIDADO", // → nome da configuração.
->  "exemple": "CÁSSIO\nGABUS MENDES\n---\nATOR",             // → texto de exemplo do input.
->  "tip": "digite o texto em 1, 2 ou 3 linhas para nome e informação.\n\nuse 1 linha com '---' para separar nome e informação.\n\nuse 1 linha vazia para separar mais de 1 versão do mesmo template selecionado.\n\nuse os controles nos efeitos do layer 'ctrl'.", // → texto com as dicas de preenchimento.
->
->  "compName": "RDP - CONVIDADO TEMPLATE", // → nome da comp a ser editada.
->  "prefix": "RDP",                        // → prefixo que o nome da comp editada receberá.
->  "refTime": 2,                           // → tempo, em segundos, do momento em que todas as infos preenchidas estão visíveis na comp.
->  "separator": "---",                     // → texto usado para separar as informações de tipos diferentes.
->  "textCase": "upperCase",                // → o tipo de caixa de texto que o template deve receber: "upperCase", "lowerCase", "titleCase" ou "freeCase".
->
->  "inputLayers": [                             // → lista com os layers editáveis da comp.
->   {"layerIndex": 4, "method": "textContent"}, // → índice do layer: 1, 2, 3, etc.
->   {"layerIndex": 5, "method": "textContent"}  // → método: "layerName" renomeia o layer ou "textContent" preenche o conteúdo de um layer de texto.
->  ],
->
->  "inputFx": {"layerIndex": 1, "fxName": "layout", "optionIndex": 1, "options": ["E","D"]}, // → lista as opções de layout possíveis: "E" e "D", na opção 1 do efeito "layout" no layer 1. (parâmetro opcional).
->
->  "importPath": "~/Downloads", // → Caminho padrão para importar novos footages.
->  "outputPath": [              // → lista com caminhos do output.
->    "//10.228.183.146/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE SP/CONVERSA COM BIAL/CONVIDADOS"
->  ]
-> }
-> ```
-
-> 🚩 *obs:*\
-> • o parâmetro '**inputFx**' ainda não está disponível para a interface do criador de templates mas pode ser adicionado manualmente no arquivo de configuração. ele consiste em indicar um efeito controlador de expressões em um layer da comp principal que controle variações de layout e um array com os sufixos que serão adicionados. útil para gerar variações de layouts ou paletas de cor.
-
-> 📋 *exemplo:*\
-> o primeiro layer da comp principal possui um efeito controlador de expressão chamado '**layout**' que controla o alinhamento da tarja. e efeito possui **2 opões** de alinhamento: esquerda e direita e os sufixos '**E**' e '**D**'.\
-> assim cada preenchimento deste template gerará **2 comps**, uma com layout alinhado a esquerda, com sufixo '**E**' e outra com layout alinhado a direita com sufixo '**D**'.
+> • a lista é sempre gravada em ordem alfabética: use caracteres especiais ou números no início do nome para colocar uma produção no topo.\
+> • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
+> • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
+> • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
 
 <br>
 
@@ -279,331 +153,410 @@ o script executará as seguintes tarefas em ordem:
 
 ## 📍 preenchendo templates
 
-a interface de templates sempre exibirá a lista de templates disponíveis na pasta de produção no '**menu de produção**'.\
-caso não exista nenhum template disponível, a lista aparecerá vazia, mostrando apenas a pasta de produção como raiz.
+o painel de templates mostra os templates da produção escolhida na barra. ele começa só com a busca e se abre em duas colunas quando você escolhe um template.
 
-> 📟 *interface de templates:*
+> 📟 *lista de templates:*
 >
-> ![ui](docs/images/o_padeiro_ui2.png)
+> <img src="docs/images/templates-lista.webp" alt="lista de templates" width="420">
 
-1. `◖ clique esquerdo`  no botão com ícone de paninho para abrir interface de templates.
-2. faça uma busca ou navegue pela estrutura da lista.
-3. selecione o template desejado.
-4. preencha o campo '**input**' seguindo as '**dicas**'.
-5. habilite ou não a opção '**adicionar a fila de render**'.
-6. clique no botão '**processar**'.
+1. `◖ clique esquerdo` em **templates**, na barra.
+2. busque ou navegue pelas pastas.
+3. selecione o template.
+4. preencha o **input** seguindo as **dicas**.
+5. clique em '*Preencher*' (ou `Ctrl/Cmd+Enter`).
+6. escolha o template de output e clique em '*Criar fila de render*'.
 
-<br>
-
-> 📟 *OPÇÕES DE RENDER:*
+> 📟 *template selecionado:*
 >
-> ![ui](docs/images/render_ui.png)
+> ![template selecionado](docs/images/templates-preencher.webp)
 
-*lista todos os presets disponíveis no After Effects.*
+### a lista
 
-- **templates de render** → seleciona o preset para o render.
-- **cancelar** → aborta a criação da fila de render.
-- **continuar** → cria a fila de render.
+- **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. `Enter` seleciona o primeiro template encontrado.
+- **★ fixados** → passe o mouse em um template e clique na estrela para fixá-lo no topo da lista.
+- **recentes** → os últimos 5 templates preenchidos ou importados.
+- **atualizar** → lê a pasta de templates de novo.
+- **abrir pasta** → abre a pasta de templates da produção.
+- `◖ clique` no template selecionado (ou no fundo da lista, ou `Esc`) → desmarca o template.
+- `◖ clique DUPLO` no template → importa o template para o projeto, sem preencher.
+
+> <img src="docs/images/templates-busca.webp" alt="busca" width="380"> <img src="docs/images/templates-loader.webp" alt="lendo a pasta de templates" width="380">
 
 > 🚩 *obs:*\
-> • ao cancelar a seleção do preset, o script abortará apenas a criação da fila de render.\
-> • caso exista um arquivo de script externo associado ao template, o mesmo ainda será executado.
+> • a lista mostra só os arquivos `.aep` / `.aet` e as pastas que têm templates. uma pasta com uma única subpasta aparece como `PASTA / SUBPASTA`.\
+> • pastas de rede podem demorar: enquanto a lista é lida, o forninho mostra quantas pastas já foram lidas.\
+> • fixados e recentes são de cada computador e de cada produção.
 
-<br>
+### o template
 
-> 📟 *PROGRESSO:*
+- **preview** → a imagem `_preview.png` do template. se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
+- **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
+- **dicas** → como preencher esse template.
+- **abrir output** → abre as pastas de output do template.
+- **importar template** → importa o template para o projeto, sem preencher.
+- **✎ editar config** → abre o editor do arquivo de configuração (veja [editor de config](#editor-de-config)).
+
+### fontes do template
+
+antes de importar, o padeiro confere se as fontes da pasta `FONTS` do template estão instaladas. se faltar alguma, um aviso aparece acima do input e o padeiro pergunta antes de preencher, evitando a janela '*Resolve Fonts*' do After Effects.
+
+> ![aviso de fontes](docs/images/templates-aviso-fontes.webp)
 >
-> ![ui](docs/images/progresso3.png)
+> ![fontes não instaladas](docs/images/templates-fontes.webp)
 
-*informa o andamento de cada etapa do processo.*
+- **instalar fontes** → instala as fontes e segue com o preenchimento.
+- **seguir sem instalar** → preenche assim mesmo, sem a janela do After Effects (as fontes que faltam são trocadas pela padrão).
+- **voltar** → volta para o template.
+
+> 🚩 *obs:*\
+> • no macOS as fontes são copiadas para `~/Library/Fonts`; no Windows, instaladas por um script de PowerShell.\
+> • se o After Effects ainda não mostrar uma fonte recém-instalada, reinicie-o.
+
+### fila de render
+
+> ![fila de render](docs/images/templates-fila.webp)
+
+depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template.
+
+- **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
+- **concluir sem fila** → termina sem criar a fila.
+
+para criar um novo preset de output, acesse:\
+`Edit` > `Templates` > `Output Module...`
+
+> ![menu output module](docs/images/ae-menu-output-module.png)
+
+o padeiro executa as seguintes tarefas, em ordem:
+
+1. importar o projeto do template.
+2. duplicar a comp principal para cada item do input.
+3. preencher os textos.
+4. renomear as comps a partir do conteúdo.
+5. organizar o projeto no padrão da PROMO.
+6. adicionar as comps à fila de render.
+7. definir os caminhos de output.
+8. rodar o script do template (`_script.js`), se existir.
+
+### editor de config
+
+> ![editor de config](docs/images/templates-config.webp)
+
+o lápis ao lado do nome do template abre um formulário para o `_config.json`: nome, comp principal, prefixo, tempo de referência, caixa de texto, separador, exemplo, dicas, layers editáveis (com a ordem), variações de layout (`inputFx`) e pastas de import e output. em um template sem config, o mesmo botão cria o arquivo.
+
+> 🚩 *obs:*\
+> • o formulário mostra o nome final da comp com o exemplo e confere tudo antes de salvar.\
+> • chaves do arquivo que o formulário não conhece são preservadas.
 
 <br>
-
-caso deseje adicionar um novo preset acesse o menu:\
-`Edit` > `Templates` > `Presets` > `Output Module...`
-
-> 📋 *exemplo:*\
-> ![ui](docs/images/templates_output_module.png)
-
-> 🚩 *obs:*\
-> • ao cancelar a seleção do preset, o script abortará a criação da fila de render.
-
-<br>
-
-o script executará as seguintes tarefas em ordem:
-
-1. importar os arquivos do projeto.
-2. duplicar as comps necessárias.
-3. preencher as informações inseridas no input.
-4. renomear as comps com base no seu conteúdo.
-5. organizar o projeto seguindo o padrão da PROMO.
-6. adicionar as comps criadas a fila de render
-7. setar os caminhos para o output.
-
-> 📋 *exemplo de uso:*\
-> ![ui](docs/gifs/ui2.gif)\
-> ![ui](docs/gifs/ui3.gif)\
-> ![ui](docs/gifs/ui_2.gif)\
-> ![ui](docs/gifs/ui_3.gif)
-
-### templates
-
-> ![ui](docs/images/templates_ui.png)
-
-- **busca** → filtra a lista enquanto você digita, mostrando apenas os templates ou pastas com o termo buscado (sem diferenciar maiúsculas e acentos). `Enter` seleciona o primeiro template encontrado.
-- **lista de templates** → árvore com todos os templates disponíveis na pasta de templates do script.
-- **ajuda | DOCS** → acessa a documentação provisória do script e seus templates disponíveis.
-- **atualizar lista** → verifica e atualiza a lista de templates disponíveis.
-- **abrir pasta** → abre a pasta raiz de templates.
-
-> 🚩 *obs:*\
-> • ao selecionar um template da lista, a interface do script se ajustará para exibir um preview, o campo de input e dicas, se disponíveis.\
-> • apenas os templates podem ser selecionados na lista.\
-> • apenas os arquivos com extensão '*.aep*', '*.aet*' e seus diretórios são exibidos na lista.
-
-### preview
-
-> ![ui](docs/images/preview_ui.png)
-
-- **imagem de preview** → exibe uma imagem de exemplo do template selecionado.
-
-> 🚩 *obs:*\
-> • caso não exista uma imagem de preview, será exibido um aviso "PREVIEW NÃO DISPONÍVEL".
-
-### input
-
-> ![ui](docs/images/input_ui.png)
-
-- **texto** → campo de texto editável multifuncional, é o responsável pelo preenchimento de qualquer possível campo de texto do template selecionado.
-- **adicionar a fila de render** → se habilitado, adiciona as comps criadas e o seus caminhos corretos no output automaticamente.
-- **dicas** → tópicos curtos explicando o preenchimento do template selecionado.
-- **output** → abre as pastas de output do template selecionado.
-- **processar** → inicia a execução do preenchimento automático.
-
-> 🚩 *obs:*\
-> • o '**input**' é pré preenchido com dados genéricos disponíveis no arquivo de configuração do template selecionado e usados para gerar a imagem do preview apenas para exemplificar.\
-> • sem um arquivo de configuração, não é possível preencher o template selecionado usando o campo de texto do '**input**'.\
-> • você ainda poderá **IMPORTAR** e **PREENCHER MANUALMENTE** o template no After Effects!!!
 
 ---
 
 <br>
 
-## 🚨 Atenção!
+## 📍 criando um novo template
+
+um template do padeiro é um conjunto de arquivos:
+
+- o **projeto** do After Effects com a comp principal (de preferência salvo como `.aet`);
+- `<nome>_config.json` → como preencher o template;
+- `<nome>_preview.png` → a imagem de preview;
+- a pasta `FONTS` → os arquivos das fontes usadas no projeto.
+
+> 📟 *criador de templates:*
+>
+> ![criador de templates](docs/images/criador.webp)
+
+1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
+2. abra a comp principal e `◗ clique direito` em **templates**, na barra.
+3. preencha o '*nome da configuração*', o '*exemplo de preenchimento*' e as '*dicas*'.
+4. posicione a agulha da timeline em um frame de referência e clique em '*Capturar preview*'.
+5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
+6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
+7. escolha a '*pasta de mídias*' (opcional) e as '*pastas de output*'.
+8. use '*Testar agora*' para conferir o preenchimento com o exemplo.
+9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
+
+> 📟 *o que falta para salvar:*
+>
+> ![checklist do criador](docs/images/criador-checklist.webp)
+
+a barra de salvar mostra o que falta: **preview**, **nome**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+
+ao salvar, o padeiro:
+
+1. marca a comp principal com o comentário `TEMPLATE`.
+2. abre a janela de salvar do After Effects (cancelar não muda nada).
+3. grava o `_config.json` e o `_preview.png` ao lado do projeto.
+4. copia as fontes usadas para a pasta `FONTS`.
+5. abre a pasta do template.
+
+### formulário e nomenclatura
+
+- **nome da configuração** → identifica o template no log.
+- **exemplo de preenchimento** → idealmente, o texto usado no preview. '*puxar dos layers*' monta o exemplo com o texto atual dos layers editáveis.
+- **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.
+- **prefixo** → começo do nome de todas as comps criadas.
+- **caixa de texto** → `CAIXA ALTA`, `caixa baixa`, `Título` ou `livre` (sem conversão).
+- **separador** → o texto que separa informações diferentes no input. use `\n` para uma informação por linha.
+
+### layers editáveis
+
+> ![layers editáveis](docs/images/criador-layers.webp)
+
+- **+ layers** → adiciona os layers selecionados na comp principal.
+- **método** → '*conteúdo do texto*' preenche um layer de texto; '*nome do layer*' renomeia o layer.
+- **↑ ↓ ×** → reordenam ou removem o layer.
+- clique no nome do layer → seleciona o layer na comp.
+- **testar agora** → preenche os layers com o primeiro bloco do exemplo e captura um novo preview (o texto do exemplo não muda).
+
+> 🚩 *obs:*\
+> • a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.\
+> • o separador só é usado com mais de um layer editável.\
+> • todo template pode ter várias pastas de output: o render é copiado em todas. sem nenhuma, vale o output padrão.
+
+### arquivo de configuração
+
+> 📋 *exemplo:* `RODAPE CONVIDADO_config.json`
+>
+> ```jsonc
+> // "\n" representa uma quebra de linha.
+> {
+>   "configName": "CONVERSA COM BIAL TARJA RODAPÉ CONVIDADO", // → nome da configuração.
+>   "exemple": "CÁSSIO\nGABUS MENDES\n---\nATOR",             // → texto de exemplo do input.
+>   "tip": "digite o texto em 1, 2 ou 3 linhas para nome e informação.\n\nuse 1 linha com '---' para separar nome e informação.", // → dicas.
+>
+>   "compName": "RDP - CONVIDADO TEMPLATE", // → nome da comp principal.
+>   "prefix": "RDP",                        // → prefixo do nome das comps criadas.
+>   "refTime": 2,                           // → tempo (s) em que todas as informações estão visíveis.
+>   "separator": "---",                     // → texto que separa as informações.
+>   "textCase": "upperCase",                // → "upperCase", "lowerCase", "titleCase" ou "freeCase".
+>
+>   "inputLayers": [                             // → layers editáveis, na ordem de preenchimento.
+>     {"layerIndex": 4, "method": "textContent"}, // → índice do layer: 1, 2, 3...
+>     {"layerIndex": 5, "method": "textContent"}  // → "textContent" preenche o texto, "layerName" renomeia o layer.
+>   ],
+>
+>   "inputFx": {"layerIndex": 1, "fxName": "layout", "optionIndex": 1, "options": ["E", "D"]}, // → variações de layout (opcional).
+>
+>   "importPath": "~/Downloads", // → pasta padrão para importar footages.
+>   "outputPath": [              // → pastas de output.
+>     "//10.228.183.146/edit_in_place/PROMO/cdesign_output/C# ABERTA & INTER/ARTE SP/CONVERSA COM BIAL/CONVIDADOS"
+>   ]
+> }
+> ```
+
+> 📋 *variações de layout* (`inputFx`):\
+> o primeiro layer da comp principal tem um controlador de expressão chamado '**layout**' com **2 opções** de alinhamento, esquerda e direita, e os sufixos '**E**' e '**D**'.\
+> cada preenchimento desse template gera **2 comps**: uma alinhada à esquerda, com sufixo '**E**', e outra à direita, com sufixo '**D**'. as variações são editadas no [editor de config](#editor-de-config).
+
+<br>
+
+---
+
+<br>
+
+## 📍 O ACESSORISTA
+
+as buscas do padeiro, em um painel com duas abas.
+
+### caminhos
+
+> <img src="docs/images/acessorista-caminhos.webp" alt="busca de caminhos" width="420">
+
+`◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
+
+- **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma pode ser ligada ou desligada.
+- **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
+- **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
+- **caminho** → clique para abrir a pasta.
+- **atualizar** → baixa os caminhos de novo.
+
+> 🚩 *obs:*\
+> • os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. sem conexão, o último índice salvo é usado.\
+> • no macOS, os volumes de rede necessários são montados ao abrir uma pasta.\
+> • aparecem no máximo 12 atrações por busca: refine o termo para ver as demais.
+
+### textos
+
+> <img src="docs/images/acessorista-textos.webp" alt="busca de textos" width="420">
+
+`◗ clique direito` em **buscar**, na barra. o painel lê os textos de todos os layers do projeto e filtra enquanto você digita.
+
+- **APENAS VISÍVEIS** → só layers ligados.
+- **IGNORAR ACENTOS** → '*amazonia*' também encontra '*Amazônia*' (ligado por padrão).
+- **INVERTER** → layers que **não** contêm o termo.
+- clique em um resultado → abre a comp com o layer selecionado, no tempo em que o texto aparece.
+- **atualizar** → lê o projeto de novo (depois de alterar os textos).
+
+> 🚩 *obs:*\
+> • a busca ignora maiúsculas e minúsculas, e caracteres como `(`, `.` ou `?` não têm significado especial.
+
+<br>
+
+---
+
+<br>
+
+## 📍 conversor de caminhos
+
+> ![conversor de caminhos](docs/images/conversor.webp)
+
+`◗ clique direito` em **pastas**, na barra. o conversor abre com a pasta da última saída da fila de render.
+
+- **cole um caminho em qualquer lugar do painel** → o padeiro reconhece se é macOS ou Windows, coloca no campo certo e converte o outro.
+- **copiar** → copia o caminho.
+- **abrir pasta** → abre o caminho no sistema atual (ou a pasta mais próxima que existe).
+- **atualizar** (canto) → volta a usar a pasta da última saída da fila de render.
+- `Esc` → limpa os dois campos.
+
+> 🚩 *obs:*\
+> • aceita caminhos com aspas ('*copiar como caminho*' do Windows), letras de drive mapeadas (ex: `L:\`) e endereços `smb://` do Finder.
+
+<br>
+
+---
+
+<br>
+
+## 📍 outras ferramentas da barra
+
+### fontes
+
+`◖ clique esquerdo` → instala as fontes da pasta `FONTS` do template que preencheu o projeto.
+
+*ao preencher um template, o padeiro grava no campo '**Source**' dos metadados do projeto o caminho do template. por isso essa instalação funciona só em projetos preenchidos pelo padeiro.*
+
+`◗ clique direito` → copia os arquivos das fontes usadas no projeto (incluindo as que aparecem só em keyframes de texto) para uma pasta escolhida.
+
+> 🚩 *obs:*\
+> • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas: o padeiro avisa quais ficaram de fora.
+
+### pastas
+
+`◖ clique esquerdo` → abre a pasta do primeiro arquivo de saída do último item da fila de render. se a pasta ainda não existir (antes do render), abre a mais próxima que existe.
+
+`◗ clique direito` → abre o [conversor de caminhos](#-conversor-de-caminhos).
+
+### renomear
+
+`◖ clique esquerdo` → renomeia as comps selecionadas no painel de projeto: remove caracteres especiais, passa para MAIÚSCULAS e acrescenta o prefixo do tipo (rodapé, cartão, lettering...).
+
+*o tipo vem do nome da pasta em que a comp está (ex: `RODAPES`, `LETTERING - JOGO`) ou de um prefixo / sufixo já presente no nome da comp. o nome da pasta tem prioridade.*
+
+`◗ clique direito` → aplica a mesma regra aos arquivos de saída de **todos** os itens da fila de render (o nome das comps não muda).
+
+> 🚩 *obs:*\
+> • com uma pasta do projeto selecionada, a pasta e todas as comps dentro dela são renomeadas.\
+> • cada saída continua na pasta em que estava; itens já renderizados não mudam e nomes repetidos na mesma pasta ganham um sufixo (`_2`, `_3`...).\
+> • comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer.
+
+**prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento, como palavras inteiras):
+
+| prefixo | termos |
+| --- | --- |
+| **RDP** | RODAPE, RDP |
+| **CRT** | CARTAO, CARTOES, CRT |
+| **LETT** | LETTERING, LETT, LET |
+| **CONFRONTO** | CONFRONTO |
+| **TARJA** | TARJA, TRJ, TAR |
+| **PASSAGEM** | PASSAGEM, TRANSICAO, TRANSICOES, LAPADA |
+| **ASSINA** | ASSINATURA, ASSINA, ASS |
+| **FOTO** | FOTO, IMG, IMAGEM, IMAGENS |
+| **REF** | REFERENCIA, PREVIEW, REF, PREV |
+
+### organizar
+
+`◖ clique esquerdo` → organiza o projeto no modelo da PROMO.
+
+> 🚩 *obs:*\
+> • **selecione antes as comps principais** (as que serão renderizadas): elas recebem o comentário 'EXPORTAR' e vão para '01 COMPS'.\
+> • comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com o comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo renomear) vão para uma subpasta com esse nome.\
+> • as demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
+> • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto do comentário antes de ':' vira subpasta.\
+> • pastas que ficarem vazias são removidas.
+
+`◗ clique direito` → cria só a estrutura de pastas (as que já existem são reaproveitadas).
+
+> ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
+
+<br>
+
+---
+
+<br>
+
+## 📍 teclado e atalhos
+
+o mesmo vocabulário em todos os painéis:
+
+| tecla | o que faz |
+| --- | --- |
+| `↑` `↓` | andam nas listas. `↓` na busca vai para o primeiro item; `↑` no primeiro volta para a busca |
+| `Enter` | abre / seleciona. nos templates, seleciona e leva para o input |
+| `Esc` | limpa a busca ou volta um passo |
+| `Ctrl/Cmd+F` | foca a busca do painel |
+| `Ctrl/Cmd+S` | salva (produções, criador de templates) |
+| `Ctrl/Cmd+Enter` | preenche (templates) |
+| `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
+
+- **templates** → `←` `→` fecham e abrem as pastas; digitar com a lista em foco leva as letras para a busca.
+- **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.
+- **listas suspensas** → com a lista aberta, digite para filtrar (útil com muitas produções).
+- **produções** → `↑` `↓` em um campo vão para o mesmo campo da linha de cima / de baixo.
+
+<br>
+
+---
+
+<br>
+
+## 🚨 atenção!
 
 `CONFIRA SEMPRE AS COMPOSIÇÕES CRIADAS, SEU CONTEÚDO E O CAMINHO DO OUTPUT!`
 
-os layouts dos templates podem variar para exibir ou omitir diferentes tipos de informação, assim, é possível que o resultado final fique diferente do preview.
-> 📋 *exemplo:*\
-> as comps criadas podem ter layers omitidos por falta de conteúdo inserido ou elementos com cores diferentes das exibidas no preview.
-
-idealmente cada template deve possuir uma imagem com o mesmo **nome exato** do template seguida de '*_preview.png*' e um arquivo de configuração '*_config.json*' com as informações necessárias para o preenchimento correto do template selecionado.
-> 📋 *exemplo:*\
-> um template chamado *"FOTO_CONVIDADO.aet"* deve estar acompanhado por uma imagem de preview *"FOTO_CONVIDADO_preview.png"* e um arquivo de configuração *"FOTO_CONVIDADO_config.json"*.
-
-o sistema de templates possui padrões internos caso não seja especificado um caminho de output ou a pasta de destino não exista, o mesmo ocorre para o texto separador de informações diferentes.
-
-> 📋 *padrões internos:*\
-> • **caminho do output padrão** → '*\Desktop*'.\
-> • **separador de informação padrão** → '*---*'.
-
-é possível usar a quebra de linha '*\n*' como separador no arquivo de configuração. muito útil para separar a mesma informação em layers de texto com formatação distintas.
+os layouts dos templates podem variar para exibir ou omitir informações, então o resultado final pode ficar diferente do preview.
 
 > 📋 *exemplo:*\
-> um input com o nome *"Lima\nDuarte"*, em duas linhas, com o primeiro nome *"Lima"* em uma fonte light e o sobrenome "Duarte" em uma fonte bold.
+> as comps criadas podem ter layers omitidos por falta de conteúdo ou elementos com cores diferentes das do preview.
 
----
+cada template deve ter uma imagem com o **mesmo nome exato** do template seguido de '*_preview.png*' e um arquivo de configuração '*_config.json*'.
+
+> 📋 *exemplo:*\
+> um template *"FOTO_CONVIDADO.aet"* deve estar acompanhado de *"FOTO_CONVIDADO_preview.png"* e *"FOTO_CONVIDADO_config.json"*.
+
+sem um caminho de output (ou se a pasta não existir) e sem separador, valem os padrões internos:
+
+> • **output padrão** → '*~/Desktop*'.\
+> • **separador padrão** → '*---*'.
+
+a quebra de linha '*\n*' também pode ser o separador: útil para dividir a mesma informação em layers com formatações diferentes.
+
+> 📋 *exemplo:*\
+> o nome *"Lima\nDuarte"*, em duas linhas, com *"Lima"* em uma fonte light e *"Duarte"* em uma fonte bold.
+
 <br>
 
-## 🛠️ manutenção do script
-
-pontos do código onde ficam as configurações mais comuns:
-
-- **botões da interface principal** → `PAD_mainGrpUiStructure` (`O_PADEIRO.js`). cada botão declara rótulo, ícone, dicas e as ações `leftClick` / `rightClick`, que ficam em `PAD_ACTIONS` (`source/layout/main ui functions.js`).
-- **tipos de renomeação** (prefixos e termos) → `renameRefArray` (`source/globals.js`). a lógica fica em `source/libraries/functions/rename lib.js`.
-- **estrutura de pastas do projeto** → `PROJECT_FOLDERS` (`source/libraries/functions/project lib.js`).
-- **categorias do acessorista** → `PS_CATEGORIES` (ordem e rótulos) e `PS_LOCAL_SOURCES` (listas locais, como `servidor`) em `source/utils/o acessorista ui.js`. qualquer lista nova no JSON do workflow (ex: `atracoes_filmes`) ou em `PS_LOCAL_SOURCES` vira uma categoria e um filtro automaticamente.
-- **largura das janelas de busca e do conversor** → `PAD_SEARCH_UI_WIDTH` (`source/layout/main ui functions.js`).
-
-> 🚩 *obs:*\
-> • alguns arquivos (`globals.js`, `FUNC lib.js`, `JSON lib.js`, `bin ui.js`) usam codificação UTF-16 LE: mantenha essa codificação ao editá-los.\
-> • o ExtendScript avalia ternários encadeados (`a ? b : c ? d : e`) de forma diferente do JavaScript atual: use parênteses ou if / else.
-
 ---
+
 <br>
 
 ## ✨ dicas
 
-a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necessário se preocupar com o uso de letras **maiúsculas** ou **minúsculas**, o script fará a conversão do texto.
+a menos que o template use a caixa de texto '**livre**', não se preocupe com **maiúsculas** e **minúsculas**: o padeiro converte o texto.
 
 > 📋 *exemplo:*\
-> os input "*cauã raymond*", "*CAUÃ RAYMOND*" ou "*cAuÃ raYMOnd*" serão exibidos como "*Cauã Raymond*" em um template que usa '*titleCase*' no arquivo de configuração.
+> "*cauã raymond*", "*CAUÃ RAYMOND*" ou "*cAuÃ raYMOnd*" viram "*Cauã Raymond*" em um template com '*titleCase*'.
 
-é possível importar rapidamente qualquer template da lista executando um clique duplo no mesmo.
+um `◖ clique DUPLO` em qualquer template da lista importa o template na hora, para editar manualmente.
 
----
+templates sem config (ou sem layers editáveis) não podem ser preenchidos pelo input, mas ainda podem ser **importados** e **preenchidos manualmente** no After Effects.
+
 <br>
 
-## outras utilidades...
+---
 
-- ### **RESOLVER FONTES**:
+<br>
 
-  `◖ clique esquerdo` → Instala as fontes que o template do padeiro precisa para funcionar corretamente.
+## 📍 manutenção
 
-  *Ao preencher o template pela interface do padeiro o script armazena no campo '**Source**' dos metadados do projeto o caminho dos arquivos do template, assim é possível fazer a instalação das fontes necessárias facilmente. Após clicar no botão, as fontes da pasta `FONTS` do template (incluindo subpastas) são instaladas: no Windows por um script de **powershell**, no macOS copiadas para `~/Library/Fonts`. Fontes já instaladas são ignoradas.*
-  > 📋 *exemplo:*\
-  > ![instalar fontes](docs/gifs/instalar-fontes.gif)
-
-  > *metadados do projeto:*\
-  > ![metadados](docs/images/metadata.png)
-
-  > *powershell:*\
-  > ![powershell](<docs/images/instalar fontes.png>)
-
-  > 🚩 *obs:*\
-  > Como essa funcionalidade depende de metadados inseridos pelo padeiro, ela funcionará apenas nos templates preenchidos pelo padeiro!
-
-  <br>
-
-  `◗ clique direito` → Copia todos os arquivos de fontes usadas nos layers de texto do projeto em uma pasta selecionada pelo usuário.
-
-  *O script varre todos os layers de texto de todas as comps do projeto (incluindo fontes usadas apenas em keyframes de texto) e copia os arquivos dessas fontes para uma pasta a sua escolha.*
-
-  > 📋 *exemplo:*\
-  > ![collect fontes](docs/gifs/collect-de-fontes.gif)
-
-  > 🚩 *obs:*\
-  > Fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas. Nesse caso, o script alertará quais fontes não puderam ser copiadas.
-
-  <br><br>
-
-- ### **ABRIR PASTAS**:
-
-  `◖ clique esquerdo` → Abre a pasta do **primeiro arquivo** de saída do **último item** da fila de render.
-
-  *O script analisa a fila de render e puxa o último caminho do último item disponível e em seguida abre a respectiva pasta.*
-
-  > 🚩 *obs:*\
-  > Se a pasta ainda não existir (antes do render), o script abre a pasta mais próxima que existe.
-
-  `◗ clique direito` → Abre o **conversor de caminhos** com a pasta de saída do último item da fila de render.
-
-  *Cole ou digite um caminho no campo MacOS ou Windows e o outro é convertido na hora. Aceita caminhos com aspas (copiar como caminho do Windows), letras de drive mapeadas (ex: `L:\`) e endereços `smb://` do Finder. Os botões 'copiar' enviam o caminho para a área de transferência e 'abrir pasta' abre o caminho no sistema atual.*
-
-  <br><br>
-
-- ### **RENOMEAR**:
-
-  `◖ clique esquerdo` → Altera o nome das comps selecionadas na janela do projeto.
-
-  *O script remove caracteres especiais dos nomes, convertendo tudo em MAIÚSCULAS.\
-  Caso as comps selecionadas estejam dentro de uma pasta cujo nome comece com um tipo conhecido (ex: `RODAPES`, `LETTERING - JOGO`) ou o nome da comp já possuir algum prefixo / sufixo conhecido, as comps receberão o prefixo do tipo no nome. O nome da pasta tem prioridade sobre o nome da comp.*
-
-  > 📋 *exemplo:*\
-  > ![renomear comps](docs/gifs/renomear-comps.gif)
-
-  > 🚩 *obs:*\
-  > Caso uma pasta no projeto esteja selecionada, o script renomeará a pasta e todas as comps dentro da mesma.
-
-  <br>
-
-  `◗ clique direito` → Altera o nome de todos os itens na fila de render.
-
-  *O script analisa o nome das comps de todos os itens da fila de render e aplica as mesmas mudanças do clique esquerdo nos arquivos de saída: remove caracteres especiais, converte em MAIÚSCULAS e adiciona prefixos.*
-
-  > 📋 *exemplo:*\
-  > ![renomear output](docs/gifs/renomear-output.gif)
-
-  > 🚩 *obs:*\
-  > O NOME DAS COMPS NÃO SERÁ ALTERADO!\
-  > Cada saída continua na pasta em que já estava. Itens já renderizados não são alterados e nomes repetidos na mesma pasta recebem um sufixo (`_2`, `_3`...) para um render não sobrescrever o outro.
-
-  **lista de prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento):
-  - **RDP** → *RODAPE, RDP*
-  - **CRT** → *CARTAO, CARTOES, CRT*
-  - **LETT** → *LETTERING, LETT, LET*
-  - **CONFRONTO** → *CONFRONTO*
-  - **TARJA** → *TARJA, TRJ, TAR*
-  - **PASSAGEM** → *PASSAGEM, TRANSICAO, TRANSICOES, LAPADA*
-  - **ASSINA** → *ASSINATURA, ASSINA, ASS*
-  - **FOTO** → *FOTO, IMG, IMAGEM, IMAGENS*
-  - **REF** → *REFERENCIA, PREVIEW, REF, PREV*
-
-  > 🚩 *obs:*\
-  > Os termos são reconhecidos como palavras inteiras, separadas por espaço, `_` ou `-` (ex: 'ASS' não casa com 'CLASSICO').\
-  > Comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer.
-
-  <br><br>
-
-- ### **ORGANIZAR**:
-
-  `◖ clique esquerdo` → Organiza o projeto de acordo com o modelo de projeto da PROMO.
-  *O script cria várias pastas, como '01 COMPS', '02 PRECOMPS', '03 ARQUIVOS', etc.*
-  *As comps selecionadas inicialmente serão organizadas na pasta '01 COMPS'.*
-  *O script separa outros arquivos (imagens, sons, etc.) nas pastas certas.*
-
-  > 📋 *exemplo:*\
-  > ![organizar projeto](docs/gifs/organizar-projeto.gif)
-
-  > 🚩 *obs:*\
-  > Você deve selecionar as comps principais (as que serão renderizadas) antes de clicar.\
-  > As comps selecionadas sem comentário recebem o comentário 'EXPORTAR' e vão para a pasta '01 COMPS'.\
-  > Comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo RENOMEAR) vão para uma subpasta com esse nome.\
-  > As demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
-  > Footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. O texto do comentário antes de ':' vira subpasta.\
-  > Pastas que ficarem vazias são removidas.
-
-  <br>
-
-  `◗ clique direito` → Cria apenas a estrutura de pastas no projeto de acordo com o modelo da PROMO (pastas que já existem são reaproveitadas, não duplicadas).
-
-  > 📋 *exemplo:*\
-  > ![estrutura projeto](docs/images/estrutura_projeto_promo.png)
-
-  <br><br>
-
-- ### **BUSCA**:
-
-  O script pesquisará no conteúdo de todos os layers de texto do projeto pelo termo buscado.
-
-  > 📟 *interface de busca:*
-  >
-  > ![busca](docs/images/busca_ui2.png)
-
-  `◖ clique esquerdo` → Abre a interface de busca.\
-  opções em ordem:
-
-  - **APENAS VISÍVEIS** → buscar apenas em layers visíveis.
-  - **IGNORAR ACENTOS** → 'amazonia' também encontra 'Amazônia' (ligado por padrão).
-  - **INVERTER** → busca por layers de texto que **NÃO** contenham o termo buscado.
-
-  <br>
-
-  > 📋 *exemplo:*\
-  > ![busca](docs/gifs/busca.gif)
-
-  `Enter` (ou o botão de busca) lê o texto de todos os layers do projeto. depois disso, a lista é filtrada enquanto você digita ou muda as opções. pressione `Enter` de novo para reler o projeto depois de alterar os textos.
-
-  > 🚩 *obs:*\
-  > A busca sempre ignora a caixa do texto (MAIÚSCULAS e minúsculas) e, por padrão, a acentuação.\
-  > Assim uma busca rápida por 'amazonia' pode retornar todos os layers de texto contendo 'amazonia', 'Amazônia', 'AmAzOnIa'...\
-  > O termo é procurado como texto: caracteres como '(', '.' ou '?' não têm significado especial.\
-  > Clique em um resultado para abrir a comp com o layer selecionado (textos com keyframes ou expressão abrem no tempo em que o texto encontrado aparece).
-
-  <br>
-
-  `◗ clique direito` → Abre **O ACESSORISTA**, a busca de caminhos de atrações.
-
-  *Pesquise por atração, projeto, output ou caminho (a partir de 2 caracteres, enquanto você digita) e abra as pastas direto no Explorer / Finder.*
-
-  - **lupa** → baixa os caminhos atualizados e refaz a busca.
-  - **filtros** → um checkbox para cada categoria (TEAMS, TRELLO, ATRAÇÕES, SERVIDOR...) inclui ou remove a categoria dos resultados.
-  - **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
-  - **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
-  - **caminho** → clique no caminho para abrir a pasta.
-
-  > 🚩 *obs:*\
-  > Os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. Sem conexão, o último índice salvo é usado.\
-  > A categoria SERVIDOR reúne caminhos fixos (ex: '#INGEST', 'BASES VALENDO').\
-  > No macOS, os volumes de rede necessários são montados automaticamente ao abrir uma pasta.\
-  > São exibidas no máximo 12 atrações por busca: refine o termo para ver as demais.
+o código da extensão, a estrutura dos arquivos, como testar sem o After Effects e onde ficam as configurações mais comuns estão em [`extension/README.md`](extension/README.md).

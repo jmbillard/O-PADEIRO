@@ -1,145 +1,163 @@
-# 🧩 O PADEIRO *extensão*
+# 🛠️ O PADEIRO — desenvolvimento
 
-Painel CEP do **O PADEIRO** para o After Effects, com a mesma lógica de templates do script ScriptUI e a interface em HTML / CSS.
+guia do código da extensão. o guia de uso está no [README principal](../README.md).
 
-> a extensão convive com o script: nenhum arquivo do script ScriptUI é alterado de forma que mude o comportamento dele, e as duas versões compartilham a mesma lista de produções (`O PADEIRO script/O_PADEIRO_config.json`, na pasta de dados do usuário).
+a extensão é um pacote **CEP** (Common Extensibility Platform) para o After Effects 2022+: painéis em HTML / CSS / JS (o *client*) que conversam com o After Effects através de ExtendScript (o *host*).
 
 <br>
 
 ## 📍 os painéis
 
-a extensão tem dois painéis, que podem ser acoplados separadamente (`Window` > `Extensions`):
+todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo host.
 
-- **O PADEIRO** → a barra principal (degradê azul, horizontal ou vertical conforme o tamanho). escolhe a **produção** e tem os mesmos botões do script, com clique esquerdo e direito:
-  - `templates` abre o painel de templates;
-  - `fontes` instala as fontes do template / faz o collect das fontes do projeto;
-  - `pastas` abre a pasta do último item da fila de render / abre o conversor de caminhos;
-  - `renomear` renomeia as comps selecionadas / todas as saídas de render;
-  - `organizar` organiza o projeto / cria só a estrutura de pastas;
-  - o ícone de corrente abre o apontamento de projetos.
-  - `buscar` abre o painel **O ACESSORISTA** (a lupa mostra letras passando pelo vidro no hover);
-  - `templates` com clique direito abre o criador de templates.
-- **O PADEIRO templates** → o painel de templates, descrito abaixo.
-- **O ACESSORISTA** → as buscas, em um painel com duas abas (o botão `buscar` da barra abre na aba certa: clique esquerdo em `CAMINHOS`, direito em `TEXTOS`):
-  - `CAMINHOS` (principal, clique esquerdo): a busca de caminhos de atrações (Teams, Trello, atrações e servidor), a partir de 2 caracteres, com filtros por categoria e botões para abrir projeto, output e pasta. a lupa de atualizar baixa o índice de novo. usa a mesma lógica do script (cache de 30 s, volumes SMB montados no macOS).
-  - `TEXTOS` (clique direito): a busca no conteúdo dos layers de texto. lê o projeto ao abrir (loader do forninho com o andamento por comp) e filtra enquanto você digita, com `APENAS VISÍVEIS`, `IGNORAR ACENTOS` e `INVERTER`. o termo aparece destacado e clicar abre a comp com o layer selecionado no tempo do texto. o botão de atualizar lê o projeto de novo.
-- **O PADEIRO criar template** → o criador de templates (clique direito em `templates`; precisa da comp principal aberta). a comp ativa vira a comp principal e o preview é o frame onde está a agulha (`Capturar preview`). os layers selecionados na comp entram com `+ layers` (a ordem importa: a 1ª informação do input vai para o 1º layer; clicar no nome do layer o seleciona na comp) e `Testar agora` preenche a comp com o exemplo. o formulário tem nome da configuração, exemplo, dicas, prefixo, caixa de texto, separador, pasta de mídias e pastas de output, com a prévia do nome final da comp e as fontes usadas. `Salvar template` marca a comp como `TEMPLATE`, abre a janela de salvar do After Effects e grava, ao lado do projeto, o `_config.json`, o `_preview.png` e a pasta `FONTS`. as variações de layout (`inputFx`) ficam para o lápis "editar config" do painel de templates.
-- **O PADEIRO produções** → o editor da lista de produções (dois cliques no ícone da produção na barra). a lista é o `O_PADEIRO_config.json` **compartilhado pela equipe** (o mesmo do script ScriptUI), na pasta do `O_PADEIRO_SOURCE.jsxbin`, ao lado da pasta `extension/`. cada linha tem ícone (24 x 24 px, opcional), nome do menu e pasta de templates (com um ponto verde / vermelho indicando se a pasta existe). também importa e exporta listas. ao salvar, a lista é gravada em ordem alfabética (uma cópia da anterior fica em `O_PADEIRO_config.bak.json`) e, se outra pessoa (ou o script) alterou o arquivo depois que o editor o abriu, o salvamento é recusado para não sobrescrever o trabalho dela. a barra e o painel de templates atualizam sozinhos quando a lista muda.
-- **O PADEIRO conversor** → o conversor de caminhos Windows / macOS, em uma janelinha própria (abre pelo clique direito em `pastas`). cole ou digite em qualquer campo e o outro é convertido na hora (aspas do 'copiar como caminho' e `smb://` são limpos); `copiar` copia cada caminho e `abrir pasta` abre a pasta (ou a mais próxima que existe) no Finder / Explorer. abre já com a pasta da última saída da fila de render, e o botão de atualizar do canto volta a usá-la.
-
-a produção escolhida na barra é gravada em `O PADEIRO script/selected_production.json` (o script ScriptUI grava o mesmo arquivo) e o painel de templates acompanha.
-
-<br>
-
-## 📍 o que já tem no painel de templates (v0.1.0)
-
-o fluxo principal de templates: `1 buscar` > `2 selecionar` > `3 preencher` > `4 fila de render`.
-
-- **produção** escolhida na barra principal (da extensão ou do script): sem nenhuma das duas, usa a primeira da lista;
-- leitura da pasta de templates, com busca dinâmica;
-- **preview**, dicas e exemplo do template (`_preview.png` e `_config.json`). se existir `_preview.webm` ou `_preview.mp4` ao lado do template, o preview toca em loop e o mouse navega pelos quadros (como o thumbnail do Premiere); sem vídeo, usa o png. o `webm` (VP8/VP9) é o mais seguro: o suporte a `mp4` (H.264) depende da versão do CEP;
-- **preencher** com status, progresso e erro por item (uma comp por linha da fila);
-- **fila de render** com escolha do template de output e verificação das pastas de saída;
-- script do template (`_script.js`), log, metadados XMP e organização do projeto, como no script;
-- duplo clique no template importa e organiza o projeto.
-- **loader temático** (pães saindo do forninho) enquanto lê a lista de templates e o template escolhido. a pasta de templates é lida **pasta a pasta**, em chamadas curtas ao After Effects, com o andamento no loader: assim o painel continua animando em vez de travar numa leitura longa da rede.
-- **editor de config** (lápis ao lado do nome do template): formulário para o `_config.json` com nome, comp, prefixo, caixa de texto, separador, tempo de referência, exemplo, dicas, layers editáveis (com ordem), variações de layout (`inputFx`) e pastas de import / output. mostra o nome final da comp com o exemplo, valida antes de salvar e preserva chaves que o formulário não conhece. em template sem config, o mesmo botão cria o arquivo.
-
-todas as ferramentas do script já têm versão na extensão. o script ScriptUI continua funcionando em paralelo.
-
-<br>
-
-## 📍 teclado e atalhos
-
-o mesmo vocabulário em todos os painéis:
-
-| tecla | o que faz |
-| --- | --- |
-| `↑` `↓` | andam nas listas (templates, resultados das buscas, linhas de produções). `↓` na busca vai para o primeiro item; `↑` no primeiro volta para a busca |
-| `Enter` | abre / seleciona. no painel de templates, seleciona e leva para o campo de texto |
-| `Esc` | limpa a busca ou volta um passo (do texto para a lista, da lista para a busca) |
-| `Ctrl/Cmd+F` | foca a busca do painel |
-| `Ctrl/Cmd+S` | salva (lista de produções, criador de templates) |
-| `Ctrl/Cmd+Enter` | preenche (painel de templates) |
-| `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
-
-- **templates:** `←` `→` fecham e abrem as pastas; digitar com a lista em foco leva as letras para a busca. a ★ fixa o template no topo (**fixados**) e os últimos usados aparecem em **recentes**, por produção. essas duas listas são de cada máquina: ficam em `O PADEIRO script/temp/template_lists.json`, na pasta de dados do usuário;
-- **barra:** `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito;
-- **dropdowns:** com a lista aberta, digite para filtrar (útil com muitas produções);
-- **conversor:** cole um caminho em qualquer lugar do painel: o tipo é reconhecido e o outro lado é convertido;
-- **criador de templates:** a barra de salvar mostra o que falta (preview, nome, layers, exemplo, output); clicar num item leva até ele. “puxar dos layers” monta o exemplo com o texto atual dos layers editáveis.
-
-no CEP as teclas só chegam ao painel quando ele pede (`registerKeyEventsInterest`, em `client/js/keys.js`): sem isso as setas e os atalhos iriam para o After Effects.
-
-<br>
-
-## 📍 instalação (macOS e Windows)
-
-requer After Effects **2022 (22.0)** ou mais novo.
-
-```bash
-./extension/scripts/install-mac.sh
-```
-
-```powershell
-powershell -ExecutionPolicy Bypass -File extension\scripts\install-win.ps1
-```
-
-reinicie o After Effects e abra `Window` > `Extensions` > `O PADEIRO`.
-
-> 📍 **lista de produções compartilhada:** instale a extensão **a partir da pasta do padeiro na rede**, com a pasta `extension/` ao lado do `O_PADEIRO_config.json`. o instalador grava o caminho desse arquivo (`O PADEIRO script/shared_config.txt`, na pasta de dados do usuário), então a extensão usa a mesma lista do script mesmo rodando de uma cópia local. **não existe cópia local da lista:** se o arquivo compartilhado não estiver acessível (rede fora), a barra e os painéis avisam e voltam a ler sozinhos quando a rede voltar; o editor de produções fica bloqueado até lá.
-
-> 🚩 *obs:*\
-> • sem assinatura (`.zxp`), o CEP só carrega extensões com o `PlayerDebugMode` ligado, o que os scripts acima fazem.\
-> • habilite também `Edit` > `Preferences` > `Scripting & Expressions...` > '**Allow Scripts to Write Files and Access Network**'.\
-> • no macOS o instalador cria um *link* para a pasta `extension/` (bom para desenvolver); use `--copy` para uma cópia fixa e `--uninstall` para remover.
+| painel (menu `Window` > `Extensions`) | id | página | script | porta de depuração |
+| --- | --- | --- | --- | --- |
+| O PADEIRO (barra) | `com.jmbillard.opadeiro.bar` | `bar.html` | `js/bar.js` | 8089 |
+| O PADEIRO templates | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
+| O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
+| O PADEIRO conversor | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
+| O PADEIRO produções | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
+| O PADEIRO criar template | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
 
 <br>
 
 ## 📍 estrutura
 
 ```text
-extension/
-├─ CSXS/manifest.xml        → declaração do painel
-├─ client/                  → painel (HTML / CSS / JS)
-│  ├─ css/styles.css        → tokens e componentes da linguagem visual
-│  ├─ css/panel.css         → componentes do padeiro (busca, input, fila)
-│  ├─ css/bar.css           → barra principal
-│  ├─ css/finder.css        → o acessorista (buscas)
-│  ├─ index.html, js/app.js → painel de templates
-│  ├─ finder.html, js/finder.js → o acessorista
-│  ├─ converter.html, js/converter.js → o conversor de caminhos
-│  ├─ productions.html, js/productions.js → o editor da lista de produções
-│  ├─ maker.html, js/maker.js → o criador de templates
-│  ├─ bar.html, js/bar.js   → barra principal
-│  └─ js/                   → bridge.js (ponte), keys.js (teclado), dropdown.js, config-editor.js, util.js, mock-host.js (dev)
-├─ host/                    → ExtendScript (roda dentro do After Effects)
-│  ├─ index.jsx             → entrada: includes
-│  ├─ api.jsx               → métodos chamados pelo painel (PADX.*)
-│  └─ lib/                  → libs do script, copiadas por scripts/sync-libs.sh
-└─ scripts/                 → instaladores e sincronização das libs
+O-PADEIRO/
+├─ INSTALAR macOS.command        → dois cliques: instala / atualiza (macOS)
+├─ INSTALAR Windows.bat          → dois cliques: instala / atualiza (Windows)
+├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
+├─ docs/images/                  → imagens da documentação
+└─ extension/
+   ├─ CSXS/manifest.xml          → os 6 painéis
+   ├─ .debug                     → portas de depuração (CEF)
+   ├─ client/                    → painéis (HTML / CSS / JS)
+   │  ├─ *.html                  → uma página por painel
+   │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, vidro, folha branca)
+   │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
+   │  ├─ css/loader.css          → o forninho (loader)
+   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker
+   │  └─ js/
+   │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
+   │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
+   │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
+   │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
+   │     ├─ util.js              → ícones das produções, forninho, URLs de arquivo
+   │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
+   │     └─ <painel>.js          → lógica de cada painel
+   ├─ host/                      → ExtendScript (roda dentro do After Effects)
+   │  ├─ index.jsx               → entrada: includes
+   │  ├─ env.jsx                 → nome, versão, sistema e pastas de dados
+   │  ├─ api.jsx                 → PADX_call e os métodos da barra e dos templates
+   │  ├─ finder.jsx              → O ACESSORISTA e o conversor
+   │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
+   │  ├─ maker.jsx               → criador de templates
+   │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
+   └─ scripts/                   → instaladores (install-mac.sh, install-win.ps1)
 ```
 
-o painel chama `PADX_call('método', json)` no host (`client/js/bridge.js`) e recebe `{ ok, data }` ou `{ ok: false, error }`. o preenchimento e a fila de render são divididos em passos (`fillBegin` / `fillStep` / `fillFinish`, `queueBegin` / `queueStep`) para a interface mostrar o andamento.
+<br>
+
+## 📍 como o painel fala com o After Effects
+
+o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_call('método', 'json')` no host (`window.__adobe_cep__.evalScript`). o host responde `{ ok: true, data }` ou `{ ok: false, error }`, e o `call` devolve uma *Promise* com o `data` (ou rejeita com a mensagem de erro).
+
+```js
+var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
+```
+
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`).
+- **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
+- **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
+- **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:
+  - pasta de templates → `listDir` (uma pasta por chamada);
+  - preenchimento → `fillBegin` / `fillStep` / `fillFinish`;
+  - fila de render → `queueBegin` / `queueStep`;
+  - textos do projeto → `textCompList` / `textIndexChunk`.
+
+### comunicação entre painéis
+
+cada painel é uma página separada. eles combinam o que fazer por arquivos pequenos na pasta de dados do usuário (`Folder.userData/O PADEIRO script/`) e conferem de tempos em tempos (1 a 3 s, e ao ganhar foco):
+
+| arquivo | quem grava | quem lê |
+| --- | --- | --- |
+| `selected_production.json` | barra (produção escolhida) | templates |
+| `finder_tab.json` | barra (botão buscar) | O ACESSORISTA (aba a abrir) |
+| `converter_request.json` | barra (botão pastas) | conversor (caminho a mostrar) |
+| `shared_config.txt` | instaladores | host (onde está a lista compartilhada) |
+| `temp/template_lists.json` | templates | templates (fixados e recentes, por produção) |
+
+a **lista de produções** é sempre o `O_PADEIRO_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
 
 <br>
 
 ## 📍 desenvolvimento
 
-**libs compartilhadas** — `host/lib/` é gerada a partir de `source/libraries/` (e as constantes de rede / renomeação, de `source/globals.js`). depois de mexer nelas, rode e comite o resultado:
+### instalar a partir do repositório
 
 ```bash
-./extension/scripts/sync-libs.sh
+./extension/scripts/install-mac.sh
 ```
 
-**interface sem o After Effects** — abra `extension/client/index.html` (templates) ou `bar.html` (barra) no navegador: sem o AE o painel usa o `mock-host.js`, com templates de mentira. `?mock=slow` deixa as respostas lentas e `?mock=fail` simula erros.
+no macOS, sem argumentos, o instalador cria um **link** para a pasta `extension/`: as alterações valem depois de recarregar o painel (feche e abra, ou recarregue pela porta de depuração). `--copy` faz uma cópia fixa e `--uninstall` remove.
 
-**depurar no AE** — o `.debug` abre as portas `8088` (templates), `8089` (barra), `8090` (acessorista), `8091` (conversor) e `8092` (produções) e `8093` (criador): acesse `http://localhost:8088` no Chrome com o painel aberto.
+```powershell
+powershell -ExecutionPolicy Bypass -File extension\scripts\install-win.ps1
+```
+
+no Windows o instalador sempre copia (`-Uninstall` remove).
+
+> 🚩 *obs:*\
+> • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_config.json` da raiz do repo: salvar no editor de produções grava nele.\
+> • os instaladores ligam o `PlayerDebugMode` (CSXS 9 a 12), sem o qual o CEP não carrega extensões sem assinatura.\
+> • os instaladores também removem o `O PADEIRO.jsx` da versão antiga (script ScriptUI) das pastas `Scripts/ScriptUI Panels`.\
+> • mudanças no `manifest.xml` só valem depois de reiniciar o After Effects.
+
+### abrir os painéis no navegador
+
+sem o After Effects, os painéis usam o `mock-host.js` (templates, produções e respostas de mentira). abra qualquer página de `extension/client/` no Chrome:
+
+| parâmetro | efeito |
+| --- | --- |
+| `?mock=slow` | respostas lentas (para ver os loaders) |
+| `?mock=fail` | erros nas chamadas |
+| `?mock=conflict` | conflito ao salvar a lista de produções |
+| `?mock=local` | lista compartilhada inacessível (até `window.PAD_MOCK_NETBACK = true`) |
+| `?mock=nonet` | sem acesso à rede nas preferências |
+| `?nocomp` | criador de templates sem comp aberta |
+| `?path=...` | conversor aberto com um caminho |
+
+no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta das fontes).
+
+### depurar no After Effects
+
+com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabela dos painéis) para ter o console, os elementos e a rede do painel. o ExtendScript pode ser depurado com a extensão *ExtendScript Debugger* do VS Code.
+
+<br>
+
+## 📍 onde mudar o quê
+
+- **botões da barra** → `SECTIONS` em `client/js/bar.js` (rótulo, ícone, dicas e ações dos cliques esquerdo e direito). as ações ficam em `actions`, no mesmo arquivo.
+- **link do apontamento** → `APONTAMENTO_URL` em `client/js/bar.js`.
+- **tipos de renomeação** (prefixos e termos) → `renameRefArray` em `host/lib/globals.js`; a lógica em `host/lib/functions/rename lib.js`.
+- **letras de drive da rede** → `DRIVE_MAP` em `host/lib/globals.js`.
+- **config padrão dos templates** → `defaultTemplateConfigObj` em `host/lib/globals.js`.
+- **estrutura de pastas do projeto** → `PROJECT_FOLDERS` em `host/lib/functions/project lib.js`.
+- **categorias do acessorista** → `PS_CATEGORIES` (ordem e rótulos) e `PS_LOCAL_SOURCES` (listas fixas, como `servidor`) em `host/lib/acessorista.js`. qualquer lista nova no JSON do workflow vira uma categoria e um filtro automaticamente.
+- **quantas atrações aparecem** → `MAX_RESULTS` em `client/js/finder.js`.
+- **cores, raios e sombras** → os tokens em `:root`, no início de `client/css/styles.css`.
+- **versão** → `ExtensionBundleVersion` em `CSXS/manifest.xml` e `PADX_VERSION` em `host/index.jsx`.
+
+> 🚩 *obs:*\
+> • `host/lib/JSON lib.js` usa codificação UTF-16 LE e os `.jsx` do host usam UTF-8 com BOM: mantenha essas codificações ao editar.\
+> • o ExtendScript é ES3: nada de `let`, `const`, *arrow functions* ou métodos novos de array e string. ele também avalia ternários encadeados (`a ? b : c ? d : e`) de outro jeito: use parênteses ou `if` / `else`.\
+> • o client roda no Chromium do CEP 11 (Chrome 88): `async` / `await` funcionam, mas evite recursos mais novos que isso.
 
 <br>
 
 ## 📍 notas
 
-- a extensão usa o mesmo *webhook* de log do script (`log_db_padeiro`) ao concluir um preenchimento; a falha dele é silenciosa.
-- as fontes usam a pilha do sistema (`Inter` se estiver instalada).
-- distribuição para a equipe: o ideal é empacotar e assinar um `.zxp` (`ZXPSignCmd`), o que dispensa o `PlayerDebugMode`.
+- ao concluir um preenchimento, o host envia um registro ao *webhook* de log (`log_db_padeiro`); a falha dele é silenciosa.
+- as fontes da interface usam a pilha do sistema (`Inter` se estiver instalada).
+- para distribuir sem o `PlayerDebugMode`, o caminho é empacotar e assinar um `.zxp` (`ZXPSignCmd`).
