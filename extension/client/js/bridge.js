@@ -93,6 +93,16 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
+	// Fecha o próprio painel.
+	function closePanel() {
+		if (cep && cep.closeExtension) {
+			cep.closeExtension();
+		} else {
+			console.log('[mock] fechar painel');
+			window.PAD_MOCK_CLOSED = true;
+		}
+	}
+
 	function openUrl(url) {
 		if (window.cep && window.cep.util) {
 			window.cep.util.openURLInDefaultBrowser(url);
@@ -101,5 +111,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, openUrl: openUrl };
+	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, openUrl: openUrl };
 })();

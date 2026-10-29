@@ -465,14 +465,125 @@ PADX.saveTemplateConfig = function (a) {
 	return { path: configFile.fsName };
 };
 
-// Importa o template para o projeto e organiza (duplo clique na lista).
+/*
+
+---------------------------------------------------------------
+> fontes do template
+---------------------------------------------------------------
+
+O criador de templates copia as fontes do projeto para '<pasta do template>/FONTS'. Antes de importar,
+o painel confere quais desses arquivos não estão instalados: sem isso o After Effects abre a janela
+"Resolve Fonts" e troca as fontes pela padrão.
+
+*/
+
+// Pastas onde o sistema guarda as fontes instaladas.
+function padSystemFontFolders() {
+	if (appOs == 'Win') {
+		var folders = [Folder.decode($.getenv('WINDIR') || 'C:/Windows') + '/Fonts'];
+		var local = $.getenv('LOCALAPPDATA');
+
+		if (local) folders.push(Folder.decode(local) + '/Microsoft/Windows/Fonts');
+
+		return folders;
+	}
+
+	return ['~/Library/Fonts', '/Library/Fonts', '/System/Library/Fonts', '/System/Library/Fonts/Supplemental', '/Network/Library/Fonts'];
+}
+
+// Nomes (em minúsculas) dos arquivos de fonte instalados: pastas do sistema e, no After Effects 24+,
+// o arquivo de cada fonte que o próprio After Effects conhece (inclui gerenciadores de fontes).
+function padInstalledFontFiles() {
+	var names = {};
+	var folders = padSystemFontFolders();
+
+	for (var f = 0; f < folders.length; f++) {
+		var folder = new Folder(folders[f]);
+
+		if (!folder.exists) continue;
+
+		var files = folder.getFiles();
+
+		for (var i = 0; i < files.length; i++) {
+			if (files[i] instanceof File) names[File.decode(files[i].name).toLowerCase()] = true;
+		}
+	}
+
+	try {
+		var groups = app.fonts.allFonts;
+
+		for (var g = 0; g < groups.length; g++) {
+			for (var k = 0; k < groups[g].length; k++) {
+				var location = groups[g][k].location;
+
+				if (location) names[File.decode(new File(location).name).toLowerCase()] = true;
+			}
+		}
+	} catch (err) { } // After Effects antes da versão 24 não tem app.fonts
+
+	return names;
+}
+
+function padTemplateFontsFolder(uri) {
+	return new Folder(new File(uri).parent.fsName + '/FONTS');
+}
+
+// Fontes da pasta FONTS do template que não estão instaladas. a: { uri }
+PADX.templateFonts = function (a) {
+	var projectFile = new File(a.uri);
+
+	if (!projectFile.exists) throw new Error('#PAD_018 - arquivo do template não encontrado');
+
+	var folder = padTemplateFontsFolder(a.uri);
+
+	if (!folder.exists) return { hasFolder: false, total: 0, missing: [] };
+
+	var files = getFontFiles(folder, []);
+	var installed = padInstalledFontFiles();
+	var missing = [];
+
+	for (var i = 0; i < files.length; i++) {
+		var name = File.decode(files[i].name);
+
+		if (!installed[name.toLowerCase()]) missing.push(name);
+	}
+
+	return { hasFolder: true, total: files.length, missing: missing };
+};
+
+// Instala as fontes da pasta FONTS do template e confere de novo. a: { uri }
+PADX.installTemplateFonts = function (a) {
+	var folder = padTemplateFontsFolder(a.uri);
+
+	if (!folder.exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+
+	var res = padCollect(function () {
+		installFonts(folder.fsName); // Windows ou macOS
+	});
+
+	return { messages: res.messages, data: PADX.templateFonts(a) };
+};
+
+// Importa o projeto do template. 'quiet': a pessoa já sabe das fontes faltando, então a janela
+// "Resolve Fonts" (e outros avisos da importação) não aparece.
+function padImportProject(projectFile, quiet) {
+	if (quiet) app.beginSuppressDialogs();
+
+	try {
+		app.project.importFile(new ImportOptions(projectFile));
+	} finally {
+		if (quiet) app.endSuppressDialogs(false);
+	}
+}
+
+// Importa o template para o projeto e organiza (duplo clique na lista). a: { uri, quiet }
 PADX.importTemplate = function (a) {
 	var projectFile = new File(a.uri);
 
 	if (!projectFile.exists) throw new Error('#PAD_022 - arquivo do template não encontrado');
 
 	padGroup('Importar Template', function () {
-		app.project.importFile(new ImportOptions(projectFile));
+		padImportProject(projectFile, a.quiet);
 
 		deleteProjectFolders();
 		populateProjectFolders();
@@ -493,7 +604,7 @@ PADX.importTemplate = function (a) {
 */
 
 // Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
-// a: { uri, text }
+// a: { uri, text, quiet }
 PADX.fillBegin = function (a) {
 	var projectFile = new File(a.uri);
 	var files = padTemplateFiles(projectFile);
@@ -521,7 +632,7 @@ PADX.fillBegin = function (a) {
 		app.project.timeDisplayType = TimeDisplayType.TIMECODE;
 
 		// Importação do arquivo de projeto
-		app.project.importFile(new ImportOptions(projectFile));
+		padImportProject(projectFile, a.quiet);
 
 		// Busca a comp original
 		var templateComp = null;

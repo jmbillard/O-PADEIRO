@@ -134,6 +134,20 @@
 					<button type="button" class="button button-primary" id="btn-import-readonly">Importar template</button>
 				</div>
 
+				<!-- fontes do template não instaladas: pergunta antes de importar -->
+				<div class="view fonts-ask" id="view-fonts" hidden>
+					<div class="fonts-ask-icon" aria-hidden="true">Aa</div>
+					<h3 id="fonts-title">Fontes não instaladas</h3>
+					<p id="fonts-text">Sem elas o After Effects troca as fontes do template pela fonte padrão.</p>
+					<ul class="fonts-list" id="fonts-list"></ul>
+					<p class="fonts-note" id="fonts-note"></p>
+					<div class="fonts-actions">
+						<button type="button" class="button button-primary" id="btn-fonts-install">Instalar fontes</button>
+						<button type="button" class="button button-secondary" id="btn-fonts-skip">Seguir sem instalar</button>
+						<button type="button" class="button button-secondary" id="btn-fonts-back">Voltar</button>
+					</div>
+				</div>
+
 				<!-- input -->
 				<div class="view view-stack" id="view-input" hidden>
 					<div class="preview-card" id="preview-card">
@@ -145,6 +159,8 @@
 							<span>sem preview</span>
 						</div>
 					</div>
+
+					<button type="button" class="fonts-warning" id="fonts-warning" hidden></button>
 
 					<div class="field">
 						<div class="field-head">

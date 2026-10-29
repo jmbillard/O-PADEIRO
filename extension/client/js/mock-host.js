@@ -117,6 +117,22 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
+		// TARJA DUPLA tem duas fontes faltando (até "instalar")
+		templateFonts: async function (a) {
+			await wait(120);
+
+			var missing = /DUPLA/.test(a.uri) && !window.PAD_MOCK_FONTS ? ['GlobotipoTexto-BoldItalic.otf', 'GlobotipoTexto-ThinItalic.otf'] : [];
+
+			return { hasFolder: true, total: 3, missing: missing };
+		},
+
+		installTemplateFonts: async function (a) {
+			await wait(delay * 2);
+			window.PAD_MOCK_FONTS = true;
+
+			return { messages: [], data: { hasFolder: true, total: 3, missing: [] } };
+		},
+
 		templateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 

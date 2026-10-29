@@ -1877,3 +1877,137 @@ body.motion-ready .eyebrow {
 .dropdown-query[hidden] {
   display: none;
 }
+
+/* =========================================================
+   Fontes do template não instaladas
+   ========================================================= */
+
+.fonts-warning {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 10px 14px;
+  border: 1px solid #f1d9a6;
+  border-radius: var(--radius-medium);
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    transform 220ms var(--ease-soft);
+}
+
+.fonts-warning:hover {
+  border-color: #e4bd6b;
+  transform: translateY(-1px);
+}
+
+.fonts-warning[hidden] {
+  display: none;
+}
+
+.fonts-warning strong {
+  font-weight: 750;
+}
+
+.fonts-warning span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: #8a6a2a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fonts-warning em {
+  font-style: normal;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fonts-ask {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 26px 18px;
+  text-align: center;
+}
+
+.fonts-ask[hidden] {
+  display: none;
+}
+
+.fonts-ask-icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.fonts-ask h3 {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.fonts-ask p {
+  max-width: 420px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.fonts-list {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fonts-list li {
+  max-width: 100%;
+  padding: 4px 11px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  color: #505c72;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fonts-ask .fonts-note:empty {
+  display: none;
+}
+
+.fonts-ask .fonts-note.is-error {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.fonts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
