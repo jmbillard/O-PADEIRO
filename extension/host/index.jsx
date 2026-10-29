@@ -5,8 +5,8 @@
 > O PADEIRO — host (ExtendScript) da extensão CEP
 ---------------------------------------------------------------
 
-Carregado pelo CEP (ScriptPath do manifest) em todos os painéis. Junta as libs (host/lib) e expõe
-a API que os painéis chamam através de PADX_call (client/js/bridge.js).
+Avaliado a pedido dos painéis (client/js/bridge.js → host/loader.jsx), direto da pasta na rede.
+Junta as libs (host/lib) e expõe a API que os painéis chamam através de PADX_call.
 
 */
 

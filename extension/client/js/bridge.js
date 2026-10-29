@@ -26,9 +26,44 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return JSON.stringify(str).split(String.fromCharCode(0x2028)).join('\\u2028').split(String.fromCharCode(0x2029)).join('\\u2029');
 	}
 
+	// Pasta 'host' ao lado da pasta 'client' desta página (o código vive na rede: a página foi aberta de lá).
+	function hostFolder() {
+		var path = decodeURIComponent(location.pathname).replace(/\/client\/[^/]*$/, '/host');
+
+		if (location.host) return '//' + location.host + path; // Windows: \\servidor\share (file://servidor/share)
+		if (/^\/[A-Za-z]:\//.test(path)) return path.slice(1); // Windows: C:/...
+
+		return path;
+	}
+
+	// Carrega o host da rede na primeira chamada do painel, e de novo se algum arquivo dele mudou.
+	var hostReady = null;
+
+	async function loadHost() {
+		var host = literal(hostFolder());
+		var state = await evalScript('try{$.evalFile(new File(' + host + '+"/loader.jsx"));PADX_hostState(' + host + ')}catch(e){"erro: "+e}');
+
+		if (state === 'load') state = await evalScript('try{$.evalFile(new File(' + host + '+"/index.jsx"));PADX_hostLoaded()}catch(e){"erro: "+e}');
+
+		if (state !== 'ok' && state !== 'loaded') throw new Error(String(state).replace(/^erro: /, '') || 'o host do After Effects não carregou');
+	}
+
+	function ensureHost() {
+		if (!hostReady) {
+			hostReady = loadHost().catch(function (err) {
+				hostReady = null; // tenta de novo na próxima chamada (a rede pode voltar)
+				throw err;
+			});
+		}
+
+		return hostReady;
+	}
+
 	// Chama PADX[method](args) no host. Resolve com os dados ou rejeita com Error.
 	async function call(method, args) {
 		if (window.PAD_MOCK_HOST) return window.PAD_MOCK_HOST.call(method, args || {});
+
+		await ensureHost();
 
 		var raw = await evalScript('PADX_call(' + literal(method) + ',' + literal(JSON.stringify(args || {})) + ')');
 		var res;

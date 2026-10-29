@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<!--
+	O PADEIRO — carregador instalado na máquina.
+	O instalador (INSTALAR O PADEIRO.jsx) grava uma cópia desta página para cada painel, com ROOT
+	(pasta 'extension' na rede) e PAGE (página do painel) preenchidos.
+	O painel de verdade é aberto direto da rede: para atualizar, basta trocar os arquivos lá e reabrir o painel.
+-->
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O PADEIRO</title>
+	<style>
+		html,
+		body {
+			height: 100%;
+			margin: 0;
+		}
+
+		body {
+			display: grid;
+			place-items: center;
+			padding: 16px;
+			box-sizing: border-box;
+			background: linear-gradient(135deg, #6db8ff 0%, #4f82ff 48%, #5b4fe6 100%);
+			color: white;
+			font: 600 12px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			text-align: center;
+		}
+
+		#box {
+			display: grid;
+			max-width: 420px;
+			gap: 8px;
+		}
+
+		strong {
+			font-size: 14px;
+		}
+
+		span {
+			opacity: 0.8;
+			overflow-wrap: anywhere;
+		}
+
+		button {
+			justify-self: center;
+			margin-top: 6px;
+			padding: 8px 18px;
+			border: 1px solid rgb(255 255 255 / 50%);
+			border-radius: 999px;
+			background: rgb(255 255 255 / 16%);
+			color: white;
+			cursor: pointer;
+			font: inherit;
+		}
+
+		[hidden] {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="box">
+		<strong id="title">abrindo o padeiro…</strong>
+		<span id="detail"></span>
+		<button type="button" id="retry" hidden>Tentar de novo</button>
+	</div>
+
+	<script>
+		(function () {
+			var ROOT = __PADEIRO_ROOT__;
+			var PAGE = __PADEIRO_PAGE__;
+
+			// macOS: o volume de rede pode ser montado com sufixo (/Volumes/VFX-1 ... VFX-5)
+			function candidates(root) {
+				var list = [root];
+				var m = /^\/Volumes\/([^/]+)(\/.*)?$/.exec(root);
+
+				if (m) {
+					for (var i = 1; i <= 5; i++) list.push('/Volumes/' + m[1] + '-' + i + (m[2] || ''));
+				}
+
+				return list;
+			}
+
+			function exists(path) {
+				if (!window.cep || !window.cep.fs) return true; // fora do After Effects: só tenta abrir
+
+				return window.cep.fs.stat(path).err === 0;
+			}
+
+			function fileUrl(path) {
+				var s = path.replace(/\\/g, '/');
+				var drive = /^[A-Za-z]:\//.test(s) ? s.slice(0, 2) : '';
+				var rest = drive ? s.slice(2) : s;
+				var encoded = rest.split('/').map(encodeURIComponent).join('/');
+
+				if (s.indexOf('//') === 0) return 'file:' + encoded; // \\servidor\share → file://servidor/share
+				if (drive) return 'file:///' + drive + encoded;
+
+				return 'file://' + encoded;
+			}
+
+			function open() {
+				var list = candidates(ROOT);
+
+				for (var i = 0; i < list.length; i++) {
+					var page = list[i].replace(/[\\/]+$/, '') + '/client/' + PAGE;
+
+					if (exists(page)) {
+						location.replace(fileUrl(page) + location.search);
+						return;
+					}
+				}
+
+				document.getElementById('title').textContent = 'a pasta do padeiro na rede não está acessível';
+				document.getElementById('detail').textContent = ROOT;
+				document.getElementById('retry').hidden = false;
+				setTimeout(open, 4000); // a rede pode voltar
+			}
+
+			document.getElementById('retry').addEventListener('click', open);
+			open();
+		})();
+	</script>
+</body>
+
+</html>

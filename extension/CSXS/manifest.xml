@@ -29,7 +29,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/bar.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -60,7 +59,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/index.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -90,7 +88,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/finder.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -120,7 +117,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/converter.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -150,7 +146,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/productions.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
@@ -180,7 +175,6 @@
 			<DispatchInfo>
 				<Resources>
 					<MainPath>./client/maker.html</MainPath>
-					<ScriptPath>./host/index.jsx</ScriptPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>

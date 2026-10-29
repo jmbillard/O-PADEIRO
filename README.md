@@ -55,7 +55,9 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 > 🚩 *obs:*\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
-> • para **atualizar**, rode o instalador de novo e reinicie o After Effects. o mesmo instalador também **remove** a extensão.\
+> • o **código do padeiro fica na rede**: o computador recebe só um carregador, que abre os painéis direto da pasta do padeiro. por isso, **para atualizar, basta fechar e abrir o painel de novo** depois que os arquivos da rede forem trocados.\
+> • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
+> • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
 > • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
 

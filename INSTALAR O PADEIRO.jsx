@@ -7,8 +7,13 @@
 No After Effects: File > Scripts > Run Script File... e escolha este arquivo, direto da pasta do padeiro
 na rede. Funciona no macOS e no Windows (rodando dentro do After Effects, o macOS não bloqueia).
 
+O código do padeiro continua na rede: a máquina recebe só um carregador (o manifest e uma página por
+painel que abre a página de verdade, na pasta 'extension' da rede). Para atualizar o padeiro, basta trocar
+os arquivos na rede e reabrir o painel; o instalador só precisa rodar de novo quando o manifest mudar
+(um painel novo, por exemplo).
+
 Instalar / atualizar:
-  1. copia a pasta 'extension' para a pasta de extensões CEP do usuário;
+  1. grava o carregador na pasta de extensões CEP do usuário;
   2. liga o PlayerDebugMode (extensões sem assinatura só carregam com ele);
   3. grava onde está a lista de produções compartilhada (O_PADEIRO_config.json, ao lado deste arquivo);
   4. remove a versão antiga (o script 'O PADEIRO.jsx' das pastas ScriptUI Panels).
@@ -41,6 +46,22 @@ Remover: apaga a extensão instalada.
 		return '"' + String(path).replace(/"/g, '\\"') + '"';
 	}
 
+	function readText(file) {
+		file.encoding = 'UTF-8';
+		file.open('r');
+
+		var text = file.read();
+
+		file.close();
+
+		return text;
+	}
+
+	// literal de string JavaScript (o ExtendScript antigo não tem JSON)
+	function jsString(str) {
+		return '"' + String(str).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+	}
+
 	function writeText(file, text) {
 		file.encoding = 'UTF-8';
 		file.open('w');
@@ -48,29 +69,7 @@ Remover: apaga a extensão instalada.
 		file.close();
 	}
 
-	// Windows: cópia e remoção pelo próprio ExtendScript
-	function copyFolder(from, to, skip) {
-		var errors = [];
-
-		if (!to.exists) to.create();
-
-		var items = from.getFiles();
-
-		for (var i = 0; i < items.length; i++) {
-			var name = File.decode(items[i].name);
-
-			if (items[i] instanceof Folder) {
-				if (skip && skip[name]) continue;
-
-				errors = errors.concat(copyFolder(items[i], new Folder(to.fsName + '/' + name), null));
-			} else if (!items[i].copy(to.fsName + '/' + name)) {
-				errors.push(items[i].fsName);
-			}
-		}
-
-		return errors;
-	}
-
+	// Windows: remoção pelo próprio ExtendScript
 	function removeFolder(folder) {
 		var items = folder.getFiles();
 
@@ -91,20 +90,40 @@ Remover: apaga a extensão instalada.
 		}
 	}
 
+	// O carregador: o manifest da rede e, para cada painel, uma página que abre a página de verdade na rede.
 	function installExtension() {
+		var manifest = new File(src.fsName + '/CSXS/manifest.xml');
+		var stub = new File(src.fsName + '/loader/stub.html');
+
+		if (!manifest.exists || !stub.exists) return ['arquivos da extensão não encontrados em ' + src.fsName];
+
+		var xml = readText(manifest);
+		var template = readText(stub);
+		var pages = xml.match(/<MainPath>\.\/client\/[^<]+<\/MainPath>/g) || [];
+
 		removeExtension();
-		new Folder(dest.parent.fsName).create();
+		new Folder(dest.fsName + '/CSXS').create();
+		new Folder(dest.fsName + '/client').create();
+		writeText(new File(dest.fsName + '/CSXS/manifest.xml'), xml);
 
-		if (IS_MAC) {
-			system.callSystem('ditto ' + quote(src.fsName) + ' ' + quote(dest.fsName));
-			system.callSystem('rm -rf ' + quote(dest.fsName + '/scripts'));
-			// arquivos baixados (zip do GitHub) vêm em quarentena
-			system.callSystem('xattr -dr com.apple.quarantine ' + quote(dest.fsName));
+		var debug = new File(src.fsName + '/.debug');
 
-			return new File(dest.fsName + '/CSXS/manifest.xml').exists ? [] : ['a cópia para ' + dest.fsName + ' falhou'];
+		if (debug.exists) debug.copy(dest.fsName + '/.debug');
+
+		for (var i = 0; i < pages.length; i++) {
+			var page = pages[i].replace(/^<MainPath>\.\/client\//, '').replace(/<\/MainPath>$/, '');
+			var html = template
+				.replace(/__PADEIRO_ROOT__/g, function () {
+					return jsString(src.fsName);
+				})
+				.replace(/__PADEIRO_PAGE__/g, function () {
+					return jsString(page);
+				});
+
+			writeText(new File(dest.fsName + '/client/' + page), html);
 		}
 
-		return copyFolder(src, dest, { scripts: true });
+		return new File(dest.fsName + '/CSXS/manifest.xml').exists ? [] : ['não foi possível gravar em ' + dest.fsName];
 	}
 
 	function enableDebugMode() {

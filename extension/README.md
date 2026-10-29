@@ -25,12 +25,13 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 
 ```text
 O-PADEIRO/
-├─ INSTALAR O PADEIRO.jsx        → instalador (File > Scripts > Run Script File... no After Effects)
+├─ INSTALAR O PADEIRO.jsx        → instalador do carregador (File > Scripts > Run Script File... no After Effects)
 ├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
    ├─ CSXS/manifest.xml          → os 6 painéis
    ├─ .debug                     → portas de depuração (CEF)
+   ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
    │  ├─ *.html                  → uma página por painel
    │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, vidro, folha branca)
@@ -46,6 +47,7 @@ O-PADEIRO/
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
    │     └─ <painel>.js          → lógica de cada painel
    ├─ host/                      → ExtendScript (roda dentro do After Effects)
+   │  ├─ loader.jsx              → carregador: confere se o host mudou na rede
    │  ├─ index.jsx               → entrada: includes
    │  ├─ env.jsx                 → nome, versão, sistema e pastas de dados
    │  ├─ api.jsx                 → PADX_call e os métodos da barra e dos templates
@@ -55,6 +57,28 @@ O-PADEIRO/
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
    └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
 ```
+
+<br>
+
+## 📍 o código vive na rede
+
+a pasta do padeiro na rede é a única cópia do código. o `INSTALAR O PADEIRO.jsx` grava no computador só um **carregador**, na pasta de extensões CEP do usuário:
+
+```text
+com.jmbillard.opadeiro.panel/
+├─ CSXS/manifest.xml   → cópia do manifest da rede (os painéis e os menus)
+├─ .debug              → portas de depuração
+└─ client/<página>.html → uma por painel, gerada de extension/loader/stub.html
+```
+
+1. **página** → ao abrir um painel, a página instalada procura a mesma página na pasta `extension` da rede (no macOS, também em `/Volumes/<volume>-1` a `-5`) e navega para ela. sem acesso, mostra um aviso e tenta de novo a cada 4 s.
+2. **host** → na primeira chamada, `client/js/bridge.js` pede ao After Effects para avaliar `host/loader.jsx` da mesma pasta da página. o carregador compara nome e data de cada `.jsx` / `.js` do host com a última leitura e, se algo mudou (ou nunca foi lido), o painel avalia `host/index.jsx` de novo.
+
+resultado: trocar os arquivos na rede e **reabrir o painel** já atualiza a interface e o host, sem reinstalar e sem reiniciar o After Effects. reinstalar só é preciso quando o `manifest.xml` muda (painel novo, tamanho padrão, menu).
+
+> 🚩 *obs:*\
+> • o manifest não tem `ScriptPath`: o host é sempre carregado pelos painéis, da rede.\
+> • os painéis compartilham o mesmo ExtendScript do After Effects: reabrir um painel depois de uma atualização recarrega o host para todos.
 
 <br>
 
@@ -95,7 +119,7 @@ a **lista de produções** é sempre o `O_PADEIRO_config.json` compartilhado: o 
 
 ### instalar a partir do repositório
 
-para usar, o caminho é o mesmo da equipe: `INSTALAR O PADEIRO.jsx` (cópia da pasta `extension/`, `PlayerDebugMode`, ponteiro da lista compartilhada e remoção da versão antiga). para desenvolver, os scripts de `extension/scripts/` fazem o mesmo pelo terminal:
+para usar, o caminho é o mesmo da equipe: `INSTALAR O PADEIRO.jsx` a partir do repositório (o carregador aponta para a pasta `extension/` do repo). para desenvolver, os scripts de `extension/scripts/` também servem:
 
 ```bash
 ./extension/scripts/install-mac.sh
