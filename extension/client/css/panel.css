@@ -1075,3 +1075,48 @@ body {
     transform: translateY(-4px);
   }
 }
+
+/* =========================================================
+   Ajustes: ícone sólido dos templates, dicas em lista, eyebrow
+   ========================================================= */
+
+/* templates com ícone sólido (separa das pastas, que são só contorno) */
+.tree-item>.tree-row>svg {
+  fill: currentcolor;
+}
+
+.tree-item>.tree-row>svg path:nth-child(2) {
+  fill: none;
+  stroke: rgb(24 35 85 / 38%);
+}
+
+.upload-side .eyebrow {
+  padding-left: 5px;
+}
+
+.tip-list {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-list li {
+  position: relative;
+  padding-left: 16px;
+  color: #4e5a6f;
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.tip-list li::before {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  top: 0.62em;
+  left: 3px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  content: "";
+}

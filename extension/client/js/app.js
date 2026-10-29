@@ -607,7 +607,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// o que o usuário já digitou é mantido ao trocar de template (como no script)
 		if (!typed) textarea.value = cfg.exemple;
 
-		$('tip').textContent = cfg.tip;
+		var tipList = $('tip');
+
+		tipList.textContent = '';
+		String(cfg.tip).split(/[\n\r]+/).forEach(function (line) {
+			if (line.trim() !== '') tipList.appendChild(el('li', null, line.trim()));
+		});
 		setPreview(info);
 		updateInputCount();
 		showView('input');
