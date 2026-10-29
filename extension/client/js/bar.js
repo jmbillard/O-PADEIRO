@@ -40,13 +40,35 @@ aparecem como "em breve".
 		return node;
 	}
 
+	// Ícones com partes animadas no hover (CSS em bar.css); os demais vêm do sprite.
+	var INLINE_ICONS = {
+		folders:
+			'<g class="anim-folder"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" />' +
+			'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
+		organize:
+			'<g class="anim-layers"><path class="layer-top" d="m12 3-8.5 4.25L12 11.5l8.5-4.25z" />' +
+			'<path class="layer-mid" d="m3.5 12 8.5 4.25L20.5 12" />' +
+			'<path class="layer-bottom" d="m3.5 16.5 8.5 4.25 8.5-4.25" /></g>',
+		rename:
+			'<g class="anim-type"><rect x="2.5" y="6.5" width="19" height="11" rx="3" />' +
+			'<path class="type-char" d="M6 12h2.4" /><path class="type-char" d="M10.3 12h2.4" /><path class="type-char" d="M14.6 12h2.4" />' +
+			'<path class="type-caret" d="M18.6 9.6v4.8" /></g>',
+		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
+	};
+
 	function svgIcon(name) {
 		var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-		var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 
 		svg.setAttribute('viewBox', '0 0 24 24');
-		use.setAttribute('href', '#i-' + name);
-		svg.appendChild(use);
+
+		if (INLINE_ICONS[name]) {
+			svg.innerHTML = INLINE_ICONS[name];
+		} else {
+			var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+
+			use.setAttribute('href', '#i-' + name);
+			svg.appendChild(use);
+		}
 
 		return svg;
 	}
@@ -243,6 +265,7 @@ aparecem como "em breve".
 
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
+				btn.dataset.icon = def.icon;
 				btn.title = def.tips.join('\n');
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));

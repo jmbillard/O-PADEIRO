@@ -137,21 +137,18 @@ body.bar-page {
   border-color: rgb(255 255 255 / 80%);
 }
 
-/* botões */
+/* botões: só o ícone e o rótulo (sem caixa) */
 .bar-icon,
 .bar-btn {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 30%);
-  background: rgb(255 255 255 / 12%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
-  color: white;
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 92%);
   cursor: pointer;
   transition:
-    background-color 200ms ease,
-    border-color 200ms ease,
-    box-shadow 220ms ease,
+    color 200ms ease,
     transform 240ms var(--ease-soft);
 }
 
@@ -163,15 +160,16 @@ body.bar-page {
 
 .bar-btn {
   min-width: 62px;
-  gap: 3px;
-  padding: 7px 8px 6px;
-  border-radius: 16px;
+  gap: 4px;
+  padding: 6px 6px 5px;
+  border-radius: 14px;
 }
 
 .bar-icon svg,
 .bar-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
+  overflow: visible;
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;
@@ -181,36 +179,32 @@ body.bar-page {
 }
 
 .bar-icon svg {
-  width: 17px;
-  height: 17px;
+  width: 19px;
+  height: 19px;
 }
 
 .bar-label {
-  color: rgb(255 255 255 / 84%);
+  color: rgb(255 255 255 / 78%);
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
+  transition: color 200ms ease;
 }
 
 .bar-icon:hover:not(:disabled),
 .bar-btn:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 80%);
-  background: rgb(255 255 255 / 24%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 20%),
-    0 10px 22px rgb(24 43 113 / 22%);
-  transform: translateY(-2px);
+  color: white;
+  transform: translateY(-1px);
 }
 
-.bar-btn:hover:not(:disabled) svg,
-.bar-icon:hover:not(:disabled) svg {
-  transform: scale(1.1) rotate(-4deg);
+.bar-btn:hover:not(:disabled) .bar-label {
+  color: white;
 }
 
 .bar-btn:active:not(:disabled),
 .bar-icon:active:not(:disabled) {
-  transform: translateY(0) scale(0.97);
+  transform: translateY(0) scale(0.96);
 }
 
 .bar-btn:focus-visible,
@@ -223,7 +217,7 @@ body.bar-page {
 .bar-btn.is-busy,
 .bar-icon.is-busy {
   pointer-events: none;
-  animation: bar-busy 900ms ease-in-out infinite alternate;
+  animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 
 .bar-btn.is-soon {
@@ -232,6 +226,124 @@ body.bar-page {
 
 .bar-btn.is-soon:hover:not(:disabled) {
   transform: none;
+}
+
+/* ---------- animações dos ícones (a cada hover) ---------- */
+
+/* templates, buscar e apontamento: leve giro e zoom */
+.bar-btn[data-icon="templates"]:hover:not(:disabled) svg,
+.bar-btn[data-icon="search"]:hover:not(:disabled) svg,
+.bar-icon:hover:not(:disabled) svg {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.bar-btn svg * {
+  transform-box: fill-box;
+}
+
+/* pastas: a frente da pasta se abre */
+.anim-folder .folder-front {
+  transform-origin: 50% 100%;
+  transition: transform 280ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-folder .folder-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+/* organizar: as camadas se separam */
+.anim-layers path {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-layers .layer-top {
+  transform: translateY(-3.2px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-layers .layer-bottom {
+  transform: translateY(3.2px);
+}
+
+/* renomear: digitação rápida (letras aparecem e o cursor acompanha) */
+.anim-type .type-char {
+  transform-origin: 0 50%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char {
+  animation: type-char 140ms ease-out backwards;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(2) {
+  animation-delay: 110ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(3) {
+  animation-delay: 220ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-caret {
+  animation: type-caret 360ms steps(3, end);
+}
+
+/* fontes: o T fica negrito, itálico e fino */
+.anim-font .font-t {
+  transform-origin: 50% 100%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-font .font-t {
+  animation: font-style 1100ms ease-in-out;
+}
+
+@keyframes type-char {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes type-caret {
+  from {
+    transform: translateX(-9px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes font-style {
+
+  0%,
+  100% {
+    stroke-width: 1.7;
+    transform: skewX(0);
+  }
+
+  22% {
+    stroke-width: 3.6;
+    transform: skewX(0);
+  }
+
+  44% {
+    stroke-width: 1.7;
+    transform: skewX(0);
+  }
+
+  60%,
+  72% {
+    stroke-width: 1.7;
+    transform: skewX(-16deg);
+  }
+
+  86% {
+    stroke-width: 0.7;
+    transform: skewX(0);
+  }
 }
 
 @keyframes bar-busy {
@@ -301,14 +413,16 @@ body.bar-page {
     width: 100%;
   }
 
-  .bar-tools,
-  .bar-section {
-    flex-flow: row wrap;
-    justify-content: center;
+  .bar-tools {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
 
-  .bar-tools {
-    gap: 6px;
+  .bar-section {
+    width: 100%;
+    flex-flow: row wrap;
+    justify-content: center;
   }
 
   .bar-divider {
