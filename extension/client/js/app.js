@@ -745,7 +745,17 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		total.textContent = query ? found + ' / ' + countTemplates(state.tree) : plural(found, 'template', 'templates');
 	}
 
+	function updateFolderButton() {
+		var btn = $('btn-open-templates');
+		var title = state.selected ? 'Abrir a pasta do template selecionado' : 'Abrir pasta de templates';
+
+		btn.title = title;
+		btn.setAttribute('aria-label', title);
+	}
+
 	function markSelected() {
+		updateFolderButton();
+
 		var items = $('tree').querySelectorAll('.tree-item');
 
 		Array.prototype.forEach.call(items, function (item) {
@@ -1572,11 +1582,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Menu e eventos
 	   ========================================================= */
 
+	// Com um template selecionado, abre a pasta dele; sem seleção, a pasta de templates da produção.
 	async function openTemplatesFolder() {
-		if (!state.templatesPath) return;
+		var path = state.selected && state.info ? state.info.folder : state.templatesPath;
+
+		if (!path) return;
 
 		try {
-			await call('openFolder', { path: state.templatesPath });
+			await call('openFolder', { path: path });
 		} catch (err) {
 			pickerMessage('error', err.message);
 		}

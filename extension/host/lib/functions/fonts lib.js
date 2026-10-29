@@ -122,24 +122,28 @@ function getFontFiles(folder, fileArray) {
 	return fileArray;
 }
 
-// Instala as fontes de uma pasta (e subpastas) no sistema do usuário.
+// Instala as fontes de uma pasta (e subpastas) no sistema do usuário, sem janelas: o painel mostra
+// o resultado. Retorna { total, installed, already, errors: [nomes] } (no Windows, 'installed' = enviadas).
 function installFonts(fontsPath) {
 	var srcFolder = new Folder(fontsPath);
 
-	if (!srcFolder.exists) {
-		alert(lol + '#PAD_006 - a pasta de fontes não foi localizada...');
-		return;
-	}
+	if (!srcFolder.exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
 
 	var fontFiles = getFontFiles(srcFolder, []);
 
-	if (fontFiles.length == 0) {
-		alert(lol + '#PAD_035 - nenhum arquivo .ttf ou .otf na pasta de fontes.');
-		return;
-	}
+	if (fontFiles.length == 0) throw new Error('#PAD_035 - nenhum arquivo .ttf ou .otf na pasta de fontes.');
 
-	if (appOs == 'Win') installWinFonts(fontFiles);
-	if (appOs == 'Mac') installMacFonts(fontFiles);
+	return appOs == 'Win' ? installWinFonts(fontFiles) : installMacFonts(fontFiles);
+}
+
+// Resumo da instalação em uma linha (aviso da barra).
+function installFontsMessage(res) {
+	var msg = 'fontes instaladas: ' + res.installed;
+
+	if (res.already > 0) msg += ' · já instaladas: ' + res.already;
+	if (res.errors.length > 0) msg += ' · não foi possível instalar: ' + res.errors.join(', ');
+
+	return msg;
 }
 
 // Windows: instala pela pasta especial de fontes (Shell.Application), que registra a fonte para o usuário.
@@ -147,7 +151,7 @@ function installFonts(fontsPath) {
 // quando há muitas fontes.
 function installWinFonts(fontFiles) {
 	var ps = [
-		"Write-Host '------------- O PADEIRO script -------------' -ForegroundColor white -BackgroundColor DarkRed",
+		"Write-Host '------------- O PADEIRO -------------' -ForegroundColor white -BackgroundColor DarkRed",
 		'$fonts = (New-Object -ComObject Shell.Application).Namespace(0x14)'
 	];
 
@@ -163,7 +167,7 @@ function installWinFonts(fontFiles) {
 	var scriptFile = new File(tempPath + '/install_fonts.ps1');
 
 	scriptFile.encoding = 'UTF-8';
-	writeFileContent(scriptFile, '﻿' + ps.join('\r\n'));
+	writeFileContent(scriptFile, '\uFEFF' + ps.join('\r\n'));
 
 	system.callSystem('cmd.exe /c powershell.exe -NoProfile -ExecutionPolicy Bypass -File "' + scriptFile.fsName + '"');
 
@@ -171,7 +175,7 @@ function installWinFonts(fontFiles) {
 		scriptFile.remove();
 	} catch (err) { }
 
-	alert(relax + fontFiles.length + ' fonte(s) enviadas para instalação.');
+	return { total: fontFiles.length, installed: fontFiles.length, already: 0, errors: [] };
 }
 
 // macOS: copia para ~/Library/Fonts (pasta do usuário, sem pedir senha).
@@ -208,10 +212,5 @@ function installMacFonts(fontFiles) {
 		} catch (err) { }
 	}
 
-	var msg = relax + 'fontes instaladas: ' + installed;
-
-	if (alreadyInstalled > 0) msg += '\njá instaladas: ' + alreadyInstalled;
-	if (errors.length > 0) msg += '\n\nnão foi possível instalar:\n' + errors.join('\n');
-
-	alert(msg);
+	return { total: fontFiles.length, installed: installed, already: alreadyInstalled, errors: errors };
 }

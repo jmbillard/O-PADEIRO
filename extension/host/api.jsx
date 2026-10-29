@@ -55,7 +55,8 @@ function netAccess() {
 var PADX_alerts = null;
 var PADX_nativeAlert = alert;
 
-alert = function (msg) {
+// atribuído em $.global: o alert de todas as libs passa por aqui
+$.global.alert = function (msg) {
 	if (PADX_alerts === null) return PADX_nativeAlert(msg);
 
 	PADX_alerts.push(String(msg).replace(lol, '').replace(relax, '').replace(/^\s+|\s+$/g, ''));
@@ -524,11 +525,9 @@ PADX.installTemplateFonts = function (a) {
 
 	if (!folder.exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
 
-	var res = padCollect(function () {
-		installFonts(folder.fsName); // Windows ou macOS
-	});
+	var res = installFonts(folder.fsName); // Windows ou macOS, sem janelas
 
-	return { messages: res.messages, data: PADX.templateFonts(a) };
+	return { messages: res.errors.length ? ['não foi possível instalar: ' + res.errors.join(', ')] : [], data: PADX.templateFonts(a) };
 };
 
 // Importa o projeto do template. 'quiet': a pessoa já sabe das fontes faltando, então a janela
@@ -1011,9 +1010,7 @@ PADX.installFonts = function () {
 
 	if (!new Folder(fontsPath).exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
 
-	return padCollect(function () {
-		installFonts(fontsPath); // Windows ou macOS
-	});
+	return { messages: [installFontsMessage(installFonts(fontsPath))], data: null }; // Windows ou macOS, sem janelas
 };
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }

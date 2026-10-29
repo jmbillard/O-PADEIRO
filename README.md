@@ -177,7 +177,7 @@ o painel de templates mostra os templates da produção escolhida na barra. ele 
 - **★ fixados** → passe o mouse em um template e clique na estrela para fixá-lo no topo da lista.
 - **recentes** → os últimos 5 templates preenchidos ou importados.
 - **atualizar** → lê a pasta de templates de novo.
-- **abrir pasta** → abre a pasta de templates da produção.
+- **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
 - `◖ clique` no template selecionado (ou no fundo da lista, ou `Esc`) → desmarca o template.
 - `◖ clique DUPLO` no template → importa o template para o projeto, sem preencher.
 
@@ -190,7 +190,7 @@ o painel de templates mostra os templates da produção escolhida na barra. ele 
 
 ### o template
 
-- **preview** → a imagem `_preview.png` do template. se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
+- **preview** → a imagem `_preview.png` do template (transparências aparecem sobre um fundo xadrez). se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
 - **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
 - **dicas** → como preencher esse template.
 - **abrir output** → abre as pastas de output do template.

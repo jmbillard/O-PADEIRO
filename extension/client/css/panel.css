@@ -1944,3 +1944,21 @@ body.motion-ready .eyebrow {
   transform: rotate(90deg);
 }
 
+
+/* preview em png: xadrez no fundo para mostrar as transparências */
+.preview-card.has-image {
+  background:
+    repeating-conic-gradient(#d5dae3 0 25%, #eef1f5 0 50%) 0 0 / 16px 16px;
+}
+
+/* botão "⋯" do rodapé da lista: só os três pontinhos, sem o círculo */
+.actions-menu>summary.icon-button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.actions-menu>summary.icon-button:hover,
+.actions-menu[open]>summary.icon-button {
+  border-color: transparent;
+  background: rgb(255 255 255 / 12%);
+}
