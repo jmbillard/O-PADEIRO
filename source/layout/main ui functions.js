@@ -289,19 +289,19 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		PAD_LAYOUT(uiObj);
 	};
 
-	// durante o arrasto (onResizing) o tamanho da janela nunca é alterado pelo script:
-	// definir window.size no meio do arrasto interrompe o redimensionamento pelo mouse
-	uiObj.window.onResizing = function () {
+	uiObj.window.onResizing = uiObj.window.onResize = function () {
 		if (uiObj.isLayouting) return;
 
-		PAD_LAYOUT(uiObj, true);
-	};
+		// painel encaixado: o After Effects controla o tamanho, o layout completo roda na hora
+		if (!uiObj.isFloating) {
+			PAD_LAYOUT(uiObj);
+			return;
+		}
 
-	// ao soltar o mouse (onResize) o layout completo pode corrigir o tamanho, se preciso
-	uiObj.window.onResize = function () {
-		if (uiObj.isLayouting) return;
-
-		PAD_LAYOUT(uiObj, false);
+		// janela flutuante: durante o arrasto, só redistribui os controles no tamanho atual.
+		// layout(true) ou mudar window.size no meio do arrasto faz a janela parar de seguir o mouse.
+		this.layout.resize();
+		scheduleFloatingLayout(uiObj);
 	};
 
 	PAD_UI_EVENTS(uiObj);
@@ -339,15 +339,34 @@ function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
 // Tamanho inicial da janela flutuante (fora de um painel)
 var PAD_FLOATING_SIZE = [640, 80];
 
+// Espera (ms) depois do último evento de redimensionamento para aplicar o layout completo
+var PAD_FLOATING_LAYOUT_DELAY = 250;
+
+// Agenda o layout completo da janela flutuante para quando o arrasto parar: cada evento de
+// redimensionamento cancela o agendamento anterior. O app.scheduleTask executa o texto no
+// escopo global, então a função fica em $.global.
+function scheduleFloatingLayout(uiObj) {
+	$.global.PAD_FLOATING_LAYOUT = function () {
+		$.global.PAD_FLOATING_LAYOUT_TASK = null;
+
+		try {
+			PAD_LAYOUT(uiObj);
+		} catch (err) { }
+	};
+
+	if ($.global.PAD_FLOATING_LAYOUT_TASK) app.cancelTask($.global.PAD_FLOATING_LAYOUT_TASK);
+
+	$.global.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
+}
+
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
 // Aplica o layout dos controles dependendo das dimensões da janela
-// isResizing: true enquanto a janela flutuante está sendo arrastada (ver onResizing).
-function PAD_LAYOUT(uiObj, isResizing) {
+function PAD_LAYOUT(uiObj) {
 	uiObj.isLayouting = true;
 
 	// janela flutuante: guarda o tamanho escolhido pelo usuário, caso o layout(true) volte a janela
 	// para o tamanho preferido do conteúdo
-	var keepSize = uiObj.isFloating && !isResizing ? [uiObj.window.size.width, uiObj.window.size.height] : null;
+	var keepSize = uiObj.isFloating ? [uiObj.window.size.width, uiObj.window.size.height] : null;
 
 	var isRow = uiObj.window.size.width > uiObj.window.size.height;
 	var grpOrientation = isRow ? 'row' : 'column';
