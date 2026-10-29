@@ -1042,6 +1042,31 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			search.focus();
 		});
 
+		// clicar fora de um template (fundo da lista ou da coluna) ou apertar Esc também desmarca
+		function deselectFromUi() {
+			if (!state.selected || runIsOpen() || state.busy) return;
+
+			deselectTemplate();
+		}
+
+		document.querySelector('.upload-side').addEventListener('click', function (e) {
+			if (e.target.closest('.tree-row, .picker-search, .picker-footer, .picker-state')) return;
+
+			deselectFromUi();
+		});
+
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape') return;
+
+			var active = document.activeElement;
+
+			if (active === search && search.value) return; // o Esc da busca só limpa o texto
+			if (active && active.tagName === 'TEXTAREA') return;
+			if ($('app-menu').hasAttribute('open')) return;
+
+			deselectFromUi();
+		});
+
 		$('btn-refresh').addEventListener('click', refreshTree);
 		$('btn-open-templates').addEventListener('click', openTemplatesFolder);
 
