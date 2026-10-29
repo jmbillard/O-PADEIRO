@@ -30,9 +30,4 @@
 			<Host Name="AEFT" Port="8093" />
 		</HostList>
 	</Extension>
-	<Extension Id="com.jmbillard.opadeiro.templateswindow">
-		<HostList>
-			<Host Name="AEFT" Port="8094" />
-		</HostList>
-	</Extension>
 </ExtensionList>

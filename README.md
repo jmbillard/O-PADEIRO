@@ -9,7 +9,7 @@ o fluxo é simples, em 3 etapas:\
 
 ![barra principal](docs/images/barra.webp)
 
-o padeiro é uma **extensão** do After Effects: um conjunto de painéis que podem ser acoplados em qualquer lugar da interface, como os painéis nativos.
+o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos, e as outras ferramentas abrem em **janelas** próprias, pelos botões da barra.
 
 | painel | para que serve |
 | --- | --- |
@@ -50,7 +50,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 2. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
 3. clique em '*Instalar*' (ou '*Atualizar*', se já estiver instalado).
 4. **reinicie** o After Effects.
-5. abra os painéis pelo menu `Window` > `Extensions` e acople onde preferir. comece pelo **O PADEIRO** (a barra): os outros abrem pelos botões dela.
+5. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
 > 🚩 *obs:*\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
@@ -58,7 +58,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
-> • **janela preta** em um painel flutuante (visto no After Effects 2025): os painéis já pedem desenho sem GPU. se acontecer, rode o instalador de novo (o manifest instalado precisa ser o atual) e reinicie o After Effects.\
+> • **janelas pretas no After Effects 2025**: problema conhecido e ainda em investigação (no 2026 abre normalmente).\
 > • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
 
 ### habilitando o acesso à rede
