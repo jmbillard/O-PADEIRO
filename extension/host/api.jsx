@@ -1,0 +1,656 @@
+﻿/* eslint-disable no-undef */
+/*
+
+---------------------------------------------------------------
+> API do painel
+---------------------------------------------------------------
+
+Cada método de PADX recebe um objeto (JSON) e devolve dados simples (serializáveis).
+O painel chama sempre por PADX_call, que devolve '{ ok, data }' ou '{ ok: false, error }'.
+
+O preenchimento e a criação da fila de render são divididos em passos (begin / step / finish)
+para o painel mostrar o progresso e o status de cada item.
+
+*/
+
+var PADX = {};
+
+// Extensões de template permitidas
+var PADX_TEMPLATE_EXT = ['.aep', '.aet'];
+
+// Estado da execução em andamento (entre as chamadas dos passos)
+var PADX_run = null;
+
+function PADX_call(method, argsJson) {
+	var res;
+
+	try {
+		var args = argsJson ? JSON.parse(argsJson) : {};
+
+		if (typeof PADX[method] !== 'function') throw new Error('método desconhecido: ' + method);
+
+		res = { ok: true, data: PADX[method](args) };
+	} catch (err) {
+		res = { ok: false, error: err.message || String(err) };
+	}
+
+	return JSON.stringify(res);
+}
+
+/*
+
+---------------------------------------------------------------
+> utilidades
+---------------------------------------------------------------
+
+*/
+
+// Lista de comps do projeto (FUNC lib do script ScriptUI).
+function getComps() {
+	var compArray = [];
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var comp = app.project.item(i);
+
+		if (comp instanceof CompItem) compArray.push(comp);
+	}
+
+	return compArray;
+}
+
+function padPath(pathStr) {
+	return normalizeNetworkPath(pathStr, { silent: true });
+}
+
+function padSortProductions(list) {
+	return list.sort(function (a, b) {
+		if (a.name < b.name) return -1;
+		if (a.name > b.name) return 1;
+
+		return 0;
+	});
+}
+
+// Arquivo da lista de produções: o informado pelo painel ou o padrão da pasta de dados do usuário.
+// Na primeira vez, o padrão é criado a partir da lista que acompanha a extensão.
+function padConfigFile(customPath) {
+	if (customPath) return new File(customPath);
+
+	var configFile = new File(scriptPreferencesPath + '/O_PADEIRO_config.json');
+
+	if (!configFile.exists) {
+		var bundled = new File(PADX_HOST_PATH + '/data/O_PADEIRO_config.json');
+
+		if (bundled.exists) bundled.copy(configFile.fsName);
+	}
+
+	return configFile;
+}
+
+// Config do template: o que está no arquivo + o que falta, do padrão.
+function padReadTemplateConfig(configFile) {
+	var data = JSON.parse(readFileContent(configFile));
+
+	for (var o in defaultTemplateConfigObj) {
+		if (data.hasOwnProperty(o)) continue;
+
+		data[o] = defaultTemplateConfigObj[o];
+	}
+
+	return data;
+}
+
+// Arquivos auxiliares do template (mesma base do nome do projeto).
+function padTemplateFiles(projectFile) {
+	var base = projectFile.path + '/' + deleteFileExt(projectFile.displayName);
+
+	return {
+		preview: new File(base + '_preview.png'),
+		config: new File(base + '_config.json'),
+		script: new File(base + '_script.js')
+	};
+}
+
+function padSerializeTree(node) {
+	var out = { type: node.type, text: node.text };
+
+	if (node.type == 'node') {
+		out.children = [];
+
+		for (var i = 0; i < node.children.length; i++) {
+			out.children.push(padSerializeTree(node.children[i]));
+		}
+	} else {
+		out.uri = node.file.absoluteURI;
+		out.fsName = node.file.fsName;
+	}
+
+	return out;
+}
+
+function padGroup(name, fn) {
+	app.beginUndoGroup(name);
+
+	try {
+		return fn();
+	} finally {
+		app.endUndoGroup();
+	}
+}
+
+/*
+
+---------------------------------------------------------------
+> ambiente
+---------------------------------------------------------------
+
+*/
+
+PADX.ping = function () {
+	return {
+		app: app.appName,
+		build: app.buildName,
+		os: appOs,
+		version: PADX_VERSION
+	};
+};
+
+// Lista de produções (nome, pasta de templates e ícone).
+PADX.productions = function (a) {
+	var configFile = padConfigFile(a.configPath);
+	var list;
+	var error = null;
+
+	try {
+		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
+	} catch (err) {
+		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
+		list = [];
+	}
+
+	var productions = [];
+
+	for (var i = 0; i < list.length; i++) {
+		productions.push({
+			name: list[i].name,
+			templatesPath: list[i].templatesPath,
+			icon: list[i].icon || null // literal de string binária (PNG); decodificado no painel
+		});
+	}
+
+	return { configPath: configFile.fsName, productions: productions, error: error };
+};
+
+PADX.openFolder = function (a) {
+	var folder = new Folder(padPath(a.path));
+
+	if (!folder.exists) throw new Error('#PAD_019 - pasta não encontrada: ' + a.path);
+
+	openFolder(folder.fsName);
+
+	return true;
+};
+
+PADX.openUrl = function (a) {
+	openWebSite(a.url);
+
+	return true;
+};
+
+/*
+
+---------------------------------------------------------------
+> templates
+---------------------------------------------------------------
+
+*/
+
+// Lê a pasta de templates e devolve a árvore (pastas e arquivos .aep / .aet).
+PADX.templateTree = function (a) {
+	var path = padPath(a.path);
+	var folder = new Folder(path);
+
+	if (!folder.exists) return { exists: false, path: path, tree: null };
+
+	return { exists: true, path: path, tree: padSerializeTree(buildTreeData(folder, PADX_TEMPLATE_EXT)) };
+};
+
+// Preview, configuração e dicas de um template.
+PADX.templateInfo = function (a) {
+	var projectFile = new File(a.uri);
+
+	if (!projectFile.exists) throw new Error('#PAD_018 - arquivo do template não encontrado');
+
+	var files = padTemplateFiles(projectFile);
+	var info = {
+		uri: projectFile.absoluteURI,
+		name: deleteFileExt(projectFile.displayName),
+		folder: Folder.decode(projectFile.parent.fsName),
+		preview: files.preview.exists ? files.preview.fsName : null,
+		hasConfig: files.config.exists,
+		hasScript: files.script.exists,
+		hasInputLayers: false,
+		config: null,
+		configError: null
+	};
+
+	if (files.config.exists) {
+		try {
+			info.config = padReadTemplateConfig(files.config);
+			info.hasInputLayers = info.config.inputLayers != null;
+		} catch (err) {
+			info.configError = '#PAD_017 - esse template não tem um arquivo de configuração válido!';
+		}
+	}
+
+	return info;
+};
+
+// Importa o template para o projeto e organiza (duplo clique na lista).
+PADX.importTemplate = function (a) {
+	var projectFile = new File(a.uri);
+
+	if (!projectFile.exists) throw new Error('#PAD_022 - arquivo do template não encontrado');
+
+	padGroup('Importar Template', function () {
+		app.project.importFile(new ImportOptions(projectFile));
+
+		deleteProjectFolders();
+		populateProjectFolders();
+		deleteEmptyProjectFolders();
+
+		setXMPData('source', decodeURI(projectFile.path).toString());
+	});
+
+	return { name: projectFile.displayName };
+};
+
+/*
+
+---------------------------------------------------------------
+> preenchimento
+---------------------------------------------------------------
+
+*/
+
+// Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
+// a: { uri, text }
+PADX.fillBegin = function (a) {
+	var projectFile = new File(a.uri);
+	var files = padTemplateFiles(projectFile);
+
+	if (!projectFile.exists) throw new Error('#PAD_018 - arquivo do template não encontrado');
+	if (!files.config.exists) throw new Error('#PAD_017 - esse template não tem arquivo de configuração');
+
+	var templateData = padReadTemplateConfig(files.config);
+	var text = String(a.text);
+
+	if (text.trim() == '') throw new Error('o texto de input está vazio');
+
+	// Ajusta a caixa do texto
+	if (templateData.textCase == 'upperCase') text = text.toUpperCase();
+	if (templateData.textCase == 'lowerCase') text = text.toLowerCase();
+	if (templateData.textCase == 'titleCase') text = text.toTitleCase();
+
+	var inputTextArray = text.split(/[\n\r]{2,}/);
+
+	return padGroup('O PADEIRO: importar template', function () {
+		// Define configurações do projeto
+		app.project.bitsPerChannel = 8;
+		app.project.expressionEngine = 'javascript-1.0';
+		app.project.linearBlending = true;
+		app.project.timeDisplayType = TimeDisplayType.TIMECODE;
+
+		// Importação do arquivo de projeto
+		app.project.importFile(new ImportOptions(projectFile));
+
+		// Busca a comp original
+		var templateComp = null;
+
+		for (var i = 1; i <= app.project.numItems; i++) {
+			var comp = app.project.item(i);
+
+			if (!(comp instanceof CompItem)) continue;
+			if (!comp.comment.match(/^TEMPLATE/)) continue;
+			if (comp.name != templateData.compName) continue;
+
+			templateComp = comp;
+			break;
+		}
+
+		if (!templateComp) {
+			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (comentário TEMPLATE) não encontrada no projeto');
+		}
+
+		// Extrai e filtra a lista de templates de render
+		var renderTemplates = [];
+		var rqItem = app.project.renderQueue.items.add(templateComp);
+
+		try {
+			renderTemplates = rqItem.outputModule(1).templates;
+
+			var tIndex = renderTemplates.length - 1;
+
+			// Remove templates ocultos
+			while (tIndex >= 0 && renderTemplates[tIndex].toString().match(/^_HIDDEN\s/)) {
+				renderTemplates.pop();
+				tIndex--;
+			}
+		} finally {
+			rqItem.remove();
+		}
+
+		var suffixArray = templateData.inputFx != null ? templateData.inputFx.options : [''];
+		var ignore = !!templateData.prefix.match(/ignore/i);
+		var jobs = [];
+
+		if (ignore) {
+			// Templates com prefixo 'ignore' não são processados (podem ser manipulados por um script externo)
+			jobs.push({ n: 0, f: 0, label: templateComp.name });
+		} else {
+			for (var n = 0; n < inputTextArray.length; n++) {
+				for (var f = 0; f < suffixArray.length; f++) {
+					jobs.push({ n: n, f: f, label: inputTextArray[n].split(/[\n\r]+/).join(' / ') + (suffixArray[f] ? ' · ' + suffixArray[f] : '') });
+				}
+			}
+		}
+
+		var renderList = [];
+
+		for (var r = 0; r < renderTemplates.length; r++) {
+			renderList.push(renderTemplates[r].toString());
+		}
+
+		PADX_run = {
+			projectFile: projectFile,
+			files: files,
+			templateData: templateData,
+			templateComp: templateComp,
+			inputTextArray: inputTextArray,
+			suffixArray: suffixArray,
+			ignore: ignore,
+			jobs: jobs,
+			newComps: [],
+			newOutputs: [],
+			renderTemplates: renderList,
+			count: 0
+		};
+
+		// Compatibilidade com scripts externos de template ('_script.js')
+		$.global.templateData = templateData;
+		$.global.inputTextArray = inputTextArray;
+		$.global.newCompsArray = PADX_run.newComps;
+		$.global.newOutputsArray = PADX_run.newOutputs;
+
+		return { total: jobs.length, jobs: jobs, templateName: projectFile.displayName };
+	});
+};
+
+// Passo 2: cria e preenche uma comp (item 'index' de jobs).
+PADX.fillStep = function (a) {
+	var run = PADX_run;
+
+	if (!run) throw new Error('nenhum preenchimento em andamento');
+
+	var job = run.jobs[a.index];
+	var templateData = run.templateData;
+	var template = null;
+
+	return padGroup('O PADEIRO: preencher template', function () {
+		try {
+			if (run.ignore) {
+				run.newComps.push(run.templateComp);
+				run.templateComp.openInViewer();
+				run.count++;
+
+				return { name: run.templateComp.name };
+			}
+
+			var inputText = run.inputTextArray[job.n];
+			var inputLayerList = templateData.inputLayers;
+			var infoArray = [inputText];
+
+			// Comp duplicada que será editada
+			template = run.templateComp.duplicate();
+
+			if (templateData.separator != '') {
+				// Pattern de separação de informações
+				var sPattern = new RegExp(templateData.separator.replace(/\s/g, '\\s'), 'i');
+
+				if (templateData.separator == '\n') sPattern = new RegExp('[\\n\\r]', 'i');
+
+				infoArray = inputText.split(sPattern); // ex: título e subtítulo --> ['A.X.L', 'O CÃO ROBÔ']
+			}
+
+			// Define o valor do efeito
+			if (templateData.inputFx != null) {
+				template
+					.layer(templateData.inputFx.layerIndex)
+					.property('ADBE Effect Parade')
+					.property(templateData.inputFx.fxName)
+					.property(templateData.inputFx.optionIndex)
+					.setValue(job.f + 1);
+			}
+
+			// Preenche a informação nos layers editáveis
+			for (var l = 0; l < inputLayerList.length; l++) {
+				var inputLayer = template.layer(inputLayerList[l].layerIndex);
+
+				// Desabilita o layer se o índice dele for maior que o número de informações
+				if (l >= infoArray.length) {
+					inputLayer.enabled = false;
+					continue;
+				}
+
+				if (infoArray[l] == '') continue;
+
+				// Conteúdo do layer (apenas layers de texto)
+				if (inputLayerList[l].method == 'textContent') {
+					if (!(inputLayer instanceof TextLayer)) continue;
+
+					infoArray[l] = infoArray[l].trim();
+
+					var text = inputLayer.property('ADBE Text Properties');
+					var textDoc = text.property('ADBE Text Document').value;
+
+					textDoc.text = infoArray[l];
+					text.property('ADBE Text Document').setValue(textDoc);
+				}
+
+				// Nome do layer (qualquer layer)
+				if (inputLayerList[l].method == 'layerName') {
+					inputLayer.name = infoArray[l].trim();
+				}
+			}
+
+			var info = infoArray.join(' ').replace(/[\s\-]+/g, ' ');
+			var suffix = run.suffixArray[job.f];
+
+			// Define o nome do template
+			if (!overwriteCompName(template)) {
+				template.name = (templateData.prefix + globalSeparator + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
+			}
+
+			template.openInViewer(); // Abre a composição preenchida
+			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
+			template.comment = 'EXPORTAR'; // Comentário para organização do projeto
+
+			run.newComps.push(template);
+			run.count++;
+
+			return { name: template.name };
+		} catch (err) {
+			// não deixa uma comp pela metade no projeto
+			try {
+				if (template) template.remove();
+			} catch (e) { }
+
+			throw err;
+		}
+	});
+};
+
+// Passo 3: remove o template original, organiza o projeto, registra o log e os metadados.
+PADX.fillFinish = function () {
+	var run = PADX_run;
+
+	if (!run) throw new Error('nenhum preenchimento em andamento');
+
+	var warnings = [];
+
+	padGroup('O PADEIRO: organizar projeto', function () {
+		// Remove o template original caso o prefixo não seja 'ignore'
+		if (!run.ignore) {
+			try {
+				run.templateComp.remove();
+			} catch (err) { }
+		}
+
+		// Define a pasta de importação padrão do projeto
+		try {
+			app.project.setDefaultImportFolder(new Folder(run.templateData.importPath));
+		} catch (err) { }
+
+		// Organização do projeto
+		deleteProjectFolders();
+		populateProjectFolders();
+		deleteEmptyProjectFolders();
+
+		// Metadados XMP indicando o caminho do template
+		try {
+			setXMPData('source', decodeURI(run.projectFile.path).toString());
+		} catch (err) {
+			warnings.push('metadados: ' + err.message);
+		}
+	});
+
+	// Registro de dados (log) — falha silenciosa: não pode atrapalhar o trabalho
+	try {
+		var dt = new Date();
+		var pad2 = function (n) {
+			return n < 10 ? '0' + n : String(n);
+		};
+
+		sendToWebhookWithCurl(
+			{
+				template: run.templateData.configName,
+				quantidade: run.count,
+				user: system.userName,
+				work_station: system.machineName.replaceSpecialCharacters(),
+				data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
+				caminho: run.projectFile.fsName
+			},
+			'https://workflows.jmbillard.com/webhook/log_db_padeiro'
+		);
+	} catch (err) { }
+
+	return {
+		count: run.count,
+		renderTemplates: run.renderTemplates,
+		outputPath: run.templateData.outputPath,
+		warnings: warnings
+	};
+};
+
+/*
+
+---------------------------------------------------------------
+> fila de render
+---------------------------------------------------------------
+
+*/
+
+// Verifica as pastas de output. a: { outputTemplate }
+PADX.queueBegin = function (a) {
+	var run = PADX_run;
+
+	if (!run) throw new Error('nenhum preenchimento em andamento');
+	if (!a.outputTemplate) throw new Error('selecione um template de output');
+
+	var warnings = [];
+	var outputs = [];
+	var configured = run.templateData.outputPath;
+
+	for (var o = 0; o < configured.length; o++) {
+		var outputPath = padPath(configured[o]);
+
+		if (!new Folder(outputPath).exists) {
+			// Substitui o caminho inexistente pelo caminho padrão
+			warnings.push('#PAD_019 - output não pode ser acessado: ' + configured[o]);
+			outputPath = defaultTemplateConfigObj.outputPath[0];
+		}
+
+		outputs.push(outputPath);
+	}
+
+	run.outputTemplate = a.outputTemplate;
+	run.outputs = outputs;
+
+	return { total: run.newComps.length, outputs: outputs, warnings: warnings };
+};
+
+// Adiciona a comp 'index' à fila de render.
+PADX.queueStep = function (a) {
+	var run = PADX_run;
+
+	if (!run || !run.outputs) throw new Error('fila de render não iniciada');
+
+	return padGroup('O PADEIRO: fila de render', function () {
+		var comp = run.newComps[a.index];
+		var item = app.project.renderQueue.items.add(comp);
+
+		item.applyTemplate('Best Settings');
+
+		for (var o = 0; o < run.outputs.length; o++) {
+			if (o > 0) item.outputModules.add();
+
+			var outputModule = item.outputModule(o + 1);
+
+			outputModule.file = new File(run.outputs[o] + '/[compName].[fileextension]');
+			outputModule.applyTemplate(run.outputTemplate);
+			run.newOutputs.push(outputModule);
+		}
+
+		return { name: comp.name, outputs: run.outputs };
+	});
+};
+
+// Executa o script do template ('_script.js'), se houver, e encerra a execução.
+PADX.runEnd = function (a) {
+	var run = PADX_run;
+	var result = { script: null };
+
+	PADX_run = null;
+
+	if (!run || a.skipScript || !run.files.script.exists) return result;
+
+	result.script = run.files.script.displayName;
+
+	try {
+		$.evalFile(run.files.script);
+	} catch (err) {
+		throw new Error('#PAD_021 - ' + err.message);
+	}
+
+	return result;
+};
+
+// Abre as pastas de output do template atual.
+PADX.openOutputs = function (a) {
+	var paths = a.paths;
+	var opened = 0;
+	var missing = [];
+
+	for (var o = 0; o < paths.length; o++) {
+		var folder = new Folder(padPath(paths[o]));
+
+		if (folder.exists) {
+			openFolder(folder.fsName);
+			opened++;
+		} else {
+			missing.push(paths[o]);
+		}
+	}
+
+	return { opened: opened, missing: missing };
+};

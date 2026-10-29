@@ -11,6 +11,9 @@ a proposta de workflow é simples, são 3 etapas:\
 > • **O PADEIRO instalador.jsx** → aquivo que deve ser executado no after effects.\
 > • **O_PADEIRO_SOURCE.jsxbin** → arquivo que contém o binário do script.
 
+> 🧩 **extensão (beta):** existe também uma versão em painel CEP, com interface HTML, na pasta [`extension/`](extension/README.md).\
+> ela convive com o script e usa a mesma lista de produções.
+
 <br>
 
 ## 📍 habilitando o acesso a rede
