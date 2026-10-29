@@ -217,6 +217,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		// cada aba só carrega na primeira vez que aparece
 		if (tab === 'paths' && !state.paths.loaded) loadPaths(false);
 		if (tab === 'texts' && !state.texts.loaded) loadTexts();
+
+		scheduleFit();
 	}
 
 	/* =========================================================
@@ -753,7 +755,44 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		window.addEventListener('focus', watchRequestedTab);
 	}
 
+	/* =========================================================
+	   Altura da janela: só o suficiente para o loader e, com uma
+	   busca, a altura que cabe os resultados (até um limite)
+	   ========================================================= */
+
+	var FIT_MIN_HEIGHT = 360;
+	var fitTimer = null;
+
+	function fitHeight() {
+		var results = $('results-' + state.tab);
+
+		if (!results || !results.children.length) return;
+
+		// altura natural do conteúdo (a lista ocupa o espaço que sobra, então mede pelo último filho)
+		var top = results.getBoundingClientRect().top;
+		var bottom = 0;
+
+		Array.prototype.forEach.call(results.children, function (child) {
+			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
+		});
+
+		var content = bottom - top + results.scrollTop + parseFloat(getComputedStyle(results).paddingBottom);
+		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
+		var height = Math.round(Math.min(max, Math.max(FIT_MIN_HEIGHT, window.innerHeight - results.clientHeight + content)));
+
+		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+	}
+
+	function scheduleFit() {
+		clearTimeout(fitTimer);
+		fitTimer = setTimeout(fitHeight, 120);
+	}
+
 	async function init() {
+		['paths', 'texts'].forEach(function (tab) {
+			new MutationObserver(scheduleFit).observe($('results-' + tab), { childList: true });
+		});
+
 		bindEvents();
 
 		var tab = 'paths'; // aba principal

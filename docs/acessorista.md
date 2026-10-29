@@ -4,6 +4,8 @@
 
 o painel **O ACESSORISTA**: as buscas do padeiro, em duas abas (caminhos e textos).
 
+a janela abre baixa, só com o necessário para o loader, e ajusta a altura sozinha a cada busca para caber os resultados (até 85% da altura da tela; passando disso, a lista rola).
+
 ### caminhos
 
 > <img src="images/acessorista-caminhos.webp" alt="busca de caminhos" width="420">
