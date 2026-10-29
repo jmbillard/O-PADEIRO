@@ -8,6 +8,21 @@
 
 */
 
+// Arquivo de saída do último item da fila de render que tem um (ou null).
+function getLastOutputFile() {
+	var rq = app.project.renderQueue;
+
+	for (var i = rq.numItems; i >= 1; i--) {
+		try {
+			var outputFile = rq.item(i).outputModule(1).file;
+
+			if (outputFile != null) return outputFile;
+		} catch (err) { }
+	}
+
+	return null;
+}
+
 // Ações dos botões da interface principal.
 // Cada botão da estrutura 'PAD_mainGrpUiStructure' (O_PADEIRO.js) aponta para estas funções
 // em 'leftClick' / 'rightClick', então a dica, o ícone e a ação de cada botão ficam juntos.
@@ -94,60 +109,34 @@ var PAD_ACTIONS = {
 	},
 
 	abrirPastaOutput: function () {
-		// Verifica se há acesso à rede.
 		if (!netAccess()) {
 			alert(lol + '#PAD_007 - sem acesso a rede...');
-			return; // Encerra a função se não houver acesso à rede.
+			return;
 		}
 
-		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems < 1) {
+		var outputFile = getLastOutputFile();
+
+		if (outputFile == null) {
 			alert(lol + '#PAD_008 - a fila de render está vazia...');
 			return;
 		}
-		// Obtém o último item da fila de renderização.
-		var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
 
-		// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-		var outputModule = item.outputModule(1);
+		var outputPath = normalizeNetworkPath(decodeURI(outputFile.path));
+		var folder = nearestExistingFolder(outputPath);
 
-		// Obtém o caminho completo da pasta de saída.
-		var outputPath = normalizeNetworkPath(decodeURI(outputModule.file.path));
-
-		// Cria um objeto "Folder" para representar a pasta de saída.
-		var fld = new Folder(outputPath);
-
-		// Verifica se a pasta de saída existe.
-		if (!fld.exists) {
-			alert(lol + '#PAD_009 - a pasta não foi encontrada...'); // Exibe um erro se a pasta não for acessível.
-			return; // Encerra a função se a pasta não existir.
+		if (folder == null) {
+			alert(lol + '#PAD_009 - a pasta não foi encontrada...\n\n' + outputPath);
+			return;
 		}
 
-		// Abre a pasta de saída no sistema operacional do usuário.
-		openFolder(outputPath);
+		// antes do render a pasta de saída pode ainda não existir: abre a mais próxima
+		openFolder(folder.fsName);
 	},
 
 	abrirConversorCaminhos: function () {
+		var outputFile = getLastOutputFile();
 
-		var outputPath = '';
-		// Verifica se há itens na fila de renderização.
-		if (app.project.renderQueue.numItems >= 1) {
-
-			// Obtém o último item da fila de renderização.
-			var item = app.project.renderQueue.item(app.project.renderQueue.numItems);
-
-			// Obtém o módulo de saída do item (onde o arquivo renderizado será salvo).
-			var outputModule = item.outputModule(1);
-
-
-			// Cria um objeto "Folder" para representar a pasta de saída.
-			var fld = outputModule.file.parent;
-			// Obtém o caminho completo da pasta de saída.
-			if (fld.exists) {
-				outputPath = fld.fsName;
-			}
-		}
-		pathDialog(outputPath);
+		pathDialog(outputFile ? decodeURI(outputFile.parent.fsName) : '');
 	},
 
 	renomearComps: function () {
@@ -173,30 +162,17 @@ var PAD_ACTIONS = {
 	},
 
 	organizarProjeto: function () {
-		// Verifica se há itens no projeto.
-		if (app.project.numItems == 0) return; // Encerra a função se não houver itens.
+		if (app.project.numItems == 0) return;
 
-		// grupo de desfazer
 		app.beginUndoGroup('organização automática do projeto');
 
-		// Se houver itens selecionados na janela projeto
-		if (app.project.selection.length > 0) {
-			// Itera sobre os itens selecionados
-			for (var i = 0; i < app.project.selection.length; i++) {
-				var aItem = app.project.selection[i]; // item selecionado
-
-				// Se o item selecionado for uma composição sem tag
-				if (aItem instanceof CompItem && aItem.comment == '') {
-					aItem.comment = 'EXPORTAR'; // Adiciona a tag 'EXPORTAR' como comentário
-				}
-			}
+		try {
+			organizeProject(); // comps selecionadas sem comentário entram como 'EXPORTAR'
+		} catch (err) {
+			alert(lol + '#PAD_036 - ' + err.message);
+		} finally {
+			app.endUndoGroup();
 		}
-
-		deleteProjectFolders(); // Deleta as pastas existentes
-		populateProjectFolders(); // Cria as pastas novas e organiza os itens
-		deleteEmptyProjectFolders(); // Deleta as pastas vazias
-
-		app.endUndoGroup();
 	},
 
 	criarPastasProjeto: function () {

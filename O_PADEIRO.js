@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.95';
+	var scriptVersion = 'v1.96';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -38,6 +38,7 @@ o script funcionará normalmente, mas você não terá:\n\
 	#include 'source/libraries/functions/metadata lib.js';
 	#include 'source/libraries/functions/fonts lib.js';     // Listar, coletar e instalar fontes
 	#include 'source/libraries/functions/rename lib.js';    // Renomeação de comps e outputs
+	#include 'source/libraries/functions/project lib.js';   // Organização das pastas do projeto
 
 	// utilidades com interface
 	#include 'source/Utils/o padeiro templates ui.js'; // Sistema de templates

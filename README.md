@@ -110,8 +110,7 @@ ferramentas disponíveis em ordem:
 
 - **ABRIR PASTAS**:\
 `◖ clique esquerdo` → abre a pasta de output do último item da fila de render.\
-`◗ clique direito` → abre a pasta do projeto atual.
-  > *se o projeto já foi salvo.*
+`◗ clique direito` → abre o conversor de caminhos Windows / MacOS.
 
 - **RENOMEAR**:\
 `◖ clique esquerdo` → renomeia comps selecionadas.\
@@ -460,10 +459,12 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   *O script analisa a fila de render e puxa o último caminho do último item disponível e em seguida abre a respectiva pasta.*
 
-  `◗ clique direito` → Copia para o clipboard o caminho do **primeiro arquivo** de saída do **último item** da fila de render.
-
   > 🚩 *obs:*\
-  > Caso o caminho não seja encontrado por falta de permissão ou falha no mapeamento da rede, o script não retornara o caminho.
+  > Se a pasta ainda não existir (antes do render), o script abre a pasta mais próxima que existe.
+
+  `◗ clique direito` → Abre o **conversor de caminhos** com a pasta de saída do último item da fila de render.
+
+  *Cole ou digite um caminho no campo MacOS ou Windows e o outro é convertido na hora. Aceita caminhos com aspas (copiar como caminho do Windows), letras de drive mapeadas (ex: `L:\`) e endereços `smb://` do Finder. Os botões 'copiar' enviam o caminho para a área de transferência e 'abrir pasta' abre o caminho no sistema atual.*
 
   <br><br>
 
@@ -523,7 +524,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   <br>
 
-  `◗ clique direito` → Cria apenas a estrutura de pastas no projeto de acordo com o modelo da PROMO.
+  `◗ clique direito` → Cria apenas a estrutura de pastas no projeto de acordo com o modelo da PROMO (pastas que já existem são reaproveitadas, não duplicadas).
 
   > 📋 *exemplo:*\
   > ![estrutura projeto](docs/images/estrutura_projeto_promo.png)

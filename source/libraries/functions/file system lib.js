@@ -23,25 +23,41 @@ Windows caminho:
 ---------------------------------------------------------------
 
 */
-// Define o conteúdo da área de transferência no Windows ou macOS.
-function setClipboardPath(str) {
-	var cmd;
+// Copia um texto para a área de transferência (Windows ou macOS).
+// O texto vai por um arquivo temporário em UTF-8 para acentos e caracteres como & e # passarem intactos.
+function copyToClipboard(str) {
+	var tempFile = new File(tempPath + '/clipboard.txt');
+
+	tempFile.encoding = 'UTF-8';
+
 	if (appOs == 'Win') {
-		// Comando PowerShell para Windows
-		var setClipboardPath = "Set-Clipboard -Value '" + str + "'";
-		cmd = 'cmd.exe /c powershell.exe -c "' + setClipboardPath + '"';
-		system.callSystem(cmd);
-	} else if (appOs == 'Mac') {
-		// Comando pbcopy para macOS
-		var winPath = normalizeNetworkPath(str, {
-			forceWin: true
-		});
-		str = 'MacOS caminho:\n- ' + str + '\n\nWindows caminho:\n- ' + winPath;
-		cmd = 'echo "' + str + '" | pbcopy';
-		system.callSystem(cmd);
+		writeFileContent(tempFile, '﻿' + str);
+		system.callSystem(
+			'cmd.exe /c powershell.exe -NoProfile -c "Get-Content -Raw -Encoding UTF8 -LiteralPath \'' +
+				tempFile.fsName.replace(/'/g, "''") +
+				'\' | Set-Clipboard"'
+		);
+	} else {
+		writeFileContent(tempFile, str);
+		system.callSystem("LANG=en_US.UTF-8 pbcopy < '" + tempFile.fsName.replace(/'/g, "'\\''") + "'");
 	}
+
+	try {
+		tempFile.remove();
+	} catch (err) { }
 }
 
+// A pasta do caminho ou, se ela ainda não existir, a pasta pai mais próxima que existe.
+// Retorna null se nada no caminho existir (ex: volume não montado).
+function nearestExistingFolder(path) {
+	var folder = new Folder(path);
+
+	while (folder != null && !folder.exists) {
+		folder = folder.parent;
+	}
+
+	return folder;
+}
 
 /**
  * macOS: quando um volume de rede já está montado, uma nova montagem do mesmo share

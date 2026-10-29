@@ -1,99 +1,164 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+/*
+
+---------------------------------------------------------------
+> 🪟 UI dialogs - conversor de caminhos Windows / MacOS
+---------------------------------------------------------------
+
+*/
+
+// Limpa o caminho colado: espaços, aspas do 'copiar como caminho' do Windows e o
+// formato smb:// do Finder (smb://servidor/share/pasta → //servidor/share/pasta).
+function cleanPathInput(str) {
+	return String(str || '')
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^["']+|["']+$/g, '')
+		.replace(/^smb:\/\/([^@\/]+@)?/i, '//');
+}
+
+// Caminho no formato do macOS (/Volumes/SHARE/...).
+function toMacPath(str) {
+	var path = cleanPathInput(str);
+
+	if (path == '') return '';
+
+	// caminho local do Windows (C:\Users\...) → /Users/...
+	if (/^[a-z]:[\\\/]/i.test(path) && !DRIVE_MAP[path.charAt(0).toUpperCase()]) {
+		return path.substring(2).replace(/\\/g, '/');
+	}
+
+	return normalizeNetworkPath(path, { forceMac: true, silent: true });
+}
+
+// Caminho no formato do Windows (\\servidor\SHARE\... ou C:\...).
+function toWinPath(str) {
+	var path = cleanPathInput(str);
+
+	if (path == '') return '';
+
+	return normalizeNetworkPath(path, { forceWin: true, silent: true })
+		.replace(/^\/Users\//, 'C:/Users/') // pasta do usuário no macOS → pasta do usuário no Windows
+		.replace(/\//g, '\\');
+}
+
 function pathDialog(path) {
+	var scriptName = 'CONVERSOR DE CAMINHOS';
+	var scriptVersion = 'v2.0';
 
-    macPath = appOs == 'Mac'
-        ? path
-        : normalizeNetworkPath(path, { forceMac: true });
-    winPath = appOs == 'Win'
-        ? normalizeNetworkPath(path, { forceBackslash: true }).replace(/^c\//, 'C:\\')
-        : normalizeNetworkPath(path, { forceWin: true, forceBackslash: true }).replace(/^\\Users\\/, 'C:\\Users\\');
-    // PALETTE
-    // =======
-    var palette = new Window("palette");
-    palette.text = "Pastas v1";
-    palette.orientation = "column";
-    palette.alignChildren = ["center", "top"];
-    palette.spacing = 10;
-    palette.margins = 16;
+	var pathW = new Window('palette', scriptName + ' ' + scriptVersion);
+	pathW.orientation = 'column';
+	pathW.alignChildren = ['left', 'top'];
+	pathW.spacing = 8;
+	pathW.margins = 12;
 
-    // GROUP1
-    // ======
-    var group1 = palette.add("group", undefined, { name: "group1" });
-    group1.orientation = "row";
-    group1.alignChildren = ["left", "center"];
-    group1.spacing = 10;
-    group1.margins = 0;
+	var contentWidth = PAD_SEARCH_UI_WIDTH - pathW.margins.left - pathW.margins.right;
+	var labelWidth = 70;
+	var copyWidth = 80;
 
-    // GROUP2
-    // ======
-    var group2 = group1.add("group", undefined, { name: "group2" });
-    group2.orientation = "column";
-    group2.alignChildren = ["left", "center"];
-    group2.spacing = 10;
-    group2.margins = 0;
+	// Linha 'sistema: [caminho] [copiar]'
+	function addPathRow(label) {
+		var rowGrp = pathW.add('group');
+		rowGrp.orientation = 'row';
+		rowGrp.alignChildren = ['left', 'center'];
+		rowGrp.spacing = 8;
 
-    // GROUP3
-    // ======
-    var group3 = group2.add("group", undefined, { name: "group3" });
-    group3.orientation = "row";
-    group3.alignChildren = ["left", "center"];
-    group3.spacing = 10;
-    group3.margins = 0;
+		var lab = rowGrp.add('statictext', undefined, label);
+		lab.preferredSize.width = labelWidth;
+		setFgColor(lab, normalColor1);
 
-    var statictext1 = group3.add("statictext", undefined, undefined, { name: "statictext1" });
-    statictext1.text = "MacOS:";
-    statictext1.preferredSize.width = 60;
+		var edit = rowGrp.add('edittext', [0, 0, contentWidth - labelWidth - copyWidth - 16, 32]);
 
-    var macPathTxt = group3.add('edittext {properties: {name: "macPathTxt"}}');
-    macPathTxt.text = macPath;
-    macPathTxt.preferredSize.width = 900;
+		var copyBtn = themeButton(rowGrp, {
+			width: copyWidth,
+			height: 32,
+			labelTxt: 'copiar',
+			tips: [lClick + 'copiar o caminho ' + label]
+		});
 
-    // GROUP4
-    // ======
-    var group4 = group2.add("group", undefined, { name: "group4" });
-    group4.orientation = "row";
-    group4.alignChildren = ["left", "center"];
-    group4.spacing = 10;
-    group4.margins = 0;
+		copyBtn.leftClick.onClick = function () {
+			if (edit.text == '') return;
 
-    var statictext2 = group4.add("statictext", undefined, undefined, { name: "statictext2" });
-    statictext2.text = "Windows:";
-    statictext2.preferredSize.width = 60;
+			copyToClipboard(edit.text);
+			statusTxt.text = 'caminho ' + label + ' copiado.';
+		};
 
-    var winPathTxt = group4.add('edittext {properties: {name: "winPathTxt"}}');
-    winPathTxt.text = winPath;
-    winPathTxt.preferredSize.width = 900;
+		return edit;
+	}
 
-    // GROUP1
-    // ======
-    var openPathBtn = group1.add("button", undefined, undefined, { name: "openPathBtn" });
-    openPathBtn.text = "Abrir Pasta";
-    openPathBtn.preferredSize.width = 80;
-    openPathBtn.preferredSize.height = 56;
+	var macPathTxt = addPathRow('MacOS');
+	var winPathTxt = addPathRow('Windows');
 
-    palette.show();
+	macPathTxt.helpTip = winPathTxt.helpTip = 'cole ou digite um caminho em qualquer um dos campos: o outro é convertido na hora';
 
-    openPathBtn.onClick = function () {
+	var bottomGrp = pathW.add('group');
+	bottomGrp.orientation = 'row';
+	bottomGrp.alignChildren = ['left', 'center'];
+	bottomGrp.spacing = 12;
 
-        var fldPath = appOs == 'Mac' ? macPathTxt.text : winPathTxt.text;
-        // Abre a pasta de saída no sistema operacional do usuário.
-        openFolder(normalizeNetworkPath(fldPath));
-    }
+	var openPathBtn = themeButton(bottomGrp, {
+		width: 150,
+		height: 32,
+		textColor: bgColor1,
+		buttonColor: normalColor1,
+		labelTxt: 'abrir pasta',
+		tips: [lClick + 'abrir a pasta no ' + (appOs == 'Mac' ? 'Finder' : 'Explorer')]
+	});
 
-    winPathTxt.onEnterKey = function () {
+	var statusTxt = bottomGrp.add('statictext', undefined, '', { truncate: 'end' });
+	statusTxt.preferredSize.width = contentWidth - 150 - 12;
+	setFgColor(statusTxt, monoColor1);
 
-        macPath = normalizeNetworkPath(winPathTxt.text.replace(/^C:\\/, '\\'), { forceMac: true });
-        macPathTxt.text = macPath;
-    }
+	setBgColor(pathW, bgColor1);
 
-    macPathTxt.onEnterKey = function () {
+	// ----------------------------------------------------------------------------
 
-        winPath = normalizeNetworkPath(macPathTxt.text, { forceWin: true })
-            .replace(/^\/Users\//, 'C:/Users/')  // Primeiro substitui com barras normais
-            .replace(/\//g, '\\');               // Depois converte todas as barras
+	// O texto definido pelo script não dispara onChanging, então um campo não realimenta o outro.
+	macPathTxt.onChanging = function () {
+		winPathTxt.text = toWinPath(macPathTxt.text);
+		statusTxt.text = '';
+	};
 
-        winPathTxt.text = winPath;
-    }
+	winPathTxt.onChanging = function () {
+		macPathTxt.text = toMacPath(winPathTxt.text);
+		statusTxt.text = '';
+	};
 
-    return palette;
+	openPathBtn.leftClick.onClick = function () {
+		var fldPath = appOs == 'Mac' ? toMacPath(macPathTxt.text) : toWinPath(winPathTxt.text);
 
-};
+		if (fldPath == '') return;
+
+		var folder = nearestExistingFolder(fldPath);
+
+		if (folder == null) {
+			statusTxt.text = 'pasta não encontrada (o volume / servidor está acessível?)';
+			return;
+		}
+
+		if (decodeURI(folder.fsName) != decodeURI(new Folder(fldPath).fsName)) {
+			statusTxt.text = 'a pasta não existe: abrindo a mais próxima.';
+		}
+
+		openFolder(folder.fsName);
+	};
+
+	// caminho inicial (pasta da última saída da fila de render)
+	if (path) {
+		if (appOs == 'Mac') {
+			macPathTxt.text = toMacPath(path);
+			winPathTxt.text = toWinPath(macPathTxt.text);
+		} else {
+			winPathTxt.text = toWinPath(path);
+			macPathTxt.text = toMacPath(winPathTxt.text);
+		}
+	}
+
+	pathW.onShow = function () {
+		(appOs == 'Mac' ? macPathTxt : winPathTxt).active = true;
+	};
+
+	pathW.show();
+
+	return pathW;
+}
