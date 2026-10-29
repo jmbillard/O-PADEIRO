@@ -1671,7 +1671,7 @@ body.motion-ready .eyebrow {
 }
 
 .picker-clear:not([hidden]) {
-  animation: clear-pop 300ms var(--ease-soft) both;
+  animation: clear-pop 300ms var(--ease-soft) backwards;
 }
 
 .picker-clear:hover {
