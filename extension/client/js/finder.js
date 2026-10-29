@@ -171,7 +171,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (!loader) {
 			container.textContent = '';
-			loader = PAD_UTIL.ovenLoader(title, hint);
+			loader = PAD_UTIL.ovenLoader(title, hint, true); // fundo branco: versão clara
 			container.appendChild(loader);
 		}
 

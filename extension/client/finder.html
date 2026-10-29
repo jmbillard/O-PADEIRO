@@ -40,8 +40,10 @@
 				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden>×</button>
 			</div>
 			<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
-			<p class="finder-status" id="status-paths" aria-live="polite"></p>
-			<div class="finder-results" id="results-paths"></div>
+			<div class="finder-sheet">
+				<p class="finder-status" id="status-paths" aria-live="polite"></p>
+				<div class="finder-results" id="results-paths"></div>
+			</div>
 		</section>
 
 		<!-- textos dos layers -->
@@ -56,8 +58,10 @@
 				<button type="button" class="chip is-on" id="chip-accent" aria-pressed="true" title='"amazonia" também encontra "Amazônia"'><span class="chip-check"></span>IGNORAR ACENTOS</button>
 				<button type="button" class="chip" id="chip-invert" aria-pressed="false" title="apenas textos que NÃO possuem o termo buscado"><span class="chip-check"></span>INVERTER</button>
 			</div>
-			<p class="finder-status" id="status-texts" aria-live="polite"></p>
-			<div class="finder-results" id="results-texts"></div>
+			<div class="finder-sheet">
+				<p class="finder-status" id="status-texts" aria-live="polite"></p>
+				<div class="finder-results" id="results-texts"></div>
+			</div>
 		</section>
 
 		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>

@@ -50,10 +50,10 @@
 	}
 
 	// Loader temático: pães saindo do forninho (css/loader.css).
-	function ovenLoader(title, hint, light) {
+	function ovenLoader(title, hint, light, compact) {
 		var box = document.createElement('div');
 
-		box.className = 'oven-loader' + (light ? ' is-light is-compact' : '');
+		box.className = 'oven-loader' + (light ? ' is-light' : '') + (compact ? ' is-compact' : '');
 		box.setAttribute('role', 'status');
 		box.innerHTML =
 			'<div class="oven" aria-hidden="true"><span class="oven-glow"></span>' +

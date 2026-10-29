@@ -186,29 +186,38 @@ body.finder-page {
   transform: rotate(45deg) scale(1);
 }
 
+/* folha branca com os resultados (sem cartões dentro de cartões) */
+.finder-sheet {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin: 2px -14px 0;
+  border-radius: 24px 24px 0 0;
+  background: white;
+  box-shadow: 0 -12px 34px rgb(24 35 85 / 16%);
+}
+
 .finder-status {
   min-height: 1.2em;
   margin: 0;
+  padding: 16px 20px 4px;
   overflow: hidden;
-  color: rgb(255 255 255 / 80%);
-  font-size: 0.74rem;
-  font-weight: 620;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* resultados */
 .finder-results {
-  display: grid;
+  display: block;
   min-height: 0;
   flex: 1;
-  align-content: start;
-  gap: 8px;
-  margin-right: -6px;
-  padding: 0 6px 14px 0;
+  padding: 0 20px 16px;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-color: rgb(255 255 255 / 40%) transparent;
+  scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;
 }
 
@@ -218,24 +227,20 @@ body.finder-page {
 
 .finder-results::-webkit-scrollbar-thumb {
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 34%);
+  background: var(--border-strong);
 }
 
-.result-section {
-  display: grid;
-  gap: 8px;
-}
-
+/* caminhos */
 .result-section+.result-section {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .result-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 4px 2px 0;
-  color: rgb(255 255 255 / 86%);
+  margin: 12px 0 2px;
+  color: var(--blue-500);
   font-size: 0.66rem;
   font-weight: 760;
   letter-spacing: 0.16em;
@@ -243,28 +248,29 @@ body.finder-page {
 }
 
 .result-count {
-  padding: 1px 7px;
+  padding: 1px 8px;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 18%);
+  background: var(--blue-50);
   letter-spacing: 0.04em;
 }
 
 .result-card {
   display: grid;
   gap: 8px;
-  padding: 13px 14px;
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: 16px;
-  background: rgb(255 255 255 / 12%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
   animation: file-enter 380ms var(--ease-enter) both;
+}
+
+.result-card:last-child {
+  border-bottom: 0;
 }
 
 .result-name {
   margin: 0;
   overflow: hidden;
-  color: white;
-  font-size: 0.92rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
   font-weight: 720;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -281,13 +287,13 @@ body.finder-page {
   max-width: 100%;
   padding: 4px 13px;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 14%);
-  color: white;
+  background: white;
+  color: #505c72;
   cursor: pointer;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 680;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition:
@@ -298,9 +304,9 @@ body.finder-page {
 }
 
 .pill-btn:hover:not(:disabled) {
-  border-color: white;
-  background: white;
-  color: var(--blue-600);
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
   transform: translateY(-1px);
 }
 
@@ -308,7 +314,7 @@ body.finder-page {
 .path-line:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 3px solid rgb(79 130 255 / 22%);
   outline-offset: 2px;
 }
 
@@ -320,11 +326,11 @@ body.finder-page {
 .path-line {
   display: block;
   width: 100%;
-  padding: 3px 0;
+  padding: 2px 0;
   overflow: hidden;
   border: 0;
   background: transparent;
-  color: rgb(255 255 255 / 74%);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 0.72rem;
   text-align: left;
@@ -334,7 +340,7 @@ body.finder-page {
 }
 
 .path-line:hover {
-  color: white;
+  color: var(--blue-500);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -342,13 +348,14 @@ body.finder-page {
 /* textos */
 .comp-group {
   display: grid;
-  gap: 4px;
-  padding: 10px;
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: 16px;
-  background: rgb(255 255 255 / 12%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+  gap: 2px;
+  padding: 10px 0 6px;
+  border-bottom: 1px solid var(--border);
   animation: file-enter 380ms var(--ease-enter) both;
+}
+
+.comp-group:last-child {
+  border-bottom: 0;
 }
 
 .comp-title {
@@ -356,19 +363,20 @@ body.finder-page {
   width: 100%;
   align-items: center;
   gap: 8px;
-  padding: 4px 6px 6px;
+  padding: 5px 8px;
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: white;
+  color: var(--text-primary);
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 740;
   text-align: left;
 }
 
 .comp-title:hover {
-  background: rgb(255 255 255 / 12%);
+  background: var(--surface-soft);
+  color: var(--blue-500);
 }
 
 .comp-title span:first-child {
@@ -383,25 +391,22 @@ body.finder-page {
   display: grid;
   width: 100%;
   gap: 2px;
-  padding: 7px 10px;
-  border: 1px solid transparent;
+  padding: 6px 8px;
+  border: 0;
   border-radius: 10px;
   background: transparent;
-  color: white;
+  color: var(--text-primary);
   cursor: pointer;
   text-align: left;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease;
+  transition: background-color 180ms ease;
 }
 
 .text-row:hover {
-  border-color: rgb(255 255 255 / 40%);
-  background: rgb(255 255 255 / 14%);
+  background: var(--blue-50);
 }
 
 .text-layer {
-  color: rgb(255 255 255 / 66%);
+  color: var(--text-tertiary);
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -410,7 +415,7 @@ body.finder-page {
 .text-row.is-off .text-layer::after {
   margin-left: 8px;
   content: "layer oculto";
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .text-snippet {
@@ -424,8 +429,8 @@ body.finder-page {
 .text-snippet mark {
   padding: 0 2px;
   border-radius: 4px;
-  background: rgb(255 214 120 / 92%);
-  color: #3a2a00;
+  background: #ffe9a8;
+  color: #4a3500;
 }
 
 .finder-state {
@@ -435,13 +440,13 @@ body.finder-page {
   align-content: center;
   gap: 6px;
   padding: 24px 18px;
-  color: rgb(255 255 255 / 78%);
+  color: var(--text-secondary);
   font-size: 0.78rem;
   text-align: center;
 }
 
 .finder-state strong {
-  color: white;
+  color: var(--text-primary);
   font-size: 0.92rem;
 }
 
@@ -485,5 +490,9 @@ body.finder-page {
 
   .finder {
     padding-inline: 10px;
+  }
+
+  .finder-sheet {
+    margin-inline: -10px;
   }
 }
