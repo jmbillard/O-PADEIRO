@@ -163,8 +163,47 @@ Remover: apaga a extensão instalada.
 		return removed;
 	}
 
+	// TESTE (After Effects 2025): copia o código inteiro para este computador, sem o carregador da rede.
+	// Serve para saber se as janelas pretas vêm do carregador (página que navega para a rede).
+	function copyFolder(from, to, skip) {
+		var errors = [];
+
+		if (!to.exists) to.create();
+
+		var items = from.getFiles();
+
+		for (var i = 0; i < items.length; i++) {
+			var name = File.decode(items[i].name);
+
+			if (items[i] instanceof Folder) {
+				if (skip && skip[name]) continue;
+
+				errors = errors.concat(copyFolder(items[i], new Folder(to.fsName + '/' + name), null));
+			} else if (!items[i].copy(to.fsName + '/' + name)) {
+				errors.push(items[i].fsName);
+			}
+		}
+
+		return errors;
+	}
+
+	function installLocalCopy() {
+		removeExtension();
+		new Folder(dest.parent.fsName).create();
+
+		if (IS_MAC) {
+			system.callSystem('ditto ' + quote(src.fsName) + ' ' + quote(dest.fsName));
+			system.callSystem('rm -rf ' + quote(dest.fsName + '/scripts') + ' ' + quote(dest.fsName + '/loader'));
+			system.callSystem('xattr -dr com.apple.quarantine ' + quote(dest.fsName));
+
+			return new File(dest.fsName + '/CSXS/manifest.xml').exists ? [] : ['a cópia para ' + dest.fsName + ' falhou'];
+		}
+
+		return copyFolder(src, dest, { scripts: true, loader: true });
+	}
+
 	function install() {
-		var errors = installExtension();
+		var errors = localCopy ? installLocalCopy() : installExtension();
 
 		if (errors.length) {
 			alert('O PADEIRO\n\nnão foi possível copiar a extensão:\n\n' + errors.slice(0, 5).join('\n'));
@@ -177,6 +216,7 @@ Remover: apaga a extensão instalada.
 		var old = removeOldScript();
 		var msg = 'O PADEIRO instalado!\n\nreinicie o After Effects e abra:\nWindow > Extensions > O PADEIRO';
 
+		if (localCopy) msg += '\n\nTESTE: o código foi copiado para este computador (não atualiza pela rede). para voltar ao normal, rode o instalador de novo sem a opção de teste.';
 		if (old) msg += '\n\na versão antiga (script) foi removida.';
 		if (!shared) msg += '\n\natenção: não achei a lista de produções (O_PADEIRO_config.json) ao lado deste instalador. instale a partir da pasta do padeiro na rede.';
 
@@ -213,6 +253,7 @@ Remover: apaga a extensão instalada.
 	win.add('statictext', undefined, 'O PADEIRO').graphics.font = ScriptUI.newFont('Arial', 'BOLD', 18);
 	win.add('statictext', undefined, installed ? 'a extensão já está instalada neste computador.' : 'instala a extensão neste computador.', { multiline: true });
 
+	var localCheck = win.add('checkbox', undefined, 'teste: copiar o código para este computador (sem carregar da rede)');
 	var buttons = win.add('group');
 
 	buttons.alignment = 'right';
@@ -224,8 +265,10 @@ Remover: apaga a extensão instalada.
 	removeBtn.enabled = installed;
 
 	var action = null;
+	var localCopy = false;
 
 	installBtn.onClick = function () {
+		localCopy = localCheck.value;
 		action = install;
 		win.close();
 	};
