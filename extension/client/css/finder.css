@@ -414,7 +414,8 @@ body.finder-page {
   white-space: nowrap;
 }
 
-.text-snippet mark {
+.text-snippet mark,
+.result-name mark {
   padding: 0 2px;
   border-radius: 4px;
   background: #ffe9a8;

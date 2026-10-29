@@ -114,7 +114,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		info: null, // retorno de templateInfo
 		example: '', // texto de exemplo atual (para saber se o usuário digitou algo)
 		run: null, // execução em andamento
-		editor: null // editor de config aberto
+		editor: null, // editor de config aberto
+		byUri: {} // uri → nó do template (fixados e recentes)
 	};
 
 	var app = $('app-shell');
@@ -288,6 +289,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.loading = true;
 		state.loadHint = 'pastas de rede podem demorar um pouco';
 		state.tree = null;
+		state.byUri = {};
 		state.templatesPath = prod ? prod.templatesPath : '';
 		state.treeStatus = prod ? 'loading' : 'empty';
 		renderTree();
@@ -338,9 +340,73 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// Cada template guarda a trilha de pastas até ele (sem a pasta raiz).
 	function annotateTrail(node, trail) {
 		node.children.forEach(function (child) {
-			if (child.type === 'node') annotateTrail(child, trail.concat(child.text));
-			else child.folderTrail = trail;
+			if (child.type === 'node') {
+				annotateTrail(child, trail.concat(child.text));
+			} else {
+				child.folderTrail = trail;
+				state.byUri[child.uri] = child;
+			}
 		});
+	}
+
+	/* =========================================================
+	   Fixados e recentes (por produção, só neste computador)
+	   ========================================================= */
+
+	var MAX_RECENTS = 5;
+
+	function prodKey(kind) {
+		var prod = state.productions[state.production];
+
+		return kind + '.' + (prod ? prod.name : '');
+	}
+
+	function readList(kind) {
+		try {
+			var list = JSON.parse(store.get(prodKey(kind)) || '[]');
+
+			return Array.isArray(list) ? list : [];
+		} catch (err) {
+			return [];
+		}
+	}
+
+	function writeList(kind, list) {
+		store.set(prodKey(kind), JSON.stringify(list));
+	}
+
+	function isFavorite(uri) {
+		return readList('favorites').indexOf(uri) >= 0;
+	}
+
+	function toggleFavorite(node) {
+		var list = readList('favorites');
+		var at = list.indexOf(node.uri);
+
+		if (at >= 0) list.splice(at, 1);
+		else list.push(node.uri);
+
+		writeList('favorites', list);
+	}
+
+	function pushRecent(node) {
+		if (!node) return;
+
+		var list = readList('recents').filter(function (uri) {
+			return uri !== node.uri;
+		});
+
+		list.unshift(node.uri);
+		writeList('recents', list.slice(0, MAX_RECENTS));
+	}
+
+	// Só os templates que ainda existem na árvore lida.
+	function listNodes(kind) {
+		return readList(kind)
+			.map(function (uri) {
+				return state.byUri[uri];
+			})
+			.filter(Boolean);
 	}
 
 	function yieldUi() {
@@ -444,7 +510,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return depth === 0;
 	}
 
-	function buildNode(node, depth, parentKey) {
+	function buildNode(node, depth, parentKey, section) {
 		var li = el('div');
 
 		if (node.type === 'node') {
@@ -471,7 +537,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			});
 
 			node.children.forEach(function (child) {
-				kids.appendChild(buildNode(child, depth + 1, key));
+				kids.appendChild(buildNode(child, depth + 1, key, section));
 			});
 
 			li.appendChild(row);
@@ -479,27 +545,53 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		} else {
 			var btn = el('button', 'tree-row');
 			var ext = (node.text.match(/\.[a-z0-9]+$/i) || [''])[0].slice(1).toUpperCase();
+			var fav = isFavorite(node.uri);
+			var star = el('button', 'tree-star');
 
-			li.className = 'tree-item' + (state.selected && state.selected.uri === node.uri ? ' is-selected' : '');
+			li.className = 'tree-item' + (state.selected && state.selected.uri === node.uri ? ' is-selected' : '') + (fav ? ' is-favorite' : '');
 			li.setAttribute('role', 'treeitem');
 			li.setAttribute('aria-selected', String(li.classList.contains('is-selected')));
 			li.dataset.uri = node.uri;
+			li.dataset.section = section || '';
 
 			btn.type = 'button';
 			btn.title = node.fsName || node.text;
 			btn.appendChild(svgIcon('file'));
 			btn.appendChild(el('span', 'tree-label', node.text.replace(/\.[a-z0-9]+$/i, '')));
+
+			// nos fixados e recentes, a pasta do template ajuda a diferenciar nomes iguais
+			if (section && node.folderTrail && node.folderTrail.length) btn.appendChild(el('span', 'tree-trail', node.folderTrail.join(' / ')));
+
 			btn.appendChild(el('span', 'tree-ext', ext));
 			btn.addEventListener('click', function (e) {
 				if (e.detail > 1) return; // o duplo clique só importa, sem alternar a seleção
 
-				selectTemplate(node);
+				// Enter no template já selecionado vai para o campo de texto (não desmarca)
+				if (e.detail === 0 && state.selected && state.selected.uri === node.uri) return focusInput();
+
+				selectTemplate(node, { focusInput: e.detail === 0 });
 			});
 			btn.addEventListener('dblclick', function () {
 				importTemplate(node);
 			});
 
+			star.type = 'button';
+			star.title = fav ? 'desafixar' : 'fixar no topo da lista';
+			star.setAttribute('aria-label', star.title);
+			star.setAttribute('aria-pressed', String(fav));
+			star.appendChild(svgIcon('star'));
+			star.addEventListener('click', function () {
+				toggleFavorite(node);
+				renderTree();
+
+				// o foco volta para a estrela do mesmo template na árvore
+				var again = $('tree').querySelector('.tree-item[data-section=""][data-uri="' + CSS.escape(node.uri) + '"] .tree-star');
+
+				if (again) again.focus({ preventScroll: true });
+			});
+
 			li.appendChild(btn);
+			li.appendChild(star);
 		}
 
 		return li;
@@ -530,6 +622,40 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (text) box.appendChild(el('span', null, text));
 
 		return box;
+	}
+
+	// Grupo de atalhos no topo da árvore (fixados / recentes): abre e fecha como uma pasta.
+	function buildSection(title, icon, nodes) {
+		var key = '/:' + title;
+		var open = isFolderOpen(key, 0);
+		var li = el('div', 'tree-folder tree-section' + (open ? ' is-open' : ''));
+		var row = el('button', 'tree-row');
+		var kids = el('div', 'tree-children');
+
+		li.setAttribute('role', 'treeitem');
+		li.setAttribute('aria-expanded', String(open));
+
+		row.type = 'button';
+		row.appendChild(svgIcon('chevron', 'tree-chevron'));
+		row.appendChild(svgIcon(icon));
+		row.appendChild(el('span', 'tree-label', title));
+		row.appendChild(el('span', 'tree-count', String(nodes.length)));
+		row.addEventListener('click', function () {
+			var now = !li.classList.contains('is-open');
+
+			state.folderOverride[key] = now;
+			li.classList.toggle('is-open', now);
+			li.setAttribute('aria-expanded', String(now));
+		});
+
+		nodes.forEach(function (node) {
+			kids.appendChild(buildNode(node, 1, key, title));
+		});
+
+		li.appendChild(row);
+		li.appendChild(kids);
+
+		return li;
 	}
 
 	function renderTree() {
@@ -578,6 +704,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			list.appendChild(treeState('nada encontrado', 'nenhum template casa com “' + state.query.trim() + '”'));
 			total.textContent = '0 / ' + countTemplates(state.tree);
 			return;
+		}
+
+		if (!query) {
+			var favorites = listNodes('favorites');
+			var recents = listNodes('recents').filter(function (node) {
+				return favorites.indexOf(node) < 0;
+			});
+
+			if (favorites.length) list.appendChild(buildSection('fixados', 'star', favorites));
+			if (recents.length) list.appendChild(buildSection('recentes', 'clock', recents));
 		}
 
 		data.children.forEach(function (child) {
@@ -648,7 +784,22 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return !!state.run && !state.run.finished;
 	}
 
-	async function selectTemplate(node) {
+	function focusInput() {
+		if ($('view-input').hidden) return;
+
+		$('input').focus();
+	}
+
+	// Template selecionado na árvore (o primeiro, se aparecer em fixados / recentes também).
+	function selectedRow() {
+		if (!state.selected) return null;
+
+		var items = $('tree').querySelectorAll('.tree-item.is-selected > .tree-row');
+
+		return items.length ? items[items.length - 1] : null;
+	}
+
+	async function selectTemplate(node, opts) {
 		if (runIsOpen()) {
 			notify('warning', 'Finalize o preenchimento atual (fila de render) antes de trocar de template.');
 			return;
@@ -680,6 +831,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!state.selected || state.selected.uri !== node.uri) return; // mudou de template enquanto lia
 
 		showTemplate(state.info);
+
+		if (opts && opts.focusInput) focusInput();
 
 		var queueSide = document.querySelector('.queue-side');
 
@@ -918,6 +1071,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		try {
 			var res = await call('importTemplate', { uri: target.uri });
 
+			pushRecent(target);
+			if (!state.query) renderTree();
+
 			notify('success', 'Template importado e projeto organizado: ' + res.name);
 			pickerMessage('success', 'importado: ' + res.name);
 		} catch (err) {
@@ -1035,6 +1191,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		try {
 			begin = await call('fillBegin', { uri: state.info.uri, text: text });
+			pushRecent(state.selected);
 		} catch (err) {
 			setBusy(false);
 			setStage('2 · preencher', null, relativeFolder());
@@ -1209,6 +1366,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('render-options').hidden = true;
 		$('run-footer').hidden = false;
 		setPickerLocked(false);
+		renderTree(); // o template entra nos recentes
 
 		try {
 			var res = await call('runEnd', {});
@@ -1296,7 +1454,44 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				var query = searchText(state.query);
 				var first = firstTemplate(query ? filterTree(state.tree, query) : state.tree);
 
-				if (first) selectTemplate(first);
+				if (first) selectTemplate(first, { focusInput: true });
+			}
+		});
+
+		PAD_KEYS.listNav({
+			root: $('tree'),
+			items: '.tree-row',
+			search: search,
+			typeToSearch: true,
+			// ← fecha a pasta (ou volta para a pasta do item); → abre a pasta (ou entra nela)
+			onLeft: function (row) {
+				var li = row.parentNode;
+
+				if (li.classList.contains('tree-folder') && li.classList.contains('is-open')) {
+					row.click();
+					return true;
+				}
+
+				var parent = li.parentNode.closest('.tree-folder');
+
+				if (parent) PAD_KEYS.focusItem(parent.firstElementChild);
+
+				return !!parent;
+			},
+			onRight: function (row) {
+				var li = row.parentNode;
+
+				if (!li.classList.contains('tree-folder')) return false;
+				if (!li.classList.contains('is-open')) row.click();
+				else PAD_KEYS.focusItem(li.querySelector('.tree-children .tree-row'));
+
+				return true;
+			}
+		});
+
+		PAD_KEYS.shortcuts({
+			find: function () {
+				if (!runIsOpen()) PAD_KEYS.focusSearch(search);
 			}
 		});
 
@@ -1314,13 +1509,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		document.querySelector('.upload-side').addEventListener('click', function (e) {
-			if (e.target.closest('.tree-row, .picker-search, .picker-footer, .picker-state')) return;
+			if (e.target.closest('.tree-row, .tree-star, .picker-search, .picker-footer, .picker-state')) return;
 
 			deselectFromUi();
 		});
 
 		document.addEventListener('keydown', function (e) {
-			if (e.key !== 'Escape') return;
+			if (e.key !== 'Escape' || e.defaultPrevented) return; // o Esc do texto só volta para a lista
 
 			var active = document.activeElement;
 
@@ -1353,7 +1548,17 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			updateInputCount();
 		});
 		input.addEventListener('keydown', function (e) {
-			if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) startFill();
+			if (e.key === 'Enter' && PAD_KEYS.isMod(e)) startFill();
+
+			// Esc no texto volta para o template na lista (outro Esc desmarca)
+			if (e.key === 'Escape') {
+				var row = selectedRow();
+
+				if (row) {
+					e.preventDefault();
+					PAD_KEYS.focusItem(row);
+				}
+			}
 		});
 
 		$('btn-edit-config').addEventListener('click', openEditor);

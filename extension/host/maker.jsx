@@ -33,7 +33,17 @@ function padLayerById(comp, layerId) {
 }
 
 function padLayerInfo(layer) {
-	return { id: layer.id, index: layer.index, name: layer.name, isText: layer instanceof TextLayer };
+	var isText = layer instanceof TextLayer;
+	var text = '';
+
+	// texto atual do layer (o painel monta o exemplo de preenchimento com ele)
+	if (isText) {
+		try {
+			text = String(layer.property('ADBE Text Properties').property('ADBE Text Document').value.text);
+		} catch (err) { }
+	}
+
+	return { id: layer.id, index: layer.index, name: layer.name, isText: isText, text: text };
 }
 
 // Estado do After Effects para o painel: comp ativa e layers selecionados nela.

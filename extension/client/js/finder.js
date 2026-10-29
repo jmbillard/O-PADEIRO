@@ -73,6 +73,67 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return stripAccents(String(value || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
 	}
 
+	// Nome com o termo buscado destacado. A busca compara só a-z / 0-9 sem acentos:
+	// cada caractere normalizado guarda a posição de origem para achar o trecho no texto original.
+	function highlightNode(tag, className, text, query) {
+		var node = el(tag, className);
+		var flat = '';
+		var origin = [];
+
+		for (var i = 0; i < text.length; i++) {
+			var norm = psNormalize(text.charAt(i));
+
+			for (var k = 0; k < norm.length; k++) {
+				flat += norm.charAt(k);
+				origin.push(i);
+			}
+		}
+
+		var at = query ? flat.indexOf(query) : -1;
+
+		if (at < 0) {
+			node.textContent = text;
+			return node;
+		}
+
+		var start = origin[at];
+		var end = origin[at + query.length - 1] + 1;
+
+		node.appendChild(document.createTextNode(text.slice(0, start)));
+		node.appendChild(el('mark', null, text.slice(start, end)));
+		node.appendChild(document.createTextNode(text.slice(end)));
+
+		return node;
+	}
+
+	// Copia um texto (área de transferência do painel; se falhar, pelo After Effects).
+	async function copyText(text, label) {
+		var area = el('textarea');
+		var active = document.activeElement;
+		var copied = false;
+
+		area.value = text;
+		area.setAttribute('readonly', '');
+		area.style.position = 'fixed';
+		area.style.opacity = '0';
+		document.body.appendChild(area);
+		area.select();
+
+		try {
+			copied = document.execCommand('copy');
+		} catch (err) { }
+
+		area.remove();
+		if (active && active.focus) active.focus({ preventScroll: true });
+
+		try {
+			if (!copied) await call('copyText', { text: text });
+			toast('success', label + ' copiado.');
+		} catch (err) {
+			toast('error', err.message);
+		}
+	}
+
 	function truncateMiddle(text, maxChars) {
 		text = String(text || '');
 
@@ -303,7 +364,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var btn = el('button', 'pill-btn', label);
 
 		btn.type = 'button';
-		btn.title = path;
+		btn.title = path + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		btn.dataset.copy = toPlatform(path, state.paths.platform);
 		btn.addEventListener('click', function () {
 			openPath(btn, path, group);
 		});
@@ -315,7 +377,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var card = el('article', 'result-card');
 		var actions = el('div', 'result-actions');
 
-		card.appendChild(el('h4', 'result-name', group.name));
+		card.appendChild(highlightNode('h4', 'result-name', group.name, query));
 		card.firstChild.title = group.name;
 
 		if (group.projetos.length) folderButton(actions, 'Abrir projeto', group.projetos[0], group);
@@ -331,7 +393,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var line = el('button', 'path-line', 'Caminho: ' + truncateMiddle(display, MAX_PATH_CHARS));
 
 			line.type = 'button';
-			line.title = 'clique para abrir:\n' + display;
+			line.title = 'clique para abrir:\n' + display + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+			line.dataset.copy = display;
 			line.addEventListener('click', function () {
 				openPath(null, display, group);
 			});
@@ -567,7 +630,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var row = el('button', 'text-row' + (entry.enabled ? '' : ' is-off'));
 
 			row.type = 'button';
-			row.title = entry.text;
+			row.title = entry.text + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o texto';
+			row.dataset.copy = entry.text;
 			row.appendChild(el('span', 'text-layer', entry.label));
 			row.appendChild(snippetNode(entry.text, key, opts, !opts.invert));
 			row.addEventListener('click', openText.bind(null, entry, true));
@@ -651,6 +715,39 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		// Enter na busca de textos lê o projeto de novo se ainda não houver índice
 		$('q-texts').addEventListener('keydown', function (e) {
 			if (e.key === 'Enter' && !state.texts.ready && !state.texts.loading) loadTexts();
+		});
+
+		// teclado: ↑ ↓ nos resultados, Enter abre, Ctrl/Cmd+C copia, Esc volta para a busca
+		['paths', 'texts'].forEach(function (tab) {
+			var results = $('results-' + tab);
+			var q = $('q-' + tab);
+
+			PAD_KEYS.listNav({
+				root: results,
+				items: '.pill-btn, .path-line, .comp-title, .text-row',
+				search: q,
+				typeToSearch: true
+			});
+
+			results.addEventListener('keydown', function (e) {
+				var target = e.target.closest('[data-copy]');
+
+				if (e.key === 'Escape') {
+					e.preventDefault();
+					q.focus();
+				} else if (target && PAD_KEYS.isMod(e) && e.key.toLowerCase() === 'c') {
+					e.preventDefault();
+					copyText(target.dataset.copy, target.classList.contains('text-row') ? 'texto' : 'caminho');
+				}
+			});
+		});
+
+		PAD_KEYS.listNav({ root: $('tabs'), items: '.tab', horizontal: true });
+
+		PAD_KEYS.shortcuts({
+			find: function () {
+				PAD_KEYS.focusSearch($('q-' + state.tab));
+			}
 		});
 
 		window.addEventListener('resize', movePill);

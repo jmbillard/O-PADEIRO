@@ -145,3 +145,19 @@ body.converter-page {
     flex-basis: 100%;
   }
 }
+
+/* caminho colado e reconhecido: o campo pisca de leve */
+.convert-field.is-flash .cfg-input {
+  animation: convert-flash 900ms var(--ease-soft);
+}
+
+@keyframes convert-flash {
+  0% {
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 6px rgb(79 130 255 / 22%);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(79 130 255 / 0%);
+  }
+}

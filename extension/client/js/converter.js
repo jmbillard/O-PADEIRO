@@ -4,8 +4,8 @@
 > CONVERSOR DE CAMINHOS Windows / macOS
 ---------------------------------------------------------------
 
-Cole um caminho em qualquer campo e o outro é convertido na hora (host: lógica do script,
-'path ui.js'). Abre já com a pasta da última saída da fila de render quando a barra principal
+Cole um caminho em qualquer lugar do painel: o tipo é reconhecido, o caminho vai para o campo
+certo e o outro é convertido na hora (host: lógica do script, 'path ui.js'). Abre já com a pasta da última saída da fila de render quando a barra principal
 pede (botão 'pastas', clique direito).
 
 */
@@ -63,6 +63,63 @@ pede (botão 'pastas', clique direito).
 
 		$('cv-' + os).value = path;
 		convertFrom(os);
+	}
+
+	// 'mac' | 'win' | null (sem certeza: o colar segue normal)
+	function detectKind(text) {
+		var t = text.trim().split(/[\n\r]/)[0];
+
+		if (/^\\\\|^\/\/[^/]|^[A-Za-z]:[\\/]/.test(t)) return 'win';
+		if (/^smb:\/\/|^\/(Volumes|Users)\//i.test(t)) return 'mac';
+		if (/^\//.test(t)) return 'mac';
+		if (t.indexOf('\\') >= 0 && t.indexOf('/') < 0) return 'win';
+
+		return null;
+	}
+
+	function flash(input) {
+		var field = input.closest('.convert-field');
+
+		field.classList.remove('is-flash');
+		void field.offsetWidth;
+		field.classList.add('is-flash');
+	}
+
+	// Colar em qualquer lugar: o caminho vai para o campo do seu tipo. Colar no meio de um texto
+	// (parte de um caminho) segue o comportamento normal do campo.
+	function onPaste(e) {
+		var data = e.clipboardData || window.clipboardData;
+		var text = data ? data.getData('text') : '';
+		var kind = detectKind(text);
+
+		if (!kind) return;
+
+		var target = $('cv-' + kind);
+		var focused = document.activeElement;
+
+		if (focused === target) return;
+
+		if (focused === $('cv-mac') || focused === $('cv-win')) {
+			var whole = focused.value === '' || (focused.selectionStart === 0 && focused.selectionEnd === focused.value.length);
+
+			if (!whole) return;
+		}
+
+		e.preventDefault();
+		target.value = text.trim();
+		target.focus();
+		flash(target);
+		convertFrom(kind);
+		status('caminho ' + (kind === 'mac' ? 'MacOS' : 'Windows') + ' reconhecido.');
+	}
+
+	function clearAll() {
+		clearTimeout(state.timer);
+		state.seq++;
+		$('cv-mac').value = '';
+		$('cv-win').value = '';
+		status('');
+		$(state.os === 'Mac' ? 'cv-mac' : 'cv-win').focus();
 	}
 
 	async function copyField(id, btn, label) {
@@ -167,6 +224,15 @@ pede (botão 'pastas', clique direito).
 			$(id).addEventListener('keydown', function (e) {
 				if (e.key === 'Enter') openFolder();
 			});
+		});
+
+		document.addEventListener('paste', onPaste);
+
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				clearAll();
+			}
 		});
 
 		try {

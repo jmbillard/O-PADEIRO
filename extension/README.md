@@ -49,6 +49,30 @@ todas as ferramentas do script já têm versão na extensão. o script ScriptUI 
 
 <br>
 
+## 📍 teclado e atalhos
+
+o mesmo vocabulário em todos os painéis:
+
+| tecla | o que faz |
+| --- | --- |
+| `↑` `↓` | andam nas listas (templates, resultados das buscas, linhas de produções). `↓` na busca vai para o primeiro item; `↑` no primeiro volta para a busca |
+| `Enter` | abre / seleciona. no painel de templates, seleciona e leva para o campo de texto |
+| `Esc` | limpa a busca ou volta um passo (do texto para a lista, da lista para a busca) |
+| `Ctrl/Cmd+F` | foca a busca do painel |
+| `Ctrl/Cmd+S` | salva (lista de produções, criador de templates) |
+| `Ctrl/Cmd+Enter` | preenche (painel de templates) |
+| `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
+
+- **templates:** `←` `→` fecham e abrem as pastas; digitar com a lista em foco leva as letras para a busca. a ★ fixa o template no topo (**fixados**) e os últimos usados aparecem em **recentes**, por produção e só neste computador;
+- **barra:** `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito;
+- **dropdowns:** com a lista aberta, digite para filtrar (útil com muitas produções);
+- **conversor:** cole um caminho em qualquer lugar do painel: o tipo é reconhecido e o outro lado é convertido;
+- **criador de templates:** a barra de salvar mostra o que falta (preview, nome, layers, exemplo, output); clicar num item leva até ele. “puxar dos layers” monta o exemplo com o texto atual dos layers editáveis.
+
+no CEP as teclas só chegam ao painel quando ele pede (`registerKeyEventsInterest`, em `client/js/keys.js`): sem isso as setas e os atalhos iriam para o After Effects.
+
+<br>
+
 ## 📍 instalação (macOS e Windows)
 
 requer After Effects **2022 (22.0)** ou mais novo.
@@ -88,7 +112,7 @@ extension/
 │  ├─ productions.html, js/productions.js → o editor da lista de produções
 │  ├─ maker.html, js/maker.js → o criador de templates
 │  ├─ bar.html, js/bar.js   → barra principal
-│  └─ js/                   → bridge.js (ponte), dropdown.js, config-editor.js, util.js, mock-host.js (dev)
+│  └─ js/                   → bridge.js (ponte), keys.js (teclado), dropdown.js, config-editor.js, util.js, mock-host.js (dev)
 ├─ host/                    → ExtendScript (roda dentro do After Effects)
 │  ├─ index.jsx             → entrada: includes
 │  ├─ api.jsx               → métodos chamados pelo painel (PADX.*)

@@ -10,6 +10,8 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
   PAD_DROPDOWN.enhance(selectEl)   → deixa o <select> (dentro de um '.select') com a nova aparência
   PAD_DROPDOWN.refresh(selectEl)   → atualiza o rótulo depois de mudar opções, valor ou 'disabled'
 
+Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo); Backspace apaga.
+
 */
 
 (function () {
@@ -24,6 +26,11 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 		if (text != null) node.textContent = text;
 
 		return node;
+	}
+
+	// maiúsculas, sem acentos (para o filtro digitado)
+	function fold(str) {
+		return String(str).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 	}
 
 	function closeOpen() {
@@ -51,6 +58,10 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 		var popover = el('div', 'dropdown-popover');
 		var items = [];
 		var active = Math.max(0, select.selectedIndex);
+		var query = '';
+		var empty = el('p', 'dropdown-empty', 'nada encontrado');
+		var queryLine = el('p', 'dropdown-query'); // termo digitado, quando a lista cobre o botão
+		var covers = false;
 
 		popover.setAttribute('role', 'listbox');
 
@@ -71,6 +82,10 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 			popover.appendChild(item);
 		});
 
+		empty.hidden = true;
+		queryLine.hidden = true;
+		popover.insertBefore(queryLine, popover.firstChild);
+		popover.appendChild(empty);
 		document.body.appendChild(popover);
 
 		// posição: abaixo do botão, ou acima se não couber
@@ -87,6 +102,52 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 		popover.style.top = Math.max(8, top) + 'px';
 		popover.style.maxHeight = window.innerHeight - 16 + 'px';
 
+		// painel baixo (a barra): a lista fica por cima do botão e o termo digitado aparece nela
+		var popRect = popover.getBoundingClientRect();
+
+		covers = popRect.top < rect.bottom && popRect.bottom > rect.top;
+
+		function visible() {
+			var list = [];
+
+			items.forEach(function (item, i) {
+				if (!item.hidden) list.push(i);
+			});
+
+			return list;
+		}
+
+		// próximo item visível a partir do ativo (delta = +1 / -1)
+		function step(delta) {
+			var list = visible();
+
+			if (!list.length) return;
+
+			var at = list.indexOf(active);
+
+			highlight(list[at < 0 ? 0 : Math.max(0, Math.min(list.length - 1, at + delta))]);
+		}
+
+		function filter() {
+			var label = trigger.firstChild;
+			var key = fold(query);
+
+			items.forEach(function (item) {
+				item.hidden = key !== '' && fold(item.textContent).indexOf(key) < 0;
+			});
+
+			var list = visible();
+
+			empty.hidden = list.length > 0;
+			queryLine.hidden = !covers || query === '';
+			queryLine.textContent = query;
+			trigger.classList.toggle('is-filtering', query !== '');
+			label.textContent = query !== '' ? query : (select.options[select.selectedIndex] || {}).textContent || '';
+
+			if (list.length) highlight(list.indexOf(active) >= 0 ? active : list[0]);
+			else active = -1;
+		}
+
 		function highlight(i) {
 			active = i;
 			items.forEach(function (item, n) {
@@ -100,6 +161,8 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 		}
 
 		function choose(i) {
+			if (i < 0 || !items[i] || items[i].hidden) return;
+
 			var changed = select.selectedIndex !== i;
 
 			select.selectedIndex = i;
@@ -118,15 +181,23 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 				trigger.focus();
 			} else if (e.key === 'ArrowDown') {
 				e.preventDefault();
-				highlight(Math.min(items.length - 1, active + 1));
+				step(1);
 			} else if (e.key === 'ArrowUp') {
 				e.preventDefault();
-				highlight(Math.max(0, active - 1));
-			} else if (e.key === 'Enter' || e.key === ' ') {
+				step(-1);
+			} else if (e.key === 'Enter' || (e.key === ' ' && query === '')) {
 				e.preventDefault();
 				choose(active);
 			} else if (e.key === 'Tab') {
 				closeOpen();
+			} else if (e.key === 'Backspace') {
+				e.preventDefault();
+				query = query.slice(0, -1);
+				filter();
+			} else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+				e.preventDefault();
+				query += e.key;
+				filter();
 			}
 		}
 
@@ -156,8 +227,10 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 				window.removeEventListener('resize', closeOpen);
 				window.removeEventListener('blur', closeOpen);
 				trigger.setAttribute('aria-expanded', 'false');
+				trigger.classList.remove('is-filtering');
 				popover.remove();
 				openState = null;
+				refresh(select);
 			}
 		};
 	}
@@ -172,6 +245,7 @@ um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 		trigger.setAttribute('aria-haspopup', 'listbox');
 		trigger.setAttribute('aria-expanded', 'false');
 		if (select.getAttribute('aria-label')) trigger.setAttribute('aria-label', select.getAttribute('aria-label'));
+		trigger.title = 'abra e digite para filtrar';
 		trigger.appendChild(el('span', 'dropdown-label'));
 
 		trigger.addEventListener('click', function () {

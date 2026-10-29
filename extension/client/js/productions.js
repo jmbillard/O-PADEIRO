@@ -344,6 +344,61 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.rows.forEach(function (row) {
 			list.appendChild(buildRow(row));
 		});
+
+		applyFilter();
+	}
+
+	// Filtro por nome ou pasta (só esconde as linhas: salvar grava a lista inteira).
+	function fold(str) {
+		return String(str).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+	}
+
+	function applyFilter() {
+		var key = fold($('filter').value.trim());
+		var shown = 0;
+		var list = $('list');
+		var empty = list.querySelector('.prods-nomatch');
+
+		state.rows.forEach(function (row) {
+			if (!row.nodes) return;
+
+			// linhas novas (ainda sem nome) e com erro ficam sempre à vista
+			var match = key === '' || row.name.trim() === '' || row.error || fold(row.name + ' ' + row.path).indexOf(key) >= 0;
+
+			row.nodes.box.hidden = !match;
+			if (match) shown++;
+		});
+
+		if (empty) empty.remove();
+
+		if (state.rows.length && !shown) list.appendChild(el('p', 'prods-empty prods-nomatch', 'nenhuma produção casa com “' + $('filter').value.trim() + '”.'));
+	}
+
+	// ↑ ↓ num campo vão para o mesmo campo da linha de cima / de baixo.
+	function moveBetweenRows(e) {
+		if ((e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || e.altKey || e.shiftKey || PAD_KEYS.isMod(e)) return;
+
+		var input = e.target;
+
+		if (input.tagName !== 'INPUT') return;
+
+		var rows = Array.prototype.filter.call($('list').querySelectorAll('.prod-row'), function (box) {
+			return !box.hidden;
+		});
+		var box = input.closest('.prod-row');
+		var at = rows.indexOf(box);
+		var column = Array.prototype.indexOf.call(box.querySelectorAll('input'), input);
+		var next = rows[at + (e.key === 'ArrowDown' ? 1 : -1)];
+
+		if (!next) return;
+
+		e.preventDefault();
+
+		var target = next.querySelectorAll('input')[column];
+
+		target.focus();
+		target.setSelectionRange(target.value.length, target.value.length);
+		next.scrollIntoView({ block: 'nearest' });
 	}
 
 	// Verifica quais pastas existem (a leitura é pelo After Effects, que pode demorar na rede).
@@ -515,7 +570,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		}
 	}
 
+	function clearFilter() {
+		$('filter').value = '';
+		$('filter-clear').hidden = true;
+		applyFilter();
+	}
+
 	function addRow() {
+		clearFilter();
+
 		var row = newRow({ name: '', icon: state.newIcon, templatesPath: '' });
 
 		state.rows.push(row);
@@ -540,10 +603,46 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			confirmDiscard(load);
 		});
 
-		document.addEventListener('keydown', function (e) {
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+		var filter = $('filter');
+
+		filter.addEventListener('input', function () {
+			$('filter-clear').hidden = filter.value === '';
+			applyFilter();
+		});
+		filter.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && filter.value) {
 				e.preventDefault();
-				save();
+				clearFilter();
+			}
+
+			// ↓ no filtro vai para o nome da primeira produção visível
+			if (e.key === 'ArrowDown') {
+				var first = $('list').querySelector('.prod-row:not([hidden]) input');
+
+				if (first) {
+					e.preventDefault();
+					first.focus();
+				}
+			}
+		});
+		$('filter-clear').addEventListener('click', function () {
+			clearFilter();
+			filter.focus();
+		});
+
+		$('list').addEventListener('keydown', moveBetweenRows);
+
+		PAD_KEYS.shortcuts({
+			save: save,
+			find: function () {
+				PAD_KEYS.focusSearch(filter);
+			},
+			escape: function () {
+				if (!filter.value) return false;
+
+				clearFilter();
+
+				return true;
 			}
 		});
 

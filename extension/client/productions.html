@@ -15,6 +15,11 @@
 	<main class="prods" id="prods">
 		<header class="prods-top">
 			<p class="eyebrow">lista de produções</p>
+			<div class="picker-search prods-filter">
+				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+				<input type="search" id="filter" placeholder="filtrar produções" autocomplete="off" spellcheck="false" aria-label="Filtrar produções">
+				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar filtro" hidden>×</button>
+			</div>
 			<div class="prods-tools">
 				<button type="button" class="icon-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
 					<svg viewBox="0 0 24 24"><path d="M12 4v10M8 10.500l4 4 4-4M5 18.500h14" /></svg>
@@ -52,6 +57,7 @@
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
 	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
 	<script src="js/productions.js"></script>
 </body>
 

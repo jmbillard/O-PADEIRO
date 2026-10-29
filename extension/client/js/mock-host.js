@@ -264,14 +264,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerState: function () {
 			if (/nocomp/.test(location.search) && !window.PAD_MOCK_COMP) return { hasComp: false };
 
-			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 102, index: 2, name: 'cargo', isText: true }] };
+			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }] };
 		},
 
 		makerCapture: async function () {
 			await wait(delay);
 			window.PAD_MOCK_COMP = true;
 
-			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 102, index: 2, name: 'cargo', isText: true }, { id: 103, index: 3, name: 'fundo', isText: false }] };
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
 		makerFonts: async function () {
@@ -281,7 +281,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		makerSelection: function () {
-			return { hasComp: true, selected: [{ id: 101, index: 1, name: 'nome', isText: true }, { id: 103, index: 3, name: 'fundo', isText: false }] };
+			return { hasComp: true, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
 		makerToggleLayer: function () {
@@ -289,7 +289,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		makerLayers: function (a) {
-			return { layers: a.layerIds.map(function (id) { return id === 103 && /missing/.test(location.search) ? null : { id: id, index: id - 100, name: 'layer ' + id, isText: id !== 103 }; }) };
+			return { layers: a.layerIds.map(function (id) { return id === 103 && /missing/.test(location.search) ? null : { id: id, index: id - 100, name: 'layer ' + id, isText: id !== 103, text: { 101: 'Cássio Gabus\rMendes', 102: 'Ator' }[id] || '' }; }) };
 		},
 
 		makerTest: async function () {

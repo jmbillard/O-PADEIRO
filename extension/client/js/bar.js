@@ -26,6 +26,7 @@ aparecem como "em breve".
 
 	var L_CLICK = '◖  →  ';
 	var R_CLICK = '◗  →  ';
+	var KEYS_TIP = '\n\nteclado: ← → escolhem · Enter = ◖ · Shift+Enter = ◗';
 
 	/* =========================================================
 	   Utilidades
@@ -284,6 +285,14 @@ aparecem como "em breve".
 			e.preventDefault();
 			run(btn, right);
 		});
+
+		// no teclado: Shift+Enter faz a segunda ação
+		btn.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter' || !e.shiftKey) return;
+
+			e.preventDefault();
+			run(btn, right);
+		});
 	}
 
 	// Lupa: a cada hover, letras aleatórias passam pelo vidro (uma nova a cada passada).
@@ -324,7 +333,7 @@ aparecem como "em breve".
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n');
+				btn.title = def.tips.join('\n') + KEYS_TIP;
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
@@ -424,6 +433,13 @@ aparecem como "em breve".
 		buildTools();
 
 		PAD_DROPDOWN.enhance($('production'));
+
+		// ← → andam pela barra (logo, produção, link e ferramentas)
+		PAD_KEYS.listNav({
+			root: $('bar'),
+			items: '.bar-logo, .bar-prod .dropdown-trigger, .bar-icon, .bar-btn',
+			horizontal: true
+		});
 
 		$('production').addEventListener('change', async function () {
 			updateProdIcon(this.value);

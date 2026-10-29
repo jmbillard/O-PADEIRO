@@ -192,6 +192,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
 		}
 
+		updateChecklist();
+
 		state.layers.forEach(function (layer, i) {
 			var row = el('div', 'cfg-row' + (layer.missing ? ' is-missing' : ''));
 			var name = el('button', 'maker-layer-name', '#' + layer.index + '  ' + layer.name);
@@ -260,7 +262,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		infos.forEach(function (info) {
 			if (state.layers.some(function (l) { return l.id === info.id; })) return;
 
-			state.layers.push({ id: info.id, index: info.index, name: info.name, isText: info.isText, method: info.isText ? 'textContent' : 'layerName', missing: false });
+			state.layers.push({ id: info.id, index: info.index, name: info.name, isText: info.isText, text: info.text || '', method: info.isText ? 'textContent' : 'layerName', missing: false });
 			added++;
 		});
 
@@ -296,11 +298,112 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				if (info) {
 					layer.index = info.index;
 					layer.name = info.name;
+					layer.text = info.text || '';
 				}
 			});
 
 			renderLayers();
 		} catch (err) { }
+	}
+
+	// Exemplo montado com o que está nos layers agora: o texto (ou o nome, conforme o método) de cada um,
+	// na ordem da lista, unidos pelo separador.
+	async function exampleFromLayers() {
+		if (!state.layers.length) return toast('error', 'adicione os layers editáveis primeiro (“+ layers”).');
+
+		await refreshLayers();
+
+		var sep = getSeparator();
+		var oneLine = sep.indexOf('\n') >= 0; // separador de linha: quebras dentro de um texto viram espaço
+		var parts = state.layers
+			.filter(function (layer) {
+				return !layer.missing;
+			})
+			.map(function (layer) {
+				var value = layer.method === 'textContent' ? normalizeBreaks(layer.text) : layer.name;
+
+				return oneLine ? value.replace(/\s*\n+\s*/g, ' ').trim() : value;
+			});
+		var example = parts.join(sep === '---' ? '\n' : sep).replace(/\n{2,}/g, '\n'); // linha vazia separaria versões
+
+		$('f-example').value = example;
+		$('f-example').dispatchEvent(new Event('input'));
+		toast('success', 'exemplo montado com ' + parts.length + (parts.length === 1 ? ' layer.' : ' layers.'));
+	}
+
+	/* =========================================================
+	   O que falta para salvar (checklist da barra)
+	   ========================================================= */
+
+	function checks() {
+		var config = $('f-config').value.trim();
+		var infos = firstExampleBlock().trim() === '' ? 0 : exampleInputs().length;
+		var missing = state.layers.filter(function (l) {
+			return l.missing;
+		}).length;
+		var outputs = state.outputs.filter(function (p) {
+			return p.trim() !== '';
+		}).length;
+		var hasPreview = !!state.comp && $('preview-card').classList.contains('has-image');
+
+		return [
+			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
+			{ key: 'name', label: 'nome', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'nome da configuração' },
+			{
+				key: 'layers',
+				label: 'layers',
+				ok: state.layers.length > 0 && !missing,
+				target: 'layers',
+				tip: !state.layers.length ? 'nenhum layer editável' : missing ? plural(missing, 'layer não existe', 'layers não existem') + ' mais na comp' : plural(state.layers.length, 'layer editável', 'layers editáveis')
+			},
+			{
+				key: 'example',
+				label: 'exemplo',
+				ok: infos > 0 && (state.layers.length < 2 || infos === state.layers.length),
+				target: 'f-example',
+				tip: infos === 0 ? 'exemplo vazio' : state.layers.length > 1 && infos !== state.layers.length ? 'o exemplo tem ' + plural(infos, 'informação', 'informações') + ' e a lista tem ' + plural(state.layers.length, 'layer', 'layers') : 'o exemplo bate com os layers'
+			},
+			{ key: 'output', label: 'output', ok: outputs > 0, target: 'outputs', tip: outputs ? plural(outputs, 'pasta de output', 'pastas de output') : 'nenhuma pasta de output' }
+		];
+	}
+
+	function plural(n, one, many) {
+		return n + ' ' + (n === 1 ? one : many);
+	}
+
+	function updateChecklist() {
+		var box = $('checklist');
+
+		if (!box) return;
+
+		box.textContent = '';
+
+		checks().forEach(function (item) {
+			var chip = el('button', 'check-chip' + (item.ok ? ' is-ok' : ''));
+
+			chip.type = 'button';
+			chip.title = (item.ok ? '✓ ' : 'falta: ') + item.tip;
+			chip.appendChild(el('span', 'check-dot'));
+			chip.appendChild(el('span', 'check-label', item.label));
+			chip.addEventListener('click', function () {
+				goTo(item.target);
+			});
+			box.appendChild(chip);
+		});
+	}
+
+	// Leva até o campo (ou cartão) do item e dá um destaque rápido no cartão.
+	function goTo(id) {
+		var target = $(id);
+		var card = target.closest('.cfg-card') || target;
+		var field = target.matches('input, textarea') ? target : card.querySelector('input:not([disabled]), textarea');
+
+		card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+		card.classList.remove('is-pulse');
+		void card.offsetWidth;
+		card.classList.add('is-pulse');
+
+		if (field && id !== 'preview-card') field.focus({ preventScroll: true });
 	}
 
 	/* =========================================================
@@ -313,15 +416,18 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		card.classList.remove('has-image');
 		img.hidden = true;
+		updateChecklist();
 
 		if (!path) return;
 
 		img.onload = function () {
 			img.hidden = false;
 			card.classList.add('has-image');
+			updateChecklist();
 		};
 		img.onerror = function () {
 			img.hidden = true;
+			updateChecklist();
 		};
 		var url = PAD_UTIL.fileUrl(path);
 
@@ -400,11 +506,15 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var line = el('div', 'cfg-path');
 			var input = el('input', 'cfg-input');
 			var pick = miniButton('folder', 'escolher pasta', async function () {
-				if (await pickPathInto(input, 'Selecione a pasta de output')) state.outputs[i] = input.value;
+				if (await pickPathInto(input, 'Selecione a pasta de output')) {
+					state.outputs[i] = input.value;
+					updateChecklist();
+				}
 			});
 			var remove = miniButton('remove', 'remover output', function () {
 				state.outputs.splice(i, 1);
 				renderOutputs();
+				updateChecklist();
 			});
 
 			input.type = 'text';
@@ -414,6 +524,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			input.setAttribute('aria-label', 'pasta de output ' + (i + 1));
 			input.addEventListener('input', function () {
 				state.outputs[i] = input.value;
+				updateChecklist();
 			});
 
 			remove.disabled = state.outputs.length === 1; // mantém ao menos uma pasta
@@ -585,7 +696,17 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {
 			$(id).addEventListener('input', updateNamePreview);
 		});
+		['f-config', 'f-example', 'f-separator'].forEach(function (id) {
+			$(id).addEventListener('input', updateChecklist);
+		});
 		$('f-case').addEventListener('change', updateNamePreview);
+		$('btn-example').addEventListener('click', exampleFromLayers);
+
+		PAD_KEYS.shortcuts({
+			save: function () {
+				if (!$('bar').hidden) save();
+			}
+		});
 		$('f-prefix').addEventListener('change', function () {
 			this.value = cleanName(this.value.trim().toUpperCase());
 			updateNamePreview();

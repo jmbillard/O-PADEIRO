@@ -300,3 +300,42 @@ body.prods-page {
     padding-inline: 14px;
   }
 }
+
+/* filtro no topo (versão compacta da busca do painel de templates) */
+.prods-filter {
+  min-width: 0;
+  max-width: 320px;
+  flex: 1;
+  margin: 0 0 0 auto;
+}
+
+.prods-filter>svg {
+  left: 13px;
+  width: 16px;
+  height: 16px;
+}
+
+.prods-filter input {
+  min-height: 38px;
+  padding: 6px 36px 6px 38px;
+  font-size: 0.8rem;
+}
+
+.prods-filter .picker-clear {
+  right: 6px;
+}
+
+.prod-row[hidden] {
+  display: none;
+}
+
+@media (max-width: 460px) {
+  .prods-top .eyebrow {
+    display: none;
+  }
+}
+
+.prods-filter .picker-clear {
+  width: 24px;
+  height: 24px;
+}
