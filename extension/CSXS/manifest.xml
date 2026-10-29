@@ -32,6 +32,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -62,6 +65,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -91,6 +97,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -120,6 +129,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -149,6 +161,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -178,6 +193,9 @@
 					<CEFCommandLine>
 						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
+						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
+						<Parameter>--disable-gpu</Parameter>
+						<Parameter>--disable-gpu-compositing</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>

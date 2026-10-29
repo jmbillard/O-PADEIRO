@@ -78,6 +78,7 @@ resultado: trocar os arquivos na rede e **reabrir o painel** já atualiza a inte
 
 > 🚩 *obs:*\
 > • o manifest não tem `ScriptPath`: o host é sempre carregado pelos painéis, da rede.\
+> • os painéis rodam com `--disable-gpu` e `--disable-gpu-compositing` (CEFCommandLine): no After Effects 2025 (macOS) as janelas flutuantes ficavam pretas com a GPU ligada. como o manifest é copiado pelo instalador, mudanças nele pedem reinstalar.\
 > • os painéis compartilham o mesmo ExtendScript do After Effects: reabrir um painel depois de uma atualização recarrega o host para todos.
 
 <br>

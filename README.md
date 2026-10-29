@@ -58,6 +58,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
+> • **janela preta** em um painel flutuante (visto no After Effects 2025): os painéis já pedem desenho sem GPU. se acontecer, rode o instalador de novo (o manifest instalado precisa ser o atual) e reinicie o After Effects.\
 > • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
 
 ### habilitando o acesso à rede
