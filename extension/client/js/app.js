@@ -1161,27 +1161,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			void li.offsetWidth;
 			li.classList.add('just-completed');
 		}
-
-		updateSummary();
-	}
-
-	function updateSummary() {
-		var counts = { waiting: 0, processing: 0, success: 0, error: 0 };
-
-		state.run.items.forEach(function (item) {
-			counts[item.status]++;
-		});
-
-		Object.keys(counts).forEach(function (key) {
-			var node = $('sum-' + key);
-
-			if (node.textContent !== String(counts[key])) {
-				node.textContent = String(counts[key]);
-				node.classList.remove('has-changed');
-				void node.offsetWidth;
-				node.classList.add('has-changed');
-			}
-		});
 	}
 
 	function setProgress(done, total, label) {
@@ -1240,7 +1219,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		showView('run');
 		setStage('3 · preenchendo', state.info.name, begin.templateName);
 		setProgress(0, begin.total, 'Preenchendo templates');
-		updateSummary();
 
 		var hostIndex = 0;
 
