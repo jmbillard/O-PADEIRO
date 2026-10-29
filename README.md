@@ -427,7 +427,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   `◖ clique esquerdo` → Instala as fontes que o template do padeiro precisa para funcionar corretamente.
 
-  *Ao preencher o template pela interface do padeiro o script armazena no campo '**Source**' dos metadados do projeto o caminho dos arquivos do template, assim é possível fazer a instalação das fontes necessárias facilmente. Após clicar no botão um script de **powershell** copia todos os arquivos de fontes do projeto para a pasta de fontes do sistema.*
+  *Ao preencher o template pela interface do padeiro o script armazena no campo '**Source**' dos metadados do projeto o caminho dos arquivos do template, assim é possível fazer a instalação das fontes necessárias facilmente. Após clicar no botão, as fontes da pasta `FONTS` do template (incluindo subpastas) são instaladas: no Windows por um script de **powershell**, no macOS copiadas para `~/Library/Fonts`. Fontes já instaladas são ignoradas.*
   > 📋 *exemplo:*\
   > ![instalar fontes](docs/gifs/instalar-fontes.gif)
 
@@ -444,7 +444,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
 
   `◗ clique direito` → Copia todos os arquivos de fontes usadas nos layers de texto do projeto em uma pasta selecionada pelo usuário.
 
-  *O script varre todas os layers de texto de todas as comps do projeto e armazena todas as fontes usadas, em seguida, copia os seus arquivos para uma pasta a sua escolha.*
+  *O script varre todos os layers de texto de todas as comps do projeto (incluindo fontes usadas apenas em keyframes de texto) e copia os arquivos dessas fontes para uma pasta a sua escolha.*
 
   > 📋 *exemplo:*\
   > ![collect fontes](docs/gifs/collect-de-fontes.gif)
@@ -472,7 +472,7 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   `◖ clique esquerdo` → Altera o nome das comps selecionadas na janela do projeto.
 
   *O script remove caracteres especiais dos nomes, convertendo tudo em MAIÚSCULAS.\
-  Caso as comps selecionadas estejam dentro de uma pasta com de nome específico ou o nome da respectiva comp já possuir algum prefixo / sufixo conhecido, todas comps receberão um prefixo no nome.*
+  Caso as comps selecionadas estejam dentro de uma pasta cujo nome comece com um tipo conhecido (ex: `RODAPES`, `LETTERING - JOGO`) ou o nome da comp já possuir algum prefixo / sufixo conhecido, as comps receberão o prefixo do tipo no nome. O nome da pasta tem prioridade sobre o nome da comp.*
 
   > 📋 *exemplo:*\
   > ![renomear comps](docs/gifs/renomear-comps.gif)
@@ -490,8 +490,8 @@ a menos que o projeto possua a '**caixa de texto**' '**livre**', não é necess�
   > ![renomear output](docs/gifs/renomear-output.gif)
 
   > 🚩 *obs:*\
-  > O NOME DAS COMPS NÃO SERÁ ALTERADO!
-  > No momento, outputs em sequânica de imagens não suportam subpastas.
+  > O NOME DAS COMPS NÃO SERÁ ALTERADO!\
+  > Cada saída continua na pasta em que já estava. Itens já renderizados não são alterados e nomes repetidos na mesma pasta recebem um sufixo (`_2`, `_3`...) para um render não sobrescrever o outro.
 
   **lista de prefixos e termos reconhecidos**:
   - **RDP** → *RODAPE*

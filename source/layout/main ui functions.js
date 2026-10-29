@@ -65,7 +65,7 @@ var PAD_ACTIONS = {
 
 		// Se o caminho da pasta não for encontrado, a função é interrompida.
 		if (folderPath == '') {
-			alert(lol + '#PAD_005 - esse não foi preenchido pelo padeiro...');
+			alert(lol + '#PAD_005 - esse projeto não foi preenchido pelo padeiro...');
 			return;
 		}
 		// Cria um objeto "Folder" para a pasta de fontes do template.
@@ -76,9 +76,7 @@ var PAD_ACTIONS = {
 			alert(lol + '#PAD_006 - a pasta de fontes não foi localizada...');
 			return;
 		}
-		// Se a pasta de fontes existe e o sistema operacional for Windows, instala as fontes.
-		if (appOs == 'Win') installWinFonts(templateFontsPath);
-		if (appOs == 'Mac') installMacFonts(templateFontsPath);
+		installFonts(templateFontsPath); // Windows ou macOS
 	},
 
 	coletarFontes: function () {
@@ -92,7 +90,7 @@ var PAD_ACTIONS = {
 		var currentProjPath = decodeURI(savePath.fsName) + '/FONTS'; // caminho final do collect
 		var fontsPath = fontCollect(currentProjPath);
 
-		openFolder(fontsPath);
+		if (fontsPath != '') openFolder(fontsPath);
 	},
 
 	abrirPastaOutput: function () {
