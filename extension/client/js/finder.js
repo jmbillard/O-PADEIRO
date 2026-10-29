@@ -760,13 +760,37 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   busca, a altura que cabe os resultados (até um limite)
 	   ========================================================= */
 
-	var FIT_MIN_HEIGHT = 360;
+	var fitMinHeight = 360;
 	var fitTimer = null;
+	var refitOnResize = false;
+
+	window.addEventListener('resize', function () {
+		if (!refitOnResize) return;
+
+		refitOnResize = false;
+		scheduleFit();
+	});
 
 	function fitHeight() {
 		var results = $('results-' + state.tab);
 
 		if (!results || !results.children.length) return;
+
+		// primeiro a largura: os toggles cabem numa linha só (a janela só alarga, nunca estreita)
+		var opts = $('opts-' + state.tab);
+		var chips = opts.children;
+		var natural = 0;
+
+		for (var c = 0; c < chips.length; c++) natural += chips[c].getBoundingClientRect().width;
+
+		natural += Math.max(0, chips.length - 1) * parseFloat(getComputedStyle(opts).columnGap || 0);
+
+		if (natural > opts.clientWidth + 1) {
+			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho perde uma linha)
+			refitOnResize = true;
+			PAD_BRIDGE.resizeWindow(window.innerWidth + Math.ceil(natural - opts.clientWidth) + 2, window.innerHeight);
+			return;
+		}
 
 		// altura natural do conteúdo (a lista ocupa o espaço que sobra, então mede pelo último filho)
 		var top = results.getBoundingClientRect().top;
@@ -778,7 +802,10 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		var content = bottom - top + results.scrollTop + parseFloat(getComputedStyle(results).paddingBottom);
 		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
-		var height = Math.round(Math.min(max, Math.max(FIT_MIN_HEIGHT, window.innerHeight - results.clientHeight + content)));
+		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
+
+		// a altura do loader (a primeira medida) vira a mínima: a janela não encolhe depois de carregar
+		if (results.querySelector('.oven-loader')) fitMinHeight = Math.max(fitMinHeight, height);
 
 		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
 	}
