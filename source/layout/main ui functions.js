@@ -278,6 +278,8 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		// janela flutuante: começa no layout horizontal e pode ser reduzida até o modo compacto
 		if (uiObj.isFloating) {
 			uiObj.window.minimumSize = [40, 40];
+			// sem um máximo explícito, a janela não cresce além do máximo que o conteúdo permite
+			uiObj.window.maximumSize = [10000, 10000];
 			uiObj.window.size = PAD_FLOATING_SIZE;
 		}
 
@@ -298,9 +300,9 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 			return;
 		}
 
-		// janela flutuante: durante o arrasto, só redistribui os controles no tamanho atual.
-		// layout(true) ou mudar window.size no meio do arrasto faz a janela parar de seguir o mouse.
-		this.layout.resize();
+		// janela flutuante: nada é recalculado durante o arrasto (layout, resize ou mudar
+		// window.size no meio do arrasto fazem a janela parar de seguir o mouse).
+		// O layout completo roda quando o tamanho estabilizar.
 		scheduleFloatingLayout(uiObj);
 	};
 
@@ -770,7 +772,8 @@ function themeMenuButton(sectionGrp, ctrlProperties) {
 		else size = [textW + 8, 20];
 
 		button.mode = mode;
-		button.preferredSize = button.minimumSize = button.maximumSize = size;
+		// sem minimumSize / maximumSize: limites nos controles também limitam o tamanho da janela
+		button.preferredSize = size;
 		button.size = size;
 	};
 
