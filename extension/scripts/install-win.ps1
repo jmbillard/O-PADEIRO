@@ -3,7 +3,7 @@
 #   powershell -ExecutionPolicy Bypass -File install-win.ps1             copia a pasta
 #   powershell -ExecutionPolicy Bypass -File install-win.ps1 -Uninstall  remove a extensão
 #
-# Extensões sem assinatura (.zxp) só carregam com o PlayerDebugMode ligado; o script liga para as versões CSXS 9-12.
+# Extensões sem assinatura (.zxp) só carregam com o PlayerDebugMode ligado; o script liga para as versões CSXS 9-13.
 param([switch]$Uninstall)
 
 $ErrorActionPreference = 'Stop'
@@ -17,7 +17,7 @@ if ($Uninstall) {
 	exit 0
 }
 
-foreach ($v in 9..12) {
+foreach ($v in 9..13) {
 	$key = "HKCU:\Software\Adobe\CSXS.$v"
 	if (-not (Test-Path $key)) { New-Item -Path $key -Force | Out-Null }
 	New-ItemProperty -Path $key -Name PlayerDebugMode -Value '1' -PropertyType String -Force | Out-Null

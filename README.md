@@ -46,11 +46,13 @@ cada painel tem a sua documentação, também aberta pelo **⋯ > ajuda / docume
 
 requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
-1. habilite o acesso à rede nas preferências do After Effects (veja [abaixo](#habilitando-o-acesso-à-rede)).
-2. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
-3. clique em '*Instalar*' (ou '*Atualizar*', se já estiver instalado).
-4. **reinicie** o After Effects.
-5. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
+1. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
+2. o instalador guia o passo a passo:
+   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: habilite a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
+   - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
+   - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
+3. **reinicie** o After Effects.
+4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
 > 🚩 *obs:*\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
@@ -58,7 +60,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
-> • **janelas pretas no After Effects 2025**: problema conhecido e ainda em investigação (no 2026 abre normalmente).\
+> • **janelas pretas no After Effects 2025**: resolvido a partir desta versão. se ainda acontecer, rode o instalador de novo (o carregador antigo usava outro manifest).\
 > • o instalador também remove a versão antiga do padeiro (o script `O PADEIRO.jsx` da pasta `Scripts/ScriptUI Panels`), que deixou de existir.
 
 ### habilitando o acesso à rede

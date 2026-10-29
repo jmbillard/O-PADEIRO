@@ -5,7 +5,7 @@
 #   ./install-mac.sh --copy      copia a pasta (instalação "fixa")
 #   ./install-mac.sh --uninstall remove a extensão
 #
-# Extensões sem assinatura (.zxp) só carregam com o PlayerDebugMode ligado; o script liga para as versões CSXS 9–12.
+# Extensões sem assinatura (.zxp) só carregam com o PlayerDebugMode ligado; o script liga para as versões CSXS 9–13.
 set -euo pipefail
 
 src="$(cd "$(dirname "$0")/.." && pwd)"
@@ -17,7 +17,7 @@ if [[ "${1:-}" == "--uninstall" ]]; then
 	exit 0
 fi
 
-for v in 9 10 11 12; do
+for v in 9 10 11 12 13; do
 	defaults write "com.adobe.CSXS.$v" PlayerDebugMode 1
 done
 

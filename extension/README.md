@@ -78,7 +78,7 @@ resultado: trocar os arquivos na rede e **reabrir o painel** já atualiza a inte
 
 > 🚩 *obs:*\
 > • o manifest não tem `ScriptPath`: o host é sempre carregado pelos painéis, da rede.\
-> • no After Effects 2025 (macOS) os painéis e janelas abertos com o After Effects já rodando ficam pretos (só aparecem se o After Effects iniciar com eles acoplados). a página carrega e é desenhada (a miniatura do DevTools mostra), mas a janela não mostra o desenho. `--disable-gpu` e o tipo `Modeless` não resolveram. em teste: o mesmo CSXS (7.0) e os mesmos parâmetros do CEF de uma extensão que funciona no 2025 (`--enable-nodejs`, `--mixed-context`), sem o `--disable-web-security` dela. no 2026 tudo abre normalmente. como o manifest é copiado pelo instalador, mudanças nele pedem reinstalar.\
+> • **After Effects 2025 (macOS)**: com CSXS 8+ e sem os parâmetros abaixo, os painéis e janelas abertos com o After Effects já rodando ficavam pretos (a página carregava e era desenhada, mas a janela não mostrava). o que resolveu: `RequiredRuntime` CSXS **7.0** e os parâmetros do CEF `--enable-nodejs` e `--mixed-context` (os mesmos de extensões que funcionam no 2025). `--disable-gpu` e o tipo `Modeless` sozinhos não resolvem. como o manifest é copiado pelo instalador, mudanças nele pedem reinstalar.\
 > • os painéis compartilham o mesmo ExtendScript do After Effects: reabrir um painel depois de uma atualização recarrega o host para todos.
 
 <br>
@@ -136,7 +136,7 @@ no Windows o instalador sempre copia (`-Uninstall` remove).
 
 > 🚩 *obs:*\
 > • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_config.json` da raiz do repo: salvar no editor de produções grava nele.\
-> • os instaladores ligam o `PlayerDebugMode` (CSXS 9 a 12), sem o qual o CEP não carrega extensões sem assinatura.\
+> • os instaladores ligam o `PlayerDebugMode` (CSXS 9 a 13), sem o qual o CEP não carrega extensões sem assinatura.\
 > • os instaladores também removem o `O PADEIRO.jsx` da versão antiga (script ScriptUI) das pastas `Scripts/ScriptUI Panels`.\
 > • mudanças no `manifest.xml` só valem depois de reiniciar o After Effects.
 
