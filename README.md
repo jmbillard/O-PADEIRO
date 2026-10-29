@@ -363,7 +363,8 @@ as buscas do padeiro, em um painel com duas abas.
 
 `◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
 
-- **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma pode ser ligada ou desligada.
+- **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma tem um interruptor para entrar ou sair da busca.
+- **⋯** → ajuda e recarregar o painel.
 - **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
 - **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
 - **caminho** → clique para abrir a pasta.

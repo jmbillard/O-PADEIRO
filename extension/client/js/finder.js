@@ -15,6 +15,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var call = PAD_BRIDGE.call;
 
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-acessorista';
+
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
 	var MAX_RESULTS = 12; // máximo de atrações exibidas
 	var MAX_PATH_CHARS = 90;
@@ -201,14 +203,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   Abas
 	   ========================================================= */
 
-	function movePill() {
-		var tab = $('tab-' + state.tab);
-		var pill = $('tab-pill');
-
-		pill.style.width = tab.offsetWidth + 'px';
-		pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
-	}
-
 	function switchTab(tab) {
 		if (tab !== 'paths' && tab !== 'texts') tab = 'paths';
 
@@ -221,8 +215,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			$('tab-' + name).setAttribute('aria-selected', String(on));
 			$('pane-' + name).hidden = !on;
 		});
-
-		movePill();
 
 		var q = $('q-' + tab);
 
@@ -746,7 +738,23 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			}
 		});
 
-		window.addEventListener('resize', movePill);
+		// menu "⋯" (um por aba)
+		Array.prototype.forEach.call(document.querySelectorAll('.finder-menu'), function (menu) {
+			menu.addEventListener('click', function (e) {
+				var btn = e.target.closest('button[data-action]');
+
+				if (!btn) return;
+
+				menu.removeAttribute('open');
+
+				if (btn.dataset.action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
+				if (btn.dataset.action === 'reload') location.reload();
+			});
+
+			document.addEventListener('click', function (e) {
+				if (!menu.contains(e.target)) menu.removeAttribute('open');
+			});
+		});
 		window.addEventListener('focus', watchRequestedTab);
 	}
 

@@ -22,7 +22,6 @@
 	<main class="finder" id="finder">
 		<header class="finder-top">
 			<div class="tabs" id="tabs" role="tablist">
-				<span class="tab-pill" id="tab-pill"></span>
 				<button type="button" class="tab" role="tab" id="tab-paths" data-tab="paths" aria-selected="true">CAMINHOS</button>
 				<button type="button" class="tab" role="tab" id="tab-texts" data-tab="texts" aria-selected="false">TEXTOS</button>
 			</div>
@@ -39,7 +38,16 @@
 				<input type="search" id="q-paths" placeholder="buscar atração, projeto, output ou caminho" autocomplete="off" spellcheck="false" aria-label="Buscar caminhos">
 				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden>×</button>
 			</div>
-			<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
+			<div class="finder-options-row">
+				<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
+				<details class="actions-menu finder-menu">
+					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+					<div class="menu-popover">
+						<button type="button" data-action="docs">Ajuda / documentação</button>
+						<button type="button" data-action="reload">Recarregar painel</button>
+					</div>
+				</details>
+			</div>
 			<div class="finder-sheet">
 				<div class="finder-results" id="results-paths">
 				<div class="oven-loader is-light" role="status">
@@ -58,10 +66,19 @@
 				<input type="search" id="q-texts" placeholder="buscar nos textos do projeto" autocomplete="off" spellcheck="false" aria-label="Buscar textos">
 				<button type="button" class="picker-clear" id="clear-texts" aria-label="Limpar busca" hidden>×</button>
 			</div>
-			<div class="finder-options" id="opts-texts" aria-label="Opções">
-				<button type="button" class="chip" id="chip-vis" aria-pressed="false" title="buscar apenas em layers visíveis (ligados)"><span class="chip-check"></span>APENAS VISÍVEIS</button>
-				<button type="button" class="chip is-on" id="chip-accent" aria-pressed="true" title='"amazonia" também encontra "Amazônia"'><span class="chip-check"></span>IGNORAR ACENTOS</button>
-				<button type="button" class="chip" id="chip-invert" aria-pressed="false" title="apenas textos que NÃO possuem o termo buscado"><span class="chip-check"></span>INVERTER</button>
+			<div class="finder-options-row">
+				<div class="finder-options" id="opts-texts" aria-label="Opções">
+					<button type="button" class="chip" id="chip-vis" aria-pressed="false" title="buscar apenas em layers visíveis (ligados)"><span class="chip-check"></span>APENAS VISÍVEIS</button>
+					<button type="button" class="chip is-on" id="chip-accent" aria-pressed="true" title='"amazonia" também encontra "Amazônia"'><span class="chip-check"></span>IGNORAR ACENTOS</button>
+					<button type="button" class="chip" id="chip-invert" aria-pressed="false" title="apenas textos que NÃO possuem o termo buscado"><span class="chip-check"></span>INVERTER</button>
+				</div>
+				<details class="actions-menu finder-menu">
+					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+					<div class="menu-popover">
+						<button type="button" data-action="docs">Ajuda / documentação</button>
+						<button type="button" data-action="reload">Recarregar painel</button>
+					</div>
+				</details>
 			</div>
 			<div class="finder-sheet">
 				<div class="finder-results" id="results-texts"></div>
