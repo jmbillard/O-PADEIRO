@@ -1024,6 +1024,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (saved && state.run.renderTemplates.indexOf(saved) >= 0) select.value = saved;
 
+		PAD_DROPDOWN.refresh(select);
+
 		var outputs = $('render-outputs');
 
 		outputs.textContent = '';
@@ -1286,6 +1288,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	async function init() {
 		bindEvents();
+		PAD_DROPDOWN.enhance($('render-template'));
 
 		setTimeout(function () {
 			document.body.classList.add('motion-ready');

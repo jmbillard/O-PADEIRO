@@ -192,6 +192,7 @@ são preservadas ao salvar.
 			node.value = value;
 			wrap.appendChild(node);
 			wrap.control = node;
+			PAD_DROPDOWN.enhance(node);
 
 			return wrap;
 		}
