@@ -1616,3 +1616,86 @@ body.motion-ready .eyebrow {
   animation-duration: 380ms;
   animation-delay: 0ms;
 }
+
+/* =========================================================
+   Entradas sem desfoque
+   O After Effects ocupado pode congelar uma animação no meio:
+   sem blur (e sem sumir) o conteúdo, como o loader, nunca fica "borrado".
+   ========================================================= */
+
+@keyframes shell-enter {
+  from {
+    opacity: 0.6;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0.6;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes queue-side-enter {
+  from {
+    opacity: 0.6;
+    transform: translateX(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* =========================================================
+   Botão de limpar a busca (×)
+   ========================================================= */
+
+.picker-clear {
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.picker-clear:not([hidden]) {
+  animation: clear-pop 300ms var(--ease-soft) both;
+}
+
+.picker-clear:hover {
+  background: rgb(255 255 255 / 40%);
+  transform: rotate(90deg) scale(1.12);
+}
+
+.picker-clear:active {
+  transform: rotate(180deg) scale(0.88);
+}
+
+.picker-clear:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
+}
+
+@keyframes clear-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-90deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
