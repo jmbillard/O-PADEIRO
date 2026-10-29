@@ -129,9 +129,19 @@ body.finder-page {
   align-self: flex-start;
 }
 
-.finder-menu>summary.icon-button {
+.finder-menu>summary.icon-button,
+.finder-refresh {
   width: 30px;
   height: 30px;
+}
+
+.finder-refresh {
+  align-self: flex-start;
+}
+
+.finder-refresh svg {
+  width: 16px;
+  height: 16px;
 }
 
 .chip {
@@ -195,8 +205,10 @@ body.finder-page {
   background: white;
 }
 
+/* ligado = o inverso do desligado: trilho opaco e bolinha esmaecida */
 .chip.is-on .chip-check::after {
-  background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+  background: rgb(79 130 255 / 30%);
+  box-shadow: none;
   transform: translateX(12px);
 }
 

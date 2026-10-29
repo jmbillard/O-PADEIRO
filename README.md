@@ -370,7 +370,7 @@ as buscas do padeiro, em um painel com duas abas.
 - **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
 - **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
 - **caminho** → clique para abrir a pasta.
-- **atualizar** → baixa os caminhos de novo.
+- **atualizar** (antes dos interruptores) → baixa os caminhos de novo.
 
 > 🚩 *obs:*\
 > • os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. sem conexão, o último índice salvo é usado.\
@@ -387,7 +387,7 @@ as buscas do padeiro, em um painel com duas abas.
 - **IGNORAR ACENTOS** → '*amazonia*' também encontra '*Amazônia*' (ligado por padrão).
 - **INVERTER** → layers que **não** contêm o termo.
 - clique em um resultado → abre a comp com o layer selecionado, no tempo em que o texto aparece.
-- **atualizar** → lê o projeto de novo (depois de alterar os textos).
+- **atualizar** (antes dos interruptores) → lê o projeto de novo (depois de alterar os textos).
 
 > 🚩 *obs:*\
 > • a busca ignora maiúsculas e minúsculas, e caracteres como `(`, `.` ou `?` não têm significado especial.
@@ -407,7 +407,8 @@ as buscas do padeiro, em um painel com duas abas.
 - **cole um caminho em qualquer lugar do painel** → o padeiro reconhece se é macOS ou Windows, coloca no campo certo e converte o outro.
 - **copiar** → copia o caminho.
 - **abrir pasta** → abre o caminho no sistema atual (ou a pasta mais próxima que existe).
-- **atualizar** (canto) → volta a usar a pasta da última saída da fila de render.
+- **atualizar** (canto inferior esquerdo) → volta a usar a pasta da última saída da fila de render.
+- **⋯** (canto inferior direito) → ajuda e recarregar o painel.
 - `Esc` → limpa os dois campos.
 
 > 🚩 *obs:*\

@@ -26,9 +26,6 @@
 				<button type="button" class="tab" role="tab" id="tab-texts" data-tab="texts" aria-selected="false">TEXTOS</button>
 			</div>
 
-			<button type="button" class="icon-button" id="btn-refresh" title="Atualizar" aria-label="Atualizar">
-				<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
-			</button>
 		</header>
 
 		<!-- caminhos (O ACESSORISTA) -->
@@ -39,6 +36,9 @@
 				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden>×</button>
 			</div>
 			<div class="finder-options-row">
+				<button type="button" class="icon-button finder-refresh" title="Atualizar" aria-label="Atualizar">
+					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+				</button>
 				<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
 				<details class="actions-menu finder-menu">
 					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
@@ -67,6 +67,9 @@
 				<button type="button" class="picker-clear" id="clear-texts" aria-label="Limpar busca" hidden>×</button>
 			</div>
 			<div class="finder-options-row">
+				<button type="button" class="icon-button finder-refresh" title="Atualizar" aria-label="Atualizar">
+					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+				</button>
 				<div class="finder-options" id="opts-texts" aria-label="Opções">
 					<button type="button" class="chip" id="chip-vis" aria-pressed="false" title="buscar apenas em layers visíveis (ligados)"><span class="chip-check"></span>APENAS VISÍVEIS</button>
 					<button type="button" class="chip is-on" id="chip-accent" aria-pressed="true" title='"amazonia" também encontra "Amazônia"'><span class="chip-check"></span>IGNORAR ACENTOS</button>

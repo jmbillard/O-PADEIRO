@@ -525,11 +525,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return null;
 	}
 
+	// Pastas começam recolhidas (fixados e recentes, abertos); a busca abre tudo.
 	function isFolderOpen(key, depth) {
 		if (state.query) return true;
 		if (Object.prototype.hasOwnProperty.call(state.folderOverride, key)) return state.folderOverride[key];
 
-		return depth === 0;
+		return key.indexOf('/:') === 0;
 	}
 
 	function buildNode(node, depth, parentKey, section) {

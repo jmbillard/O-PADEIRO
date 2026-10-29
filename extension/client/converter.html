@@ -12,37 +12,39 @@
 
 <body class="converter-page">
 	<main class="converter" id="converter">
-		<header class="converter-top">
-			<p class="eyebrow">conversor de caminhos</p>
+		<div class="convert-field">
+			<label class="eyebrow" for="cv-mac">MacOS</label>
+			<div class="convert-line">
+				<input class="convert-input" id="cv-mac" type="text" spellcheck="false" autocomplete="off" placeholder="/Volumes/SHARE/pasta">
+				<button type="button" class="convert-pill" id="cv-copy-mac" title="copiar o caminho MacOS">copiar</button>
+			</div>
+		</div>
+
+		<div class="convert-field">
+			<label class="eyebrow" for="cv-win">Windows</label>
+			<div class="convert-line">
+				<input class="convert-input" id="cv-win" type="text" spellcheck="false" autocomplete="off" placeholder="\\servidor\SHARE\pasta">
+				<button type="button" class="convert-pill" id="cv-copy-win" title="copiar o caminho Windows">copiar</button>
+			</div>
+		</div>
+
+		<div class="convert-actions">
+			<button type="button" class="convert-open" id="cv-open" title="abrir a pasta no Finder / Explorer">Abrir pasta</button>
+			<span class="convert-status" id="cv-status" aria-live="polite"></span>
+		</div>
+
+		<footer class="convert-footer">
 			<button type="button" class="icon-button" id="btn-last" title="Usar a pasta da última saída da fila de render" aria-label="Usar a pasta da última saída da fila de render">
 				<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
 			</button>
-		</header>
-
-		<section class="converter-sheet">
-			<p class="convert-hint">cole um caminho em qualquer lugar do painel: o tipo (MacOS ou Windows) é reconhecido e o outro é convertido na hora. Esc limpa.</p>
-
-			<div class="convert-field">
-				<label class="cfg-label" for="cv-mac">MacOS</label>
-				<div class="convert-line">
-					<input class="cfg-input" id="cv-mac" type="text" spellcheck="false" autocomplete="off" placeholder="/Volumes/SHARE/pasta">
-					<button type="button" class="pill-btn" id="cv-copy-mac" title="copiar o caminho MacOS">copiar</button>
+			<details class="actions-menu convert-menu" id="app-menu">
+				<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
 				</div>
-			</div>
-
-			<div class="convert-field">
-				<label class="cfg-label" for="cv-win">Windows</label>
-				<div class="convert-line">
-					<input class="cfg-input" id="cv-win" type="text" spellcheck="false" autocomplete="off" placeholder="\\servidor\SHARE\pasta">
-					<button type="button" class="pill-btn" id="cv-copy-win" title="copiar o caminho Windows">copiar</button>
-				</div>
-			</div>
-
-			<div class="convert-actions">
-				<button type="button" class="button button-primary" id="cv-open" title="abrir a pasta no Finder / Explorer">Abrir pasta</button>
-				<span class="convert-status" id="cv-status" aria-live="polite"></span>
-			</div>
-		</section>
+			</details>
+		</footer>
 	</main>
 
 	<script src="js/bridge.js"></script>

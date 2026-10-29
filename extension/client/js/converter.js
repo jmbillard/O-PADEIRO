@@ -15,7 +15,8 @@ pede (botão 'pastas', clique direito).
 
 	var call = PAD_BRIDGE.call;
 
-	var REQUEST_TTL = 15000; // ms: um pedido da barra feito há pouco vale ao abrir o painel
+	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-conversor-de-caminhos';
+		var REQUEST_TTL = 15000; // ms: um pedido da barra feito há pouco vale ao abrir o painel
 
 	var state = { os: 'Mac', seq: 0, lastStamp: 0, timer: null };
 
@@ -220,6 +221,23 @@ pede (botão 'pastas', clique direito).
 		$('cv-open').addEventListener('click', openFolder);
 		$('btn-last').addEventListener('click', useLastOutput);
 
+		// menu "⋯"
+		var menu = $('app-menu');
+
+		menu.addEventListener('click', function (e) {
+			var btn = e.target.closest('button[data-action]');
+
+			if (!btn) return;
+
+			menu.removeAttribute('open');
+
+			if (btn.dataset.action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
+			if (btn.dataset.action === 'reload') location.reload();
+		});
+		document.addEventListener('click', function (e) {
+			if (!menu.contains(e.target)) menu.removeAttribute('open');
+		});
+
 		['cv-mac', 'cv-win'].forEach(function (id) {
 			$(id).addEventListener('keydown', function (e) {
 				if (e.key === 'Enter') openFolder();
@@ -231,6 +249,9 @@ pede (botão 'pastas', clique direito).
 		document.addEventListener('keydown', function (e) {
 			if (e.key === 'Escape') {
 				e.preventDefault();
+
+				if (menu.hasAttribute('open')) return menu.removeAttribute('open');
+
 				clearAll();
 			}
 		});

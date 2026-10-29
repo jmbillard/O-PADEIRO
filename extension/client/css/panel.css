@@ -1762,11 +1762,10 @@ body.motion-ready .eyebrow {
   stroke-width: 1.8;
 }
 
+/* fixados / recentes: só um espaço maior antes do resto da lista */
 .tree-section+.tree-folder:not(.tree-section),
 .tree-section+.tree-item {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid rgb(255 255 255 / 16%);
+  margin-top: 16px;
 }
 
 /* filtro digitado no dropdown */

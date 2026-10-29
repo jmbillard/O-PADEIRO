@@ -219,7 +219,10 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var q = $('q-' + tab);
 
 		q.focus();
-		$('btn-refresh').title = tab === 'paths' ? 'Baixar os caminhos atualizados e buscar' : 'Ler os textos do projeto de novo';
+		var refresh = document.querySelector('#pane-' + tab + ' .finder-refresh');
+
+		refresh.title = tab === 'paths' ? 'Baixar os caminhos atualizados e buscar' : 'Ler os textos do projeto de novo';
+		refresh.setAttribute('aria-label', refresh.title);
 
 		// cada aba só carrega na primeira vez que aparece
 		if (tab === 'paths' && !state.paths.loaded) loadPaths(false);
@@ -695,9 +698,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			});
 		});
 
-		$('btn-refresh').addEventListener('click', function () {
-			if (state.tab === 'paths') loadPaths(true);
-			else loadTexts();
+		Array.prototype.forEach.call(document.querySelectorAll('.finder-refresh'), function (btn) {
+			btn.addEventListener('click', function () {
+				if (state.tab === 'paths') loadPaths(true);
+				else loadTexts();
+			});
 		});
 
 		// Enter na busca de textos lê o projeto de novo se ainda não houver índice
