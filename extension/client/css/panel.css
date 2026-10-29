@@ -448,10 +448,6 @@ body {
   font-weight: 650;
 }
 
-.picker-footer .picker-total {
-  margin-left: auto;
-}
-
 .icon-button {
   display: grid;
   width: 38px;
@@ -1961,4 +1957,19 @@ body.motion-ready .eyebrow {
 .actions-menu[open]>summary.icon-button {
   border-color: transparent;
   background: rgb(255 255 255 / 12%);
+}
+
+/* total de templates no lugar do eyebrow (fica com a altura reservada enquanto a lista é lida) */
+.eyebrow.picker-total {
+  min-height: 1.2em;
+}
+
+/* "⋯" no canto direito do rodapé da lista; o menu abre para cima, alinhado à direita */
+.picker-footer .picker-menu {
+  margin-left: auto;
+}
+
+.picker-footer .picker-menu .menu-popover {
+  right: 0;
+  left: auto;
 }

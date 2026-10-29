@@ -178,6 +178,8 @@ o painel de templates mostra os templates da produção escolhida na barra. ele 
 - **recentes** → os últimos 5 templates preenchidos ou importados.
 - **atualizar** → lê a pasta de templates de novo.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
+- **⋯** (canto direito, embaixo) → ajuda e recarregar o painel.
+- **total** (acima da busca) → quantos templates a produção tem (com uma busca, quantos foram encontrados).
 - `◖ clique` no template selecionado (ou no fundo da lista, ou `Esc`) → desmarca o template.
 - `◖ clique DUPLO` no template → importa o template para o projeto, sem preencher.
 

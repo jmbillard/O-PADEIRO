@@ -724,7 +724,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (found === 0) {
 			list.appendChild(treeState('nada encontrado', 'nenhum template casa com “' + state.query.trim() + '”'));
-			total.textContent = '0 / ' + countTemplates(state.tree);
+			total.textContent = '0 de ' + plural(countTemplates(state.tree), 'template', 'templates');
 			return;
 		}
 
@@ -742,7 +742,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			list.appendChild(buildNode(child, 0, ''));
 		});
 
-		total.textContent = query ? found + ' / ' + countTemplates(state.tree) : plural(found, 'template', 'templates');
+		total.textContent = query ? found + ' de ' + plural(countTemplates(state.tree), 'template', 'templates') : plural(found, 'template', 'templates');
 	}
 
 	function updateFolderButton() {
