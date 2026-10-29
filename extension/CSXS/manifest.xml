@@ -19,7 +19,7 @@
 			<Locale Code="All" />
 		</LocaleList>
 		<RequiredRuntimeList>
-			<RequiredRuntime Name="CSXS" Version="11.0" />
+			<RequiredRuntime Name="CSXS" Version="7.0" />
 		</RequiredRuntimeList>
 	</ExecutionEnvironment>
 
@@ -30,11 +30,10 @@
 				<Resources>
 					<MainPath>./client/bar.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -63,11 +62,10 @@
 				<Resources>
 					<MainPath>./client/index.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -99,11 +97,10 @@
 				<Resources>
 					<MainPath>./client/finder.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -135,11 +132,10 @@
 				<Resources>
 					<MainPath>./client/converter.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -171,11 +167,10 @@
 				<Resources>
 					<MainPath>./client/productions.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>
@@ -207,11 +202,10 @@
 				<Resources>
 					<MainPath>./client/maker.html</MainPath>
 					<CEFCommandLine>
-						<Parameter>--allow-file-access</Parameter>
 						<Parameter>--allow-file-access-from-files</Parameter>
-						<!-- janela flutuante preta no After Effects 2025 (macOS): desenho por software, sem GPU -->
-						<Parameter>--disable-gpu</Parameter>
-						<Parameter>--disable-gpu-compositing</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
 					</CEFCommandLine>
 				</Resources>
 				<Lifecycle>

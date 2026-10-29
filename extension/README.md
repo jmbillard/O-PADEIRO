@@ -78,7 +78,7 @@ resultado: trocar os arquivos na rede e **reabrir o painel** já atualiza a inte
 
 > 🚩 *obs:*\
 > • o manifest não tem `ScriptPath`: o host é sempre carregado pelos painéis, da rede.\
-> • no After Effects 2025 (macOS) os painéis e janelas abertos com o After Effects já rodando ficam pretos (só aparecem se o After Effects iniciar com eles acoplados). nem `--disable-gpu` / `--disable-gpu-compositing` (ainda no CEFCommandLine) nem o tipo `Modeless` resolveram; no 2026 tudo abre normalmente. como o manifest é copiado pelo instalador, mudanças nele pedem reinstalar.\
+> • no After Effects 2025 (macOS) os painéis e janelas abertos com o After Effects já rodando ficam pretos (só aparecem se o After Effects iniciar com eles acoplados). a página carrega e é desenhada (a miniatura do DevTools mostra), mas a janela não mostra o desenho. `--disable-gpu` e o tipo `Modeless` não resolveram. em teste: o mesmo CSXS (7.0) e os mesmos parâmetros do CEF de uma extensão que funciona no 2025 (`--enable-nodejs`, `--mixed-context`), sem o `--disable-web-security` dela. no 2026 tudo abre normalmente. como o manifest é copiado pelo instalador, mudanças nele pedem reinstalar.\
 > • os painéis compartilham o mesmo ExtendScript do After Effects: reabrir um painel depois de uma atualização recarrega o host para todos.
 
 <br>
