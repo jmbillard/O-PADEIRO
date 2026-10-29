@@ -289,11 +289,19 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		PAD_LAYOUT(uiObj);
 	};
 
-	uiObj.window.onResizing = uiObj.window.onResize = function () {
-		// o PAD_LAYOUT ajusta o tamanho da janela flutuante, o que dispara este evento de novo
+	// durante o arrasto (onResizing) o tamanho da janela nunca é alterado pelo script:
+	// definir window.size no meio do arrasto interrompe o redimensionamento pelo mouse
+	uiObj.window.onResizing = function () {
 		if (uiObj.isLayouting) return;
 
-		PAD_LAYOUT(uiObj);
+		PAD_LAYOUT(uiObj, true);
+	};
+
+	// ao soltar o mouse (onResize) o layout completo pode corrigir o tamanho, se preciso
+	uiObj.window.onResize = function () {
+		if (uiObj.isLayouting) return;
+
+		PAD_LAYOUT(uiObj, false);
 	};
 
 	PAD_UI_EVENTS(uiObj);
@@ -333,12 +341,13 @@ var PAD_FLOATING_SIZE = [640, 80];
 
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
 // Aplica o layout dos controles dependendo das dimensões da janela
-function PAD_LAYOUT(uiObj) {
+// isResizing: true enquanto a janela flutuante está sendo arrastada (ver onResizing).
+function PAD_LAYOUT(uiObj, isResizing) {
 	uiObj.isLayouting = true;
 
-	// janela flutuante: guarda o tamanho escolhido pelo usuário (o layout(true) volta a janela
-	// para o tamanho preferido, desfazendo o redimensionamento)
-	var keepSize = uiObj.isFloating ? [uiObj.window.size.width, uiObj.window.size.height] : null;
+	// janela flutuante: guarda o tamanho escolhido pelo usuário, caso o layout(true) volte a janela
+	// para o tamanho preferido do conteúdo
+	var keepSize = uiObj.isFloating && !isResizing ? [uiObj.window.size.width, uiObj.window.size.height] : null;
 
 	var isRow = uiObj.window.size.width > uiObj.window.size.height;
 	var grpOrientation = isRow ? 'row' : 'column';
@@ -425,7 +434,12 @@ function PAD_LAYOUT(uiObj) {
 	} //Em caso de erro...
 
 	uiObj.window.layout.layout(true);
-	if (keepSize) uiObj.window.size = keepSize;
+
+	// só reaplica o tamanho se ele realmente mudou (definir o mesmo valor também mexe na janela)
+	if (keepSize && (uiObj.window.size.width != keepSize[0] || uiObj.window.size.height != keepSize[1])) {
+		uiObj.window.size = keepSize;
+	}
+
 	uiObj.window.layout.resize();
 
 	uiObj.isLayouting = false;
