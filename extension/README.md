@@ -20,9 +20,9 @@ a extensão tem dois painéis, que podem ser acoplados separadamente (`Window` >
   - `buscar` abre o painel **O ACESSORISTA** (a lupa mostra letras passando pelo vidro no hover);
   - o que depende de uma tela ainda não portada (criar template, conversor de caminhos, editor de produções) avisa "em breve".
 - **O PADEIRO templates** → o painel de templates, descrito abaixo.
-- **O ACESSORISTA** → as buscas, em um painel com duas abas (o botão `buscar` da barra abre na aba certa):
-  - `CAMINHOS` (principal, clique direito): a busca de caminhos de atrações (Teams, Trello, atrações e servidor), a partir de 2 caracteres, com filtros por categoria e botões para abrir projeto, output e pasta. a lupa de atualizar baixa o índice de novo. usa a mesma lógica do script (cache de 30 s, volumes SMB montados no macOS).
-  - `TEXTOS` (clique esquerdo): a busca no conteúdo dos layers de texto. lê o projeto ao abrir (loader do forninho com o andamento por comp) e filtra enquanto você digita, com `APENAS VISÍVEIS`, `IGNORAR ACENTOS` e `INVERTER`. o termo aparece destacado e clicar abre a comp com o layer selecionado no tempo do texto. o botão de atualizar lê o projeto de novo.
+- **O ACESSORISTA** → as buscas, em um painel com duas abas (o botão `buscar` da barra abre na aba certa: clique esquerdo em `CAMINHOS`, direito em `TEXTOS`):
+  - `CAMINHOS` (principal, clique esquerdo): a busca de caminhos de atrações (Teams, Trello, atrações e servidor), a partir de 2 caracteres, com filtros por categoria e botões para abrir projeto, output e pasta. a lupa de atualizar baixa o índice de novo. usa a mesma lógica do script (cache de 30 s, volumes SMB montados no macOS).
+  - `TEXTOS` (clique direito): a busca no conteúdo dos layers de texto. lê o projeto ao abrir (loader do forninho com o andamento por comp) e filtra enquanto você digita, com `APENAS VISÍVEIS`, `IGNORAR ACENTOS` e `INVERTER`. o termo aparece destacado e clicar abre a comp com o layer selecionado no tempo do texto. o botão de atualizar lê o projeto de novo.
 
 a produção escolhida na barra é gravada em `O PADEIRO script/selected_production.json` (o script ScriptUI grava o mesmo arquivo) e o painel de templates acompanha.
 

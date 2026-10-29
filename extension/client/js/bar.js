@@ -160,7 +160,7 @@ aparecem como "em breve".
 			report(await call('createProjectFolders'), 'estrutura de pastas criada.');
 		},
 
-		// busca em layers de texto (esquerdo) e O ACESSORISTA, a busca de caminhos (direito):
+		// O ACESSORISTA, a busca de caminhos (esquerdo, aba principal), e a busca em layers de texto (direito):
 		// um painel só, que abre na aba pedida
 		searchTexts: async function () {
 			await call('requestTab', { tab: 'texts' });
@@ -235,9 +235,9 @@ aparecem como "em breve".
 				key: 'buscar',
 				label: 'Buscar',
 				icon: 'search',
-				tips: [L_CLICK + 'abrir a BUSCA em layers de texto', R_CLICK + 'abrir a BUSCA de caminhos de atrações (O ACESSORISTA)'],
-				left: actions.searchTexts,
-				right: actions.searchPaths
+				tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
+				left: actions.searchPaths,
+				right: actions.searchTexts
 			}
 		]
 	];
