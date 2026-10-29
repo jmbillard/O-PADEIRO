@@ -291,20 +291,29 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		PAD_LAYOUT(uiObj);
 	};
 
-	uiObj.window.onResizing = uiObj.window.onResize = function () {
-		if (uiObj.isLayouting) return;
-
-		// painel encaixado: o After Effects controla o tamanho, o layout completo roda na hora
-		if (!uiObj.isFloating) {
-			PAD_LAYOUT(uiObj);
-			return;
-		}
-
-		// janela flutuante: nada é recalculado durante o arrasto (layout, resize ou mudar
-		// window.size no meio do arrasto fazem a janela parar de seguir o mouse).
-		// O layout completo roda quando o tamanho estabilizar.
-		scheduleFloatingLayout(uiObj);
+	// Painel encaixado: o After Effects controla o tamanho, o layout roda a cada mudança.
+	// Janela flutuante: NADA pode rodar durante o arrasto. Qualquer script executado no meio do
+	// arrasto (layout, resize ou até uma tarefa agendada) faz a janela parar de seguir o mouse.
+	// O layout roda ao terminar (onResize) ou, como reserva, quando o mouse volta para a janela
+	// com o tamanho diferente do último layout.
+	uiObj.window.onResizing = function () {
+		if (!uiObj.isFloating && !uiObj.isLayouting) PAD_LAYOUT(uiObj);
 	};
+
+	uiObj.window.onResize = function () {
+		if (!uiObj.isLayouting) PAD_LAYOUT(uiObj);
+	};
+
+	if (uiObj.isFloating) {
+		uiObj.window.addEventListener('mouseover', function () {
+			var last = uiObj.layoutSize;
+			var size = uiObj.window.size;
+
+			if (uiObj.isLayouting || (last && last[0] == size.width && last[1] == size.height)) return;
+
+			PAD_LAYOUT(uiObj);
+		});
+	}
 
 	PAD_UI_EVENTS(uiObj);
 }
@@ -340,44 +349,6 @@ function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
 
 // Tamanho inicial da janela flutuante (fora de um painel)
 var PAD_FLOATING_SIZE = [640, 80];
-
-// Intervalo (ms) das checagens do tamanho da janela flutuante durante o redimensionamento
-var PAD_FLOATING_LAYOUT_DELAY = 250;
-
-// Aplica o layout completo da janela flutuante só quando o redimensionamento terminar.
-// O After Effects não dispara onResizing de forma contínua durante o arrasto (às vezes só no
-// início), então a tarefa agendada compara o tamanho da janela entre uma checagem e outra:
-// se mudou, o usuário ainda está arrastando e a checagem é agendada de novo; se ficou igual,
-// o layout completo é aplicado. O app.scheduleTask executa o texto no escopo global, por isso
-// a função fica em $.global.
-function scheduleFloatingLayout(uiObj) {
-	var g = $.global;
-
-	g.PAD_FLOATING_LAYOUT = function () {
-		g.PAD_FLOATING_LAYOUT_TASK = null;
-
-		try {
-			var size = uiObj.window.size;
-			var last = g.PAD_FLOATING_LAST_SIZE;
-
-			if (!last || last[0] != size.width || last[1] != size.height) {
-				// ainda redimensionando: confere de novo depois do intervalo
-				g.PAD_FLOATING_LAST_SIZE = [size.width, size.height];
-				g.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
-				return;
-			}
-
-			g.PAD_FLOATING_LAST_SIZE = null;
-			PAD_LAYOUT(uiObj);
-		} catch (err) { }
-	};
-
-	// já existe uma checagem em andamento: ela mesma acompanha o tamanho até estabilizar
-	if (g.PAD_FLOATING_LAYOUT_TASK) return;
-
-	g.PAD_FLOATING_LAST_SIZE = [uiObj.window.size.width, uiObj.window.size.height];
-	g.PAD_FLOATING_LAYOUT_TASK = app.scheduleTask('$.global.PAD_FLOATING_LAYOUT();', PAD_FLOATING_LAYOUT_DELAY, false);
-}
 
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
 // Aplica o layout dos controles dependendo das dimensões da janela
@@ -481,6 +452,7 @@ function PAD_LAYOUT(uiObj) {
 
 	uiObj.window.layout.resize();
 
+	uiObj.layoutSize = [uiObj.window.size.width, uiObj.window.size.height];
 	uiObj.isLayouting = false;
 }
 
