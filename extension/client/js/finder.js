@@ -49,6 +49,21 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		});
 	}
 
+	// Espera o navegador PINTAR (2 quadros) antes de uma chamada longa ao After Effects: sem isso o loader
+	// pode nem aparecer, porque o host ocupado segura o painel. Com limite de tempo (painel oculto não pinta).
+	function nextPaint() {
+		return Promise.race([
+			new Promise(function (resolve) {
+				requestAnimationFrame(function () {
+					requestAnimationFrame(resolve);
+				});
+			}),
+			new Promise(function (resolve) {
+				setTimeout(resolve, 160);
+			})
+		]);
+	}
+
 	function stripAccents(str) {
 		return String(str).normalize('NFD').replace(/[̀-ͯ]/g, '');
 	}
@@ -120,7 +135,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var state = {
 		tab: null,
-		paths: { index: [], ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, hint: '' },
+		paths: { index: [], ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' },
 		texts: { entries: [], comps: 0, ready: false, loading: false, loaded: false, loadId: 0, hint: '' },
 		lastTabStamp: 0
 	};
@@ -198,9 +213,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		p.loading = true;
 		p.ready = false;
-		$('status-paths').textContent = '';
+		p.error = '';
 		showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
-		await yieldUi();
+		await nextPaint();
 
 		try {
 			var res = await call('pathsIndex', { force: !!force });
@@ -210,11 +225,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			p.ready = true;
 			p.loaded = true;
 			buildCategoryFilters();
-			$('status-paths').textContent = res.downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
+
+			if (!res.downloaded) toast(null, 'sem conexão com o workflow: usando o último índice salvo.');
 		} catch (err) {
 			p.ready = false;
 			p.loaded = true;
-			$('status-paths').textContent = err.message;
+			p.error = err.message;
 		}
 
 		p.loading = false;
@@ -329,7 +345,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	function searchPaths() {
 		var p = state.paths;
 		var results = $('results-paths');
-		var status = $('status-paths');
 		var query = psNormalize($('q-paths').value);
 
 		if (p.loading) return;
@@ -337,12 +352,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		results.textContent = '';
 
 		if (!p.ready) {
-			showState(results, 'índice de caminhos indisponível', 'clique em atualizar para baixar de novo.');
+			showState(results, 'índice de caminhos indisponível', p.error || 'clique em atualizar para baixar de novo.');
 			return;
 		}
 
 		if (query.length < MIN_QUERY) {
-			status.textContent = 'digite ao menos ' + MIN_QUERY + ' caracteres para pesquisar.';
 			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho');
 			return;
 		}
@@ -375,13 +389,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		});
 
 		if (total === 0) {
-			status.textContent = 'nenhum resultado encontrado.';
 			showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
-		} else {
-			status.textContent =
-				plural(total, 'atração encontrada', 'atrações encontradas') +
-				(total > shown ? ' (exibindo ' + shown + ', refine a busca)' : '') +
-				'  |  ' + p.platform.toUpperCase();
+		} else if (total > shown) {
+			results.appendChild(el('p', 'finder-more', 'mais ' + (total - shown) + ' — refine a busca'));
 		}
 	}
 
@@ -398,9 +408,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		t.ready = false;
 		t.loaded = true;
 		t.entries = [];
-		$('status-texts').textContent = '';
 		showLoader(results, 'assando os textos…', 'listando as comps do projeto');
-		await yieldUi();
+		await nextPaint();
 
 		try {
 			var comps = (await call('textCompList')).comps;
@@ -411,7 +420,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				t.ready = true;
 				t.loading = false;
 				showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
-				$('status-texts').textContent = '';
 				return;
 			}
 
@@ -505,7 +513,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	function searchTexts() {
 		var t = state.texts;
 		var results = $('results-texts');
-		var status = $('status-texts');
 		var opts = textOptions();
 		var raw = $('q-texts').value;
 		var key = normalizeText(raw, opts);
@@ -520,7 +527,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (raw === '') {
-			status.textContent = 'índice: ' + plural(t.entries.length, 'texto', 'textos') + ' em ' + plural(t.comps, 'comp', 'comps');
 			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto');
 			return;
 		}
@@ -532,7 +538,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		});
 
 		if (!found.length) {
-			status.textContent = 'sem matches...';
 			showState(results, 'sem matches', 'nenhum texto casa com “' + raw.trim() + '”');
 			return;
 		}
@@ -569,9 +574,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			group.appendChild(row);
 		}
 
-		status.textContent =
-			plural(found.length, 'texto encontrado', 'textos encontrados') +
-			(found.length > rows ? ' (exibindo ' + rows + ', refine a busca)' : '');
+		if (found.length > rows) results.appendChild(el('p', 'finder-more', 'mais ' + (found.length - rows) + ' — refine a busca'));
 	}
 
 	/* =========================================================

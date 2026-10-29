@@ -41,8 +41,13 @@
 			</div>
 			<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
 			<div class="finder-sheet">
-				<p class="finder-status" id="status-paths" aria-live="polite"></p>
-				<div class="finder-results" id="results-paths"></div>
+				<div class="finder-results" id="results-paths">
+				<div class="oven-loader is-light" role="status">
+					<div class="oven" aria-hidden="true"><span class="oven-glow"></span><span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span><span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>
+					<strong class="oven-title">esquentando o índice…</strong>
+					<span class="oven-hint">o workflow pode demorar alguns segundos</span>
+				</div>
+				</div>
 			</div>
 		</section>
 
@@ -59,7 +64,6 @@
 				<button type="button" class="chip" id="chip-invert" aria-pressed="false" title="apenas textos que NÃO possuem o termo buscado"><span class="chip-check"></span>INVERTER</button>
 			</div>
 			<div class="finder-sheet">
-				<p class="finder-status" id="status-texts" aria-live="polite"></p>
 				<div class="finder-results" id="results-texts"></div>
 			</div>
 		</section>

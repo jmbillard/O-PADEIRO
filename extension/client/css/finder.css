@@ -119,36 +119,39 @@ body.finder-page {
 
 .chip {
   display: inline-flex;
-  min-height: 30px;
+  min-height: 28px;
   align-items: center;
   gap: 7px;
-  padding: 4px 12px 4px 8px;
-  border: 1px solid rgb(255 255 255 / 34%);
+  padding: 3px 10px 3px 4px;
+  border: 0;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 10%);
-  color: rgb(255 255 255 / 86%);
+  background: transparent;
+  color: rgb(255 255 255 / 66%);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 750;
   letter-spacing: 0.08em;
   transition:
     background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    transform 220ms var(--ease-soft);
+    color 200ms ease;
 }
 
 .chip:hover {
-  border-color: rgb(255 255 255 / 80%);
-  background: rgb(255 255 255 / 20%);
-  transform: translateY(-1px);
+  background: rgb(255 255 255 / 12%);
+  color: white;
 }
 
+.chip:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 1px;
+}
+
+/* a bolinha: vazada quando desligado, cheia com o check quando ligado */
 .chip-check {
   position: relative;
   width: 16px;
   height: 16px;
-  border: 1.5px solid rgb(255 255 255 / 60%);
+  border: 1.5px solid rgb(255 255 255 / 50%);
   border-radius: 50%;
   transition:
     background-color 200ms ease,
@@ -172,13 +175,12 @@ body.finder-page {
 }
 
 .chip.is-on {
-  border-color: white;
-  background: white;
-  color: var(--blue-600);
+  color: white;
 }
 
 .chip.is-on .chip-check {
-  border-color: var(--blue-600);
+  border-color: white;
+  background: white;
 }
 
 .chip.is-on .chip-check::after {
@@ -192,29 +194,15 @@ body.finder-page {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  margin: 2px -14px 0;
-  border-radius: 24px 24px 0 0;
+  margin: 4px -14px 0;
   background: white;
-  box-shadow: 0 -12px 34px rgb(24 35 85 / 16%);
-}
-
-.finder-status {
-  min-height: 1.2em;
-  margin: 0;
-  padding: 16px 20px 4px;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 0.72rem;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .finder-results {
   display: block;
   min-height: 0;
   flex: 1;
-  padding: 0 20px 16px;
+  padding: 6px 20px 16px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
@@ -495,4 +483,12 @@ body.finder-page {
   .finder-sheet {
     margin-inline: -10px;
   }
+}
+
+.finder-more {
+  margin: 8px 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-align: center;
 }
