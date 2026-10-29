@@ -492,7 +492,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		queueBegin: function (a) {
 			run.template = a.outputTemplate;
 
-			return { total: run.jobs.length, outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS', '~/Desktop'], warnings: mode === 'fail' ? ['#PAD_019 - output não pode ser acessado: //servidor/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS'] : [] };
+			return { total: run.jobs.length, outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS', '~/Desktop'], warnings: mode === 'fail' ? ['#PAD_019 - output não pode ser acessado: /Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS'] : [] };
 		},
 
 		queueStep: async function (a) {
@@ -509,7 +509,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// ?mock=nooutput: a pasta de output não pode ser acessada (aparece 2 vezes, como na rede)
 		openOutputs: function (a) {
-			if (mode === 'nooutput') return { opened: 0, missing: [a.paths[0], a.paths[0]] };
+			if (mode === 'nooutput') return { opened: 0, missing: a.paths.map(function (p) { return p.replace(/^\/\/[^\/]+/, '/Volumes'); }) };
 
 			return { opened: 1, missing: [] };
 		},
