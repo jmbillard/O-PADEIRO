@@ -275,14 +275,6 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 	setBgColor(uiObj.window, bgColor1);
 
 	uiObj.window.onShow = function () {
-		// janela flutuante: começa no layout horizontal e pode ser reduzida até o modo compacto
-		if (uiObj.isFloating) {
-			uiObj.window.minimumSize = [40, 40];
-			// sem um máximo explícito, a janela não cresce além do máximo que o conteúdo permite
-			uiObj.window.maximumSize = [10000, 10000];
-			uiObj.window.size = PAD_FLOATING_SIZE;
-		}
-
 		for (var b = 0; b < uiObj.imageButtonArray.length; b++) {
 			var btn = uiObj.imageButtonArray[b];
 			if (btn.label) btn.label.preferredSize = btn.label.size;
@@ -291,29 +283,9 @@ function PAD_BUILD_UI(structureObj, uiObj) {
 		PAD_LAYOUT(uiObj);
 	};
 
-	// Painel encaixado: o After Effects controla o tamanho, o layout roda a cada mudança.
-	// Janela flutuante: NADA pode rodar durante o arrasto. Qualquer script executado no meio do
-	// arrasto (layout, resize ou até uma tarefa agendada) faz a janela parar de seguir o mouse.
-	// O layout roda ao terminar (onResize) ou, como reserva, quando o mouse volta para a janela
-	// com o tamanho diferente do último layout.
-	uiObj.window.onResizing = function () {
-		if (!uiObj.isFloating && !uiObj.isLayouting) PAD_LAYOUT(uiObj);
+	uiObj.window.onResizing = uiObj.window.onResize = function () {
+		PAD_LAYOUT(uiObj);
 	};
-
-	uiObj.window.onResize = function () {
-		if (!uiObj.isLayouting) PAD_LAYOUT(uiObj);
-	};
-
-	if (uiObj.isFloating) {
-		uiObj.window.addEventListener('mouseover', function () {
-			var last = uiObj.layoutSize;
-			var size = uiObj.window.size;
-
-			if (uiObj.isLayouting || (last && last[0] == size.width && last[1] == size.height)) return;
-
-			PAD_LAYOUT(uiObj);
-		});
-	}
 
 	PAD_UI_EVENTS(uiObj);
 }
@@ -347,18 +319,9 @@ function bindUiCtrl(uiObj, key, btn, ctrlProperties) {
 	if (ctrlProperties.rightClick) btn.rightClick.onClick = ctrlProperties.rightClick;
 }
 
-// Tamanho inicial da janela flutuante (fora de um painel)
-var PAD_FLOATING_SIZE = [640, 80];
-
 // Recebe uma janela 'window' e um objeto para interação 'uiObj'
 // Aplica o layout dos controles dependendo das dimensões da janela
 function PAD_LAYOUT(uiObj) {
-	uiObj.isLayouting = true;
-
-	// janela flutuante: guarda o tamanho escolhido pelo usuário, caso o layout(true) volte a janela
-	// para o tamanho preferido do conteúdo
-	var keepSize = uiObj.isFloating ? [uiObj.window.size.width, uiObj.window.size.height] : null;
-
 	var isRow = uiObj.window.size.width > uiObj.window.size.height;
 	var grpOrientation = isRow ? 'row' : 'column';
 	var btnOrientation = isRow ? 'column' : 'row';
@@ -444,16 +407,7 @@ function PAD_LAYOUT(uiObj) {
 	} //Em caso de erro...
 
 	uiObj.window.layout.layout(true);
-
-	// só reaplica o tamanho se ele realmente mudou (definir o mesmo valor também mexe na janela)
-	if (keepSize && (uiObj.window.size.width != keepSize[0] || uiObj.window.size.height != keepSize[1])) {
-		uiObj.window.size = keepSize;
-	}
-
 	uiObj.window.layout.resize();
-
-	uiObj.layoutSize = [uiObj.window.size.width, uiObj.window.size.height];
-	uiObj.isLayouting = false;
 }
 
 function PAD_UI_EVENTS(uiObj) {
@@ -744,8 +698,7 @@ function themeMenuButton(sectionGrp, ctrlProperties) {
 		else size = [textW + 8, 20];
 
 		button.mode = mode;
-		// sem minimumSize / maximumSize: limites nos controles também limitam o tamanho da janela
-		button.preferredSize = size;
+		button.preferredSize = button.minimumSize = button.maximumSize = size;
 		button.size = size;
 	};
 
