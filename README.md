@@ -1,4 +1,4 @@
-# 🥖 O PADEIRO
+# 🥖 O PADEIRO · v2.0 beta
 
 🗨️ **pt-BR** ⚡ preenchimento em massa de templates e outras utilidades para o After Effects ⚡
 
@@ -8,6 +8,8 @@ o fluxo é simples, em 3 etapas:\
 `1 buscar` > `2 selecionar` > `3 preencher`
 
 ![barra principal](docs/images/barra.webp)
+
+> 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
 o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos, e as outras ferramentas abrem em **janelas** próprias, pelos botões da barra.
 
