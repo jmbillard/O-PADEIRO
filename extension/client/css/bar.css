@@ -32,6 +32,29 @@ body.bar-page {
   display: none;
 }
 
+/* o conjunto de botões fica no centro; as margens automáticas viram zero quando falta espaço
+   (sem cortar o começo, como faria o justify-content: center) */
+.bar-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-main> :first-child {
+  margin-left: auto;
+}
+
+.bar-main> :last-child {
+  margin-right: auto;
+}
+
+/* logo: na ponta direita (na vertical, embaixo) */
+.bar-info {
+  flex: 0 0 auto;
+}
+
 .bar-group {
   display: flex;
   min-width: 0;
@@ -128,8 +151,6 @@ body.bar-page {
   width: 24px;
   height: 24px;
   flex: 0 0 auto;
-  border-radius: 7px;
-  background: rgb(255 255 255 / 20%);
   cursor: help;
   object-fit: cover;
 }
@@ -268,12 +289,13 @@ body.bar-page {
 }
 
 .lens-letter.is-passing {
-  animation: lens-pass 620ms linear;
+  animation: lens-pass 2600ms linear;
 }
 
-/* o deslocamento leva o conjunto (aro + vidro recortado): o recorte nunca se afasta do aro */
+/* a lupa procura: vai para um lado, sobe e volta. o deslocamento leva o conjunto (aro + vidro recortado),
+   então o recorte nunca se afasta do aro */
 .bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search {
-  animation: lens-nudge 620ms ease-in-out infinite;
+  animation: lens-search 2600ms ease-in-out infinite;
 }
 
 @keyframes lens-pass {
@@ -293,15 +315,23 @@ body.bar-page {
   }
 }
 
-@keyframes lens-nudge {
+@keyframes lens-search {
 
   0%,
   100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) rotate(0);
   }
 
-  50% {
-    transform: translate(.5px, -.5px);
+  30% {
+    transform: translate(-3px, 0.5px) rotate(-6deg);
+  }
+
+  60% {
+    transform: translate(-1px, -3px) rotate(3deg);
+  }
+
+  80% {
+    transform: translate(1.5px, -1px) rotate(0);
   }
 }
 
@@ -460,6 +490,19 @@ body.bar-page {
     gap: 10px;
     padding: 10px 8px;
     overflow: hidden auto;
+  }
+
+  .bar-main {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .bar-main> :first-child {
+    margin: auto 0 0;
+  }
+
+  .bar-main> :last-child {
+    margin: 0 0 auto;
   }
 
   .bar-group {

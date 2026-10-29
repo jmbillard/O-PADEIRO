@@ -43,6 +43,24 @@
 	</svg>
 
 	<main class="bar" id="bar">
+		<div class="bar-main">
+		<div class="bar-group bar-pin">
+			<div class="bar-prod">
+				<img class="bar-prod-icon" id="prod-icon" alt="" hidden>
+				<span class="select">
+					<select id="production" aria-label="Produção" title="PRODUÇÃO SELECIONADA"></select>
+				</span>
+			</div>
+			<button type="button" class="bar-icon" id="btn-links" aria-label="Apontamento">
+				<svg viewBox="0 0 24 24"><use href="#i-link" /></svg>
+			</button>
+		</div>
+
+		<span class="bar-divider"></span>
+
+		<div class="bar-group bar-tools" id="tools"></div>
+		</div>
+
 		<div class="bar-group bar-info">
 			<button type="button" class="bar-logo" id="logo" title="O PADEIRO · ajuda | DOCS" aria-label="O PADEIRO">
 				<svg class="bar-loaf" viewBox="0 0 48 32" aria-hidden="true">
@@ -59,24 +77,6 @@
 				<span class="bar-version" id="version">v0.1.0</span>
 			</button>
 		</div>
-
-		<span class="bar-divider"></span>
-
-		<div class="bar-group bar-pin">
-			<div class="bar-prod">
-				<img class="bar-prod-icon" id="prod-icon" alt="" hidden>
-				<span class="select">
-					<select id="production" aria-label="Produção" title="PRODUÇÃO SELECIONADA"></select>
-				</span>
-			</div>
-			<button type="button" class="bar-icon" id="btn-links" aria-label="Apontamento">
-				<svg viewBox="0 0 24 24"><use href="#i-link" /></svg>
-			</button>
-		</div>
-
-		<span class="bar-divider"></span>
-
-		<div class="bar-group bar-tools" id="tools"></div>
 
 		<div class="bar-toast" id="toast" role="status" aria-live="polite" hidden></div>
 	</main>

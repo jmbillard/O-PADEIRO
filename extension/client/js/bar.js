@@ -303,7 +303,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		btn.addEventListener('mouseenter', function () {
 			pass();
-			timer = setInterval(pass, 620);
+			timer = setInterval(pass, 2600);
 		});
 
 		btn.addEventListener('mouseleave', function () {

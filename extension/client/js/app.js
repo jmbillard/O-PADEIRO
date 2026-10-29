@@ -766,12 +766,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	function showView(name) {
-		['readonly', 'input', 'config', 'run', 'loading', 'fonts'].forEach(function (view) {
+		['readonly', 'input', 'config', 'run', 'loading'].forEach(function (view) {
 			$('view-' + view).hidden = view !== name;
 		});
 
 		$('queue-actions').hidden = name !== 'input';
-		$('btn-edit-config').hidden = name === 'run' || name === 'loading' || name === 'fonts';
+		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
 		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
 	}
@@ -1085,10 +1085,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	/* =========================================================
-	   Fontes do template (pasta FONTS): antes de importar, pergunta se faltar alguma
+	   Fontes do template (pasta FONTS): aviso acima do input; "instalar" instala ali mesmo.
+	   Preencher / importar com fontes faltando segue sem elas, sem a janela "Resolve Fonts".
 	   ========================================================= */
 
-	// Confere as fontes do template e mostra o aviso acima do input. Retorna a checagem (ou null).
+	// Confere as fontes do template e atualiza o aviso. Retorna a checagem (ou null).
 	async function checkFonts(uri) {
 		var res = null;
 
@@ -1104,84 +1105,65 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return res;
 	}
 
+	function missingFonts() {
+		return state.fonts && state.selected && state.fonts.uri === state.selected.uri ? state.fonts.missing : [];
+	}
+
 	function renderFontsWarning() {
 		var box = $('fonts-warning');
-		var missing = state.fonts && state.selected && state.fonts.uri === state.selected.uri ? state.fonts.missing : [];
+		var missing = missingFonts();
+		var installing = !!state.fontsInstalling;
 
 		box.hidden = !missing.length;
 		box.textContent = '';
+		box.disabled = installing;
+		box.classList.toggle('is-installing', installing);
 
 		if (!missing.length) return;
 
+		if (installing) {
+			box.appendChild(el('strong', null, 'instalando fontes…'));
+			box.appendChild(el('span', null, missing.join(' · ')));
+			return;
+		}
+
 		box.appendChild(el('strong', null, plural(missing.length, 'fonte não instalada', 'fontes não instaladas')));
 		box.appendChild(el('span', null, missing.join(' · ')));
+
 		box.appendChild(el('em', null, 'instalar'));
-		box.title = 'clique para instalar as fontes do template';
+		box.title = 'instalar: ' + missing.join(', ');
 	}
 
-	// Pergunta antes de importar: instalar, seguir sem instalar (sem a janela "Resolve Fonts") ou voltar.
-	// 'proceed(quiet)' continua a importação / o preenchimento.
-	function askFonts(missing, proceed) {
-		var list = $('fonts-list');
-		var note = $('fonts-note');
+	async function installFonts() {
+		if (state.fontsInstalling || !state.selected) return;
 
-		list.textContent = '';
-		missing.forEach(function (name) {
-			list.appendChild(el('li', null, name));
-		});
+		var uri = state.selected.uri;
 
-		$('fonts-title').textContent = plural(missing.length, 'fonte do template não está instalada', 'fontes do template não estão instaladas');
-		note.textContent = '';
-		note.classList.remove('is-error');
-		state.fontsAsk = { proceed: proceed };
-		showView('fonts');
-		$('btn-fonts-install').focus();
-	}
-
-	async function installFontsAndGo() {
-		var ask = state.fontsAsk;
-		var btn = $('btn-fonts-install');
-		var note = $('fonts-note');
-
-		if (!ask || !state.selected) return;
-
-		btn.disabled = true;
-		btn.textContent = 'Instalando…';
-		note.textContent = '';
+		state.fontsInstalling = true;
+		renderFontsWarning();
 
 		try {
-			var res = await call('installTemplateFonts', { uri: state.selected.uri });
+			var res = await call('installTemplateFonts', { uri: uri });
 			var missing = res.data.missing;
 
-			state.fonts = { uri: state.selected.uri, missing: missing, total: res.data.total };
-			renderFontsWarning();
+			if (state.selected && state.selected.uri === uri) state.fonts = { uri: uri, missing: missing, total: res.data.total };
 
-			if (!missing.length) {
-				state.fontsAsk = null;
-				notify('success', 'Fontes instaladas. Se o After Effects ainda não mostrar alguma, reinicie-o.');
-				ask.proceed(false);
-				return;
-			}
-
-			askFonts(missing, ask.proceed);
-			note.textContent = (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Estas ainda não aparecem como instaladas.';
-			note.classList.add('is-error');
+			if (!missing.length) notify('success', 'Fontes instaladas. Se o After Effects ainda não mostrar alguma, reinicie-o.');
+			else notify('warning', (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Ainda não aparecem como instaladas: ' + missing.join(', '));
 		} catch (err) {
-			note.textContent = err.message;
-			note.classList.add('is-error');
-		} finally {
-			btn.disabled = false;
-			btn.textContent = 'Instalar fontes';
+			notify('error', err.message);
 		}
+
+		state.fontsInstalling = false;
+		renderFontsWarning();
 	}
 
-	// Antes de importar: confere as fontes de novo (alguém pode ter instalado) e pergunta se faltar.
-	async function withFonts(uri, proceed) {
-		var res = await checkFonts(uri);
+	// Antes de importar o template selecionado: confere de novo (alguém pode ter instalado as fontes).
+	// true = faltam fontes: importa sem a janela "Resolve Fonts" (as fontes faltando viram a padrão).
+	async function fontsMissingNow() {
+		var res = await checkFonts(state.selected.uri);
 
-		if (res && res.missing.length) return askFonts(res.missing, proceed);
-
-		proceed(false);
+		return !!(res && res.missing.length);
 	}
 
 	async function importTemplate(node, quiet) {
@@ -1193,10 +1175,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		// pela lista (duplo clique) ou pelo botão: o template selecionado passa pela checagem das fontes
 		if (quiet == null && state.selected && state.selected.uri === target.uri) {
-			return withFonts(target.uri, function (q) {
-				showTemplate(state.info);
-				importTemplate(target, q);
-			});
+			quiet = await fontsMissingNow();
 		}
 
 		try {
@@ -1286,22 +1265,18 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setPickerLocked(busy || runIsOpen());
 	}
 
-	async function startFill(quiet) {
+	async function startFill() {
 		var text = $('input').value;
 
 		if (!state.info || !state.info.hasInputLayers || text.trim() === '' || state.busy) return;
 
-		if (quiet !== true && quiet !== false) {
-			setBusy(true);
-			await withFonts(state.info.uri, function (q) {
-				setBusy(false);
-				startFill(q);
-			});
+		if (state.fontsChecking) return;
 
-			if (!$('view-fonts').hidden) setBusy(false);
+		state.fontsChecking = true;
 
-			return;
-		}
+		var quiet = await fontsMissingNow();
+
+		state.fontsChecking = false;
 
 		clearNotices();
 		setBusy(true);
@@ -1696,22 +1671,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			startFill();
 		});
 
-		$('fonts-warning').addEventListener('click', function () {
-			if (state.fonts && state.fonts.missing.length) askFonts(state.fonts.missing, function () {
-				showTemplate(state.info);
-			});
-		});
-		$('btn-fonts-install').addEventListener('click', installFontsAndGo);
-		$('btn-fonts-skip').addEventListener('click', function () {
-			var ask = state.fontsAsk;
-
-			state.fontsAsk = null;
-			if (ask) ask.proceed(true);
-		});
-		$('btn-fonts-back').addEventListener('click', function () {
-			state.fontsAsk = null;
-			showTemplate(state.info);
-		});
+		$('fonts-warning').addEventListener('click', installFonts);
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);

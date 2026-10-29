@@ -87,7 +87,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas.
 
-- **pãozinho** → abre esta documentação.
+- **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
 - **produção** → escolhe a produção atual (a pasta de templates usada pelo painel de templates).\
   `◖ clique DUPLO` no ícone da produção → abre o editor de produções.
 - **corrente** → abre a planilha de apontamento de projetos.
@@ -199,15 +199,12 @@ o painel de templates mostra os templates da produção escolhida na barra. ele 
 
 ### fontes do template
 
-antes de importar, o padeiro confere se as fontes da pasta `FONTS` do template estão instaladas. se faltar alguma, um aviso aparece acima do input e o padeiro pergunta antes de preencher, evitando a janela '*Resolve Fonts*' do After Effects.
+ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele estão instaladas. se faltar alguma, um aviso aparece acima do input.
 
 > ![aviso de fontes](docs/images/templates-aviso-fontes.webp)
->
-> ![fontes não instaladas](docs/images/templates-fontes.webp)
 
-- **instalar fontes** → instala as fontes e segue com o preenchimento.
-- **seguir sem instalar** → preenche assim mesmo, sem a janela do After Effects (as fontes que faltam são trocadas pela padrão).
-- **voltar** → volta para o template.
+- **instalar** (no aviso) → instala as fontes que faltam, ali mesmo.
+- **preencher** (ou importar) com fontes faltando → segue normalmente, sem a janela '*Resolve Fonts*' do After Effects (as fontes que faltam são trocadas pela padrão).
 
 > 🚩 *obs:*\
 > • no macOS as fontes são copiadas para `~/Library/Fonts`; no Windows, instaladas por um script de PowerShell.\
