@@ -10,7 +10,8 @@ Painel CEP do **O PADEIRO** para o After Effects, com a mesma lógica de templat
 
 o fluxo principal de templates: `1 buscar` > `2 selecionar` > `3 preencher` > `4 fila de render`.
 
-- seleção da **produção** (lista do `O_PADEIRO_config.json`) e leitura da pasta de templates, com busca dinâmica;
+- **produção** escolhida na barra do script (main ui): o script grava a escolha em `O PADEIRO script/selected_production.json` e o painel acompanha, então o painel precisa do script aberto para trocar de produção (sem ele, usa a primeira da lista);
+- leitura da pasta de templates, com busca dinâmica;
 - **preview**, dicas e exemplo do template (`_preview.png` e `_config.json`);
 - **preencher** com status, progresso e erro por item (uma comp por linha da fila);
 - **fila de render** com escolha do template de output e verificação das pastas de saída;

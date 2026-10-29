@@ -80,6 +80,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			};
 		},
 
+		selectedProduction: function () {
+			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA' };
+		},
+
 		templateTree: function (a) {
 			if (/TESTES/.test(a.path)) return { exists: true, path: a.path, tree: { type: 'node', text: 'TESTES', children: [] } };
 			if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, tree: null };

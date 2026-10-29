@@ -181,6 +181,19 @@ PADX.productions = function (a) {
 	return { configPath: configFile.fsName, productions: productions, error: error };
 };
 
+// Produção escolhida na barra do script (main ui), gravada em 'selected_production.json'.
+PADX.selectedProduction = function () {
+	var file = new File(scriptPreferencesPath + '/selected_production.json');
+
+	if (!file.exists) return { name: null };
+
+	try {
+		return { name: JSON.parse(readFileContent(file)).name || null };
+	} catch (err) {
+		return { name: null };
+	}
+};
+
 PADX.openFolder = function (a) {
 	var folder = new Folder(padPath(a.path));
 

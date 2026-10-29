@@ -408,12 +408,24 @@ function PAD_UI_EVENTS(uiObj) {
 		var i = this.selection.index;
 		changeIcon(i, uiObj.prodIconGrp);
 
+		// Compartilha a produção escolhida com a extensão (painel CEP)
+		try {
+			saveTextFile(JSON.stringify({ name: PAD_prodArray[i].name }), scriptPreferencesPath + '/selected_production.json');
+		} catch (err) { }
+
 		templatesPath = normalizeNetworkPath(PAD_prodArray[i].templatesPath);
 		templatesFolder = new Folder(templatesPath); // pasta de templates.
 
 		// Se a pasta de templates não existir.
 		if (!templatesFolder.exists) alert(lol + '#PAD_002 - pasta de templates não localizada...');
 	};
+
+	// Produção inicial também vai para a extensão (o onChange só dispara quando o usuário troca)
+	try {
+		if (uiObj.prodDrop.selection != null) {
+			saveTextFile(JSON.stringify({ name: PAD_prodArray[uiObj.prodDrop.selection.index].name }), scriptPreferencesPath + '/selected_production.json');
+		}
+	} catch (err) { }
 }
 
 // Recebe um índice 'imageIndex' e um grupo de imagens 'imagesGrp'

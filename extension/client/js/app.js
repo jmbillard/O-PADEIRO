@@ -15,7 +15,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	var call = PAD_BRIDGE.call;
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-preenchendo-templates';
-	var HERO_TEXT = 'Preencha templates em massa';
 
 	/* =========================================================
 	   Utilidades
@@ -142,6 +141,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		configPath: store.get('configPath') || '',
 		productions: [],
 		production: 0,
+		loading: false,
 		tree: null, // árvore em memória { type, text, children | uri }
 		treeStatus: 'loading', // loading | ok | missing | empty | error
 		templatesPath: '',
@@ -194,69 +194,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	/* =========================================================
-	   Conexão com o After Effects
-	   ========================================================= */
-
-	function setConnection(status, label) {
-		var node = $('connection');
-
-		node.className = 'connection-status is-' + status;
-		$('connection-label').textContent = label;
-	}
-
-	async function checkConnection() {
-		setConnection('checking', 'conectando');
-
-		try {
-			var info = await call('ping');
-
-			setConnection('online', 'AE ' + (info.build || '').split('x')[0]);
-			$('connection').title = info.app + ' ' + info.build + ' · painel v' + info.version;
-
-			return true;
-		} catch (err) {
-			setConnection('offline', 'sem conexão');
-			$('connection').title = err.message;
-
-			return false;
-		}
-	}
-
-	/* =========================================================
-	   Hero (título digitado)
-	   ========================================================= */
-
-	function typewriter() {
-		var node = $('typewriter-text');
-		var title = $('hero-title');
-		var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		if (reduced) {
-			node.textContent = HERO_TEXT;
-			title.classList.add('hide-typewriter-cursor');
-
-			return;
-		}
-
-		var i = 0;
-
-		(function tick() {
-			node.textContent = HERO_TEXT.slice(0, ++i);
-
-			if (i < HERO_TEXT.length) {
-				setTimeout(tick, 38 + Math.random() * 40);
-			} else {
-				setTimeout(function () {
-					title.classList.add('hide-typewriter-cursor');
-				}, 1600);
-			}
-		})();
-	}
-
-	/* =========================================================
 	   Produções
 	   ========================================================= */
 
+	// A produção é escolhida na barra do script (main ui): ela grava a escolha em um arquivo
+	// compartilhado e o painel acompanha (host: PADX.selectedProduction).
 	async function loadProductions() {
 		try {
 			var res = await call('productions', { configPath: state.configPath });
@@ -269,37 +211,65 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			pickerMessage('error', err.message);
 		}
 
-		var select = $('production');
+		var name = null;
 
-		select.textContent = '';
+		try {
+			name = (await call('selectedProduction')).name;
+		} catch (err) { }
 
-		state.productions.forEach(function (prod, i) {
-			var option = el('option', null, prod.name);
-
-			option.value = String(i);
-			select.appendChild(option);
-		});
-
-		var saved = store.get('production');
 		var found = state.productions.findIndex(function (prod) {
-			return prod.name === saved;
+			return prod.name === name;
 		});
 
 		state.production = found >= 0 ? found : 0;
-		select.value = String(state.production);
-		select.disabled = state.productions.length === 0;
-
-		updateProductionIcon();
+		updateSearchPlaceholder();
 		await loadTree();
 	}
 
-	function updateProductionIcon() {
+	function updateSearchPlaceholder() {
 		var prod = state.productions[state.production];
-		var icon = $('production-icon');
-		var url = prod ? decodeIcon(prod.icon) : null;
 
-		icon.hidden = !url;
-		if (url) icon.src = url;
+		$('search').placeholder = prod ? 'buscar em ' + prod.name : 'buscar template';
+	}
+
+	// Acompanha a produção escolhida na barra do script e a conexão com o After Effects.
+	async function watchProduction() {
+		if (document.hidden || state.busy || runIsOpen() || state.loading) return;
+
+		var name;
+
+		try {
+			name = (await call('selectedProduction')).name;
+		} catch (err) {
+			if (state.treeStatus !== 'error') {
+				state.treeStatus = 'error';
+				renderTree();
+			}
+
+			return;
+		}
+
+		if (state.treeStatus === 'error') return loadProductions();
+
+		var current = state.productions[state.production];
+
+		if (!name || (current && current.name === name)) return;
+
+		var index = state.productions.findIndex(function (prod) {
+			return prod.name === name;
+		});
+
+		if (index < 0) return;
+
+		state.production = index;
+		state.selected = null;
+		state.info = null;
+		state.run = null;
+		app.classList.remove('is-expanded');
+		clearNotices();
+		pickerMessage();
+		updateSearchPlaceholder();
+		await loadTree();
 	}
 
 	/* =========================================================
@@ -309,12 +279,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	async function loadTree() {
 		var prod = state.productions[state.production];
 
+		state.loading = true;
 		state.tree = null;
 		state.templatesPath = prod ? prod.templatesPath : '';
 		state.treeStatus = prod ? 'loading' : 'empty';
 		renderTree();
 
-		if (!prod) return;
+		if (!prod) {
+			state.loading = false;
+			return;
+		}
 
 		try {
 			var res = await call('templateTree', { path: prod.templatesPath });
@@ -332,6 +306,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			pickerMessage('error', err.message);
 		}
 
+		state.loading = false;
 		renderTree();
 	}
 
@@ -467,7 +442,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		if (state.treeStatus === 'error') {
-			list.appendChild(treeState('não foi possível ler os templates', 'verifique a conexão com o After Effects'));
+			list.appendChild(treeState('não foi possível ler os templates', 'sem conexão com o After Effects — o painel tenta de novo sozinho'));
 			return;
 		}
 
@@ -507,7 +482,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function setPickerLocked(locked) {
 		$('picker').style.pointerEvents = locked ? 'none' : '';
 		$('picker').style.opacity = locked ? '0.6' : '';
-		$('production').disabled = locked || state.productions.length === 0;
 	}
 
 	/* =========================================================
@@ -1051,19 +1025,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			search.focus();
 		});
 
-		$('production').addEventListener('change', function () {
-			state.production = parseInt(this.value, 10);
-			store.set('production', state.productions[state.production].name);
-			updateProductionIcon();
-			state.selected = null;
-			state.info = null;
-			state.run = null;
-			app.classList.remove('is-expanded');
-			clearNotices();
-			pickerMessage();
-			loadTree();
-		});
-
 		$('btn-refresh').addEventListener('click', refreshTree);
 		$('btn-open-templates').addEventListener('click', openTemplatesFolder);
 
@@ -1098,16 +1059,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 		$('btn-again').addEventListener('click', newRun);
 
-		$('connection').addEventListener('click', checkConnection);
-		window.addEventListener('focus', function () {
-			if ($('connection').classList.contains('is-offline')) checkConnection();
-		});
-
-		$('brand').addEventListener('click', function (e) {
-			e.preventDefault();
-			PAD_BRIDGE.openUrl('https://github.com/jmbillard/O-PADEIRO');
-		});
-
 		// menu ⋯
 		var menu = $('app-menu');
 
@@ -1135,21 +1086,22 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	async function init() {
 		bindEvents();
-		typewriter();
 
 		setTimeout(function () {
 			document.body.classList.add('motion-ready');
 		}, 0);
 
-		var online = await checkConnection();
-
-		if (!online) {
+		try {
+			await call('ping');
+		} catch (err) {
 			state.treeStatus = 'error';
 			renderTree();
-			return;
 		}
 
-		await loadProductions();
+		if (state.treeStatus !== 'error') await loadProductions();
+
+		setInterval(watchProduction, 2000);
+		window.addEventListener('focus', watchProduction);
 	}
 
 	init();

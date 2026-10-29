@@ -30,6 +30,19 @@
 			<path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" />
 			<path d="M13.5 3.5V8H18" />
 		</symbol>
+		<symbol id="i-refresh" viewBox="0 0 24 24">
+			<path d="M20 11a8 8 0 1 0-2.3 5.7" />
+			<path d="M20 5v6h-6" />
+		</symbol>
+		<symbol id="i-folder-open" viewBox="0 0 24 24">
+			<path d="M3.5 17.5v-10A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v2" />
+			<path d="M3.8 18.5 6 12.8a1.5 1.5 0 0 1 1.4-1h13a1 1 0 0 1 .95 1.3l-1.8 4.9a1.5 1.5 0 0 1-1.4 1H5.2a1.4 1.4 0 0 1-1.4-1.5z" />
+		</symbol>
+		<symbol id="i-more" viewBox="0 0 24 24">
+			<circle cx="6" cy="12" r="1.2" />
+			<circle cx="12" cy="12" r="1.2" />
+			<circle cx="18" cy="12" r="1.2" />
+		</symbol>
 		<symbol id="i-image" viewBox="0 0 24 24">
 			<rect x="3.5" y="5" width="17" height="14" rx="2.5" />
 			<circle cx="9" cy="10" r="1.6" />
@@ -38,57 +51,11 @@
 	</svg>
 
 	<main class="app-shell" id="app-shell">
-		<header class="topbar">
-			<a class="brand" href="#" id="brand" aria-label="O PADEIRO">
-				<span class="brand-symbol"><svg viewBox="0 0 24 24"><use href="#i-brand" /></svg></span>
-				<span class="brand-copy">
-					<strong>O PADEIRO</strong>
-					<small>TEMPLATES</small>
-				</span>
-			</a>
-
-			<div class="topbar-status">
-				<div class="production">
-					<img class="production-icon" id="production-icon" alt="" hidden>
-					<span class="select">
-						<select id="production" aria-label="Produção" title="Produção selecionada"></select>
-					</span>
-				</div>
-
-				<span class="topbar-divider"></span>
-
-				<span class="connection-status is-checking" id="connection" role="status" title="Conexão com o After Effects (clique para verificar)">
-					<span class="connection-dot"></span>
-					<span id="connection-label">conectando</span>
-				</span>
-
-				<details class="actions-menu" id="app-menu">
-					<summary class="button button-secondary button-compact" aria-label="Menu">⋯</summary>
-					<div class="menu-popover">
-						<button type="button" data-action="refresh">Atualizar lista de templates</button>
-						<button type="button" data-action="open-templates">Abrir pasta de templates</button>
-						<div class="menu-separator"></div>
-						<button type="button" data-action="config-file">Arquivo de produções…</button>
-						<button type="button" data-action="config-reset">Usar arquivo padrão</button>
-						<div class="menu-separator"></div>
-						<button type="button" data-action="docs">Ajuda / documentação</button>
-						<button type="button" data-action="reload">Recarregar painel</button>
-					</div>
-				</details>
-			</div>
-		</header>
-
 		<div class="workspace">
 			<!-- 1 · buscar -->
 			<section class="upload-side" aria-label="Busca de templates">
 				<div class="upload-side-content">
-					<div class="hero">
-						<p class="eyebrow">buscar · selecionar · preencher</p>
-						<h1 class="typewriter-title" id="hero-title" aria-label="Preencha templates em massa">
-							<span id="typewriter-text"></span><span class="typewriter-cursor" aria-hidden="true">|</span>
-						</h1>
-						<p class="hero-description">Escolha um template da produção, cole os textos e o padeiro cria as comps e a fila de render.</p>
-					</div>
+					<p class="eyebrow">buscar · selecionar · preencher</p>
 
 					<div class="upload-section">
 						<div class="picker" id="picker">
@@ -101,8 +68,18 @@
 							<div class="picker-list" id="tree" role="tree" aria-label="Templates"></div>
 
 							<div class="picker-footer">
-								<button type="button" class="button button-glass" id="btn-refresh">↻ atualizar</button>
-								<button type="button" class="button button-glass" id="btn-open-templates">abrir pasta</button>
+								<button type="button" class="icon-button" id="btn-refresh" title="Atualizar lista de templates" aria-label="Atualizar lista de templates"><svg viewBox="0 0 24 24"><use href="#i-refresh" /></svg></button>
+								<button type="button" class="icon-button" id="btn-open-templates" title="Abrir pasta de templates" aria-label="Abrir pasta de templates"><svg viewBox="0 0 24 24"><use href="#i-folder-open" /></svg></button>
+								<details class="actions-menu" id="app-menu">
+									<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24"><use href="#i-more" /></svg></summary>
+									<div class="menu-popover">
+										<button type="button" data-action="config-file">Arquivo de produções…</button>
+										<button type="button" data-action="config-reset">Usar arquivo padrão</button>
+										<div class="menu-separator"></div>
+										<button type="button" data-action="docs">Ajuda / documentação</button>
+										<button type="button" data-action="reload">Recarregar painel</button>
+									</div>
+								</details>
 								<span class="picker-total" id="picker-total"></span>
 							</div>
 						</div>
@@ -110,10 +87,6 @@
 						<div class="validation-messages" id="messages" aria-live="polite"></div>
 					</div>
 
-					<div class="integration-information">
-						<span><i class="information-icon">i</i> duplo clique importa o template</span>
-						<span><i class="information-icon">↵</i> enter seleciona o primeiro resultado</span>
-					</div>
 				</div>
 			</section>
 
@@ -163,7 +136,7 @@
 						<p class="tip-text" id="tip"></p>
 					</div>
 
-					<div class="action-bar">
+					<div class="action-bar is-anchored">
 						<button type="button" class="button button-secondary" id="btn-output" title="Abrir a pasta de output do template">Abrir output</button>
 						<button type="button" class="button button-primary" id="btn-fill">Preencher: 1</button>
 					</div>
@@ -219,7 +192,7 @@
 						<ul class="file-list" id="file-list"></ul>
 					</div>
 
-					<div class="run-footer" id="run-footer" hidden>
+					<div class="run-footer action-bar is-anchored" id="run-footer" hidden>
 						<button type="button" class="button button-secondary" id="btn-output-run">Abrir output</button>
 						<button type="button" class="button button-primary" id="btn-again">Novo preenchimento</button>
 					</div>
