@@ -377,3 +377,33 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 		alert(lol + '#PAD_PATH_002 - não foi possível abrir a pasta:\n' + folderPath + '\n\n' + err.message);
 	}
 }
+
+function cleanPathInput(str) {
+	return String(str || '')
+		.replace(/^\s+|\s+$/g, '')
+		.replace(/^["']+|["']+$/g, '')
+		.replace(/^smb:\/\/([^@\/]+@)?/i, '//');
+}
+
+function toMacPath(str) {
+	var path = cleanPathInput(str);
+
+	if (path == '') return '';
+
+	// caminho local do Windows (C:\Users\...) → /Users/...
+	if (/^[a-z]:[\\\/]/i.test(path) && !DRIVE_MAP[path.charAt(0).toUpperCase()]) {
+		return path.substring(2).replace(/\\/g, '/');
+	}
+
+	return normalizeNetworkPath(path, { forceMac: true, silent: true });
+}
+
+function toWinPath(str) {
+	var path = cleanPathInput(str);
+
+	if (path == '') return '';
+
+	return normalizeNetworkPath(path, { forceWin: true, silent: true })
+		.replace(/^\/Users\//, 'C:/Users/') // pasta do usuário no macOS → pasta do usuário no Windows
+		.replace(/\//g, '\\');
+}

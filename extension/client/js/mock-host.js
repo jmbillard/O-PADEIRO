@@ -209,6 +209,48 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { entries: entries, errors: [] };
 		},
 
+		requestConverter: function () {
+			window.PAD_MOCK_CONVERTER = { stamp: Date.now(), path: '/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS' };
+
+			return { path: window.PAD_MOCK_CONVERTER.path };
+		},
+
+		requestedConverter: function () {
+			if (!window.PAD_MOCK_CONVERTER && /path=/.test(location.search)) {
+				window.PAD_MOCK_CONVERTER = { stamp: Date.now(), path: decodeURIComponent(location.search.split('path=')[1]) };
+			}
+
+			var req = window.PAD_MOCK_CONVERTER || { stamp: 0, path: '' };
+
+			return { stamp: req.stamp, path: req.path, now: Date.now() };
+		},
+
+		convertPaths: function (a) {
+			var text = String(a.text).trim().replace(/^["']+|["']+$/g, '');
+
+			if (a.from === 'mac') {
+				var parts = text.replace(/^\/Volumes\//, '').split('/');
+
+				return { mac: text, win: '\\\\vfx-ml-sp.servicos.corp.tvglobo.com.br\\' + parts.join('\\'), os: 'Mac' };
+			}
+
+			return { win: text, mac: '/Volumes/' + text.replace(/^\\\\[^\\]+\\/, '').replace(/\\/g, '/'), os: 'Mac' };
+		},
+
+		openConvertedPath: function (a) {
+			if (/naoexiste/.test(a.text)) throw new Error('pasta não encontrada (o volume / servidor está acessível?)');
+
+			return { exact: !/parcial/.test(a.text), path: a.text };
+		},
+
+		lastOutputFolder: function () {
+			return { path: '/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS' };
+		},
+
+		copyText: function () {
+			return { ok: true };
+		},
+
 		openTextResult: function () {
 			return { ok: true };
 		},

@@ -6,6 +6,7 @@
 		<Extension Id="com.jmbillard.opadeiro.bar" Version="0.1.0" />
 		<Extension Id="com.jmbillard.opadeiro.panel" Version="0.1.0" />
 		<Extension Id="com.jmbillard.opadeiro.finder" Version="0.1.0" />
+		<Extension Id="com.jmbillard.opadeiro.converter" Version="0.1.0" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -107,6 +108,36 @@
 						<MinSize>
 							<Width>300</Width>
 							<Height>360</Height>
+						</MinSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- conversor de caminhos Windows / macOS -->
+		<Extension Id="com.jmbillard.opadeiro.converter">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/converter.html</MainPath>
+					<ScriptPath>./host/index.jsx</ScriptPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--allow-file-access-from-files</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>O PADEIRO conversor</Menu>
+					<Geometry>
+						<Size>
+							<Width>520</Width>
+							<Height>380</Height>
+						</Size>
+						<MinSize>
+							<Width>300</Width>
+							<Height>300</Height>
 						</MinSize>
 					</Geometry>
 				</UI>

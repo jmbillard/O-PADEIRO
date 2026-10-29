@@ -18,6 +18,7 @@ aparecem como "em breve".
 
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
+	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
@@ -57,7 +58,7 @@ aparecem como "em breve".
 		search:
 			// o vidro da lupa recorta as letras num círculo um pouco menor que o aro: sobra um contorno
 			// redondo "negativo" mesmo quando a letra ocupa o espaço todo
-			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10" cy="10" r="5.5" /></clipPath></defs>' +
+			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10" cy="10" r="5.2" /></clipPath></defs>' +
 			'<circle cx="10" cy="10" r="7.2" /><path d="m15.300 15.300 5.200 5.200" />' +
 			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10" y="18.300" text-anchor="middle">A</text></g></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
@@ -175,6 +176,12 @@ aparecem como "em breve".
 			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
 		},
 
+		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
+		convertPaths: async function () {
+			await call('requestConverter');
+			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
+		},
+
 		links: async function () {
 			await requireNetwork('PAD_007');
 			PAD_BRIDGE.openUrl(APONTAMENTO_URL);
@@ -209,9 +216,9 @@ aparecem como "em breve".
 				key: 'pastas',
 				label: 'Pastas',
 				icon: 'folders',
-				tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs (em breve)'],
+				tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
 				left: actions.openLastOutput,
-				right: soon('conversor de caminhos')
+				right: actions.convertPaths
 			}
 		],
 		[

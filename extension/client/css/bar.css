@@ -279,8 +279,8 @@ body.bar-page {
   animation: lens-pass 620ms linear;
 }
 
-.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search>circle,
-.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search>path {
+/* o deslocamento leva o conjunto (aro + vidro recortado): o recorte nunca se afasta do aro */
+.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search {
   animation: lens-nudge 620ms ease-in-out infinite;
 }
 

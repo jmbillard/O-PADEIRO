@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Extrai de source/utils/o acessorista ui.js as funções e constantes SEM interface
-(índice, caminhos, montagem SMB) para extension/host/lib/acessorista.shared.js."""
+"""Extrai as funções e constantes SEM interface de source/utils/o acessorista ui.js (índice, caminhos,
+montagem SMB) e de source/utils/path ui.js (conversão Windows / macOS) para extension/host/lib/acessorista.shared.js."""
 import re
 import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
-lines = (root / 'source' / 'utils' / 'o acessorista ui.js').read_text(encoding='utf-8').replace('\r\n', '\n').split('\n')
+def read_lines(name):
+	return (root / 'source' / 'utils' / name).read_text(encoding='utf-8').replace('\r\n', '\n').split('\n')
+
+
+lines = read_lines('o acessorista ui.js')
 
 FUNCTIONS = [
 	'psCategoryLabel', 'psCategoryList', 'psNormalize', 'psSlashes', 'psPathKey', 'psToMac', 'psToPlatform',
@@ -23,7 +27,7 @@ def start_of(pattern):
 	for i, line in enumerate(lines):
 		if re.match(pattern, line):
 			return i
-	sys.exit('não encontrado em "o acessorista ui.js": ' + pattern)
+	sys.exit('não encontrado: ' + pattern)
 
 
 def block(start, single_end):
@@ -48,5 +52,13 @@ for name in FUNCTIONS:
 	i = start_of(r'^function ' + re.escape(name) + r'\(')
 	out.append('\n'.join(block(i, lambda l: l == '}')) + '\n')
 
+# conversor de caminhos (path ui.js)
+lines = read_lines('path ui.js')
+CONVERT_FUNCTIONS = ['cleanPathInput', 'toMacPath', 'toWinPath']
+
+for name in CONVERT_FUNCTIONS:
+	i = start_of(r'^function ' + re.escape(name) + r'\(')
+	out.append('\n'.join(block(i, lambda l: l == '}')) + '\n')
+
 (root / 'extension' / 'host' / 'lib' / 'acessorista.shared.js').write_text('\n'.join(out), encoding='utf-8-sig')
-print('ok  acessorista.shared.js (' + str(len(VARS)) + ' constantes, ' + str(len(FUNCTIONS)) + ' funções)')
+print('ok  acessorista.shared.js (' + str(len(VARS)) + ' constantes, ' + str(len(FUNCTIONS) + len(CONVERT_FUNCTIONS)) + ' funções)')

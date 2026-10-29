@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CONVERSOR DE CAMINHOS</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/converter.css">
+</head>
+
+<body class="converter-page">
+	<main class="converter" id="converter">
+		<header class="converter-top">
+			<p class="eyebrow">conversor de caminhos</p>
+			<button type="button" class="icon-button" id="btn-last" title="Usar a pasta da última saída da fila de render" aria-label="Usar a pasta da última saída da fila de render">
+				<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+			</button>
+		</header>
+
+		<section class="converter-sheet">
+			<p class="convert-hint">cole ou digite um caminho em qualquer campo: o outro é convertido na hora.</p>
+
+			<div class="convert-field">
+				<label class="cfg-label" for="cv-mac">MacOS</label>
+				<div class="convert-line">
+					<input class="cfg-input" id="cv-mac" type="text" spellcheck="false" autocomplete="off" placeholder="/Volumes/SHARE/pasta">
+					<button type="button" class="pill-btn" id="cv-copy-mac" title="copiar o caminho MacOS">copiar</button>
+				</div>
+			</div>
+
+			<div class="convert-field">
+				<label class="cfg-label" for="cv-win">Windows</label>
+				<div class="convert-line">
+					<input class="cfg-input" id="cv-win" type="text" spellcheck="false" autocomplete="off" placeholder="\\servidor\SHARE\pasta">
+					<button type="button" class="pill-btn" id="cv-copy-win" title="copiar o caminho Windows">copiar</button>
+				</div>
+			</div>
+
+			<div class="convert-actions">
+				<button type="button" class="button button-primary" id="cv-open" title="abrir a pasta no Finder / Explorer">Abrir pasta</button>
+				<span class="convert-status" id="cv-status" aria-live="polite"></span>
+			</div>
+		</section>
+	</main>
+
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/converter.js"></script>
+</body>
+
+</html>

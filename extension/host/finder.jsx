@@ -173,3 +173,91 @@ PADX.openTextResult = function (a) {
 
 	return { ok: true };
 };
+
+/*
+
+---------------------------------------------------------------
+> conversor de caminhos Windows / macOS
+---------------------------------------------------------------
+
+Mesma conversão do script (path ui.js → cleanPathInput / toMacPath / toWinPath).
+
+*/
+
+// Pedido de abertura feito pela barra principal ('pastas', clique direito): o painel do conversor
+// começa com a pasta da última saída da fila de render.
+PADX.requestConverter = function () {
+	var request = { stamp: new Date().getTime(), path: '' };
+
+	try {
+		var outputFile = getLastOutputFile();
+
+		if (outputFile != null) request.path = decodeURI(outputFile.parent.fsName);
+	} catch (err) { }
+
+	saveTextFile(JSON.stringify(request), scriptPreferencesPath + '/converter_request.json');
+
+	return { path: request.path };
+};
+
+PADX.requestedConverter = function () {
+	var file = new File(scriptPreferencesPath + '/converter_request.json');
+
+	if (!file.exists) return { stamp: 0, path: '' };
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return { stamp: data.stamp || 0, path: data.path || '', now: new Date().getTime() };
+	} catch (err) {
+		return { stamp: 0, path: '' };
+	}
+};
+
+// Converte o texto colado em um dos formatos e devolve os dois. a: { text, from: 'mac' | 'win' }
+PADX.convertPaths = function (a) {
+	var mac;
+	var win;
+
+	if (a.from == 'mac') {
+		mac = a.text;
+		win = toWinPath(mac);
+	} else {
+		win = a.text;
+		mac = toMacPath(win);
+	}
+
+	return { mac: mac, win: win, os: appOs };
+};
+
+// Abre a pasta do caminho (ou a mais próxima que existe) no Finder / Explorer. a: { text }
+// O texto é o do campo do sistema atual.
+PADX.openConvertedPath = function (a) {
+	var fldPath = appOs == 'Mac' ? toMacPath(a.text) : toWinPath(a.text);
+
+	if (fldPath == '') throw new Error('informe um caminho.');
+
+	var folder = nearestExistingFolder(fldPath);
+
+	if (folder == null) throw new Error('pasta não encontrada (o volume / servidor está acessível?)');
+
+	var exact = decodeURI(folder.fsName) == decodeURI(new Folder(fldPath).fsName);
+
+	openFolder(folder.fsName);
+
+	return { exact: exact, path: folder.fsName };
+};
+
+// Pasta da última saída da fila de render ('' se a fila não tem nenhuma).
+PADX.lastOutputFolder = function () {
+	var outputFile = getLastOutputFile();
+
+	return { path: outputFile != null ? decodeURI(outputFile.parent.fsName) : '' };
+};
+
+// Copia um texto para a área de transferência do sistema (quando o painel não consegue).
+PADX.copyText = function (a) {
+	copyToClipboard(a.text);
+
+	return { ok: true };
+};

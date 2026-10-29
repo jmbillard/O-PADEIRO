@@ -1,0 +1,147 @@
+/* =========================================================
+   CONVERSOR DE CAMINHOS — janelinha própria
+   Degradê no topo e folha branca com o formulário.
+   ========================================================= */
+
+html,
+body.converter-page {
+  height: 100%;
+  min-width: 0;
+}
+
+body.converter-page {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.converter {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: 14px 14px 0;
+}
+
+.converter-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0 14px 5px;
+}
+
+.converter-top .eyebrow {
+  margin: 0;
+}
+
+.converter-sheet {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  align-content: start;
+  gap: 18px;
+  margin: 0 -14px;
+  padding: 20px;
+  overflow-y: auto;
+  background: white;
+}
+
+.convert-hint {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.convert-field {
+  display: grid;
+  gap: 6px;
+}
+
+.convert-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.convert-line .cfg-input {
+  min-height: 46px;
+  flex: 1;
+}
+
+.pill-btn {
+  min-width: 78px;
+  min-height: 36px;
+  flex: 0 0 auto;
+  padding: 4px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: white;
+  color: #505c72;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 680;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    transform 220ms var(--ease-soft);
+}
+
+.pill-btn:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+  transform: translateY(-1px);
+}
+
+.pill-btn:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.pill-btn.is-done {
+  border-color: #bde5d2;
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.convert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.convert-status {
+  min-width: 0;
+  flex: 1;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 620;
+  overflow-wrap: anywhere;
+}
+
+.convert-status.is-error {
+  color: var(--danger);
+}
+
+@media (max-width: 420px) {
+  .converter {
+    padding-inline: 10px;
+  }
+
+  .converter-sheet {
+    margin-inline: -10px;
+    padding: 16px;
+  }
+
+  .convert-line {
+    flex-wrap: wrap;
+  }
+
+  .convert-line .cfg-input {
+    flex-basis: 100%;
+  }
+}
