@@ -103,6 +103,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		production: 0,
 		loading: false,
 		loadId: 0,
+		listStamp: 0,
 		loadHint: '',
 		tree: null, // árvore em memória { type, text, children | uri }
 		treeStatus: 'loading', // loading | ok | missing | empty | error
@@ -167,6 +168,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var res = await call('productions', { configPath: state.configPath });
 
 			state.productions = res.productions;
+			state.listStamp = res.stamp;
 
 			if (res.error) pickerMessage('error', 'lista de produções: ' + res.error);
 		} catch (err) {
@@ -196,13 +198,54 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	// Acompanha a produção escolhida na barra do script e a conexão com o After Effects.
+	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
+	async function refreshProductionList(selectedName) {
+		var current = state.productions[state.production];
+
+		try {
+			var res = await call('productions', {});
+
+			state.listStamp = res.stamp;
+			state.productions = res.productions;
+		} catch (err) {
+			return;
+		}
+
+		var wanted = selectedName || (current && current.name);
+		var index = state.productions.findIndex(function (prod) {
+			return prod.name === wanted;
+		});
+
+		var same = current && index >= 0 && state.productions[index].name === current.name && state.productions[index].templatesPath === current.templatesPath;
+
+		if (same) {
+			state.production = index;
+			return;
+		}
+
+		state.production = index >= 0 ? index : 0;
+		state.selected = null;
+		state.info = null;
+		state.run = null;
+		app.classList.remove('is-expanded');
+		clearNotices();
+		pickerMessage();
+		updateSearchPlaceholder();
+		await loadTree();
+	}
+
 	async function watchProduction() {
 		if (document.hidden || state.busy || runIsOpen() || state.loading || state.editor) return;
 
 		var name;
 
 		try {
-			name = (await call('selectedProduction')).name;
+			var selected = await call('selectedProduction');
+
+			name = selected.name;
+
+			// a lista de produções foi editada (editor, script ou outra pessoa)
+			if (selected.stamp && selected.stamp !== state.listStamp && state.treeStatus !== 'error') return refreshProductionList(name);
 		} catch (err) {
 			if (state.treeStatus !== 'error') {
 				state.treeStatus = 'error';

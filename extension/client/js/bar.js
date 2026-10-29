@@ -19,6 +19,7 @@ aparecem como "em breve".
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
+	var PRODUCTIONS_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#-o-padeiro-script';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
@@ -339,7 +340,7 @@ aparecem como "em breve".
 	   Produção
 	   ========================================================= */
 
-	var state = { productions: [] };
+	var state = { productions: [], stamp: 0 };
 
 	function updateProdIcon(name) {
 		var prod = state.productions.filter(function (p) {
@@ -349,7 +350,7 @@ aparecem como "em breve".
 		var url = prod ? PAD_UTIL.decodeIcon(prod.icon) : null;
 
 		icon.hidden = !url;
-		icon.title = prod ? prod.name + '\n\ndois cliques: editar a lista de produções (em breve)' : '';
+		icon.title = prod ? prod.name + '\n\ndois cliques: editar a lista de produções' : 'dois cliques: editar a lista de produções';
 		if (url) icon.src = url;
 	}
 
@@ -358,7 +359,10 @@ aparecem como "em breve".
 		var chosen = null;
 
 		try {
-			state.productions = (await call('productions', {})).productions;
+			var list = await call('productions', {});
+
+			state.productions = list.productions;
+			state.stamp = list.stamp;
 			chosen = (await call('selectedProduction')).name;
 		} catch (err) {
 			toast('error', err.message);
@@ -390,8 +394,12 @@ aparecem como "em breve".
 		if (document.hidden || !state.productions.length) return;
 
 		try {
-			var name = (await call('selectedProduction')).name;
+			var selected = await call('selectedProduction');
+			var name = selected.name;
 			var select = $('production');
+
+			// a lista foi editada (editor, script ou outra pessoa): lê de novo
+			if (selected.stamp && selected.stamp !== state.stamp) return loadProductions();
 
 			if (name && name !== select.value && state.productions.some(function (p) { return p.name === name; })) {
 				select.value = name;
@@ -424,7 +432,9 @@ aparecem como "em breve".
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
 
-		$('prod-icon').addEventListener('dblclick', soon('editor de produções'));
+		$('prod-icon').addEventListener('dblclick', function () {
+			PAD_BRIDGE.openPanel(PRODUCTIONS_PANEL_ID);
+		});
 
 		try {
 			var info = await call('ping');

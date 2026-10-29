@@ -77,14 +77,60 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		productions: function (a) {
+			if (!window.PAD_MOCK_LIST) {
+				window.PAD_MOCK_LIST = {
+					stamp: 1000,
+					items: [
+						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
+						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
+						{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: null }
+					]
+				};
+			}
+
 			return {
-				configPath: a.configPath || '~/O PADEIRO script/O_PADEIRO_config.json',
+				configPath: '//servidor/padeiro/O_PADEIRO_config.json',
+				shared: mode !== 'local',
+				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
-				productions: [
-					{ name: 'DIA-A-DIA', templatesPath: '//servidor/TEMPLATES PADEIRO', icon: null },
-					{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
-					{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: null }
-				]
+				productions: window.PAD_MOCK_LIST.items.map(function (p) {
+					return Object.assign({}, p);
+				})
+			};
+		},
+
+		saveProductions: async function (a) {
+			await wait(delay);
+
+			if (mode === 'conflict') throw new Error('#PAD_CONFLITO - a lista foi alterada por outra pessoa (ou pelo script) depois que você abriu o editor. use "recarregar" e refaça as alterações.');
+
+			window.PAD_MOCK_LIST.items = a.productions.slice().sort(function (x, y) {
+				return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
+			});
+			window.PAD_MOCK_LIST.stamp += 1000;
+
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+		},
+
+		readProductionsFile: function () {
+			return { productions: [{ name: 'IMPORTADA 1', icon: '', templatesPath: '//servidor/IMP1' }, { name: 'IMPORTADA 2', icon: '', templatesPath: '//servidor/IMP2' }] };
+		},
+
+		writeProductionsFile: function (a) {
+			return { path: a.path };
+		},
+
+		canonicalPath: function (a) {
+			return { path: a.path };
+		},
+
+		checkFolders: async function (a) {
+			await wait(150);
+
+			return {
+				exists: a.paths.map(function (p) {
+					return !/TESTES|inexistente/.test(p);
+				})
 			};
 		},
 
@@ -256,7 +302,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		selectedProduction: function () {
-			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA' };
+			return { name: window.PAD_MOCK_PRODUCTION || 'DIA-A-DIA', stamp: window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.stamp : 1000 };
 		},
 
 		listDir: async function (a) {

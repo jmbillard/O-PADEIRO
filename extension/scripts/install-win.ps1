@@ -29,4 +29,18 @@ Copy-Item $src $dest -Recurse
 Remove-Item (Join-Path $dest 'scripts') -Recurse -Force
 
 Write-Host "copiado para: $dest"
+# lista de produções compartilhada: 'O_PADEIRO_config.json' na pasta que contém a pasta da extensão
+# (a mesma do O_PADEIRO_SOURCE.jsxbin). O caminho é gravado para a extensão achar o arquivo mesmo
+# rodando a partir da cópia local.
+$config = Join-Path (Split-Path $src -Parent) 'O_PADEIRO_config.json'
+$prefs = Join-Path $env:APPDATA 'O PADEIRO script'
+
+if (Test-Path $config) {
+	New-Item -ItemType Directory -Path $prefs -Force | Out-Null
+	[System.IO.File]::WriteAllText((Join-Path $prefs 'shared_config.txt'), $config)
+	Write-Host "lista de produções compartilhada: $config"
+} else {
+	Write-Host "aviso: não achei $config - a extensão usará uma lista local (instale a partir da pasta do padeiro na rede)"
+}
+
 Write-Host 'reinicie o After Effects e abra: Window > Extensions > O PADEIRO'

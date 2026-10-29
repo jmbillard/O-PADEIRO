@@ -66,6 +66,24 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
 	}
 
+	// Janela de salvar arquivo. Retorna o caminho escolhido ou null.
+	function pickSaveFile(title, defaultName, extensions) {
+		if (!cep || !window.cep || !window.cep.fs) return null;
+
+		var res = window.cep.fs.showSaveDialogEx(title, '', extensions || [], defaultName || '', '');
+
+		return res && res.err === 0 && res.data ? res.data : null;
+	}
+
+	// Lê um arquivo do disco como base64 (sem Node). Retorna a string base64 ou null.
+	function readFileBase64(path) {
+		if (!cep || !window.cep || !window.cep.fs) return null;
+
+		var res = window.cep.fs.readFile(path, window.cep.encoding.Base64);
+
+		return res && res.err === 0 ? res.data : null;
+	}
+
 	// Abre (ou traz para a frente) outro painel da extensão pelo Id do manifest.
 	function openPanel(extensionId) {
 		if (cep && cep.requestOpenExtension) {
@@ -83,5 +101,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, openPanel: openPanel, openUrl: openUrl };
+	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, openUrl: openUrl };
 })();

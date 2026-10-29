@@ -104,10 +104,34 @@ function padSortProductions(list) {
 	});
 }
 
-// Arquivo da lista de produções: o informado pelo painel ou o padrão da pasta de dados do usuário.
-// Na primeira vez, o padrão é criado a partir da lista que acompanha a extensão.
+// Lista de produções COMPARTILHADA (a mesma do script ScriptUI, 'O_PADEIRO_config.json'): fica na pasta
+// do 'O_PADEIRO_SOURCE.jsxbin', ao lado da pasta da extensão. Procura, nesta ordem:
+//   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
+//   2. o arquivo na pasta que contém a pasta da extensão.
+function padSharedConfigFile() {
+	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
+
+	if (pointer.exists) {
+		try {
+			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
+
+			if (path != '' && new File(path).exists) return new File(path);
+		} catch (err) { }
+	}
+
+	var sibling = new File(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json');
+
+	return sibling.exists ? sibling : null;
+}
+
+// Arquivo da lista de produções: o compartilhado; sem ele (ex: instalação fora da rede), uma cópia local
+// criada a partir da lista que acompanha a extensão.
 function padConfigFile(customPath) {
 	if (customPath) return new File(customPath);
+
+	var shared = padSharedConfigFile();
+
+	if (shared) return shared;
 
 	var configFile = new File(scriptPreferencesPath + '/O_PADEIRO_config.json');
 
@@ -214,20 +238,29 @@ PADX.productions = function (a) {
 		});
 	}
 
-	return { configPath: configFile.fsName, productions: productions, error: error };
+	return {
+		configPath: configFile.fsName,
+		shared: padSharedConfigFile() != null,
+		stamp: configFile.exists ? configFile.modified.getTime() : 0,
+		productions: productions,
+		error: error
+	};
 };
 
 // Produção escolhida na barra do script (main ui), gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
 	var file = new File(scriptPreferencesPath + '/selected_production.json');
+	var list = padConfigFile();
+	var stamp = list.exists ? list.modified.getTime() : 0; // a lista mudou (editor, script ou outra pessoa)?
+	var name = null;
 
-	if (!file.exists) return { name: null };
-
-	try {
-		return { name: JSON.parse(readFileContent(file)).name || null };
-	} catch (err) {
-		return { name: null };
+	if (file.exists) {
+		try {
+			name = JSON.parse(readFileContent(file)).name || null;
+		} catch (err) { }
 	}
+
+	return { name: name, stamp: stamp };
 };
 
 // Grava a produção escolhida (a barra principal escolhe, o painel de templates acompanha).
