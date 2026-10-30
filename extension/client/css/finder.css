@@ -304,39 +304,36 @@ body.finder-page {
 .result-icons {
   display: flex;
   flex: 0 0 auto;
-  gap: 2px;
-}
-
-.card-icon {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    transform 220ms var(--ease-soft);
+  gap: 6px;
 }
 
 .card-icon svg {
-  width: 17px;
-  height: 17px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
+  overflow: visible;
 }
 
-.card-icon:hover:not(:disabled) {
-  background: var(--blue-50);
-  color: var(--blue-500);
-  transform: translateY(-1px);
+.card-icon svg * {
+  transform-box: fill-box;
+}
+
+/* arquivo: inclina, como uma folha sendo puxada (volta ao sair) */
+.anim-file {
+  transform-origin: 50% 100%;
+  transition: transform 300ms var(--ease-soft);
+}
+
+.card-icon:hover .anim-file {
+  transform: rotate(-10deg) translateY(-1px);
+}
+
+/* película: as perfurações correm um quadro e param (voltam ao sair) */
+.anim-film .film-holes {
+  stroke-dasharray: 1.6 2.4;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
+}
+
+.card-icon:hover .anim-film .film-holes {
+  stroke-dashoffset: -8;
 }
 
 .card-icon:focus-visible,

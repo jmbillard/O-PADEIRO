@@ -309,14 +309,15 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
+	// arquivo (projeto): inclina; película (output): avança um quadro
 	var CARD_ICONS = {
-		projeto: '<path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.500z" /><path d="M14 3.5V8h4" />',
-		output: '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14M3.500 9.500h4M3.500 14.500h4M16.500 9.500h4M16.500 14.500h4" />'
+		projeto: '<g class="anim-file"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.500z" /><path d="M14 3.5V8h4" /></g>',
+		output: '<g class="anim-film"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></g>'
 	};
 
 	// projeto e output: ícones à direita do nome da atração
 	function iconButton(parent, kind, label, path, group) {
-		var btn = el('button', 'card-icon');
+		var btn = el('button', 'icon-button is-light card-icon');
 
 		btn.type = 'button';
 		btn.title = label + ':\n' + toPlatform(path, state.paths.platform) + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
