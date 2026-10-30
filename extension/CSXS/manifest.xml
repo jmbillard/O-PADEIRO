@@ -112,11 +112,11 @@
 					<Geometry>
 						<Size>
 							<Width>720</Width>
-							<Height>290</Height>
+							<Height>280</Height>
 						</Size>
 						<MinSize>
 							<Width>300</Width>
-							<Height>220</Height>
+							<Height>150</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

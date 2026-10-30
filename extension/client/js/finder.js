@@ -225,8 +225,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		loader.querySelector('.oven-hint').textContent = hint || '';
 	}
 
-	function showState(container, title, text) {
-		var box = el('div', 'finder-state');
+	function showState(container, title, text, isHint) {
+		var box = el('div', 'finder-state' + (isHint ? ' is-hint' : ''));
 
 		box.appendChild(el('strong', null, title));
 		if (text) box.appendChild(el('span', null, text));
@@ -439,7 +439,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (query.length < MIN_QUERY) {
-			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho');
+			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho', true);
 			return;
 		}
 
@@ -609,7 +609,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (raw === '') {
-			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto');
+			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto', true);
 			return;
 		}
 
@@ -798,7 +798,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var FIT_MIN_WIDTH = 720;
 	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-title span:first-child';
-	var fitMinHeight = 220;
+	var fitMinHeight = 150; // só o cabeçalho (busca vazia)
 	var fitTimer = null;
 	var refitOnResize = false;
 
@@ -848,7 +848,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		// altura natural do conteúdo (a lista ocupa o espaço que sobra, então mede pelo último filho)
 		var top = results.getBoundingClientRect().top;
-		var bottom = 0;
+		var bottom = top;
 
 		Array.prototype.forEach.call(results.children, function (child) {
 			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
@@ -858,10 +858,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
 		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
 
-		// a altura do loader (a primeira medida) vira a mínima: a janela não encolhe depois de carregar
-		if (results.querySelector('.oven-loader')) fitMinHeight = Math.max(fitMinHeight, height);
 
 		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+	}
+
+	// Sem busca, a folha branca sai: só o cabeçalho (loader e avisos aparecem sobre o degradê).
+	function updateIdle() {
+		['paths', 'texts'].forEach(function (tab) {
+			var q = $('q-' + tab).value.trim();
+
+			$('pane-' + tab).classList.toggle('is-idle', q.length < (tab === 'paths' ? MIN_QUERY : 1));
+		});
 	}
 
 	function scheduleFit() {
@@ -871,8 +878,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	async function init() {
 		['paths', 'texts'].forEach(function (tab) {
-			new MutationObserver(scheduleFit).observe($('results-' + tab), { childList: true });
+			new MutationObserver(function () {
+				updateIdle();
+				scheduleFit();
+			}).observe($('results-' + tab), { childList: true });
+			$('q-' + tab).addEventListener('input', updateIdle);
 		});
+		updateIdle(); // o loader inicial já vem no HTML
 
 		bindEvents();
 

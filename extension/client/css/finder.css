@@ -220,6 +220,7 @@ body.finder-page {
   flex-direction: column;
   margin: 4px -14px 0;
   background: white;
+  transition: background-color 240ms ease;
 }
 
 .finder-results {
@@ -621,4 +622,33 @@ body.finder-page {
 .finder-results .finder-state {
   min-height: 0;
   padding: 26px 18px;
+}
+
+/* sem busca: sem a folha branca. loader e avisos ficam sobre o degradê; a dica de busca vazia some */
+.finder-pane.is-idle .finder-sheet {
+  background: transparent;
+}
+
+.finder-pane.is-idle .finder-state.is-hint {
+  display: none;
+}
+
+.finder-pane.is-idle .finder-state {
+  padding-top: 8px;
+  color: rgb(255 255 255 / 78%);
+}
+
+.finder-pane.is-idle .finder-state strong {
+  color: white;
+}
+
+.finder-pane.is-idle .oven-loader.is-light {
+  --oven-line: rgb(255 255 255 / 88%);
+  --oven-fill: rgb(255 255 255 / 14%);
+  --oven-belt: rgb(255 255 255 / 40%);
+  --oven-steam: rgb(255 255 255 / 70%);
+  --oven-text: white;
+  --oven-hint: rgb(255 255 255 / 72%);
+
+  padding-top: 2px;
 }
