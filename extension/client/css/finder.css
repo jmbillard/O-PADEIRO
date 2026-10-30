@@ -591,3 +591,34 @@ body.finder-page {
   font-weight: 650;
   text-align: center;
 }
+
+/* loader e mensagens compactos: a janela abre baixa (a altura do loader é a mínima) */
+.finder-results .oven-loader {
+  min-height: 0;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 2px;
+  padding: 14px 18px;
+  text-align: left;
+}
+
+.finder-results .oven-loader .oven {
+  grid-row: 1 / span 2;
+  margin: -14px -12px -14px -4px;
+  transform: scale(0.7);
+}
+
+.finder-results .oven-loader .oven-title {
+  align-self: end;
+}
+
+.finder-results .oven-loader .oven-hint {
+  align-self: start;
+}
+
+.finder-results .finder-state {
+  min-height: 0;
+  padding: 26px 18px;
+}

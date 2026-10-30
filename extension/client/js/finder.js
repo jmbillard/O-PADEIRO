@@ -796,10 +796,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   busca, a altura que cabe os resultados (até um limite)
 	   ========================================================= */
 
-	var FIT_MIN_WIDTH = 520; // loader e mensagens
-	var FIT_RESULTS_WIDTH = 720; // com resultados (caminhos costumam ser compridos)
+	var FIT_MIN_WIDTH = 720;
 	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-title span:first-child';
-	var fitMinHeight = 360;
+	var fitMinHeight = 220;
 	var fitTimer = null;
 	var refitOnResize = false;
 
@@ -835,9 +834,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			extra = Math.max(extra, item.scrollWidth - item.clientWidth);
 		});
 
-		var minWidth = results.querySelector('.result-card, .comp-group') ? FIT_RESULTS_WIDTH : FIT_MIN_WIDTH;
-		var maxWidth = Math.max(minWidth, Math.round((window.screen.availWidth || 1440) * 0.7));
-		var width = Math.min(maxWidth, Math.max(minWidth, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
+		var maxWidth = Math.max(FIT_MIN_WIDTH, Math.round((window.screen.availWidth || 1440) * 0.7));
+		var width = Math.min(maxWidth, Math.max(FIT_MIN_WIDTH, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
 
 		if (width > window.innerWidth + 1) {
 			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho pode perder uma linha)

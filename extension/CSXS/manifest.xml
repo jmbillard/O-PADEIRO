@@ -111,12 +111,12 @@
 					<Menu>O ACESSORISTA</Menu>
 					<Geometry>
 						<Size>
-							<Width>520</Width>
-							<Height>400</Height>
+							<Width>720</Width>
+							<Height>290</Height>
 						</Size>
 						<MinSize>
 							<Width>300</Width>
-							<Height>360</Height>
+							<Height>220</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
