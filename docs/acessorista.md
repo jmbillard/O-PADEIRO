@@ -4,7 +4,7 @@
 
 o painel **O ACESSORISTA**: as buscas do padeiro, em duas abas (caminhos e textos).
 
-a janela abre com 720 px de largura e baixa, só com o necessário para o loader. a cada busca ela se ajusta sozinha: alarga para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola). a altura do loader é a mínima.
+a janela abre compacta (520 px), só com o necessário para o loader. a cada busca ela se ajusta sozinha: com resultados, alarga para pelo menos 720 px, para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola). a altura do loader é a mínima.
 
 ### caminhos
 
