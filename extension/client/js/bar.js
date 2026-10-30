@@ -470,7 +470,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (state === 'ok') line = 'banco de fontes: as ' + res.total + ' fontes do projeto estão no banco';
 		if (state === 'pending') line = 'banco de fontes: enviando ' + res.pending + (res.pending === 1 ? ' fonte' : ' fontes') + (res.pendingNames.length ? ' (' + res.pendingNames.join(', ') + (res.pending > res.pendingNames.length ? '…' : '') + ')' : '');
-		if (res && res.state === 'unavailable') line = res.message;
+		if (res && res.state === 'none') line = 'banco de fontes: o projeto aberto não tem fontes para enviar (Adobe Fonts e fontes do sistema ficam de fora)';
+		if (res && (res.state === 'unavailable' || res.state === 'error')) line = 'banco de fontes: ' + PAD_UTIL.errorText(res.message);
 
 		btn.title = btn.dataset.baseTip + (line ? '\n' + line : '');
 	}
@@ -491,7 +492,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (res.state === 'unsupported') delay = 0; // After Effects anterior ao 2024: sem banco
 			if (res.state === 'pending') delay = FONT_BANK_STEP;
 		} catch (err) {
-			fontBankDot(null); // o envio volta a ser tentado na próxima leitura
+			fontBankDot({ state: 'error', message: err.message }); // o envio volta a ser tentado na próxima leitura
 		}
 
 		fontBank.busy = false;

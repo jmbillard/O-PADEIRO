@@ -14,9 +14,8 @@ a janela abre com 720 px de largura e baixa, só com o necessário para o loader
 
 - **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma tem um interruptor para entrar ou sair da busca.
 - **⋯** → ajuda (esta página) e recarregar o painel.
-- **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
-- **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
-- **caminho** → clique para abrir a pasta.
+- **ícones de arquivo / película** (à direita do nome da atração) → abrem as pastas de projeto e de output.
+- **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
 - **atualizar** (antes dos interruptores) → baixa os caminhos de novo.
 
 > 🚩 *obs:*\

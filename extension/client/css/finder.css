@@ -288,73 +288,141 @@ body.finder-page {
   white-space: nowrap;
 }
 
-.result-actions {
+.result-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
 }
 
-.pill-btn {
-  min-height: 30px;
-  max-width: 100%;
-  padding: 4px 13px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: white;
-  color: #505c72;
+.result-head .result-name {
+  min-width: 0;
+  flex: 1;
+}
+
+/* projeto e output: ícones à direita do nome */
+.result-icons {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.card-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
   cursor: pointer;
-  font-size: 0.7rem;
-  font-weight: 680;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   transition:
-    background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
     transform 220ms var(--ease-soft);
 }
 
-.pill-btn:hover:not(:disabled) {
-  border-color: var(--blue-200);
+.card-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.card-icon:hover:not(:disabled) {
   background: var(--blue-50);
   color: var(--blue-500);
   transform: translateY(-1px);
 }
 
-.pill-btn:focus-visible,
-.path-line:focus-visible,
+.card-icon:focus-visible,
+.crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
   outline: 3px solid rgb(79 130 255 / 22%);
   outline-offset: 2px;
 }
 
-.pill-btn.is-busy {
+.card-icon.is-busy {
   pointer-events: none;
   animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 
-.path-line {
-  display: block;
-  width: 100%;
-  padding: 2px 0;
+/* caminho em breadcrumb: as pastas iniciais saem com "…" quando não cabem */
+.path-crumbs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1px;
+  margin-left: -6px;
   overflow: hidden;
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.72rem;
-  text-align: left;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 180ms ease;
 }
 
-.path-line:hover {
+.path-crumbs .crumb {
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.path-crumbs .crumb:hover {
+  background: var(--blue-50);
   color: var(--blue-500);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+}
+
+.path-crumbs .crumb.is-last {
+  flex-shrink: 1;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.path-crumbs.is-measuring .crumb.is-last {
+  flex-shrink: 0;
+}
+
+/* a pasta que contém o termo buscado */
+.path-crumbs .crumb.is-match {
+  background: #ffe9a8;
+  color: #4a3500;
+  font-weight: 720;
+}
+
+.path-crumbs .crumb.is-match:hover {
+  background: #ffdf85;
+}
+
+.path-crumbs .crumb-sep,
+.path-crumbs .crumb-more {
+  flex: 0 0 auto;
+  color: var(--border-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.path-crumbs .crumb-more {
+  padding: 0 4px 0 6px;
+  color: var(--text-tertiary);
+}
+
+.path-crumbs [hidden] {
+  display: none;
 }
 
 /* textos */
