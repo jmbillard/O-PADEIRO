@@ -73,7 +73,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta2', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta3', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -266,6 +266,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		textCompList: function () {
+			if (/nocomp/.test(location.search)) return { comps: [] };
+
 			return { comps: [{ id: 1, name: 'RDP - CONVIDADO' }, { id: 2, name: 'TARJA - JOAO BOSCO' }, { id: 3, name: 'LETTERING AMAZÔNIA' }, { id: 4, name: 'FUNDO' }, { id: 5, name: 'ASSINATURA' }] };
 		},
 
@@ -376,10 +378,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (/naoexiste/.test(a.text)) throw new Error('pasta não encontrada (o volume / servidor está acessível?)');
 
 			return { exact: !/parcial/.test(a.text), path: a.text };
-		},
-
-		lastOutputFolder: function () {
-			return { path: '/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS' };
 		},
 
 		copyText: function () {

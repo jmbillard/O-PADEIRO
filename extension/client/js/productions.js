@@ -306,14 +306,18 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			updateDirty();
 		});
 
-		pathWrap.appendChild(path);
+		// o campo do caminho leva o status (à esquerda) e os botões de pasta e de excluir (à direita)
+		var actions = el('div', 'prod-path-actions');
+
+		actions.appendChild(pick);
+		actions.appendChild(remove);
 		pathWrap.appendChild(dot);
-		pathWrap.appendChild(pick);
+		pathWrap.appendChild(path);
+		pathWrap.appendChild(actions);
 
 		box.appendChild(iconBtn);
 		box.appendChild(name);
 		box.appendChild(pathWrap);
-		box.appendChild(remove);
 
 		row.nodes = { box: box, dot: dot, name: name, path: path };
 
@@ -417,7 +421,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		info.textContent = '';
 		info.appendChild(el('span', null, res.configPath));
-		info.appendChild(el('span', 'prods-tag' + (res.shared ? '' : ' is-local'), res.shared ? 'compartilhada' : 'inacessível'));
+		// a lista é sempre a compartilhada: a etiqueta só aparece quando ela não está acessível
+		if (!res.shared) info.appendChild(el('span', 'prods-tag is-local', 'inacessível'));
 		info.title = res.shared ? res.configPath : 'a lista compartilhada (junto do padeiro, na rede) não está acessível.';
 		info.hidden = false;
 	}

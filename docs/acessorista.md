@@ -4,7 +4,7 @@
 
 o painel **O ACESSORISTA**: as buscas do padeiro, em duas abas (caminhos e textos).
 
-a janela abre com 720 px de largura e baixa, só com o necessário para o loader. a cada busca ela se ajusta sozinha: alarga para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola). a altura do loader é a mínima.
+a janela abre com 720 px de largura e baixa: sem uma busca, ela mostra só o cabeçalho (o loader e os avisos aparecem sobre o degradê). a folha branca com os resultados entra quando você pesquisa. a cada busca ela se ajusta sozinha: alarga para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola).
 
 ### caminhos
 
@@ -14,9 +14,8 @@ a janela abre com 720 px de largura e baixa, só com o necessário para o loader
 
 - **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma tem um interruptor para entrar ou sair da busca.
 - **⋯** → ajuda (esta página) e recarregar o painel.
-- **abrir projeto / abrir output** → abrem as pastas de projeto e de output da atração.
-- **abrir: PASTA** → abre a pasta do caminho que contém o termo buscado.
-- **caminho** → clique para abrir a pasta.
+- **pastinhas** (à direita do nome da atração) → a com documento abre a pasta de projeto; a com quadro de filme, a de output.
+- **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
 - **atualizar** (antes dos interruptores) → baixa os caminhos de novo.
 
 > 🚩 *obs:*\

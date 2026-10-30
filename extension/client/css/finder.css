@@ -220,6 +220,7 @@ body.finder-page {
   flex-direction: column;
   margin: 4px -14px 0;
   background: white;
+  transition: background-color 240ms ease;
 }
 
 .finder-results {
@@ -288,73 +289,147 @@ body.finder-page {
   white-space: nowrap;
 }
 
-.result-actions {
+.result-head {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.result-head .result-name {
+  min-width: 0;
+  flex: 1;
+}
+
+/* projeto e output: ícones à direita do nome */
+.result-icons {
+  display: flex;
+  flex: 0 0 auto;
   gap: 6px;
 }
 
-.pill-btn {
-  min-height: 30px;
-  max-width: 100%;
-  padding: 4px 13px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: white;
-  color: #505c72;
-  cursor: pointer;
-  font-size: 0.7rem;
-  font-weight: 680;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.card-icon svg {
+  overflow: visible;
+}
+
+.card-icon svg * {
+  transform-box: fill-box;
+}
+
+/* pastinha: a frente abre e o conteúdo sobe um pouco (volta ao sair). conteúdo e frente são
+   preenchidos com o fundo do botão para cobrir o que fica atrás deles */
+.card-icon .folder-front {
+  fill: white;
+  transform-origin: 50% 100%;
   transition:
-    background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    transform 220ms var(--ease-soft);
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
 }
 
-.pill-btn:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-  transform: translateY(-1px);
+.card-icon:hover .folder-front {
+  fill: var(--blue-50);
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
-.pill-btn:focus-visible,
-.path-line:focus-visible,
+.card-icon .folder-content {
+  fill: white;
+  transition:
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.card-icon:hover .folder-content {
+  fill: var(--blue-50);
+}
+
+.card-icon:hover .folder-content {
+  transform: translateY(-2px);
+}
+
+.card-icon:focus-visible,
+.crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
   outline: 3px solid rgb(79 130 255 / 22%);
   outline-offset: 2px;
 }
 
-.pill-btn.is-busy {
+.card-icon.is-busy {
   pointer-events: none;
   animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 
-.path-line {
-  display: block;
-  width: 100%;
-  padding: 2px 0;
+/* caminho em breadcrumb: as pastas iniciais saem com "…" quando não cabem */
+.path-crumbs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1px;
+  margin-left: -6px;
   overflow: hidden;
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 0.72rem;
-  text-align: left;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 180ms ease;
 }
 
-.path-line:hover {
+.path-crumbs .crumb {
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.path-crumbs .crumb:hover {
+  background: var(--blue-50);
   color: var(--blue-500);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+}
+
+.path-crumbs .crumb.is-last {
+  flex-shrink: 1;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.path-crumbs.is-measuring .crumb.is-last {
+  flex-shrink: 0;
+}
+
+/* a pasta que contém o termo buscado */
+.path-crumbs .crumb.is-match {
+  background: #ffe9a8;
+  color: #4a3500;
+  font-weight: 720;
+}
+
+.path-crumbs .crumb.is-match:hover {
+  background: #ffdf85;
+}
+
+.path-crumbs .crumb-sep,
+.path-crumbs .crumb-more {
+  flex: 0 0 auto;
+  color: var(--border-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.path-crumbs .crumb-more {
+  padding: 0 4px 0 6px;
+  color: var(--text-tertiary);
+}
+
+.path-crumbs [hidden] {
+  display: none;
 }
 
 /* textos */
@@ -391,7 +466,34 @@ body.finder-page {
   color: var(--blue-500);
 }
 
-.comp-title span:first-child {
+.comp-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  transition: stroke 180ms ease;
+}
+
+.comp-title:hover .comp-icon {
+  stroke: currentcolor;
+}
+
+/* película: as perfurações correm um quadro e param (voltam ao sair) */
+.comp-icon .film-holes {
+  stroke-dasharray: 1.6 2.4;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
+}
+
+.comp-title:hover .comp-icon .film-holes {
+  stroke-dashoffset: -8;
+}
+
+.comp-title .comp-name {
   min-width: 0;
   flex: 1;
   overflow: hidden;
@@ -516,4 +618,68 @@ body.finder-page {
   font-size: 0.7rem;
   font-weight: 650;
   text-align: center;
+}
+
+/* loader e mensagens compactos: a janela abre baixa (a altura do loader é a mínima) */
+.finder-results .oven-loader {
+  min-height: 0;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 2px;
+  padding: 14px 18px;
+  text-align: left;
+}
+
+.finder-results .oven-loader .oven {
+  grid-row: 1 / span 2;
+  margin: -14px -12px -14px -4px;
+  transform: scale(0.7);
+}
+
+.finder-results .oven-loader .oven-title {
+  align-self: end;
+}
+
+.finder-results .oven-loader .oven-hint {
+  align-self: start;
+}
+
+.finder-results .finder-state {
+  min-height: 0;
+  padding: 26px 18px;
+}
+
+/* sem busca: sem a folha branca. loader e avisos ficam sobre o degradê; a dica de busca vazia some */
+.finder-pane.is-idle .finder-sheet {
+  background: transparent;
+}
+
+.finder-pane.is-idle .finder-state.is-hint {
+  display: none;
+}
+
+.finder-pane.is-idle .finder-results {
+  overflow: hidden;
+}
+
+.finder-pane.is-idle .finder-state {
+  padding-top: 8px;
+  color: rgb(255 255 255 / 78%);
+}
+
+.finder-pane.is-idle .finder-state strong {
+  color: white;
+}
+
+.finder-pane.is-idle .oven-loader.is-light {
+  --oven-line: rgb(255 255 255 / 88%);
+  --oven-fill: rgb(255 255 255 / 14%);
+  --oven-belt: rgb(255 255 255 / 40%);
+  --oven-steam: rgb(255 255 255 / 70%);
+  --oven-text: white;
+  --oven-hint: rgb(255 255 255 / 72%);
+
+  padding-top: 2px;
 }

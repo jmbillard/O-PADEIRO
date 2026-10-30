@@ -247,13 +247,6 @@ PADX.openConvertedPath = function (a) {
 	return { exact: exact, path: folder.fsName };
 };
 
-// Pasta da última saída da fila de render ('' se a fila não tem nenhuma).
-PADX.lastOutputFolder = function () {
-	var outputFile = getLastOutputFile();
-
-	return { path: outputFile != null ? decodeURI(outputFile.parent.fsName) : '' };
-};
-
 // Copia um texto para a área de transferência do sistema (quando o painel não consegue).
 PADX.copyText = function (a) {
 	copyToClipboard(a.text);

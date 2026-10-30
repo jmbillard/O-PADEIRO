@@ -21,12 +21,6 @@
 				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar filtro" hidden>×</button>
 			</div>
 			<div class="prods-tools">
-				<button type="button" class="icon-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
-					<svg viewBox="0 0 24 24"><path d="M12 4v10M8 10.500l4 4 4-4M5 18.500h14" /></svg>
-				</button>
-				<button type="button" class="icon-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
-					<svg viewBox="0 0 24 24"><path d="M12 15V5M8 8.500l4-4 4 4M5 18.500h14" /></svg>
-				</button>
 				<button type="button" class="icon-button" id="btn-reload" title="Recarregar a lista do arquivo" aria-label="Recarregar a lista do arquivo">
 					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
 				</button>
@@ -52,6 +46,12 @@
 			</div>
 
 			<div class="action-bar is-anchored prods-bar">
+				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
+					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
+				</button>
+				<button type="button" class="io-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
+					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
+				</button>
 				<button type="button" class="button button-secondary" id="btn-new">+ nova produção</button>
 				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
 				<button type="button" class="button button-primary" id="btn-save">Salvar lista</button>
@@ -61,6 +61,7 @@
 		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>
 	</main>
 
+	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
 	<script src="js/util.js"></script>

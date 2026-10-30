@@ -111,16 +111,11 @@ body.prods-page {
 /* uma produção */
 .prod-row {
   display: grid;
-  grid-template-columns: 40px minmax(120px, 190px) minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(120px, 190px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 7px 0;
   animation: file-enter 320ms var(--ease-enter) both;
-}
-
-.prod-row:last-child {
-  border-bottom: 0;
 }
 
 .prod-icon {
@@ -158,25 +153,29 @@ body.prods-page {
 
 .prod-path {
   position: relative;
-  display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 6px;
 }
 
+/* status à esquerda e botões à direita, dentro do campo */
 .prod-path .cfg-input {
-  flex: 1;
-  padding-right: 30px;
+  width: 100%;
+  padding-right: 72px;
+  padding-left: 34px;
 }
 
 .prod-dot {
   position: absolute;
+  top: 50%;
+  left: 14px;
   width: 9px;
   height: 9px;
-  right: 48px;
   border-radius: 50%;
   background: var(--border-strong);
   pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .prod-dot.is-ok {
@@ -187,6 +186,80 @@ body.prods-page {
 .prod-dot.is-missing {
   background: #dd5656;
   box-shadow: 0 0 0 4px rgb(221 86 86 / 12%);
+}
+
+.prod-path-actions {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  transform: translateY(-50%);
+}
+
+.prod-path-actions .mini-button {
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.prod-path-actions .mini-button:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
+}
+
+/* importar e exportar (rodapé): a seta desce / sobe no hover e volta ao sair */
+.io-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.io-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.io-button:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.io-button svg {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.io-arrow {
+  transition: transform 280ms var(--ease-soft);
+}
+
+#btn-import:hover .io-arrow {
+  transform: translateY(2.5px);
+}
+
+#btn-export:hover .io-arrow {
+  transform: translateY(-2.5px);
 }
 
 .prod-row.has-error .cfg-input {
@@ -266,8 +339,10 @@ body.prods-page {
 }
 
 @media (max-width: 640px) {
+  /* sem separadores: um respiro maior entre as produções empilhadas */
   .prod-row {
-    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding: 8px 0 14px;
   }
 
   .prod-path {
@@ -275,14 +350,6 @@ body.prods-page {
     grid-row: 2;
   }
 
-  .prod-row>.mini-button {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .prod-dot {
-    right: 48px;
-  }
 }
 
 @media (max-width: 420px) {

@@ -86,8 +86,34 @@ function psSlashes(path) {
 	return String(path || '').replace(/\\/g, '/');
 }
 
+// Caminho como vem do workflow, limpo: sem espaços/quebras de linha nas pontas, sem aspas soltas no
+// começo ou no fim (ex: "...\LETTERING'") e sem barra no fim.
+function psCleanPath(path) {
+	return String(path || '')
+		.replace(/^[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+|[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+$/g, '')
+		.replace(/(.)[\\\/]+$/, '$1');
+}
+
+// Chave para comparar caminhos: o mesmo caminho em formato Windows (//servidor/share/...) ou macOS
+// (/Volumes/share/...), com barras duplas, espaços em volta das pastas, caracteres invisíveis,
+// maiúsculas ou acentos compostos de jeitos diferentes (o macOS grava "Ê" como "E" + acento).
 function psPathKey(path) {
-	return psSlashes(path).replace(/\/+$/, '').toLowerCase();
+	var parts = psToMac(psCleanPath(path).replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')).split('/');
+	var clean = [];
+
+	for (var i = 0; i < parts.length; i++) {
+		var part = parts[i].replace(/^\s+|\s+$/g, '');
+
+		if (part !== '') clean.push(part);
+	}
+
+	return clean
+		.join('/')
+		.toLowerCase()
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, function (c) {
+			return PS_ACCENTS[c];
+		});
 }
 
 function psToMac(path) {
@@ -212,9 +238,9 @@ function psBuildIndex(data) {
 			if (!rec) continue;
 
 			var plat = rec[platform] || {};
-			var projeto = plat.projeto || rec.projeto || '';
-			var output = plat.output || rec.output || '';
-			var caminho = plat.caminho || rec.caminho || '';
+			var projeto = psCleanPath(plat.projeto || rec.projeto);
+			var output = psCleanPath(plat.output || rec.output);
+			var caminho = psCleanPath(plat.caminho || rec.caminho);
 
 			var name = rec.atracao
 				? String(rec.atracao)

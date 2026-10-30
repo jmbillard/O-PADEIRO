@@ -294,6 +294,7 @@ svg {
   padding: 7px 15px;
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
+  font-size: 0.88rem; /* padrão de todos os botões (o compacto é a exceção) */
   font-weight: 680;
   line-height: 1.2;
   transition:

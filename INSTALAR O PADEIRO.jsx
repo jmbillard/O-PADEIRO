@@ -275,8 +275,8 @@ Instalar / atualizar:
 
 	text(
 		p0,
-		'olá! este instalador coloca O PADEIRO no After Effects deste computador.\n\n' +
-			'o código do padeiro continua na pasta da rede: para atualizar, basta fechar e abrir a janela. ' +
+		'olá! vamos instalar O PADEIRO no After Effects.\n\n' +
+			'uma vez instalado ele será atualizado automaticamente, basta fechar e abrir a janela. ' +
 			'o instalador só precisa rodar de novo quando a equipe avisar.',
 		92
 	);

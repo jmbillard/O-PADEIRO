@@ -128,10 +128,29 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	// Redimensiona a própria janela (só janelas Modeless; painéis acoplados ignoram).
+	// Redimensiona a própria janela (só janelas Modeless; painéis acoplados ignoram). O After Effects
+	// pode ignorar um pedido (por exemplo, logo que a janela abre): confere um instante depois e pede
+	// de novo, até 4 vezes. Os limites do manifest (tamanho mínimo e máximo) continuam valendo.
+	var resizeTimer = null;
+
 	function resizeWindow(width, height) {
-		if (cep && cep.resizeContent) cep.resizeContent(Math.round(width), Math.round(height));
-		else console.log('[mock] redimensionar janela', width, height);
+		var w = Math.round(width);
+		var h = Math.round(height);
+		var tries = 0;
+
+		clearTimeout(resizeTimer);
+
+		if (!cep || !cep.resizeContent) return console.log('[mock] redimensionar janela', w, h);
+
+		(function attempt() {
+			cep.resizeContent(w, h);
+
+			if (++tries >= 4) return;
+
+			resizeTimer = setTimeout(function () {
+				if (Math.abs(window.innerWidth - w) > 2 || Math.abs(window.innerHeight - h) > 2) attempt();
+			}, 350);
+		})();
 	}
 
 	// Fecha o próprio painel.

@@ -19,7 +19,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
 	var MAX_RESULTS = 12; // máximo de atrações exibidas
-	var MAX_PATH_CHARS = 180;
 	var MAX_TEXT_ROWS = 300; // máximo de textos exibidos
 	var COMPS_PER_CHUNK = 4;
 	var TAB_REQUEST_TTL = 15000; // ms: pedido de aba da barra considerado "recente" ao abrir o painel
@@ -132,18 +131,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
-	function truncateMiddle(text, maxChars) {
-		text = String(text || '');
-
-		if (text.length <= maxChars) return text;
-
-		var remaining = maxChars - 3;
-		var left = Math.ceil(remaining / 2);
-		var right = Math.floor(remaining / 2);
-
-		return text.substring(0, left) + '...' + text.substring(text.length - right);
-	}
-
 	// //servidor/share/pasta → /Volumes/share/pasta (macOS); barras invertidas no Windows.
 	function toPlatform(path, platform) {
 		var p = String(path || '').replace(/\\/g, '/');
@@ -238,8 +225,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		loader.querySelector('.oven-hint').textContent = hint || '';
 	}
 
-	function showState(container, title, text) {
-		var box = el('div', 'finder-state');
+	function showState(container, title, text, isHint) {
+		var box = el('div', 'finder-state' + (isHint ? ' is-hint' : ''));
 
 		box.appendChild(el('strong', null, title));
 		if (text) box.appendChild(el('span', null, text));
@@ -308,27 +295,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	// Primeira pasta do caminho cujo nome contém o termo buscado.
-	function matchingFolder(group, query) {
-		var lists = [group.caminhos, group.projetos, group.outputs];
-
-		for (var i = 0; i < lists.length; i++) {
-			for (var j = 0; j < lists[i].length; j++) {
-				var parts = lists[i][j].split(/([\\/])/);
-				var built = '';
-
-				for (var k = 0; k < parts.length; k++) {
-					built += parts[k];
-
-					if (parts[k] !== '\\' && parts[k] !== '/' && psNormalize(parts[k]).indexOf(query) >= 0) {
-						return { path: built, name: parts[k] };
-					}
-				}
-			}
-		}
-
-		return null;
-	}
-
 	async function openPath(btn, path, group) {
 		if (btn) btn.classList.add('is-busy');
 
@@ -343,12 +309,24 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
-	function folderButton(parent, label, path, group) {
-		var btn = el('button', 'pill-btn', label);
+	// pastinhas com o conteúdo à mostra: documento (projeto) e quadro de filme (output). no hover a
+	// frente da pasta abre e o conteúdo sobe um pouco (CSS em finder.css)
+	var FOLDER_BACK = '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" />';
+	var FOLDER_FRONT = '<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />';
+	var CARD_ICONS = {
+		projeto: FOLDER_BACK + '<g class="folder-content"><path d="M8 12.500V4h5.500l2.500 2.500v6" /><path d="M13.500 4v2.500h2.500" /></g>' + FOLDER_FRONT,
+		output: FOLDER_BACK + '<g class="folder-content"><rect x="7" y="4.500" width="10" height="8" rx="1" /><path d="M9.500 4.500v8M14.500 4.500v8" /></g>' + FOLDER_FRONT
+	};
+
+	// projeto e output: ícones à direita do nome da atração
+	function iconButton(parent, kind, label, path, group) {
+		var btn = el('button', 'icon-button is-light card-icon');
 
 		btn.type = 'button';
-		btn.title = path + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		btn.title = label + ':\n' + toPlatform(path, state.paths.platform) + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		btn.setAttribute('aria-label', label);
 		btn.dataset.copy = toPlatform(path, state.paths.platform);
+		btn.innerHTML = '<svg viewBox="0 0 24 24">' + CARD_ICONS[kind] + '</svg>';
 		btn.addEventListener('click', function () {
 			openPath(btn, path, group);
 		});
@@ -356,33 +334,91 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		parent.appendChild(btn);
 	}
 
-	function groupCard(group, query) {
-		var card = el('article', 'result-card');
-		var actions = el('div', 'result-actions');
+	// Caminho em breadcrumb: cada pasta abre a si mesma; a que contém o termo buscado fica destacada.
+	function pathCrumbs(display, query, group) {
+		var nav = el('nav', 'path-crumbs');
+		var unc = /^[\\/]{2}/.test(display);
+		var sep = state.paths.platform === 'Mac' ? '/' : '\\';
+		var prefix = state.paths.platform === 'Mac' ? '/' : unc ? '\\\\' : '';
+		var parts = display.split(/[\\/]+/).filter(Boolean);
 
-		card.appendChild(highlightNode('h4', 'result-name', group.name, query));
-		card.firstChild.title = group.name;
+		nav.dataset.copy = display;
+		nav.title = display + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		nav.appendChild(el('span', 'crumb-more', '…'));
 
-		if (group.projetos.length) folderButton(actions, 'Abrir projeto', group.projetos[0], group);
-		if (group.outputs.length) folderButton(actions, 'Abrir output', group.outputs[0], group);
+		parts.forEach(function (name, i) {
+			var target = prefix + parts.slice(0, i + 1).join(sep);
+			var crumb = el('button', 'crumb' + (i === parts.length - 1 ? ' is-last' : '') + (query && psNormalize(name).indexOf(query) >= 0 ? ' is-match' : ''), name);
 
-		var folder = matchingFolder(group, query);
-
-		if (folder) folderButton(actions, 'Abrir: ' + folder.name, folder.path, group);
-		if (actions.children.length) card.appendChild(actions);
-
-		group.caminhos.forEach(function (path) {
-			var display = toPlatform(path, state.paths.platform);
-			var line = el('button', 'path-line', 'Caminho: ' + truncateMiddle(display, MAX_PATH_CHARS));
-
-			line.type = 'button';
-			line.title = 'clique para abrir:\n' + display + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
-			line.dataset.copy = display;
-			line.addEventListener('click', function () {
-				openPath(null, display, group);
+			crumb.type = 'button';
+			crumb.title = 'abrir ' + target;
+			crumb.addEventListener('click', function () {
+				openPath(null, target, group);
 			});
 
-			card.appendChild(line);
+			if (i > 0) nav.appendChild(el('span', 'crumb-sep', '›'));
+			nav.appendChild(crumb);
+		});
+
+		return nav;
+	}
+
+	// Mostra todas as pastas (para medir a largura natural) ou esconde as iniciais até caber; a última
+	// e a que deu match têm prioridade e só saem por último.
+	function crumbsExpand(root) {
+		Array.prototype.forEach.call(root.querySelectorAll('.path-crumbs'), function (nav) {
+			nav.classList.remove('is-collapsed');
+			Array.prototype.forEach.call(nav.children, function (child) {
+				child.hidden = child.classList.contains('crumb-more');
+			});
+		});
+	}
+
+	function crumbsCollapse(root) {
+		crumbsExpand(root);
+
+		Array.prototype.forEach.call(root.querySelectorAll('.path-crumbs'), function (nav) {
+			var crumbs = Array.prototype.filter.call(nav.children, function (c) {
+				return c.classList.contains('crumb');
+			});
+			var order = crumbs.slice(0, -1).filter(function (c) {
+				return !c.classList.contains('is-match');
+			}).concat(crumbs.slice(0, -1).filter(function (c) {
+				return c.classList.contains('is-match');
+			}));
+
+			nav.classList.add('is-measuring');
+
+			for (var h = 0; nav.scrollWidth > nav.clientWidth && h < order.length; h++) {
+				order[h].hidden = true;
+
+				// o separador que vem antes da pasta (ou depois, na primeira)
+				var sepNode = order[h].previousSibling && order[h].previousSibling.classList.contains('crumb-sep') ? order[h].previousSibling : order[h].nextSibling;
+
+				if (sepNode && sepNode.classList.contains('crumb-sep')) sepNode.hidden = true;
+				nav.querySelector('.crumb-more').hidden = false;
+			}
+
+			nav.classList.remove('is-measuring');
+		});
+	}
+
+	function groupCard(group, query) {
+		var card = el('article', 'result-card');
+		var head = el('div', 'result-head');
+		var icons = el('div', 'result-icons');
+
+		head.appendChild(highlightNode('h4', 'result-name', group.name, query));
+		head.firstChild.title = group.name;
+
+		if (group.projetos.length) iconButton(icons, 'projeto', 'abrir o projeto', group.projetos[0], group);
+		if (group.outputs.length) iconButton(icons, 'output', 'abrir o output', group.outputs[0], group);
+
+		head.appendChild(icons);
+		card.appendChild(head);
+
+		group.caminhos.forEach(function (path) {
+			card.appendChild(pathCrumbs(toPlatform(path, state.paths.platform), query, group));
 		});
 
 		return card;
@@ -403,7 +439,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (query.length < MIN_QUERY) {
-			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho');
+			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho', true);
 			return;
 		}
 
@@ -465,7 +501,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			if (!comps.length) {
 				t.ready = true;
 				t.loading = false;
-				showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
+				showState(results, 'projeto sem comps', 'abra um projeto com layers de texto', true);
 				return;
 			}
 
@@ -556,6 +592,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
+	// película antes do nome da comp: no hover, as perfurações correm um quadro (CSS em finder.css)
+	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>';
+
 	function searchTexts() {
 		var t = state.texts;
 		var results = $('results-texts');
@@ -568,12 +607,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		results.textContent = '';
 
 		if (!t.ready) {
-			showState(results, 'textos não lidos', 'clique em atualizar para ler o projeto.');
+			showState(results, 'textos não lidos', 'clique em atualizar para ler o projeto.', true);
 			return;
 		}
 
 		if (raw === '') {
-			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto');
+			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto', true);
+			return;
+		}
+
+		if (t.comps === 0) {
+			showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
 			return;
 		}
 
@@ -604,7 +648,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 				title.type = 'button';
 				title.title = 'abrir a comp';
-				title.appendChild(el('span', null, entry.compName));
+				title.insertAdjacentHTML('beforeend', COMP_ICON);
+				title.appendChild(el('span', 'comp-name', entry.compName));
 				title.addEventListener('click', openText.bind(null, entry, false));
 				group.appendChild(title);
 				results.appendChild(group);
@@ -709,7 +754,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 			PAD_KEYS.listNav({
 				root: results,
-				items: '.pill-btn, .path-line, .comp-title, .text-row',
+				items: '.card-icon, .crumb.is-last, .comp-title, .text-row',
 				search: q,
 				typeToSearch: true
 			});
@@ -761,25 +806,29 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   ========================================================= */
 
 	var FIT_MIN_WIDTH = 720;
-	var FIT_WIDE_ITEMS = '.path-line, .result-name, .comp-title span:first-child';
-	var fitMinHeight = 360;
+	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-name';
+	var fitMinHeight = 150; // só o cabeçalho (busca vazia)
 	var fitTimer = null;
 	var refitOnResize = false;
 
 	window.addEventListener('resize', function () {
+		crumbsCollapse($('results-paths'));
+
 		if (!refitOnResize) return;
 
 		refitOnResize = false;
 		scheduleFit();
 	});
 
-	function fitHeight() {
+	function fitHeight(skipWidth) {
 		var results = $('results-' + state.tab);
 
 		if (!results || !results.children.length) return;
 
 		// primeiro a largura (a janela só alarga, nunca estreita): os toggles numa linha só e os
 		// caminhos e nomes sem reticências, até 70% da largura da tela
+		crumbsExpand(results); // mede os caminhos inteiros
+
 		var opts = $('opts-' + state.tab);
 		var chips = opts.children;
 		var natural = 0;
@@ -797,16 +846,25 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var maxWidth = Math.max(FIT_MIN_WIDTH, Math.round((window.screen.availWidth || 1440) * 0.7));
 		var width = Math.min(maxWidth, Math.max(FIT_MIN_WIDTH, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
 
-		if (width > window.innerWidth + 1) {
+		if (!skipWidth && width > window.innerWidth + 1) {
 			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho pode perder uma linha)
 			refitOnResize = true;
 			PAD_BRIDGE.resizeWindow(width, window.innerHeight);
+
+			// se o evento de resize não vier (pedido ignorado ou limitado pelo manifest), mede a altura assim mesmo
+			clearTimeout(fitTimer);
+			fitTimer = setTimeout(function () {
+				refitOnResize = false;
+				fitHeight(true);
+			}, 1500);
 			return;
 		}
 
+		crumbsCollapse(results); // na largura final, as pastas iniciais que não cabem saem
+
 		// altura natural do conteúdo (a lista ocupa o espaço que sobra, então mede pelo último filho)
 		var top = results.getBoundingClientRect().top;
-		var bottom = 0;
+		var bottom = top;
 
 		Array.prototype.forEach.call(results.children, function (child) {
 			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
@@ -816,10 +874,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
 		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
 
-		// a altura do loader (a primeira medida) vira a mínima: a janela não encolhe depois de carregar
-		if (results.querySelector('.oven-loader')) fitMinHeight = Math.max(fitMinHeight, height);
 
 		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+	}
+
+	// Sem busca, a folha branca sai: só o cabeçalho (loader e avisos aparecem sobre o degradê).
+	function updateIdle() {
+		['paths', 'texts'].forEach(function (tab) {
+			var q = $('q-' + tab).value.trim();
+
+			$('pane-' + tab).classList.toggle('is-idle', q.length < (tab === 'paths' ? MIN_QUERY : 1));
+		});
 	}
 
 	function scheduleFit() {
@@ -829,8 +894,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	async function init() {
 		['paths', 'texts'].forEach(function (tab) {
-			new MutationObserver(scheduleFit).observe($('results-' + tab), { childList: true });
+			new MutationObserver(function () {
+				updateIdle();
+				scheduleFit();
+			}).observe($('results-' + tab), { childList: true });
+			$('q-' + tab).addEventListener('input', updateIdle);
 		});
+		updateIdle(); // o loader inicial já vem no HTML
 
 		bindEvents();
 
