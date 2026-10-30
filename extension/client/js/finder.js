@@ -811,7 +811,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		scheduleFit();
 	});
 
-	function fitHeight() {
+	function fitHeight(skipWidth) {
 		var results = $('results-' + state.tab);
 
 		if (!results || !results.children.length) return;
@@ -837,10 +837,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var maxWidth = Math.max(FIT_MIN_WIDTH, Math.round((window.screen.availWidth || 1440) * 0.7));
 		var width = Math.min(maxWidth, Math.max(FIT_MIN_WIDTH, window.innerWidth + Math.ceil(extra) + (extra ? 2 : 0)));
 
-		if (width > window.innerWidth + 1) {
+		if (!skipWidth && width > window.innerWidth + 1) {
 			// a altura é medida de novo quando a janela terminar de alargar (o cabeçalho pode perder uma linha)
 			refitOnResize = true;
 			PAD_BRIDGE.resizeWindow(width, window.innerHeight);
+
+			// se o evento de resize não vier (pedido ignorado ou limitado pelo manifest), mede a altura assim mesmo
+			clearTimeout(fitTimer);
+			fitTimer = setTimeout(function () {
+				refitOnResize = false;
+				fitHeight(true);
+			}, 1500);
 			return;
 		}
 
