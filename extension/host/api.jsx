@@ -96,7 +96,33 @@ function getComps() {
 }
 
 function padPath(pathStr) {
-	return normalizeNetworkPath(pathStr, { silent: true });
+	var path = normalizeNetworkPath(pathStr, { silent: true });
+
+	// no macOS, normalizeNetworkPath escapa aspas ("D\'AVILA") para outro uso: aqui o caminho vai para File/Folder
+	return appOs == 'Mac' && path ? path.replace(/\\(['"])/g, '$1') : path;
+}
+
+// Caminho para MOSTRAR nas janelas: sempre no formato do sistema atual (/Volumes/... no macOS,
+// \\servidor\... no Windows), qualquer que seja o formato guardado (lista, config, workflow).
+// O conversor de caminhos é a exceção: ele mostra os dois formatos.
+function padDisplayPath(pathStr) {
+	if (!pathStr) return pathStr || '';
+
+	var path = padPath(pathStr) || String(pathStr);
+
+	try {
+		return Folder.decode(new Folder(path).fsName);
+	} catch (err) {
+		return path;
+	}
+}
+
+function padDisplayPaths(list) {
+	var out = [];
+
+	for (var i = 0; i < list.length; i++) out.push(padDisplayPath(list[i]));
+
+	return out;
 }
 
 function padSortProductions(list) {
@@ -150,7 +176,7 @@ function padConfigFile() {
 }
 
 function padNoSharedListError() {
-	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padSharedConfigPath() + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
+	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
 // Config do template: o que está no arquivo + o que falta, do padrão.
@@ -213,7 +239,7 @@ PADX.productions = function () {
 	var list;
 	var error = null;
 
-	if (!configFile) return { configPath: padSharedConfigPath(), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
+	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
 		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
@@ -327,7 +353,7 @@ PADX.listDir = function (a) {
 	var path = a.uri ? a.uri : padPath(a.path);
 	var folder = new Folder(path);
 
-	if (!folder.exists) return { exists: false, path: path, name: '', entries: [] };
+	if (!folder.exists) return { exists: false, path: padDisplayPath(path), name: '', entries: [] };
 
 	var items = folder.getFiles();
 	var entries = [];
@@ -342,7 +368,7 @@ PADX.listDir = function (a) {
 		}
 	}
 
-	return { exists: true, path: path, name: folder.displayName, entries: entries };
+	return { exists: true, path: padDisplayPath(path), name: folder.displayName, entries: entries };
 };
 
 // Preview, configuração e dicas de um template.
@@ -849,7 +875,7 @@ PADX.fillFinish = function () {
 	return {
 		count: run.count,
 		renderTemplates: run.renderTemplates,
-		outputPath: run.templateData.outputPath,
+		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};
 };
@@ -889,7 +915,7 @@ PADX.queueBegin = function (a) {
 	run.outputTemplate = a.outputTemplate;
 	run.outputs = outputs;
 
-	return { total: run.newComps.length, outputs: outputs, warnings: warnings };
+	return { total: run.newComps.length, outputs: padDisplayPaths(outputs), warnings: warnings };
 };
 
 // Adiciona a comp 'index' à fila de render.
@@ -923,7 +949,7 @@ PADX.queueStep = function (a) {
 				run.newOutputs.push(outputModule);
 			}
 
-			return { name: comp.name, outputs: run.outputs };
+			return { name: comp.name, outputs: padDisplayPaths(run.outputs) };
 		} finally {
 			app.endSuppressDialogs(false);
 		}
@@ -1010,7 +1036,7 @@ PADX.openLastOutput = function () {
 	var outputPath = normalizeNetworkPath(decodeURI(outputFile.path), { silent: true });
 	var folder = nearestExistingFolder(outputPath);
 
-	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + outputPath);
+	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));
 
 	openFolder(folder.fsName);
 
