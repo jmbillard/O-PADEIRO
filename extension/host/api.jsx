@@ -899,22 +899,34 @@ PADX.queueStep = function (a) {
 	if (!run || !run.outputs) throw new Error('#PAD_049 - fila de render não iniciada');
 
 	return padGroup('O PADEIRO: fila de render', function () {
-		var comp = run.newComps[a.index];
-		var item = app.project.renderQueue.items.add(comp);
+		// O After Effects confere a última pasta de render que ele lembra ao criar o item e ao aplicar os
+		// templates; se ela não existe mais, mostra "The directory originally specified in the selected
+		// output module no longer exists", mesmo que a pasta do padeiro exista. O padeiro define a pasta
+		// de cada saída, então esses avisos ficam desligados durante a montagem.
+		app.beginSuppressDialogs();
 
-		item.applyTemplate('Best Settings');
+		try {
+			var comp = run.newComps[a.index];
+			var item = app.project.renderQueue.items.add(comp);
 
-		for (var o = 0; o < run.outputs.length; o++) {
-			if (o > 0) item.outputModules.add();
+			item.applyTemplate('Best Settings');
 
-			var outputModule = item.outputModule(o + 1);
+			for (var o = 0; o < run.outputs.length; o++) {
+				if (o > 0) item.outputModules.add();
 
-			outputModule.file = new File(run.outputs[o] + '/[compName].[fileextension]');
-			outputModule.applyTemplate(run.outputTemplate);
-			run.newOutputs.push(outputModule);
+				var outputModule = item.outputModule(o + 1);
+				var file = new File(run.outputs[o] + '/[compName].[fileextension]');
+
+				outputModule.file = file;
+				outputModule.applyTemplate(run.outputTemplate);
+				outputModule.file = file; // o template não pode trocar a pasta
+				run.newOutputs.push(outputModule);
+			}
+
+			return { name: comp.name, outputs: run.outputs };
+		} finally {
+			app.endSuppressDialogs(false);
 		}
-
-		return { name: comp.name, outputs: run.outputs };
 	});
 };
 
