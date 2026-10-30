@@ -2032,3 +2032,36 @@ body.motion-ready .eyebrow {
   border-color: transparent;
   background: transparent;
 }
+
+/* dicas (js/tooltip.js): o CEP no macOS não mostra as dicas nativas do 'title' */
+.pad-tooltip {
+  position: fixed;
+  z-index: 10000;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: rgb(20 26 48 / 94%);
+  box-shadow: 0 6px 18px rgb(10 14 30 / 28%);
+  color: white;
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  white-space: pre-line;
+}
+
+.pad-tooltip.is-narrow {
+  padding: 5px 3px;
+  border-radius: 6px;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.pad-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -24,7 +24,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	var L_CLICK = '◖  →  ';
 	var R_CLICK = '◗  →  ';
-	var KEYS_TIP = '\n\nteclado: ← → escolhem · Enter = ◖ · Shift+Enter = ◗';
 
 	/* =========================================================
 	   Utilidades
@@ -277,10 +276,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 	}
 
-	// Lupa: no hover, uma letra (sorteada) entra da esquerda no vidro enquanto a lupa vai para o lado,
-	// sobe e volta, e tudo para; ao sair, a mesma animação roda ao contrário, como nos outros ícones.
+	// Lupa: no hover, uma letra (sorteada) entra da esquerda no vidro enquanto a lupa vai para o lado e
+	// para cima e volta, e tudo para; ao sair, a mesma animação roda ao contrário, como nos outros ícones.
 	var LENS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#&';
-	var LENS_MS = 900;
+	var LENS_MS = 480;
 
 	function bindLensLetters(btn) {
 		var lens = btn.querySelector('.anim-search');
@@ -293,8 +292,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			lens.animate(
 				[
 					{ transform: 'translate(0, 0) rotate(0)' },
-					{ transform: 'translate(-3px, 0.5px) rotate(-6deg)', offset: 0.35 },
-					{ transform: 'translate(-1px, -3px) rotate(3deg)', offset: 0.7 },
+					{ transform: 'translate(-2.5px, -2.5px) rotate(-6deg)', offset: 0.45 },
 					{ transform: 'translate(0, 0) rotate(0)' }
 				],
 				timing
@@ -351,7 +349,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n') + KEYS_TIP;
+				btn.title = def.tips.join('\n');
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
