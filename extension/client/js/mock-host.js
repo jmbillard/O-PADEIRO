@@ -380,17 +380,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { exact: !/parcial/.test(a.text), path: a.text };
 		},
 
-		// banco de fontes: 3 fontes no projeto, 2 ainda fora do banco (uma enviada por chamada)
-		fontBankSync: function (a) {
-			var bank = window.PAD_MOCK_FONTBANK || (window.PAD_MOCK_FONTBANK = ['GlobotipoTexto-Bold', 'GlobotipoTexto-BoldItalic', 'Inter-Black']);
-
-			if (a.upload && bank.length > 1) bank.shift();
-
-			var pending = bank.length - 1;
-
-			return { state: pending ? 'pending' : 'ok', total: 3, pending: pending, pendingNames: bank.slice(0, pending), uploaded: '', skipped: 0 };
-		},
-
 		copyText: function () {
 			return { ok: true };
 		},

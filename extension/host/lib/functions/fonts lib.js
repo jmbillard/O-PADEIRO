@@ -12,7 +12,7 @@
 var FONT_FILE_EXTENSIONS = ['.ttf', '.otf'];
 
 // Fontes usadas nos layers de texto de todas as comps, incluindo as que aparecem só em
-// keyframes de texto. Retorna [{ name, family, style, location }] sem repetições (pelo nome da fonte).
+// keyframes de texto. Retorna [{ name, location }] sem repetições (pelo nome da fonte).
 function getProjectFonts() {
 	var fonts = [];
 	var seen = {};
@@ -24,12 +24,7 @@ function getProjectFonts() {
 		if (!fontName || seen[fontName]) return;
 
 		seen[fontName] = true;
-		fonts.push({
-			name: fontName,
-			family: textDoc.fontFamily || '',
-			style: textDoc.fontStyle || '',
-			location: textDoc.fontLocation ? decodeURI(textDoc.fontLocation) : ''
-		});
+		fonts.push({ name: fontName, location: textDoc.fontLocation ? decodeURI(textDoc.fontLocation) : '' });
 	}
 
 	for (var c = 0; c < compArray.length; c++) {

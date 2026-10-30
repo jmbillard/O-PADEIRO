@@ -100,8 +100,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◗` → abre o criador de templates (com a comp principal aberta).
 - **fontes**\
   `◖` → instala as fontes do template que preencheu o projeto.\
-  `◗` → faz o collect das fontes usadas no projeto.\
-  bolinha 🟡 / 🟢 → [banco de fontes](#banco-de-fontes): fontes do projeto sendo enviadas / todas no banco.
+  `◗` → faz o collect das fontes usadas no projeto.
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
@@ -139,23 +138,6 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas: o padeiro avisa quais ficaram de fora.
-
-#### banco de fontes
-
-um banco único de fontes para a equipe, na pasta do padeiro na rede (`BANCO DE FONTES`, ao lado da pasta `extension/`). requer After Effects **2024** ou mais novo.
-
-enquanto a barra está aberta, o padeiro confere as fontes usadas no **projeto aberto** e envia sozinho, sem avisos, as que ainda não estão no banco. a bolinha no botão **fontes** mostra o estado:
-
-- 🟡 **amarela** → há fontes do projeto fora do banco (o envio está em andamento).
-- 🟢 **verde** → todas as fontes do projeto estão no banco.
-
-passe o mouse sobre o botão para ver quantas fontes (e quais) faltam.
-
-> 🚩 *obs:*\
-> • cada fonte é guardada pelo nome PostScript (`<nome>.otf`, por exemplo), com um `<nome>.json` ao lado: família, estilo, quem enviou, de que máquina e projeto, e quando.\
-> • Adobe Fonts e as fontes do sistema do macOS ficam de fora (não têm arquivo copiável ou são iguais em todas as máquinas).\
-> • as fontes são enviadas uma por vez, para não travar o After Effects com cópias longas pela rede.\
-> • o projeto é conferido a cada 12 s e sempre que a barra ganha o foco.
 
 ### pastas
 
@@ -285,8 +267,6 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_065` | outra pessoa salvou a lista de produções depois que você abriu o editor |
 | `#PAD_066` `#PAD_067` `#PAD_068` | o painel não conseguiu carregar o padeiro da rede |
 | `#PAD_070` `#PAD_071` `#PAD_072` `#PAD_PATH_001` `#PAD_PATH_002` | caminho de rede inválido, volume não montado ou pasta inacessível |
-| `#PAD_073` | banco de fontes: não foi possível enviar uma fonte |
-| `#PAD_074` | banco de fontes: a pasta do banco não está acessível |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>
