@@ -315,25 +315,34 @@ body.finder-page {
   transform-box: fill-box;
 }
 
-/* arquivo: inclina, como uma folha sendo puxada (volta ao sair) */
-.anim-file {
+/* pastinha: a frente abre e o conteúdo sobe um pouco (volta ao sair). conteúdo e frente são
+   preenchidos com o fundo do botão para cobrir o que fica atrás deles */
+.card-icon .folder-front {
+  fill: white;
   transform-origin: 50% 100%;
-  transition: transform 300ms var(--ease-soft);
+  transition:
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
 }
 
-.card-icon:hover .anim-file {
-  transform: rotate(-10deg) translateY(-1px);
+.card-icon:hover .folder-front {
+  fill: var(--blue-50);
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
-/* película: as perfurações correm um quadro e param (voltam ao sair) */
-.anim-film .film-holes {
-  stroke-dasharray: 1.6 2.4;
-  stroke-linecap: butt;
-  transition: stroke-dashoffset 420ms var(--ease-soft);
+.card-icon .folder-content {
+  fill: white;
+  transition:
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
 }
 
-.card-icon:hover .anim-film .film-holes {
-  stroke-dashoffset: -8;
+.card-icon:hover .folder-content {
+  fill: var(--blue-50);
+}
+
+.card-icon:hover .folder-content {
+  transform: translateY(-2px);
 }
 
 .card-icon:focus-visible,

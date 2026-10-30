@@ -309,10 +309,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
-	// arquivo (projeto): inclina; película (output): avança um quadro
+	// pastinhas com o conteúdo à mostra: documento (projeto) e quadro de filme (output). no hover a
+	// frente da pasta abre e o conteúdo sobe um pouco (CSS em finder.css)
+	var FOLDER_BACK = '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" />';
+	var FOLDER_FRONT = '<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />';
 	var CARD_ICONS = {
-		projeto: '<g class="anim-file"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.500z" /><path d="M14 3.5V8h4" /></g>',
-		output: '<g class="anim-film"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></g>'
+		projeto: FOLDER_BACK + '<g class="folder-content"><path d="M8 12.500V4h5.500l2.500 2.500v6" /><path d="M13.500 4v2.500h2.500" /></g>' + FOLDER_FRONT,
+		output: FOLDER_BACK + '<g class="folder-content"><rect x="7" y="4.500" width="10" height="8" rx="1" /><path d="M9.500 4.500v8M14.500 4.500v8" /></g>' + FOLDER_FRONT
 	};
 
 	// projeto e output: ícones à direita do nome da atração
