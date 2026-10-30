@@ -99,6 +99,75 @@ body.converter-page {
   gap: 10px;
 }
 
+/* breadcrumb: as últimas pastas sempre visíveis; cada uma abre a pasta */
+.convert-crumbs {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.has-status .convert-crumbs,
+.convert-status:empty {
+  display: none;
+}
+
+.crumb {
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.crumb:hover {
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.crumb.is-last {
+  flex-shrink: 1;
+  color: var(--text-primary);
+  font-weight: 720;
+}
+
+.is-measuring .crumb.is-last {
+  flex-shrink: 0;
+}
+
+.crumb[hidden],
+.crumb-sep[hidden],
+.crumb-more[hidden] {
+  display: none;
+}
+
+.crumb-sep,
+.crumb-more {
+  flex: 0 0 auto;
+  color: var(--border-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.crumb-more {
+  padding: 0 4px;
+  color: var(--text-tertiary);
+}
+
 .convert-status {
   min-width: 0;
   flex: 1;
