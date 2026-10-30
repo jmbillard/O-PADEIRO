@@ -13,11 +13,11 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > ![editor de produções](images/producoes.webp)
 
 1. clique em '*+ nova produção*'.
-2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates (o ponto ao lado do caminho fica verde quando a pasta existe).
+2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). o **×** no mesmo campo exclui a produção.
 3. clique em '*Salvar lista*' (ou `Ctrl/Cmd+S`).
 
 - **filtrar** → mostra só as produções com o termo no nome ou no caminho.
-- **importar / exportar** → lê ou grava uma lista completa, com os ícones.
+- **importar / exportar** (os botões com setas, no canto inferior esquerdo) → lê ou grava uma lista completa, com os ícones.
 - **recarregar** → lê a lista de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 
