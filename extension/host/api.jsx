@@ -915,6 +915,10 @@ PADX.queueBegin = function (a) {
 	run.outputTemplate = a.outputTemplate;
 	run.outputs = outputs;
 
+	// como no padeiro antigo: o script do template ('_script.js') recebe em templateData.outputPath os
+	// caminhos já convertidos para este sistema (e a pasta padrão no lugar das inacessíveis)
+	run.templateData.outputPath = outputs.slice(0);
+
 	return { total: run.newComps.length, outputs: padDisplayPaths(outputs), warnings: warnings };
 };
 
