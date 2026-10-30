@@ -94,10 +94,21 @@ function psCleanPath(path) {
 		.replace(/(.)[\\\/]+$/, '$1');
 }
 
-// Chave para comparar caminhos: sem diferença de barras, maiúsculas, barra no fim ou de acentos
-// compostos de jeitos diferentes (o macOS grava "Ê" como "E" + acento).
+// Chave para comparar caminhos: o mesmo caminho em formato Windows (//servidor/share/...) ou macOS
+// (/Volumes/share/...), com barras duplas, espaços em volta das pastas, caracteres invisíveis,
+// maiúsculas ou acentos compostos de jeitos diferentes (o macOS grava "Ê" como "E" + acento).
 function psPathKey(path) {
-	return psSlashes(psCleanPath(path))
+	var parts = psToMac(psCleanPath(path).replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')).split('/');
+	var clean = [];
+
+	for (var i = 0; i < parts.length; i++) {
+		var part = parts[i].replace(/^\s+|\s+$/g, '');
+
+		if (part !== '') clean.push(part);
+	}
+
+	return clean
+		.join('/')
 		.toLowerCase()
 		.replace(/[\u0300-\u036f]/g, '')
 		.replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, function (c) {
