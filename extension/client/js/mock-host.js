@@ -378,10 +378,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { exact: !/parcial/.test(a.text), path: a.text };
 		},
 
-		lastOutputFolder: function () {
-			return { path: '/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS' };
-		},
-
 		copyText: function () {
 			return { ok: true };
 		},

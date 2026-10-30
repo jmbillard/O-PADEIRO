@@ -9,9 +9,8 @@ o painel **O PADEIRO conversor**: converte caminhos entre Windows e macOS.
 `◗ clique direito` em **pastas**, na barra. o conversor abre com a pasta da última saída da fila de render.
 
 - **cole um caminho em qualquer lugar do painel** → o padeiro reconhece se é macOS ou Windows, coloca no campo certo e converte o outro.
-- **copiar** → copia o caminho.
-- **abrir pasta** → abre o caminho no sistema atual (ou a pasta mais próxima que existe).
-- **atualizar** (canto inferior esquerdo) → volta a usar a pasta da última saída da fila de render.
+- **prancheta** (dentro de cada campo) → copia o caminho.
+- **pasta** (dentro do campo do sistema atual) → abre o caminho no Finder / Explorer (ou a pasta mais próxima que existe). `Enter` faz o mesmo.
 - **⋯** (canto inferior direito) → ajuda (esta página) e recarregar o painel.
 - `Esc` → limpa os dois campos.
 

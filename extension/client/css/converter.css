@@ -1,5 +1,5 @@
 /* =========================================================
-   CONVERSOR DE CAMINHOS — janelinha própria, toda no degradê
+   CONVERSOR DE CAMINHOS — janelinha própria, fundo branco
    ========================================================= */
 
 html,
@@ -13,172 +13,118 @@ body.converter-page {
   min-height: 0;
   padding: 0;
   overflow: hidden;
+  background: white;
 }
 
 .converter {
   display: flex;
-  height: 100%;
   flex-direction: column;
-  gap: 16px;
-  padding: 18px 16px 14px;
-  overflow-y: auto;
+  gap: 14px;
+  padding: 16px 16px 10px;
 }
 
 .convert-field {
   display: grid;
-  gap: 7px;
+  gap: 6px;
 }
 
-.convert-field .eyebrow {
-  margin: 0;
-  padding-left: 5px;
+.convert-label {
+  padding-left: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
+/* o campo leva os botões dentro, à direita (copiar e, no sistema atual, abrir a pasta) */
 .convert-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  position: relative;
 }
 
-/* campos de vidro, como a busca dos outros painéis */
 .convert-input {
-  min-width: 0;
-  min-height: 46px;
-  flex: 1;
-  padding: 10px 18px;
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 12%);
-  color: white;
-  font: inherit;
-  font-size: 0.86rem;
+  padding-right: 76px;
   font-weight: 560;
-  outline: none;
-  transition:
-    background-color 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease;
 }
 
-.convert-input::placeholder {
-  color: rgb(255 255 255 / 55%);
+.convert-tools {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  transform: translateY(-50%);
 }
 
-.convert-input:focus {
-  border-color: rgb(255 255 255 / 88%);
-  background: rgb(255 255 255 / 20%);
-  box-shadow: 0 0 0 4px rgb(255 255 255 / 12%);
+.convert-tool {
+  width: 30px;
+  height: 30px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
 }
 
-.convert-pill {
-  min-width: 78px;
-  min-height: 38px;
-  flex: 0 0 auto;
-  padding: 4px 14px;
-  border: 1px solid rgb(255 255 255 / 34%);
-  border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 12%);
-  color: white;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.7rem;
-  font-weight: 700;
-  transition:
-    background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    transform 220ms var(--ease-soft);
+.convert-tool:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
 }
 
-.convert-pill:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 70%);
-  background: rgb(255 255 255 / 22%);
-  transform: translateY(-1px);
+.convert-tool[hidden] {
+  display: none;
 }
 
-.convert-pill:focus-visible,
-.convert-open:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
-  outline-offset: 2px;
+.convert-tool:disabled {
+  cursor: progress;
 }
 
-.convert-pill.is-done {
-  border-color: white;
-  background: white;
+/* copiar: a prancheta ganha um "check" verde por um instante */
+.convert-copy .clip-check {
+  opacity: 0;
+  stroke: var(--success);
+  transition: opacity 180ms ease;
+}
+
+.convert-copy.is-done {
   color: var(--success);
 }
 
-.convert-actions {
+.convert-copy.is-done .clip-check {
+  opacity: 1;
+}
+
+/* rodapé: mensagem à esquerda, "⋯" à direita */
+.convert-footer {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-}
-
-/* botão principal sobre o degradê: branco com texto azul */
-.convert-open {
-  min-height: 44px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: white;
-  box-shadow: 0 10px 24px rgb(24 43 113 / 22%);
-  color: var(--blue-600);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 750;
-  transition:
-    transform 220ms var(--ease-soft),
-    box-shadow 220ms ease;
-}
-
-.convert-open:hover:not(:disabled) {
-  box-shadow: 0 14px 30px rgb(24 43 113 / 28%);
-  transform: translateY(-1px);
-}
-
-.convert-open:disabled {
-  cursor: progress;
-  opacity: 0.7;
+  gap: 10px;
 }
 
 .convert-status {
   min-width: 0;
   flex: 1;
-  color: rgb(255 255 255 / 82%);
-  font-size: 0.74rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
   font-weight: 620;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* a janela tem altura fixa: a mensagem inteira fica na dica */
 }
 
 .convert-status.is-error {
-  color: #ffe1e1;
+  color: var(--danger);
   font-weight: 700;
 }
 
-/* rodapé: atualizar à esquerda, "⋯" à direita */
-.convert-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
+.actions-menu[open]>.icon-button.is-light {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
 }
 
 .convert-menu .menu-popover {
   top: auto;
   bottom: calc(100% + 8px);
   right: 0;
-}
-
-@media (max-width: 420px) {
-  .convert-line {
-    flex-wrap: wrap;
-  }
-
-  .convert-input {
-    flex-basis: 100%;
-  }
 }
 
 /* caminho colado e reconhecido: o campo pisca de leve */
@@ -188,11 +134,11 @@ body.converter-page {
 
 @keyframes convert-flash {
   0% {
-    border-color: white;
-    box-shadow: 0 0 0 6px rgb(255 255 255 / 30%);
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 6px rgb(79 130 255 / 24%);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    box-shadow: 0 0 0 0 rgb(79 130 255 / 0%);
   }
 }

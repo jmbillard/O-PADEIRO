@@ -6,7 +6,7 @@
 
 Cole um caminho em qualquer lugar do painel: o tipo é reconhecido, o caminho vai para o campo
 certo e o outro é convertido na hora (host: lib/acessorista.js). Abre já com a pasta da última saída da fila de render quando a barra principal
-pede (botão 'pastas', clique direito).
+pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos campos; abrir, só no do sistema atual.
 
 */
 
@@ -28,6 +28,7 @@ pede (botão 'pastas', clique direito).
 		var node = $('cv-status');
 
 		node.textContent = isError ? PAD_UTIL.errorText(text) : text || '';
+		node.title = node.textContent;
 		node.classList.toggle('is-error', !!isError);
 	}
 
@@ -148,11 +149,9 @@ pede (botão 'pastas', clique direito).
 
 		field.setSelectionRange(field.value.length, field.value.length);
 		btn.classList.add('is-done');
-		btn.textContent = 'copiado';
 		status('caminho ' + label + ' copiado.');
 		setTimeout(function () {
 			btn.classList.remove('is-done');
-			btn.textContent = 'copiar';
 		}, 1600);
 	}
 
@@ -161,7 +160,7 @@ pede (botão 'pastas', clique direito).
 
 		if (field.value.trim() === '') return;
 
-		var btn = $('cv-open');
+		var btn = $(state.os === 'Mac' ? 'cv-open-mac' : 'cv-open-win');
 
 		btn.disabled = true;
 
@@ -173,18 +172,6 @@ pede (botão 'pastas', clique direito).
 			status(err.message, true);
 		} finally {
 			btn.disabled = false;
-		}
-	}
-
-	async function useLastOutput() {
-		try {
-			var res = await call('lastOutputFolder');
-
-			if (!res.path) return status('#PAD_008 - a fila de render está vazia.', true);
-
-			setPath(res.path);
-		} catch (err) {
-			status(err.message, true);
 		}
 	}
 
@@ -205,6 +192,13 @@ pede (botão 'pastas', clique direito).
 		} catch (err) { }
 	}
 
+	// A janela não precisa de altura: fica com a do conteúdo (a do manifest só muda reinstalando).
+	function fitHeight() {
+		var height = Math.ceil($('converter').getBoundingClientRect().height);
+
+		if (Math.abs(height - window.innerHeight) > 2) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+	}
+
 	async function init() {
 		$('cv-mac').addEventListener('input', function () {
 			convertFrom('mac');
@@ -218,8 +212,8 @@ pede (botão 'pastas', clique direito).
 		$('cv-copy-win').addEventListener('click', function () {
 			copyField('cv-win', this, 'Windows');
 		});
-		$('cv-open').addEventListener('click', openFolder);
-		$('btn-last').addEventListener('click', useLastOutput);
+		$('cv-open-mac').addEventListener('click', openFolder);
+		$('cv-open-win').addEventListener('click', openFolder);
 
 		// menu "⋯"
 		var menu = $('app-menu');
@@ -262,7 +256,10 @@ pede (botão 'pastas', clique direito).
 			status(err.message, true);
 		}
 
+		// abrir a pasta só faz sentido no campo do sistema em que o After Effects está rodando
+		$(state.os === 'Mac' ? 'cv-open-mac' : 'cv-open-win').hidden = false;
 		$(state.os === 'Mac' ? 'cv-mac' : 'cv-win').focus();
+		fitHeight();
 
 		await watchRequest(true);
 
