@@ -274,6 +274,47 @@ body.bar-page {
   animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 
+/* banco de fontes: bolinha no botão de fontes (amarela enviando, verde tudo no banco) */
+.bar-btn {
+  position: relative;
+}
+
+.bar-dot {
+  position: absolute;
+  top: 4px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 85%);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    background-color 320ms ease,
+    opacity 260ms ease,
+    transform 320ms var(--ease-soft);
+  pointer-events: none;
+}
+
+.bar-dot[data-state="pending"] {
+  background: #ffc542;
+  opacity: 1;
+  transform: scale(1);
+  animation: bar-dot-pulse 1400ms ease-in-out infinite;
+}
+
+.bar-dot[data-state="ok"] {
+  background: #34c98a;
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes bar-dot-pulse {
+  50% {
+    box-shadow: 0 0 0 4px rgb(255 197 66 / 35%);
+  }
+}
+
 /* ---------- animações dos ícones (a cada hover) ---------- */
 
 /* templates e apontamento: leve giro e zoom */

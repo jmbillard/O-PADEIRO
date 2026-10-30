@@ -349,7 +349,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n');
+				btn.title = btn.dataset.baseTip = def.tips.join('\n');
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
@@ -444,6 +444,62 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* =========================================================
+	   Banco de fontes: as fontes do projeto aberto que ainda não
+	   estão no banco são enviadas sozinhas, sem avisos. Uma bolinha
+	   no botão de fontes mostra o estado: amarela (enviando) e
+	   verde (tudo no banco).
+	   ========================================================= */
+
+	var FONT_BANK_EVERY = 12000; // ms entre as leituras do projeto (cada leitura percorre os layers de texto)
+	var FONT_BANK_STEP = 400; // ms entre um envio e o próximo
+	var fontBank = { busy: false, timer: null };
+
+	function fontBankDot(res) {
+		var btn = $('btn-fontes');
+		var dot = btn.querySelector('.bar-dot');
+		var state = res && (res.state === 'ok' || res.state === 'pending') ? res.state : '';
+		var line = '';
+
+		if (!dot) {
+			dot = el('span', 'bar-dot');
+			dot.setAttribute('aria-hidden', 'true');
+			btn.appendChild(dot);
+		}
+
+		dot.dataset.state = state;
+
+		if (state === 'ok') line = 'banco de fontes: as ' + res.total + ' fontes do projeto estão no banco';
+		if (state === 'pending') line = 'banco de fontes: enviando ' + res.pending + (res.pending === 1 ? ' fonte' : ' fontes') + (res.pendingNames.length ? ' (' + res.pendingNames.join(', ') + (res.pending > res.pendingNames.length ? '…' : '') + ')' : '');
+		if (res && res.state === 'unavailable') line = res.message;
+
+		btn.title = btn.dataset.baseTip + (line ? '\n' + line : '');
+	}
+
+	async function syncFontBank() {
+		if (fontBank.busy || document.hidden) return;
+
+		fontBank.busy = true;
+		clearTimeout(fontBank.timer);
+
+		var delay = FONT_BANK_EVERY;
+
+		try {
+			var res = await call('fontBankSync', { upload: true });
+
+			fontBankDot(res);
+
+			if (res.state === 'unsupported') delay = 0; // After Effects anterior ao 2024: sem banco
+			if (res.state === 'pending') delay = FONT_BANK_STEP;
+		} catch (err) {
+			fontBankDot(null); // o envio volta a ser tentado na próxima leitura
+		}
+
+		fontBank.busy = false;
+
+		if (delay) fontBank.timer = setTimeout(syncFontBank, delay);
+	}
+
+	/* =========================================================
 	   Início
 	   ========================================================= */
 
@@ -498,6 +554,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		setInterval(watchProduction, 3000);
 		window.addEventListener('focus', watchProduction);
+
+		syncFontBank();
+		window.addEventListener('focus', syncFontBank);
 	}
 
 	init();
