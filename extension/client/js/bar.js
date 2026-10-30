@@ -277,27 +277,63 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 	}
 
-	// Lupa: a cada hover, letras aleatórias passam pelo vidro (uma nova a cada passada).
+	// Lupa: no hover, uma letra (sorteada) entra da esquerda no vidro enquanto a lupa vai para o lado,
+	// sobe e volta, e tudo para; ao sair, a mesma animação roda ao contrário, como nos outros ícones.
 	var LENS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#&';
+	var LENS_MS = 900;
 
 	function bindLensLetters(btn) {
+		var lens = btn.querySelector('.anim-search');
 		var letter = btn.querySelector('.lens-letter');
-		var timer = null;
 
-		function pass() {
-			letter.textContent = LENS_LETTERS.charAt(Math.floor(Math.random() * LENS_LETTERS.length));
-			letter.classList.remove('is-passing');
-			void letter.getBoundingClientRect(); // reinicia a animação
-			letter.classList.add('is-passing');
+		if (!lens.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+		var timing = { duration: LENS_MS, easing: 'ease-in-out', fill: 'both' };
+		var anims = [
+			lens.animate(
+				[
+					{ transform: 'translate(0, 0) rotate(0)' },
+					{ transform: 'translate(-3px, 0.5px) rotate(-6deg)', offset: 0.35 },
+					{ transform: 'translate(-1px, -3px) rotate(3deg)', offset: 0.7 },
+					{ transform: 'translate(0, 0) rotate(0)' }
+				],
+				timing
+			),
+			letter.animate(
+				[
+					{ opacity: 0, transform: 'translateX(-14px)' },
+					{ opacity: 1, offset: 0.4 },
+					{ opacity: 1, transform: 'translateX(0)' }
+				],
+				timing
+			)
+		];
+
+		anims.forEach(function (anim) {
+			anim.pause();
+		});
+
+		function play(rate) {
+			var t = anims[0].currentTime || 0;
+
+			anims.forEach(function (anim) {
+				// play() reinicia a animação se ela já estiver na ponta para onde vai: aí só para
+				if ((rate > 0 && t >= LENS_MS) || (rate < 0 && t <= 0)) return anim.pause();
+
+				anim.playbackRate = rate;
+				anim.play();
+			});
 		}
 
 		btn.addEventListener('mouseenter', function () {
-			pass();
-			timer = setInterval(pass, 2600);
+			// letra nova só quando ela está fora do vidro (não troca no meio da volta)
+			if (anims[1].currentTime <= 0) letter.textContent = LENS_LETTERS.charAt(Math.floor(Math.random() * LENS_LETTERS.length));
+
+			play(1);
 		});
 
 		btn.addEventListener('mouseleave', function () {
-			clearInterval(timer);
+			play(-1);
 		});
 	}
 

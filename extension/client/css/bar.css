@@ -286,7 +286,8 @@ body.bar-page {
   transform-box: fill-box;
 }
 
-/* buscar: letras aleatórias passam pelo vidro da lupa */
+/* buscar: a letra entra no vidro da lupa enquanto a lupa procura (animação em bar.js, que roda ao
+   contrário quando o mouse sai, como as transições dos outros ícones) */
 .lens-letter {
   fill: currentcolor;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
@@ -294,53 +295,6 @@ body.bar-page {
   font-weight: 800;
   opacity: 0;
   stroke: none;
-}
-
-.lens-letter.is-passing {
-  animation: lens-pass 2600ms linear;
-}
-
-/* a lupa procura: vai para um lado, sobe e volta. o deslocamento leva o conjunto (aro + vidro recortado),
-   então o recorte nunca se afasta do aro */
-.bar-btn[data-icon="search"]:hover:not(:disabled) .anim-search {
-  animation: lens-search 2600ms ease-in-out infinite;
-}
-
-@keyframes lens-pass {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  22%,
-  70% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes lens-search {
-
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0);
-  }
-
-  30% {
-    transform: translate(-3px, 0.5px) rotate(-6deg);
-  }
-
-  60% {
-    transform: translate(-1px, -3px) rotate(3deg);
-  }
-
-  80% {
-    transform: translate(1.5px, -1px) rotate(0);
-  }
 }
 
 /* pastas: a frente da pasta se abre */
