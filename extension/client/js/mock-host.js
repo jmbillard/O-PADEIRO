@@ -139,6 +139,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return all[a.production] || { favorites: [], recents: [], renderPresets: {} };
 		},
 
+		templateTreeCache: function (a) {
+			return { text: sessionStorage.getItem('mock.tree.' + a.production) || '' };
+		},
+
+		saveTemplateTreeCache: function (a) {
+			sessionStorage.setItem('mock.tree.' + a.production, a.text);
+
+			return { ok: true };
+		},
+
 		saveTemplateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 

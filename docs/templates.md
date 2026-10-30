@@ -25,7 +25,8 @@ o painel de templates mostra os templates da produção escolhida na barra. a ja
 
 - **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. `Enter` seleciona o primeiro template encontrado.
 - **★ fixados / recentes** → atalhos no topo da lista (veja [fixados e recentes](#fixados-e-recentes)).
-- **atualizar** → lê a pasta de templates de novo.
+- **atualizar** → lê a pasta de templates de novo (com o loader).
+- **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
 - **⋯** (canto direito, embaixo) → ajuda (esta página) e recarregar o painel.
 - **total** (acima da busca) → quantos templates a produção tem (com uma busca, quantos foram encontrados).

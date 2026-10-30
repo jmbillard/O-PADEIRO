@@ -328,6 +328,31 @@ PADX.saveTemplateLists = function (a) {
 	return { ok: true };
 };
 
+// Cópia da última árvore de templates lida de cada produção (pasta temp local): a janela de templates
+// mostra a lista na hora ao abrir e relê a pasta em segundo plano. A árvore vai e volta como texto
+// (JSON feito pelo painel), sem passar pelo JSON do ExtendScript, que é lento com listas grandes.
+function padTreeCacheFile(production) {
+	var folder = new Folder(tempPath + '/template_trees');
+
+	if (!folder.exists) folder.create();
+
+	return new File(folder.fsName + '/' + String(production).replace(/[\\\/:*?"<>|]+/g, '_') + '.json');
+}
+
+// a: { production } → { text } ('' sem cópia)
+PADX.templateTreeCache = function (a) {
+	var file = padTreeCacheFile(a.production);
+
+	return { text: file.exists ? readFileContent(file) : '' };
+};
+
+// a: { production, text }
+PADX.saveTemplateTreeCache = function (a) {
+	saveTextFile(String(a.text || ''), padTreeCacheFile(a.production).fsName);
+
+	return { ok: true };
+};
+
 PADX.openFolder = function (a) {
 	var folder = new Folder(padPath(a.path));
 

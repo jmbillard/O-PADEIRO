@@ -996,6 +996,11 @@ body {
   animation: icon-spin 650ms var(--ease-soft);
 }
 
+/* relendo em segundo plano (lista de templates): gira devagar até terminar */
+.icon-button.is-refreshing .anim-refresh {
+  animation: icon-spin 1100ms linear infinite;
+}
+
 /* pasta: a frente se abre */
 .anim-folder .folder-front {
   transform-origin: 50% 100%;

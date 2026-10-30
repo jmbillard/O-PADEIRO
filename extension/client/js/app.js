@@ -321,7 +321,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Árvore de templates
 	   ========================================================= */
 
-	async function loadTree() {
+	// A lista aparece na hora a partir da cópia da última leitura (pasta temp local) e a pasta é relida em
+	// segundo plano: se algo mudou, a lista se atualiza sozinha. 'force' (botão atualizar) relê com o loader.
+	async function loadTree(force) {
 		var prod = state.productions[state.production];
 
 		state.loading = true;
@@ -338,14 +340,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		var loadId = ++state.loadId;
+		var cached = force ? null : await readTreeCache(prod);
 
 		await loadLists();
+
+		if (loadId !== state.loadId) return;
+
+		if (cached) {
+			showTree(cached.tree);
+			state.loading = false;
+			renderTree();
+			setRefreshing(true);
+		}
 
 		try {
 			var res = await readTemplateTree(
 				prod.templatesPath,
 				function (folders, name) {
-					if (loadId !== state.loadId) return;
+					if (cached || loadId !== state.loadId) return; // com a cópia na tela, a leitura é silenciosa
 
 					state.loadHint = folders + (folders === 1 ? ' pasta lida' : ' pastas lidas') + ' · ' + name;
 					renderTree();
@@ -360,21 +372,62 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			state.templatesPath = res.path;
 
 			if (!res.exists) {
+				state.tree = null;
+				state.byUri = {};
 				state.treeStatus = 'missing';
 			} else {
-				state.tree = res.tree;
-				annotateTrail(res.tree, []);
-				state.treeStatus = countTemplates(res.tree) > 0 ? 'ok' : 'empty';
+				var text = JSON.stringify(res.tree);
+
+				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prod.templatesPath, tree: res.tree }) }).catch(function () { });
+
+				// com a cópia na tela, só redesenha se a pasta mudou
+				if (cached && cached.text === text) {
+					setRefreshing(false);
+					return;
+				}
+
+				showTree(res.tree);
 			}
 		} catch (err) {
 			if (loadId !== state.loadId) return; // leitura antiga cancelada
 
-			state.treeStatus = 'error';
+			// sem rede, a cópia continua valendo
+			if (!cached) state.treeStatus = 'error';
 			pickerMessage('error', err.message);
 		}
 
+		setRefreshing(false);
 		state.loading = false;
 		renderTree();
+	}
+
+	function showTree(tree) {
+		state.tree = tree;
+		state.byUri = {};
+		annotateTrail(tree, []);
+		state.treeStatus = countTemplates(tree) > 0 ? 'ok' : 'empty';
+	}
+
+	// { tree, text } da última leitura desta produção (se a pasta de templates for a mesma) ou null
+	async function readTreeCache(prod) {
+		try {
+			var res = await call('templateTreeCache', { production: prod.name });
+
+			if (!res.text) return null;
+
+			var data = JSON.parse(res.text);
+
+			if (!data || data.path !== prod.templatesPath || !data.tree) return null;
+
+			return { tree: data.tree, text: JSON.stringify(data.tree) };
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// leitura em segundo plano: o ícone de atualizar gira
+	function setRefreshing(on) {
+		$('btn-refresh').classList.toggle('is-refreshing', on);
 	}
 
 	// Cada template guarda a trilha de pastas até ele (sem a pasta raiz).
@@ -1685,7 +1738,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	async function refreshTree() {
 		pickerMessage();
-		await loadTree();
+		await loadTree(true);
 	}
 
 	async function menuAction(action) {
