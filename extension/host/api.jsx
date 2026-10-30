@@ -291,7 +291,8 @@ PADX.setProduction = function (a) {
 };
 
 // Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp local
-// ({ "<produção>": { favorites: [uri], recents: [uri] } }). A lista de produções é que é compartilhada.
+// ({ "<produção>": { favorites: [uri], recents: [uri], renderPresets: { uri: preset } } }), com o
+// último preset de render usado em cada um. A lista de produções é que é compartilhada.
 function padTemplateListsFile() {
 	return new File(tempPath + '/template_lists.json');
 }
@@ -314,14 +315,14 @@ function padReadTemplateLists() {
 PADX.templateLists = function (a) {
 	var item = padReadTemplateLists()[a.production] || {};
 
-	return { favorites: item.favorites || [], recents: item.recents || [] };
+	return { favorites: item.favorites || [], recents: item.recents || [], renderPresets: item.renderPresets || {} };
 };
 
-// a: { production, favorites, recents }
+// a: { production, favorites, recents, renderPresets }
 PADX.saveTemplateLists = function (a) {
 	var all = padReadTemplateLists();
 
-	all[a.production] = { favorites: a.favorites || [], recents: a.recents || [] };
+	all[a.production] = { favorites: a.favorites || [], recents: a.recents || [], renderPresets: a.renderPresets || {} };
 	saveTextFile(JSON.stringify(all, null, '\t'), padTemplateListsFile().fsName);
 
 	return { ok: true };

@@ -136,13 +136,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		templateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 
-			return all[a.production] || { favorites: [], recents: [] };
+			return all[a.production] || { favorites: [], recents: [], renderPresets: {} };
 		},
 
 		saveTemplateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 
-			all[a.production] = { favorites: a.favorites, recents: a.recents };
+			all[a.production] = { favorites: a.favorites, recents: a.recents, renderPresets: a.renderPresets || {} };
 			sessionStorage.setItem('mock.templateLists', JSON.stringify(all));
 
 			return { ok: true };

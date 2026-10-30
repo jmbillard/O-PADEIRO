@@ -405,14 +405,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	async function loadLists() {
 		var name = productionName();
 
-		state.lists = { favorites: [], recents: [] };
+		state.lists = { favorites: [], recents: [], renderPresets: {} };
 
 		if (!name) return;
 
 		try {
 			var res = await call('templateLists', { production: name });
 
-			if (name === productionName()) state.lists = { favorites: res.favorites, recents: res.recents };
+			if (name === productionName()) state.lists = { favorites: res.favorites, recents: res.recents, renderPresets: res.renderPresets || {} };
 		} catch (err) { }
 	}
 
@@ -421,17 +421,43 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function writeList(kind, list) {
-		var name = productionName();
-
-		if (!state.lists) state.lists = { favorites: [], recents: [] };
+		if (!state.lists) state.lists = { favorites: [], recents: [], renderPresets: {} };
 
 		state.lists[kind] = list;
+		saveLists();
+	}
+
+	function saveLists() {
+		var name = productionName();
 
 		if (!name) return;
 
-		call('saveTemplateLists', { production: name, favorites: state.lists.favorites, recents: state.lists.recents }).catch(function (err) {
+		// só os presets dos templates que estão nos fixados ou nos recentes
+		var kept = {};
+		var presets = state.lists.renderPresets || {};
+
+		state.lists.favorites.concat(state.lists.recents).forEach(function (uri) {
+			if (presets[uri]) kept[uri] = presets[uri];
+		});
+
+		state.lists.renderPresets = kept;
+
+		call('saveTemplateLists', { production: name, favorites: state.lists.favorites, recents: state.lists.recents, renderPresets: kept }).catch(function (err) {
 			pickerMessage('error', 'não foi possível gravar fixados / recentes: ' + err.message);
 		});
+	}
+
+	// Último preset de render usado em cada template (fixados e recentes).
+	function templatePreset(uri) {
+		return (state.lists && state.lists.renderPresets && state.lists.renderPresets[uri]) || '';
+	}
+
+	function rememberPreset(uri, preset) {
+		if (!uri || !state.lists) return;
+
+		state.lists.renderPresets = state.lists.renderPresets || {};
+		state.lists.renderPresets[uri] = preset;
+		saveLists();
 	}
 
 	function isFavorite(uri) {
@@ -615,7 +641,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			li.dataset.section = section || '';
 
 			btn.type = 'button';
-			btn.title = node.fsName || node.text;
+			btn.title = (node.fsName || node.text) + (templatePreset(node.uri) ? '\nrender: ' + templatePreset(node.uri) : '');
 			btn.appendChild(svgIcon('file'));
 			btn.appendChild(el('span', 'tree-label', node.text.replace(/\.[a-z0-9]+$/i, '')));
 
@@ -1499,7 +1525,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	function showRenderOptions() {
 		var select = $('render-template');
-		var saved = store.get('outputTemplate');
+		// o último preset usado neste template (fixados e recentes) ou, sem ele, o último usado em geral
+		var saved = (state.selected && templatePreset(state.selected.uri)) || store.get('outputTemplate');
 
 		select.textContent = '';
 		state.run.renderTemplates.forEach(function (name) {
@@ -1533,6 +1560,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!template) return;
 
 		store.set('outputTemplate', template);
+		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');

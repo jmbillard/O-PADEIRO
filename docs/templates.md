@@ -49,6 +49,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
   - o limite é de **5 templates**: quando entra o 6º, o mais antigo sai.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos de 5.
+- **preset de render** → fixados e recentes lembram o último template de output usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 
 > 🚩 *obs:*\
@@ -83,7 +84,7 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![fila de render](images/templates-fila.webp)
 
-depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template.
+depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes) ou, sem ele, o último usado em geral.
 
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila.
