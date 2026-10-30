@@ -592,6 +592,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
+	// película antes do nome da comp: no hover, as perfurações correm um quadro (CSS em finder.css)
+	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>';
+
 	function searchTexts() {
 		var t = state.texts;
 		var results = $('results-texts');
@@ -645,7 +648,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 				title.type = 'button';
 				title.title = 'abrir a comp';
-				title.appendChild(el('span', null, entry.compName));
+				title.insertAdjacentHTML('beforeend', COMP_ICON);
+				title.appendChild(el('span', 'comp-name', entry.compName));
 				title.addEventListener('click', openText.bind(null, entry, false));
 				group.appendChild(title);
 				results.appendChild(group);
@@ -802,7 +806,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   ========================================================= */
 
 	var FIT_MIN_WIDTH = 720;
-	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-title span:first-child';
+	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-name';
 	var fitMinHeight = 150; // só o cabeçalho (busca vazia)
 	var fitTimer = null;
 	var refitOnResize = false;

@@ -466,7 +466,34 @@ body.finder-page {
   color: var(--blue-500);
 }
 
-.comp-title span:first-child {
+.comp-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  transition: stroke 180ms ease;
+}
+
+.comp-title:hover .comp-icon {
+  stroke: currentcolor;
+}
+
+/* película: as perfurações correm um quadro e param (voltam ao sair) */
+.comp-icon .film-holes {
+  stroke-dasharray: 1.6 2.4;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
+}
+
+.comp-title:hover .comp-icon .film-holes {
+  stroke-dashoffset: -8;
+}
+
+.comp-title .comp-name {
   min-width: 0;
   flex: 1;
   overflow: hidden;
