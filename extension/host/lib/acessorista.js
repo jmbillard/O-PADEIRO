@@ -86,8 +86,23 @@ function psSlashes(path) {
 	return String(path || '').replace(/\\/g, '/');
 }
 
+// Caminho como vem do workflow, limpo: sem espaços/quebras de linha nas pontas, sem aspas soltas no
+// começo ou no fim (ex: "...\LETTERING'") e sem barra no fim.
+function psCleanPath(path) {
+	return String(path || '')
+		.replace(/^[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+|[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+$/g, '')
+		.replace(/(.)[\\\/]+$/, '$1');
+}
+
+// Chave para comparar caminhos: sem diferença de barras, maiúsculas, barra no fim ou de acentos
+// compostos de jeitos diferentes (o macOS grava "Ê" como "E" + acento).
 function psPathKey(path) {
-	return psSlashes(path).replace(/\/+$/, '').toLowerCase();
+	return psSlashes(psCleanPath(path))
+		.toLowerCase()
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, function (c) {
+			return PS_ACCENTS[c];
+		});
 }
 
 function psToMac(path) {
@@ -212,9 +227,9 @@ function psBuildIndex(data) {
 			if (!rec) continue;
 
 			var plat = rec[platform] || {};
-			var projeto = plat.projeto || rec.projeto || '';
-			var output = plat.output || rec.output || '';
-			var caminho = plat.caminho || rec.caminho || '';
+			var projeto = psCleanPath(plat.projeto || rec.projeto);
+			var output = psCleanPath(plat.output || rec.output);
+			var caminho = psCleanPath(plat.caminho || rec.caminho);
 
 			var name = rec.atracao
 				? String(rec.atracao)
