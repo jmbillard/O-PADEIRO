@@ -131,6 +131,8 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 | `←` `→` | fecham e abrem as pastas (na pasta aberta, `→` entra nela) |
 | `Enter` | seleciona o template e leva para o input; na busca, seleciona o primeiro encontrado |
 | `Ctrl/Cmd+Enter` | preenche |
+| `Ctrl/Cmd+Z` (no texto) | desfaz (inclusive o exemplo do template que substituiu o texto) |
+| `Ctrl/Cmd+Shift+Z` ou `Ctrl+Y` (no texto) | refaz |
 | `Esc` | no input, volta para a lista; na lista, desmarca o template; na busca, limpa |
 | `Ctrl/Cmd+F` | foca a busca |
 | letras | com a lista em foco, vão para a busca |

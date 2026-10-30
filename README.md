@@ -221,6 +221,7 @@ o mesmo vocabulário em todos os painéis:
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
 | `Ctrl/Cmd+Enter` | preenche (templates) |
+| `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.

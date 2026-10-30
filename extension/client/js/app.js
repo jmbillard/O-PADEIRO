@@ -1043,7 +1043,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.example = cfg.exemple;
 
 		// o que o usuário já digitou é mantido ao trocar de template 
-		if (!typed) textarea.value = cfg.exemple;
+		if (!typed) setInputValue(cfg.exemple);
 
 		var tipList = $('tip');
 
@@ -1697,6 +1697,100 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (action === 'reload') location.reload();
 	}
 
+	/* =========================================================
+	   Desfazer / refazer no texto do input. O histórico nativo do
+	   navegador se perde quando o painel troca o texto por código
+	   (exemplo do template, limpeza de linhas vazias), então o
+	   painel guarda o seu: Cmd/Ctrl+Z desfaz, Cmd/Ctrl+Shift+Z ou
+	   Ctrl+Y refaz. Digitação contínua vira um passo só.
+	   ========================================================= */
+
+	var INPUT_HISTORY_MAX = 200;
+	var INPUT_BURST_MS = 700;
+	var inputHistory = { undo: [], redo: [], last: null, burst: null };
+
+	function inputSnapshot(input) {
+		return { value: input.value, start: input.selectionStart, end: input.selectionEnd };
+	}
+
+	function pushUndo(snapshot) {
+		var top = inputHistory.undo[inputHistory.undo.length - 1];
+
+		if (top && top.value === snapshot.value) return;
+
+		inputHistory.undo.push(snapshot);
+		if (inputHistory.undo.length > INPUT_HISTORY_MAX) inputHistory.undo.shift();
+		inputHistory.redo = [];
+	}
+
+	function endBurst() {
+		clearTimeout(inputHistory.burst);
+		inputHistory.burst = null;
+	}
+
+	// troca o texto por código sem perder o que havia antes (entra no histórico)
+	function setInputValue(value) {
+		var input = $('input');
+
+		if (input.value === value) return;
+
+		endBurst();
+		if (input.value !== '') pushUndo(inputSnapshot(input));
+		input.value = value;
+		inputHistory.last = inputSnapshot(input);
+	}
+
+	function restoreInput(input, snapshot) {
+		input.value = snapshot.value;
+		input.setSelectionRange(snapshot.start, snapshot.end);
+		inputHistory.last = snapshot;
+		updateInputCount();
+	}
+
+	function bindInputHistory(input) {
+		inputHistory.last = inputSnapshot(input);
+
+		input.addEventListener('input', function (e) {
+			var big = /^(insertFromPaste|insertFromDrop|deleteByCut|historyUndo|historyRedo)$/.test(e.inputType || '') || Math.abs(input.value.length - inputHistory.last.value.length) > 1;
+
+			// o estado de antes entra no histórico no começo de cada sequência de digitação e a cada mudança grande
+			if (big || !inputHistory.burst) pushUndo(inputHistory.last);
+
+			// o que for digitado logo em seguida entra no mesmo passo (ex: digitar por cima de uma seleção)
+			endBurst();
+			inputHistory.burst = setTimeout(endBurst, INPUT_BURST_MS);
+
+			inputHistory.last = inputSnapshot(input);
+		});
+
+		// a posição do cursor também volta ao desfazer
+		['keyup', 'mouseup', 'select'].forEach(function (type) {
+			input.addEventListener(type, function () {
+				if (inputHistory.last && inputHistory.last.value === input.value) inputHistory.last = inputSnapshot(input);
+			});
+		});
+
+		input.addEventListener('keydown', function (e) {
+			if (!PAD_KEYS.isMod(e)) return;
+
+			var key = e.key.toLowerCase();
+			var redo = (key === 'z' && e.shiftKey) || (key === 'y' && !PAD_KEYS.mac);
+
+			if (key !== 'z' && !redo) return;
+
+			e.preventDefault();
+			endBurst();
+
+			var from = redo ? inputHistory.redo : inputHistory.undo;
+			var to = redo ? inputHistory.undo : inputHistory.redo;
+
+			if (!from.length) return;
+
+			to.push(inputSnapshot(input));
+			restoreInput(input, from.pop());
+		});
+	}
+
 	function bindEvents() {
 		bindPreviewScrub();
 
@@ -1803,12 +1897,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var input = $('input');
 
+		bindInputHistory(input);
 		input.addEventListener('input', updateInputCount);
 		input.addEventListener('focus', function () {
 			if (input.value === state.example) input.select();
 		});
 		input.addEventListener('change', function () {
-			input.value = input.value.replace(/[\n\r]{3,}/g, '\n\n');
+			var clean = input.value.replace(/[\n\r]{3,}/g, '\n\n');
+
+			if (clean !== input.value) setInputValue(clean);
 			updateInputCount();
 		});
 		input.addEventListener('keydown', function (e) {
