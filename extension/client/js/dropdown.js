@@ -94,13 +94,29 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		popover.style.maxWidth = window.innerWidth - 16 + 'px'; // nada fora do painel: o CEP corta
 		popover.style.minWidth = Math.min(rect.width, window.innerWidth - 16) + 'px';
 
-		var height = Math.min(popover.offsetHeight, window.innerHeight - 16);
-		var below = window.innerHeight - rect.bottom - 8;
-		var top = below >= height || below >= rect.top ? rect.bottom + 6 : rect.top - height - 6;
+		// a lista fica no lado com mais espaço e rola quando não cabe; sem espaço útil em nenhum dos lados
+		// (painel baixo, como a barra), usa a janela inteira, por cima do botão
+		var MIN_ROOM = 140;
+		var natural = popover.offsetHeight;
+		var below = window.innerHeight - rect.bottom - 6 - 8;
+		var above = rect.top - 6 - 8;
+		var top;
+		var maxHeight;
+
+		if (below >= natural || (below >= above && below >= MIN_ROOM)) {
+			maxHeight = below;
+			top = rect.bottom + 6;
+		} else if (above >= MIN_ROOM) {
+			maxHeight = above;
+			top = rect.top - 6 - Math.min(natural, above);
+		} else {
+			maxHeight = window.innerHeight - 16;
+			top = window.innerHeight - 8 - Math.min(natural, maxHeight);
+		}
 
 		popover.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - popover.offsetWidth - 8)) + 'px';
 		popover.style.top = Math.max(8, top) + 'px';
-		popover.style.maxHeight = window.innerHeight - 16 + 'px';
+		popover.style.maxHeight = maxHeight + 'px';
 
 		// painel baixo (a barra): a lista fica por cima do botão e o termo digitado aparece nela
 		var popRect = popover.getBoundingClientRect();
