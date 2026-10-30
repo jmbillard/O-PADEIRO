@@ -633,6 +633,10 @@ body.finder-page {
   display: none;
 }
 
+.finder-pane.is-idle .finder-results {
+  overflow: hidden;
+}
+
 .finder-pane.is-idle .finder-state {
   padding-top: 8px;
   color: rgb(255 255 255 / 78%);

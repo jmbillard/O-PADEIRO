@@ -501,7 +501,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			if (!comps.length) {
 				t.ready = true;
 				t.loading = false;
-				showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
+				showState(results, 'projeto sem comps', 'abra um projeto com layers de texto', true);
 				return;
 			}
 
@@ -604,12 +604,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		results.textContent = '';
 
 		if (!t.ready) {
-			showState(results, 'textos não lidos', 'clique em atualizar para ler o projeto.');
+			showState(results, 'textos não lidos', 'clique em atualizar para ler o projeto.', true);
 			return;
 		}
 
 		if (raw === '') {
 			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto', true);
+			return;
+		}
+
+		if (t.comps === 0) {
+			showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
 			return;
 		}
 
