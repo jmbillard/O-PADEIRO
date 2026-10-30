@@ -716,7 +716,11 @@ body {
       var(--blue-600));
   box-shadow: 0 10px 24px rgb(79 100 255 / 30%);
   color: white;
-  font-size: 0.88rem;
+}
+
+/* nas barras de ação, todos os botões têm a altura do principal */
+.action-bar .button:not(.button-compact) {
+  min-height: 46px;
 }
 
 .button-primary::after {

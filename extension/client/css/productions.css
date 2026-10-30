@@ -213,8 +213,8 @@ body.prods-page {
 /* importar e exportar (rodapé): a seta desce / sobe no hover e volta ao sair */
 .io-button {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   flex: 0 0 auto;
   place-items: center;
   border: 1px solid var(--border);
