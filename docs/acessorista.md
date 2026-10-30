@@ -21,7 +21,7 @@ a janela abre com 720 px de largura e baixa: sem uma busca, ela mostra só o cab
 > 🚩 *obs:*\
 > • os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. sem conexão, o último índice salvo é usado.\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta.\
-> • aparecem no máximo 12 atrações por busca: refine o termo para ver as demais.
+> • aparecem no máximo 60 atrações por busca (somando as categorias): refine o termo para ver as demais.
 
 ### textos
 
