@@ -87,7 +87,9 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes) ou, sem ele, o último usado em geral.
 
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
-- **concluir sem fila** → termina sem criar a fila.
+- **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
+
+> 🚩 *obs:* com algum erro (um template que não preencheu, uma saída que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
 
 para criar um novo preset de output, acesse:\
 `Edit` > `Templates` > `Output Module...`

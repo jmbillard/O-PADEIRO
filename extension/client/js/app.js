@@ -1604,16 +1604,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.run.queued = true;
 		setBusy(false);
-		await finishRun(null);
 
 		// fila criada sem erros: o trabalho do painel acabou e ele fecha (com erros, fica aberto para mostrá-los)
-		var failed = targets.some(function (item) {
-			return item.status === 'error';
-		});
-
-		if (!failed) {
-			setTimeout(PAD_BRIDGE.closePanel, 900);
-		}
+		if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 	}
 
 	async function finishRun(message) {
@@ -1629,11 +1622,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
 
+		var scriptOk = true;
+
 		try {
 			var res = await call('runEnd', {});
 
 			if (res.script) notify('success', 'Script do template executado: ' + res.script);
 		} catch (err) {
+			scriptOk = false;
 			notify('error', err.message);
 		}
 
@@ -1641,6 +1637,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setProgress(run.total, run.total, run.queued ? 'Fila de render criada' : 'Concluído');
 		setStage('concluído', null, summary);
+
+		return scriptOk && failed === 0; // sem erros: o painel pode fechar
 	}
 
 	function newRun() {
@@ -1930,9 +1928,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
-		$('btn-skip-queue').addEventListener('click', function () {
+		// concluir sem fila: sem erros, o painel também fecha
+		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
-			finishRun(null);
+
+			if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 		});
 		$('btn-again').addEventListener('click', newRun);
 
