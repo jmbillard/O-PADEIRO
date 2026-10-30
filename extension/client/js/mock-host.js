@@ -262,6 +262,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						groups: [group('Fantástico — pauta de domingo', { caminhos: ['/Volumes/VFX/trello/FANTASTICO/PAUTA DE DOMINGO'] })]
 					},
 					{
+						category: { key: 'filmes', label: 'FILMES' },
+						groups: [group('O PROTETOR: CAPÍTULO FINAL', { outputs: ['//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_P_/O PROTETOR 3 - CAPITULO FINAL'] })]
+					},
+					{
 						category: { key: 'servidor', label: 'SERVIDOR' },
 						groups: [group('#INGEST', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST'], server: 'cpp-ml-sp', share: 'PROMO_REDE' }), group('BASES VALENDO', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO'], server: 'cpp-ml-sp', share: 'PROMO_REDE' })]
 					}

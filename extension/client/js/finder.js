@@ -417,7 +417,10 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		head.appendChild(icons);
 		card.appendChild(head);
 
-		group.caminhos.forEach(function (path) {
+		// sem caminho (ex: filmes, só com a pasta de output), o output aparece em breadcrumb
+		var paths = group.caminhos.length ? group.caminhos : group.outputs.slice(0, 1);
+
+		paths.forEach(function (path) {
 			card.appendChild(pathCrumbs(toPlatform(path, state.paths.platform), query, group));
 		});
 
