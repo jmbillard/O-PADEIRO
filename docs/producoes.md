@@ -106,7 +106,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps de render** → a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
-- **o comentário vira subpasta** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`).
+- **o comentário vira subpasta** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\
 > • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas e os tipos dela para a pasta de cima.\

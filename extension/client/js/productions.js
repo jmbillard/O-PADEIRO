@@ -1051,6 +1051,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var x = el('button');
 
 		node.setAttribute('data-type', type);
+		node.appendChild(svgIcon(TYPES.filter(function (t) {
+			return t[0] === type;
+		})[0][2]));
 		node.appendChild(document.createTextNode(typeLabel(type)));
 		x.type = 'button';
 		x.title = 'tirar da pasta (vai para a raiz)';
@@ -1152,6 +1155,18 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 			row.appendChild(chips);
 			tree.appendChild(row);
+
+			// os comentários dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
+			if (o.commentSubfolders && f.contents.length) {
+				var sub = el('div', 'org-sub-hint');
+				var example = f.contents.indexOf('render') >= 0 ? ' (RODAPE, CARTAO…)' : '';
+
+				sub.style.setProperty('--depth', item.depth + 2);
+				sub.title = 'itens com comentário ficam numa subpasta com o nome do comentário (desligue em "o comentário vira subpasta", à direita)';
+				sub.appendChild(svgIcon([FOLDER_PATH]));
+				sub.appendChild(el('span', null, 'comentários viram subpastas' + example));
+				tree.appendChild(sub);
+			}
 		});
 
 		tree.scrollTop = scroll;
@@ -1409,6 +1424,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('org-sub').addEventListener('change', function () {
 			state.organize.commentSubfolders = this.checked;
+			renderOrganize();
 			updateDirty();
 		});
 	}

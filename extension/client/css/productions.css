@@ -859,7 +859,6 @@ body.prods-page {
 }
 
 .org-remove svg,
-.org-chip svg,
 .org-type svg {
   width: 12px;
   height: 12px;
@@ -931,6 +930,10 @@ body.prods-page {
 .org-chip button svg {
   width: 9px;
   height: 9px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
 }
 
 /* destino do arrasto */
@@ -1068,4 +1071,42 @@ body.is-org-dragging * {
   .org-side {
     overflow: visible;
   }
+}
+
+/* ícone do tipo na etiqueta da árvore */
+.org-chip>svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  margin-left: -2px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+/* subpasta "fantasma": os comentários dos itens viram subpastas desta pasta */
+.org-sub-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 3px calc(var(--depth, 0) * 18px + 22px);
+  padding: 2px 6px;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.64rem;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.org-sub-hint svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-dasharray: 2.2 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
