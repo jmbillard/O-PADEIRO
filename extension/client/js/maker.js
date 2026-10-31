@@ -424,7 +424,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	// Prévia de cada fonte: o nome e um texto fixo desenhado com ela. A fonte vem do próprio arquivo
 	// (location) ou, sem ele, das fontes instaladas pelo nome PostScript; se nada carregar, avisa.
-	var FONT_SAMPLE = 'Pão quentinho ÁÉÇÕ 0123';
+	var FONT_SAMPLE = 'Pão Quentinho ÁÉÇÕ 0123 %&@#';
 
 	function fontPreview(font, i) {
 		var li = el('li', 'font-item');
