@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em cinco abas: **produções**, **logs**, **drives**, **renomear** e **organizar**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em seis abas: **produções**, **logs**, **drives**, **renomear**, **organizar** e **busca**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 ## 📍 produções
 
@@ -19,7 +19,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 3. clique em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
-- **filtrar** → mostra só as produções com o termo no nome ou no caminho.
+- **filtrar** (ao lado do título da lista) → mostra só as produções com o termo no nome ou no caminho.
 - **importar / exportar** (os botões com setas, no canto inferior esquerdo, só nesta aba) → lê ou grava uma lista completa, com os ícones.
 - **recarregar** → lê a configuração de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.
@@ -113,6 +113,21 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 > • o tipo que não está em nenhuma pasta fica na raiz do projeto (aparece na linha **raiz do projeto**).\
 > • `Esc` cancela um arrasto; perto das bordas, a árvore rola sozinha.\
 > • a pasta dos arquivos ausentes só é criada quando há algum arquivo ausente.
+
+<br>
+
+---
+
+<br>
+
+## 📍 busca
+
+a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
+
+- **webhook** → o endereço que devolve o índice de caminhos (atrações, projetos e outputs). ao trocar, o índice é baixado de novo na próxima busca.
+- **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias pelo webhook*' baixa o índice de novo.
+
+> 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
 
 <br>
 

@@ -31,7 +31,19 @@ body.prods-page {
   padding: 2px 0 14px 5px;
 }
 
+/* as abas ocupam o topo; em janela estreita a fila rola na horizontal */
 .prods-top .tabs {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.prods-top .tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.prods-top .tab {
   flex: 0 0 auto;
 }
 
@@ -238,6 +250,7 @@ body.prods-page {
 
 .prods-dirty {
   margin-left: 4px;
+  white-space: nowrap;
   color: var(--waiting);
   font-size: 0.72rem;
   font-weight: 700;
@@ -324,12 +337,49 @@ body.prods-page {
   }
 }
 
-/* filtro no topo (versão compacta da busca do painel de templates) */
+/* título da lista com o filtro ao lado (versão clara e compacta da busca do painel de templates) */
+.prods-list-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 6px;
+}
+
+.prods-list-head .cfg-title {
+  flex: 1 1 auto;
+}
+
 .prods-filter {
-  min-width: 0;
-  max-width: 320px;
-  flex: 1;
-  margin: 0 0 0 auto;
+  min-width: 140px;
+  max-width: 280px;
+  flex: 0 1 280px;
+  margin: 0;
+}
+
+.prods-filter input {
+  border-color: var(--border-strong);
+  background: white;
+  box-shadow: none;
+  color: var(--text-primary);
+}
+
+.prods-filter input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.prods-filter input:focus {
+  border-color: var(--blue-500);
+  background: white;
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+}
+
+.prods-filter>svg {
+  stroke: var(--text-tertiary);
+}
+
+.prods-filter .picker-clear {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
 }
 
 .prods-filter>svg {
@@ -339,9 +389,9 @@ body.prods-page {
 }
 
 .prods-filter input {
-  min-height: 38px;
-  padding: 6px 36px 6px 38px;
-  font-size: 0.8rem;
+  min-height: 34px;
+  padding: 5px 34px 5px 36px;
+  font-size: 0.78rem;
 }
 
 .prods-filter .picker-clear {
@@ -1109,4 +1159,40 @@ body.is-org-dragging * {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
+}
+
+/* aba BUSCA: a categoria (chave do índice) e o nome de exibição */
+.category-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) 90px;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-key {
+  overflow: hidden;
+  padding: 0 4px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-count {
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.category-row.is-missing .category-key {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.category-empty {
+  margin: 0;
+  padding: 10px 0;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
 }

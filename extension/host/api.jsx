@@ -260,6 +260,7 @@ PADX.productions = function () {
 		drives: padReadDrives(),
 		rename: padReadRename(),
 		organize: padReadOrganize(),
+		search: padReadSearch(),
 		error: error
 	};
 };

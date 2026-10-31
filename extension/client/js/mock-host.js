@@ -113,6 +113,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
 						commentSubfolders: true
 					},
+					search: {
+						webhook: 'https://workflows.jmbillard.com/webhook/path-search',
+						labels: [{ key: 'atracoes_teams', label: 'TEAMS' }, { key: 'atracoes_trello', label: 'TRELLO' }, { key: 'filmes', label: 'FILMES' }, { key: 'servidor', label: 'SERVIDOR' }]
+					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
@@ -135,9 +139,25 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)),
 				rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)),
 				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
+				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
 				})
+			};
+		},
+
+		searchCategories: async function (a) {
+			await wait(a.force ? 900 : 300);
+
+			return {
+				downloaded: !!a.force,
+				categories: [
+					{ key: 'atracoes_teams', auto: 'TEAMS', count: 412 },
+					{ key: 'atracoes_trello', auto: 'TRELLO', count: 128 },
+					{ key: 'filmes', auto: 'FILMES', count: 57 },
+					{ key: 'esportes_ao_vivo', auto: 'ESPORTES AO VIVO', count: 9 },
+					{ key: 'servidor', auto: 'SERVIDOR', count: 2 }
+				]
 			};
 		},
 
@@ -162,8 +182,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
 			}
 			if (a.organize) window.PAD_MOCK_LIST.organize = JSON.parse(JSON.stringify(a.organize));
+			if (a.search) {
+				if (!/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
+			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

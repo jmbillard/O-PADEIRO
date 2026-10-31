@@ -29,6 +29,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
 		rename: { types: [], fixed: [] }, // tipos de peça e nomes fixos (aba RENOMEAR); termos editados como texto
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
+		search: { webhook: '', labels: {} }, // aba BUSCA: endereço e { chave: nome de exibição }
+		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
 		tab: 'prods'
 	};
 
@@ -251,8 +253,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function searchForSave() {
+		var labels = state.search.labels;
+
+		return {
+			webhook: state.search.webhook.trim(),
+			labels: Object.keys(labels).filter(function (key) {
+				return labels[key].trim();
+			}).map(function (key) {
+				return { key: key, label: labels[key].trim() };
+			})
+		};
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave() });
 	}
 
 	function updateDirty() {
@@ -512,6 +527,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderDrives();
 		renderRename();
 		renderOrganize();
+		renderSearch();
 	}
 
 	function showUnavailable(message) {
@@ -1430,6 +1446,113 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Busca de caminhos
+	   ========================================================= */
+
+	function setSearch(sc) {
+		var data = sc || {};
+		var labels = {};
+
+		(data.labels || []).forEach(function (l) {
+			labels[l.key] = l.label;
+		});
+
+		state.search = { webhook: data.webhook || '', labels: labels };
+		renderSearch();
+	}
+
+	// nome automático (o mesmo do host): sem 'atracoes_', '_' vira espaço, maiúsculas
+	function autoLabel(key) {
+		return key.replace(/^atracoes_/, '').replace(/_/g, ' ').toUpperCase();
+	}
+
+	function renderSearch() {
+		var hook = $('search-webhook');
+		var list = $('category-list');
+
+		if (hook.value !== state.search.webhook) hook.value = state.search.webhook;
+		hook.disabled = !state.available;
+		$('btn-categories').disabled = !state.available;
+		list.textContent = '';
+
+		if (!state.categories) {
+			list.appendChild(el('p', 'category-empty', state.categoriesError || 'lendo as categorias do índice…'));
+			return;
+		}
+
+		// as do índice, na ordem dele; depois as que só têm nome guardado (não vieram agora)
+		var rows = state.categories.map(function (c) {
+			return { key: c.key, auto: c.auto, count: c.count };
+		});
+
+		Object.keys(state.search.labels).forEach(function (key) {
+			if (!rows.some(function (r) { return r.key === key; })) rows.push({ key: key, auto: autoLabel(key), count: 0, missing: true });
+		});
+
+		if (!rows.length) list.appendChild(el('p', 'category-empty', 'o índice não tem categorias.'));
+
+		rows.forEach(function (r) {
+			var row = el('div', 'category-row' + (r.missing ? ' is-missing' : ''));
+			var key = el('span', 'category-key', r.key);
+			var field = el('div', 'has-field-icon');
+			var input = el('input', 'cfg-input');
+			var icon = svg(TAG_ICON);
+
+			key.title = r.missing ? 'esta categoria não veio no índice agora' : 'categoria no índice';
+			icon.setAttribute('class', 'field-icon');
+			input.type = 'text';
+			input.value = state.search.labels[r.key] || '';
+			input.placeholder = r.auto;
+			input.spellcheck = false;
+			input.disabled = !state.available;
+			input.setAttribute('aria-label', 'nome de exibição de ' + r.key);
+			input.addEventListener('input', function () {
+				if (input.value.trim()) state.search.labels[r.key] = input.value;
+				else delete state.search.labels[r.key];
+				updateDirty();
+			});
+			field.appendChild(icon);
+			field.appendChild(input);
+			row.appendChild(key);
+			row.appendChild(field);
+			row.appendChild(el('span', 'category-count', r.missing ? 'não veio' : r.count + (r.count === 1 ? ' item' : ' itens')));
+			list.appendChild(row);
+		});
+	}
+
+	async function loadCategories(force) {
+		var btn = $('btn-categories');
+
+		btn.disabled = true;
+		btn.textContent = force ? 'baixando o índice…' : 'lendo…';
+
+		try {
+			var res = await call('searchCategories', { force: !!force });
+
+			state.categories = res.categories;
+			state.categoriesError = '';
+		} catch (err) {
+			state.categoriesError = err.message;
+			if (force) toast('error', err.message);
+		} finally {
+			btn.disabled = !state.available;
+			btn.textContent = 'atualizar as categorias pelo webhook';
+			renderSearch();
+		}
+	}
+
+	function bindSearch() {
+		$('search-webhook').addEventListener('input', function () {
+			state.search.webhook = this.value;
+			this.classList.remove('has-error');
+			updateDirty();
+		});
+		$('btn-categories').addEventListener('click', function () {
+			loadCategories(true);
+		});
+	}
+
+	/* =========================================================
 	   Abas
 	   ========================================================= */
 
@@ -1439,12 +1562,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
 		});
-		['prods', 'logs', 'drives', 'rename', 'organize'].forEach(function (key) {
+		['prods', 'logs', 'drives', 'rename', 'organize', 'search'].forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
 
+		// as categorias da busca são lidas do índice na primeira vez que a aba abre
+		if (name === 'search' && !state.categories && state.available) loadCategories(false);
+
 		// filtro, importar e exportar são da lista de produções
-		document.querySelector('.prods-filter').hidden = name !== 'prods';
 		$('btn-import').hidden = $('btn-export').hidden = name !== 'prods';
 	}
 
@@ -1454,6 +1579,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_0(79|80|81)/.test(message)) return 'drives';
 		if (/#PAD_08[23]/.test(message)) return 'rename';
 		if (/#PAD_08[45]/.test(message)) return 'organize';
+		if (/#PAD_086/.test(message)) return 'search';
 
 		return null;
 	}
@@ -1484,6 +1610,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setDrives(res.drives);
 			setRename(res.rename);
 			setOrganize(res.organize);
+			setSearch(res.search);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -1554,13 +1681,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
 			if (res.drives) setDrives(res.drives);
 			if (res.rename) setRename(res.rename);
 			if (res.organize) setOrganize(res.organize);
+			if (res.search) setSearch(res.search);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
@@ -1662,6 +1790,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindDrives();
 		bindRename();
 		bindOrganize();
+		bindSearch();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

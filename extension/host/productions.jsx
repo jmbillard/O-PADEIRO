@@ -65,6 +65,7 @@ PADX.saveProductions = function (a) {
 	var drives = a.drives ? padCleanDrives(a.drives) : null;
 	var rename = a.rename ? padCleanRename(a.rename) : null;
 	var organize = a.organize ? padCleanOrganize(a.organize) : null;
+	var search = a.search ? padCleanSearch(a.search) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -78,7 +79,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -86,7 +87,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -227,6 +228,7 @@ function padApplyConfig() {
 	padDefaultDrives(); // guarda os padrões antes da primeira troca
 	padDefaultRename();
 	padDefaultOrganize();
+	padDefaultSearch();
 
 	var file = padConfigFile();
 	var stamp = 0;
@@ -263,6 +265,20 @@ function padApplyConfig() {
 	renameRefArray = padRenameRefs(r.types);
 
 	PAD_ORGANIZE = padReadOrganize();
+
+	var search = padReadSearch();
+
+	// outro webhook: o índice guardado é de outro lugar, então é baixado de novo
+	if (search.webhook != PS_WEBHOOK_URL) {
+		try {
+			var cache = new File(tempFolder.fsName + '/path_index.json');
+
+			if (cache.exists) cache.remove();
+		} catch (err) { }
+	}
+
+	PS_WEBHOOK_URL = search.webhook;
+	PS_CATEGORIES = search.labels;
 }
 
 /*
@@ -469,3 +485,100 @@ function padReadOrganize() {
 		return padDefaultOrganize();
 	}
 }
+
+/*
+
+---------------------------------------------------------------
+> busca de caminhos (aba BUSCA da configuração)
+---------------------------------------------------------------
+
+'SEARCH' no O_PADEIRO_config.json: { webhook, labels: [{ key, label }] }.
+  webhook → o endereço que devolve o índice de caminhos (lib/acessorista.js)
+  labels  → nome de exibição de cada categoria (as categorias vêm do próprio índice; sem nome, o automático)
+Sem 'SEARCH' no arquivo: os valores de lib/acessorista.js (os de sempre).
+
+*/
+
+var PAD_DEFAULT_SEARCH = null;
+
+function padDefaultSearch() {
+	if (!PAD_DEFAULT_SEARCH) PAD_DEFAULT_SEARCH = JSON.parse(JSON.stringify({ webhook: PS_WEBHOOK_URL, labels: PS_CATEGORIES }));
+
+	return PAD_DEFAULT_SEARCH;
+}
+
+// Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
+function padCleanSearch(o) {
+	var clean = { webhook: padTrim(o.webhook), labels: [] };
+	var seen = {};
+
+	// o endereço vai para a linha de comando do curl: sem espaços, aspas nem símbolos do terminal
+	if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+	}
+
+	for (var i = 0; i < (o.labels || []).length; i++) {
+		var key = padTrim(o.labels[i].key);
+		var label = padTrim(o.labels[i].label).replace(/\s+/g, ' ').toUpperCase();
+
+		if (key == '' || label == '' || seen[key]) continue; // sem nome: o automático
+
+		seen[key] = true;
+		clean.labels.push({ key: key, label: label });
+	}
+
+	return clean;
+}
+
+function padReadSearch() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.SEARCH ? padCleanSearch(data.SEARCH) : padDefaultSearch();
+	} catch (err) {
+		return padDefaultSearch();
+	}
+}
+
+// Categorias que o índice tem agora (da cópia local; sem ela, baixa). a: { force }
+// → { categories: [{ key, auto, count }], downloaded }
+PADX.searchCategories = function (a) {
+	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
+	var downloaded = false;
+
+	if (a.force || !cacheFile.exists) downloaded = psDownloadIndex(cacheFile);
+
+	var data = null;
+
+	try {
+		data = psReadJSON(cacheFile);
+	} catch (err) { }
+
+	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
+	if (!data) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
+
+	var out = [];
+
+	for (var key in data) {
+		if (!(data[key] instanceof Array) || data[key].length == 0) continue;
+
+		out.push({ key: key, auto: psCategoryLabel(key), count: data[key].length });
+	}
+
+	for (var src in PS_LOCAL_SOURCES) {
+		var found = false;
+
+		for (var j = 0; j < out.length; j++) {
+			if (out[j].key == src) {
+				out[j].count += PS_LOCAL_SOURCES[src].length;
+				found = true;
+			}
+		}
+
+		if (!found) out.push({ key: src, auto: psCategoryLabel(src), count: PS_LOCAL_SOURCES[src].length });
+	}
+
+	return { categories: out, downloaded: downloaded };
+};
