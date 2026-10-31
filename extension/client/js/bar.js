@@ -66,6 +66,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		project:
 			'<g class="anim-clap"><rect x="3.5" y="10" width="17" height="9.5" rx="1.5" />' +
 			'<g class="clap-top"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></g>',
+		// coletar: pasta cheia de arquivos; no hover os arquivos sobem
+		collect:
+			'<g class="anim-collect"><path d="M3.5 18V9.2a1.5 1.5 0 0 1 1.5-1.5h.6" /><path d="M19.4 9.5h.1a1.5 1.5 0 0 1 .5 1.1v.9" />' +
+			'<path class="collect-file f1" d="M7 11.5V4.8a1 1 0 0 1 1-1h3.4l2.1 2.1v5.6" />' +
+			'<path class="collect-file f2" d="M14.6 11.5V8.4a1 1 0 0 1 1-1h2.4a1 1 0 0 1 1 1v3.1" />' +
+			'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
 
@@ -171,7 +177,26 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
 		},
 
-		// janela do projeto: ID, nome, retranca, renomear e salvar
+		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar)
+		collect: async function (path) {
+			var res = await call('collectProject', { path: path || '' });
+			var d = res.data || {};
+			var parts = [];
+
+			if (d.files) parts.push(d.files + (d.files === 1 ? ' arquivo' : ' arquivos'));
+			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
+			if (d.fonts) parts.push('fontes');
+
+			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+		},
+
+		collectTo: async function () {
+			var path = PAD_BRIDGE.pickFolder('Pasta para coletar os arquivos do projeto');
+
+			if (path) await actions.collect(path);
+		},
+
+		// janela do projeto: ID, nome, retranca e salvar
 		project: function () {
 			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
 		},
@@ -196,7 +221,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var res;
 
 			try {
-				res = await call('projectSave', { path: path, collectFiles: info.collectFiles, collectFonts: info.collectFonts, open: true });
+				res = await call('projectSave', { path: path, open: true });
 			} catch (err) {
 				if (!/#PAD_092/.test(err.message)) throw err;
 
@@ -204,7 +229,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: para substituir, salve pela janela PROJETO.');
 			}
 
-			report(res, 'projeto salvo: ' + (res.data && res.data.file ? res.data.file : info.fileName));
+			toast('success', 'projeto salvo: ' + (res && res.file ? res.file : info.fileName));
 		},
 
 		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
@@ -251,9 +276,20 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				config: 'project',
 				label: 'Projeto',
 				icon: 'project',
-				tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca, renomear e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
+				tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
 				left: actions.project,
 				right: actions.saveProject
+			},
+			{
+				key: 'coletar',
+				config: 'collect',
+				label: 'Coletar',
+				icon: 'collect',
+				tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'coletar em outra pasta…'],
+				left: function () {
+					return actions.collect('');
+				},
+				right: actions.collectTo
 			},
 			{
 				key: 'pastas',

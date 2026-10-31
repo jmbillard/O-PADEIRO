@@ -185,13 +185,6 @@ body.project-page {
   white-space: nowrap;
 }
 
-.proj-switches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-  padding: 0 4px;
-}
-
 .proj-status {
   min-height: 1.2em;
   margin: -4px 4px -6px;
@@ -224,7 +217,7 @@ body.project-page {
   gap: 10px;
 }
 
-.proj-footer .button-secondary {
+.proj-footer .button-primary {
   margin-left: auto;
 }
 

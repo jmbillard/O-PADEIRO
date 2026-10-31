@@ -7,17 +7,14 @@
 
 Os dados do projeto (ID e nome) ficam no XMP do .aep: dc:identifier e dc:title, os mesmos campos da
 barra antiga da PROMO GNEWS (um projeto feito nela abre aqui com os dados). A sigla do usuário fica só
-neste computador (pasta de dados do usuário).
+neste computador (pasta de dados do usuário). O collect dos arquivos é do botão COLETAR (collect.jsx).
 
 'PROJECT' no O_PADEIRO_config.json:
   root         → pasta raiz dos projetos (na rede); vazio = escolher a pasta ao salvar
   folder       → cria uma pasta para cada projeto (com o nome do arquivo) dentro da pasta da retranca
   fileName     → nome do arquivo .aep, com as variáveis {id} {projeto} {usuario} {retranca} {data}
-  compName     → nome das comps de render; também aceita {comp} (o nome atual da comp)
   retrancas    → [{ code, path }]: o começo do ID do projeto → a pasta da retranca (dentro da raiz, ou um
                  caminho completo); vale o código mais longo que combinar
-  collectFiles → o padrão do "coletar arquivos" ao salvar
-  collectFonts → o padrão do "coletar fontes" ao salvar
 Sem 'PROJECT' no arquivo: PAD_DEFAULT_PROJECT.
 
 */
@@ -26,10 +23,7 @@ var PAD_DEFAULT_PROJECT = {
 	root: '',
 	folder: true,
 	fileName: '{id} {projeto}',
-	compName: '{id} {projeto}',
-	retrancas: [],
-	collectFiles: false,
-	collectFonts: false
+	retrancas: []
 };
 
 var PAD_PROJECT_TOKENS = ['id', 'projeto', 'usuario', 'retranca', 'data'];
@@ -44,7 +38,7 @@ function padProjectIsAbsolute(path) {
 }
 
 // Confere as variáveis de um padrão de nome. Lança Error com a mensagem.
-function padCheckProjectPattern(pattern, label, extra) {
+function padCheckProjectPattern(pattern, label) {
 	var re = /\{([^}]*)\}/g;
 	var m;
 
@@ -53,7 +47,7 @@ function padCheckProjectPattern(pattern, label, extra) {
 	while ((m = re.exec(pattern)) != null) {
 		var token = m[1];
 
-		if (PAD_PROJECT_TOKENS.indexOf(token) < 0 && token != extra) throw new Error('#PAD_089 - projeto: {' + token + '} não é uma variável do ' + label + '.');
+		if (PAD_PROJECT_TOKENS.indexOf(token) < 0) throw new Error('#PAD_089 - projeto: {' + token + '} não é uma variável do ' + label + '.');
 	}
 
 	if (/[\\\/:*?"<>|]/.test(pattern.replace(re, ''))) throw new Error('#PAD_089 - projeto: o ' + label + ' não pode ter \\ / : * ? " < > |.');
@@ -65,15 +59,11 @@ function padCleanProject(o) {
 		root: padProjectPath(o.root),
 		folder: o.folder !== false,
 		fileName: padTrim(o.fileName).replace(/\s+/g, ' '),
-		compName: padTrim(o.compName).replace(/\s+/g, ' '),
-		retrancas: [],
-		collectFiles: o.collectFiles === true,
-		collectFonts: o.collectFonts === true
+		retrancas: []
 	};
 	var seen = {};
 
 	padCheckProjectPattern(clean.fileName, 'nome do arquivo');
-	padCheckProjectPattern(clean.compName, 'nome das comps', 'comp');
 
 	for (var i = 0; i < (o.retrancas || []).length; i++) {
 		var code = padTrim(o.retrancas[i].code).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, '');
@@ -217,49 +207,8 @@ function padProjectState() {
 	return { settings: settings, id: id, name: name, user: user, retranca: retranca, values: values, fileBase: fileBase, target: target, file: file };
 }
 
-// Comps de render: as selecionadas ou, sem seleção, as que têm comentário de render.
-function padProjectRenderComps() {
-	var selected = [];
-	var marked = [];
-	var i;
-
-	for (i = 0; i < app.project.selection.length; i++) {
-		if (app.project.selection[i] instanceof CompItem) selected.push(app.project.selection[i]);
-	}
-
-	var comps = getComps();
-
-	for (i = 0; i < comps.length; i++) {
-		if (padIsRenderComment(comps[i].comment)) marked.push(comps[i]);
-	}
-
-	return { comps: selected.length ? selected : marked, selected: selected.length > 0 };
-}
-
-// Nome de comp pelo padrão; {comp} é o nome atual sem o começo que o próprio padrão já colocou.
-function padProjectCompName(pattern, values, comp) {
-	var current = String(comp ? comp.name : '');
-	var head = pattern.split('{comp}')[0];
-
-	if (pattern.indexOf('{comp}') >= 0 && head != '') {
-		var prefix = padFillPattern(head, values);
-
-		if (prefix != '' && current.indexOf(prefix) == 0) current = current.substring(prefix.length);
-	}
-
-	var v = {};
-
-	for (var key in values) v[key] = values[key];
-
-	v.comp = padRenameFormat(current.replace(/^[\s\-_]+/, ''));
-
-	return padFillPattern(pattern, v);
-}
-
 PADX.projectInfo = function () {
 	var s = padProjectState();
-	var render = padProjectRenderComps();
-	var sample = render.comps.length ? render.comps[0] : null;
 
 	return {
 		id: s.id,
@@ -272,11 +221,7 @@ PADX.projectInfo = function () {
 		hasRetrancas: s.settings.retrancas.length > 0,
 		target: s.target ? padDisplayPath(s.target) : '',
 		fileName: s.fileBase ? s.fileBase + '.aep' : '',
-		compName: s.id || s.name ? padProjectCompName(s.settings.compName, s.values, sample) : '',
-		renderCount: render.comps.length,
-		selected: render.selected,
-		collectFiles: s.settings.collectFiles,
-		collectFonts: s.settings.collectFonts
+		saved: !!s.file
 	};
 };
 
@@ -306,101 +251,7 @@ function padRequireProjectData(s) {
 	if (s.id == '' && s.name == '') throw new Error('#PAD_090 - preencha o ID ou o nome do projeto.');
 }
 
-// Renomeia as comps de render pelo padrão (as selecionadas sem comentário ganham o comentário automático).
-PADX.projectRename = function () {
-	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
-
-	var s = padProjectState();
-
-	padRequireProjectData(s);
-
-	var render = padProjectRenderComps();
-
-	if (!render.comps.length) throw new Error('#PAD_090 - nenhuma comp de render: selecione as comps ou use o comentário de render (' + PAD_ORGANIZE.renderComments.join(', ') + ').');
-
-	var used = {};
-	var names = [];
-
-	padGroup('renomear comps do projeto', function () {
-		for (var i = 0; i < render.comps.length; i++) {
-			var comp = render.comps[i];
-			var base = padProjectCompName(s.settings.compName, s.values, comp);
-			var name = base;
-
-			// nomes iguais (o padrão sem {comp}): 2, 3...
-			for (var n = 2; used[name.toUpperCase()]; n++) name = base + ' ' + n;
-
-			used[name.toUpperCase()] = true;
-			comp.name = name;
-			names.push(name);
-
-			if (render.selected && comp.comment == '') comp.comment = PAD_ORGANIZE.autoComment;
-		}
-	});
-
-	return { count: names.length, names: names };
-};
-
-// Arquivos que parecem sequência de imagens (o collect copia um arquivo só: ficam de fora).
-function padIsSequence(item) {
-	try {
-		return !item.mainSource.isStill && /\.(png|jpe?g|tiff?|exr|dpx|tga|bmp|psd|cin|hdr|sgi)$/i.test(item.file.name);
-	} catch (err) {
-		return false;
-	}
-}
-
-// Copia os arquivos usados no projeto para '<destino>/project files/<pastas do projeto>' e troca o
-// caminho dos itens. Os que já estão no destino ficam como estão.
-function padCollectProjectFiles(target) {
-	var root = new Folder(padPath(target));
-	var rootPath = String(root.fsName).replace(/\\/g, '/').toLowerCase();
-	var copied = 0;
-	var skipped = [];
-
-	for (var i = 1; i <= app.project.numItems; i++) {
-		var item = app.project.item(i);
-
-		if (!(item instanceof FootageItem) || !item.file || !item.file.exists) continue;
-
-		var src = item.file;
-
-		if (String(src.fsName).replace(/\\/g, '/').toLowerCase().indexOf(rootPath + '/') == 0) continue; // já está no destino
-
-		if (padIsSequence(item)) {
-			skipped.push(item.name);
-			continue;
-		}
-
-		var sub = '';
-
-		for (var f = item.parentFolder; f && f != app.project.rootFolder; f = f.parentFolder) sub = sanitizeFileName(f.name) + '/' + sub;
-
-		var folder = new Folder((root.fsName + '/project files/' + sub).replace(/\/+$/, ''));
-
-		if (!folder.exists) folder.create();
-
-		var fileName = decodeURI(src.name);
-		var dest = new File(folder.fsName + '/' + fileName);
-
-		// outro arquivo com o mesmo nome na mesma pasta: _2, _3...
-		for (var n = 2; dest.exists && dest.length != src.length; n++) {
-			dest = new File(folder.fsName + '/' + fileName.replace(/(\.[^.]+)?$/, '_' + n + '$1'));
-		}
-
-		if (!dest.exists && !src.copy(dest)) {
-			skipped.push(item.name);
-			continue;
-		}
-
-		item.replace(dest);
-		copied++;
-	}
-
-	return { copied: copied, skipped: skipped };
-}
-
-// Salva o projeto na pasta da retranca (ou na escolhida). a: { path, collectFiles, collectFonts, overwrite, open }
+// Salva o projeto na pasta da retranca (ou na escolhida). a: { path, overwrite, open }
 PADX.projectSave = function (a) {
 	var s = padProjectState();
 
@@ -424,23 +275,13 @@ PADX.projectSave = function (a) {
 		throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: salve de novo para substituir.');
 	}
 
-	return padCollect(function () {
-		var collect = { copied: 0, skipped: [] };
-		var fonts = '';
+	setXMPData('creator', system.userName);
+	setXMPData('date', padToday());
+	app.project.save(file);
 
-		setXMPData('creator', system.userName);
-		setXMPData('date', padToday());
+	if (a.open) openFolder(folder.fsName);
 
-		if (a.collectFiles) collect = padCollectProjectFiles(folder.fsName);
-		if (a.collectFonts) fonts = fontCollect(folder.fsName + '/FONTS');
-
-		app.project.save(file);
-
-		if (collect.skipped.length) alert(lol + '#PAD_093 - estes itens não foram coletados (sequências ou sem permissão):\n\n' + collect.skipped.join('\n'));
-		if (a.open) openFolder(folder.fsName);
-
-		return { file: padDisplayPath(file.fsName), folder: padDisplayPath(folder.fsName), copied: collect.copied, fonts: fonts != '' };
-	});
+	return { file: padDisplayPath(file.fsName), folder: padDisplayPath(folder.fsName) };
 };
 
 // Abre a pasta do projeto salvo ou, sem ele, a do destino.

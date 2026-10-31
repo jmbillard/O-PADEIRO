@@ -28,10 +28,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
-		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
+		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCA: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
-		project: { root: '', folder: true, fileName: '', compName: '', retrancas: [], collectFiles: false, collectFonts: false }, // aba PROJETO
+		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
+		collect: { folders: [], projectFolders: false, saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
@@ -266,6 +267,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				return { name: f.name.trim(), parent: f.parent, contents: f.contents.slice() };
 			}),
 			renderComments: commaList(o.renderComments),
+			editComments: commaList(o.editComments),
 			autoComment: o.autoComment.trim(),
 			dataExtensions: commaList(o.dataExtensions),
 			commentSubfolders: o.commentSubfolders
@@ -306,12 +308,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			root: p.root.trim(),
 			folder: p.folder,
 			fileName: p.fileName.trim(),
-			compName: p.compName.trim(),
 			retrancas: p.retrancas.map(function (r) {
 				return { code: r.code.trim().toUpperCase(), path: r.path.trim() };
+			})
+		};
+	}
+
+	function collectForSave() {
+		var c = state.collect;
+
+		return {
+			folders: c.folders.map(function (f) {
+				return { name: f.name.trim(), parent: f.parent, contents: f.contents.slice() };
 			}),
-			collectFiles: p.collectFiles,
-			collectFonts: p.collectFonts
+			projectFolders: c.projectFolders,
+			saveAfter: c.saveAfter
 		};
 	}
 
@@ -320,7 +331,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), appearance: appearanceForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), appearance: appearanceForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -589,6 +600,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderLinks();
 		renderAppearance();
 		renderProject();
+		renderCollect();
 	}
 
 	function showUnavailable(message) {
@@ -1081,6 +1093,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var FOLDER_PATH = 'M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z';
 	var TYPES = [
 		['render', 'comps de render', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M10 9.5v5l4.5-2.5z']],
+		['editaveis', 'comps editáveis', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v5', 'M3.5 6.5v11a2 2 0 0 0 2 2h5', 'M14.5 20.5v-2.6l5-5a1.8 1.8 0 0 1 2.6 2.6l-5 5z']],
 		['precomps', 'outras comps', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M7.5 4.5v15M16.5 4.5v15']],
 		['videos', 'vídeos', ['M4 6.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M16 10l4-2.5v9L16 14']],
 		['imagens', 'imagens', ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'm4.5 16 4.5-4.5 4 4 2.5-2.5 4 4', 'M15 9h.01']],
@@ -1090,14 +1103,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['missing', 'arquivos ausentes', ['M12 4 3 19.5h18z', 'M12 10v4.5M12 17.5h.01']]
 	];
 
-	function typeLabel(key) {
-		var t = TYPES.filter(function (x) {
-			return x[0] === key;
-		})[0];
-
-		return t ? t[1] : key;
-	}
-
 	function setOrganize(o) {
 		var data = o || {};
 
@@ -1106,6 +1111,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || (f.content ? [f.content] : [])).slice() };
 			}),
 			renderComments: (data.renderComments || []).join(', '),
+			editComments: (data.editComments || ['EDIT']).join(', '),
 			autoComment: data.autoComment || '',
 			dataExtensions: (data.dataExtensions || []).join(', '),
 			commentSubfolders: data.commentSubfolders !== false
@@ -1113,198 +1119,495 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderOrganize();
 	}
 
-	function sameName(a, b) {
-		return String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
-	}
+	// Árvore de pastas com tipos de item arrastáveis (organizar e coletar usam a mesma).
+	// cfg: { model() → { folders }, types, treeId, typesId, paneId, newBtnId, rootLabel, rootWhere,
+	//        removeTitle, rowHint(folder, depth) → nó | null, after() (depois de redesenhar) }
+	function makeTree(cfg) {
+		function M() {
+			return cfg.model();
+		}
 
-	function folderByName(name) {
-		return state.organize.folders.filter(function (f) {
-			return sameName(f.name, name);
-		})[0] || null;
-	}
+		function renderAll() {
+			render();
+			if (cfg.after) cfg.after();
+		}
 
-	// a pasta e as que estão dentro dela (em qualquer nível)
-	function subtree(folder) {
-		var out = [folder];
+		function typeLabel(key) {
+			var t = cfg.types.filter(function (x) {
+				return x[0] === key;
+			})[0];
 
-		for (var i = 0; i < out.length; i++) {
-			state.organize.folders.forEach(function (f) {
-				if (out.indexOf(f) < 0 && f.parent && sameName(f.parent, out[i].name)) out.push(f);
+			return t ? t[1] : key;
+		}
+
+		function sameName(a, b) {
+			return String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+		}
+
+		function folderByName(name) {
+			return M().folders.filter(function (f) {
+				return sameName(f.name, name);
+			})[0] || null;
+		}
+
+		// a pasta e as que estão dentro dela (em qualquer nível)
+		function subtree(folder) {
+			var out = [folder];
+
+			for (var i = 0; i < out.length; i++) {
+				M().folders.forEach(function (f) {
+					if (out.indexOf(f) < 0 && f.parent && sameName(f.parent, out[i].name)) out.push(f);
+				});
+			}
+
+			return out;
+		}
+
+		// ordem de árvore: cada pasta logo depois da pasta pai, com a profundidade (para o recuo)
+		function folderTree() {
+			var folders = M().folders;
+			var out = [];
+			var placed = [];
+
+			function add(parentName, depth) {
+				folders.forEach(function (f) {
+					if (placed.indexOf(f) >= 0) return;
+
+					var isRoot = f.parent === '' || !folderByName(f.parent) || sameName(f.parent, f.name);
+
+					if (parentName === null ? isRoot : sameName(f.parent, parentName)) {
+						placed.push(f);
+						out.push({ folder: f, depth: depth });
+						if (depth < 12) add(f.name, depth + 1);
+					}
+				});
+			}
+
+			add(null, 0);
+			folders.forEach(function (f) {
+				if (placed.indexOf(f) < 0) out.push({ folder: f, depth: 0 }); // ciclo: aparece na raiz (o salvar avisa)
+			});
+
+			return out;
+		}
+
+		function folderOf(type) {
+			return M().folders.filter(function (f) {
+				return f.contents.indexOf(type) >= 0;
+			})[0] || null;
+		}
+
+		function svgIcon(paths) {
+			var node = svg(paths);
+
+			node.setAttribute('aria-hidden', 'true');
+
+			return node;
+		}
+
+		function chip(type, onRemove) {
+			var node = el('span', 'org-chip');
+			var x = el('button');
+
+			node.setAttribute('data-type', type);
+			node.appendChild(svgIcon(cfg.types.filter(function (t) {
+				return t[0] === type;
+			})[0][2]));
+			node.appendChild(document.createTextNode(typeLabel(type)));
+			x.type = 'button';
+			x.title = cfg.removeTitle;
+			x.setAttribute('aria-label', 'tirar ' + typeLabel(type) + ' da pasta');
+			x.appendChild(svgIcon(ICONS.remove));
+			x.addEventListener('click', onRemove);
+			node.appendChild(x);
+
+			return node;
+		}
+
+		function unassign(type) {
+			M().folders.forEach(function (f) {
+				var i = f.contents.indexOf(type);
+
+				if (i >= 0) f.contents.splice(i, 1);
 			});
 		}
 
-		return out;
-	}
+		function render() {
+			if (!M()) return;
 
-	// ordem de árvore: cada pasta logo depois da pasta pai, com a profundidade (para o recuo)
-	function folderTree() {
-		var folders = state.organize.folders;
-		var out = [];
-		var placed = [];
+			var tree = $(cfg.treeId);
+			var o = M();
+			var scroll = tree.scrollTop;
 
-		function add(parentName, depth) {
-			folders.forEach(function (f) {
-				if (placed.indexOf(f) >= 0) return;
+			tree.textContent = '';
 
-				var isRoot = f.parent === '' || !folderByName(f.parent) || sameName(f.parent, f.name);
+			// a raiz do projeto: recebe pastas soltas aqui e mostra os tipos que não entram em pasta nenhuma
+			var root = el('div', 'org-folder is-root');
+			var rootChips = el('div', 'org-chips');
 
-				if (parentName === null ? isRoot : sameName(f.parent, parentName)) {
-					placed.push(f);
-					out.push({ folder: f, depth: depth });
-					if (depth < 12) add(f.name, depth + 1);
+			root.setAttribute('data-root', '1');
+			root.appendChild(svgIcon(['M3.5 7.5A2 2 0 0 1 5.5 5.5h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M3.5 9.5h17']));
+			root.appendChild(el('span', 'org-root-label', cfg.rootLabel));
+			cfg.types.forEach(function (t) {
+				if (!folderOf(t[0])) rootChips.appendChild(chip(t[0], function () { }));
+			});
+			Array.prototype.forEach.call(rootChips.querySelectorAll('button'), function (b) {
+				b.remove(); // na raiz não há o que tirar
+			});
+			rootChips.style.paddingLeft = '22px';
+			root.appendChild(rootChips);
+			tree.appendChild(root);
+
+			folderTree().forEach(function (item) {
+				var f = item.folder;
+				var row = el('div', 'org-folder' + (item.depth ? ' is-child' : ''));
+				var name = el('input', 'org-name');
+				var remove = el('button', 'org-remove');
+				var chips = el('div', 'org-chips');
+
+				row.setAttribute('data-index', o.folders.indexOf(f));
+				row.style.setProperty('--depth', item.depth + 1);
+				row.appendChild(PAD_SORT.handle());
+				row.appendChild(svgIcon([FOLDER_PATH]));
+
+				name.type = 'text';
+				name.value = f.name;
+				name.placeholder = 'nome da pasta';
+				name.spellcheck = false;
+				name.disabled = !state.available;
+				name.setAttribute('aria-label', 'nome da pasta');
+				name.addEventListener('input', function () {
+					// renomear leva as subpastas junto
+					o.folders.forEach(function (child) {
+						if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = name.value.trim();
+					});
+					f.name = name.value;
+					renderTypes();
+					updateDirty();
+				});
+				row.appendChild(name);
+
+				remove.type = 'button';
+				remove.title = 'excluir a pasta (as subpastas e os tipos sobem um nível)';
+				remove.setAttribute('aria-label', 'excluir a pasta ' + f.name);
+				remove.disabled = !state.available;
+				remove.appendChild(svgIcon(ICONS.remove));
+				remove.addEventListener('click', function () {
+					var up = folderByName(f.parent);
+
+					o.folders.forEach(function (child) {
+						if (child !== f && sameName(child.parent, f.name)) child.parent = f.parent;
+					});
+					if (up) up.contents = up.contents.concat(f.contents);
+					o.folders.splice(o.folders.indexOf(f), 1);
+					renderAll();
+					updateDirty();
+				});
+				row.appendChild(remove);
+
+				f.contents.forEach(function (type) {
+					chips.appendChild(chip(type, function () {
+						unassign(type);
+						renderAll();
+						updateDirty();
+					}));
+				});
+				row.appendChild(chips);
+				tree.appendChild(row);
+
+				if (cfg.rowHint) {
+					var hintNode = cfg.rowHint(f, item.depth);
+
+					if (hintNode) tree.appendChild(hintNode);
 				}
 			});
+
+			tree.scrollTop = scroll;
+			renderTypes();
+
 		}
 
-		add(null, 0);
-		folders.forEach(function (f) {
-			if (placed.indexOf(f) < 0) out.push({ folder: f, depth: 0 }); // ciclo: aparece na raiz (o salvar avisa)
-		});
+		// os cartões dos tipos (direita), com o lugar de cada um
+		function renderTypes() {
+			var box = $(cfg.typesId);
 
-		return out;
-	}
+			box.textContent = '';
 
-	function folderOf(type) {
-		return state.organize.folders.filter(function (f) {
-			return f.contents.indexOf(type) >= 0;
-		})[0] || null;
-	}
+			cfg.types.forEach(function (t) {
+				var card = el('div', 'org-type');
+				var text = el('span', 'org-type-text');
+				var where = folderOf(t[0]);
 
-	function svgIcon(paths) {
-		var node = svg(paths);
+				card.setAttribute('data-type', t[0]);
+				card.title = 'arraste para uma pasta da árvore';
+				card.appendChild(svgIcon(t[2]));
+				text.appendChild(el('strong', null, t[1]));
+				text.appendChild(el('span', null, where ? 'em ' + (where.name.trim() || '(sem nome)') : (cfg.whereFor && cfg.whereFor(t[0])) || cfg.rootWhere));
+				card.appendChild(text);
+				box.appendChild(card);
+			});
+		}
 
-		node.setAttribute('aria-hidden', 'true');
+		/* ---------- arrastar ---------- */
 
-		return node;
-	}
+		var drag = null; // { kind: 'folder' | 'type', folder, type, x, y, active, ghost, target }
 
-	function chip(type, onRemove) {
-		var node = el('span', 'org-chip');
-		var x = el('button');
+		function dropTarget(x, y) {
+			var hit = document.elementFromPoint(x, y);
 
-		node.setAttribute('data-type', type);
-		node.appendChild(svgIcon(TYPES.filter(function (t) {
-			return t[0] === type;
-		})[0][2]));
-		node.appendChild(document.createTextNode(typeLabel(type)));
-		x.type = 'button';
-		x.title = 'tirar da pasta (vai para a raiz)';
-		x.setAttribute('aria-label', 'tirar ' + typeLabel(type) + ' da pasta');
-		x.appendChild(svgIcon(ICONS.remove));
-		x.addEventListener('click', onRemove);
-		node.appendChild(x);
+			if (!hit) return null;
 
-		return node;
-	}
+			var tree = $(cfg.treeId);
+			var row = hit.closest('.org-folder');
 
-	function unassign(type) {
-		state.organize.folders.forEach(function (f) {
-			var i = f.contents.indexOf(type);
+			if (drag.kind === 'type') {
+				if (row && row.hasAttribute('data-index')) return { mode: 'inside', folder: M().folders[+row.getAttribute('data-index')], row: row };
+				if ((row && row.hasAttribute('data-root')) || hit.closest('.org-side') || hit.closest('.org-tree')) return { mode: 'root' };
 
-			if (i >= 0) f.contents.splice(i, 1);
-		});
-	}
+				return null;
+			}
 
-	function renderOrganize() {
-		if (!state.organize) return;
+			if (row && row.hasAttribute('data-index')) {
+				var target = M().folders[+row.getAttribute('data-index')];
+				var box = row.getBoundingClientRect();
+				var rel = (y - box.top) / box.height;
+				var mode = rel < 0.28 ? 'before' : rel > 0.72 ? 'after' : 'inside';
 
-		var tree = $('org-tree');
-		var o = state.organize;
-		var scroll = tree.scrollTop;
+				if (subtree(drag.folder).indexOf(target) >= 0) return null; // não entra nela mesma
 
-		tree.textContent = '';
+				return { mode: mode, folder: target, row: row };
+			}
 
-		// a raiz do projeto: recebe pastas soltas aqui e mostra os tipos que não entram em pasta nenhuma
-		var root = el('div', 'org-folder is-root');
-		var rootChips = el('div', 'org-chips');
+			if ((row && row.hasAttribute('data-root')) || (hit.closest('.org-tree') === tree)) return { mode: 'root' };
 
-		root.setAttribute('data-root', '1');
-		root.appendChild(svgIcon(['M3.5 7.5A2 2 0 0 1 5.5 5.5h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M3.5 9.5h17']));
-		root.appendChild(el('span', 'org-root-label', 'raiz do projeto'));
-		TYPES.forEach(function (t) {
-			if (!folderOf(t[0])) rootChips.appendChild(chip(t[0], function () { }));
-		});
-		Array.prototype.forEach.call(rootChips.querySelectorAll('button'), function (b) {
-			b.remove(); // na raiz não há o que tirar
-		});
-		rootChips.style.paddingLeft = '22px';
-		root.appendChild(rootChips);
-		tree.appendChild(root);
+			return null;
+		}
 
-		folderTree().forEach(function (item) {
-			var f = item.folder;
-			var row = el('div', 'org-folder' + (item.depth ? ' is-child' : ''));
-			var name = el('input', 'org-name');
-			var remove = el('button', 'org-remove');
-			var chips = el('div', 'org-chips');
+		function showTarget(t) {
+			var tree = $(cfg.treeId);
+			var line = tree.querySelector('.org-line');
 
-			row.setAttribute('data-index', o.folders.indexOf(f));
-			row.style.setProperty('--depth', item.depth + 1);
-			row.appendChild(PAD_SORT.handle());
-			row.appendChild(svgIcon([FOLDER_PATH]));
+			Array.prototype.forEach.call(tree.querySelectorAll('.is-drop-inside'), function (r) {
+				r.classList.remove('is-drop-inside');
+			});
+			$(cfg.paneId).querySelector('.org-side').classList.toggle('is-drop-target', !!(t && t.mode === 'root' && drag.kind === 'type'));
 
-			name.type = 'text';
-			name.value = f.name;
-			name.placeholder = 'nome da pasta';
-			name.spellcheck = false;
-			name.disabled = !state.available;
-			name.setAttribute('aria-label', 'nome da pasta');
-			name.addEventListener('input', function () {
-				// renomear leva as subpastas junto
-				o.folders.forEach(function (child) {
-					if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = name.value.trim();
-				});
-				f.name = name.value;
-				renderTypes();
+			if (!t) {
+				if (line) line.remove();
+				return;
+			}
+
+			if (t.mode === 'inside') t.row.classList.add('is-drop-inside');
+			if (t.mode === 'root') tree.querySelector('[data-root]').classList.add('is-drop-inside');
+
+			if (t.mode === 'before' || t.mode === 'after') {
+				if (!line) {
+					line = el('div', 'org-line');
+					tree.appendChild(line);
+				}
+
+				var treeBox = tree.getBoundingClientRect();
+				var rowBox = t.row.getBoundingClientRect();
+
+				line.style.left = rowBox.left - treeBox.left + 'px';
+				line.style.width = rowBox.width + 'px';
+				line.style.top = (t.mode === 'before' ? rowBox.top : rowBox.bottom) - treeBox.top + tree.scrollTop - 1 + 'px';
+			} else if (line) {
+				line.remove();
+			}
+		}
+
+		function applyDrop(t) {
+			var o = M();
+
+			if (drag.kind === 'type') {
+				unassign(drag.type);
+				if (t.mode === 'inside') t.folder.contents.push(drag.type);
+				return;
+			}
+
+			var f = drag.folder;
+
+			o.folders.splice(o.folders.indexOf(f), 1);
+
+			if (t.mode === 'inside') {
+				f.parent = t.folder.name.trim();
+				o.folders.push(f);
+			} else if (t.mode === 'root') {
+				f.parent = '';
+				o.folders.push(f);
+			} else {
+				f.parent = t.folder.parent;
+				o.folders.splice(o.folders.indexOf(t.folder) + (t.mode === 'after' ? 1 : 0), 0, f);
+			}
+		}
+
+		function onDragMove(e) {
+			if (!drag) return;
+
+			if (!drag.active) {
+				if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 5) return;
+
+				drag.active = true;
+				drag.ghost = el('div', 'org-ghost', drag.kind === 'folder' ? (drag.folder.name.trim() || 'pasta') : typeLabel(drag.type));
+				document.body.appendChild(drag.ghost);
+				document.body.classList.add('is-org-dragging');
+			}
+
+			e.preventDefault();
+			drag.ghost.style.left = e.clientX + 'px';
+			drag.ghost.style.top = e.clientY + 'px';
+			drag.lastX = e.clientX;
+			drag.lastY = e.clientY;
+			drag.target = dropTarget(e.clientX, e.clientY);
+			showTarget(drag.target);
+			autoScroll();
+		}
+
+		// perto das bordas da árvore, ela rola sozinha enquanto o arrasto continua
+		function autoScroll() {
+			clearTimeout(drag.scrollTimer);
+
+			var tree = $(cfg.treeId);
+			var box = tree.getBoundingClientRect();
+			var y = drag.lastY;
+			var step = 0;
+
+			if (drag.lastX < box.left || drag.lastX > box.right) return;
+			if (y < box.top + 28 && y > box.top - 40) step = -8;
+			if (y > box.bottom - 28 && y < box.bottom + 40) step = 8;
+			if (!step) return;
+
+			tree.scrollTop += step;
+			drag.target = dropTarget(drag.lastX, drag.lastY);
+			showTarget(drag.target);
+			drag.scrollTimer = setTimeout(function () {
+				if (drag && drag.active) autoScroll();
+			}, 30);
+		}
+
+		function endDrag(e, cancel) {
+			window.removeEventListener('mousemove', onDragMove, true);
+			window.removeEventListener('mouseup', onDragUp, true);
+			window.removeEventListener('keydown', onDragKey, true);
+
+			if (!drag) return;
+
+			var d = drag;
+
+			clearTimeout(d.scrollTimer);
+			if (d.ghost) d.ghost.remove();
+			document.body.classList.remove('is-org-dragging');
+			showTarget(null);
+			drag = null;
+
+			if (d.active && !cancel && d.target) {
+				drag = d;
+				applyDrop(d.target);
+				drag = null;
+				renderAll();
 				updateDirty();
+			}
+		}
+
+		function onDragUp(e) {
+			endDrag(e, false);
+		}
+
+		function onDragKey(e) {
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				endDrag(e, true);
+			}
+		}
+
+		function startDrag(e, data) {
+			if (e.button !== 0 || !state.available) return;
+
+			e.preventDefault();
+			drag = Object.assign({ x: e.clientX, y: e.clientY, active: false, target: null }, data);
+			window.addEventListener('mousemove', onDragMove, true);
+			window.addEventListener('mouseup', onDragUp, true);
+			window.addEventListener('keydown', onDragKey, true);
+		}
+
+		function bind() {
+			// pastas: pelo puxador (ou pelo ícone); tipos: pelas etiquetas da árvore e pelos cartões da direita
+			$(cfg.paneId).addEventListener('mousedown', function (e) {
+				if (e.target.closest('button:not(.drag-handle), input')) return;
+
+				var row = e.target.closest('.org-folder[data-index]');
+				var tag = e.target.closest('.org-chip, .org-type');
+
+				if (tag) return startDrag(e, { kind: 'type', type: tag.getAttribute('data-type') });
+				if (row && e.target.closest('.drag-handle, svg')) startDrag(e, { kind: 'folder', folder: M().folders[+row.getAttribute('data-index')] });
 			});
-			row.appendChild(name);
 
-			remove.type = 'button';
-			remove.title = 'excluir a pasta (as subpastas e os tipos sobem um nível)';
-			remove.setAttribute('aria-label', 'excluir a pasta ' + f.name);
-			remove.disabled = !state.available;
-			remove.appendChild(svgIcon(ICONS.remove));
-			remove.addEventListener('click', function () {
-				var up = folderByName(f.parent);
+			$(cfg.newBtnId).addEventListener('click', function () {
+				var name = 'NOVA PASTA';
 
-				o.folders.forEach(function (child) {
-					if (child !== f && sameName(child.parent, f.name)) child.parent = f.parent;
-				});
-				if (up) up.contents = up.contents.concat(f.contents);
-				o.folders.splice(o.folders.indexOf(f), 1);
-				renderOrganize();
+				for (var n = 2; folderByName(name); n++) name = 'NOVA PASTA ' + n;
+
+				M().folders.push({ name: name, parent: '', contents: [] });
+				renderAll();
 				updateDirty();
-			});
-			row.appendChild(remove);
 
-			f.contents.forEach(function (type) {
-				chips.appendChild(chip(type, function () {
-					unassign(type);
-					renderOrganize();
-					updateDirty();
-				}));
+				var inputs = $(cfg.treeId).querySelectorAll('.org-name');
+				var last = inputs[inputs.length - 1];
+
+				last.focus();
+				last.select();
 			});
-			row.appendChild(chips);
-			tree.appendChild(row);
+
+		}
+
+		return { render: renderAll, bind: bind };
+	}
+
+	var orgTree = makeTree({
+		model: function () {
+			return state.organize;
+		},
+		types: TYPES,
+		treeId: 'org-tree',
+		typesId: 'org-types',
+		paneId: 'pane-organize',
+		newBtnId: 'btn-new-folder',
+		rootLabel: 'raiz do projeto',
+		rootWhere: 'na raiz do projeto',
+		removeTitle: 'tirar da pasta (vai para a raiz)',
+		whereFor: function (type) {
+			return type === 'editaveis' ? 'sem pasta: ficam com as outras comps' : null;
+		},
+		rowHint: function (f, depth) {
+			var o = state.organize;
 
 			// os comentários dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
-			if (o.commentSubfolders && f.contents.length) {
-				var sub = el('div', 'org-sub-hint');
-				var example = f.contents.indexOf('render') >= 0 ? ' (RODAPE, CARTAO…)' : '';
+			if (!o.commentSubfolders || !f.contents.length) return null;
 
-				sub.style.setProperty('--depth', item.depth + 2);
-				sub.title = 'itens com comentário ficam numa subpasta com o nome do comentário (desligue em "o comentário vira subpasta", à direita)';
-				sub.appendChild(svgIcon([FOLDER_PATH]));
-				sub.appendChild(el('span', null, 'comentários viram subpastas' + example));
-				tree.appendChild(sub);
-			}
-		});
+			var sub = el('div', 'org-sub-hint');
+			var example = f.contents.indexOf('render') >= 0 ? ' (RODAPE, CARTAO…)' : '';
+			var icon = svg([FOLDER_PATH]);
 
-		tree.scrollTop = scroll;
-		renderTypes();
+			icon.setAttribute('aria-hidden', 'true');
+			sub.style.setProperty('--depth', depth + 2);
+			sub.title = 'itens com comentário ficam numa subpasta com o nome do comentário (desligue em "o comentário vira subpasta", à direita)';
+			sub.appendChild(icon);
+			sub.appendChild(el('span', null, 'comentários viram subpastas' + example));
 
-		var fields = { 'org-render': 'renderComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
+			return sub;
+		},
+		after: organizeFields
+	});
+
+	function renderOrganize() {
+		orgTree.render();
+	}
+
+	// os campos à direita (comentários de render, extensões...)
+	function organizeFields() {
+		var o = state.organize;
+		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
 
 		Object.keys(fields).forEach(function (id) {
 			if ($(id).value !== o[fields[id]]) $(id).value = o[fields[id]];
@@ -1315,239 +1618,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-new-folder').disabled = !state.available;
 	}
 
-	// os cartões dos tipos (direita), com o lugar de cada um
-	function renderTypes() {
-		var box = $('org-types');
-
-		box.textContent = '';
-
-		TYPES.forEach(function (t) {
-			var card = el('div', 'org-type');
-			var text = el('span', 'org-type-text');
-			var where = folderOf(t[0]);
-
-			card.setAttribute('data-type', t[0]);
-			card.title = 'arraste para uma pasta da árvore';
-			card.appendChild(svgIcon(t[2]));
-			text.appendChild(el('strong', null, t[1]));
-			text.appendChild(el('span', null, where ? 'em ' + (where.name.trim() || '(sem nome)') : 'na raiz do projeto'));
-			card.appendChild(text);
-			box.appendChild(card);
-		});
-	}
-
-	/* ---------- arrastar ---------- */
-
-	var drag = null; // { kind: 'folder' | 'type', folder, type, x, y, active, ghost, target }
-
-	function dropTarget(x, y) {
-		var hit = document.elementFromPoint(x, y);
-
-		if (!hit) return null;
-
-		var tree = $('org-tree');
-		var row = hit.closest('.org-folder');
-
-		if (drag.kind === 'type') {
-			if (row && row.hasAttribute('data-index')) return { mode: 'inside', folder: state.organize.folders[+row.getAttribute('data-index')], row: row };
-			if ((row && row.hasAttribute('data-root')) || hit.closest('.org-side') || hit.closest('.org-tree')) return { mode: 'root' };
-
-			return null;
-		}
-
-		if (row && row.hasAttribute('data-index')) {
-			var target = state.organize.folders[+row.getAttribute('data-index')];
-			var box = row.getBoundingClientRect();
-			var rel = (y - box.top) / box.height;
-			var mode = rel < 0.28 ? 'before' : rel > 0.72 ? 'after' : 'inside';
-
-			if (subtree(drag.folder).indexOf(target) >= 0) return null; // não entra nela mesma
-
-			return { mode: mode, folder: target, row: row };
-		}
-
-		if ((row && row.hasAttribute('data-root')) || (hit.closest('.org-tree') === tree)) return { mode: 'root' };
-
-		return null;
-	}
-
-	function showTarget(t) {
-		var tree = $('org-tree');
-		var line = tree.querySelector('.org-line');
-
-		Array.prototype.forEach.call(tree.querySelectorAll('.is-drop-inside'), function (r) {
-			r.classList.remove('is-drop-inside');
-		});
-		$('pane-organize').querySelector('.org-side').classList.toggle('is-drop-target', !!(t && t.mode === 'root' && drag.kind === 'type'));
-
-		if (!t) {
-			if (line) line.remove();
-			return;
-		}
-
-		if (t.mode === 'inside') t.row.classList.add('is-drop-inside');
-		if (t.mode === 'root') tree.querySelector('[data-root]').classList.add('is-drop-inside');
-
-		if (t.mode === 'before' || t.mode === 'after') {
-			if (!line) {
-				line = el('div', 'org-line');
-				tree.appendChild(line);
-			}
-
-			var treeBox = tree.getBoundingClientRect();
-			var rowBox = t.row.getBoundingClientRect();
-
-			line.style.left = rowBox.left - treeBox.left + 'px';
-			line.style.width = rowBox.width + 'px';
-			line.style.top = (t.mode === 'before' ? rowBox.top : rowBox.bottom) - treeBox.top + tree.scrollTop - 1 + 'px';
-		} else if (line) {
-			line.remove();
-		}
-	}
-
-	function applyDrop(t) {
-		var o = state.organize;
-
-		if (drag.kind === 'type') {
-			unassign(drag.type);
-			if (t.mode === 'inside') t.folder.contents.push(drag.type);
-			return;
-		}
-
-		var f = drag.folder;
-
-		o.folders.splice(o.folders.indexOf(f), 1);
-
-		if (t.mode === 'inside') {
-			f.parent = t.folder.name.trim();
-			o.folders.push(f);
-		} else if (t.mode === 'root') {
-			f.parent = '';
-			o.folders.push(f);
-		} else {
-			f.parent = t.folder.parent;
-			o.folders.splice(o.folders.indexOf(t.folder) + (t.mode === 'after' ? 1 : 0), 0, f);
-		}
-	}
-
-	function onDragMove(e) {
-		if (!drag) return;
-
-		if (!drag.active) {
-			if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 5) return;
-
-			drag.active = true;
-			drag.ghost = el('div', 'org-ghost', drag.kind === 'folder' ? (drag.folder.name.trim() || 'pasta') : typeLabel(drag.type));
-			document.body.appendChild(drag.ghost);
-			document.body.classList.add('is-org-dragging');
-		}
-
-		e.preventDefault();
-		drag.ghost.style.left = e.clientX + 'px';
-		drag.ghost.style.top = e.clientY + 'px';
-		drag.lastX = e.clientX;
-		drag.lastY = e.clientY;
-		drag.target = dropTarget(e.clientX, e.clientY);
-		showTarget(drag.target);
-		autoScroll();
-	}
-
-	// perto das bordas da árvore, ela rola sozinha enquanto o arrasto continua
-	function autoScroll() {
-		clearTimeout(drag.scrollTimer);
-
-		var tree = $('org-tree');
-		var box = tree.getBoundingClientRect();
-		var y = drag.lastY;
-		var step = 0;
-
-		if (drag.lastX < box.left || drag.lastX > box.right) return;
-		if (y < box.top + 28 && y > box.top - 40) step = -8;
-		if (y > box.bottom - 28 && y < box.bottom + 40) step = 8;
-		if (!step) return;
-
-		tree.scrollTop += step;
-		drag.target = dropTarget(drag.lastX, drag.lastY);
-		showTarget(drag.target);
-		drag.scrollTimer = setTimeout(function () {
-			if (drag && drag.active) autoScroll();
-		}, 30);
-	}
-
-	function endDrag(e, cancel) {
-		window.removeEventListener('mousemove', onDragMove, true);
-		window.removeEventListener('mouseup', onDragUp, true);
-		window.removeEventListener('keydown', onDragKey, true);
-
-		if (!drag) return;
-
-		var d = drag;
-
-		clearTimeout(d.scrollTimer);
-		if (d.ghost) d.ghost.remove();
-		document.body.classList.remove('is-org-dragging');
-		showTarget(null);
-		drag = null;
-
-		if (d.active && !cancel && d.target) {
-			drag = d;
-			applyDrop(d.target);
-			drag = null;
-			renderOrganize();
-			updateDirty();
-		}
-	}
-
-	function onDragUp(e) {
-		endDrag(e, false);
-	}
-
-	function onDragKey(e) {
-		if (e.key === 'Escape') {
-			e.preventDefault();
-			endDrag(e, true);
-		}
-	}
-
-	function startDrag(e, data) {
-		if (e.button !== 0 || !state.available) return;
-
-		e.preventDefault();
-		drag = Object.assign({ x: e.clientX, y: e.clientY, active: false, target: null }, data);
-		window.addEventListener('mousemove', onDragMove, true);
-		window.addEventListener('mouseup', onDragUp, true);
-		window.addEventListener('keydown', onDragKey, true);
-	}
-
 	function bindOrganize() {
-		// pastas: pelo puxador (ou pelo ícone); tipos: pelas etiquetas da árvore e pelos cartões da direita
-		$('pane-organize').addEventListener('mousedown', function (e) {
-			if (e.target.closest('button:not(.drag-handle), input')) return;
+		orgTree.bind();
 
-			var row = e.target.closest('.org-folder[data-index]');
-			var tag = e.target.closest('.org-chip, .org-type');
-
-			if (tag) return startDrag(e, { kind: 'type', type: tag.getAttribute('data-type') });
-			if (row && e.target.closest('.drag-handle, svg')) startDrag(e, { kind: 'folder', folder: state.organize.folders[+row.getAttribute('data-index')] });
-		});
-
-		$('btn-new-folder').addEventListener('click', function () {
-			var name = 'NOVA PASTA';
-
-			for (var n = 2; folderByName(name); n++) name = 'NOVA PASTA ' + n;
-
-			state.organize.folders.push({ name: name, parent: '', contents: [] });
-			renderOrganize();
-			updateDirty();
-
-			var inputs = $('org-tree').querySelectorAll('.org-name');
-			var last = inputs[inputs.length - 1];
-
-			last.focus();
-			last.select();
-		});
-
-		[['org-render', 'renderComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {
+		[['org-render', 'renderComments'], ['org-edit', 'editComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				state.organize[pair[1]] = this.value;
 				updateDirty();
@@ -1557,6 +1631,90 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('org-sub').addEventListener('change', function () {
 			state.organize.commentSubfolders = this.checked;
 			renderOrganize();
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
+	   Coletar: a árvore dentro da pasta do projeto (a mesma do
+	   organizar); tipo na raiz = não é coletado
+	   ========================================================= */
+
+	var COLLECT_TYPES = [
+		['videos', 'vídeos', TYPES.filter(function (t) { return t[0] === 'videos'; })[0][2]],
+		['sequencias', 'sequências de imagens', ['M8 4.5h10.5a1.5 1.5 0 0 1 1.5 1.5v10.5', 'M5.5 7h11a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19.5v-11A1.5 1.5 0 0 1 5.5 7z', 'm4.5 18 4-4 3.5 3.5 2-2 3.5 3.5']],
+		['imagens', 'imagens', TYPES.filter(function (t) { return t[0] === 'imagens'; })[0][2]],
+		['audio', 'áudio', TYPES.filter(function (t) { return t[0] === 'audio'; })[0][2]],
+		['dados', 'dados', TYPES.filter(function (t) { return t[0] === 'dados'; })[0][2]],
+		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']]
+	];
+
+	function setCollect(c) {
+		var data = c || {};
+
+		state.collect = {
+			folders: (data.folders || []).map(function (f) {
+				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || []).slice() };
+			}),
+			projectFolders: data.projectFolders === true,
+			saveAfter: data.saveAfter !== false
+		};
+		renderCollect();
+	}
+
+	var colTree = makeTree({
+		model: function () {
+			return state.collect;
+		},
+		types: COLLECT_TYPES,
+		treeId: 'col-tree',
+		typesId: 'col-types',
+		paneId: 'pane-collect',
+		newBtnId: 'btn-new-col-folder',
+		rootLabel: 'pasta do projeto',
+		rootWhere: 'não é coletado',
+		removeTitle: 'tirar da pasta (não é coletado)',
+		rowHint: function (f, depth) {
+			var notes = [];
+
+			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
+			if (state.collect.projectFolders && f.contents.some(function (t) { return t !== 'fontes'; })) notes.push('as pastas do painel de projeto');
+			if (!notes.length) return null;
+
+			var sub = el('div', 'org-sub-hint');
+			var icon = svg([FOLDER_PATH]);
+
+			icon.setAttribute('aria-hidden', 'true');
+			sub.style.setProperty('--depth', depth + 2);
+			sub.appendChild(icon);
+			sub.appendChild(el('span', null, notes.join(' · ')));
+
+			return sub;
+		},
+		after: function () {
+			$('col-project-folders').checked = state.collect.projectFolders;
+			$('col-save').checked = state.collect.saveAfter;
+			['col-project-folders', 'col-save', 'btn-new-col-folder'].forEach(function (id) {
+				$(id).disabled = !state.available;
+			});
+		}
+	});
+
+	function renderCollect() {
+		colTree.render();
+	}
+
+	function bindCollect() {
+		colTree.bind();
+
+		$('col-project-folders').addEventListener('change', function () {
+			state.collect.projectFolders = this.checked;
+			renderCollect();
+			updateDirty();
+		});
+
+		$('col-save').addEventListener('change', function () {
+			state.collect.saveAfter = this.checked;
 			updateDirty();
 		});
 	}
@@ -2028,23 +2186,20 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			root: data.root || '',
 			folder: data.folder !== false,
 			fileName: data.fileName || '{id} {projeto}',
-			compName: data.compName || '{id} {projeto}',
 			retrancas: (data.retrancas || []).map(function (r) {
 				return { code: r.code || '', path: r.path || '' };
-			}),
-			collectFiles: data.collectFiles === true,
-			collectFonts: data.collectFonts === true
+			})
 		};
 		renderProject();
 	}
 
 	// variável desconhecida no padrão (a janela só aceita as da lista)
-	function badToken(pattern, extra) {
+	function badToken(pattern) {
 		var re = /\{([^}]*)\}/g;
 		var m;
 
 		while ((m = re.exec(pattern)) !== null) {
-			if (PROJECT_TOKENS.indexOf(m[1]) < 0 && m[1] !== extra) return m[0];
+			if (PROJECT_TOKENS.indexOf(m[1]) < 0) return m[0];
 		}
 
 		return null;
@@ -2060,8 +2215,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			projeto: renameFormat('história ao vivo', state.rename),
 			usuario: 'JBI',
 			retranca: first && first.path ? first.path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() : 'em ponto',
-			data: new Date().toISOString().slice(0, 10),
-			comp: renameFormat('comp final', state.rename)
+			data: new Date().toISOString().slice(0, 10)
 		};
 		var fill = function (pattern) {
 			return pattern.replace(/\{(\w+)\}/g, function (all, t) {
@@ -2069,7 +2223,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}).replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
 		};
 		var node = $('proj-pattern-preview');
-		var bad = badToken(p.fileName) || badToken(p.compName, 'comp');
+		var bad = badToken(p.fileName);
 
 		node.textContent = '';
 
@@ -2080,8 +2234,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		node.appendChild(document.createTextNode('ex. (' + id + ', “história ao vivo”): '));
 		node.appendChild(el('b', null, fill(p.fileName) + '.aep'));
-		node.appendChild(document.createTextNode(' · comps: '));
-		node.appendChild(el('b', null, fill(p.compName)));
 	}
 
 	function renderProject() {
@@ -2091,16 +2243,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var list = $('retranca-list');
 		var disabled = !state.available;
 
-		[['proj-root', 'root'], ['proj-file-pattern', 'fileName'], ['proj-comp-pattern', 'compName']].forEach(function (pair) {
+		[['proj-root', 'root'], ['proj-file-pattern', 'fileName']].forEach(function (pair) {
 			var input = $(pair[0]);
 
 			if (input.value !== p[pair[1]]) input.value = p[pair[1]];
 			input.disabled = disabled;
 		});
 		$('proj-folder').checked = p.folder;
-		$('proj-def-files').checked = p.collectFiles;
-		$('proj-def-fonts').checked = p.collectFonts;
-		['proj-folder', 'proj-def-files', 'proj-def-fonts', 'proj-root-pick', 'btn-new-retranca', 'btn-retrancas-index'].forEach(function (id) {
+		['proj-folder', 'proj-root-pick', 'btn-new-retranca', 'btn-retrancas-index'].forEach(function (id) {
 			$(id).disabled = disabled;
 		});
 
@@ -2146,7 +2296,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function bindProject() {
-		[['proj-root', 'root'], ['proj-file-pattern', 'fileName'], ['proj-comp-pattern', 'compName']].forEach(function (pair) {
+		[['proj-root', 'root'], ['proj-file-pattern', 'fileName']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				state.project[pair[1]] = this.value;
 				projectPreview();
@@ -2154,7 +2304,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		[['proj-folder', 'folder'], ['proj-def-files', 'collectFiles'], ['proj-def-fonts', 'collectFonts']].forEach(function (pair) {
+		[['proj-folder', 'folder']].forEach(function (pair) {
 			$(pair[0]).addEventListener('change', function () {
 				state.project[pair[1]] = this.checked;
 				updateDirty();
@@ -2218,7 +2368,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search', 'project', 'appearance'];
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance'];
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2271,6 +2421,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_087/.test(message)) return 'links';
 		if (/#PAD_088/.test(message)) return 'appearance';
 		if (/#PAD_089/.test(message)) return 'project';
+		if (/#PAD_094/.test(message)) return 'collect';
 
 		return null;
 	}
@@ -2305,6 +2456,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setSearch(res.search);
 			setLinks(res.links);
 			setProject(res.project);
+			setCollect(res.collect);
 			setAppearance(res.appearance);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
@@ -2394,7 +2546,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), appearance: appearanceForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), appearance: appearanceForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -2404,6 +2556,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.search) setSearch(res.search);
 			if (res.links) setLinks(res.links);
 			if (res.project) setProject(res.project);
+			if (res.collect) setCollect(res.collect);
 			setAppearance(res.appearance || state.appearance);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -2519,6 +2672,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindLinks();
 		bindAppearance();
 		bindProject();
+		bindCollect();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

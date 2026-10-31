@@ -45,7 +45,7 @@
 					<Menu>O PADEIRO</Menu>
 					<Geometry>
 						<Size>
-							<Width>720</Width>
+							<Width>800</Width>
 							<Height>84</Height>
 						</Size>
 						<MinSize>
@@ -182,7 +182,7 @@
 					<Menu>O PADEIRO configuração</Menu>
 					<Geometry>
 						<Size>
-							<Width>860</Width>
+							<Width>940</Width>
 							<Height>640</Height>
 						</Size>
 						<MinSize>

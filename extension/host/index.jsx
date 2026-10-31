@@ -33,4 +33,5 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "finder.jsx"
 #include "productions.jsx"
 #include "project.jsx"
+#include "collect.jsx"
 #include "maker.jsx"

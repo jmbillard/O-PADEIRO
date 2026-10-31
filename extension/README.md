@@ -55,7 +55,8 @@ O-PADEIRO/
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
-   │  ├─ project.jsx             → janela PROJETO (dados no XMP, renomear, salvar / coletar na pasta da retranca)
+   │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
+   │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
    └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
 ```
@@ -93,7 +94,7 @@ o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_c
 var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
-- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`).
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`, `collect.jsx`).
 - **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:

@@ -125,10 +125,20 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						root: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO',
 						folder: true,
 						fileName: '{id} {projeto}',
-						compName: '{usuario} PROMO - {id} {projeto}',
-						retrancas: [{ code: 'EMP', path: 'JORNAIS/em ponto' }, { code: 'JDE', path: 'JORNAIS/jornal das dez' }, { code: 'INS', path: 'CANAL/institucional' }],
-						collectFiles: true,
-						collectFonts: false
+						retrancas: [{ code: 'EMP', path: 'JORNAIS/em ponto' }, { code: 'JDE', path: 'JORNAIS/jornal das dez' }, { code: 'INS', path: 'CANAL/institucional' }]
+					},
+					collect: {
+						folders: [
+							{ name: 'project files', parent: '', contents: [] },
+							{ name: 'videos', parent: 'project files', contents: ['videos'] },
+							{ name: 'sequencias', parent: 'project files', contents: ['sequencias'] },
+							{ name: 'imagens', parent: 'project files', contents: ['imagens'] },
+							{ name: 'audio', parent: 'project files', contents: ['audio'] },
+							{ name: 'dados', parent: 'project files', contents: ['dados'] },
+							{ name: 'FONTS', parent: '', contents: ['fontes'] }
+						],
+						projectFolders: false,
+						saveAfter: true
 					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
@@ -155,6 +165,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
+				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
@@ -250,10 +261,22 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
 			}
 			if (a.project) {
-				var badTok = /\{(?!(id|projeto|usuario|retranca|data|comp)\})[^}]*\}/.exec(a.project.fileName + a.project.compName);
+				var badTok = /\{(?!(id|projeto|usuario|retranca|data)\})[^}]*\}/.exec(a.project.fileName);
 
 				if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é uma variável.');
 				window.PAD_MOCK_LIST.project = JSON.parse(JSON.stringify(a.project));
+			}
+			if (a.collect) {
+				var seenType = {};
+
+				a.collect.folders.forEach(function (f) {
+					if (!f.name) throw new Error('#PAD_094 - coletar: toda pasta precisa de um nome.');
+					f.contents.forEach(function (t) {
+						if (seenType[t]) throw new Error('#PAD_094 - coletar: duas pastas recebem o mesmo tipo.');
+						seenType[t] = true;
+					});
+				});
+				window.PAD_MOCK_LIST.collect = JSON.parse(JSON.stringify(a.collect));
 			}
 			if (a.search) {
 				if (a.search.source !== 'file' && !/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
@@ -261,7 +284,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -724,11 +747,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				hasRetrancas: retrancas.length > 0,
 				target: target ? toMac(target) : '',
 				fileName: fileBase ? fileBase + '.aep' : '',
-				compName: p.id || p.name ? fill(s.compName.replace('{comp}', 'comp final')) : '',
-				renderCount: 3,
-				selected: false,
-				collectFiles: s.collectFiles,
-				collectFonts: s.collectFonts
+				saved: !!window.PAD_MOCK_SAVED
 			};
 		},
 
@@ -741,12 +760,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return api.projectInfo();
 		},
 
-		projectRename: function () {
-			if (mode === 'fail') throw new Error('#PAD_090 - nenhuma comp de render: selecione as comps ou use o comentário de render (EXPORT).');
-
-			return { count: 3, names: [] };
-		},
-
 		projectSave: function (a) {
 			var info = api.projectInfo();
 
@@ -755,7 +768,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			window.PAD_MOCK_EXISTS = true;
 			window.PAD_MOCK_SAVED = (a.path || info.target) + '/' + info.fileName;
 
-			return { messages: [], data: { file: window.PAD_MOCK_SAVED, copied: a.collectFiles ? 12 : 0, fonts: !!a.collectFonts } };
+			return { file: window.PAD_MOCK_SAVED, folder: a.path || info.target };
+		},
+
+		// ?mock=unsaved: projeto ainda não salvo
+		collectProject: function (a) {
+			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
+
+			return { messages: mode === 'fail' ? ['#PAD_093 - arquivos ausentes (não coletados):\n\nsumiu.mov'] : [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true } };
 		},
 
 		projectOpenFolder: function () {

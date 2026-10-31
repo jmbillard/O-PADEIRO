@@ -19,8 +19,8 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO projeto** | ID e nome do projeto, retranca, renomear as comps de render e salvar / coletar na pasta da retranca → [documentação](docs/projeto.md) |
-| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar, busca, projeto e aparência → [documentação](docs/producoes.md) |
+| **O PADEIRO projeto** | ID e nome do projeto, retranca e salvar na pasta da retranca → [documentação](docs/projeto.md) |
+| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -103,8 +103,11 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
 - **projeto**\
-  `◖` → abre a janela do [projeto](docs/projeto.md) (ID, nome, retranca, renomear e salvar).\
+  `◖` → abre a janela do [projeto](docs/projeto.md) (ID, nome, retranca e salvar).\
   `◗` → salva o projeto direto na pasta da retranca.
+- **coletar**\
+  `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
+  `◗` → coleta numa pasta escolhida.
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
@@ -142,6 +145,20 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas: o padeiro avisa quais ficaram de fora.
+
+### coletar
+
+`◖ clique esquerdo` → copia os arquivos usados no projeto para a pasta do projeto (a do `.aep`), na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar), e troca os caminhos no projeto para as cópias. depois, salva o projeto (se ligado na configuração).
+
+- cada tipo (vídeos, sequências de imagens, imagens, áudio, dados e fontes) vai para a sua pasta; tipos fora da árvore não são coletados.
+- **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
+- arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
+
+`◗ clique direito` → escolhe a pasta na hora (projeto ainda não salvo: ele é salvo nela).
+
+> 🚩 *obs:*\
+> • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
+> • arquivos ausentes e fontes sem arquivo local (ex: Adobe Fonts) não são coletados: o padeiro avisa quais.
 
 ### pastas
 
@@ -182,6 +199,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • **selecione antes as comps principais** (as que serão renderizadas): elas recebem o comentário 'EXPORTAR' e vão para '01 COMPS'.\
+> • com uma pasta para as **comps editáveis** na árvore (configuração), comps com 'EDIT' no comentário vão para ela.\
 > • comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com o comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo renomear) vão para uma subpasta com esse nome.\
 > • as demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
 > • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto do comentário antes de ':' vira subpasta.\
@@ -204,8 +222,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🎬 projeto](docs/projeto.md) | ID e nome do projeto, retranca, nomes das comps de render, salvar e coletar |
-| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, busca, projeto e aparência (compartilhados pela equipe) |
+| [🎬 projeto](docs/projeto.md) | ID e nome do projeto, retranca e salvar na pasta da retranca |
+| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -288,11 +306,13 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração: projeto com variável desconhecida no nome, nome vazio ou retranca sem código / pasta |
-| `#PAD_090` | projeto: sem ID e sem nome, ou nenhuma comp de render para renomear |
+| `#PAD_089` | configuração: projeto com variável desconhecida no nome do arquivo, nome vazio ou retranca sem código / pasta |
+| `#PAD_090` | projeto: sem ID e sem nome |
 | `#PAD_091` | projeto: sem pasta de destino, nome do arquivo vazio ou pasta que não pôde ser criada |
 | `#PAD_092` | projeto: já existe um projeto com esse nome na pasta (salve de novo para substituir) |
-| `#PAD_093` | projeto: itens que não puderam ser coletados (sequências de imagens ou sem permissão) |
+| `#PAD_093` | coletar: itens que não puderam ser coletados (sem permissão, arquivo ausente) |
+| `#PAD_094` | configuração: árvore do coletar inválida (nome vazio, repetido ou com `\ / : * ? " < > \|`, pasta pai inexistente, ciclo, tipo em duas pastas) ou sem nenhum tipo |
+| `#PAD_095` | coletar: projeto não salvo (use o clique direito para escolher a pasta) |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

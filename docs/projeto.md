@@ -2,7 +2,9 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO projeto** guarda o **ID** e o **nome** do projeto aberto, descobre a **retranca** pelo começo do ID e, com ela, a pasta onde o projeto é salvo. dela também saem os nomes das comps de render.
+a janela **O PADEIRO projeto** guarda o **ID** e o **nome** do projeto aberto, descobre a **retranca** pelo começo do ID e, com ela, a pasta onde o projeto é salvo, com o nome padronizado.
+
+> 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
 abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto direto na pasta da retranca, sem abrir a janela.
 
@@ -29,37 +31,21 @@ a pastinha à direita abre a pasta do projeto (ou, antes de salvar, a mais próx
 
 > 🚩 *obs:* sem retranca para o ID, o projeto vai para a pasta dos projetos. sem pasta dos projetos configurada, '*Salvar projeto*' pede uma pasta.
 
-## 📍 nomes
+## 📍 nome do arquivo
 
-- **arquivo** → o nome do `.aep`.
-- **comps** → o nome que as comps de render recebem, com a quantidade delas.
-
-os dois seguem os padrões da [configuração > projeto](producoes.md#-projeto) (ex: `{usuario} PROMO - {id} {projeto}` → `JBI PROMO - EMP123456 historia ao vivo`).
-
-## 📍 renomear comps
-
-renomeia as **comps selecionadas** no painel de projeto ou, sem seleção, todas as comps com um **comentário de render** (os da aba **organizar**, como `EXPORT`).
-
-- comps selecionadas sem comentário recebem o comentário automático (como no organizar), e passam a contar como render.
-- nomes iguais ganham um número: `... historia ao vivo`, `... historia ao vivo 2`...
-- com `{comp}` no padrão, cada comp mantém o próprio nome depois do começo padronizado. renomear de novo não repete o começo.
+a linha **arquivo** mostra o nome do `.aep`, pelo padrão da [configuração > projeto](producoes.md#-projeto) (ex: `{id} {projeto}` → `EMP123456 historia ao vivo.aep`).
 
 ## 📍 salvar projeto
 
 salva o projeto na pasta mostrada no cartão, com o nome do **arquivo**. com '*uma pasta para cada projeto*' (configuração), cria uma pasta com o mesmo nome.
 
-- **coletar arquivos** → copia os arquivos usados no projeto para `project files/`, na mesma estrutura de pastas do painel de projeto, e troca os caminhos no projeto. arquivos que já estão na pasta ficam como estão; nomes repetidos ganham `_2`, `_3`...
-- **coletar fontes** → copia as fontes usadas para `FONTS/`.
-
-o padrão dos dois interruptores vem da configuração; mudar na janela vale até ela ser fechada.
-
 - já existe um projeto com o mesmo nome na pasta → o padeiro avisa; clique de novo em '*Salvar projeto*' (logo em seguida) para substituir. salvar de novo o próprio projeto não pergunta.
 - **⋯ > salvar em outra pasta…** → escolhe a pasta na hora (a pasta do projeto é criada dentro dela).
 - ao salvar, a pasta abre no Explorer / Finder.
 
-> 🚩 *obs:*\
-> • sequências de imagens não são coletadas (só o primeiro quadro seria copiado): o padeiro avisa quais ficaram de fora.\
-> • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas.
+## 📍 coletar os arquivos
+
+depois de salvo, o botão **coletar** da barra copia os arquivos usados para a pasta do projeto (vídeos, sequências de imagens, imagens, áudio, dados e fontes), na árvore da [configuração > coletar](producoes.md#-coletar), e troca os caminhos no projeto. detalhes na [barra](../README.md#coletar).
 
 ## 📍 menu ⋯
 

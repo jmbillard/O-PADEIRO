@@ -22,6 +22,7 @@
 				<button type="button" class="tab" role="tab" data-tab="drives" aria-selected="false">DRIVES</button>
 				<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 				<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
+				<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
 				<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCA</button>
 				<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
 				<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
@@ -170,6 +171,10 @@
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-auto" placeholder="EXPORTAR" spellcheck="false" autocomplete="off"></div>
 					<p class="cfg-hint">dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates.</p>
 
+					<p class="cfg-title prods-section-title">comps editáveis</p>
+					<p class="cfg-hint">com uma pasta para as <b>comps editáveis</b> na árvore, a comp vai para ela quando o comentário contém um destes termos (ex: EDIT, EDITAR). sem essa pasta, elas ficam com as outras comps.</p>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-edit" placeholder="EDIT" spellcheck="false" autocomplete="off" aria-label="Comentários das comps editáveis"></div>
+
 					<p class="cfg-title prods-section-title">arquivos</p>
 					<label class="cfg-label" for="org-data">extensões de dados</label>
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><input type="text" class="cfg-input" id="org-data" placeholder=".csv, .json, .txt" spellcheck="false" autocomplete="off"></div>
@@ -177,6 +182,38 @@
 						<input type="checkbox" id="org-sub">
 						<span class="cfg-switch-track"></span>
 						<span class="cfg-switch-label" title="ex: comps com comentário RODAPE ficam em 01 COMPS / RODAPE">comentários viram subpastas</span>
+					</label>
+				</div>
+			</div>
+
+			<!-- aba COLETAR (botão COLETAR da barra): a árvore dentro da pasta do projeto -->
+			<div class="cfg-pane organize-pane" id="pane-collect" role="tabpanel" hidden>
+				<div class="org-card">
+					<p class="org-eyebrow">árvore do collect</p>
+					<div class="org-tree" id="col-tree"></div>
+					<div class="org-foot">
+						<button type="button" class="org-add" id="btn-new-col-folder">+ nova pasta</button>
+					</div>
+				</div>
+
+				<div class="org-side">
+					<p class="cfg-title prods-section-title">tipos de arquivo</p>
+					<p class="cfg-hint">o collect copia os arquivos usados no projeto para a pasta do projeto (a do .aep) e troca os caminhos no projeto. arraste cada tipo para a pasta que deve recebê-lo; o que fica na raiz (riscado) <b>não é coletado</b>.</p>
+					<div class="org-types" id="col-types"></div>
+
+					<p class="cfg-title prods-section-title">sequências de imagens</p>
+					<p class="cfg-hint">copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela (render_0001.png → render). a interpretação do item (fps, alpha) é mantida.</p>
+
+					<p class="cfg-title prods-section-title">opções</p>
+					<label class="cfg-switch organize-switch">
+						<input type="checkbox" id="col-project-folders">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label" title="ex: um vídeo na pasta Material do painel de projeto vai para videos / Material">repetir as pastas do painel de projeto</span>
+					</label>
+					<label class="cfg-switch organize-switch">
+						<input type="checkbox" id="col-save">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label">salvar o projeto depois de coletar</span>
 					</label>
 				</div>
 			</div>
@@ -199,7 +236,7 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-categories">atualizar as categorias pelo webhook</button>
 			</div>
 
-			<!-- aba PROJETO (a janela PROJETO: pasta, nomes e retrancas) -->
+			<!-- aba PROJETO (a janela PROJETO: pasta, nome do arquivo e retrancas) -->
 			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">pasta dos projetos</p>
 				<p class="cfg-hint">onde os projetos são salvos. a pasta de cada retranca fica dentro desta; sem pasta, a janela PROJETO pede uma ao salvar.</p>
@@ -211,17 +248,9 @@
 				</label>
 
 				<p class="cfg-title prods-section-title">nomes</p>
-				<p class="cfg-hint">variáveis: <b>{id}</b> <b>{projeto}</b> <b>{usuario}</b> (a sigla) <b>{retranca}</b> <b>{data}</b>; nas comps também <b>{comp}</b> (o nome atual da comp). o nome do projeto segue o formato da aba RENOMEAR (acentos e caixa).</p>
+				<p class="cfg-hint">o nome do arquivo .aep, com as variáveis <b>{id}</b> <b>{projeto}</b> <b>{usuario}</b> (a sigla) <b>{retranca}</b> <b>{data}</b>. o nome do projeto segue o formato da aba RENOMEAR (acentos e caixa).</p>
 				<div class="has-field-icon" title="nome do arquivo .aep"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><input type="text" class="cfg-input" id="proj-file-pattern" placeholder="{id} {projeto}" spellcheck="false" autocomplete="off" aria-label="Nome do arquivo"></div>
-				<div class="has-field-icon" title="nome das comps de render"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /></svg><input type="text" class="cfg-input" id="proj-comp-pattern" placeholder="{usuario} PROMO - {id} {projeto}" spellcheck="false" autocomplete="off" aria-label="Nome das comps de render"></div>
 				<p class="rename-result" id="proj-pattern-preview"></p>
-
-				<p class="cfg-title prods-section-title">ao salvar</p>
-				<p class="cfg-hint">o padrão dos interruptores da janela PROJETO (cada pessoa ainda pode mudar na hora).</p>
-				<div class="proj-cfg-switches">
-					<label class="cfg-switch"><input type="checkbox" id="proj-def-files"><span class="cfg-switch-track"></span><span class="cfg-switch-label">coletar arquivos</span></label>
-					<label class="cfg-switch"><input type="checkbox" id="proj-def-fonts"><span class="cfg-switch-track"></span><span class="cfg-switch-label">coletar fontes</span></label>
-				</div>
 
 				<p class="cfg-title prods-section-title">retrancas</p>
 				<p class="cfg-hint">o começo do ID do projeto indica a retranca: <b>EMP</b>123456 → a pasta de <b>EMP</b>. a pasta pode ser dentro da pasta dos projetos (JORNAIS/em ponto) ou um caminho completo. vale o código mais longo que combinar.</p>

@@ -87,6 +87,13 @@
 	"ORGANIZE": {
 		"folders": [
 			{
+				"name": "_EDITAR",
+				"parent": "",
+				"contents": [
+					"editaveis"
+				]
+			},
+			{
 				"name": "_MATERIAL",
 				"parent": "",
 				"contents": []
@@ -137,6 +144,9 @@
 		],
 		"renderComments": [
 			"EXPORT"
+		],
+		"editComments": [
+			"EDIT"
 		],
 		"autoComment": "EXPORT",
 		"dataExtensions": [
@@ -210,7 +220,6 @@
 		"root": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO",
 		"folder": true,
 		"fileName": "{id} {projeto}",
-		"compName": "{usuario} PROMO - {id} {projeto}",
 		"retrancas": [
 			{
 				"code": "INS",
@@ -344,9 +353,31 @@
 				"code": "MAC",
 				"path": "MARCA E COMUNICACAO"
 			}
+		]
+	},
+	"COLLECT": {
+		"folders": [
+			{
+				"name": "project files",
+				"parent": "",
+				"contents": [
+					"videos",
+					"sequencias",
+					"imagens",
+					"audio",
+					"dados"
+				]
+			},
+			{
+				"name": "FONTS",
+				"parent": "",
+				"contents": [
+					"fontes"
+				]
+			}
 		],
-		"collectFiles": false,
-		"collectFonts": false
+		"projectFolders": true,
+		"saveAfter": true
 	},
 	"APPEARANCE": {
 		"mode": "light",

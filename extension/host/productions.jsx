@@ -69,6 +69,7 @@ PADX.saveProductions = function (a) {
 	var links = a.links ? padCleanLinks(a.links) : null;
 	var appearance = a.appearance ? padCleanAppearance(a.appearance) : null;
 	var project = a.project ? padCleanProject(a.project) : null;
+	var collect = a.collect ? padCleanCollect(a.collect) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -82,7 +83,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance, PROJECT: project });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance, PROJECT: project, COLLECT: collect });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -90,7 +91,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), project: padReadProject(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), project: padReadProject(), collect: padReadCollect(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -385,12 +386,12 @@ function padReadRename() {
 ---------------------------------------------------------------
 
 'ORGANIZE' no O_PADEIRO_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
-{ folders: [{ name, parent, contents: [...] }], renderComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
+{ folders: [{ name, parent, contents: [...] }], renderComments: [...], editComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
 Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
 
 */
 
-var PAD_ORGANIZE_CONTENTS = ['render', 'precomps', 'videos', 'imagens', 'audio', 'solidos', 'dados', 'missing'];
+var PAD_ORGANIZE_CONTENTS = ['render', 'editaveis', 'precomps', 'videos', 'imagens', 'audio', 'solidos', 'dados', 'missing'];
 var PAD_DEFAULT_ORGANIZE = null;
 
 function padDefaultOrganize() {
@@ -414,7 +415,7 @@ function padCommaList(value) {
 
 // Valida e normaliza a organização vinda do painel. Lança Error com a mensagem.
 function padCleanOrganize(o) {
-	var clean = { folders: [], renderComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false };
+	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false };
 	var names = {};
 	var contents = {};
 	var i;
@@ -475,6 +476,10 @@ function padCleanOrganize(o) {
 	for (i = 0; i < comments.length; i++) clean.renderComments.push(comments[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' '));
 
 	if (!clean.renderComments.length) throw new Error('#PAD_085 - organizar: informe ao menos um comentário de render.');
+
+	var edits = o.editComments == null ? ['EDIT'] : padCommaList(o.editComments); // configurações antigas: o padrão
+
+	for (i = 0; i < edits.length; i++) clean.editComments.push(edits[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' '));
 
 	clean.autoComment = padTrim(o.autoComment).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ');
 

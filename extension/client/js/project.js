@@ -1,12 +1,13 @@
 /*
 
 ---------------------------------------------------------------
-> PROJETO — ID, nome, retranca, renomear e salvar
+> PROJETO — ID, nome, retranca e salvar
 ---------------------------------------------------------------
 
 O ID e o nome ficam no próprio .aep (XMP); a sigla, só neste computador. As primeiras letras do ID
 indicam a retranca (configuração > projeto), e com ela a pasta onde o projeto é salvo. A janela
-acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
+acompanha o projeto aberto no After Effects (trocar de projeto troca os dados). O collect dos arquivos
+é do botão COLETAR da barra.
 
 */
 
@@ -20,7 +21,7 @@ acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
 	var SAVE_DEBOUNCE = 420; // ms depois da última tecla: grava no projeto
 	var CONFIRM_MS = 4000; // tempo para o segundo clique de "substituir"
 
-	var state = { info: null, timer: null, statusTimer: null, busy: false, confirmUntil: 0, collectSet: false, seq: 0 };
+	var state = { info: null, timer: null, statusTimer: null, busy: false, confirmUntil: 0, seq: 0 };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -102,20 +103,8 @@ acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
 
 		// nomes
 		$('proj-file-name').textContent = info.fileName || '—';
-		$('proj-comp-name').textContent = info.compName || '—';
-		$('proj-comps-label').textContent = info.renderCount ? 'comps · ' + info.renderCount : 'comps';
-		$('proj-comps-label').parentNode.title = info.renderCount ? (info.selected ? 'as comps selecionadas' : 'as comps com o comentário de render') + ' passam a se chamar assim' : 'selecione as comps de render (ou marque com o comentário de render)';
-
-		// coletar: o padrão da configuração vale até a pessoa mexer
-		if (!state.collectSet) {
-			$('proj-collect-files').checked = !!info.collectFiles;
-			$('proj-collect-fonts').checked = !!info.collectFonts;
-		}
-
 		var empty = !info.id && !info.name;
 
-		$('btn-rename').disabled = empty || !info.hasItems || !info.renderCount;
-		$('btn-rename').title = !info.renderCount ? 'selecione as comps de render (ou marque com o comentário de render)' : 'renomear ' + info.renderCount + (info.renderCount === 1 ? ' comp' : ' comps') + ' para: ' + info.compName;
 		$('btn-save').disabled = empty;
 		fitHeight();
 	}
@@ -189,14 +178,6 @@ acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
 		}
 	}
 
-	function rename() {
-		return busy($('btn-rename'), 'Renomeando…', async function () {
-			var res = await call('projectRename');
-
-			status(res.count + (res.count === 1 ? ' comp renomeada.' : ' comps renomeadas.'), 'success');
-		});
-	}
-
 	function save(path) {
 		var overwrite = Date.now() < state.confirmUntil;
 
@@ -213,15 +194,8 @@ acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
 			}
 
 			try {
-				var res = await call('projectSave', { path: path || '', collectFiles: $('proj-collect-files').checked, collectFonts: $('proj-collect-fonts').checked, overwrite: overwrite, open: true });
-				var data = res.data || {};
-				var extra = [];
-
-				if (data.copied) extra.push(data.copied + (data.copied === 1 ? ' arquivo coletado' : ' arquivos coletados'));
-				if (data.fonts) extra.push('fontes coletadas');
-
-				if (res.messages && res.messages.length) status(res.messages.join('\n'), 'error');
-				else status('projeto salvo' + (extra.length ? ' (' + extra.join(', ') + ')' : '') + '.', 'success');
+				await call('projectSave', { path: path || '', overwrite: overwrite, open: true });
+				status('projeto salvo.', 'success');
 			} catch (err) {
 				// já existe: o próximo clique (logo em seguida) substitui
 				if (/#PAD_092/.test(err.message)) {
@@ -285,13 +259,6 @@ acompanha o projeto aberto no After Effects (trocar de projeto troca os dados).
 			});
 		});
 
-		['proj-collect-files', 'proj-collect-fonts'].forEach(function (id) {
-			$(id).addEventListener('change', function () {
-				state.collectSet = true;
-			});
-		});
-
-		$('btn-rename').addEventListener('click', rename);
 		$('btn-save').addEventListener('click', function () {
 			save('');
 		});

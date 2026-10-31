@@ -1457,12 +1457,6 @@ body.is-org-dragging * {
   text-transform: uppercase;
 }
 
-.proj-cfg-switches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-}
-
 .rename-result .is-error {
   color: var(--danger);
   font-weight: 700;
@@ -1471,4 +1465,14 @@ body.is-org-dragging * {
 /* os dois "+" da lista de retrancas: o segundo logo abaixo do primeiro */
 #btn-new-retranca + .add-button {
   margin-top: -2px;
+}
+
+/* =========================================================
+   aba COLETAR (a mesma árvore do organizar)
+   ========================================================= */
+
+/* na raiz ficam os tipos que não são coletados: riscados */
+#pane-collect .org-folder.is-root .org-chip {
+  opacity: 0.6;
+  text-decoration: line-through;
 }

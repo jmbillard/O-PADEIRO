@@ -342,6 +342,23 @@ body.bar-page {
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
+/* coletar: os arquivos sobem da pasta, um depois do outro */
+.anim-collect .collect-file {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.anim-collect .f2 {
+  transition-delay: 60ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-collect .f1 {
+  transform: translateY(-2.2px) rotate(-6deg);
+}
+
+.bar-btn:hover:not(:disabled) .anim-collect .f2 {
+  transform: translateY(-1.6px) rotate(5deg);
+}
+
 /* projeto: a claquete abre e bate */
 .anim-clap .clap-top {
   transform-origin: 0 100%;

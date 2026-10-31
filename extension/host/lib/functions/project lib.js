@@ -11,9 +11,12 @@
 
 // Organização (a aba ORGANIZAR da configuração substitui):
 //   folders          → a árvore de pastas: nome, pasta pai ('' = raiz) e os tipos que ela recebe ('contents'):
-//                      render (comps de render), precomps (as outras comps), videos, imagens, audio,
+//                      render (comps de render), editaveis (comps editáveis), precomps (as outras comps),
+//                      videos, imagens, audio,
 //                      solidos, dados, missing (arquivos ausentes); sem tipos, só agrupa outras pastas
 //   renderComments   → comentários (ou parte deles) que mandam a comp para a pasta de render
+//   editComments     → comentários (ou parte deles) que mandam a comp para a pasta das editáveis
+//                      (sem pasta para 'editaveis', elas ficam com as outras comps)
 //   autoComment      → comentário dado às comps selecionadas sem comentário (e às criadas pelos templates)
 //   dataExtensions   → extensões tratadas como arquivos de dados
 //   commentSubfolders→ o comentário (antes de ':') vira subpasta
@@ -30,6 +33,7 @@ var PAD_ORGANIZE = {
 		{ name: 'MISSING', parent: '', contents: ['missing'] }
 	],
 	renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
+	editComments: ['EDIT'],
 	autoComment: 'EXPORTAR',
 	dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
 	commentSubfolders: true
@@ -50,6 +54,18 @@ function padIsRenderComment(comment) {
 
 	for (var i = 0; i < PAD_ORGANIZE.renderComments.length; i++) {
 		if (PAD_ORGANIZE.renderComments[i] != '' && c.indexOf(PAD_ORGANIZE.renderComments[i].toUpperCase()) >= 0) return true;
+	}
+
+	return false;
+}
+
+// O comentário da comp manda para a pasta das editáveis?
+function padIsEditComment(comment) {
+	var c = String(comment).toUpperCase();
+	var list = PAD_ORGANIZE.editComments || [];
+
+	for (var i = 0; i < list.length; i++) {
+		if (list[i] != '' && c.indexOf(String(list[i]).toUpperCase()) >= 0) return true;
 	}
 
 	return false;
@@ -244,6 +260,8 @@ function populateCompItemFolders(comps, folders, cache) {
 
 		if (padIsRenderComment(compComment)) {
 			comp.parentFolder = renderFolder;
+		} else if (folders.editaveis && padIsEditComment(compComment)) {
+			comp.parentFolder = folders.editaveis; // a pasta já é a das editáveis: sem subpasta pelo comentário
 		} else if (typeRegExp && compComment.match(typeRegExp)) {
 			comp.parentFolder = sub ? getCommentFolder(cache, compComment, renderFolder) : renderFolder;
 		} else if (compComment == '' || !sub) {

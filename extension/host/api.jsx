@@ -264,6 +264,7 @@ PADX.productions = function () {
 		links: padReadLinks(),
 		appearance: padReadAppearance(),
 		project: padReadProject(),
+		collect: padReadCollect(),
 		error: error
 	};
 };
