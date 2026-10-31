@@ -64,6 +64,7 @@ PADX.saveProductions = function (a) {
 	var log = a.log ? padCleanLog(a.log) : null;
 	var drives = a.drives ? padCleanDrives(a.drives) : null;
 	var rename = a.rename ? padCleanRename(a.rename) : null;
+	var organize = a.organize ? padCleanOrganize(a.organize) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -77,7 +78,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -85,7 +86,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -225,6 +226,7 @@ function padApplyConfig() {
 	padDrivesCache.checked = now;
 	padDefaultDrives(); // guarda os padrões antes da primeira troca
 	padDefaultRename();
+	padDefaultOrganize();
 
 	var file = padConfigFile();
 	var stamp = 0;
@@ -259,6 +261,8 @@ function padApplyConfig() {
 	PAD_RENAME_TYPES = r.types;
 	PAD_RENAME_FIXED = r.fixed;
 	renameRefArray = padRenameRefs(r.types);
+
+	PAD_ORGANIZE = padReadOrganize();
 }
 
 /*
@@ -336,5 +340,122 @@ function padReadRename() {
 		return data.RENAME ? padCleanRename(data.RENAME) : padDefaultRename();
 	} catch (err) {
 		return padDefaultRename();
+	}
+}
+
+/*
+
+---------------------------------------------------------------
+> organizar (aba ORGANIZAR da configuração)
+---------------------------------------------------------------
+
+'ORGANIZE' no O_PADEIRO_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
+{ folders: [{ name, parent, content }], renderComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
+Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
+
+*/
+
+var PAD_ORGANIZE_CONTENTS = ['render', 'precomps', 'videos', 'imagens', 'audio', 'solidos', 'dados', 'missing'];
+var PAD_DEFAULT_ORGANIZE = null;
+
+function padDefaultOrganize() {
+	if (!PAD_DEFAULT_ORGANIZE) PAD_DEFAULT_ORGANIZE = JSON.parse(JSON.stringify(PAD_ORGANIZE));
+
+	return PAD_DEFAULT_ORGANIZE;
+}
+
+function padCommaList(value) {
+	var list = value instanceof Array ? value : String(value == null ? '' : value).split(',');
+	var out = [];
+
+	for (var i = 0; i < list.length; i++) {
+		var item = padTrim(list[i]);
+
+		if (item != '') out.push(item);
+	}
+
+	return out;
+}
+
+// Valida e normaliza a organização vinda do painel. Lança Error com a mensagem.
+function padCleanOrganize(o) {
+	var clean = { folders: [], renderComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false };
+	var names = {};
+	var contents = {};
+	var i;
+
+	for (i = 0; i < (o.folders || []).length; i++) {
+		var name = padTrim(o.folders[i].name).replace(/\s+/g, ' ');
+		var content = padTrim(o.folders[i].content);
+
+		if (name == '') throw new Error('#PAD_084 - organizar: a pasta ' + (i + 1) + ' precisa de um nome.');
+		if (names[name.toUpperCase()]) throw new Error('#PAD_084 - organizar: a pasta "' + name + '" aparece mais de uma vez.');
+		if (content != '' && PAD_ORGANIZE_CONTENTS.indexOf(content) < 0) throw new Error('#PAD_084 - organizar: conteúdo desconhecido em "' + name + '".');
+		if (content != '' && contents[content]) throw new Error('#PAD_084 - organizar: "' + name + '" e "' + contents[content] + '" recebem o mesmo conteúdo.');
+
+		names[name.toUpperCase()] = true;
+		if (content != '') contents[content] = name;
+		clean.folders.push({ name: name, parent: padTrim(o.folders[i].parent), content: content });
+	}
+
+	// pasta pai: precisa existir e não pode formar ciclo
+	for (i = 0; i < clean.folders.length; i++) {
+		var f = clean.folders[i];
+		var seen = {};
+		var cur = f;
+
+		if (f.parent != '' && !names[f.parent.toUpperCase()]) throw new Error('#PAD_084 - organizar: a pasta pai de "' + f.name + '" não existe.');
+
+		for (var c = 0; c < clean.folders.length; c++) {
+			if (clean.folders[c].name.toUpperCase() == f.parent.toUpperCase()) f.parent = clean.folders[c].name; // grafia da pasta
+		}
+
+		while (cur && cur.parent != '') {
+			if (seen[cur.name.toUpperCase()]) throw new Error('#PAD_084 - organizar: "' + f.name + '" está dentro dela mesma.');
+
+			seen[cur.name.toUpperCase()] = true;
+
+			var next = null;
+
+			for (var k = 0; k < clean.folders.length; k++) {
+				if (clean.folders[k].name.toUpperCase() == cur.parent.toUpperCase()) next = clean.folders[k];
+			}
+
+			cur = next;
+		}
+	}
+
+	var comments = padCommaList(o.renderComments);
+
+	for (i = 0; i < comments.length; i++) clean.renderComments.push(comments[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' '));
+
+	if (!clean.renderComments.length) throw new Error('#PAD_085 - organizar: informe ao menos um comentário de render.');
+
+	clean.autoComment = padTrim(o.autoComment).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ');
+
+	var matches = false;
+
+	for (i = 0; i < clean.renderComments.length; i++) {
+		if (clean.autoComment.indexOf(clean.renderComments[i]) >= 0) matches = true;
+	}
+
+	if (clean.autoComment == '' || !matches) throw new Error('#PAD_085 - organizar: o comentário automático precisa conter um dos comentários de render.');
+
+	var exts = padCommaList(o.dataExtensions);
+
+	for (i = 0; i < exts.length; i++) clean.dataExtensions.push('.' + exts[i].replace(/^\*?\.+/, '').toLowerCase());
+
+	return clean;
+}
+
+function padReadOrganize() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.ORGANIZE ? padCleanOrganize(data.ORGANIZE) : padDefaultOrganize();
+	} catch (err) {
+		return padDefaultOrganize();
 	}
 }

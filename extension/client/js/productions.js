@@ -28,6 +28,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
 		rename: { types: [], fixed: [] }, // tipos de peça e nomes fixos (aba RENOMEAR); termos editados como texto
+		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR
 		tab: 'prods'
 	};
 
@@ -230,8 +231,28 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function commaList(text) {
+		return String(text).split(',').map(function (x) {
+			return x.trim();
+		}).filter(Boolean);
+	}
+
+	function organizeForSave() {
+		var o = state.organize;
+
+		return {
+			folders: o.folders.map(function (f) {
+				return { name: f.name.trim(), parent: f.parent, content: f.content };
+			}),
+			renderComments: commaList(o.renderComments),
+			autoComment: o.autoComment.trim(),
+			dataExtensions: commaList(o.dataExtensions),
+			commentSubfolders: o.commentSubfolders
+		};
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave() });
 	}
 
 	function updateDirty() {
@@ -490,6 +511,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderLog();
 		renderDrives();
 		renderRename();
+		renderOrganize();
 	}
 
 	function showUnavailable(message) {
@@ -595,7 +617,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		remove.disabled = !state.available;
 		input.addEventListener('input', function () {
 			onInput(input.value);
-			line.closest('.drive-row').classList.remove('has-error');
+
+			var row = line.closest('.drive-row');
+
+			if (row) row.classList.remove('has-error');
 			updateDirty();
 		});
 		line.appendChild(ico);
@@ -916,6 +941,183 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Organizar
+	   ========================================================= */
+
+	var FOLDER_ICON = ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'];
+	var CONTENTS = [
+		['', '— só agrupa'],
+		['render', 'comps de render'],
+		['precomps', 'outras comps'],
+		['videos', 'vídeos'],
+		['imagens', 'imagens'],
+		['audio', 'áudio'],
+		['solidos', 'sólidos'],
+		['dados', 'dados'],
+		['missing', 'arquivos ausentes']
+	];
+
+	function setOrganize(o) {
+		var data = o || {};
+
+		state.organize = {
+			folders: (data.folders || []).map(function (f) {
+				return { name: f.name || '', parent: f.parent || '', content: f.content || '' };
+			}),
+			renderComments: (data.renderComments || []).join(', '),
+			autoComment: data.autoComment || '',
+			dataExtensions: (data.dataExtensions || []).join(', '),
+			commentSubfolders: data.commentSubfolders !== false
+		};
+		renderOrganize();
+	}
+
+	function sameName(a, b) {
+		return String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+	}
+
+	// ordem de árvore: cada pasta logo depois da pasta pai, com a profundidade (para o recuo)
+	function folderTree() {
+		var folders = state.organize.folders;
+		var out = [];
+		var placed = [];
+
+		function add(parentName, depth) {
+			folders.forEach(function (f) {
+				if (placed.indexOf(f) >= 0) return;
+				if (parentName === null ? (f.parent === '' || !folders.some(function (p) { return p !== f && sameName(p.name, f.parent); })) : sameName(f.parent, parentName)) {
+					placed.push(f);
+					out.push({ folder: f, depth: depth });
+					if (depth < 12) add(f.name, depth + 1);
+				}
+			});
+		}
+
+		add(null, 0);
+		folders.forEach(function (f) {
+			if (placed.indexOf(f) < 0) out.push({ folder: f, depth: 0 }); // ciclo: aparece na raiz (o salvar avisa)
+		});
+
+		return out;
+	}
+
+	function selectBox(options, value, label, onChange) {
+		var wrap = el('span', 'select');
+		var select = el('select');
+
+		options.forEach(function (o) {
+			var option = el('option', null, o[1]);
+
+			option.value = o[0];
+			select.appendChild(option);
+		});
+		select.value = value;
+		select.setAttribute('aria-label', label);
+		select.disabled = !state.available;
+		select.addEventListener('change', function () {
+			onChange(select.value);
+		});
+		wrap.appendChild(select);
+		PAD_DROPDOWN.enhance(select);
+
+		return wrap;
+	}
+
+	function renderOrganize() {
+		if (!state.organize) return;
+
+		var list = $('folder-list');
+		var o = state.organize;
+
+		list.textContent = '';
+
+		folderTree().forEach(function (item) {
+			var f = item.folder;
+			var row = el('div', 'organize-row');
+			var name = driveField(f.name, 'nome da pasta', 'nome da pasta', FOLDER_ICON, function (v) {
+				// renomear leva as subpastas junto
+				o.folders.forEach(function (child) {
+					if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = v.trim();
+				});
+				f.name = v;
+			}, function () {
+				// as subpastas sobem para a pasta pai da removida
+				o.folders.forEach(function (child) {
+					if (child !== f && sameName(child.parent, f.name)) child.parent = f.parent;
+				});
+				o.folders.splice(o.folders.indexOf(f), 1);
+				renderOrganize();
+				updateDirty();
+			});
+
+			name.classList.add('organize-name');
+			if (item.depth) name.classList.add('is-child');
+			name.style.setProperty('--depth', item.depth);
+			name.querySelector('input').addEventListener('change', renderOrganize); // ao sair do campo, atualiza as listas de pasta pai
+
+			var parents = [['', 'raiz do projeto']].concat(o.folders.filter(function (p) {
+				return p !== f && p.name.trim();
+			}).map(function (p) {
+				return [p.name.trim(), p.name.trim()];
+			}));
+			var used = {};
+
+			o.folders.forEach(function (other) {
+				if (other !== f && other.content) used[other.content] = other.name.trim();
+			});
+
+			row.appendChild(name);
+			row.appendChild(selectBox(parents, f.parent, 'pasta pai de ' + f.name, function (v) {
+				f.parent = v;
+				renderOrganize();
+				updateDirty();
+			}));
+			row.appendChild(selectBox(CONTENTS.map(function (c) {
+				return [c[0], c[0] && used[c[0]] ? c[1] + ' (em ' + used[c[0]] + ')' : c[1]];
+			}), f.content, 'o que ' + f.name + ' recebe', function (v) {
+				f.content = v;
+				renderOrganize();
+				updateDirty();
+			}));
+			list.appendChild(row);
+		});
+
+		var fields = { 'org-render': 'renderComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
+
+		Object.keys(fields).forEach(function (id) {
+			if ($(id).value !== o[fields[id]]) $(id).value = o[fields[id]];
+			$(id).disabled = !state.available;
+		});
+		$('org-sub').checked = o.commentSubfolders;
+		$('org-sub').disabled = !state.available;
+		$('btn-new-folder').disabled = !state.available;
+	}
+
+	function bindOrganize() {
+		$('btn-new-folder').addEventListener('click', function () {
+			state.organize.folders.push({ name: '', parent: '', content: '' });
+			renderOrganize();
+			updateDirty();
+
+			var inputs = $('folder-list').querySelectorAll('.organize-name input');
+
+			inputs[inputs.length - 1].focus();
+		});
+
+		[['org-render', 'renderComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {
+			$(pair[0]).addEventListener('input', function () {
+				state.organize[pair[1]] = this.value;
+				updateDirty();
+			});
+		});
+
+		$('org-sub').addEventListener('change', function () {
+			state.organize.commentSubfolders = this.checked;
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
 	   Abas
 	   ========================================================= */
 
@@ -925,7 +1127,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
 		});
-		['prods', 'logs', 'drives', 'rename'].forEach(function (key) {
+		['prods', 'logs', 'drives', 'rename', 'organize'].forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
 
@@ -939,6 +1141,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_078/.test(message)) return 'logs';
 		if (/#PAD_0(79|80|81)/.test(message)) return 'drives';
 		if (/#PAD_08[23]/.test(message)) return 'rename';
+		if (/#PAD_08[45]/.test(message)) return 'organize';
 
 		return null;
 	}
@@ -968,6 +1171,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setLog(res.log);
 			setDrives(res.drives);
 			setRename(res.rename);
+			setOrganize(res.organize);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -1038,12 +1242,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
 			if (res.drives) setDrives(res.drives);
 			if (res.rename) setRename(res.rename);
+			if (res.organize) setOrganize(res.organize);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
@@ -1144,6 +1349,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindLog();
 		bindDrives();
 		bindRename();
+		bindOrganize();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

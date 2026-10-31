@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em quatro abas: **produções**, **logs**, **drives** e **renomear**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em cinco abas: **produções**, **logs**, **drives**, **renomear** e **organizar**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 ## 📍 produções
 
@@ -88,6 +88,27 @@ a aba **renomear** define como o botão **renomear** (na barra) padroniza os nom
 > • a ordem importa: vale o primeiro tipo encontrado. arraste pelos pontinhos para reordenar.\
 > • os termos são palavras: maiúsculas e acentos não importam, e o plural com S também vale (`tarja` reconhece **TARJAS**). plurais irregulares entram como outro termo (`cartao, cartoes`).\
 > • o comentário do tipo também é usado pelo **organizar**.
+
+<br>
+
+---
+
+<br>
+
+## 📍 organizar
+
+a aba **organizar** define a árvore de pastas que o botão **organizar** (na barra) monta no projeto. vem preenchida com a árvore de sempre (`01 COMPS`, `02 PRECOMPS`, `03 ARQUIVOS` com `VIDEOS`, `IMAGENS`, `AUDIO`, `SOLIDOS` e `DADOS`, e `MISSING`).
+
+- **árvore de pastas** → cada pasta tem o **nome**, **dentro de** qual pasta ela fica (ou na raiz) e o que ela **recebe**: comps de render, outras comps, vídeos, imagens, áudio, sólidos, dados ou arquivos ausentes. pastas que não recebem nada só agrupam outras (como `03 ARQUIVOS`). as subpastas aparecem recuadas embaixo da pasta delas.
+- **comps de render** → a comp vai para a pasta de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
+- **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
+- **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
+- **o comentário vira subpasta** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`).
+
+> 🚩 *obs:*\
+> • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas para a pasta de cima.\
+> • o que não tem pasta na árvore fica na raiz do projeto.\
+> • a pasta dos arquivos ausentes só é criada quando há algum arquivo ausente.
 
 <br>
 

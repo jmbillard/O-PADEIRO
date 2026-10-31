@@ -687,3 +687,74 @@ body.prods-page {
     grid-column: 2 / -1;
   }
 }
+
+/* aba ORGANIZAR: árvore (a pasta recua conforme a profundidade), pasta pai e conteúdo */
+.organize-head,
+.organize-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px 190px;
+  align-items: center;
+  gap: 8px;
+}
+
+.organize-head {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.organize-head span {
+  padding-left: 13px;
+}
+
+.organize-row .cfg-input,
+.organize-row .dropdown-trigger {
+  min-height: 38px;
+  font-size: 0.8rem;
+}
+
+.organize-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+/* recuo da subpasta, com uma linha guia */
+.organize-name {
+  position: relative;
+  margin-left: calc(var(--depth, 0) * 22px);
+}
+
+.organize-name.is-child::before {
+  position: absolute;
+  top: -10px;
+  left: -13px;
+  width: 9px;
+  height: 29px;
+  border-bottom: 1.5px solid var(--border-strong);
+  border-left: 1.5px solid var(--border-strong);
+  border-bottom-left-radius: 5px;
+  content: "";
+}
+
+.organize-switch {
+  margin-top: 6px;
+}
+
+.organize-switch .cfg-switch-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+@media (max-width: 680px) {
+  .organize-head {
+    display: none;
+  }
+
+  .organize-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .organize-row>.organize-name {
+    grid-column: 1 / -1;
+  }
+}

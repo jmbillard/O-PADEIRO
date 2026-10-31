@@ -259,6 +259,7 @@ PADX.productions = function () {
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
 		rename: padReadRename(),
+		organize: padReadOrganize(),
 		error: error
 	};
 };
@@ -968,7 +969,7 @@ PADX.fillStep = function (a) {
 
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
-			template.comment = 'EXPORTAR'; // Comentário para organização do projeto
+			template.comment = PAD_ORGANIZE.autoComment; // comentário de render (configuração > organizar)
 
 			run.newComps.push(template);
 			run.count++;
@@ -1265,7 +1266,7 @@ PADX.organizeProject = function () {
 	return padCollect(function () {
 		try {
 			padGroup('organização automática do projeto', function () {
-				organizeProject(); // comps selecionadas sem comentário entram como 'EXPORTAR'
+				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
 			});
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);
