@@ -431,7 +431,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	// selo à esquerda de cada fonte: [texto, dica]
 	var FONT_BADGES = {
 		local: ['Tt', 'instalada neste computador'],
-		adobe: ['CC', 'do Adobe Fonts (Creative Cloud)'],
+		adobe: ['CC', 'do Adobe Fonts (Creative Cloud): fácil de ativar em qualquer computador'],
 		missing: ['?', 'não existe neste computador']
 	};
 
