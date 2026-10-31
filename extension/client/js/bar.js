@@ -68,10 +68,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			'<g class="clap-top"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></g>',
 		// coletar: pasta cheia de arquivos; no hover os arquivos sobem
 		collect:
-			// o fundo da pasta só aparece fora dos arquivos (à esquerda e à direita), para não vazar atrás deles
-			'<g class="anim-collect"><path d="M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h1" /><path d="M19.2 9.6a1.5 1.5 0 0 1 1.3 1.5v.4" />' +
-			'<path class="collect-file f1" d="M7 11.5V4.8a1 1 0 0 1 1-1h3.2l2 2v5.7" />' +
-			'<path class="collect-file f2" d="M14.4 11.5V8.2a1 1 0 0 1 1-1h1.8a1 1 0 0 1 1 1v3.3" />' +
+			// duas folhas grandes, sobrepostas, que entram na pasta: a frente da pasta esconde a parte de baixo
+			// delas e a folha da frente esconde a de trás (máscaras com a mesma animação). o fundo da pasta só
+			// aparece fora das folhas (a aba, à esquerda)
+			'<g class="anim-collect"><defs>' +
+			'<mask id="collect-back" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32">' +
+			'<rect x="-4" y="-4" width="32" height="32" fill="#fff" stroke="none" />' +
+			'<path class="collect-file f2" d="M10 15V6.5a1 1 0 0 1 1-1h4.8l2.7 2.7V15z" fill="#000" stroke="#000" stroke-width="3.4" stroke-linejoin="round" />' +
+			'<rect x="-4" y="10.7" width="32" height="17" fill="#000" stroke="none" /></mask>' +
+			'<mask id="collect-front" maskUnits="userSpaceOnUse" x="-4" y="-4" width="32" height="32">' +
+			'<rect x="-4" y="-4" width="32" height="14.7" fill="#fff" stroke="none" /></mask></defs>' +
+			'<path d="M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h.4" /><path d="M19.6 9.7a1.5 1.5 0 0 1 .9 1.4v.4" />' +
+			'<g mask="url(#collect-back)"><g class="collect-file f1"><path d="M6 15V4a1 1 0 0 1 1-1h4.6l2.7 2.7V15" /><path d="M11.6 3v2.7h2.7" /></g></g>' +
+			'<g mask="url(#collect-front)"><g class="collect-file f2"><path d="M10 15V6.5a1 1 0 0 1 1-1h4.8l2.7 2.7V15" /><path d="M15.8 5.5v2.7h2.7" /></g></g>' +
 			'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
