@@ -555,10 +555,12 @@ body.prods-page {
 .is-sorting>.prod-row.is-dragging {
   position: relative;
   z-index: 2;
-  /* respiro dos dois lados do cartão, sem mudar a posição do conteúdo */
-  margin-inline: -10px;
-  padding-inline: 10px;
-  border-radius: var(--radius-small);
+  /* cartão como um offset do conteúdo: a mesma margem dos quatro lados (os 7 px de cima e de baixo da linha)
+     e cantos concêntricos aos dos campos (raio dos campos + margem), sem mudar a posição do conteúdo */
+  --drag-offset: 7px;
+  margin-inline: calc(var(--drag-offset) * -1);
+  padding-inline: var(--drag-offset);
+  border-radius: calc(var(--radius-small) + var(--drag-offset));
   background: white;
   box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
   transition: none;
@@ -568,4 +570,9 @@ body.prods-page {
 .is-sorting>.prod-row,
 .prods-list.is-settled>.prod-row {
   animation: none;
+}
+
+/* no cartão arrastado, o puxador sem o fundo de foco (só os pontinhos) */
+.prod-row.is-dragging .drag-handle {
+  background: transparent;
 }
