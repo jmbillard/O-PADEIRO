@@ -428,6 +428,13 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	// (location) ou, sem ele, das fontes instaladas pelo nome PostScript; se nada carregar, avisa.
 	var FONT_SAMPLE = 'Pão Quentinho ÁÉÇÕ 0123 %&@#';
 
+	// selo à esquerda de cada fonte: [texto, dica]
+	var FONT_BADGES = {
+		local: ['Tt', 'instalada neste computador'],
+		adobe: ['CC', 'do Adobe Fonts (Creative Cloud)'],
+		missing: ['?', 'não existe neste computador']
+	};
+
 	function fontLabel(font) {
 		return [font.family, font.style].filter(Boolean).join(' ') || font.name || '';
 	}
@@ -435,9 +442,11 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	function fontPreview(font, i) {
 		var li = el('li', 'font-item');
 		var label = el('span', 'font-name', fontLabel(font));
-		var badge = el('span', 'font-badge' + (font.adobe ? ' is-adobe' : ''), font.adobe ? 'CC' : 'Tt');
+		var badge = el('span', 'font-badge is-' + (FONT_BADGES[font.source] ? font.source : 'local'));
+		var kind = FONT_BADGES[font.source] || FONT_BADGES.local;
 
-		badge.title = font.adobe ? 'não instalada neste computador (provavelmente do Adobe Fonts / Creative Cloud)' : 'instalada neste computador';
+		badge.textContent = kind[0];
+		badge.title = kind[1];
 		li.appendChild(badge);
 		var sample = el('span', 'font-sample', FONT_SAMPLE);
 		var id = 'pad-font-' + i + '-' + Date.now();

@@ -326,7 +326,7 @@ body.maker-page {
   background: white;
 }
 
-/* Tt: instalada · CC: Adobe Fonts / Creative Cloud (ou sem arquivo neste computador) */
+/* Tt: instalada · CC: Adobe Fonts / Creative Cloud · ?: não existe neste computador */
 .font-badge {
   display: grid;
   width: 26px;
@@ -339,6 +339,14 @@ body.maker-page {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.font-badge.is-missing {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
 }
 
 .font-badge.is-adobe {

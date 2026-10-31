@@ -331,9 +331,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			return {
 				fonts: [
-					{ name: 'Georgia-Bold', family: 'Georgia', style: 'Bold', location: window.PAD_MOCK_FONT_FILE || '/Library/Fonts/Georgia Bold.ttf', adobe: false },
-					{ name: 'Gotham-Book', family: 'Gotham', style: 'Book', location: '', adobe: true },
-					{ name: 'GloboSans-Condensed', family: 'Globo Sans', style: 'Condensed', location: '/Users/u/Library/Fonts/GloboSans-Condensed.otf', adobe: false }
+					{ name: 'Georgia-Bold', family: 'Georgia', style: 'Bold', location: window.PAD_MOCK_FONT_FILE || '/Library/Fonts/Georgia Bold.ttf', source: 'local' },
+					{ name: 'Gotham-Book', family: 'Gotham', style: 'Book', location: '', source: 'adobe' },
+					{ name: 'GloboSans-Condensed', family: 'Globo Sans', style: 'Condensed', location: '', source: 'missing' }
 				]
 			};
 		},
