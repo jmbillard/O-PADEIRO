@@ -47,13 +47,13 @@ body.converter-page {
   fill: var(--blue-500);
 }
 
-/* o campo leva os botões dentro, à direita (copiar e, no sistema atual, abrir a pasta) */
+/* o campo leva o botão de copiar dentro, à direita */
 .convert-line {
   position: relative;
 }
 
 .convert-input {
-  padding-right: 76px;
+  padding-right: 44px;
   padding-left: 40px;
 }
 
