@@ -42,9 +42,42 @@ body.maker-page {
   gap: 8px;
 }
 
-/* o que falta para salvar: no topo, antes do "⋯" */
+/* o que falta para salvar: no topo, antes do "⋯", limpo sobre o degradê (só texto branco; a bolinha
+   esmaecida ou, pronta, branca preenchida) */
 .maker-tools .maker-check {
   justify-content: flex-end;
+  gap: 2px 12px;
+}
+
+.maker-tools .check-chip,
+.maker-tools .check-chip.is-ok {
+  padding: 3px 2px;
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 72%);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.maker-tools .check-chip:hover {
+  color: white;
+}
+
+.maker-tools .check-chip.is-ok {
+  color: white;
+}
+
+.maker-tools .check-dot {
+  border-color: rgb(255 255 255 / 45%);
+}
+
+.maker-tools .check-chip.is-ok .check-dot {
+  border-color: white;
+  background: white;
+}
+
+.maker-tools .check-chip.is-ok .check-dot::after {
+  border-color: var(--blue-500);
 }
 
 .maker-sheet {
@@ -303,6 +336,14 @@ body.maker-page {
   width: 100%;
   margin-top: 4px;
   border-style: dashed;
+}
+
+.maker-add:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  box-shadow: none;
+  color: var(--blue-500);
+  transform: none;
 }
 
 /* sem comp */
