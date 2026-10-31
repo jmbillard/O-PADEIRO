@@ -284,7 +284,7 @@ PADX.makerSave = function (a) {
 		}
 
 		fontCollect(folder + '/FONTS');
-		openFolder(folder);
+		// a pasta abre pelo painel, depois de gerar (ou não) o preview em vídeo
 
 		return { saved: true, path: base + '_config.json', base: base, folder: folder };
 	});

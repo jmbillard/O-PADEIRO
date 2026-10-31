@@ -666,20 +666,34 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('save-hint').textContent = text || '';
 	}
 
-	// Depois de salvar: o aviso fica mais tempo e oferece gerar o preview em vídeo (.mp4).
+	// Depois de salvar: o aviso fica até a escolha (gerar o preview em vídeo ou não) e só então a pasta do
+	// template abre, para não interromper o processo com a janela do Finder / Explorer.
 	function savedToast(data) {
 		var box = $('toast');
-
-		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 20000);
-
-		var action = el('button', 'toast-action', 'gerar preview .mp4');
 		var compId = state.comp.id;
+		var opened = false;
 
-		action.type = 'button';
-		action.title = 'renderiza a comp principal em vídeo (H.264, meia resolução) ao lado do template: a janela de templates passa a mostrar o vídeo';
-		action.addEventListener('click', async function () {
-			action.disabled = true;
-			action.textContent = 'renderizando…';
+		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 600000);
+
+		function openTemplateFolder() {
+			if (opened) return;
+
+			opened = true;
+			call('openFolder', { path: data.folder }).catch(function (err) {
+				toast('error', err.message);
+			});
+		}
+
+		var render = el('button', 'toast-action', 'gerar preview .mp4');
+		var skip = el('button', 'toast-action is-quiet', 'agora não');
+
+		render.type = skip.type = 'button';
+		render.title = 'renderiza a comp principal em vídeo (H.264, meia resolução) ao lado do template: a janela de templates passa a mostrar o vídeo';
+		skip.title = 'não gerar o vídeo e abrir a pasta do template';
+
+		render.addEventListener('click', async function () {
+			render.disabled = skip.disabled = true;
+			render.textContent = 'renderizando…';
 
 			try {
 				var res = await call('makerRenderPreview', { compId: compId, base: data.base });
@@ -688,8 +702,16 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			} catch (err) {
 				toast('error', err.message);
 			}
+
+			openTemplateFolder();
 		});
-		box.insertBefore(action, box.lastChild);
+		skip.addEventListener('click', function () {
+			box.hidden = true;
+			openTemplateFolder();
+		});
+		box.lastChild.addEventListener('click', openTemplateFolder); // o × do aviso
+		box.insertBefore(render, box.lastChild);
+		box.insertBefore(skip, box.lastChild);
 	}
 
 	async function save() {

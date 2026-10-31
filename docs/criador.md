@@ -24,7 +24,7 @@ um template do padeiro é um conjunto de arquivos:
 7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
 8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
-10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo: o padeiro renderiza a comp principal (H.264 de 15 Mbps, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
+10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo (ou em '*agora não*'): o padeiro renderiza a comp principal (H.264 de 15 Mbps, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
 
 - **↻** (cabeçalho) → limpa o formulário e começa de novo.
 - **⋯** (cabeçalho) → ajuda (esta página) e recarregar o painel.
@@ -41,7 +41,7 @@ ao salvar, o padeiro:
 2. abre a janela de salvar do After Effects (cancelar não muda nada).
 3. grava o `_config.json` e o `_preview.png` ao lado do projeto.
 4. copia as fontes usadas para a pasta `FONTS`.
-5. abre a pasta do template.
+5. abre a pasta do template, depois que você escolhe gerar ou não o preview em vídeo (no aviso de template salvo: '*gerar preview .mp4*', '*agora não*' ou o ×), para não interromper o processo.
 
 ### formulário e nomenclatura
 

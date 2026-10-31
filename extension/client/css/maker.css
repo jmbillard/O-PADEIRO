@@ -672,6 +672,12 @@ body.maker-page {
   background: white;
 }
 
+.toast-action.is-quiet {
+  margin-left: 6px;
+  border-color: transparent;
+  opacity: 0.8;
+}
+
 .toast-action:disabled {
   cursor: progress;
   opacity: 0.7;

@@ -538,7 +538,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { opened: 1, missing: [] };
 		},
 
-		openFolder: function () {
+		openFolder: function (a) {
+			(window.PAD_MOCK_OPENED = window.PAD_MOCK_OPENED || []).push(a.path);
+
 			return true;
 		},
 
