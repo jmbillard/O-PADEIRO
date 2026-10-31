@@ -1,4 +1,4 @@
-# 🥖 O PADEIRO · v2.0 beta4
+# 🥖 O PADEIRO · v2.0 beta5
 
 🗨️ **pt-BR** ⚡ preenchimento em massa de templates e outras utilidades para o After Effects ⚡
 
