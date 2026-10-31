@@ -211,6 +211,37 @@ body.bar-page {
   transform: translateY(-1px) scale(1.08);
 }
 
+/* os links são menores que as ferramentas: de 2 em 2 (na horizontal, 2 por coluna; na vertical, 2 por linha) */
+#links {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, 26px);
+  align-content: center;
+  gap: 2px 4px;
+}
+
+#links .bar-link {
+  width: 26px;
+  height: 26px;
+}
+
+#links .bar-link img,
+#links .bar-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+#links .bar-link-badge,
+#links .bar-link-badge svg {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+#links .bar-link-badge {
+  right: 1px;
+  bottom: 1px;
+}
+
 .bar-pin[hidden],
 .bar-divider[hidden] {
   display: none;
@@ -479,6 +510,13 @@ body.bar-page {
 
   .bar-pin {
     flex-direction: column;
+  }
+
+  #links {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, 26px);
+    grid-template-rows: none;
+    justify-content: center;
   }
 
   .bar-tools {
