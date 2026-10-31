@@ -85,7 +85,6 @@ PADX.makerFonts = function () {
 
 	return { fonts: fonts };
 };
-};
 
 // Confere se dá para criar um template agora (barra principal).
 PADX.makerReady = function () {

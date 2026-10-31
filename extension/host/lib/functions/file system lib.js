@@ -408,7 +408,7 @@ function findServerForShare(shareName) {
 		'VFX': 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
 		'cdesign': 'egcdesign01.servicos.corp.tvglobo.com.br',
 		'EDIT_IN_PLACE': 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
-		'promo_ber': '10.193.48.13',
+		'promo_ber': '10.193.48.13'
 	};
 
 	return knownShares[shareName] || null;
