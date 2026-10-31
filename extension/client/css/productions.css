@@ -429,3 +429,80 @@ body.prods-page {
 .prods-unavailable .button {
   margin-top: 10px;
 }
+
+/* logs: divisor e escolha de onde gravar o uso */
+.prods-log {
+  display: grid;
+  gap: 8px;
+  margin: 0 20px;
+  padding: 14px 0 14px;
+  border-top: 1px solid var(--border);
+}
+
+.prods-log-title {
+  margin-bottom: 2px;
+}
+
+.log-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.log-mode {
+  min-height: 32px;
+  padding: 5px 13px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: white;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.log-mode:hover:not(:disabled) {
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+}
+
+.log-mode:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 18%);
+}
+
+.log-mode.is-on {
+  border-color: var(--blue-500);
+  background: var(--blue-500);
+  color: white;
+}
+
+.log-mode:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.log-webhook {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.log-webhook[hidden] {
+  display: none;
+}
+
+.log-webhook.has-error {
+  border-color: var(--danger);
+}
+
+@media (max-width: 420px) {
+  .prods-log {
+    margin-inline: 14px;
+  }
+}

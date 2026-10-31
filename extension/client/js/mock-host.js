@@ -80,6 +80,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (!window.PAD_MOCK_LIST) {
 				window.PAD_MOCK_LIST = {
 					stamp: 1000,
+					log: { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' },
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
@@ -98,6 +99,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				shared: true,
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
+				log: Object.assign({}, window.PAD_MOCK_LIST.log),
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
 				})
@@ -113,8 +115,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
 			});
 			window.PAD_MOCK_LIST.stamp += 1000;
+			if (a.log) window.PAD_MOCK_LIST.log = Object.assign({}, a.log);
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

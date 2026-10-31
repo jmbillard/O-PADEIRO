@@ -274,6 +274,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
 | `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
 | `#PAD_077` | criador: o preview .mp4 não foi gerado |
+| `#PAD_078` | produções: endereço do webhook do log vazio ou inválido |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

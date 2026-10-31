@@ -32,8 +32,20 @@ function padCleanProductions(list) {
 	return padSortProductions(clean);
 }
 
-function padWriteProductions(file, list) {
-	saveTextFile(JSON.stringify({ PRODUCTIONS: list }, null, '\t'), file.fsName);
+// 'log' (opcional): a config de log; sem ela, a que já está no arquivo é mantida.
+function padWriteProductions(file, list, log) {
+	var data = { PRODUCTIONS: list };
+	var current = log;
+
+	if (!current && file.exists) {
+		try {
+			current = JSON.parse(readFileContent(file)).LOG;
+		} catch (err) { }
+	}
+
+	if (current) data.LOG = current;
+
+	saveTextFile(JSON.stringify(data, null, '\t'), file.fsName);
 
 	// confere o que foi gravado
 	JSON.parse(readFileContent(new File(file.fsName)));
@@ -46,6 +58,7 @@ PADX.saveProductions = function (a) {
 	if (!file) throw new Error(padNoSharedListError());
 
 	var clean = padCleanProductions(a.productions);
+	var log = a.log ? padCleanLog(a.log) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -59,12 +72,12 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteProductions(file, clean);
+		padWriteProductions(file, clean, log);
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }

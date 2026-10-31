@@ -24,7 +24,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		stamp: 0,
 		snapshot: '',
 		discardTimer: null,
-		saving: false
+		saving: false,
+		log: { mode: 'webhook', webhook: '' } // onde cada render da fila é registrado
+	};
+
+	var LOG_HINTS = {
+		webhook: 'cada render da fila é enviado para este endereço (data, template, quantidade, usuário, máquina e pasta).',
+		csv: 'cada render da fila vira uma linha no “O_PADEIRO_log.csv”, na pasta de templates da produção escolhida.',
+		off: 'nada é registrado.'
 	};
 
 	/* =========================================================
@@ -196,8 +203,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	function logForSave() {
+		return { mode: state.log.mode, webhook: state.log.webhook.trim() };
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify(listForSave());
+		return JSON.stringify({ list: listForSave(), log: logForSave() });
 	}
 
 	function updateDirty() {
@@ -433,6 +444,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['btn-new', 'btn-save', 'btn-import', 'btn-export'].forEach(function (id) {
 			$(id).disabled = !available;
 		});
+		renderLog();
 	}
 
 	function showUnavailable(message) {
@@ -447,6 +459,64 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(retry);
 		list.textContent = '';
 		list.appendChild(box);
+	}
+
+	/* =========================================================
+	   Logs
+	   ========================================================= */
+
+	function renderLog() {
+		var mode = state.log.mode;
+		var webhook = $('log-webhook');
+
+		Array.prototype.forEach.call($('log-modes').querySelectorAll('.log-mode'), function (btn) {
+			var on = btn.getAttribute('data-mode') === mode;
+
+			btn.classList.toggle('is-on', on);
+			btn.setAttribute('aria-checked', on ? 'true' : 'false');
+			btn.disabled = !state.available;
+		});
+
+		if (webhook.value !== state.log.webhook) webhook.value = state.log.webhook;
+		webhook.hidden = mode !== 'webhook';
+		webhook.disabled = !state.available;
+		$('log-hint').textContent = LOG_HINTS[mode] || '';
+	}
+
+	function setLog(log) {
+		state.log = { mode: (log && log.mode) || 'webhook', webhook: (log && log.webhook) || '' };
+		$('log-webhook').classList.remove('has-error');
+		renderLog();
+	}
+
+	function validateLog() {
+		var log = logForSave();
+		var bad = log.mode === 'webhook' && !/^https?:\/\/\S+$/i.test(log.webhook);
+
+		$('log-webhook').classList.toggle('has-error', bad);
+
+		return bad ? '#PAD_078 - log: preencha o endereço do webhook (http:// ou https://).' : null;
+	}
+
+	function bindLog() {
+		$('log-modes').addEventListener('click', function (e) {
+			var btn = e.target.closest('.log-mode');
+
+			if (!btn || btn.disabled) return;
+
+			state.log.mode = btn.getAttribute('data-mode');
+			$('log-webhook').classList.remove('has-error');
+			renderLog();
+			updateDirty();
+
+			if (state.log.mode === 'webhook' && !state.log.webhook.trim()) $('log-webhook').focus();
+		});
+
+		$('log-webhook').addEventListener('input', function () {
+			state.log.webhook = $('log-webhook').value;
+			$('log-webhook').classList.remove('has-error');
+			updateDirty();
+		});
 	}
 
 	/* =========================================================
@@ -469,6 +539,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}
 
 			setAvailable(true);
+			setLog(res.log);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -526,14 +597,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (problems.length) return toast('error', problems[0]);
 
+		var logProblem = validateLog();
+
+		if (logProblem) {
+			$('log-webhook').focus();
+			return toast('error', logProblem);
+		}
+
 		state.saving = true;
 		$('btn-save').disabled = true;
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
+			if (res.log) setLog(res.log);
 			state.rows = res.productions.map(newRow); // volta ordenada, como o script grava
 			state.snapshot = currentSnapshot();
 			render();
@@ -622,6 +701,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function init() {
 		state.newIcon = defaultIcon();
+		bindLog();
 
 		$('btn-new').addEventListener('click', addRow);
 		$('btn-save').addEventListener('click', save);

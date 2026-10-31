@@ -263,9 +263,104 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
+		log: padReadLogSettings(),
 		error: error
 	};
 };
+
+/*
+
+---------------------------------------------------------------
+> log dos preenchimentos
+---------------------------------------------------------------
+
+Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_config.json), editável no painel de
+produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
+templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo: o webhook de sempre.
+
+*/
+
+var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
+var PAD_LOG_COLUMNS = ['data', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
+
+function padDefaultLog() {
+	return { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
+}
+
+// Valida a config de log vinda do painel. Lança Error com a mensagem.
+function padCleanLog(log) {
+	var clean = padDefaultLog();
+
+	if (!log) return clean;
+
+	clean.mode = log.mode == 'csv' || log.mode == 'off' ? log.mode : 'webhook';
+	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
+
+	if (clean.mode == 'webhook' && !/^https?:\/\/\S+$/i.test(clean.webhook)) {
+		throw new Error('#PAD_078 - log: preencha o endereço do webhook (http:// ou https://).');
+	}
+
+	return clean;
+}
+
+function padReadLogSettings() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.LOG ? padCleanLog(data.LOG) : padDefaultLog();
+	} catch (err) {
+		return padDefaultLog();
+	}
+}
+
+function padCsvValue(value) {
+	return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+}
+
+// Pasta de templates da produção escolhida na barra (onde fica o CSV do log).
+function padSelectedProductionFolder() {
+	var name = PADX.selectedProduction().name;
+	var config = padConfigFile();
+
+	if (!config || !config.exists) return null;
+
+	var list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
+
+	for (var i = 0; i < list.length; i++) {
+		if (list[i].name == name) return new Folder(padPath(list[i].templatesPath));
+	}
+
+	return null;
+}
+
+function padWriteLog(record) {
+	var settings = padReadLogSettings();
+
+	if (settings.mode == 'off') return;
+	if (settings.mode == 'webhook') return sendToWebhookWithCurl(record, settings.webhook);
+
+	var folder = padSelectedProductionFolder();
+
+	if (!folder || !folder.exists) return;
+
+	var file = new File(folder.fsName + '/' + PAD_LOG_FILE_NAME);
+	var isNew = !file.exists;
+	var line = [];
+
+	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
+
+	file.encoding = 'UTF-8';
+	file.lineFeed = 'Unix';
+	file.open('a');
+
+	// arquivo novo: BOM (o Excel reconhece os acentos) e o cabeçalho; ';' é o separador do Excel em pt-BR
+	if (isNew) file.write('\uFEFF' + PAD_LOG_COLUMNS.join(';') + '\n');
+
+	file.write(line.join(';') + '\n');
+	file.close();
+}
 
 // Produção escolhida na barra principal, gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
@@ -878,24 +973,21 @@ PADX.fillFinish = function () {
 		}
 	});
 
-	// Registro de dados (log) — falha silenciosa: não pode atrapalhar o trabalho
+	// Registro de dados (log), como a lista de produções define — falha silenciosa: não pode atrapalhar o trabalho
 	try {
 		var dt = new Date();
 		var pad2 = function (n) {
 			return n < 10 ? '0' + n : String(n);
 		};
 
-		sendToWebhookWithCurl(
-			{
-				template: run.templateData.configName,
-				quantidade: run.count,
-				user: system.userName,
-				work_station: system.machineName.replaceSpecialCharacters(),
-				data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
-				caminho: run.projectFile.fsName
-			},
-			'https://workflows.jmbillard.com/webhook/log_db_padeiro'
-		);
+		padWriteLog({
+			template: run.templateData.configName,
+			quantidade: run.count,
+			user: system.userName,
+			work_station: system.machineName.replaceSpecialCharacters(),
+			data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
+			caminho: run.projectFile.fsName
+		});
 	} catch (err) { }
 
 	return {
