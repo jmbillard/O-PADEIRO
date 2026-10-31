@@ -227,19 +227,19 @@ body.bar-page {
 
 #links .bar-link img,
 #links .bar-link svg {
-  width: 16px;
-  height: 16px;
+  width: 21px;
+  height: 21px;
 }
 
 #links .bar-link-badge,
 #links .bar-link-badge svg {
-  width: 9px !important;
-  height: 9px !important;
+  width: 10px !important;
+  height: 10px !important;
 }
 
 #links .bar-link-badge {
-  right: 1px;
-  bottom: 1px;
+  right: 0;
+  bottom: 0;
 }
 
 .bar-pin[hidden],
