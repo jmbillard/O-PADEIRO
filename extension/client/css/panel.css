@@ -871,15 +871,7 @@ body {
 }
 
 .render-outputs li {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.render-outputs li::before {
-  margin-right: 6px;
-  color: var(--blue-500);
-  content: "→";
+  min-width: 0;
 }
 
 .file-item.is-error {
@@ -2379,4 +2371,36 @@ body.motion-ready .eyebrow {
   box-shadow: none;
   color: var(--blue-500);
   transform: none;
+}
+
+/* caminho só para ler: ícone estático de pasta na frente (como a comp e o tempo no criador) */
+.path-line {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+}
+
+.path-line>svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  opacity: 0.8;
+}
+
+.path-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-message .path-line+.path-line {
+  margin-top: 2px;
 }

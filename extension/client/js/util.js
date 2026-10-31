@@ -142,5 +142,23 @@
 		});
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu };
+	// Caminho só para ler (não editável): ícone estático de pasta + o caminho, cortado com "…" se não couber.
+	// O caminho inteiro fica na dica.
+	var FOLDER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
+
+	function pathLine(path, tag) {
+		var node = document.createElement(tag || 'span');
+		var text = document.createElement('span');
+
+		node.className = 'path-line';
+		node.title = path;
+		node.innerHTML = FOLDER;
+		text.className = 'path-text';
+		text.textContent = path;
+		node.appendChild(text);
+
+		return node;
+	}
+
+	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine };
 })();

@@ -1450,6 +1450,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (info && info.meta != null) li.querySelector('.file-metadata').textContent = info.meta;
 		if (info && info.message != null) li.querySelector('.file-message').textContent = info.message;
 
+		// pastas de saída: uma por linha, com o ícone de pasta
+		if (info && info.paths) {
+			var message = li.querySelector('.file-message');
+
+			message.textContent = '';
+			info.paths.forEach(function (path) {
+				message.appendChild(PAD_UTIL.pathLine(path));
+			});
+		}
+
 		if (status === 'success') {
 			li.classList.remove('just-completed');
 			void li.offsetWidth;
@@ -1598,7 +1608,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		outputs.textContent = '';
 		state.run.outputPath.forEach(function (path) {
-			outputs.appendChild(el('li', null, path));
+			outputs.appendChild(PAD_UTIL.pathLine(path, 'li'));
 		});
 
 		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
@@ -1651,7 +1661,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			try {
 				var res = await call('queueStep', { index: item.hostIndex });
 
-				setItem(item.index, 'success', { meta: 'na fila de render', message: 'saída: ' + res.outputs.join('  ·  ') });
+				setItem(item.index, 'success', { meta: 'na fila de render', paths: res.outputs });
 			} catch (err) {
 				setItem(item.index, 'error', { meta: 'não entrou na fila de render', message: err.message });
 			}

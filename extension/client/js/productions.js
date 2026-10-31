@@ -431,7 +431,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var info = state.fileInfo || (state.fileInfo = el('p', 'prods-file'));
 
 		info.textContent = '';
-		info.appendChild(el('span', null, res.configPath));
+		info.appendChild(PAD_UTIL.pathLine(res.configPath || '—'));
 		// a lista é sempre a compartilhada: a etiqueta só aparece quando ela não está acessível
 		if (!res.shared) info.appendChild(el('span', 'prods-tag is-local', 'inacessível'));
 		info.title = res.shared ? res.configPath : 'a lista compartilhada (junto do padeiro, na rede) não está acessível.';
