@@ -263,6 +263,7 @@ function padApplyConfig() {
 
 	PAD_RENAME_TYPES = r.types;
 	PAD_RENAME_FIXED = r.fixed;
+	PAD_RENAME_OPTIONS = { removeSpecial: r.removeSpecial !== false, textCase: r.textCase || 'upperCase' };
 	renameRefArray = padRenameRefs(r.types);
 
 	PAD_ORGANIZE = padReadOrganize();
@@ -298,7 +299,7 @@ Sem 'RENAME' no arquivo: os valores de lib/globals.js (os de sempre).
 var PAD_DEFAULT_RENAME = null;
 
 function padDefaultRename() {
-	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED }));
+	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED, removeSpecial: PAD_RENAME_OPTIONS.removeSpecial, textCase: PAD_RENAME_OPTIONS.textCase }));
 
 	return PAD_DEFAULT_RENAME;
 }
@@ -310,7 +311,12 @@ function padRenameText(value) {
 
 // Valida e normaliza a tabela vinda do painel. Lança Error com a mensagem.
 function padCleanRename(r) {
-	var clean = { types: [], fixed: [] };
+	var clean = {
+		types: [],
+		fixed: [],
+		removeSpecial: r.removeSpecial !== false,
+		textCase: /^(upperCase|lowerCase|titleCase|keep)$/.test(r.textCase) ? r.textCase : 'upperCase'
+	};
 	var seen = {};
 	var i;
 

@@ -120,6 +120,19 @@
 					<input type="text" class="cfg-input" id="rename-test" placeholder="digite o nome de uma comp (ex: rodapé_joão silva)" spellcheck="false" autocomplete="off" aria-label="Nome de comp para testar">
 				</div>
 				<p class="rename-result" id="rename-result"></p>
+				<div class="rename-format">
+					<label class="cfg-switch">
+						<input type="checkbox" id="rename-special">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label">remover acentos e caracteres especiais</span>
+					</label>
+					<label class="rename-case-field"><span class="cfg-label">caixa de texto</span><span class="select rename-case"><select id="rename-case" aria-label="Caixa de texto do nome">
+						<option value="upperCase">CAIXA ALTA</option>
+						<option value="lowerCase">caixa baixa</option>
+						<option value="titleCase">Título</option>
+						<option value="keep">como está</option>
+					</select></span></label>
+				</div>
 				<div class="rename-head" aria-hidden="true"><span></span><span>prefixo</span><span>comentário</span><span>termos</span></div>
 				<div class="drive-rows" id="type-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-type">+ novo tipo</button>

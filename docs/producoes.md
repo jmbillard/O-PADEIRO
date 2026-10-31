@@ -102,12 +102,13 @@ a aba **drives** é o mapa da rede que o padeiro usa para converter caminhos ent
 a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os tipos de sempre; outra equipe ajusta para os tipos de peça dela.
 
 - **testar** (no topo) → digite o nome de uma comp e veja na hora como ela fica com a tabela em edição.
+- **formato do nome** → **remover acentos e caracteres especiais** (ligado: **JOÃO!** vira **JOAO**) e a **caixa de texto** do nome: CAIXA ALTA, caixa baixa, Título ou como está. valem para a parte descritiva; o prefixo do tipo fica como foi escrito.
 - **tipos de peça** → o **prefixo** do nome, o **comentário** da comp e os **termos** que identificam o tipo no nome da comp (ou da pasta dela), separados por vírgula. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
 - **nomes fixos** → a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome. ex: **LOGO GLOBO**.
 
 > 🚩 *obs:*\
 > • a ordem importa: vale o primeiro tipo encontrado. arraste pelos pontinhos para reordenar.\
-> • os termos são palavras: maiúsculas e acentos não importam, e o plural com S também vale (`tarja` reconhece **TARJAS**). plurais irregulares entram como outro termo (`cartao, cartoes`).\
+> • os termos são palavras: maiúsculas e acentos não importam (`rodape` reconhece **Rodapé**), e o plural com S também vale (`tarja` reconhece **TARJAS**). plurais irregulares entram como outro termo (`cartao, cartoes`).\
 > • o comentário do tipo também é usado pelo **organizar**.
 
 <br>

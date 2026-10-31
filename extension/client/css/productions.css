@@ -1301,3 +1301,28 @@ body.is-org-dragging * {
 .link-badge .badge-bg {
   fill: white;
 }
+
+/* aba RENOMEAR: formato do nome (acentos e caixa) */
+.rename-format {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 2px 0 4px;
+}
+
+.rename-format .cfg-switch-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.rename-case {
+  min-width: 150px;
+}
+
+.rename-case-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}

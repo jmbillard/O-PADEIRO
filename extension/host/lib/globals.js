@@ -49,6 +49,10 @@ var PAD_RENAME_TYPES = [
 	{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
 ];
 
+// Formato do nome: removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep (como está).
+// O prefixo do tipo fica sempre como foi escrito.
+var PAD_RENAME_OPTIONS = { removeSpecial: true, textCase: 'upperCase' };
+
 // Nomes fixos: se o nome (ou o comentário) da comp contém o termo, ela passa a se chamar 'name'.
 var PAD_RENAME_FIXED = [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }];
 
