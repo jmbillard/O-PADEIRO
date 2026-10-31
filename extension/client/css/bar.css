@@ -64,13 +64,13 @@ body.bar-page {
 }
 
 .bar-tools {
-  gap: 6px;
+  gap: 10px;
 }
 
 .bar-section {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .bar-divider {
@@ -217,7 +217,7 @@ body.bar-page {
   grid-auto-flow: column;
   grid-template-rows: repeat(2, 26px);
   align-content: center;
-  gap: 2px 4px;
+  gap: 0 1px;
 }
 
 #links .bar-link {
