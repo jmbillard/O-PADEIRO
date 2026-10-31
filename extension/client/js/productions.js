@@ -30,6 +30,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rename: { types: [], fixed: [] }, // tipos de peça e nomes fixos (aba RENOMEAR); termos editados como texto
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { webhook: '', labels: {} }, // aba BUSCA: endereço e { chave: nome de exibição }
+		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
 		tab: 'prods'
 	};
@@ -266,8 +267,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function linksForSave() {
+		return state.links.map(function (l) {
+			return { name: l.name.trim(), url: l.url.trim(), icon: l.icon || '' };
+		});
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave() });
 	}
 
 	function updateDirty() {
@@ -528,6 +535,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderRename();
 		renderOrganize();
 		renderSearch();
+		renderLinks();
 	}
 
 	function showUnavailable(message) {
@@ -1553,6 +1561,158 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Links da barra
+	   ========================================================= */
+
+	var GLOBE_ICON = ['M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z', 'M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z'];
+	var LINK_ICON = ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'];
+
+	function setLinks(list) {
+		state.links = (list || []).map(function (l) {
+			return { name: l.name || '', url: l.url || '', icon: l.icon || '' };
+		});
+		renderLinks();
+	}
+
+	function faviconUrl(url) {
+		var m = /^(https?:\/\/[^\/?#]+)/i.exec(String(url).trim());
+
+		return m ? m[1] + '/favicon.ico' : '';
+	}
+
+	// o ícone do link: o escolhido, o favicon do site ou, sem nenhum, o desenho de link
+	function linkIconContent(box, link) {
+		var src = PAD_UTIL.decodeIcon(link.icon) || faviconUrl(link.url);
+
+		box.textContent = '';
+
+		if (!src) return box.appendChild(svg(LINK_ICON));
+
+		var img = el('img');
+
+		img.alt = '';
+		img.addEventListener('error', function () {
+			box.textContent = '';
+			box.appendChild(svg(LINK_ICON));
+		});
+		img.src = src;
+		box.appendChild(img);
+	}
+
+	function renderLinks() {
+		var list = $('link-list');
+
+		list.textContent = '';
+
+		state.links.forEach(function (link, i) {
+			var row = el('div', 'link-row');
+			var iconWrap = el('div', 'link-icon');
+			var iconBtn = el('button', 'prod-icon');
+			var name = el('input', 'cfg-input');
+
+			iconBtn.type = 'button';
+			iconBtn.title = link.icon ? 'ícone escolhido: clique para trocar' : 'ícone do site (favicon): clique para escolher outra imagem';
+			iconBtn.disabled = !state.available;
+			linkIconContent(iconBtn, link);
+			iconBtn.addEventListener('click', async function () {
+				var file = PAD_BRIDGE.pickFile('Selecione o ícone do link', ['png', 'jpg', 'jpeg']);
+
+				if (!file) return;
+
+				try {
+					link.icon = await imageFileToIcon(file);
+					renderLinks();
+					updateDirty();
+				} catch (err) {
+					toast('error', err.message);
+				}
+			});
+			iconWrap.appendChild(iconBtn);
+
+			if (link.icon) {
+				var reset = el('button', 'link-reset', '↺');
+
+				reset.type = 'button';
+				reset.title = 'voltar para o ícone do site';
+				reset.setAttribute('aria-label', 'voltar para o ícone do site');
+				reset.addEventListener('click', function () {
+					link.icon = '';
+					renderLinks();
+					updateDirty();
+				});
+				iconWrap.appendChild(reset);
+			}
+
+			name.type = 'text';
+			name.value = link.name;
+			name.placeholder = 'nome (aparece na dica)';
+			name.spellcheck = false;
+			name.disabled = !state.available;
+			name.setAttribute('aria-label', 'nome do link ' + (i + 1));
+			name.addEventListener('input', function () {
+				link.name = name.value;
+				updateDirty();
+			});
+
+			var url = driveField(link.url, 'https://site.com/pagina', 'endereço do link ' + (link.name || i + 1), GLOBE_ICON, function (v) {
+				link.url = v;
+				if (!link.icon) linkIconContent(iconBtn, link); // o favicon acompanha o endereço
+			}, function () {
+				state.links.splice(i, 1);
+				renderLinks();
+				updateDirty();
+			});
+
+			row.appendChild(PAD_SORT.handle());
+			row.appendChild(iconWrap);
+			row.appendChild(name);
+			row.appendChild(url);
+			list.appendChild(row);
+		});
+
+		$('btn-new-link').disabled = !state.available;
+	}
+
+	function bindLinks() {
+		$('btn-new-link').addEventListener('click', function () {
+			state.links.push({ name: '', url: '', icon: '' });
+			renderLinks();
+			updateDirty();
+			$('link-list').lastChild.querySelector('input.cfg-input').focus();
+		});
+
+		PAD_SORT.enable($('link-list'), '.link-row', function (from, to) {
+			var moved = state.links.splice(from, 1)[0];
+
+			state.links.splice(to, 0, moved);
+			renderLinks();
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
+	   Pedido de aba (2 cliques numa ferramenta da barra)
+	   ========================================================= */
+
+	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search'];
+
+	async function watchRequestedTab(initial) {
+		if (document.hidden && !initial) return;
+
+		try {
+			var req = await call('requestedConfigTab');
+
+			if (!req.stamp || req.stamp <= (state.lastTabStamp || 0)) return;
+
+			state.lastTabStamp = req.stamp;
+
+			if (initial && req.now - req.stamp > CONFIG_TAB_TTL) return;
+			if (TAB_NAMES.indexOf(req.tab) >= 0) showTab(req.tab);
+		} catch (err) { }
+	}
+
+	/* =========================================================
 	   Abas
 	   ========================================================= */
 
@@ -1562,7 +1722,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
 		});
-		['prods', 'logs', 'drives', 'rename', 'organize', 'search'].forEach(function (key) {
+		TAB_NAMES.forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
 
@@ -1580,6 +1740,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_08[23]/.test(message)) return 'rename';
 		if (/#PAD_08[45]/.test(message)) return 'organize';
 		if (/#PAD_086/.test(message)) return 'search';
+		if (/#PAD_087/.test(message)) return 'links';
 
 		return null;
 	}
@@ -1611,6 +1772,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setRename(res.rename);
 			setOrganize(res.organize);
 			setSearch(res.search);
+			setLinks(res.links);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -1681,7 +1843,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -1689,6 +1851,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.rename) setRename(res.rename);
 			if (res.organize) setOrganize(res.organize);
 			if (res.search) setSearch(res.search);
+			if (res.links) setLinks(res.links);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
@@ -1791,6 +1954,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindRename();
 		bindOrganize();
 		bindSearch();
+		bindLinks();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');
@@ -1798,6 +1962,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (tab) showTab(tab.getAttribute('data-tab'));
 		});
 		showTab('prods');
+
+		// a barra pode ter pedido uma aba (2 cliques numa ferramenta): ao abrir e enquanto a janela está aberta
+		watchRequestedTab(true);
+		setInterval(watchRequestedTab, 1000);
 
 		state.newBtn = $('btn-new'); // a lista é redesenhada: o botão é guardado e reposto no fim dela
 		state.newBtn.addEventListener('click', addRow);

@@ -19,7 +19,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO configuração** | produções, logs, drives da rede, renomear, organizar e busca → [documentação](docs/producoes.md) |
+| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar e busca → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -91,10 +91,10 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas.
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
-- **corrente** → abre a planilha de apontamento de projetos.
+- **links** (no começo da barra) → os links da equipe, com o ícone de cada site (ex: a planilha de apontamento de projetos). a lista fica na [configuração](docs/producoes.md#-links).
 - **templates**\
   `◖` → abre o painel de templates.\
   `◗` → abre o criador de templates (com a comp principal aberta).
@@ -200,7 +200,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🗂️ configuração](docs/producoes.md) | produções, logs, drives da rede, renomear, organizar e busca (compartilhados pela equipe) |
+| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar e busca (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -281,6 +281,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
 | `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
 | `#PAD_086` | configuração: endereço do webhook da busca inválido |
+| `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

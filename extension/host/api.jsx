@@ -261,6 +261,7 @@ PADX.productions = function () {
 		rename: padReadRename(),
 		organize: padReadOrganize(),
 		search: padReadSearch(),
+		links: padReadLinks(),
 		error: error
 	};
 };

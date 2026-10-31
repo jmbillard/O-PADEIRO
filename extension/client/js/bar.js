@@ -18,8 +18,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
+	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
+	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
-	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
 	var L_CLICK = '◖  →  ';
 	var R_CLICK = '◗  →  ';
@@ -171,9 +172,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
 		},
 
-		links: async function () {
-			await requireNetwork('PAD_007');
-			PAD_BRIDGE.openUrl(APONTAMENTO_URL);
+		// a configuração, já na aba da ferramenta (2 cliques)
+		config: async function (tab) {
+			await call('requestConfigTab', { tab: tab });
+			PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
 		}
 	};
 
@@ -185,6 +187,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		[
 			{
 				key: 'templates',
+				config: 'prods',
 				label: 'Templates',
 				icon: 'templates',
 				tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
@@ -193,6 +196,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			},
 			{
 				key: 'fontes',
+				config: 'prods',
 				label: 'Fontes',
 				icon: 'fonts',
 				tips: [L_CLICK + 'instalar as fontes usadas no template', R_CLICK + 'fazer o collect das fontes usadas no projeto'],
@@ -203,6 +207,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		[
 			{
 				key: 'pastas',
+				config: 'drives',
 				label: 'Pastas',
 				icon: 'folders',
 				tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
@@ -213,6 +218,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		[
 			{
 				key: 'renomear',
+				config: 'rename',
 				label: 'Renomear',
 				icon: 'rename',
 				tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
@@ -221,6 +227,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			},
 			{
 				key: 'organizar',
+				config: 'organize',
 				label: 'Organizar',
 				icon: 'organize',
 				tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'organizar o projeto', R_CLICK + 'criar estrutura de pastas do projeto'],
@@ -231,6 +238,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		[
 			{
 				key: 'buscar',
+				config: 'search',
 				label: 'Buscar',
 				icon: 'search',
 				tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
@@ -255,9 +263,27 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	}
 
-	function bind(btn, left, right) {
+	// 'config': aba da configuração aberta com 2 cliques. Com ela, o clique simples espera um instante
+	// (para saber se vem o segundo) antes de rodar.
+	function bind(btn, left, right, config) {
+		var timer = null;
+
 		btn.addEventListener('click', function () {
-			run(btn, left);
+			if (!config) return run(btn, left);
+
+			if (timer) {
+				clearTimeout(timer);
+				timer = null;
+				run(btn, function () {
+					return actions.config(config);
+				});
+				return;
+			}
+
+			timer = setTimeout(function () {
+				timer = null;
+				run(btn, left);
+			}, DOUBLE_CLICK_MS);
 		});
 
 		// clique direito = segunda ação (sem o menu de contexto do navegador)
@@ -348,11 +374,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n');
+				btn.title = def.tips.concat(['2 cliques  →  configuração']).join('\n');
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
-				bind(btn, def.left, def.right);
+				bind(btn, def.left, def.right, def.config);
 				if (def.icon === 'search') bindLensLetters(btn);
 
 				group.appendChild(btn);
@@ -361,10 +387,66 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			tools.appendChild(group);
 		});
 
-		var links = $('btn-links');
+	}
 
-		links.title = L_CLICK + 'abrir apontamento de projetos';
-		bind(links, actions.links, null);
+	/* =========================================================
+	   Links (configuração > links): ícone do site (favicon) ou um
+	   ícone próprio; clique abre o endereço, 2 cliques editam
+	   ========================================================= */
+
+	var linksStamp = -1;
+
+	function faviconUrl(url) {
+		var m = /^(https?:\/\/[^\/?#]+)/i.exec(url);
+
+		return m ? m[1] + '/favicon.ico' : '';
+	}
+
+	function renderLinks(links) {
+		var box = $('links');
+
+		box.textContent = '';
+
+		links.forEach(function (link) {
+			var btn = el('button', 'bar-icon bar-link');
+			var img = el('img');
+			var custom = PAD_UTIL.decodeIcon(link.icon);
+
+			btn.type = 'button';
+			btn.title = link.name + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar os links';
+			btn.setAttribute('aria-label', link.name);
+			img.alt = '';
+			img.src = custom || faviconUrl(link.url);
+
+			// sem favicon (site sem o arquivo, rede fora): o ícone de link
+			img.addEventListener('error', function () {
+				btn.textContent = '';
+				btn.appendChild(svgIcon('link'));
+			});
+
+			btn.appendChild(img);
+			bind(btn, async function () {
+				await requireNetwork('PAD_007');
+				PAD_BRIDGE.openUrl(link.url);
+			}, null, 'links');
+			box.appendChild(btn);
+		});
+
+		box.hidden = !links.length;
+		$('links-divider').hidden = !links.length;
+	}
+
+	async function loadLinks() {
+		if (document.hidden) return;
+
+		try {
+			var res = await call('barLinks');
+
+			if (res.stamp === linksStamp) return;
+
+			linksStamp = res.stamp;
+			renderLinks(res.links);
+		} catch (err) { }
 	}
 
 	/* =========================================================
@@ -380,6 +462,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			items: '.bar-logo, .bar-icon, .bar-btn',
 			horizontal: true
 		});
+
+		loadLinks();
+		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
+		window.addEventListener('focus', loadLinks);
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);

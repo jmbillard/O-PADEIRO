@@ -169,6 +169,24 @@ body.bar-page {
   border-radius: 50%;
 }
 
+/* links da equipe: o favicon do site (ou o ícone escolhido) */
+.bar-link img {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: contain;
+  transition: transform 240ms var(--ease-soft);
+}
+
+.bar-link:hover img {
+  transform: translateY(-1px) scale(1.08);
+}
+
+.bar-pin[hidden],
+.bar-divider[hidden] {
+  display: none;
+}
+
 .bar-btn {
   min-width: 62px;
   gap: 4px;

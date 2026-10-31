@@ -16,6 +16,7 @@
 		<header class="prods-top">
 			<div class="tabs" id="tabs" role="tablist" aria-label="Configuração">
 				<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">PRODUÇÕES</button>
+				<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
 				<button type="button" class="tab" role="tab" data-tab="logs" aria-selected="false">LOGS</button>
 				<button type="button" class="tab" role="tab" data-tab="drives" aria-selected="false">DRIVES</button>
 				<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
@@ -59,6 +60,14 @@
 				</div>
 			</div>
 
+			</div>
+
+			<!-- aba LINKS (os da barra) -->
+			<div class="cfg-pane drives-pane" id="pane-links" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">links da barra</p>
+				<p class="cfg-hint">aparecem no começo da barra, nesta ordem (arraste pelos pontinhos para reordenar). o ícone é o do próprio site (favicon); clique nele para escolher outra imagem.</p>
+				<div class="drive-rows" id="link-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link</button>
 			</div>
 
 			<!-- aba LOGS -->

@@ -2,7 +2,9 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em seis abas: **produções**, **logs**, **drives**, **renomear**, **organizar** e **busca**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em sete abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar** e **busca**.
+
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, buscar → busca, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 ## 📍 produções
 
@@ -30,6 +32,21 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
+
+<br>
+
+---
+
+<br>
+
+## 📍 links
+
+a aba **links** define os links que aparecem no começo da barra (ex: a planilha de apontamento de projetos).
+
+- cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon.
+- arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
+
+> 🚩 *obs:* sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.
 
 <br>
 

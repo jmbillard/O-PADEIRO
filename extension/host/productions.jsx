@@ -66,6 +66,7 @@ PADX.saveProductions = function (a) {
 	var rename = a.rename ? padCleanRename(a.rename) : null;
 	var organize = a.organize ? padCleanOrganize(a.organize) : null;
 	var search = a.search ? padCleanSearch(a.search) : null;
+	var links = a.links ? padCleanLinks(a.links) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -79,7 +80,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -87,7 +88,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -581,4 +582,81 @@ PADX.searchCategories = function (a) {
 	}
 
 	return { categories: out, downloaded: downloaded };
+};
+
+/*
+
+---------------------------------------------------------------
+> links da barra (aba LINKS da configuração)
+---------------------------------------------------------------
+
+'LINKS' no O_PADEIRO_config.json: [{ name, url, icon }], na ordem da barra. 'icon' é um PNG 24 x 24 (literal de
+string binária, como o das produções); vazio = o favicon do site.
+
+*/
+
+var PAD_DEFAULT_LINKS = [
+	{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i', icon: '' }
+];
+
+// Valida e normaliza a lista vinda do painel. Lança Error com a mensagem.
+function padCleanLinks(list) {
+	var clean = [];
+
+	for (var i = 0; i < (list || []).length; i++) {
+		var name = padTrim(list[i].name).replace(/\s+/g, ' ');
+		var url = padTrim(list[i].url);
+
+		if (name == '') throw new Error('#PAD_087 - links: o link ' + (i + 1) + ' precisa de um nome.');
+		if (!/^https?:\/\/\S+$/i.test(url)) throw new Error('#PAD_087 - links: "' + name + '" precisa de um endereço (http:// ou https://, sem espaços).');
+
+		clean.push({ name: name, url: url, icon: list[i].icon ? String(list[i].icon) : '' });
+	}
+
+	return clean;
+}
+
+function padReadLinks() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.LINKS ? padCleanLinks(data.LINKS) : PAD_DEFAULT_LINKS;
+	} catch (err) {
+		return PAD_DEFAULT_LINKS;
+	}
+}
+
+// Links para a barra, com a data da lista (a barra só redesenha quando ela muda).
+PADX.barLinks = function () {
+	var file = padConfigFile();
+	var stamp = 0;
+
+	try {
+		stamp = file && file.exists ? file.modified.getTime() : 0;
+	} catch (err) { }
+
+	return { stamp: stamp, links: padReadLinks() };
+};
+
+// Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.
+PADX.requestConfigTab = function (a) {
+	saveTextFile(JSON.stringify({ tab: a.tab, stamp: new Date().getTime() }), scriptPreferencesPath + '/config_tab.json');
+
+	return { tab: a.tab };
+};
+
+PADX.requestedConfigTab = function () {
+	var file = new File(scriptPreferencesPath + '/config_tab.json');
+
+	if (!file.exists) return { tab: null, stamp: 0 };
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return { tab: data.tab || null, stamp: data.stamp || 0, now: new Date().getTime() };
+	} catch (err) {
+		return { tab: null, stamp: 0 };
+	}
 };
