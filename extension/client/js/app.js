@@ -321,7 +321,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Árvore de templates
 	   ========================================================= */
 
-	async function loadTree() {
+	// A lista aparece na hora a partir da cópia da última leitura (pasta temp local) e a pasta é relida em
+	// segundo plano: se algo mudou, a lista se atualiza sozinha. 'force' (botão atualizar) relê com o loader.
+	async function loadTree(force) {
 		var prod = state.productions[state.production];
 
 		state.loading = true;
@@ -338,14 +340,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		var loadId = ++state.loadId;
+		var cached = force ? null : await readTreeCache(prod);
 
 		await loadLists();
+
+		if (loadId !== state.loadId) return;
+
+		if (cached) {
+			showTree(cached.tree);
+			state.loading = false;
+			renderTree();
+			setRefreshing(true);
+		}
 
 		try {
 			var res = await readTemplateTree(
 				prod.templatesPath,
 				function (folders, name) {
-					if (loadId !== state.loadId) return;
+					if (cached || loadId !== state.loadId) return; // com a cópia na tela, a leitura é silenciosa
 
 					state.loadHint = folders + (folders === 1 ? ' pasta lida' : ' pastas lidas') + ' · ' + name;
 					renderTree();
@@ -360,21 +372,62 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			state.templatesPath = res.path;
 
 			if (!res.exists) {
+				state.tree = null;
+				state.byUri = {};
 				state.treeStatus = 'missing';
 			} else {
-				state.tree = res.tree;
-				annotateTrail(res.tree, []);
-				state.treeStatus = countTemplates(res.tree) > 0 ? 'ok' : 'empty';
+				var text = JSON.stringify(res.tree);
+
+				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prod.templatesPath, tree: res.tree }) }).catch(function () { });
+
+				// com a cópia na tela, só redesenha se a pasta mudou
+				if (cached && cached.text === text) {
+					setRefreshing(false);
+					return;
+				}
+
+				showTree(res.tree);
 			}
 		} catch (err) {
 			if (loadId !== state.loadId) return; // leitura antiga cancelada
 
-			state.treeStatus = 'error';
+			// sem rede, a cópia continua valendo
+			if (!cached) state.treeStatus = 'error';
 			pickerMessage('error', err.message);
 		}
 
+		setRefreshing(false);
 		state.loading = false;
 		renderTree();
+	}
+
+	function showTree(tree) {
+		state.tree = tree;
+		state.byUri = {};
+		annotateTrail(tree, []);
+		state.treeStatus = countTemplates(tree) > 0 ? 'ok' : 'empty';
+	}
+
+	// { tree, text } da última leitura desta produção (se a pasta de templates for a mesma) ou null
+	async function readTreeCache(prod) {
+		try {
+			var res = await call('templateTreeCache', { production: prod.name });
+
+			if (!res.text) return null;
+
+			var data = JSON.parse(res.text);
+
+			if (!data || data.path !== prod.templatesPath || !data.tree) return null;
+
+			return { tree: data.tree, text: JSON.stringify(data.tree) };
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// leitura em segundo plano: o ícone de atualizar gira
+	function setRefreshing(on) {
+		$('btn-refresh').classList.toggle('is-refreshing', on);
 	}
 
 	// Cada template guarda a trilha de pastas até ele (sem a pasta raiz).
@@ -405,14 +458,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	async function loadLists() {
 		var name = productionName();
 
-		state.lists = { favorites: [], recents: [] };
+		state.lists = { favorites: [], recents: [], renderPresets: {} };
 
 		if (!name) return;
 
 		try {
 			var res = await call('templateLists', { production: name });
 
-			if (name === productionName()) state.lists = { favorites: res.favorites, recents: res.recents };
+			if (name === productionName()) state.lists = { favorites: res.favorites, recents: res.recents, renderPresets: res.renderPresets || {} };
 		} catch (err) { }
 	}
 
@@ -421,17 +474,43 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function writeList(kind, list) {
-		var name = productionName();
-
-		if (!state.lists) state.lists = { favorites: [], recents: [] };
+		if (!state.lists) state.lists = { favorites: [], recents: [], renderPresets: {} };
 
 		state.lists[kind] = list;
+		saveLists();
+	}
+
+	function saveLists() {
+		var name = productionName();
 
 		if (!name) return;
 
-		call('saveTemplateLists', { production: name, favorites: state.lists.favorites, recents: state.lists.recents }).catch(function (err) {
+		// só os presets dos templates que estão nos fixados ou nos recentes
+		var kept = {};
+		var presets = state.lists.renderPresets || {};
+
+		state.lists.favorites.concat(state.lists.recents).forEach(function (uri) {
+			if (presets[uri]) kept[uri] = presets[uri];
+		});
+
+		state.lists.renderPresets = kept;
+
+		call('saveTemplateLists', { production: name, favorites: state.lists.favorites, recents: state.lists.recents, renderPresets: kept }).catch(function (err) {
 			pickerMessage('error', 'não foi possível gravar fixados / recentes: ' + err.message);
 		});
+	}
+
+	// Último preset de render usado em cada template (fixados e recentes).
+	function templatePreset(uri) {
+		return (state.lists && state.lists.renderPresets && state.lists.renderPresets[uri]) || '';
+	}
+
+	function rememberPreset(uri, preset) {
+		if (!uri || !state.lists) return;
+
+		state.lists.renderPresets = state.lists.renderPresets || {};
+		state.lists.renderPresets[uri] = preset;
+		saveLists();
 	}
 
 	function isFavorite(uri) {
@@ -615,7 +694,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			li.dataset.section = section || '';
 
 			btn.type = 'button';
-			btn.title = node.fsName || node.text;
+			btn.title = (node.fsName || node.text) + (templatePreset(node.uri) ? '\nrender: ' + templatePreset(node.uri) : '');
 			btn.appendChild(svgIcon('file'));
 			btn.appendChild(el('span', 'tree-label', node.text.replace(/\.[a-z0-9]+$/i, '')));
 
@@ -1017,7 +1096,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.example = cfg.exemple;
 
 		// o que o usuário já digitou é mantido ao trocar de template 
-		if (!typed) textarea.value = cfg.exemple;
+		if (!typed) setInputValue(cfg.exemple);
 
 		var tipList = $('tip');
 
@@ -1479,6 +1558,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		state.run.renderTemplates = fin.renderTemplates;
+		state.run.preferredTemplate = fin.preferredTemplate || '';
 		state.run.outputPath = fin.outputPath;
 		setBusy(false);
 
@@ -1499,7 +1579,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	function showRenderOptions() {
 		var select = $('render-template');
-		var saved = store.get('outputTemplate');
+		// o último preset usado neste template, o último usado em geral ou, na primeira vez, o H.264 de 15 Mbps
+		var saved = (state.selected && templatePreset(state.selected.uri)) || store.get('outputTemplate') || state.run.preferredTemplate;
 
 		select.textContent = '';
 		state.run.renderTemplates.forEach(function (name) {
@@ -1533,6 +1614,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!template) return;
 
 		store.set('outputTemplate', template);
+		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');
@@ -1576,16 +1658,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.run.queued = true;
 		setBusy(false);
-		await finishRun(null);
 
 		// fila criada sem erros: o trabalho do painel acabou e ele fecha (com erros, fica aberto para mostrá-los)
-		var failed = targets.some(function (item) {
-			return item.status === 'error';
-		});
-
-		if (!failed) {
-			setTimeout(PAD_BRIDGE.closePanel, 900);
-		}
+		if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 	}
 
 	async function finishRun(message) {
@@ -1601,11 +1676,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
 
+		var scriptOk = true;
+
 		try {
 			var res = await call('runEnd', {});
 
 			if (res.script) notify('success', 'Script do template executado: ' + res.script);
 		} catch (err) {
+			scriptOk = false;
 			notify('error', err.message);
 		}
 
@@ -1613,6 +1691,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setProgress(run.total, run.total, run.queued ? 'Fila de render criada' : 'Concluído');
 		setStage('concluído', null, summary);
+
+		return scriptOk && failed === 0; // sem erros: o painel pode fechar
 	}
 
 	function newRun() {
@@ -1659,7 +1739,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	async function refreshTree() {
 		pickerMessage();
-		await loadTree();
+		await loadTree(true);
 	}
 
 	async function menuAction(action) {
@@ -1667,6 +1747,100 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
 		if (action === 'reload') location.reload();
+	}
+
+	/* =========================================================
+	   Desfazer / refazer no texto do input. O histórico nativo do
+	   navegador se perde quando o painel troca o texto por código
+	   (exemplo do template, limpeza de linhas vazias), então o
+	   painel guarda o seu: Cmd/Ctrl+Z desfaz, Cmd/Ctrl+Shift+Z ou
+	   Ctrl+Y refaz. Digitação contínua vira um passo só.
+	   ========================================================= */
+
+	var INPUT_HISTORY_MAX = 200;
+	var INPUT_BURST_MS = 700;
+	var inputHistory = { undo: [], redo: [], last: null, burst: null };
+
+	function inputSnapshot(input) {
+		return { value: input.value, start: input.selectionStart, end: input.selectionEnd };
+	}
+
+	function pushUndo(snapshot) {
+		var top = inputHistory.undo[inputHistory.undo.length - 1];
+
+		if (top && top.value === snapshot.value) return;
+
+		inputHistory.undo.push(snapshot);
+		if (inputHistory.undo.length > INPUT_HISTORY_MAX) inputHistory.undo.shift();
+		inputHistory.redo = [];
+	}
+
+	function endBurst() {
+		clearTimeout(inputHistory.burst);
+		inputHistory.burst = null;
+	}
+
+	// troca o texto por código sem perder o que havia antes (entra no histórico)
+	function setInputValue(value) {
+		var input = $('input');
+
+		if (input.value === value) return;
+
+		endBurst();
+		if (input.value !== '') pushUndo(inputSnapshot(input));
+		input.value = value;
+		inputHistory.last = inputSnapshot(input);
+	}
+
+	function restoreInput(input, snapshot) {
+		input.value = snapshot.value;
+		input.setSelectionRange(snapshot.start, snapshot.end);
+		inputHistory.last = snapshot;
+		updateInputCount();
+	}
+
+	function bindInputHistory(input) {
+		inputHistory.last = inputSnapshot(input);
+
+		input.addEventListener('input', function (e) {
+			var big = /^(insertFromPaste|insertFromDrop|deleteByCut|historyUndo|historyRedo)$/.test(e.inputType || '') || Math.abs(input.value.length - inputHistory.last.value.length) > 1;
+
+			// o estado de antes entra no histórico no começo de cada sequência de digitação e a cada mudança grande
+			if (big || !inputHistory.burst) pushUndo(inputHistory.last);
+
+			// o que for digitado logo em seguida entra no mesmo passo (ex: digitar por cima de uma seleção)
+			endBurst();
+			inputHistory.burst = setTimeout(endBurst, INPUT_BURST_MS);
+
+			inputHistory.last = inputSnapshot(input);
+		});
+
+		// a posição do cursor também volta ao desfazer
+		['keyup', 'mouseup', 'select'].forEach(function (type) {
+			input.addEventListener(type, function () {
+				if (inputHistory.last && inputHistory.last.value === input.value) inputHistory.last = inputSnapshot(input);
+			});
+		});
+
+		input.addEventListener('keydown', function (e) {
+			if (!PAD_KEYS.isMod(e)) return;
+
+			var key = e.key.toLowerCase();
+			var redo = (key === 'z' && e.shiftKey) || (key === 'y' && !PAD_KEYS.mac);
+
+			if (key !== 'z' && !redo) return;
+
+			e.preventDefault();
+			endBurst();
+
+			var from = redo ? inputHistory.redo : inputHistory.undo;
+			var to = redo ? inputHistory.undo : inputHistory.redo;
+
+			if (!from.length) return;
+
+			to.push(inputSnapshot(input));
+			restoreInput(input, from.pop());
+		});
 	}
 
 	function bindEvents() {
@@ -1775,12 +1949,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var input = $('input');
 
+		bindInputHistory(input);
 		input.addEventListener('input', updateInputCount);
 		input.addEventListener('focus', function () {
 			if (input.value === state.example) input.select();
 		});
 		input.addEventListener('change', function () {
-			input.value = input.value.replace(/[\n\r]{3,}/g, '\n\n');
+			var clean = input.value.replace(/[\n\r]{3,}/g, '\n\n');
+
+			if (clean !== input.value) setInputValue(clean);
 			updateInputCount();
 		});
 		input.addEventListener('keydown', function (e) {
@@ -1805,9 +1982,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
-		$('btn-skip-queue').addEventListener('click', function () {
+		// concluir sem fila: sem erros, o painel também fecha
+		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
-			finishRun(null);
+
+			if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 		});
 		$('btn-again').addEventListener('click', newRun);
 

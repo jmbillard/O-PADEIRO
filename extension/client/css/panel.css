@@ -996,6 +996,11 @@ body {
   animation: icon-spin 650ms var(--ease-soft);
 }
 
+/* relendo em segundo plano (lista de templates): gira devagar até terminar */
+.icon-button.is-refreshing .anim-refresh {
+  animation: icon-spin 1100ms linear infinite;
+}
+
 /* pasta: a frente se abre */
 .anim-folder .folder-front {
   transform-origin: 50% 100%;
@@ -1246,7 +1251,7 @@ body {
 }
 
 .cfg-num {
-  width: 84px;
+  width: 64px;
   flex: 0 0 auto;
 }
 
@@ -1383,6 +1388,107 @@ body {
 
 .cfg-path .cfg-input {
   flex: 1;
+}
+
+/* campo de caminho com os botões dentro, à direita (pasta, remover) */
+.cfg-path {
+  position: relative;
+}
+
+.cfg-path .cfg-input {
+  padding-right: 72px;
+}
+
+.cfg-path>.mini-button,
+.cfg-area>.area-tool {
+  position: absolute;
+  top: calc(50% - 14px);
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.cfg-path>.mini-button:last-child {
+  right: 6px;
+}
+
+.cfg-path>.mini-button:nth-last-child(2) {
+  right: 34px;
+}
+
+.cfg-path>.mini-button:hover:not(:disabled),
+.cfg-area>.area-tool:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
+}
+
+/* área de texto com uma ação no canto (ex: puxar dos layers) */
+.cfg-area {
+  position: relative;
+}
+
+.cfg-area .cfg-textarea {
+  padding-right: 40px;
+}
+
+.cfg-area>.area-tool {
+  top: 6px;
+  right: 6px;
+}
+
+/* importar: a seta desce no hover e volta ao sair */
+.import-arrow {
+  transition: transform 280ms var(--ease-soft);
+}
+
+.area-tool:hover .import-arrow {
+  transform: translateY(2.5px);
+}
+
+/* botão redondo de ícone sobre fundo claro (rodapés) */
+.round-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.round-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.round-button:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.round-button svg {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.round-button:hover .anim-refresh {
+  animation: icon-spin 650ms var(--ease-soft);
 }
 
 /* interruptor */
@@ -2068,4 +2174,83 @@ body.motion-ready .eyebrow {
 .pad-tooltip.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* linhas reordenáveis (js/sortable.js): puxador à esquerda, × dentro do campo do método */
+.drag-handle {
+  display: grid;
+  width: 22px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--border-strong);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+  fill: currentcolor;
+  stroke: none;
+}
+
+.drag-handle:hover,
+.drag-handle:focus-visible {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+}
+
+.drag-handle:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+}
+
+.is-sorting,
+.is-sorting .drag-handle {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.is-sorting>.cfg-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.cfg-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: var(--blue-200);
+  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
+  transition: none;
+}
+
+.select.has-remove .dropdown-trigger,
+.select.has-remove select {
+  padding-right: 66px;
+}
+
+.select.has-remove>.row-remove {
+  position: absolute;
+  z-index: 1;
+  top: calc(50% - 14px);
+  right: 30px;
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.select.has-remove>.row-remove:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--danger-bg);
+  color: var(--danger);
+  transform: none;
 }

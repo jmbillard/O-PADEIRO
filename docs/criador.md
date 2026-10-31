@@ -17,13 +17,14 @@ um template do padeiro é um conjunto de arquivos:
 
 1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
 2. abra a comp principal e `◗ clique direito` em **templates**, na barra.
-3. preencha o '*nome da configuração*', o '*exemplo de preenchimento*' e as '*dicas*'.
-4. posicione a agulha da timeline em um frame de referência e clique em '*Capturar preview*'.
+3. preencha o '*nome da configuração*' (o primeiro campo, no topo), o '*exemplo de preenchimento*' e as '*dicas*'.
+4. posicione a agulha da timeline em um frame de referência e clique no preview ('*capturar preview*' aparece sobre ele no hover, ou direto quando ainda não há preview).
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
 6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
-7. escolha a '*pasta de mídias*' (opcional) e as '*pastas de output*'.
-8. use '*Testar agora*' para conferir o preenchimento com o exemplo.
+7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
+8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
+10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo (ou em '*agora não*'): o padeiro renderiza a comp principal (H.264 de 15 Mbps, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
 
 - **↻** (cabeçalho) → limpa o formulário e começa de novo.
 - **⋯** (cabeçalho) → ajuda (esta página) e recarregar o painel.
@@ -32,7 +33,7 @@ um template do padeiro é um conjunto de arquivos:
 >
 > ![checklist do criador](images/criador-checklist.webp)
 
-a barra de salvar mostra o que falta: **preview**, **nome**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+o topo do criador, antes do **⋯**, mostra o que falta: **nome**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
 
 ao salvar, o padeiro:
 
@@ -40,12 +41,12 @@ ao salvar, o padeiro:
 2. abre a janela de salvar do After Effects (cancelar não muda nada).
 3. grava o `_config.json` e o `_preview.png` ao lado do projeto.
 4. copia as fontes usadas para a pasta `FONTS`.
-5. abre a pasta do template.
+5. abre a pasta do template, depois que você escolhe gerar ou não o preview em vídeo (no aviso de template salvo: '*gerar preview .mp4*', '*agora não*' ou o ×), para não interromper o processo.
 
 ### formulário e nomenclatura
 
 - **nome da configuração** → identifica o template no log.
-- **exemplo de preenchimento** → idealmente, o texto usado no preview. '*puxar dos layers*' monta o exemplo com o texto atual dos layers editáveis.
+- **exemplo de preenchimento** → idealmente, o texto usado no preview. o ícone de importar, no canto do campo, puxa dos layers: monta o exemplo com o texto atual dos layers editáveis.
 - **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.
 - **prefixo** (opcional) → começo do nome de todas as comps criadas. vazio, o nome da comp é só a informação do input (ex: `JOAO BOSCO REPORTER` em vez de `TARJA - JOAO BOSCO REPORTER`).
 - **caixa de texto** → `CAIXA ALTA`, `caixa baixa`, `Título` ou `livre` (sem conversão).
@@ -57,9 +58,11 @@ ao salvar, o padeiro:
 
 - **+ layers** → adiciona os layers selecionados na comp principal.
 - **método** → '*conteúdo do texto*' preenche um layer de texto; '*nome do layer*' renomeia o layer.
-- **↑ ↓ ×** → reordenam ou removem o layer.
+- **⠿ puxador** (à esquerda) → arraste para mudar a ordem dos layers (com o puxador em foco, `↑` `↓` também movem).
+- **×** (dentro do campo do método) → remove o layer.
 - clique no nome do layer → seleciona o layer na comp.
-- **testar agora** → preenche os layers com o primeiro bloco do exemplo e captura um novo preview (o texto do exemplo não muda).
+- **fontes usadas** (abaixo do preview) → cada fonte do projeto com uma prévia: o nome e um texto fixo ("Pão Quentinho ÁÉÇÕ 0123 %&@#", com acentos, números e símbolos) desenhado com ela, a partir do arquivo da fonte ou das fontes instaladas. sem nenhum dos dois, aparece '*prévia indisponível*'. as fontes vêm em ordem alfabética, com um selo à esquerda: **Tt** para as instaladas no computador, **CC** para as do Adobe Fonts (Creative Cloud) e **?** (amarelo) para as que não existem no computador.
+- **testar agora** (rodapé, ao lado de começar de novo) → preenche os layers com o primeiro bloco do exemplo e captura um novo preview (o texto do exemplo não muda).
 
 > 🚩 *obs:*\
 > • a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.\

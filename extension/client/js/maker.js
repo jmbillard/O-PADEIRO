@@ -17,6 +17,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/criador.md';
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
+	// dicas padrão (as do padeiro antigo, defaultTemplateConfigObj.tip no host)
+	var DEFAULT_TIP = 'instruções de preenchimento deste template. ex:\n\ndigite o texto em 1 ou 2 linhas.\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.';
 	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	var METHODS = [
@@ -66,8 +68,6 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	var ICONS = {
-		up: ['m6 14 6-6 6 6'],
-		down: ['m6 10 6 6 6-6'],
 		remove: ['M6 6l12 12M18 6 6 18'],
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
 	};
@@ -110,11 +110,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 	}
 
-	function formatTime(seconds) {
-		var s = Math.max(0, seconds || 0);
-		var min = Math.floor(s / 60);
-
-		return (min ? min + 'min ' : '') + (s - min * 60).toFixed(2) + 's';
+	// Tempo de referência em frames inteiros (o After Effects guarda em segundos).
+	function formatFrame(seconds, fps) {
+		return 'frame ' + Math.round(Math.max(0, seconds || 0) * (fps || 30));
 	}
 
 	/* =========================================================
@@ -178,6 +176,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var list = $('layers');
 
 		list.textContent = '';
+		PAD_SORT.enable(list, '.cfg-row', function (from, to) {
+			state.layers.splice(to, 0, state.layers.splice(from, 1)[0]);
+			renderLayers();
+		});
 
 		if (!state.layers.length) {
 			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
@@ -213,31 +215,20 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layer.method = select.value;
 			});
 
+			// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
+			var remove = miniButton('remove', 'remover layer', function () {
+				state.layers.splice(i, 1);
+				renderLayers();
+			});
+
+			remove.classList.add('row-remove');
+			selWrap.classList.add('has-remove');
+			selWrap.appendChild(remove);
+
+			row.appendChild(PAD_SORT.handle());
 			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 			row.appendChild(name);
 			row.appendChild(selWrap);
-
-			var actions = el('span', 'cfg-row-actions');
-			var up = miniButton('up', 'subir', function () {
-				state.layers.splice(i - 1, 0, state.layers.splice(i, 1)[0]);
-				renderLayers();
-			});
-			var down = miniButton('down', 'descer', function () {
-				state.layers.splice(i + 1, 0, state.layers.splice(i, 1)[0]);
-				renderLayers();
-			});
-
-			up.disabled = i === 0;
-			down.disabled = i === state.layers.length - 1;
-			actions.appendChild(up);
-			actions.appendChild(down);
-			actions.appendChild(
-				miniButton('remove', 'remover layer', function () {
-					state.layers.splice(i, 1);
-					renderLayers();
-				})
-			);
-			row.appendChild(actions);
 			list.appendChild(row);
 
 			PAD_DROPDOWN.enhance(select);
@@ -338,8 +329,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var hasPreview = !!state.comp && $('preview-card').classList.contains('has-image');
 
 		return [
-			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{ key: 'name', label: 'nome', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'nome da configuração' },
+			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{
 				key: 'layers',
 				label: 'layers',
@@ -427,8 +418,69 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	function showComp() {
+		var time = $('comp-time');
+
 		$('comp-name').textContent = state.comp ? state.comp.name : '—';
-		$('comp-time').textContent = state.comp ? 'tempo de referência: ' + formatTime(state.comp.time) : '';
+		time.lastChild.textContent = state.comp ? (state.comp.time || 0).toFixed(2) + ' s (' + formatFrame(state.comp.time, state.comp.fps) + ')' : '';
+		time.hidden = !state.comp;
+		time.title = state.comp ? 'tempo de referência, a ' + (Math.round((state.comp.fps || 30) * 100) / 100) + ' fps' : '';
+	}
+
+	// Prévia de cada fonte: o nome e um texto fixo desenhado com ela. A fonte vem do próprio arquivo
+	// (location) ou, sem ele, das fontes instaladas pelo nome PostScript; se nada carregar, avisa.
+	var FONT_SAMPLE = 'Pão Quentinho ÁÉÇÕ 0123 %&@#';
+
+	// selo à esquerda de cada fonte: [texto, dica]
+	var FONT_BADGES = {
+		local: ['Tt', 'instalada neste computador'],
+		adobe: ['CC', 'do Adobe Fonts (Creative Cloud): fácil de ativar em qualquer computador'],
+		missing: ['?', 'não existe neste computador']
+	};
+
+	function fontLabel(font) {
+		return [font.family, font.style].filter(Boolean).join(' ') || font.name || '';
+	}
+
+	function fontPreview(font, i) {
+		var li = el('li', 'font-item');
+		var label = el('span', 'font-name', fontLabel(font));
+		var badge = el('span', 'font-badge is-' + (FONT_BADGES[font.source] ? font.source : 'local'));
+		var kind = FONT_BADGES[font.source] || FONT_BADGES.local;
+
+		badge.textContent = kind[0];
+		badge.title = kind[1];
+		li.appendChild(badge);
+		var sample = el('span', 'font-sample', FONT_SAMPLE);
+		var id = 'pad-font-' + i + '-' + Date.now();
+		var sources = [];
+
+		li.title = font.name + (font.location ? '\n' + font.location : '');
+		li.appendChild(label);
+		li.appendChild(sample);
+
+		if (font.location) sources.push('url("' + PAD_UTIL.fileUrl(font.location) + '")');
+		if (font.name) sources.push('local("' + font.name.replace(/"/g, '') + '")');
+
+		if (!sources.length || !window.FontFace) {
+			li.classList.add('is-missing');
+			return li;
+		}
+
+		var face = new FontFace(id, sources.join(', '));
+
+		face.load().then(
+			function (loaded) {
+				document.fonts.add(loaded);
+				sample.style.fontFamily = '"' + id + '", sans-serif';
+				li.classList.add('is-ready');
+			},
+			function () {
+				li.classList.add('is-missing');
+				sample.title = 'prévia indisponível: a fonte não está instalada neste computador';
+			}
+		);
+
+		return li;
 	}
 
 	async function loadFonts() {
@@ -437,11 +489,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var list = $('fonts-list');
 
 			list.textContent = '';
-			res.fonts.forEach(function (name) {
-				var li = el('li', null, name);
-
-				li.title = name;
-				list.appendChild(li);
+			// em ordem alfabética, pelo nome mostrado (família e estilo)
+			res.fonts.sort(function (a, b) {
+				return fontLabel(a).localeCompare(fontLabel(b), 'pt-BR', { sensitivity: 'base' });
+			});
+			res.fonts.forEach(function (font, i) {
+				list.appendChild(fontPreview(font, i));
 			});
 			$('fonts').hidden = res.fonts.length === 0;
 		} catch (err) { }
@@ -457,7 +510,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				toast(null, 'a comp principal mudou: a lista de layers foi limpa.');
 			}
 
-			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			state.comp = { id: res.compId, name: res.compName, time: res.time, fps: res.frameRate };
 			showComp();
 			showPreview(res.preview);
 			loadFonts();
@@ -547,7 +600,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				inputs: exampleInputs()
 			});
 
-			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			state.comp = { id: res.compId, name: res.compName, time: res.time, fps: res.frameRate };
 			showComp();
 			showPreview(res.preview);
 		} catch (err) {
@@ -555,6 +608,40 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		} finally {
 			btn.disabled = false;
 		}
+	}
+
+	// "como criar um template": a lista abre e fecha deslizando (o <details> nativo só aparece e some)
+	function animateDetails(details) {
+		var summary = details.querySelector('summary');
+		var body = details.querySelector('ol');
+		var anim = null;
+
+		summary.addEventListener('click', function (e) {
+			e.preventDefault();
+
+			if (!body.animate) return (details.open = !details.open);
+
+			var opening = !details.open;
+			var start = anim ? body.offsetHeight : opening ? 0 : body.offsetHeight;
+
+			if (anim) anim.cancel();
+
+			details.open = true;
+
+			var end = opening ? body.scrollHeight : 0;
+
+			anim = body.animate(
+				[
+					{ height: start + 'px', opacity: opening ? 0 : 1 },
+					{ height: end + 'px', opacity: opening ? 1 : 0 }
+				],
+				{ duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }
+			);
+			anim.onfinish = function () {
+				anim = null;
+				details.open = opening;
+			};
+		});
 	}
 
 	function buildConfig() {
@@ -577,6 +664,54 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	function setHint(text) {
 		$('save-hint').textContent = text || '';
+	}
+
+	// Depois de salvar: o aviso fica até a escolha (gerar o preview em vídeo ou não) e só então a pasta do
+	// template abre, para não interromper o processo com a janela do Finder / Explorer.
+	function savedToast(data) {
+		var box = $('toast');
+		var compId = state.comp.id;
+		var opened = false;
+
+		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 600000);
+
+		function openTemplateFolder() {
+			if (opened) return;
+
+			opened = true;
+			call('openFolder', { path: data.folder }).catch(function (err) {
+				toast('error', err.message);
+			});
+		}
+
+		var render = el('button', 'toast-action', 'gerar preview .mp4');
+		var skip = el('button', 'toast-action is-quiet', 'agora não');
+
+		render.type = skip.type = 'button';
+		render.title = 'renderiza a comp principal em vídeo (H.264, meia resolução) ao lado do template: a janela de templates passa a mostrar o vídeo';
+		skip.title = 'não gerar o vídeo e abrir a pasta do template';
+
+		render.addEventListener('click', async function () {
+			render.disabled = skip.disabled = true;
+			render.textContent = 'renderizando…';
+
+			try {
+				var res = await call('makerRenderPreview', { compId: compId, base: data.base });
+
+				toast('success', 'preview .mp4 gerado: ' + res.path);
+			} catch (err) {
+				toast('error', err.message);
+			}
+
+			openTemplateFolder();
+		});
+		skip.addEventListener('click', function () {
+			box.hidden = true;
+			openTemplateFolder();
+		});
+		box.lastChild.addEventListener('click', openTemplateFolder); // o × do aviso
+		box.insertBefore(render, box.lastChild);
+		box.insertBefore(skip, box.lastChild);
 	}
 
 	async function save() {
@@ -624,7 +759,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			} else if (res.messages.length) {
 				toast('error', res.messages.join('\n'));
 			} else {
-				toast('success', 'template salvo: ' + res.data.path);
+				savedToast(res.data);
 			}
 		} catch (err) {
 			toast('error', err.message);
@@ -662,15 +797,22 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		}
 	}
 
+	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; o × esvazia e esconde.
+	function showImportRow(on) {
+		$('import-row').hidden = !on;
+		$('btn-import-add').hidden = on;
+	}
+
 	function resetForm() {
 		$('f-config').value = '';
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
-		$('f-tip').value = '';
+		$('f-tip').value = DEFAULT_TIP;
 		$('f-prefix').value = 'TARJA';
 		$('f-case').value = 'upperCase';
 		PAD_DROPDOWN.refresh($('f-case'));
 		$('f-separator').value = '\\n';
 		$('f-import').value = '';
+		showImportRow(false);
 		state.layers = [];
 		state.outputs = [''];
 		state.comp = null;
@@ -725,9 +867,18 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 			inputs[inputs.length - 1].focus();
 		});
+		$('btn-import-add').addEventListener('click', function () {
+			showImportRow(true);
+			$('f-import').focus();
+		});
+		$('remove-import').addEventListener('click', function () {
+			$('f-import').value = '';
+			showImportRow(false);
+		});
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de mídias');
 		});
+		animateDetails(document.querySelector('.maker-help'));
 		$('btn-save').addEventListener('click', save);
 		$('btn-reset').addEventListener('click', resetForm);
 		$('btn-retry').addEventListener('click', start);

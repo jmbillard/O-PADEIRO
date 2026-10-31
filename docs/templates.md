@@ -25,7 +25,8 @@ o painel de templates mostra os templates da produção escolhida na barra. a ja
 
 - **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. `Enter` seleciona o primeiro template encontrado.
 - **★ fixados / recentes** → atalhos no topo da lista (veja [fixados e recentes](#fixados-e-recentes)).
-- **atualizar** → lê a pasta de templates de novo.
+- **atualizar** → lê a pasta de templates de novo (com o loader).
+- **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
 - **⋯** (canto direito, embaixo) → ajuda (esta página) e recarregar o painel.
 - **total** (acima da busca) → quantos templates a produção tem (com uma busca, quantos foram encontrados).
@@ -49,6 +50,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
   - o limite é de **5 templates**: quando entra o 6º, o mais antigo sai.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos de 5.
+- **preset de render** → fixados e recentes lembram o último template de output usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 
 > 🚩 *obs:*\
@@ -83,10 +85,12 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![fila de render](images/templates-fila.webp)
 
-depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template.
+depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
 
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
-- **concluir sem fila** → termina sem criar a fila.
+- **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
+
+> 🚩 *obs:* com algum erro (um template que não preencheu, uma saída que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
 
 para criar um novo preset de output, acesse:\
 `Edit` > `Templates` > `Output Module...`
@@ -130,6 +134,8 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 | `←` `→` | fecham e abrem as pastas (na pasta aberta, `→` entra nela) |
 | `Enter` | seleciona o template e leva para o input; na busca, seleciona o primeiro encontrado |
 | `Ctrl/Cmd+Enter` | preenche |
+| `Ctrl/Cmd+Z` (no texto) | desfaz (inclusive o exemplo do template que substituiu o texto) |
+| `Ctrl/Cmd+Shift+Z` ou `Ctrl+Y` (no texto) | refaz |
 | `Esc` | no input, volta para a lista; na lista, desmarca o template; na busca, limpa |
 | `Ctrl/Cmd+F` | foca a busca |
 | letras | com a lista em foco, vão para a busca |

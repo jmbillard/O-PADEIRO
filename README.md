@@ -1,4 +1,4 @@
-# 🥖 O PADEIRO · v2.0 beta3
+# 🥖 O PADEIRO · v2.0 beta4
 
 🗨️ **pt-BR** ⚡ preenchimento em massa de templates e outras utilidades para o After Effects ⚡
 
@@ -221,6 +221,7 @@ o mesmo vocabulário em todos os painéis:
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
 | `Ctrl/Cmd+Enter` | preenche (templates) |
+| `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.
@@ -267,6 +268,9 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_065` | outra pessoa salvou a lista de produções depois que você abriu o editor |
 | `#PAD_066` `#PAD_067` `#PAD_068` | o painel não conseguiu carregar o padeiro da rede |
 | `#PAD_070` `#PAD_071` `#PAD_072` `#PAD_PATH_001` `#PAD_PATH_002` | caminho de rede inválido, volume não montado ou pasta inacessível |
+| `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
+| `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
+| `#PAD_077` | criador: o preview .mp4 não foi gerado |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

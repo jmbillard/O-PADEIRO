@@ -18,6 +18,7 @@ var PS_CATEGORIES = [
 	{ key: 'atracoes_teams', label: 'TEAMS' },
 	{ key: 'atracoes_trello', label: 'TRELLO' },
 	{ key: 'atracoes', label: 'ATRAÇÕES' },
+	{ key: 'filmes', label: 'FILMES' },
 	{ key: 'servidor', label: 'SERVIDOR' }
 ];
 
@@ -216,6 +217,9 @@ function psDownloadIndex(cacheFile) {
 }
 
 function psBuildIndex(data) {
+	// o workflow pode devolver o objeto dentro de uma lista ([ { ... } ])
+	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
+
 	data = data || {};
 
 	// listas locais somadas às do webhook
@@ -237,20 +241,24 @@ function psBuildIndex(data) {
 
 			if (!rec) continue;
 
+			// sem o caminho deste sistema, usa o do outro (ex: a lista de filmes só tem 'win'); ele é
+			// convertido ao mostrar e ao abrir
 			var plat = rec[platform] || {};
-			var projeto = psCleanPath(plat.projeto || rec.projeto);
-			var output = psCleanPath(plat.output || rec.output);
-			var caminho = psCleanPath(plat.caminho || rec.caminho);
+			var other = rec[platform == 'mac' ? 'win' : 'mac'] || {};
+			var projeto = psCleanPath(plat.projeto || rec.projeto || other.projeto);
+			var output = psCleanPath(plat.output || rec.output || other.output);
+			var caminho = psCleanPath(plat.caminho || rec.caminho || other.caminho);
+			var atracao = psCleanPath(rec.atracao); // nomes também vêm com aspas soltas no fim
 
-			var name = rec.atracao
-				? String(rec.atracao)
+			var name = atracao
+				? atracao
 				: psLastFolderName(caminho) || psLastFolderName(projeto) || psLastFolderName(output) || 'Resultado ' + (r + 1);
 
 			// if/else em vez de ternário encadeado: o ExtendScript avalia 'a ? b : c ? d : e'
 			// como '(a ? b : c) ? d : e', o que juntava todas as atrações sem caminho num grupo só.
 			var key;
 
-			if (rec.atracao) key = 'a:' + psNormalize(name);
+			if (atracao) key = 'a:' + psNormalize(name);
 			else if (caminho) key = 'c:' + psPathKey(caminho);
 			else key = 'r:' + r;
 
@@ -279,7 +287,14 @@ function psBuildIndex(data) {
 			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
 		}
 
-		if (groups.length > 0) index.push({ category: categories[c], groups: groups });
+		// sem nenhum caminho (ex: filme com output null) não há o que abrir: fica de fora
+		var useful = [];
+
+		for (var g = 0; g < groups.length; g++) {
+			if (groups[g].projetos.length || groups[g].outputs.length || groups[g].caminhos.length) useful.push(groups[g]);
+		}
+
+		if (useful.length > 0) index.push({ category: categories[c], groups: useful });
 	}
 
 	return index;

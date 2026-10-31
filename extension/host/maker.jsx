@@ -58,12 +58,32 @@ PADX.makerState = function () {
 		selected.push(padLayerInfo(item.selectedLayers[i]));
 	}
 
-	return { hasComp: true, compId: item.id, compName: item.name, time: item.time, selected: selected };
+	return { hasComp: true, compId: item.id, compName: item.name, time: item.time, frameRate: item.frameRate, selected: selected };
 };
 
-// Fontes usadas no projeto (a leitura pode demorar em projetos grandes).
+// Fontes usadas no projeto (a leitura pode demorar em projetos grandes): { name (PostScript), family,
+// style, location (arquivo da fonte, para a prévia), source }. source: 'local' (instalada neste
+// computador), 'adobe' (Adobe Fonts / Creative Cloud) ou 'missing' (não existe neste computador).
 PADX.makerFonts = function () {
-	return { fonts: getFontNames() };
+	var fonts = getProjectFonts();
+
+	for (var f = 0; f < fonts.length; f++) {
+		var font = fonts[f];
+		var adobe = !!font.location && /\/CoreSync\/plugins\/livetype\//i.test(font.location.replace(/\\/g, '/'));
+
+		try {
+			var info = app.fonts.getFontsByPostScriptName(font.name); // After Effects 2024 ou mais novo
+
+			if (info.length && info[0].isFromAdobeFonts) adobe = true;
+		} catch (err) { }
+
+		font.source = 'local';
+
+		if (!font.location || !new File(font.location).exists) font.source = 'missing';
+		if (adobe) font.source = 'adobe';
+	}
+
+	return { fonts: fonts };
 };
 
 // Confere se dá para criar um template agora (barra principal).
@@ -74,6 +94,49 @@ PADX.makerReady = function () {
 
 	return { ok: true };
 };
+
+// saveFrameToPng grava o arquivo em segundo plano e volta antes de terminar: ler cedo demais dava um
+// preview pela metade. Espera (até ~8 s) o PNG estar completo: terminar no bloco IEND e com o tamanho
+// parado entre duas leituras.
+function padPngComplete(path) {
+	var file = new File(path);
+
+	if (!file.exists || file.length < 12) return false;
+
+	try {
+		file.encoding = 'BINARY';
+		file.open('r');
+		file.seek(file.length - 12);
+
+		var tail = file.read(12);
+
+		file.close();
+
+		return tail.indexOf('IEND') >= 0;
+	} catch (err) {
+		try {
+			file.close();
+		} catch (e) { }
+
+		return false;
+	}
+}
+
+function padWaitForPng(path) {
+	var lastSize = -1;
+
+	for (var w = 0; w < 80; w++) {
+		var file = new File(path);
+		var size = file.exists ? file.length : -1;
+
+		if (size > 0 && size === lastSize && padPngComplete(path)) return true;
+
+		lastSize = size;
+		$.sleep(100);
+	}
+
+	return padPngComplete(path);
+}
 
 // Salva o frame atual da comp ativa como preview e define a comp principal / tempo de referência.
 PADX.makerCapture = function () {
@@ -88,17 +151,13 @@ PADX.makerCapture = function () {
 
 	comp.saveFrameToPng(comp.time, previewFile);
 
-	// saveFrameToPng grava o arquivo em segundo plano: espera ele aparecer (até ~3 s)
-	for (var w = 0; w < 30 && !previewFile.exists; w++) {
-		$.sleep(100);
-	}
-
-	PADX_makerPreview = previewFile.exists ? previewFile.fsName : null;
+	PADX_makerPreview = padWaitForPng(previewFile.fsName) ? previewFile.fsName : null;
 
 	return {
 		compId: comp.id,
 		compName: comp.name,
 		time: comp.time,
+		frameRate: comp.frameRate,
 		preview: PADX_makerPreview,
 		selected: PADX.makerState().selected
 	};
@@ -225,8 +284,88 @@ PADX.makerSave = function (a) {
 		}
 
 		fontCollect(folder + '/FONTS');
-		openFolder(folder);
+		// a pasta abre pelo painel, depois de gerar (ou não) o preview em vídeo
 
-		return { saved: true, path: base + '_config.json', folder: folder };
+		return { saved: true, path: base + '_config.json', base: base, folder: folder };
 	});
+};
+
+// O template de output H.264 preferido: o de 15 Mbps ("H.264 - Match Render Settings - 15 Mbps", o padrão
+// do After Effects). O meio do nome muda com o idioma, então compara só o começo (H.264) e o fim (15 Mbps).
+// Sem ele, qualquer H.264 de 15 Mbps e, por fim, qualquer H.264. '' se não houver nenhum.
+function padPreferredH264(templates) {
+	var rules = [/^H\.?264\b.*\b15\s*Mbps\s*$/i, /H\.?264.*15\s*Mbps/i, /H\.?264/i];
+
+	for (var r = 0; r < rules.length; r++) {
+		for (var t = 0; t < templates.length; t++) {
+			if (!/^_HIDDEN/.test(templates[t]) && rules[r].test(templates[t])) return templates[t];
+		}
+	}
+
+	return '';
+}
+
+// Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):
+// renderiza a comp principal pela fila de render com um template de output H.264, em meia resolução.
+// As saídas que já estavam na fila ficam de fora durante a renderização e voltam depois.
+// a: { compId, base }
+PADX.makerRenderPreview = function (a) {
+	var comp = padMakerComp(a.compId);
+	var rq = app.project.renderQueue;
+	var target = new File(a.base + '_preview.mp4');
+
+	if (rq.rendering) throw new Error('#PAD_075 - a fila de render já está renderizando: espere terminar e tente de novo.');
+
+	var paused = [];
+
+	for (var i = 1; i <= rq.numItems; i++) {
+		try {
+			if (rq.item(i).render) {
+				rq.item(i).render = false;
+				paused.push(rq.item(i));
+			}
+		} catch (err) { }
+	}
+
+	var item = rq.items.add(comp);
+
+	app.beginSuppressDialogs();
+
+	try {
+		try {
+			item.applyTemplate('Best Settings');
+		} catch (err) { }
+
+		try {
+			item.setSetting('Resolution', [2, 2]); // meia resolução: o preview é pequeno na janela
+		} catch (err) { }
+
+		var om = item.outputModule(1);
+		var h264 = padPreferredH264(om.templates);
+
+		if (!h264) throw new Error('#PAD_076 - nenhum template de output H.264 no After Effects para gerar o preview em .mp4.');
+
+		om.applyTemplate(h264);
+
+		if (target.exists) target.remove();
+
+		om.file = target;
+		rq.render();
+	} finally {
+		try {
+			item.remove();
+		} catch (err) { }
+
+		for (var p = 0; p < paused.length; p++) {
+			try {
+				paused[p].render = true;
+			} catch (err) { }
+		}
+
+		app.endSuppressDialogs(false);
+	}
+
+	if (!target.exists) throw new Error('#PAD_077 - o preview em .mp4 não foi gerado.');
+
+	return { path: target.fsName };
 };

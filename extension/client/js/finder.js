@@ -18,7 +18,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/acessorista.md';
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
-	var MAX_RESULTS = 12; // máximo de atrações exibidas
+	var MAX_RESULTS = 60; // máximo de atrações exibidas (somando as categorias)
 	var MAX_TEXT_ROWS = 300; // máximo de textos exibidos
 	var COMPS_PER_CHUNK = 4;
 	var TAB_REQUEST_TTL = 15000; // ms: pedido de aba da barra considerado "recente" ao abrir o painel
@@ -417,7 +417,10 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		head.appendChild(icons);
 		card.appendChild(head);
 
-		group.caminhos.forEach(function (path) {
+		// sem caminho (ex: filmes, só com a pasta de output), o output aparece em breadcrumb
+		var paths = group.caminhos.length ? group.caminhos : group.outputs.slice(0, 1);
+
+		paths.forEach(function (path) {
 			card.appendChild(pathCrumbs(toPlatform(path, state.paths.platform), query, group));
 		});
 

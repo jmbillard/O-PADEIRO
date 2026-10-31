@@ -74,10 +74,7 @@ var renameRefArray = [
 var defaultTemplateConfigObj = {
 	configName: 'NOME DA CONFIGURAÇÃO',
 	exemple: 'INFORMAÇÃO 1\nINFORMAÇÃO 2',
-	tip: 'coloque aqui as instruções de preenchimento deste template.\nex:\
-\ndigite o texto em 1 ou 2 linhas.\
-\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\
-\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.',
+	tip: 'instruções de preenchimento deste template. ex:\n\ndigite o texto em 1 ou 2 linhas.\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.',
 
 	compName: 'COMP TEMPLATE',
 	prefix: 'TARJA',

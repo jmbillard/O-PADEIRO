@@ -96,7 +96,33 @@ function getComps() {
 }
 
 function padPath(pathStr) {
-	return normalizeNetworkPath(pathStr, { silent: true });
+	var path = normalizeNetworkPath(pathStr, { silent: true });
+
+	// no macOS, normalizeNetworkPath escapa aspas ("D\'AVILA") para outro uso: aqui o caminho vai para File/Folder
+	return appOs == 'Mac' && path ? path.replace(/\\(['"])/g, '$1') : path;
+}
+
+// Caminho para MOSTRAR nas janelas: sempre no formato do sistema atual (/Volumes/... no macOS,
+// \\servidor\... no Windows), qualquer que seja o formato guardado (lista, config, workflow).
+// O conversor de caminhos é a exceção: ele mostra os dois formatos.
+function padDisplayPath(pathStr) {
+	if (!pathStr) return pathStr || '';
+
+	var path = padPath(pathStr) || String(pathStr);
+
+	try {
+		return Folder.decode(new Folder(path).fsName);
+	} catch (err) {
+		return path;
+	}
+}
+
+function padDisplayPaths(list) {
+	var out = [];
+
+	for (var i = 0; i < list.length; i++) out.push(padDisplayPath(list[i]));
+
+	return out;
 }
 
 function padSortProductions(list) {
@@ -150,7 +176,7 @@ function padConfigFile() {
 }
 
 function padNoSharedListError() {
-	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padSharedConfigPath() + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
+	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
 // Config do template: o que está no arquivo + o que falta, do padrão.
@@ -213,7 +239,7 @@ PADX.productions = function () {
 	var list;
 	var error = null;
 
-	if (!configFile) return { configPath: padSharedConfigPath(), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
+	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
 		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
@@ -265,7 +291,8 @@ PADX.setProduction = function (a) {
 };
 
 // Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp local
-// ({ "<produção>": { favorites: [uri], recents: [uri] } }). A lista de produções é que é compartilhada.
+// ({ "<produção>": { favorites: [uri], recents: [uri], renderPresets: { uri: preset } } }), com o
+// último preset de render usado em cada um. A lista de produções é que é compartilhada.
 function padTemplateListsFile() {
 	return new File(tempPath + '/template_lists.json');
 }
@@ -288,15 +315,40 @@ function padReadTemplateLists() {
 PADX.templateLists = function (a) {
 	var item = padReadTemplateLists()[a.production] || {};
 
-	return { favorites: item.favorites || [], recents: item.recents || [] };
+	return { favorites: item.favorites || [], recents: item.recents || [], renderPresets: item.renderPresets || {} };
 };
 
-// a: { production, favorites, recents }
+// a: { production, favorites, recents, renderPresets }
 PADX.saveTemplateLists = function (a) {
 	var all = padReadTemplateLists();
 
-	all[a.production] = { favorites: a.favorites || [], recents: a.recents || [] };
+	all[a.production] = { favorites: a.favorites || [], recents: a.recents || [], renderPresets: a.renderPresets || {} };
 	saveTextFile(JSON.stringify(all, null, '\t'), padTemplateListsFile().fsName);
+
+	return { ok: true };
+};
+
+// Cópia da última árvore de templates lida de cada produção (pasta temp local): a janela de templates
+// mostra a lista na hora ao abrir e relê a pasta em segundo plano. A árvore vai e volta como texto
+// (JSON feito pelo painel), sem passar pelo JSON do ExtendScript, que é lento com listas grandes.
+function padTreeCacheFile(production) {
+	var folder = new Folder(tempPath + '/template_trees');
+
+	if (!folder.exists) folder.create();
+
+	return new File(folder.fsName + '/' + String(production).replace(/[\\\/:*?"<>|]+/g, '_') + '.json');
+}
+
+// a: { production } → { text } ('' sem cópia)
+PADX.templateTreeCache = function (a) {
+	var file = padTreeCacheFile(a.production);
+
+	return { text: file.exists ? readFileContent(file) : '' };
+};
+
+// a: { production, text }
+PADX.saveTemplateTreeCache = function (a) {
+	saveTextFile(String(a.text || ''), padTreeCacheFile(a.production).fsName);
 
 	return { ok: true };
 };
@@ -327,7 +379,7 @@ PADX.listDir = function (a) {
 	var path = a.uri ? a.uri : padPath(a.path);
 	var folder = new Folder(path);
 
-	if (!folder.exists) return { exists: false, path: path, name: '', entries: [] };
+	if (!folder.exists) return { exists: false, path: padDisplayPath(path), name: '', entries: [] };
 
 	var items = folder.getFiles();
 	var entries = [];
@@ -342,7 +394,7 @@ PADX.listDir = function (a) {
 		}
 	}
 
-	return { exists: true, path: path, name: folder.displayName, entries: entries };
+	return { exists: true, path: padDisplayPath(path), name: folder.displayName, entries: entries };
 };
 
 // Preview, configuração e dicas de um template.
@@ -849,7 +901,8 @@ PADX.fillFinish = function () {
 	return {
 		count: run.count,
 		renderTemplates: run.renderTemplates,
-		outputPath: run.templateData.outputPath,
+		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (maker.jsx)
+		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};
 };
@@ -889,7 +942,11 @@ PADX.queueBegin = function (a) {
 	run.outputTemplate = a.outputTemplate;
 	run.outputs = outputs;
 
-	return { total: run.newComps.length, outputs: outputs, warnings: warnings };
+	// como no padeiro antigo: o script do template ('_script.js') recebe em templateData.outputPath os
+	// caminhos já convertidos para este sistema (e a pasta padrão no lugar das inacessíveis)
+	run.templateData.outputPath = outputs.slice(0);
+
+	return { total: run.newComps.length, outputs: padDisplayPaths(outputs), warnings: warnings };
 };
 
 // Adiciona a comp 'index' à fila de render.
@@ -899,22 +956,34 @@ PADX.queueStep = function (a) {
 	if (!run || !run.outputs) throw new Error('#PAD_049 - fila de render não iniciada');
 
 	return padGroup('O PADEIRO: fila de render', function () {
-		var comp = run.newComps[a.index];
-		var item = app.project.renderQueue.items.add(comp);
+		// O After Effects confere a última pasta de render que ele lembra ao criar o item e ao aplicar os
+		// templates; se ela não existe mais, mostra "The directory originally specified in the selected
+		// output module no longer exists", mesmo que a pasta do padeiro exista. O padeiro define a pasta
+		// de cada saída, então esses avisos ficam desligados durante a montagem.
+		app.beginSuppressDialogs();
 
-		item.applyTemplate('Best Settings');
+		try {
+			var comp = run.newComps[a.index];
+			var item = app.project.renderQueue.items.add(comp);
 
-		for (var o = 0; o < run.outputs.length; o++) {
-			if (o > 0) item.outputModules.add();
+			item.applyTemplate('Best Settings');
 
-			var outputModule = item.outputModule(o + 1);
+			for (var o = 0; o < run.outputs.length; o++) {
+				if (o > 0) item.outputModules.add();
 
-			outputModule.file = new File(run.outputs[o] + '/[compName].[fileextension]');
-			outputModule.applyTemplate(run.outputTemplate);
-			run.newOutputs.push(outputModule);
+				var outputModule = item.outputModule(o + 1);
+				var file = new File(run.outputs[o] + '/[compName].[fileextension]');
+
+				outputModule.file = file;
+				outputModule.applyTemplate(run.outputTemplate);
+				outputModule.file = file; // o template não pode trocar a pasta
+				run.newOutputs.push(outputModule);
+			}
+
+			return { name: comp.name, outputs: padDisplayPaths(run.outputs) };
+		} finally {
+			app.endSuppressDialogs(false);
 		}
-
-		return { name: comp.name, outputs: run.outputs };
 	});
 };
 
@@ -998,7 +1067,7 @@ PADX.openLastOutput = function () {
 	var outputPath = normalizeNetworkPath(decodeURI(outputFile.path), { silent: true });
 	var folder = nearestExistingFolder(outputPath);
 
-	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + outputPath);
+	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));
 
 	openFolder(folder.fsName);
 

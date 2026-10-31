@@ -73,7 +73,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta3', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta4', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -136,13 +136,23 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		templateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 
-			return all[a.production] || { favorites: [], recents: [] };
+			return all[a.production] || { favorites: [], recents: [], renderPresets: {} };
+		},
+
+		templateTreeCache: function (a) {
+			return { text: sessionStorage.getItem('mock.tree.' + a.production) || '' };
+		},
+
+		saveTemplateTreeCache: function (a) {
+			sessionStorage.setItem('mock.tree.' + a.production, a.text);
+
+			return { ok: true };
 		},
 
 		saveTemplateLists: function (a) {
 			var all = JSON.parse(sessionStorage.getItem('mock.templateLists') || '{}');
 
-			all[a.production] = { favorites: a.favorites, recents: a.recents };
+			all[a.production] = { favorites: a.favorites, recents: a.recents, renderPresets: a.renderPresets || {} };
 			sessionStorage.setItem('mock.templateLists', JSON.stringify(all));
 
 			return { ok: true };
@@ -252,6 +262,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						groups: [group('Fantástico — pauta de domingo', { caminhos: ['/Volumes/VFX/trello/FANTASTICO/PAUTA DE DOMINGO'] })]
 					},
 					{
+						category: { key: 'filmes', label: 'FILMES' },
+						groups: [group('O PROTETOR: CAPÍTULO FINAL', { outputs: ['//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_P_/O PROTETOR 3 - CAPITULO FINAL'] })]
+					},
+					{
 						category: { key: 'servidor', label: 'SERVIDOR' },
 						groups: [group('#INGEST', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST'], server: 'cpp-ml-sp', share: 'PROMO_REDE' }), group('BASES VALENDO', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO'], server: 'cpp-ml-sp', share: 'PROMO_REDE' })]
 					}
@@ -302,20 +316,26 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerState: function () {
 			if (/nocomp/.test(location.search) && !window.PAD_MOCK_COMP) return { hasComp: false };
 
-			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }] };
+			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }] };
 		},
 
 		makerCapture: async function () {
 			await wait(delay);
 			window.PAD_MOCK_COMP = true;
 
-			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
 		makerFonts: async function () {
 			await wait(delay);
 
-			return { fonts: ['Gotham Bold', 'Gotham Book', 'Globo Sans Condensed'] };
+			return {
+				fonts: [
+					{ name: 'Georgia-Bold', family: 'Georgia', style: 'Bold', location: window.PAD_MOCK_FONT_FILE || '/Library/Fonts/Georgia Bold.ttf', source: 'local' },
+					{ name: 'Gotham-Book', family: 'Gotham', style: 'Book', location: '', source: 'adobe' },
+					{ name: 'GloboSans-Condensed', family: 'Globo Sans', style: 'Condensed', location: '', source: 'missing' }
+				]
+			};
 		},
 
 		makerSelection: function () {
@@ -333,7 +353,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerTest: async function () {
 			await wait(delay);
 
-			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [] };
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, preview: previewSvg(), selected: [] };
 		},
 
 		makerSave: async function (a) {
@@ -343,7 +363,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_SAVED = a;
 
-			return { messages: [], data: { saved: true, path: '/mock/TARJA/TARJA TEMPLATE_config.json', folder: '/mock/TARJA' } };
+			return { messages: [], data: { saved: true, path: '/mock/TARJA/TARJA TEMPLATE_config.json', base: '/mock/TARJA/TARJA TEMPLATE', folder: '/mock/TARJA' } };
+		},
+
+		makerRenderPreview: async function (a) {
+			await wait(delay * 4); // a renderização leva um tempo
+
+			return { path: a.base + '_preview.mp4' };
 		},
 
 		requestConverter: function () {
@@ -512,7 +538,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { opened: 1, missing: [] };
 		},
 
-		openFolder: function () {
+		openFolder: function (a) {
+			(window.PAD_MOCK_OPENED = window.PAD_MOCK_OPENED || []).push(a.path);
+
 			return true;
 		},
 
