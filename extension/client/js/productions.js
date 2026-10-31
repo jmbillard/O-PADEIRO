@@ -470,12 +470,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var mode = state.log.mode;
 		var webhook = $('log-webhook');
 
-		Array.prototype.forEach.call($('log-modes').querySelectorAll('.log-mode'), function (btn) {
-			var on = btn.getAttribute('data-mode') === mode;
-
-			btn.classList.toggle('is-on', on);
-			btn.setAttribute('aria-checked', on ? 'true' : 'false');
-			btn.disabled = !state.available;
+		Array.prototype.forEach.call($('log-modes').querySelectorAll('input[name="log-mode"]'), function (radio) {
+			radio.checked = radio.value === mode;
+			radio.disabled = !state.available;
 		});
 
 		if (webhook.value !== state.log.webhook) webhook.value = state.log.webhook;
@@ -500,12 +497,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function bindLog() {
-		$('log-modes').addEventListener('click', function (e) {
-			var btn = e.target.closest('.log-mode');
+		$('log-modes').addEventListener('change', function (e) {
+			if (e.target.name !== 'log-mode') return;
 
-			if (!btn || btn.disabled) return;
-
-			state.log.mode = btn.getAttribute('data-mode');
+			state.log.mode = e.target.value;
 			$('log-webhook').classList.remove('has-error');
 			renderLog();
 			updateDirty();

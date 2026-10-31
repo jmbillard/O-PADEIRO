@@ -450,44 +450,76 @@ body.prods-page {
 .log-modes {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 6px 20px;
+  padding: 2px 0 4px;
 }
 
-.log-mode {
-  min-height: 32px;
-  padding: 5px 13px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: white;
+.log-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-secondary);
-  font: inherit;
-  font-size: 0.74rem;
-  font-weight: 650;
+  font-size: 0.76rem;
+  font-weight: 620;
   cursor: pointer;
+  user-select: none;
+}
+
+/* o círculo nativo fica escondido: o desenho é o do .log-radio-dot */
+.log-radio input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.log-radio-dot {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  background: white;
   transition:
     border-color 160ms ease,
-    background 160ms ease,
-    color 160ms ease;
+    box-shadow 160ms ease;
 }
 
-.log-mode:hover:not(:disabled) {
+.log-radio-dot::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  content: '';
+  transform: scale(0);
+  transition: transform 180ms var(--ease-soft);
+}
+
+.log-radio:hover .log-radio-dot {
   border-color: var(--blue-500);
-  color: var(--blue-500);
 }
 
-.log-mode:focus-visible {
-  outline: none;
+.log-radio input:checked+.log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot::after {
+  transform: scale(1);
+}
+
+.log-radio input:checked~.log-radio-text {
+  color: var(--text-primary);
+}
+
+.log-radio input:focus-visible+.log-radio-dot {
   box-shadow: 0 0 0 4px rgb(79 130 255 / 18%);
 }
 
-.log-mode.is-on {
-  border-color: var(--blue-500);
-  background: var(--blue-500);
-  color: white;
-}
-
-.log-mode:disabled {
-  cursor: default;
+.log-radio input:disabled~* {
   opacity: 0.45;
 }
 
@@ -523,6 +555,9 @@ body.prods-page {
 .is-sorting>.prod-row.is-dragging {
   position: relative;
   z-index: 2;
+  /* respiro dos dois lados do cartão, sem mudar a posição do conteúdo */
+  margin-inline: -10px;
+  padding-inline: 10px;
   border-radius: var(--radius-small);
   background: white;
   box-shadow: 0 12px 28px rgb(30 42 80 / 16%);

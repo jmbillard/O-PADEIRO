@@ -48,10 +48,10 @@
 			<div class="prods-log" id="log-box">
 				<p class="cfg-title prods-log-title">logs</p>
 				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
-					<button type="button" class="log-mode" data-mode="webhook" role="radio" title="cada preenchimento é enviado para o webhook abaixo">webhook</button>
-					<button type="button" class="log-mode" data-mode="csv" role="radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção">CSV por produção</button>
-					<button type="button" class="log-mode" data-mode="csvGlobal" role="radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na mesma pasta da lista de produções">CSV global</button>
-					<button type="button" class="log-mode" data-mode="off" role="radio" title="nada é registrado">desligado</button>
+					<label class="log-radio" title="cada preenchimento é enviado para o webhook abaixo"><input type="radio" name="log-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
+					<label class="log-radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção"><input type="radio" name="log-mode" value="csv"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">CSV por produção</span></label>
+					<label class="log-radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na mesma pasta da lista de produções"><input type="radio" name="log-mode" value="csvGlobal"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">CSV global</span></label>
+					<label class="log-radio" title="nada é registrado"><input type="radio" name="log-mode" value="off"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">desligado</span></label>
 				</div>
 				<input type="text" class="cfg-input log-webhook" id="log-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook" title="endereço do webhook (http:// ou https://)">
 				<p class="cfg-hint" id="log-hint"></p>
