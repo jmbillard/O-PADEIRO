@@ -28,13 +28,23 @@ body.converter-page {
   gap: 6px;
 }
 
-.convert-label {
-  padding-left: 4px;
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+/* o sistema de cada campo: ícone da Apple ou do Windows no início */
+.convert-os {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  fill: var(--text-tertiary);
+  stroke: none;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: fill 160ms ease;
+}
+
+.convert-line:focus-within .convert-os {
+  fill: var(--blue-500);
 }
 
 /* o campo leva os botões dentro, à direita (copiar e, no sistema atual, abrir a pasta) */
@@ -44,7 +54,7 @@ body.converter-page {
 
 .convert-input {
   padding-right: 76px;
-  font-weight: 560;
+  padding-left: 40px;
 }
 
 .convert-tools {

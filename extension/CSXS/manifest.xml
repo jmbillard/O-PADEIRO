@@ -147,15 +147,15 @@
 					<Geometry>
 						<Size>
 							<Width>800</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</Size>
 						<MinSize>
 							<Width>300</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</MaxSize>
 					</Geometry>
 				</UI>
