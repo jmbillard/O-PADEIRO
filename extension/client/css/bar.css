@@ -64,13 +64,13 @@ body.bar-page {
 }
 
 .bar-tools {
-  gap: 10px;
+  gap: 6px;
 }
 
 .bar-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .bar-divider {
@@ -256,8 +256,8 @@ body.bar-page {
 
 .bar-icon svg,
 .bar-btn svg {
-  width: 24px;
-  height: 24px;
+  width: 27px;
+  height: 27px;
   overflow: visible;
   fill: none;
   stroke: currentcolor;
