@@ -4,8 +4,8 @@
 > arrastar para reordenar
 ---------------------------------------------------------------
 
-Listas de linhas que se reordenam pelo puxador (.drag-handle) de cada linha. Usa eventos de ponteiro em vez
-do arrastar nativo do navegador, que o CEP nem sempre entrega: a linha segue o mouse, as outras abrem espaço
+Listas de linhas que se reordenam pelo puxador (.drag-handle) de cada linha. Usa eventos de mouse (os de ponteiro e
+o arrastar nativo do navegador o CEP não entrega no After Effects): a linha segue o mouse, as outras abrem espaço
 e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 
   PAD_SORT.handle()                              → o puxador (botão com os pontinhos)
@@ -41,7 +41,7 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			});
 		}
 
-		list.addEventListener('pointerdown', function (e) {
+		list.addEventListener('mousedown', function (e) {
 			var grip = e.target.closest('.drag-handle');
 
 			if (!grip || e.button !== 0) return;
@@ -61,11 +61,7 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			var step = boxes.length > 1 ? boxes[1].top - boxes[0].top : boxes[0].height;
 			var to = from;
 
-			// os eventos vêm da janela (o CEP nem sempre respeita a captura do ponteiro no botão)
-			try {
-				grip.setPointerCapture(e.pointerId);
-			} catch (err) { }
-
+			grip.focus();
 			row.classList.add('is-dragging');
 			list.classList.add('is-sorting');
 
@@ -101,9 +97,9 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			}
 
 			function end() {
-				window.removeEventListener('pointermove', move, true);
-				window.removeEventListener('pointerup', end, true);
-				window.removeEventListener('pointercancel', end, true);
+				window.removeEventListener('mousemove', move, true);
+				window.removeEventListener('mouseup', end, true);
+				window.removeEventListener('blur', end);
 				list.classList.remove('is-sorting');
 				row.classList.remove('is-dragging');
 				all.forEach(function (r) {
@@ -113,9 +109,10 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 				if (to !== from) onMove(from, to);
 			}
 
-			window.addEventListener('pointermove', move, true);
-			window.addEventListener('pointerup', end, true);
-			window.addEventListener('pointercancel', end, true);
+			// pela janela: o mouse pode sair do puxador (e da lista) durante o arraste
+			window.addEventListener('mousemove', move, true);
+			window.addEventListener('mouseup', end, true);
+			window.addEventListener('blur', end);
 		});
 
 		// teclado: com o puxador em foco, ↑ ↓ mudam a ordem
