@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.97';
+	var scriptVersion = 'v1.98';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -62,6 +62,16 @@ o script funcionará normalmente, mas você não terá:\n\
 						lClick + 'abrir apontamento de projetos'
 					],
 					leftClick: PAD_ACTIONS.abrirApontamento
+				},
+				upgrade: {
+					type: 'iconButton',
+					labelTxt: 'Atualizar',
+					icon: PAD_ATUALIZAR_ICON,
+					tips: [
+						'esta é a versão LEGACY do padeiro.',
+						lClick + 'instalar a nova versão (abre o "INSTALAR O PADEIRO")'
+					],
+					leftClick: PAD_ACTIONS.atualizarPadeiro
 				}
 			}
 		},
