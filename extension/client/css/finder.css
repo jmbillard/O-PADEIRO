@@ -133,7 +133,7 @@ body.finder-page {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgb(24 43 113 / 28%);
   content: "";
   transition:
@@ -146,7 +146,7 @@ body.finder-page {
 }
 
 .chip.is-on .chip-check {
-  background: white;
+  background: var(--surface);
 }
 
 /* ligado = o inverso do desligado: trilho opaco e bolinha esmaecida */
@@ -163,7 +163,7 @@ body.finder-page {
   flex: 1;
   flex-direction: column;
   margin: 4px -14px 0;
-  background: white;
+  background: var(--surface);
   transition: background-color 240ms ease;
 }
 
@@ -263,7 +263,7 @@ body.finder-page {
 /* pastinha: a frente abre e o conteúdo sobe um pouco (volta ao sair). conteúdo e frente são
    preenchidos com o fundo do botão para cobrir o que fica atrás deles */
 .card-icon .folder-front {
-  fill: white;
+  fill: var(--surface);
   transform-origin: 50% 100%;
   transition:
     fill 180ms ease,
@@ -276,7 +276,7 @@ body.finder-page {
 }
 
 .card-icon .folder-content {
-  fill: white;
+  fill: var(--surface);
   transition:
     fill 180ms ease,
     transform 300ms var(--ease-soft);
@@ -520,7 +520,7 @@ body.finder-page {
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: white;
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 22%),
     0 4px 12px rgb(30 42 80 / 10%);

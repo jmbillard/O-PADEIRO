@@ -467,8 +467,36 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Início
 	   ========================================================= */
 
+	// logo escolhida na configuração (aparência) no lugar do pãozinho
+	function applyLogo(theme) {
+		var logo = $('logo');
+		var loaf = logo.querySelector('.bar-loaf');
+		var img = logo.querySelector('.bar-logo-img');
+		var src = theme && theme.logo ? PAD_UTIL.decodeIcon(theme.logo) : null;
+
+		if (!src) {
+			if (img) img.remove();
+			loaf.style.display = '';
+			return;
+		}
+
+		if (!img) {
+			img = el('img', 'bar-logo-img');
+			img.alt = '';
+			logo.insertBefore(img, loaf);
+		}
+
+		img.src = src;
+		loaf.style.display = 'none';
+	}
+
 	async function init() {
 		buildTools();
+
+		document.addEventListener('pad-theme', function (e) {
+			applyLogo(e.detail);
+		});
+		if (window.PAD_THEME) applyLogo(PAD_THEME.current());
 
 		// ← → andam pela barra (logo, link e ferramentas)
 		PAD_KEYS.listNav({

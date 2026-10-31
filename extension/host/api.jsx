@@ -262,6 +262,7 @@ PADX.productions = function () {
 		organize: padReadOrganize(),
 		search: padReadSearch(),
 		links: padReadLinks(),
+		appearance: padReadAppearance(),
 		error: error
 	};
 };

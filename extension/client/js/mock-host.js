@@ -145,10 +145,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
 				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
+				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
 				})
 			};
+		},
+
+		appearance: function () {
+			var stored = JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null');
+
+			return { stamp: localStorage.getItem('pad.mock.appearance') || 'padrão', appearance: stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
 		},
 
 		barLinks: function () {
@@ -222,6 +229,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
 			}
 			if (a.organize) window.PAD_MOCK_LIST.organize = JSON.parse(JSON.stringify(a.organize));
+			if (a.appearance) {
+				if (!['accent', 'gradientStart', 'gradientEnd'].every(function (k) { return /^#[0-9a-f]{6}$/i.test(a.appearance[k]); })) throw new Error('#PAD_088 - aparência: cor inválida (use #rrggbb).');
+				localStorage.setItem('pad.mock.appearance', JSON.stringify(a.appearance));
+			}
 			if (a.links) {
 				var badLink = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
 
@@ -234,7 +245,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

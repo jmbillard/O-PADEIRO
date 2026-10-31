@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em sete abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar** e **busca**.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em oito abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **busca** e **aparência**.
 
 > 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, buscar → busca, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
@@ -154,6 +154,25 @@ a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
 - **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias*' lê o índice de novo.
 
 > 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
+
+<br>
+
+---
+
+<br>
+
+## 📍 aparência
+
+a aba **aparência** define o visual de todas as janelas do padeiro, para a equipe toda.
+
+- **modo** → claro, escuro ou automático (segue o sistema).
+- **fundo** → degradê ou sólido (a cor de destaque).
+- **cores** → a cor de **destaque** (botões, títulos, seleção) e as pontas do **degradê** (o fundo das janelas e da barra). os tons claros (seleção, avisos, bordas de foco) são calculados a partir do destaque. clique no quadradinho para escolher a cor ou digite o código (`#rrggbb`).
+- **fonte** → Inter (padrão), a do sistema, Helvetica / Arial, Segoe UI, Roboto, Georgia ou monoespaçada. a fonte precisa estar instalada no computador.
+- **logo da barra** → uma imagem no lugar do pãozinho (reduzida para caber, sem cortar; PNG com fundo transparente fica melhor). '*voltar ao pãozinho*' desfaz.
+- **restaurar a aparência padrão** → volta tudo ao visual de sempre.
+
+> 🚩 *obs:* enquanto você edita, só esta janela mostra a prévia; ao salvar, as outras janelas mudam em alguns segundos.
 
 <br>
 

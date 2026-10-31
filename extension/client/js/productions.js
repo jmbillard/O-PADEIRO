@@ -31,6 +31,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCA: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
+		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
+		savedAppearance: null,
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -156,7 +158,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// Imagem escolhida pelo usuário → PNG 24 x 24 (recorte central, sem distorcer).
-	function imageFileToIcon(path) {
+	// 'logo': a imagem inteira, sem cortar, dentro de 96 x 72 px (a logo da barra), com fundo transparente
+	function imageFileToIcon(path, logo) {
 		return new Promise(function (resolve, reject) {
 			var base64 = PAD_BRIDGE.readFileBase64(path);
 
@@ -168,6 +171,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			img.onload = function () {
 				var canvas = document.createElement('canvas');
 				var side = Math.min(img.width, img.height);
+
+				if (logo) {
+					var scale = Math.min(96 / img.width, 72 / img.height, 1);
+
+					canvas.width = Math.max(1, Math.round(img.width * scale));
+					canvas.height = Math.max(1, Math.round(img.height * scale));
+					canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+					return resolve(canvasToLiteral(canvas));
+				}
 
 				canvas.width = canvas.height = ICON_SIZE;
 				canvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, ICON_SIZE, ICON_SIZE);
@@ -286,8 +298,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	function appearanceForSave() {
+		return state.appearance ? Object.assign({}, state.appearance) : null;
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), appearance: appearanceForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -554,6 +570,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderOrganize();
 		renderSearch();
 		renderLinks();
+		renderAppearance();
 	}
 
 	function showUnavailable(message) {
@@ -1857,11 +1874,133 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Aparência
+	   ========================================================= */
+
+	function setAppearance(a) {
+		state.appearance = Object.assign({}, PAD_THEME.defaults, a || {});
+		state.savedAppearance = Object.assign({}, state.appearance);
+		renderAppearance();
+		PAD_THEME.apply(state.appearance);
+	}
+
+	// cada mudança vira prévia nesta janela; as outras mudam ao salvar
+	function changeAppearance(key, value) {
+		state.appearance[key] = value;
+		PAD_THEME.apply(state.appearance);
+		renderAppearance();
+		updateDirty();
+	}
+
+	function renderAppearance() {
+		var a = state.appearance;
+
+		if (!a) return;
+
+		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
+			Array.prototype.forEach.call(document.querySelectorAll('input[name="' + pair[0] + '"]'), function (radio) {
+				radio.checked = radio.value === a[pair[1]];
+				radio.disabled = !state.available;
+			});
+		});
+
+		Array.prototype.forEach.call(document.querySelectorAll('.app-color input[type="color"]'), function (input) {
+			var key = input.getAttribute('data-key');
+			var hex = document.querySelector('[data-hex="' + key + '"]');
+
+			input.value = a[key];
+			input.disabled = !state.available;
+			if (document.activeElement !== hex) hex.value = a[key];
+			hex.disabled = !state.available;
+		});
+
+		// fundo sólido: as pontas do degradê não valem
+		Array.prototype.forEach.call(document.querySelectorAll('.app-color[data-gradient]'), function (box) {
+			box.classList.toggle('is-off', a.background === 'solid');
+		});
+
+		$('app-font').value = a.font;
+		$('app-font').disabled = !state.available;
+		PAD_DROPDOWN.refresh($('app-font'));
+
+		var box = $('app-logo-box');
+		var logo = a.logo ? PAD_UTIL.decodeIcon(a.logo) : null;
+		var img = box.querySelector('img');
+
+		box.querySelector('.appearance-loaf').style.display = logo ? 'none' : '';
+		if (logo && !img) {
+			img = el('img');
+			img.alt = '';
+			box.appendChild(img);
+		}
+		if (img) {
+			if (logo) img.src = logo;
+			else img.remove();
+		}
+
+		['app-logo-pick', 'app-logo-reset', 'app-defaults'].forEach(function (id) {
+			$(id).disabled = !state.available;
+		});
+		$('app-logo-reset').hidden = !a.logo;
+	}
+
+	function bindAppearance() {
+		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
+			$(pair[0]).addEventListener('change', function (e) {
+				if (e.target.name === pair[0]) changeAppearance(pair[1], e.target.value);
+			});
+		});
+
+		Array.prototype.forEach.call(document.querySelectorAll('.app-color input[type="color"]'), function (input) {
+			input.addEventListener('input', function () {
+				changeAppearance(input.getAttribute('data-key'), input.value.toLowerCase());
+			});
+		});
+
+		Array.prototype.forEach.call(document.querySelectorAll('[data-hex]'), function (hex) {
+			hex.addEventListener('input', function () {
+				var v = hex.value.trim().toLowerCase();
+
+				if (/^#?[0-9a-f]{6}$/.test(v)) changeAppearance(hex.getAttribute('data-hex'), v.charAt(0) === '#' ? v : '#' + v);
+			});
+			hex.addEventListener('blur', renderAppearance);
+		});
+
+		PAD_DROPDOWN.enhance($('app-font'));
+		$('app-font').addEventListener('change', function () {
+			changeAppearance('font', this.value);
+		});
+
+		$('app-logo-pick').addEventListener('click', async function () {
+			var file = PAD_BRIDGE.pickFile('Selecione a logo da barra', ['png', 'jpg', 'jpeg']);
+
+			if (!file) return;
+
+			try {
+				changeAppearance('logo', await imageFileToIcon(file, true));
+			} catch (err) {
+				toast('error', err.message);
+			}
+		});
+
+		$('app-logo-reset').addEventListener('click', function () {
+			changeAppearance('logo', '');
+		});
+
+		$('app-defaults').addEventListener('click', function () {
+			state.appearance = Object.assign({}, PAD_THEME.defaults);
+			PAD_THEME.apply(state.appearance);
+			renderAppearance();
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
 	   Pedido de aba (2 cliques numa ferramenta da barra)
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search'];
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search', 'appearance'];
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -1907,6 +2046,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_08[45]/.test(message)) return 'organize';
 		if (/#PAD_086/.test(message)) return 'search';
 		if (/#PAD_087/.test(message)) return 'links';
+		if (/#PAD_088/.test(message)) return 'appearance';
 
 		return null;
 	}
@@ -1940,6 +2080,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setOrganize(res.organize);
 			setSearch(res.search);
 			setLinks(res.links);
+			setAppearance(res.appearance);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -2028,7 +2169,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), appearance: appearanceForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -2037,6 +2178,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.organize) setOrganize(res.organize);
 			if (res.search) setSearch(res.search);
 			if (res.links) setLinks(res.links);
+			setAppearance(res.appearance || state.appearance);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
@@ -2149,6 +2291,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindOrganize();
 		bindSearch();
 		bindLinks();
+		bindAppearance();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="css/panel.css">
 	<link rel="stylesheet" href="css/loader.css">
 	<link rel="stylesheet" href="css/productions.css">
+	<link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body class="prods-page">
@@ -22,6 +23,7 @@
 				<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 				<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
 				<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCA</button>
+				<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 			</div>
 			<div class="prods-tools">
 				<button type="button" class="icon-button" id="btn-reload" title="Recarregar a configuração do arquivo" aria-label="Recarregar a configuração do arquivo">
@@ -196,6 +198,52 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-categories">atualizar as categorias pelo webhook</button>
 			</div>
 
+			<!-- aba APARÊNCIA (o tema de todas as janelas) -->
+			<div class="cfg-pane drives-pane" id="pane-appearance" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">modo</p>
+				<div class="log-modes" id="app-mode" role="radiogroup" aria-label="Modo">
+					<label class="log-radio"><input type="radio" name="app-mode" value="light"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">claro</span></label>
+					<label class="log-radio"><input type="radio" name="app-mode" value="dark"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">escuro</span></label>
+					<label class="log-radio" title="segue o modo do sistema"><input type="radio" name="app-mode" value="auto"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">automático</span></label>
+				</div>
+
+				<p class="cfg-title prods-section-title">fundo</p>
+				<div class="log-modes" id="app-bg" role="radiogroup" aria-label="Fundo">
+					<label class="log-radio"><input type="radio" name="app-bg" value="gradient"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">degradê</span></label>
+					<label class="log-radio"><input type="radio" name="app-bg" value="solid"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">sólido (a cor de destaque)</span></label>
+				</div>
+
+				<p class="cfg-title prods-section-title">cores</p>
+				<div class="app-colors">
+					<label class="app-color"><input type="color" data-key="accent"><span class="app-color-text"><strong>destaque</strong><input type="text" class="cfg-input" data-hex="accent" spellcheck="false" maxlength="7" aria-label="cor de destaque"></span></label>
+					<label class="app-color" data-gradient><input type="color" data-key="gradientStart"><span class="app-color-text"><strong>início do degradê</strong><input type="text" class="cfg-input" data-hex="gradientStart" spellcheck="false" maxlength="7" aria-label="início do degradê"></span></label>
+					<label class="app-color" data-gradient><input type="color" data-key="gradientEnd"><span class="app-color-text"><strong>fim do degradê</strong><input type="text" class="cfg-input" data-hex="gradientEnd" spellcheck="false" maxlength="7" aria-label="fim do degradê"></span></label>
+				</div>
+				<div class="app-preview" id="app-preview" aria-hidden="true"><span class="app-preview-chip">botão</span><span class="app-preview-text">o fundo das janelas, a barra e os destaques</span></div>
+
+				<p class="cfg-title prods-section-title">fonte</p>
+				<span class="select app-font"><select id="app-font" aria-label="Fonte">
+					<option value="inter">Inter (padrão)</option>
+					<option value="system">fonte do sistema</option>
+					<option value="helvetica">Helvetica / Arial</option>
+					<option value="segoe">Segoe UI</option>
+					<option value="roboto">Roboto</option>
+					<option value="georgia">Georgia (serifada)</option>
+					<option value="mono">monoespaçada</option>
+				</select></span>
+				<p class="cfg-hint">a fonte precisa estar instalada no computador; sem ela, vale a do sistema.</p>
+
+				<p class="cfg-title prods-section-title">logo da barra</p>
+				<div class="app-logo">
+					<div class="app-logo-box" id="app-logo-box"><svg class="appearance-loaf" viewBox="0 0 48 32" aria-hidden="true"><path d="M7 24C7 12.6 14.6 5 24 5s17 7.6 17 19v3a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z" fill="#f2b45f" /><path d="M7.6 23.2h32.8M18.2 10.8l1.4 4.2M23.4 9.4l1.3 4.6M28.6 10.8l1.4 4.2" fill="none" stroke="#9c5a1c" stroke-width="1.6" stroke-linecap="round" /></svg></div>
+					<button type="button" class="button button-secondary button-compact" id="app-logo-pick">escolher imagem</button>
+					<button type="button" class="button button-secondary button-compact" id="app-logo-reset">voltar ao pãozinho</button>
+				</div>
+				<p class="cfg-hint">a imagem é reduzida para caber na barra (até 96 x 72 px), sem cortar. PNG com fundo transparente fica melhor.</p>
+
+				<button type="button" class="button button-secondary button-compact add-button" id="app-defaults">restaurar a aparência padrão</button>
+			</div>
+
 			<div class="action-bar is-anchored prods-bar">
 				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
@@ -215,6 +263,7 @@
 	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
 	<script src="js/sortable.js"></script>

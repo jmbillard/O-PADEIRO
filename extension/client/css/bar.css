@@ -325,7 +325,7 @@ body.bar-page {
    contrário quando o mouse sai, como as transições dos outros ícones) */
 .lens-letter {
   fill: currentcolor;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui, Inter), ui-sans-serif, system-ui, sans-serif;
   font-size: 23px;
   font-weight: 800;
   opacity: 0;
@@ -455,7 +455,7 @@ body.bar-page {
   padding: 9px 13px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: white;
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 22%),
     0 4px 12px rgb(30 42 80 / 10%);

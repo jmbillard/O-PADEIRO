@@ -13,7 +13,7 @@ body.converter-page {
   min-height: 0;
   padding: 0;
   overflow: hidden;
-  background: white;
+  background: var(--surface);
 }
 
 .converter {

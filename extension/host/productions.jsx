@@ -67,6 +67,7 @@ PADX.saveProductions = function (a) {
 	var organize = a.organize ? padCleanOrganize(a.organize) : null;
 	var search = a.search ? padCleanSearch(a.search) : null;
 	var links = a.links ? padCleanLinks(a.links) : null;
+	var appearance = a.appearance ? padCleanAppearance(a.appearance) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -80,7 +81,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -88,7 +89,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -718,4 +719,74 @@ PADX.requestedConfigTab = function () {
 	} catch (err) {
 		return { tab: null, stamp: 0 };
 	}
+};
+
+/*
+
+---------------------------------------------------------------
+> aparência (aba APARÊNCIA da configuração)
+---------------------------------------------------------------
+
+'APPEARANCE' no O_PADEIRO_config.json: o tema de todas as janelas (aplicado por client/js/theme.js).
+  mode          → light, dark ou auto (segue o sistema)
+  background    → gradient (degradê) ou solid (a cor de destaque)
+  accent        → cor de destaque (#rrggbb); gradientStart / gradientEnd → as pontas do degradê
+  font          → inter, system, helvetica, segoe, roboto, georgia ou mono
+  logo          → PNG (literal de string binária, como o ícone das produções) no lugar do pãozinho; vazio = o pãozinho
+
+*/
+
+var PAD_DEFAULT_APPEARANCE = {
+	mode: 'light',
+	background: 'gradient',
+	accent: '#5184f8',
+	gradientStart: '#67b7ff',
+	gradientEnd: '#5649e9',
+	font: 'inter',
+	logo: ''
+};
+
+// Valida e normaliza a aparência vinda do painel. Lança Error com a mensagem.
+function padCleanAppearance(o) {
+	var d = PAD_DEFAULT_APPEARANCE;
+	var clean = {
+		mode: /^(light|dark|auto)$/.test(o.mode) ? o.mode : d.mode,
+		background: o.background == 'solid' ? 'solid' : 'gradient',
+		accent: padTrim(o.accent).toLowerCase(),
+		gradientStart: padTrim(o.gradientStart).toLowerCase(),
+		gradientEnd: padTrim(o.gradientEnd).toLowerCase(),
+		font: /^(inter|system|helvetica|segoe|roboto|georgia|mono)$/.test(o.font) ? o.font : d.font,
+		logo: o.logo ? String(o.logo) : ''
+	};
+	var names = { accent: 'cor de destaque', gradientStart: 'início do degradê', gradientEnd: 'fim do degradê' };
+
+	for (var key in names) {
+		if (!/^#[0-9a-f]{6}$/.test(clean[key])) throw new Error('#PAD_088 - aparência: ' + names[key] + ' inválida (use #rrggbb).');
+	}
+
+	return clean;
+}
+
+function padReadAppearance() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.APPEARANCE ? padCleanAppearance(data.APPEARANCE) : PAD_DEFAULT_APPEARANCE;
+	} catch (err) {
+		return PAD_DEFAULT_APPEARANCE;
+	}
+}
+
+// O tema, com a data do arquivo (as janelas só reaplicam quando ele muda).
+PADX.appearance = function () {
+	var file = padConfigFile();
+	var stamp = 0;
+
+	try {
+		stamp = file && file.exists ? file.modified.getTime() : 0;
+	} catch (err) { }
+
+	return { stamp: stamp, appearance: padReadAppearance() };
 };
