@@ -95,6 +95,49 @@ PADX.makerReady = function () {
 	return { ok: true };
 };
 
+// saveFrameToPng grava o arquivo em segundo plano e volta antes de terminar: ler cedo demais dava um
+// preview pela metade. Espera (até ~8 s) o PNG estar completo: terminar no bloco IEND e com o tamanho
+// parado entre duas leituras.
+function padPngComplete(path) {
+	var file = new File(path);
+
+	if (!file.exists || file.length < 12) return false;
+
+	try {
+		file.encoding = 'BINARY';
+		file.open('r');
+		file.seek(file.length - 12);
+
+		var tail = file.read(12);
+
+		file.close();
+
+		return tail.indexOf('IEND') >= 0;
+	} catch (err) {
+		try {
+			file.close();
+		} catch (e) { }
+
+		return false;
+	}
+}
+
+function padWaitForPng(path) {
+	var lastSize = -1;
+
+	for (var w = 0; w < 80; w++) {
+		var file = new File(path);
+		var size = file.exists ? file.length : -1;
+
+		if (size > 0 && size === lastSize && padPngComplete(path)) return true;
+
+		lastSize = size;
+		$.sleep(100);
+	}
+
+	return padPngComplete(path);
+}
+
 // Salva o frame atual da comp ativa como preview e define a comp principal / tempo de referência.
 PADX.makerCapture = function () {
 	var comp = app.project.activeItem;
@@ -108,12 +151,7 @@ PADX.makerCapture = function () {
 
 	comp.saveFrameToPng(comp.time, previewFile);
 
-	// saveFrameToPng grava o arquivo em segundo plano: espera ele aparecer (até ~3 s)
-	for (var w = 0; w < 30 && !previewFile.exists; w++) {
-		$.sleep(100);
-	}
-
-	PADX_makerPreview = previewFile.exists ? previewFile.fsName : null;
+	PADX_makerPreview = padWaitForPng(previewFile.fsName) ? previewFile.fsName : null;
 
 	return {
 		compId: comp.id,

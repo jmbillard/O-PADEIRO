@@ -17,6 +17,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/criador.md';
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
+	// dicas padrão (as do padeiro antigo, defaultTemplateConfigObj.tip no host)
+	var DEFAULT_TIP = 'coloque aqui as instruções de preenchimento deste template.\nex:\ndigite o texto em 1 ou 2 linhas.\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.';
 	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	var METHODS = [
@@ -756,7 +758,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	function resetForm() {
 		$('f-config').value = '';
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
-		$('f-tip').value = '';
+		$('f-tip').value = DEFAULT_TIP;
 		$('f-prefix').value = 'TARJA';
 		$('f-case').value = 'upperCase';
 		PAD_DROPDOWN.refresh($('f-case'));
