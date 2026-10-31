@@ -50,6 +50,39 @@ function getProjectFonts() {
 	return fonts;
 }
 
+// Nome do arquivo copiado. As fontes do Adobe Fonts ficam em arquivos ocultos e numerados
+// ('.../CoreSync/plugins/livetype/.r/.34534.otf'): nesse caso (ou sem extensão de fonte), o arquivo leva
+// o nome PostScript da fonte e a extensão do formato de verdade (lido no começo do arquivo).
+function fontCollectName(file, postScriptName) {
+	var name = File.decode(file.name);
+	var path = file.fsName.replace(/\\/g, '/');
+
+	if (!/^\./.test(name) && !/\/CoreSync\/plugins\/livetype\//i.test(path) && /\.(ttf|otf|ttc|otc)$/i.test(name)) return name;
+
+	return String(postScriptName || 'fonte').replace(/[\\\/:*?"<>|]+/g, '_') + fontFileExtension(file);
+}
+
+// '.otf' (CFF: começa com 'OTTO'), '.ttc' (coleção: 'ttcf') ou '.ttf' (TrueType).
+function fontFileExtension(file) {
+	var magic = '';
+
+	try {
+		file.encoding = 'BINARY';
+		file.open('r');
+		magic = file.read(4);
+		file.close();
+	} catch (err) {
+		try {
+			file.close();
+		} catch (e) { }
+	}
+
+	if (magic === 'OTTO') return '.otf';
+	if (magic === 'ttcf') return '.ttc';
+
+	return '.ttf';
+}
+
 // Copia os arquivos das fontes usadas no projeto para 'savePath'.
 // Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada.
 function fontCollect(savePath) {
@@ -72,9 +105,7 @@ function fontCollect(savePath) {
 		// estilos diferentes podem vir do mesmo arquivo
 		if (copiedFiles[fontSrcFile.fsName]) continue;
 
-		var fontFileName = fontSrcFile.displayName;
-
-		if (!fontFileName.match(/(\.ttf|\.otf)$/i)) fontFileName = 'cc_' + fonts[f].name + '.ttf';
+		var fontFileName = fontCollectName(fontSrcFile, fonts[f].name);
 
 		if (fontSrcFile.copy(new File(savePath + '/' + fontFileName))) {
 			copiedFiles[fontSrcFile.fsName] = true;
