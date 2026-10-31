@@ -102,6 +102,10 @@ ferramentas disponíveis em ordem:
 `◖ clique esquerdo` → seleciona a pasta da produção atual.
   >
 
+- **ATUALIZAR** (ícone ao lado do menu de produção):\
+`◖ clique esquerdo` → abre o instalador da nova versão do padeiro ('*INSTALAR O PADEIRO.jsx*', na mesma pasta da rede de onde esta versão é carregada).
+  > *esta é a versão LEGACY do padeiro. o instalador substitui esta versão pela nova; depois da instalação, reinicie o After Effects.*
+
 - **O PADEIRO**:\
 `◖ clique esquerdo` → abre a interface de templates.\
 `◗ clique direito` → abre a interface do criador de templates.
