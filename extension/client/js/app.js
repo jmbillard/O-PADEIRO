@@ -198,8 +198,71 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Produções
 	   ========================================================= */
 
-	// A produção é escolhida na barra principal: ela grava a escolha em um arquivo
-	// compartilhado e o painel acompanha (host: PADX.selectedProduction).
+	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions'; // janela de configuração (produções, logs, drives)
+
+	// A produção é escolhida no rodapé deste painel: a escolha fica num arquivo compartilhado
+	// (host: PADX.setProduction / selectedProduction), que o log e os outros painéis também leem.
+	function renderProductionSelect() {
+		var select = $('production');
+		var current = state.productions[state.production];
+
+		select.textContent = '';
+
+		state.productions.forEach(function (prod) {
+			var option = el('option', null, prod.name);
+
+			option.value = prod.name;
+			select.appendChild(option);
+		});
+
+		if (!state.productions.length) select.appendChild(el('option', null, 'sem produções'));
+
+		select.disabled = !state.productions.length;
+		if (current) select.value = current.name;
+		PAD_DROPDOWN.refresh(select);
+
+		var trigger = select._dropdownTrigger;
+
+		if (trigger) trigger.title = (current ? 'produção: ' + current.name + '\n\n' : '') + 'abra e digite para filtrar';
+	}
+
+	// Troca a produção mostrada (escolhida aqui ou em outro painel).
+	async function switchProduction(index) {
+		state.production = index;
+		state.selected = null;
+		state.info = null;
+		state.run = null;
+		setExpanded(false);
+		clearNotices();
+		pickerMessage();
+		updateSearchPlaceholder();
+		renderProductionSelect();
+		await loadTree();
+	}
+
+	async function onProductionChange() {
+		var select = $('production');
+		var index = state.productions.findIndex(function (prod) {
+			return prod.name === select.value;
+		});
+
+		if (index < 0 || index === state.production) return;
+
+		// no meio de um preenchimento a troca espera: volta para a produção atual
+		if (state.busy || runIsOpen() || state.editor) {
+			renderProductionSelect();
+			pickerMessage('error', 'termine (ou feche) o preenchimento antes de trocar de produção.');
+			return;
+		}
+
+		try {
+			await call('setProduction', { name: select.value });
+		} catch (err) {
+			pickerMessage('error', err.message);
+		}
+
+		await switchProduction(index);
+	}
 	async function loadProductions() {
 		try {
 			var res = await call('productions', {});
@@ -226,6 +289,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.production = found >= 0 ? found : 0;
 		updateSearchPlaceholder();
+		renderProductionSelect();
 		await loadTree();
 	}
 
@@ -259,18 +323,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (same) {
 			state.production = index;
+			renderProductionSelect();
 			return;
 		}
 
-		state.production = index >= 0 ? index : 0;
-		state.selected = null;
-		state.info = null;
-		state.run = null;
-		setExpanded(false);
-		clearNotices();
-		pickerMessage();
-		updateSearchPlaceholder();
-		await loadTree();
+		await switchProduction(index >= 0 ? index : 0);
 	}
 
 	async function watchProduction() {
@@ -306,15 +363,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (index < 0) return;
 
-		state.production = index;
-		state.selected = null;
-		state.info = null;
-		state.run = null;
-		setExpanded(false);
-		clearNotices();
-		pickerMessage();
-		updateSearchPlaceholder();
-		await loadTree();
+		await switchProduction(index);
 	}
 
 	/* =========================================================
@@ -1747,6 +1796,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (action === 'refresh') await refreshTree();
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
+		if (action === 'config') PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
 		if (action === 'reload') location.reload();
 	}
 
@@ -2023,6 +2073,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		bindEvents();
 		PAD_DROPDOWN.enhance($('render-template'));
+		PAD_DROPDOWN.enhance($('production'));
+		$('production').addEventListener('change', onProductionChange);
 
 		setTimeout(function () {
 			document.body.classList.add('motion-ready');

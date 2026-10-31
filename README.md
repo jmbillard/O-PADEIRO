@@ -16,10 +16,10 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | painel | para que serve |
 | --- | --- |
 | **INSTALAR O PADEIRO.jsx** | instalar, atualizar ou remover o padeiro neste computador ([abaixo](#-instalação)) |
-| **O PADEIRO** | a barra principal: produção, ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
+| **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO produções** | editar a lista de produções da equipe → [documentação](docs/producoes.md) |
+| **O PADEIRO configuração** | produções, logs e drives da rede da equipe → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -94,8 +94,6 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas.
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
-- **produção** → escolhe a produção atual (a pasta de templates usada pelo painel de templates).\
-  `◖ clique DUPLO` no ícone da produção → abre o editor de produções.
 - **corrente** → abre a planilha de apontamento de projetos.
 - **templates**\
   `◖` → abre o painel de templates.\
@@ -120,7 +118,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • a versão do padeiro aparece embaixo do pãozinho.\
-> • a produção escolhida vale para todos os painéis, que acompanham a troca na hora.
+> • a produção é escolhida no rodapé do painel de templates e vale para todos os painéis, que acompanham a troca na hora.
 
 <br>
 
@@ -202,7 +200,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🗂️ produções](docs/producoes.md) | a lista de produções compartilhada |
+| [🗂️ configuração](docs/producoes.md) | produções, logs e drives da rede (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -274,7 +272,10 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
 | `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
 | `#PAD_077` | criador: o preview .mp4 não foi gerado |
-| `#PAD_078` | produções: endereço do webhook do log inválido (vazio, sem http(s):// ou com espaços/aspas) |
+| `#PAD_078` | configuração: endereço do webhook do log inválido (vazio, sem http(s):// ou com espaços/aspas) |
+| `#PAD_079` | configuração: letra de drive inválida ou repetida |
+| `#PAD_080` | configuração: o caminho do drive não é de rede (`//servidor/share/...`) |
+| `#PAD_081` | configuração: volume sem nome, repetido ou sem servidor |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

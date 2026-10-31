@@ -148,49 +148,6 @@ body.bar-page {
 }
 
 /* produção */
-.bar-prod {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
-}
-
-.bar-prod-icon {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-  cursor: help;
-  object-fit: cover;
-}
-
-.bar-prod .select {
-  width: 150px;
-  min-width: 70px;
-}
-
-.bar-prod .dropdown-trigger {
-  min-height: 34px;
-  border-color: rgb(255 255 255 / 34%);
-  background: rgb(255 255 255 / 14%);
-  color: white;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
-}
-
-.bar-prod .dropdown-trigger:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 70%);
-  background: rgb(255 255 255 / 24%);
-}
-
-.bar-prod .dropdown-trigger:focus-visible,
-.bar-prod .dropdown-trigger[aria-expanded="true"] {
-  border-color: white;
-  box-shadow: 0 0 0 4px rgb(255 255 255 / 16%);
-}
-
-.bar-prod .select::after {
-  border-color: rgb(255 255 255 / 80%);
-}
-
 /* botões: só o ícone e o rótulo (sem caixa) */
 .bar-icon,
 .bar-btn {
@@ -473,13 +430,8 @@ body.bar-page {
     justify-content: center;
   }
 
-  .bar-pin,
-  .bar-prod {
+  .bar-pin {
     flex-direction: column;
-  }
-
-  .bar-prod .select {
-    width: 100%;
   }
 
   .bar-tools {
@@ -502,29 +454,6 @@ body.bar-page {
   .bar-pin {
     flex-direction: row;
     flex-wrap: wrap;
-  }
-}
-
-/* barra vertical estreita (até 100 px): o seletor de produção não cabe com o nome; fica só a seta,
-   num botão redondo (o nome aparece na dica e na lista) */
-@media (max-aspect-ratio: 1/1) and (max-width: 100px) {
-  .bar-prod .select {
-    width: 34px;
-    min-width: 0;
-  }
-
-  .bar-prod .dropdown-trigger {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .bar-prod .dropdown-label {
-    display: none;
-  }
-
-  .bar-prod .select::after {
-    right: 50%;
-    transform: translate(50%, -70%) rotate(45deg);
   }
 }
 

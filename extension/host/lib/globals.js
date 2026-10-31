@@ -23,6 +23,17 @@ UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX"] = "Y:";
 
 UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_p"] = "P:";
 
+// Volumes (shares) que não têm letra de drive: share → servidor, para converter /Volumes/SHARE em //servidor/SHARE.
+var PAD_SHARE_SERVERS = {
+	VFX: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
+	cdesign: 'egcdesign01.servicos.corp.tvglobo.com.br',
+	EDIT_IN_PLACE: 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
+	promo_ber: '10.193.48.13'
+};
+
+// Servidor usado quando o share não está em nenhum dos mapas.
+var PAD_DEFAULT_SERVER = 'vfx-ml-sp.servicos.corp.tvglobo.com.br';
+
 var renameRefArray = [
 	(RODAPE = {
 		prefix: 'RDP',

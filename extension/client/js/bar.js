@@ -17,7 +17,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
-	var PRODUCTIONS_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
@@ -369,117 +368,21 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* =========================================================
-	   Produção
-	   ========================================================= */
-
-	var state = { productions: [], stamp: 0 };
-
-	function updateProdIcon(name) {
-		var prod = state.productions.filter(function (p) {
-			return p.name === name;
-		})[0];
-		var icon = $('prod-icon');
-		var url = prod ? PAD_UTIL.decodeIcon(prod.icon) : null;
-
-		icon.hidden = !url;
-		icon.title = prod ? prod.name + '\n\ndois cliques: editar a lista de produções' : 'dois cliques: editar a lista de produções';
-		if (url) icon.src = url;
-
-		// na barra vertical estreita o seletor mostra só a seta: o nome da produção vai na dica
-		var trigger = $('production')._dropdownTrigger;
-
-		if (trigger) trigger.title = (prod ? prod.name + '\n\n' : '') + 'abra e digite para filtrar';
-	}
-
-	async function loadProductions() {
-		var select = $('production');
-		var chosen = null;
-
-		try {
-			var list = await call('productions', {});
-
-			state.productions = list.productions;
-			state.stamp = list.stamp;
-			chosen = (await call('selectedProduction')).name;
-
-			if (list.error) toast('error', list.error, 9000);
-		} catch (err) {
-			toast('error', err.message);
-		}
-
-		select.textContent = '';
-
-		state.productions.forEach(function (prod) {
-			var option = el('option', null, prod.name);
-
-			option.value = prod.name;
-			select.appendChild(option);
-		});
-
-		if (!state.productions.length) {
-			select.appendChild(el('option', null, 'sem produções'));
-			select.disabled = true;
-		} else {
-			select.disabled = false;
-			select.value = state.productions.some(function (p) { return p.name === chosen; }) ? chosen : state.productions[0].name;
-		}
-
-		PAD_DROPDOWN.refresh(select);
-		updateProdIcon(select.value);
-	}
-
-	// Acompanha mudanças feitas por fora (lista editada, produção escolhida em outro painel).
-	async function watchProduction() {
-		if (document.hidden) return;
-
-		try {
-			var selected = await call('selectedProduction');
-			var name = selected.name;
-			var select = $('production');
-
-			// a lista foi editada (editor, script ou outra pessoa) ou voltou a ficar acessível: lê de novo
-			if (selected.stamp !== state.stamp) return loadProductions();
-
-			if (name && name !== select.value && state.productions.some(function (p) { return p.name === name; })) {
-				select.value = name;
-				PAD_DROPDOWN.refresh(select);
-				updateProdIcon(name);
-			}
-		} catch (err) { }
-	}
-
-	/* =========================================================
 	   Início
 	   ========================================================= */
 
 	async function init() {
 		buildTools();
 
-		PAD_DROPDOWN.enhance($('production'));
-
-		// ← → andam pela barra (logo, produção, link e ferramentas)
+		// ← → andam pela barra (logo, link e ferramentas)
 		PAD_KEYS.listNav({
 			root: $('bar'),
-			items: '.bar-logo, .bar-prod .dropdown-trigger, .bar-icon, .bar-btn',
+			items: '.bar-logo, .bar-icon, .bar-btn',
 			horizontal: true
-		});
-
-		$('production').addEventListener('change', async function () {
-			updateProdIcon(this.value);
-
-			try {
-				await call('setProduction', { name: this.value });
-			} catch (err) {
-				toast('error', err.message);
-			}
 		});
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
-		});
-
-		$('prod-icon').addEventListener('dblclick', function () {
-			PAD_BRIDGE.openPanel(PRODUCTIONS_PANEL_ID);
 		});
 
 		try {
@@ -498,11 +401,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			return;
 		}
-
-		await loadProductions();
-
-		setInterval(watchProduction, 3000);
-		window.addEventListener('focus', watchProduction);
 	}
 
 	init();

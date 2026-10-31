@@ -14,14 +14,18 @@
 <body class="prods-page">
 	<main class="prods" id="prods">
 		<header class="prods-top">
-			<p class="eyebrow">configuração</p>
+			<div class="tabs" id="tabs" role="tablist" aria-label="Configuração">
+				<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">PRODUÇÕES</button>
+				<button type="button" class="tab" role="tab" data-tab="logs" aria-selected="false">LOGS</button>
+				<button type="button" class="tab" role="tab" data-tab="drives" aria-selected="false">DRIVES</button>
+			</div>
 			<div class="picker-search prods-filter">
 				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
 				<input type="search" id="filter" placeholder="filtrar produções" autocomplete="off" spellcheck="false" aria-label="Filtrar produções">
 				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar filtro" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 			</div>
 			<div class="prods-tools">
-				<button type="button" class="icon-button" id="btn-reload" title="Recarregar a lista do arquivo" aria-label="Recarregar a lista do arquivo">
+				<button type="button" class="icon-button" id="btn-reload" title="Recarregar a configuração do arquivo" aria-label="Recarregar a configuração do arquivo">
 					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
 				</button>
 				<details class="actions-menu header-menu" id="app-menu">
@@ -35,6 +39,8 @@
 		</header>
 
 		<section class="prods-sheet">
+			<!-- aba PRODUÇÕES -->
+			<div class="cfg-pane" id="pane-prods" role="tabpanel">
 			<p class="cfg-title prods-section-title">lista de produções</p>
 
 			<!-- "+ nova produção" entra no fim da lista (render), como o "+ novo output" -->
@@ -48,8 +54,11 @@
 				</div>
 			</div>
 
-			<div class="prods-log" id="log-box">
-				<p class="cfg-title prods-log-title">logs</p>
+			</div>
+
+			<!-- aba LOGS -->
+			<div class="cfg-pane prods-log" id="pane-logs" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">registro de uso</p>
 				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
 					<label class="log-radio" title="cada preenchimento é enviado para o webhook abaixo"><input type="radio" name="log-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
 					<label class="log-radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção"><input type="radio" name="log-mode" value="csv"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">CSV por produção</span></label>
@@ -63,6 +72,26 @@
 				<p class="cfg-hint" id="log-hint"></p>
 			</div>
 
+			<!-- aba DRIVES -->
+			<div class="cfg-pane drives-pane" id="pane-drives" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">drives da rede</p>
+				<p class="cfg-hint">a letra do Windows e o caminho de rede que ela representa. o padeiro usa este mapa para converter caminhos entre Windows e Mac (conversor, busca e caminhos dos templates).</p>
+				<div class="drive-rows" id="drive-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-drive">+ novo drive</button>
+
+				<p class="cfg-title prods-section-title">volumes sem letra</p>
+				<p class="cfg-hint">volumes montados no Mac (/Volumes/NOME) que não têm letra no Windows: o nome do volume e o servidor onde ele está.</p>
+				<div class="drive-rows" id="share-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-share">+ novo volume</button>
+
+				<p class="cfg-title prods-section-title">servidor padrão</p>
+				<div class="has-field-icon">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>
+					<input type="text" class="cfg-input" id="default-server" placeholder="servidor.empresa.com" spellcheck="false" autocomplete="off" aria-label="Servidor padrão">
+				</div>
+				<p class="cfg-hint">usado quando o volume não está em nenhuma das listas acima.</p>
+			</div>
+
 			<div class="action-bar is-anchored prods-bar">
 				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
@@ -71,7 +100,7 @@
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
 				</button>
 				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
-				<button type="button" class="button button-primary" id="btn-save">Salvar lista</button>
+				<button type="button" class="button button-primary" id="btn-save">Salvar</button>
 			</div>
 		</section>
 

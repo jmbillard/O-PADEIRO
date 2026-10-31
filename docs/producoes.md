@@ -1,29 +1,31 @@
-# 🗂️ produções
+# 🗂️ configuração
 
 [← O PADEIRO](../README.md)
 
-o painel **O PADEIRO produções**: a lista de produções da equipe.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em três abas: **produções**, **logs** e **drives**. tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
+
+## 📍 produções
 
 uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
 
-a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config.json`, na pasta do padeiro na rede. quando alguém muda a lista, a barra e os painéis de todo mundo atualizam sozinhos.
+a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config.json`, na pasta do padeiro na rede. quando alguém muda a lista, os painéis de todo mundo atualizam sozinhos.
 
-> 📟 *editor de produções* (`◖ clique DUPLO` no ícone da produção, na barra):
+> 📟 *aba produções*:
 >
 > ![editor de produções](images/producoes.webp)
 
 1. clique em '*+ nova produção*'.
 2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). o **×** no mesmo campo exclui a produção.
-3. clique em '*Salvar lista*' (ou `Ctrl/Cmd+S`).
+3. clique em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
 - **filtrar** → mostra só as produções com o termo no nome ou no caminho.
-- **importar / exportar** (os botões com setas, no canto inferior esquerdo) → lê ou grava uma lista completa, com os ícones.
-- **recarregar** → lê a lista de novo, descartando o que não foi salvo.
+- **importar / exportar** (os botões com setas, no canto inferior esquerdo, só nesta aba) → lê ou grava uma lista completa, com os ícones.
+- **recarregar** → lê a configuração de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 
 > 🚩 *obs:*\
-> • a ordem da lista é a do menu da barra: arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
+> • a ordem da lista é a do seletor de produção (no rodapé do painel de templates): arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
 > • o caminho do arquivo da lista aparece no fim da lista de produções.\
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
@@ -37,7 +39,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 ## 📍 logs
 
-na parte de baixo do editor, **logs** define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto. vale para a equipe toda e é gravado junto com a lista, em '*Salvar lista*'.
+a aba **logs** define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
 
 | opção | o que faz |
 | --- | --- |
@@ -56,11 +58,29 @@ na parte de baixo do editor, **logs** define onde o padeiro registra cada preenc
 
 <br>
 
+## 📍 drives
+
+a aba **drives** é o mapa da rede que o padeiro usa para converter caminhos entre Windows e Mac (conversor, busca de caminhos e os caminhos dos templates). vem preenchida com o mapa de sempre; outra equipe, com outros servidores, ajusta aqui.
+
+- **drives da rede** → a letra do Windows e o caminho de rede que ela representa (`//servidor/share/pasta`). ex: `L:` → `//vfx-ml-sp.../VFX/imagem/drive_l`: `L:\PROMO\x` vira `//vfx-ml-sp.../VFX/imagem/drive_l/PROMO/x` (e `/Volumes/drive_l/PROMO/x` no Mac).
+- **volumes sem letra** → volumes montados no Mac (`/Volumes/NOME`) que não têm letra no Windows: o nome do volume e o servidor onde ele está.
+- **servidor padrão** → usado quando o volume não está em nenhuma das listas.
+
+> 🚩 *obs:*\
+> • a letra pode ser digitada com ou sem `:`; caminhos com `\` são convertidos para `/` ao salvar.\
+> • os painéis passam a usar o mapa novo em alguns segundos, sem reiniciar o After Effects.
+
+<br>
+
+---
+
+<br>
+
 ## 📍 teclado
 
 | tecla | o que faz |
 | --- | --- |
-| `Ctrl/Cmd+S` | salva a lista |
+| `Ctrl/Cmd+S` | salva a configuração |
 | `Ctrl/Cmd+F` | foca o filtro |
 | `↑` `↓` (em um campo) | vão para o mesmo campo da linha de cima / de baixo |
 | `Esc` | limpa o filtro |

@@ -178,7 +178,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO produções</Menu>
+					<Menu>O PADEIRO configuração</Menu>
 					<Geometry>
 						<Size>
 							<Width>860</Width>

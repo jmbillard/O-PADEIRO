@@ -4,7 +4,7 @@
 
 o painel **O PADEIRO templates**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida na barra. a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
 
 > 📟 *lista de templates:*
 >
@@ -28,7 +28,8 @@ o painel de templates mostra os templates da produção escolhida na barra. a ja
 - **atualizar** → lê a pasta de templates de novo (com o loader).
 - **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
-- **⋯** (canto direito, embaixo) → ajuda (esta página) e recarregar o painel.
+- **produção** (no rodapé, à esquerda do **⋯**) → escolhe a produção: a pasta de templates mostrada. a escolha vale para os outros painéis (e para o log). no meio de um preenchimento a troca espera.
+- **⋯** (canto direito, embaixo) → configuração (produções, logs e drives), ajuda (esta página) e recarregar o painel.
 - **total** (acima da busca) → quantos templates a produção tem (com uma busca, quantos foram encontrados).
 - `◖ clique` no template selecionado (ou no fundo da lista, ou `Esc`) → desmarca o template.
 - `◖ clique DUPLO` no template → importa o template para o projeto, sem preencher.

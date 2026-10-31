@@ -31,8 +31,8 @@ body.prods-page {
   padding: 2px 0 14px 5px;
 }
 
-.prods-top .eyebrow {
-  margin: 0;
+.prods-top .tabs {
+  flex: 0 0 auto;
 }
 
 .prods-tools {
@@ -352,10 +352,9 @@ body.prods-page {
   display: none;
 }
 
-@media (max-width: 460px) {
-  .prods-top .eyebrow {
-    display: none;
-  }
+/* o filtro só vale para a aba de produções */
+.prods-filter[hidden] {
+  display: none;
 }
 
 .prods-filter .picker-clear {
@@ -387,12 +386,70 @@ body.prods-page {
 }
 
 /* logs: divisor e escolha de onde gravar o uso */
-.prods-log {
+/* abas da configuração: cada uma ocupa a folha branca e rola sozinha */
+.cfg-pane {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.cfg-pane[hidden] {
+  display: none;
+}
+
+.prods-log,
+.drives-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px 18px;
+  overflow-y: auto;
+}
+
+.drives-pane .prods-section-title {
+  margin-top: 10px;
+  padding: 16px 0 0;
+}
+
+.drives-pane .prods-section-title:first-child,
+.prods-log .prods-section-title {
+  margin-top: 0;
+  padding: 16px 0 0;
+}
+
+.drives-pane .cfg-hint {
+  margin-bottom: 4px;
+}
+
+/* uma linha do mapa: letra (ou volume) + caminho (ou servidor) com o × dentro */
+.drive-rows {
   display: grid;
   gap: 8px;
-  margin: 0 20px;
-  padding: 14px 0 14px;
-  border-top: 1px solid var(--border);
+}
+
+.drive-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.drive-row.is-share {
+  grid-template-columns: minmax(110px, 200px) minmax(0, 1fr);
+}
+
+.drive-letter {
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.drive-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+.drive-row.has-error .cfg-input {
+  border-color: var(--danger);
 }
 
 .prods-log-title {

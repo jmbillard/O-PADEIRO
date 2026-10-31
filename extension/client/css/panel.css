@@ -2047,8 +2047,35 @@ body.motion-ready .eyebrow {
 }
 
 /* "⋯" no canto direito do rodapé da lista; o menu abre para cima, alinhado à direita */
-.picker-footer .picker-menu {
+/* produção: no rodapé, à esquerda do ⋯ */
+.picker-footer .picker-prod {
+  min-width: 0;
+  max-width: 190px;
+  flex: 0 1 auto;
   margin-left: auto;
+}
+
+.picker-prod .dropdown-trigger {
+  min-height: 34px;
+  border-color: rgb(255 255 255 / 34%);
+  background: rgb(255 255 255 / 14%);
+  color: white;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+}
+
+.picker-prod .dropdown-trigger:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 70%);
+  background: rgb(255 255 255 / 24%);
+}
+
+.picker-prod .dropdown-trigger:focus-visible,
+.picker-prod .dropdown-trigger[aria-expanded="true"] {
+  border-color: white;
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 16%);
+}
+
+.picker-prod.select::after {
+  border-color: rgb(255 255 255 / 80%);
 }
 
 .picker-footer .picker-menu .menu-popover {
@@ -2403,4 +2430,60 @@ body.motion-ready .eyebrow {
 
 .file-message .path-line+.path-line {
   margin-top: 2px;
+}
+
+/* abas: só texto, como o "buscar · selecionar · preencher" dos templates; a aba ativa fica opaca, com um ponto */
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding-left: 5px;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 52%);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  transition: color 220ms ease;
+}
+
+.tab::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    opacity 200ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.tab:hover {
+  color: rgb(255 255 255 / 80%);
+}
+
+.tab[aria-selected="true"] {
+  color: white;
+}
+
+.tab[aria-selected="true"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tab:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
 }

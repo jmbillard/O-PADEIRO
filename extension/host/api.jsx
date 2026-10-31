@@ -29,6 +29,8 @@ function PADX_call(method, argsJson) {
 
 		if (typeof PADX[method] !== 'function') throw new Error('#PAD_043 - método desconhecido: ' + method);
 
+		padApplyDrives(); // o mapa de drives vem da configuração compartilhada (relida quando o arquivo muda)
+
 		res = { ok: true, data: PADX[method](args) };
 	} catch (err) {
 		var msg = err.message || String(err);
@@ -255,6 +257,7 @@ PADX.productions = function () {
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
 		log: padReadLogSettings(),
+		drives: padReadDrives(),
 		error: error
 	};
 };

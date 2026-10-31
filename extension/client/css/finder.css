@@ -30,62 +30,6 @@ body.finder-page {
   gap: 10px;
 }
 
-/* abas: só texto, como o "buscar · selecionar · preencher" dos templates; a aba ativa fica opaca, com um ponto */
-.tabs {
-  display: inline-flex;
-  align-items: center;
-  gap: 20px;
-  padding-left: 5px;
-}
-
-.tab {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 0;
-  border: 0;
-  background: transparent;
-  color: rgb(255 255 255 / 52%);
-  cursor: pointer;
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.18em;
-  transition: color 220ms ease;
-}
-
-.tab::before {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentcolor;
-  content: "";
-  opacity: 0;
-  transform: scale(0);
-  transition:
-    opacity 200ms ease,
-    transform 260ms var(--ease-soft);
-}
-
-.tab:hover {
-  color: rgb(255 255 255 / 80%);
-}
-
-.tab[aria-selected="true"] {
-  color: white;
-}
-
-.tab[aria-selected="true"]::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.tab:focus-visible {
-  border-radius: 6px;
-  outline: 2px solid rgb(255 255 255 / 80%);
-  outline-offset: 2px;
-}
-
 /* painéis */
 .finder-pane {
   display: flex;

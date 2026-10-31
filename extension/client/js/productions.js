@@ -25,7 +25,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		snapshot: '',
 		discardTimer: null,
 		saving: false,
-		log: { mode: 'webhook', webhook: '' } // onde cada render da fila é registrado
+		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
+		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
+		tab: 'prods'
 	};
 
 	var LOG_HINTS = {
@@ -196,8 +198,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return { mode: state.log.mode, webhook: state.log.webhook.trim() };
 	}
 
+	function drivesForSave() {
+		var d = state.drives;
+
+		return {
+			drives: d.drives.map(function (r) {
+				return { letter: r.letter.trim().replace(/:$/, '').toUpperCase(), path: r.path.trim() };
+			}),
+			shares: d.shares.map(function (r) {
+				return { share: r.share.trim(), server: r.server.trim() };
+			}),
+			defaultServer: d.defaultServer.trim()
+		};
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave() });
 	}
 
 	function updateDirty() {
@@ -454,6 +470,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		state.newBtn.disabled = !available;
 		renderLog();
+		renderDrives();
 	}
 
 	function showUnavailable(message) {
@@ -525,6 +542,176 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Drives da rede
+	   ========================================================= */
+
+	var SERVER_ICON = ['M5.5 4.5h13a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 9V6a1.5 1.5 0 0 1 1.5-1.5zM5.5 13.5h13a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18v-3a1.5 1.5 0 0 1 1.5-1.5z', 'M7.5 7.5h.01M7.5 16.5h.01'];
+	var NETWORK_ICON = ['M12 4v5M6 15v-3h12v3M4 15h4v5H4zM10 15h4v5h-4zM16 15h4v5h-4zM9 4h6v5H9z'];
+
+	function setDrives(d) {
+		var clone = JSON.parse(JSON.stringify(d || { drives: [], shares: [], defaultServer: '' }));
+
+		state.drives = {
+			drives: clone.drives || [],
+			shares: clone.shares || [],
+			defaultServer: clone.defaultServer || ''
+		};
+		renderDrives();
+	}
+
+	// um campo com ícone e o × de remover dentro (como os caminhos das produções)
+	function driveField(value, placeholder, label, icon, onInput, onRemove) {
+		var line = el('div', 'cfg-path has-field-icon');
+		var input = el('input', 'cfg-input');
+		var remove = miniButton('remove', 'remover', onRemove);
+		var ico = svg(icon);
+
+		ico.setAttribute('class', 'field-icon');
+		input.type = 'text';
+		input.value = value;
+		input.placeholder = placeholder;
+		input.spellcheck = false;
+		input.setAttribute('aria-label', label);
+		input.disabled = !state.available;
+		remove.disabled = !state.available;
+		input.addEventListener('input', function () {
+			onInput(input.value);
+			line.closest('.drive-row').classList.remove('has-error');
+			updateDirty();
+		});
+		line.appendChild(ico);
+		line.appendChild(input);
+		line.appendChild(remove);
+
+		return line;
+	}
+
+	function renderDrives() {
+		if (!state.drives) return;
+
+		var drives = $('drive-list');
+		var shares = $('share-list');
+
+		drives.textContent = '';
+		shares.textContent = '';
+
+		state.drives.drives.forEach(function (row, i) {
+			var box = el('div', 'drive-row');
+			var letter = el('input', 'cfg-input drive-letter');
+
+			letter.type = 'text';
+			letter.maxLength = 2;
+			letter.value = row.letter ? row.letter.replace(/:$/, '') + ':' : '';
+			letter.placeholder = 'X:';
+			letter.title = 'letra do drive no Windows';
+			letter.setAttribute('aria-label', 'letra do drive ' + (i + 1));
+			letter.disabled = !state.available;
+			letter.addEventListener('input', function () {
+				row.letter = letter.value.replace(/[^a-z]/gi, '').slice(0, 1).toUpperCase();
+				box.classList.remove('has-error');
+				updateDirty();
+			});
+			letter.addEventListener('blur', function () {
+				letter.value = row.letter ? row.letter + ':' : '';
+			});
+
+			box.appendChild(letter);
+			box.appendChild(driveField(row.path, '//servidor/share/pasta', 'caminho de rede do drive ' + (row.letter || i + 1), NETWORK_ICON, function (v) {
+				row.path = v;
+			}, function () {
+				state.drives.drives.splice(i, 1);
+				renderDrives();
+				updateDirty();
+			}));
+			drives.appendChild(box);
+		});
+
+		state.drives.shares.forEach(function (row, i) {
+			var box = el('div', 'drive-row is-share');
+			var share = el('input', 'cfg-input');
+
+			share.type = 'text';
+			share.value = row.share;
+			share.placeholder = 'nome do volume';
+			share.title = 'nome do volume no Mac (/Volumes/NOME)';
+			share.spellcheck = false;
+			share.setAttribute('aria-label', 'nome do volume ' + (i + 1));
+			share.disabled = !state.available;
+			share.addEventListener('input', function () {
+				row.share = share.value;
+				box.classList.remove('has-error');
+				updateDirty();
+			});
+
+			box.appendChild(share);
+			box.appendChild(driveField(row.server, 'servidor.empresa.com', 'servidor do volume ' + (row.share || i + 1), SERVER_ICON, function (v) {
+				row.server = v;
+			}, function () {
+				state.drives.shares.splice(i, 1);
+				renderDrives();
+				updateDirty();
+			}));
+			shares.appendChild(box);
+		});
+
+		var server = $('default-server');
+
+		if (server.value !== state.drives.defaultServer) server.value = state.drives.defaultServer;
+		server.disabled = !state.available;
+		['btn-new-drive', 'btn-new-share'].forEach(function (id) {
+			$(id).disabled = !state.available;
+		});
+	}
+
+	function bindDrives() {
+		$('btn-new-drive').addEventListener('click', function () {
+			state.drives.drives.push({ letter: '', path: '' });
+			renderDrives();
+			updateDirty();
+			$('drive-list').lastChild.querySelector('input').focus();
+		});
+
+		$('btn-new-share').addEventListener('click', function () {
+			state.drives.shares.push({ share: '', server: '' });
+			renderDrives();
+			updateDirty();
+			$('share-list').lastChild.querySelector('input').focus();
+		});
+
+		$('default-server').addEventListener('input', function () {
+			state.drives.defaultServer = this.value;
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
+	   Abas
+	   ========================================================= */
+
+	function showTab(name) {
+		state.tab = name;
+
+		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
+			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
+		});
+		['prods', 'logs', 'drives'].forEach(function (key) {
+			$('pane-' + key).hidden = key !== name;
+		});
+
+		// filtro, importar e exportar são da lista de produções
+		document.querySelector('.prods-filter').hidden = name !== 'prods';
+		$('btn-import').hidden = $('btn-export').hidden = name !== 'prods';
+	}
+
+	// erro do host numa seção: abre a aba dela
+	function tabForError(message) {
+		if (/#PAD_078/.test(message)) return 'logs';
+		if (/#PAD_0(79|80|81)/.test(message)) return 'drives';
+
+		return null;
+	}
+
+	/* =========================================================
 	   Carregar / salvar
 	   ========================================================= */
 
@@ -547,6 +734,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			setAvailable(true);
 			setLog(res.log);
+			setDrives(res.drives);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -607,6 +795,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var logProblem = validateLog();
 
 		if (logProblem) {
+			showTab('logs');
 			$('log-webhook').focus();
 			return toast('error', logProblem);
 		}
@@ -616,22 +805,24 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
+			if (res.drives) setDrives(res.drives);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
 			updateDirty();
 			checkFolders(state.rows);
-			toast('success', 'lista salva: ' + state.rows.length + (state.rows.length === 1 ? ' produção' : ' produções') + ' (a barra e os painéis atualizam sozinhos).');
+			toast('success', 'configuração salva: ' + state.rows.length + (state.rows.length === 1 ? ' produção' : ' produções') + ' (os painéis atualizam sozinhos).');
 		} catch (err) {
+			if (tabForError(err.message)) showTab(tabForError(err.message));
 			toast('error', err.message);
 		} finally {
 			state.saving = false;
 			$('btn-save').disabled = false;
-			$('btn-save').textContent = 'Salvar lista';
+			$('btn-save').textContent = 'Salvar';
 		}
 	}
 
@@ -661,7 +852,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			render();
 			updateDirty();
 			checkFolders(state.rows);
-			toast('success', 'lista importada: ' + state.rows.length + ' produções. clique em “Salvar lista” para aplicar.');
+			toast('success', 'lista importada: ' + state.rows.length + ' produções. clique em “Salvar” para aplicar.');
 		} catch (err) {
 			toast('error', err.message);
 		}
@@ -717,6 +908,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}
 		} catch (err) { }
 		bindLog();
+		bindDrives();
+
+		$('tabs').addEventListener('click', function (e) {
+			var tab = e.target.closest('.tab');
+
+			if (tab) showTab(tab.getAttribute('data-tab'));
+		});
+		showTab('prods');
 
 		state.newBtn = $('btn-new'); // a lista é redesenhada: o botão é guardado e reposto no fim dela
 		state.newBtn.addEventListener('click', addRow);
