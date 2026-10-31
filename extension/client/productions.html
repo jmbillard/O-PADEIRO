@@ -14,7 +14,7 @@
 <body class="prods-page">
 	<main class="prods" id="prods">
 		<header class="prods-top">
-			<p class="eyebrow">lista de produções</p>
+			<p class="eyebrow">configuração</p>
 			<div class="picker-search prods-filter">
 				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
 				<input type="search" id="filter" placeholder="filtrar produções" autocomplete="off" spellcheck="false" aria-label="Filtrar produções">
@@ -35,7 +35,7 @@
 		</header>
 
 		<section class="prods-sheet">
-			<p class="prods-file" id="file-info" hidden></p>
+			<p class="cfg-title prods-section-title">lista de produções</p>
 
 			<div class="prods-list" id="list">
 				<div class="oven-loader is-light" role="status">
@@ -49,7 +49,8 @@
 				<p class="cfg-title prods-log-title">logs</p>
 				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
 					<button type="button" class="log-mode" data-mode="webhook" role="radio" title="cada preenchimento é enviado para o webhook abaixo">webhook</button>
-					<button type="button" class="log-mode" data-mode="csv" role="radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção">CSV na pasta da produção</button>
+					<button type="button" class="log-mode" data-mode="csv" role="radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção">CSV por produção</button>
+					<button type="button" class="log-mode" data-mode="csvGlobal" role="radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na mesma pasta da lista de produções">CSV global</button>
 					<button type="button" class="log-mode" data-mode="off" role="radio" title="nada é registrado">desligado</button>
 				</div>
 				<input type="text" class="cfg-input log-webhook" id="log-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook" title="endereço do webhook (http:// ou https://)">
@@ -77,6 +78,7 @@
 	<script src="js/mock-host.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
+	<script src="js/sortable.js"></script>
 	<script src="js/productions.js"></script>
 </body>
 

@@ -29,7 +29,7 @@ function padCleanProductions(list) {
 		clean.push({ name: name, icon: list[i].icon ? String(list[i].icon) : '', templatesPath: path });
 	}
 
-	return padSortProductions(clean);
+	return clean; // na ordem do editor
 }
 
 // 'log' (opcional): a config de log; sem ela, a que já está no arquivo é mantida.

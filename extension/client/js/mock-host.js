@@ -111,9 +111,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (mode === 'conflict') throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 
-			window.PAD_MOCK_LIST.items = a.productions.slice().sort(function (x, y) {
-				return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
-			});
+			window.PAD_MOCK_LIST.items = a.productions.slice();
 			window.PAD_MOCK_LIST.stamp += 1000;
 			if (a.log) window.PAD_MOCK_LIST.log = Object.assign({}, a.log);
 

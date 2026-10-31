@@ -29,6 +29,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	};
 
 	var LOG_HINTS = {
+		csvGlobal: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da equipe (um arquivo só, na mesma pasta da lista de produções).',
 		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina e projeto).',
 		csv: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da produção (um arquivo só, na pasta de templates dela).',
 		off: 'nada é registrado.'
@@ -124,35 +125,23 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return bytesToLiteral(bytes);
 	}
 
-	// Ícone padrão: um pãozinho 24 x 24 (também aparece bem na barra escura do script).
+	// Ícone padrão: o pão do logo, só o contorno, esmaecido (aparece bem na barra clara e na escura).
 	function defaultIcon() {
 		var canvas = document.createElement('canvas');
+		var scale = 0.62; // o pão do logo ocupa 34 x 24 de 48 x 32
 
 		canvas.width = canvas.height = ICON_SIZE;
 
 		var ctx = canvas.getContext('2d');
-		var grad = ctx.createLinearGradient(0, 4, 0, 20);
 
-		grad.addColorStop(0, '#fbd697');
-		grad.addColorStop(1, '#e29a4c');
-		ctx.fillStyle = grad;
-		ctx.beginPath();
-		ctx.moveTo(2.5, 18.5);
-		ctx.bezierCurveTo(2.5, 8, 7, 4, 12, 4);
-		ctx.bezierCurveTo(17, 4, 21.5, 8, 21.5, 18.5);
-		ctx.quadraticCurveTo(21.5, 20, 20, 20);
-		ctx.lineTo(4, 20);
-		ctx.quadraticCurveTo(2.5, 20, 2.5, 18.5);
-		ctx.fill();
-		ctx.strokeStyle = 'rgba(140,72,18,0.62)';
-		ctx.lineWidth = 1.6;
+		ctx.setTransform(scale, 0, 0, scale, 12 - 24 * scale, 12 - 17 * scale);
+		ctx.strokeStyle = 'rgba(138,148,166,0.8)';
+		ctx.lineWidth = 1.5 / scale;
 		ctx.lineCap = 'round';
-		[[8, 9, 9.5, 14], [12, 8, 13.5, 13.5], [16, 9, 17.5, 14]].forEach(function (l) {
-			ctx.beginPath();
-			ctx.moveTo(l[0], l[1]);
-			ctx.lineTo(l[2], l[3]);
-			ctx.stroke();
-		});
+		ctx.lineJoin = 'round';
+		ctx.stroke(new Path2D('M7 24C7 12.6 14.6 5 24 5s17 7.6 17 19v3a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z'));
+		ctx.stroke(new Path2D('M7.6 23.2h32.8'));
+		ctx.stroke(new Path2D('m18.2 10.8 1.4 4.2M23.4 9.4l1.3 4.6M28.6 10.8l1.4 4.2'));
 
 		return canvasToLiteral(canvas);
 	}
@@ -237,6 +226,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function buildRow(row) {
 		var box = el('div', 'prod-row');
+		var grip = PAD_SORT.handle();
 		var iconBtn = el('button', 'prod-icon');
 		var img = el('img');
 		var name = el('input', 'cfg-input');
@@ -326,6 +316,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		pathWrap.appendChild(path);
 		pathWrap.appendChild(actions);
 
+		box.appendChild(grip);
 		box.appendChild(iconBtn);
 		box.appendChild(name);
 		box.appendChild(pathWrap);
@@ -344,6 +335,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!state.rows.length) {
 			list.appendChild(el('p', 'prods-empty', 'nenhuma produção: clique em “+ nova produção”.'));
+			appendFileInfo();
 			return;
 		}
 
@@ -351,6 +343,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			list.appendChild(buildRow(row));
 		});
 
+		appendFileInfo();
 		applyFilter();
 	}
 
@@ -377,7 +370,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (empty) empty.remove();
 
-		if (state.rows.length && !shown) list.appendChild(el('p', 'prods-empty prods-nomatch', 'nenhuma produção casa com “' + $('filter').value.trim() + '”.'));
+		list.classList.toggle('is-filtered', key !== '');
+
+		if (state.rows.length && !shown) list.insertBefore(el('p', 'prods-empty prods-nomatch', 'nenhuma produção casa com “' + $('filter').value.trim() + '”.'), state.fileInfo && state.fileInfo.parentNode === list ? state.fileInfo : null);
 	}
 
 	// ↑ ↓ num campo vão para o mesmo campo da linha de cima / de baixo.
@@ -427,8 +422,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} catch (err) { }
 	}
 
+	// o caminho da lista fica no fim da lista de pastas
+	function appendFileInfo() {
+		if (state.fileInfo && !state.fileInfo.hidden) $('list').appendChild(state.fileInfo);
+	}
+
 	function showFileInfo(res) {
-		var info = $('file-info');
+		var info = state.fileInfo || (state.fileInfo = el('p', 'prods-file'));
 
 		info.textContent = '';
 		info.appendChild(el('span', null, res.configPath));
@@ -459,6 +459,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(retry);
 		list.textContent = '';
 		list.appendChild(box);
+		appendFileInfo();
 	}
 
 	/* =========================================================
@@ -613,7 +614,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
-			state.rows = res.productions.map(newRow); // volta ordenada, como o script grava
+			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
 			updateDirty();
@@ -741,6 +742,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		$('list').addEventListener('keydown', moveBetweenRows);
+
+		// arrastar pelo puxador muda a ordem da lista (a ordem do menu na barra)
+		PAD_SORT.enable($('list'), '.prod-row', function (from, to) {
+			var moved = state.rows.splice(from, 1)[0];
+
+			state.rows.splice(to, 0, moved);
+			render();
+			updateDirty();
+		});
 
 		PAD_KEYS.shortcuts({
 			save: save,

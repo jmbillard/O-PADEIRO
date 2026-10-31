@@ -49,12 +49,16 @@ body.prods-page {
   background: white;
 }
 
+.prods-section-title {
+  padding: 16px 20px 6px;
+}
+
 .prods-file {
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
-  padding: 14px 20px 6px;
+  padding: 8px 0 4px;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.7rem;
@@ -111,7 +115,7 @@ body.prods-page {
 /* uma produção */
 .prod-row {
   display: grid;
-  grid-template-columns: 40px minmax(120px, 190px) minmax(0, 1fr);
+  grid-template-columns: 22px 40px minmax(120px, 190px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   padding: 7px 0;
@@ -341,12 +345,12 @@ body.prods-page {
 @media (max-width: 640px) {
   /* sem separadores: um respiro maior entre as produções empilhadas */
   .prod-row {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 22px 40px minmax(0, 1fr);
     padding: 8px 0 14px;
   }
 
   .prod-path {
-    grid-column: 1 / -1;
+    grid-column: 2 / -1;
     grid-row: 2;
   }
 
@@ -505,4 +509,26 @@ body.prods-page {
   .prods-log {
     margin-inline: 14px;
   }
+}
+
+/* arrastar para reordenar (com o filtro ativo, os puxadores somem: a ordem é a da lista inteira) */
+.prods-list.is-filtered .drag-handle {
+  visibility: hidden;
+}
+
+.is-sorting>.prod-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.prod-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-radius: var(--radius-small);
+  background: white;
+  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
+  transition: none;
+}
+
+.prod-row.is-dragging {
+  animation: none;
 }

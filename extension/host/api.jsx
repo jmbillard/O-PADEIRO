@@ -125,15 +125,6 @@ function padDisplayPaths(list) {
 	return out;
 }
 
-function padSortProductions(list) {
-	return list.sort(function (a, b) {
-		if (a.name < b.name) return -1;
-		if (a.name > b.name) return 1;
-
-		return 0;
-	});
-}
-
 // Lista de produções COMPARTILHADA ('O_PADEIRO_config.json'): fica na pasta do padeiro na rede,
 // ao lado da pasta da extensão. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
@@ -242,7 +233,7 @@ PADX.productions = function () {
 	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
-		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
+		list = JSON.parse(readFileContent(configFile)).PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
 	} catch (err) {
 		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
 		list = [];
@@ -293,7 +284,7 @@ function padCleanLog(log) {
 
 	if (!log) return clean;
 
-	clean.mode = log.mode == 'csv' || log.mode == 'off' ? log.mode : 'webhook';
+	clean.mode = log.mode == 'csv' || log.mode == 'csvGlobal' || log.mode == 'off' ? log.mode : 'webhook';
 	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
 
 	// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
@@ -370,7 +361,9 @@ function padWriteLog(record) {
 	if (settings.mode == 'off') return;
 	if (settings.mode == 'webhook') return sendToWebhookWithCurl(record, settings.webhook);
 
-	var folder = padProductionFolder(record.producao);
+	// CSV global: ao lado da lista de produções; por produção: na pasta de templates dela
+	var config = padConfigFile();
+	var folder = settings.mode == 'csvGlobal' ? (config && config.exists ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));

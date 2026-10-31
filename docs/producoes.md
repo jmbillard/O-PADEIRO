@@ -16,13 +16,15 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). o **×** no mesmo campo exclui a produção.
 3. clique em '*Salvar lista*' (ou `Ctrl/Cmd+S`).
 
+- **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
 - **filtrar** → mostra só as produções com o termo no nome ou no caminho.
 - **importar / exportar** (os botões com setas, no canto inferior esquerdo) → lê ou grava uma lista completa, com os ícones.
 - **recarregar** → lê a lista de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 
 > 🚩 *obs:*\
-> • a lista é sempre gravada em ordem alfabética: use caracteres especiais ou números no início do nome para colocar uma produção no topo.\
+> • a ordem da lista é a do menu da barra: arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
+> • o caminho do arquivo da lista aparece no fim da lista de produções.\
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
@@ -40,7 +42,8 @@ na parte de baixo do editor, **logs** define onde o padeiro registra cada preenc
 | opção | o que faz |
 | --- | --- |
 | **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
-| **CSV na pasta da produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
+| **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
+| **CSV global** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
 | **desligado** | não registra nada |
 
 > 🚩 *obs:*\
