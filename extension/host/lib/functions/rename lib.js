@@ -6,13 +6,51 @@
 > 🏷️ renomeação de comps e outputs
 ---------------------------------------------------------------
 
-Os padrões ficam em 'renameRefArray' (globals.js): cada tipo tem um prefixo (ex: 'RDP'),
-um comentário (ex: 'RODAPE') e os termos que o identificam (expressões regulares).
+Os tipos ficam em PAD_RENAME_TYPES (globals.js, ou a aba RENOMEAR da configuração): cada tipo tem um
+prefixo (ex: 'RDP'), um comentário (ex: 'RODAPE') e os termos que o identificam (palavras). Os termos
+viram as expressões de 'renameRefArray' em padRenameRefs.
 
 */
 
 // Separadores aceitos entre as palavras do nome
 var RENAME_SEPARATORS = '[\\s_\\-]';
+
+// Termo (palavra, sem acento, maiúsculas) → expressão: espaços valem qualquer separador e o plural com S também vale.
+function padRenameTermRegex(term) {
+	var t = renameNormalize(term).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+	return t.replace(/[\s_\-]+/g, RENAME_SEPARATORS + '+') + '(S)?';
+}
+
+// Monta 'renameRefArray' a partir dos tipos (os de globals.js ou os da configuração).
+function padRenameRefs(types) {
+	var refs = [];
+
+	for (var i = 0; i < types.length; i++) {
+		var terms = [];
+
+		for (var j = 0; j < types[i].terms.length; j++) terms.push(padRenameTermRegex(types[i].terms[j]));
+
+		refs.push({ prefix: types[i].prefix, comment: types[i].comment, regExpStr: terms });
+	}
+
+	return refs;
+}
+
+renameRefArray = padRenameRefs(PAD_RENAME_TYPES);
+
+// Nome fixo (PAD_RENAME_FIXED) que o texto contém, ou null.
+function padRenameFixedName(text) {
+	var norm = renameNormalize(text);
+
+	for (var i = 0; i < PAD_RENAME_FIXED.length; i++) {
+		var term = renameNormalize(PAD_RENAME_FIXED[i].match).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s_\-]+/g, '[\\s_\\-]*');
+
+		if (term && new RegExp(term).test(norm)) return PAD_RENAME_FIXED[i].name;
+	}
+
+	return null;
+}
 
 // Templates podem definir o nome final no texto do último layer ('script_template_name').
 function getTemplateNameLayer(comp) {
@@ -118,10 +156,10 @@ function getPromoRename(comp) {
 		result.name = cleanName && cleanName !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
 	}
 
-	// LOGO GLOBO tem nome fixo (pelo nome da comp ou pelo comentário original)
-	var originalComment = prefixFound ? '' : comp.comment;
+	// nomes fixos (ex: LOGO GLOBO), pelo nome da comp ou pelo comentário original
+	var fixedName = padRenameFixedName(compName) || (prefixFound ? null : padRenameFixedName(comp.comment));
 
-	if (compName.match(/LOGO[\s_]*GLOBO/) || originalComment.match(/LOGO[\s_]*GLOBO/)) result.name = 'LOGO GLOBO';
+	if (fixedName) result.name = fixedName;
 
 	return result;
 }

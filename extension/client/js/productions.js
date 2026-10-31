@@ -27,6 +27,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		saving: false,
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
+		rename: { types: [], fixed: [] }, // tipos de peça e nomes fixos (aba RENOMEAR); termos editados como texto
 		tab: 'prods'
 	};
 
@@ -212,8 +213,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function renameForSave() {
+		return {
+			types: state.rename.types.map(function (t) {
+				return {
+					prefix: t.prefix.trim(),
+					comment: t.comment.trim(),
+					terms: t.terms.split(',').map(function (x) {
+						return x.trim();
+					}).filter(Boolean)
+				};
+			}),
+			fixed: state.rename.fixed.map(function (f) {
+				return { match: f.match.trim(), name: f.name.trim() };
+			})
+		};
+	}
+
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave() });
 	}
 
 	function updateDirty() {
@@ -471,6 +489,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.newBtn.disabled = !available;
 		renderLog();
 		renderDrives();
+		renderRename();
 	}
 
 	function showUnavailable(message) {
@@ -685,6 +704,218 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Renomear
+	   ========================================================= */
+
+	var TAG_ICON = ['M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z', 'M8 8h.01'];
+
+	function setRename(r) {
+		var data = r || { types: [], fixed: [] };
+
+		state.rename = {
+			types: (data.types || []).map(function (t) {
+				return { prefix: t.prefix || '', comment: t.comment || '', terms: (t.terms || []).join(', ') };
+			}),
+			fixed: (data.fixed || []).map(function (f) {
+				return { match: f.match || '', name: f.name || '' };
+			})
+		};
+		renderRename();
+	}
+
+	function plainInput(value, className, placeholder, label, onInput) {
+		var input = el('input', 'cfg-input' + (className ? ' ' + className : ''));
+
+		input.type = 'text';
+		input.value = value;
+		input.placeholder = placeholder;
+		input.spellcheck = false;
+		input.setAttribute('aria-label', label);
+		input.disabled = !state.available;
+		input.addEventListener('input', function () {
+			onInput(input.value);
+			updateDirty();
+			testRename();
+		});
+
+		return input;
+	}
+
+	function renderRename() {
+		if (!state.rename) return;
+
+		var types = $('type-list');
+		var fixed = $('fixed-list');
+
+		types.textContent = '';
+		fixed.textContent = '';
+
+		state.rename.types.forEach(function (t, i) {
+			var row = el('div', 'rename-row');
+
+			row.appendChild(PAD_SORT.handle());
+			row.appendChild(plainInput(t.prefix, 'rename-prefix', 'RDP', 'prefixo do tipo ' + (i + 1), function (v) {
+				t.prefix = v;
+			}));
+			row.appendChild(plainInput(t.comment, null, 'RODAPE', 'comentário do tipo ' + (t.prefix || i + 1), function (v) {
+				t.comment = v;
+			}));
+
+			var terms = driveField(t.terms, 'rodapé, rdp', 'termos do tipo ' + (t.prefix || i + 1), TAG_ICON, function (v) {
+				t.terms = v;
+				testRename();
+			}, function () {
+				state.rename.types.splice(i, 1);
+				renderRename();
+				updateDirty();
+				testRename();
+			});
+
+			terms.querySelector('input').title = 'palavras separadas por vírgula (o plural com S também vale)';
+			row.appendChild(terms);
+			types.appendChild(row);
+		});
+
+		state.rename.fixed.forEach(function (f, i) {
+			var row = el('div', 'drive-row is-fixed');
+
+			row.appendChild(plainInput(f.match, null, 'quando o nome contém… (ex: LOGO GLOBO)', 'termo do nome fixo ' + (i + 1), function (v) {
+				f.match = v;
+			}));
+			row.appendChild(driveField(f.name, 'a comp se chama…', 'nome fixo ' + (i + 1), TAG_ICON, function (v) {
+				f.name = v;
+				testRename();
+			}, function () {
+				state.rename.fixed.splice(i, 1);
+				renderRename();
+				updateDirty();
+				testRename();
+			}));
+			fixed.appendChild(row);
+		});
+
+		['btn-new-type', 'btn-new-fixed'].forEach(function (id) {
+			$(id).disabled = !state.available;
+		});
+		testRename();
+	}
+
+	// Prévia do renomear com a tabela em edição (a mesma regra do host, rename lib.js), só pelo nome da comp.
+	var RENAME_SEP = '[\\s_\\-]';
+
+	function renameNorm(str) {
+		return String(str).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s-]/g, ' ').replace(/[\s_]+/g, ' ').trim();
+	}
+
+	function renameEscape(str) {
+		return renameNorm(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function previewRename(compName) {
+		var data = renameForSave();
+		var name = renameNorm(compName);
+		var types = data.types.map(function (t) {
+			return {
+				prefix: renameNorm(t.prefix),
+				comment: renameNorm(t.comment),
+				terms: t.terms.map(function (x) {
+					return renameEscape(x).replace(/[\s_\-]+/g, RENAME_SEP + '+') + '(S)?';
+				}).filter(function (x) {
+					return x !== '(S)?';
+				})
+			};
+		});
+		var found = null;
+
+		types.some(function (t) {
+			return t.terms.some(function (re) {
+				if (new RegExp('(^|' + RENAME_SEP + ')(' + re + ')(' + RENAME_SEP + '|$)', 'i').test(name)) found = t;
+
+				return !!found;
+			});
+		});
+
+		var result = { name: name, comment: null };
+
+		if (found) {
+			var clean = name;
+			var strip = function (terms) {
+				terms.forEach(function (re) {
+					clean = clean
+						.replace(new RegExp('^(' + re + RENAME_SEP + '+)', 'gi'), '')
+						.replace(new RegExp(RENAME_SEP + '+' + re + RENAME_SEP + '+', 'gi'), ' ')
+						.replace(new RegExp(RENAME_SEP + '+' + re + '$', 'gi'), '')
+						.replace(new RegExp('^' + re + '$', 'gi'), '');
+				});
+			};
+
+			types.forEach(function (t) {
+				if (t.prefix) clean = clean.replace(new RegExp('^' + t.prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\-]+', 'gi'), '');
+				strip(t.terms);
+			});
+			strip(found.terms);
+			clean = clean.replace(/[\s_\-]+/g, ' ').trim();
+			result.comment = found.comment;
+			result.name = clean && clean !== found.prefix ? found.prefix + ' - ' + clean : found.prefix;
+		}
+
+		data.fixed.some(function (f) {
+			var term = renameEscape(f.match).replace(/[\s_\-]+/g, '[\\s_\\-]*');
+
+			if (term && new RegExp(term).test(name)) {
+				result.name = renameNorm(f.name);
+				return true;
+			}
+
+			return false;
+		});
+
+		return result;
+	}
+
+	function testRename() {
+		var value = $('rename-test').value.trim();
+		var out = $('rename-result');
+
+		out.textContent = '';
+
+		if (!value) return;
+
+		var res = previewRename(value);
+
+		out.appendChild(document.createTextNode('→ '));
+		out.appendChild(el('b', null, res.name || '(vazio)'));
+		out.appendChild(document.createTextNode(res.comment ? '  ·  comentário ' + res.comment : '  ·  nenhum tipo encontrado'));
+	}
+
+	function bindRename() {
+		$('btn-new-type').addEventListener('click', function () {
+			state.rename.types.push({ prefix: '', comment: '', terms: '' });
+			renderRename();
+			updateDirty();
+			$('type-list').lastChild.querySelector('.rename-prefix').focus();
+		});
+
+		$('btn-new-fixed').addEventListener('click', function () {
+			state.rename.fixed.push({ match: '', name: '' });
+			renderRename();
+			updateDirty();
+			$('fixed-list').lastChild.querySelector('input').focus();
+		});
+
+		$('rename-test').addEventListener('input', testRename);
+
+		// a ordem dos tipos importa: arrastar pelo puxador reordena
+		PAD_SORT.enable($('type-list'), '.rename-row', function (from, to) {
+			var moved = state.rename.types.splice(from, 1)[0];
+
+			state.rename.types.splice(to, 0, moved);
+			renderRename();
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
 	   Abas
 	   ========================================================= */
 
@@ -694,7 +925,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
 		});
-		['prods', 'logs', 'drives'].forEach(function (key) {
+		['prods', 'logs', 'drives', 'rename'].forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
 
@@ -707,6 +938,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function tabForError(message) {
 		if (/#PAD_078/.test(message)) return 'logs';
 		if (/#PAD_0(79|80|81)/.test(message)) return 'drives';
+		if (/#PAD_08[23]/.test(message)) return 'rename';
 
 		return null;
 	}
@@ -735,6 +967,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setAvailable(true);
 			setLog(res.log);
 			setDrives(res.drives);
+			setRename(res.rename);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -805,11 +1038,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
 			if (res.drives) setDrives(res.drives);
+			if (res.rename) setRename(res.rename);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
@@ -909,6 +1143,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} catch (err) { }
 		bindLog();
 		bindDrives();
+		bindRename();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

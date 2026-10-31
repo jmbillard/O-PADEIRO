@@ -86,6 +86,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						shares: [{ share: 'VFX', server: 'vfx-ml-sp.servicos.corp.tvglobo.com.br' }, { share: 'promo_ber', server: '10.193.48.13' }],
 						defaultServer: 'vfx-ml-sp.servicos.corp.tvglobo.com.br'
 					},
+					rename: {
+						types: [
+							{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+							{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+							{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+							{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+							{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] }
+						],
+						fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }]
+					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
@@ -106,6 +116,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				error: null,
 				log: Object.assign({}, window.PAD_MOCK_LIST.log),
 				drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)),
+				rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)),
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
 				})
@@ -126,8 +137,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				if (bad) throw new Error('#PAD_080 - drives: o caminho de ' + (bad.letter || '?') + ': precisa ser de rede (//servidor/share/...).');
 				window.PAD_MOCK_LIST.drives = JSON.parse(JSON.stringify(a.drives));
 			}
+			if (a.rename) {
+				var noTerms = a.rename.types.filter(function (t) { return !t.prefix || !t.comment || !t.terms.length; })[0];
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+				if (noTerms) throw new Error('#PAD_082 - renomear: "' + (noTerms.prefix || '?') + '" precisa de prefixo, comentário e ao menos um termo.');
+				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
+			}
+
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

@@ -63,6 +63,7 @@ PADX.saveProductions = function (a) {
 	var clean = padCleanProductions(a.productions);
 	var log = a.log ? padCleanLog(a.log) : null;
 	var drives = a.drives ? padCleanDrives(a.drives) : null;
+	var rename = a.rename ? padCleanRename(a.rename) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -76,14 +77,15 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
 
-	padDrivesCache.stamp = -1; // relê o mapa salvo
+	padDrivesCache.stamp = -1; // relê o que foi salvo
+	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -213,15 +215,16 @@ function padReadDrives() {
 	}
 }
 
-// Troca as globais do mapa (DRIVE_MAP, UNC_TO_DRIVE, PAD_SHARE_SERVERS, PAD_DEFAULT_SERVER) pelas da
-// configuração. Confere o arquivo no máximo a cada 5 s, e só relê quando ele mudou.
-function padApplyDrives() {
+// Aplica a configuração compartilhada nas globais do host (drives e renomear). Confere o arquivo no
+// máximo a cada 5 s, e só relê quando ele mudou.
+function padApplyConfig() {
 	var now = new Date().getTime();
 
 	if (now - padDrivesCache.checked < 5000) return;
 
 	padDrivesCache.checked = now;
 	padDefaultDrives(); // guarda os padrões antes da primeira troca
+	padDefaultRename();
 
 	var file = padConfigFile();
 	var stamp = 0;
@@ -250,4 +253,88 @@ function padApplyDrives() {
 	UNC_TO_DRIVE = reverse;
 	PAD_SHARE_SERVERS = shares;
 	PAD_DEFAULT_SERVER = d.defaultServer;
+
+	var r = padReadRename();
+
+	PAD_RENAME_TYPES = r.types;
+	PAD_RENAME_FIXED = r.fixed;
+	renameRefArray = padRenameRefs(r.types);
+}
+
+/*
+
+---------------------------------------------------------------
+> renomear (aba RENOMEAR da configuração)
+---------------------------------------------------------------
+
+'RENAME' no O_PADEIRO_config.json: { types: [{ prefix, comment, terms: [...] }], fixed: [{ match, name }] }.
+  types → tipos de peça, na ordem em que são procurados (vale o primeiro encontrado)
+  fixed → nomes fixos: a comp que contém 'match' (no nome ou no comentário) passa a se chamar 'name'
+Sem 'RENAME' no arquivo: os valores de lib/globals.js (os de sempre).
+
+*/
+
+var PAD_DEFAULT_RENAME = null;
+
+function padDefaultRename() {
+	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED }));
+
+	return PAD_DEFAULT_RENAME;
+}
+
+// Texto do campo → maiúsculas, sem acentos e com espaços simples.
+function padRenameText(value) {
+	return padTrim(value).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+}
+
+// Valida e normaliza a tabela vinda do painel. Lança Error com a mensagem.
+function padCleanRename(r) {
+	var clean = { types: [], fixed: [] };
+	var seen = {};
+	var i;
+
+	for (i = 0; i < (r.types || []).length; i++) {
+		var t = r.types[i];
+		var prefix = padRenameText(t.prefix);
+		var comment = padRenameText(t.comment);
+		var list = t.terms instanceof Array ? t.terms : String(t.terms == null ? '' : t.terms).split(',');
+		var terms = [];
+
+		for (var j = 0; j < list.length; j++) {
+			var term = padRenameText(list[j]);
+
+			if (term != '') terms.push(term);
+		}
+
+		if (prefix == '') throw new Error('#PAD_082 - renomear: o tipo ' + (i + 1) + ' precisa de um prefixo.');
+		if (comment == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de um comentário.');
+		if (!terms.length) throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de ao menos um termo.');
+		if (seen[prefix]) throw new Error('#PAD_082 - renomear: o prefixo "' + prefix + '" aparece mais de uma vez.');
+
+		seen[prefix] = true;
+		clean.types.push({ prefix: prefix, comment: comment, terms: terms });
+	}
+
+	for (i = 0; i < (r.fixed || []).length; i++) {
+		var match = padRenameText(r.fixed[i].match);
+		var name = padRenameText(r.fixed[i].name);
+
+		if (match == '' || name == '') throw new Error('#PAD_083 - renomear: o nome fixo ' + (i + 1) + ' precisa do termo e do nome.');
+
+		clean.fixed.push({ match: match, name: name });
+	}
+
+	return clean;
+}
+
+function padReadRename() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data.RENAME ? padCleanRename(data.RENAME) : padDefaultRename();
+	} catch (err) {
+		return padDefaultRename();
+	}
 }

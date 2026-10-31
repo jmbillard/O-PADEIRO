@@ -29,7 +29,7 @@ function PADX_call(method, argsJson) {
 
 		if (typeof PADX[method] !== 'function') throw new Error('#PAD_043 - método desconhecido: ' + method);
 
-		padApplyDrives(); // o mapa de drives vem da configuração compartilhada (relida quando o arquivo muda)
+		padApplyConfig(); // drives e renomear vêm da configuração compartilhada (relida quando o arquivo muda)
 
 		res = { ok: true, data: PADX[method](args) };
 	} catch (err) {
@@ -258,6 +258,7 @@ PADX.productions = function () {
 		productions: productions,
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
+		rename: padReadRename(),
 		error: error
 	};
 };

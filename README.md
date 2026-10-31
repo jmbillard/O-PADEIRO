@@ -19,7 +19,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO configuração** | produções, logs e drives da rede da equipe → [documentação](docs/producoes.md) |
+| **O PADEIRO configuração** | produções, logs, drives da rede e renomear → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -105,7 +105,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
 - **renomear**\
-  `◖` → renomeia as comps selecionadas.\
+  `◖` → renomeia as comps selecionadas (pelos tipos de peça da [configuração](docs/producoes.md#-renomear)).\
   `◗` → renomeia todas as saídas da fila de render.
 - **organizar**\
   `◖` → organiza o projeto.\
@@ -200,7 +200,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🗂️ configuração](docs/producoes.md) | produções, logs e drives da rede (compartilhados pela equipe) |
+| [🗂️ configuração](docs/producoes.md) | produções, logs, drives da rede e renomear (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -276,6 +276,8 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_079` | configuração: letra de drive inválida ou repetida |
 | `#PAD_080` | configuração: o caminho do drive não é de rede (`//servidor/share/...`) |
 | `#PAD_081` | configuração: volume sem nome, repetido ou sem servidor |
+| `#PAD_082` | configuração: tipo de renomear sem prefixo, comentário ou termos, ou prefixo repetido |
+| `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

@@ -610,3 +610,80 @@ body.prods-page {
 .prods-list>.prods-add {
   margin: 3px 0 4px;
 }
+
+/* aba RENOMEAR: tipos de peça (puxador, prefixo, comentário, termos) */
+.rename-head,
+.rename-row {
+  display: grid;
+  grid-template-columns: 22px 96px minmax(110px, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.rename-head {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.rename-head span:not(:first-child) {
+  padding-left: 13px;
+}
+
+.rename-row .cfg-input {
+  min-height: 38px;
+  padding-block: 7px;
+  font-size: 0.8rem;
+}
+
+.rename-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+.rename-prefix {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.drive-row.is-fixed {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.rename-result {
+  min-height: 1.4em;
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+}
+
+.rename-result b {
+  color: var(--text-primary);
+}
+
+.is-sorting>.rename-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.rename-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-radius: var(--radius-small);
+  background: white;
+  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
+  transition: none;
+}
+
+@media (max-width: 640px) {
+  .rename-head {
+    display: none;
+  }
+
+  .rename-row {
+    grid-template-columns: 22px 90px minmax(0, 1fr);
+  }
+
+  .rename-row>.cfg-path {
+    grid-column: 2 / -1;
+  }
+}

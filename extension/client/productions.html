@@ -18,6 +18,7 @@
 				<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">PRODUÇÕES</button>
 				<button type="button" class="tab" role="tab" data-tab="logs" aria-selected="false">LOGS</button>
 				<button type="button" class="tab" role="tab" data-tab="drives" aria-selected="false">DRIVES</button>
+				<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 			</div>
 			<div class="picker-search prods-filter">
 				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
@@ -90,6 +91,26 @@
 					<input type="text" class="cfg-input" id="default-server" placeholder="servidor.empresa.com" spellcheck="false" autocomplete="off" aria-label="Servidor padrão">
 				</div>
 				<p class="cfg-hint">usado quando o volume não está em nenhuma das listas acima.</p>
+			</div>
+
+			<!-- aba RENOMEAR -->
+			<div class="cfg-pane drives-pane" id="pane-rename" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">tipos de peça</p>
+				<p class="cfg-hint">ao renomear, o padeiro procura um destes termos no nome da comp (ou da pasta dela) e aplica o prefixo e o comentário do tipo: <b>rodapé_joão silva</b> → <b>RDP - JOAO SILVA</b>. a ordem importa: vale o primeiro tipo encontrado (arraste para reordenar). os termos são palavras separadas por vírgula; o plural com S também vale.</p>
+								<div class="has-field-icon">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /></svg>
+					<input type="text" class="cfg-input" id="rename-test" placeholder="digite o nome de uma comp (ex: rodapé_joão silva)" spellcheck="false" autocomplete="off" aria-label="Nome de comp para testar">
+				</div>
+				<p class="rename-result" id="rename-result"></p>
+				<div class="rename-head" aria-hidden="true"><span></span><span>prefixo</span><span>comentário</span><span>termos</span></div>
+				<div class="drive-rows" id="type-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-type">+ novo tipo</button>
+
+				<p class="cfg-title prods-section-title">nomes fixos</p>
+				<p class="cfg-hint">a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome.</p>
+				<div class="drive-rows" id="fixed-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-fixed">+ novo nome fixo</button>
+
 			</div>
 
 			<div class="action-bar is-anchored prods-bar">
