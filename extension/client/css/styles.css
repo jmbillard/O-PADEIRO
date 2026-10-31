@@ -3,6 +3,10 @@
    ========================================================= */
 
 :root {
+  /* rodapés: o centro dos botões fica sempre a esta distância do fundo da janela (alinha a busca e o
+     formulário lado a lado e todas as janelas entre si). botões de 46 px nas barras brancas; 38 px no
+     rodapé do cartão de templates (dentro do cartão, com 15 px de respiro) */
+  --footer-center: 50px;
   --blue-50: #f2f6ff;
   --blue-100: #e9f1ff;
   --blue-200: #c9d9f8;
@@ -314,6 +318,10 @@ svg {
   display: grid;
   gap: 7px;
   margin-top: 10px;
+}
+
+.validation-messages:empty {
+  margin-top: 0; /* sem avisos, o cartão de templates desce até o rodapé alinhado */
 }
 
 .validation-message {

@@ -54,7 +54,7 @@ body {
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px 14px;
+  padding: 16px 14px calc(var(--footer-center) - 34px); /* 34 = borda + respiro + meio botão do rodapé do cartão */
 }
 
 .upload-side-content,
@@ -110,7 +110,7 @@ body {
   }
 
   .app-shell.is-expanded .upload-side {
-    padding-bottom: 18px;
+    padding-bottom: calc(var(--footer-center) - 34px);
   }
 
   .app-shell.is-expanded .picker-list {
@@ -130,7 +130,7 @@ body {
 @media (max-width: 480px) {
   .upload-side,
   .app-shell:not(.is-expanded) .upload-side {
-    padding: 16px 14px;
+    padding: 16px 14px calc(var(--footer-center) - 34px);
   }
 
   .queue-side,
@@ -551,7 +551,7 @@ body {
   z-index: 5;
   bottom: 0;
   margin: auto calc(var(--queue-pad) * -1) 0;
-  padding: 16px var(--queue-pad) 18px;
+  padding: 16px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
   background:
     linear-gradient(to top,
       white 72%,

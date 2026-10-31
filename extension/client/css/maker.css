@@ -488,7 +488,7 @@ body.maker-page {
 /* barra ancorada */
 .maker-bar.is-anchored {
   margin: 0;
-  padding: 14px 20px 16px;
+  padding: 14px 20px calc(var(--footer-center) - 23px); /* 23 = meio botão */
   align-items: center;
   border-top: 1px solid var(--border);
   background: white;
