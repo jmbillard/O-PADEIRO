@@ -901,6 +901,7 @@ PADX.fillFinish = function () {
 	return {
 		count: run.count,
 		renderTemplates: run.renderTemplates,
+		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (maker.jsx)
 		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};

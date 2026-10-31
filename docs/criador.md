@@ -24,7 +24,7 @@ um template do padeiro é um conjunto de arquivos:
 7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
 8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
-10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo: o padeiro renderiza a comp principal (H.264, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
+10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo: o padeiro renderiza a comp principal (H.264 de 15 Mbps, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
 
 - **↻** (cabeçalho) → limpa o formulário e começa de novo.
 - **⋯** (cabeçalho) → ajuda (esta página) e recarregar o painel.

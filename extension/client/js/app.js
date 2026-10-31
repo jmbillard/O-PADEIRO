@@ -1558,6 +1558,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		state.run.renderTemplates = fin.renderTemplates;
+		state.run.preferredTemplate = fin.preferredTemplate || '';
 		state.run.outputPath = fin.outputPath;
 		setBusy(false);
 
@@ -1578,8 +1579,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	function showRenderOptions() {
 		var select = $('render-template');
-		// o último preset usado neste template (fixados e recentes) ou, sem ele, o último usado em geral
-		var saved = (state.selected && templatePreset(state.selected.uri)) || store.get('outputTemplate');
+		// o último preset usado neste template, o último usado em geral ou, na primeira vez, o H.264 de 15 Mbps
+		var saved = (state.selected && templatePreset(state.selected.uri)) || store.get('outputTemplate') || state.run.preferredTemplate;
 
 		select.textContent = '';
 		state.run.renderTemplates.forEach(function (name) {

@@ -290,6 +290,21 @@ PADX.makerSave = function (a) {
 	});
 };
 
+// O template de output H.264 preferido: o de 15 Mbps ("H.264 - Match Render Settings - 15 Mbps", o padrão
+// do After Effects). O meio do nome muda com o idioma, então compara só o começo (H.264) e o fim (15 Mbps).
+// Sem ele, qualquer H.264 de 15 Mbps e, por fim, qualquer H.264. '' se não houver nenhum.
+function padPreferredH264(templates) {
+	var rules = [/^H\.?264\b.*\b15\s*Mbps\s*$/i, /H\.?264.*15\s*Mbps/i, /H\.?264/i];
+
+	for (var r = 0; r < rules.length; r++) {
+		for (var t = 0; t < templates.length; t++) {
+			if (!/^_HIDDEN/.test(templates[t]) && rules[r].test(templates[t])) return templates[t];
+		}
+	}
+
+	return '';
+}
+
 // Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):
 // renderiza a comp principal pela fila de render com um template de output H.264, em meia resolução.
 // As saídas que já estavam na fila ficam de fora durante a renderização e voltam depois.
@@ -326,15 +341,7 @@ PADX.makerRenderPreview = function (a) {
 		} catch (err) { }
 
 		var om = item.outputModule(1);
-		var templates = om.templates;
-		var h264 = '';
-
-		for (var t = 0; t < templates.length; t++) {
-			if (!/^_HIDDEN/.test(templates[t]) && /H\.?264/i.test(templates[t])) {
-				h264 = templates[t];
-				if (/match render settings/i.test(templates[t])) break; // o preferido, se houver
-			}
-		}
+		var h264 = padPreferredH264(om.templates);
 
 		if (!h264) throw new Error('#PAD_076 - nenhum template de output H.264 no After Effects para gerar o preview em .mp4.');
 
