@@ -15,6 +15,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 
 | painel | para que serve |
 | --- | --- |
+| **INSTALAR O PADEIRO.jsx** | instalar, atualizar ou remover o padeiro neste computador ([abaixo](#-instalação)) |
 | **O PADEIRO** | a barra principal: produção, ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
@@ -50,9 +51,13 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 1. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
 2. o instalador guia o passo a passo:
-   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: habilite a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
+   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
    - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
    - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
+
+   > 📟 *instalador (checagem):*
+   >
+   > <img src="docs/images/instalador.webp" alt="instalador do padeiro: checagem" width="380">
 3. **reinicie** o After Effects. no macOS, se o padeiro não aparecer em `Window` > `Extensions`, reinicie o computador: a liberação de extensões sem assinatura às vezes só vale depois disso.
 4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
@@ -67,12 +72,9 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 ### habilitando o acesso à rede
 
-o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes). para isso, acesse:\
-`Edit` > `Preferences` > `Scripting & Expressions...`\
-e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
+o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes). na checagem, o instalador abre sozinho a tela de preferências certa: marque '**Allow Scripts to Write Files and Access Network**' e clique em '*› verificar de novo*'.
 
-> 📋 *exemplo:*\
-> ![menu de preferências](docs/images/ae-menu-preferencias.png)
+> 📋 *a opção nas preferências de scripting:*\
 > ![preferências de scripting](docs/images/ae-preferencias-scripting.png)
 
 <br>
@@ -197,6 +199,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 | | |
 | --- | --- |
+| [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
 | [🗂️ produções](docs/producoes.md) | a lista de produções compartilhada |
