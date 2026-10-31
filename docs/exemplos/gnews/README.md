@@ -4,7 +4,7 @@ Uma configuração do O PADEIRO montada a partir do **PROMO-GNEWS-script** (a ba
 
 | arquivo | o que é |
 | --- | --- |
-| `O_PADEIRO_config.json` | a configuração completa (PRODUCTIONS, DRIVES, RENAME, ORGANIZE, SEARCH, LINKS, APPEARANCE) |
+| `O_PADEIRO_config.json` | a configuração completa (PRODUCTIONS, DRIVES, RENAME, ORGANIZE, SEARCH, PROJECT, LINKS, APPEARANCE) |
 | `gnews_path_index.json` | o índice de caminhos usado pela aba BUSCA (no lugar do webhook) |
 
 ## Como usar
@@ -62,6 +62,16 @@ O índice tem uma categoria por grupo do `promoSubPath` do script, com uma entra
 
 Buscar `EMP`, `em ponto` ou `jornais` encontra a pasta de Em Ponto. A última categoria substitui os botões de pastas da aba *shortcuts* do script. Os caminhos estão em formato Windows; no macOS eles são convertidos e montados pelos volumes de DRIVES.
 
+### Projeto (PROJECT)
+
+A aba *project* do script vira a janela [PROJETO](../../projeto.md):
+
+- **ID e nome do projeto** nos mesmos campos do XMP (`dc:identifier`, `dc:title`): projetos feitos na barra antiga abrem com os dados.
+- **Retrancas**: as 33 do `promoSubPath`, pelas 3 primeiras letras do ID (`EMP123456` → `JORNAIS/em ponto`), dentro de `…/GLOBONEWS/PROMO`.
+- **Nome das comps**: `{usuario} PROMO - {id} {projeto}` → `JBI PROMO - EMP123456 historia ao vivo`, como o `renamePromoComps` (a sigla é a do usuário, editável na janela).
+- **Arquivo e pasta**: `{id} {projeto}.aep` dentro de uma pasta com o mesmo nome, na pasta da retranca, como o `filesCollectPROMO`.
+- **Coletar arquivos** copia para `project files/<pastas do projeto>`, a mesma estrutura do script; **coletar fontes** copia para `FONTS`.
+
 ### Barra (APPEARANCE e LINKS)
 
 - Fundo **sólido** na cor do menu principal do script, `#3E50B4` (modo claro); fonte do sistema, como a ScriptUI.
@@ -82,20 +92,20 @@ Os volumes dos dois servidores do script: `cdesign` (egcdesign01) e `Arte_Ilha` 
 | pasta `End Pages` (detecta o efeito `servico end page`) | tipo EP pelo nome | **parcial**: só pelo nome da comp, vai para a raiz junto com o render |
 | tag `ignore` (fica fora das subpastas) | — | **parcial**: vira a subpasta `Comps/IGNORE` |
 | subpastas pelo nome do template de Essential Graphics | subpastas pelo comentário | **parcial**: o critério é outro |
-| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | prefixo de tipo + nome | **falta**: o nome não usa usuário nem os metadados do projeto |
+| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | janela PROJETO: `{usuario} PROMO - {id} {projeto}` | igual (lê os mesmos campos do XMP) |
 | apoio + data/hora do end page no nome (`txt_apoio`, `txt_data e horario`) | — | **falta** |
 | hard news: `GNEWS projeto n - ID` | — | **falta** |
-| collect para `projPath/<grupo>/<retranca>/<projeto>` | — | **falta**: a busca abre as pastas, mas o O PADEIRO não salva / coleta o projeto nelas |
+| collect para `projPath/<grupo>/<retranca>/<projeto>` | janela PROJETO: salvar + coletar arquivos / fontes | igual (sequências de imagens ficam de fora, com aviso) |
+| botão de salvar com clique direito (Desktop) | `⋯ > salvar em outra pasta…` | equivalente |
 | pasta do dia (`DIARIOS/RJ/aaaa/mm_MÊS/dd`) | entrada fixa em `DIARIOS/RJ` | **parcial**: o caminho com a data não é calculado |
 | botões de pastas (shortcuts) | categoria PASTAS DA PROMO na busca | equivalente (links aceitam só http/https) |
 | cor do menu claro `#3E50B4` / escuro `#8FF7A7` | uma cor de destaque | **parcial**: a mesma cor nos dois modos |
 | categoria SERVIDOR da busca | — | **sobra**: as pastas fixas da PROMO JB (`#INGEST`, `BASES VALENDO`) sempre aparecem |
 
-Resumindo: a **organização de pastas, a barra e a busca de caminhos chegam bem perto** (com os ajustes acima); o que ainda não dá para recriar é a **nomenclatura baseada no projeto** (ID e nome guardados no XMP, prefixo do usuário, dados do end page) e o **collect** para a pasta da retranca.
+Resumindo: **organização de pastas, barra, busca de caminhos e o projeto (ID, nome, retranca, nomenclatura, salvar e coletar) chegam bem perto**; o que ainda falta são os **dados do end page no nome** (apoio, data e hora), o modo **hard news** e os ajustes do organizar.
 
-Caminhos sugeridos para fechar a diferença, em ordem de impacto:
+Próximos passos sugeridos, em ordem de impacto:
 
-1. **Variáveis no nome** do RENAME: `{usuario}`, `{id}`, `{projeto}` (do XMP do projeto), para montar `USR PROMO - ID nome`.
-2. **Tipos "editáveis" e "end pages"** no ORGANIZE (pastas para as tags `edit` e para end pages, e a tag `ignore`).
-3. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a categoria SERVIDOR.
-4. **Salvar / coletar na pasta da retranca**: usar o índice da busca (3 letras do ID → pasta) como destino do projeto.
+1. **Tipos "editáveis" e "end pages"** no ORGANIZE (pastas para as tags `edit` e para end pages, e a tag `ignore`).
+2. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a categoria SERVIDOR.
+3. **Dados do end page** como variáveis do nome das comps (`{apoio}`, `{horario}`).

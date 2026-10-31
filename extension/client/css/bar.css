@@ -342,6 +342,30 @@ body.bar-page {
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
+/* projeto: a claquete abre e bate */
+.anim-clap .clap-top {
+  transform-origin: 0 100%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-clap .clap-top {
+  animation: clap 620ms var(--ease-soft);
+}
+
+@keyframes clap {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  35% {
+    transform: rotate(-18deg);
+  }
+
+  60% {
+    transform: rotate(2deg);
+  }
+}
+
 /* organizar: as camadas se separam */
 .anim-layers path {
   transition: transform 320ms var(--ease-soft);

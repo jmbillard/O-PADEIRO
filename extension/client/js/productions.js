@@ -31,6 +31,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCA: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
+		project: { root: '', folder: true, fileName: '', compName: '', retrancas: [], collectFiles: false, collectFonts: false }, // aba PROJETO
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
@@ -298,12 +299,28 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	function projectForSave() {
+		var p = state.project;
+
+		return {
+			root: p.root.trim(),
+			folder: p.folder,
+			fileName: p.fileName.trim(),
+			compName: p.compName.trim(),
+			retrancas: p.retrancas.map(function (r) {
+				return { code: r.code.trim().toUpperCase(), path: r.path.trim() };
+			}),
+			collectFiles: p.collectFiles,
+			collectFonts: p.collectFonts
+		};
+	}
+
 	function appearanceForSave() {
 		return state.appearance ? Object.assign({}, state.appearance) : null;
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), appearance: appearanceForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), appearance: appearanceForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -571,6 +588,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderSearch();
 		renderLinks();
 		renderAppearance();
+		renderProject();
 	}
 
 	function showUnavailable(message) {
@@ -1996,11 +2014,211 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Projeto (janela PROJETO): pasta, nomes e retrancas
+	   ========================================================= */
+
+	var PROJECT_TOKENS = ['id', 'projeto', 'usuario', 'retranca', 'data'];
+	var CODE_ICON = ['M9.5 4 7.5 20M16.5 4l-2 16M4.5 9h15M3.5 15h15'];
+	var FOLDER_ICON = ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'];
+
+	function setProject(p) {
+		var data = JSON.parse(JSON.stringify(p || {}));
+
+		state.project = {
+			root: data.root || '',
+			folder: data.folder !== false,
+			fileName: data.fileName || '{id} {projeto}',
+			compName: data.compName || '{id} {projeto}',
+			retrancas: (data.retrancas || []).map(function (r) {
+				return { code: r.code || '', path: r.path || '' };
+			}),
+			collectFiles: data.collectFiles === true,
+			collectFonts: data.collectFonts === true
+		};
+		renderProject();
+	}
+
+	// variável desconhecida no padrão (a janela só aceita as da lista)
+	function badToken(pattern, extra) {
+		var re = /\{([^}]*)\}/g;
+		var m;
+
+		while ((m = re.exec(pattern)) !== null) {
+			if (PROJECT_TOKENS.indexOf(m[1]) < 0 && m[1] !== extra) return m[0];
+		}
+
+		return null;
+	}
+
+	// exemplo com um projeto de mentira: EMP123456, "história ao vivo", sigla JBI
+	function projectPreview() {
+		var p = state.project;
+		var first = p.retrancas[0];
+		var id = first && first.code ? first.code.toUpperCase() + '123456' : 'EMP123456';
+		var values = {
+			id: id,
+			projeto: renameFormat('história ao vivo', state.rename),
+			usuario: 'JBI',
+			retranca: first && first.path ? first.path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() : 'em ponto',
+			data: new Date().toISOString().slice(0, 10),
+			comp: renameFormat('comp final', state.rename)
+		};
+		var fill = function (pattern) {
+			return pattern.replace(/\{(\w+)\}/g, function (all, t) {
+				return values[t] != null ? values[t] : '';
+			}).replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
+		};
+		var node = $('proj-pattern-preview');
+		var bad = badToken(p.fileName) || badToken(p.compName, 'comp');
+
+		node.textContent = '';
+
+		if (bad) {
+			node.appendChild(el('span', 'is-error', bad + ' não é uma variável.'));
+			return;
+		}
+
+		node.appendChild(document.createTextNode('ex. (' + id + ', “história ao vivo”): '));
+		node.appendChild(el('b', null, fill(p.fileName) + '.aep'));
+		node.appendChild(document.createTextNode(' · comps: '));
+		node.appendChild(el('b', null, fill(p.compName)));
+	}
+
+	function renderProject() {
+		if (!state.project || !$('pane-project')) return;
+
+		var p = state.project;
+		var list = $('retranca-list');
+		var disabled = !state.available;
+
+		[['proj-root', 'root'], ['proj-file-pattern', 'fileName'], ['proj-comp-pattern', 'compName']].forEach(function (pair) {
+			var input = $(pair[0]);
+
+			if (input.value !== p[pair[1]]) input.value = p[pair[1]];
+			input.disabled = disabled;
+		});
+		$('proj-folder').checked = p.folder;
+		$('proj-def-files').checked = p.collectFiles;
+		$('proj-def-fonts').checked = p.collectFonts;
+		['proj-folder', 'proj-def-files', 'proj-def-fonts', 'proj-root-pick', 'btn-new-retranca', 'btn-retrancas-index'].forEach(function (id) {
+			$(id).disabled = disabled;
+		});
+
+		list.textContent = '';
+
+		p.retrancas.forEach(function (row, i) {
+			var box = el('div', 'drive-row is-retranca');
+			var code = el('div', 'has-field-icon');
+			var input = el('input', 'cfg-input retranca-code');
+			var ico = svg(CODE_ICON);
+
+			ico.setAttribute('class', 'field-icon');
+			input.type = 'text';
+			input.value = row.code;
+			input.placeholder = 'COD';
+			input.maxLength = 12;
+			input.spellcheck = false;
+			input.title = 'o começo do ID do projeto';
+			input.setAttribute('aria-label', 'código da retranca ' + (i + 1));
+			input.disabled = disabled;
+			input.addEventListener('input', function () {
+				input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+				row.code = input.value;
+				box.classList.remove('has-error');
+				projectPreview();
+				updateDirty();
+			});
+			code.appendChild(ico);
+			code.appendChild(input);
+			box.appendChild(code);
+			box.appendChild(driveField(row.path, 'JORNAIS/em ponto', 'pasta da retranca ' + (row.code || i + 1), FOLDER_ICON, function (v) {
+				row.path = v;
+				projectPreview();
+			}, function () {
+				p.retrancas.splice(i, 1);
+				renderProject();
+				updateDirty();
+			}));
+			list.appendChild(box);
+		});
+
+		projectPreview();
+	}
+
+	function bindProject() {
+		[['proj-root', 'root'], ['proj-file-pattern', 'fileName'], ['proj-comp-pattern', 'compName']].forEach(function (pair) {
+			$(pair[0]).addEventListener('input', function () {
+				state.project[pair[1]] = this.value;
+				projectPreview();
+				updateDirty();
+			});
+		});
+
+		[['proj-folder', 'folder'], ['proj-def-files', 'collectFiles'], ['proj-def-fonts', 'collectFonts']].forEach(function (pair) {
+			$(pair[0]).addEventListener('change', function () {
+				state.project[pair[1]] = this.checked;
+				updateDirty();
+			});
+		});
+
+		$('proj-root-pick').addEventListener('click', async function () {
+			var picked = PAD_BRIDGE.pickFolder('Pasta dos projetos', state.project.root);
+
+			if (!picked) return;
+
+			try {
+				picked = (await call('canonicalPath', { path: picked })).path || picked;
+			} catch (err) { }
+
+			state.project.root = picked;
+			renderProject();
+			updateDirty();
+		});
+
+		$('btn-new-retranca').addEventListener('click', function () {
+			state.project.retrancas.push({ code: '', path: '' });
+			renderProject();
+			updateDirty();
+			$('retranca-list').lastChild.querySelector('input').focus();
+		});
+
+		// as entradas "COD - nome" do índice da busca viram retrancas (as que já existem ficam como estão)
+		$('btn-retrancas-index').addEventListener('click', async function () {
+			var btn = this;
+
+			btn.disabled = true;
+
+			try {
+				var res = await call('projectRetrancasFromIndex');
+				var have = {};
+				var added = 0;
+
+				state.project.retrancas.forEach(function (r) {
+					have[r.code.toUpperCase()] = true;
+				});
+				res.retrancas.forEach(function (r) {
+					if (have[r.code]) return;
+
+					state.project.retrancas.push({ code: r.code, path: r.path });
+					added++;
+				});
+				renderProject();
+				updateDirty();
+				toast(added ? 'success' : null, added ? added + (added === 1 ? ' retranca importada' : ' retrancas importadas') + ' do índice. clique em “Salvar” para aplicar.' : 'nenhuma retranca nova no índice (entradas no formato “COD - nome”).');
+			} catch (err) {
+				toast('error', err.message);
+			} finally {
+				btn.disabled = !state.available;
+			}
+		});
+	}
+
+	/* =========================================================
 	   Pedido de aba (2 cliques numa ferramenta da barra)
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search', 'appearance'];
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'search', 'project', 'appearance'];
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2025,7 +2243,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.tab = name;
 
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
-			tab.setAttribute('aria-selected', tab.getAttribute('data-tab') === name ? 'true' : 'false');
+			var on = tab.getAttribute('data-tab') === name;
+
+			tab.setAttribute('aria-selected', on ? 'true' : 'false');
+
+			// janela estreita: a aba escolhida (pela barra, por exemplo) aparece na fila que rola
+			if (on && tab.scrollIntoView) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 		});
 		TAB_NAMES.forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
@@ -2047,6 +2270,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_086/.test(message)) return 'search';
 		if (/#PAD_087/.test(message)) return 'links';
 		if (/#PAD_088/.test(message)) return 'appearance';
+		if (/#PAD_089/.test(message)) return 'project';
 
 		return null;
 	}
@@ -2080,6 +2304,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setOrganize(res.organize);
 			setSearch(res.search);
 			setLinks(res.links);
+			setProject(res.project);
 			setAppearance(res.appearance);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
@@ -2169,7 +2394,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), appearance: appearanceForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), appearance: appearanceForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -2178,6 +2403,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.organize) setOrganize(res.organize);
 			if (res.search) setSearch(res.search);
 			if (res.links) setLinks(res.links);
+			if (res.project) setProject(res.project);
 			setAppearance(res.appearance || state.appearance);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -2292,6 +2518,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindSearch();
 		bindLinks();
 		bindAppearance();
+		bindProject();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

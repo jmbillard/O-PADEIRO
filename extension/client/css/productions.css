@@ -44,12 +44,12 @@ body.prods-page {
 }
 
 .prods-top .tabs {
-  gap: 14px;
+  gap: 12px;
 }
 
 .prods-top .tab {
   flex: 0 0 auto;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 
 .prods-tools {
@@ -1441,4 +1441,34 @@ body.is-org-dragging * {
   width: 44px;
   height: 32px;
   object-fit: contain;
+}
+
+/* =========================================================
+   aba PROJETO
+   ========================================================= */
+
+.drive-row.is-retranca {
+  grid-template-columns: 124px minmax(0, 1fr);
+}
+
+.retranca-code {
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.proj-cfg-switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.rename-result .is-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* os dois "+" da lista de retrancas: o segundo logo abaixo do primeiro */
+#btn-new-retranca + .add-button {
+  margin-top: -2px;
 }

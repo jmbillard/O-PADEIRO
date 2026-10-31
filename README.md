@@ -19,7 +19,8 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar, busca e aparência → [documentação](docs/producoes.md) |
+| **O PADEIRO projeto** | ID e nome do projeto, retranca, renomear as comps de render e salvar / coletar na pasta da retranca → [documentação](docs/projeto.md) |
+| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar, busca, projeto e aparência → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -101,6 +102,9 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 - **fontes**\
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
+- **projeto**\
+  `◖` → abre a janela do [projeto](docs/projeto.md) (ID, nome, retranca, renomear e salvar).\
+  `◗` → salva o projeto direto na pasta da retranca.
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
@@ -200,7 +204,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, busca e aparência (compartilhados pela equipe) |
+| [🎬 projeto](docs/projeto.md) | ID e nome do projeto, retranca, nomes das comps de render, salvar e coletar |
+| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -283,6 +288,11 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
+| `#PAD_089` | configuração: projeto com variável desconhecida no nome, nome vazio ou retranca sem código / pasta |
+| `#PAD_090` | projeto: sem ID e sem nome, ou nenhuma comp de render para renomear |
+| `#PAD_091` | projeto: sem pasta de destino, nome do arquivo vazio ou pasta que não pôde ser criada |
+| `#PAD_092` | projeto: já existe um projeto com esse nome na pasta (salve de novo para substituir) |
+| `#PAD_093` | projeto: itens que não puderam ser coletados (sequências de imagens ou sem permissão) |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

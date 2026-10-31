@@ -1,0 +1,260 @@
+/* =========================================================
+   PROJETO — janelinha própria, fundo branco
+   ========================================================= */
+
+html,
+body.project-page {
+  height: 100%;
+  min-width: 0;
+}
+
+body.project-page {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.project {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px calc(var(--footer-center) - 23px); /* 23 = meio botão: o centro dos botões fica no lugar de sempre */
+}
+
+.proj-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.proj-row {
+  display: flex;
+  gap: 10px;
+}
+
+.proj-id {
+  min-width: 0;
+  flex: 1;
+}
+
+.proj-id .cfg-input {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.proj-user {
+  width: 104px;
+  flex: 0 0 auto;
+}
+
+.proj-user .cfg-input {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* retranca e destino: o cartão azul, com a pastinha de abrir à direita */
+.proj-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 6px;
+  padding: 14px 12px 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface-soft);
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+
+.proj-card.has-retranca {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+}
+
+.proj-card-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.proj-code {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+  color: var(--text-on-brand);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.proj-code[hidden] {
+  display: none;
+}
+
+.proj-retranca {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-card:not(.has-retranca) .proj-retranca {
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+
+.proj-target {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  grid-column: 1;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 620;
+}
+
+/* o "…" fica no começo do caminho */
+.proj-target .path-line.is-tail .path-text {
+  direction: rtl;
+  text-align: left;
+}
+
+/* salvo em outro lugar: o destino novo aparece embaixo, em azul */
+.proj-target .path-line.is-target {
+  color: var(--blue-500);
+}
+
+.proj-card.is-saved .proj-target .path-line:first-child:not(.is-target) {
+  color: var(--text-primary);
+}
+
+.proj-target-empty {
+  color: var(--text-tertiary);
+}
+
+.proj-open {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.proj-open:disabled {
+  opacity: 0.45;
+}
+
+/* os nomes que serão usados */
+.proj-names {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.proj-name-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.proj-name-row dt {
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.proj-name-row dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 0 4px;
+}
+
+.proj-status {
+  min-height: 1.2em;
+  margin: -4px 4px -6px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-status.is-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.proj-status.is-warning {
+  color: var(--waiting);
+  font-weight: 700;
+}
+
+.proj-status.is-success {
+  color: var(--success);
+}
+
+/* rodapé: "⋯" à esquerda, renomear e salvar à direita */
+.proj-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.proj-footer .button-secondary {
+  margin-left: auto;
+}
+
+.proj-footer .button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.actions-menu[open]>.icon-button.is-light {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.proj-menu .menu-popover {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+}
+
+@media (max-width: 380px) {
+  .proj-footer .button {
+    flex: 1;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .proj-name-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

@@ -121,6 +121,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						webhook: 'https://workflows.jmbillard.com/webhook/path-search',
 						labels: [{ key: 'atracoes_teams', label: 'TEAMS' }, { key: 'atracoes_trello', label: 'TRELLO' }, { key: 'filmes', label: 'FILMES' }, { key: 'servidor', label: 'SERVIDOR' }]
 					},
+					project: {
+						root: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO',
+						folder: true,
+						fileName: '{id} {projeto}',
+						compName: '{usuario} PROMO - {id} {projeto}',
+						retrancas: [{ code: 'EMP', path: 'JORNAIS/em ponto' }, { code: 'JDE', path: 'JORNAIS/jornal das dez' }, { code: 'INS', path: 'CANAL/institucional' }],
+						collectFiles: true,
+						collectFonts: false
+					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
@@ -145,6 +154,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
 				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
+				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
@@ -239,13 +249,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				if (badLink) throw new Error('#PAD_087 - links: "' + (badLink.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
 				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
 			}
+			if (a.project) {
+				var badTok = /\{(?!(id|projeto|usuario|retranca|data|comp)\})[^}]*\}/.exec(a.project.fileName + a.project.compName);
+
+				if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é uma variável.');
+				window.PAD_MOCK_LIST.project = JSON.parse(JSON.stringify(a.project));
+			}
 			if (a.search) {
 				if (a.search.source !== 'file' && !/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 				if (a.search.source === 'file' && !a.search.file) throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -667,6 +683,93 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (mode === 'nooutput') return { opened: 0, missing: a.paths.map(function (p) { return p.replace(/^\/\/[^\/]+/, '/Volumes'); }) };
 
 			return { opened: 1, missing: [] };
+		},
+
+		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
+		projectInfo: function () {
+			if (!window.PAD_MOCK_LIST) api.productions();
+
+			var p = window.PAD_MOCK_PROJECT || (window.PAD_MOCK_PROJECT = mode === 'noproj' ? { id: '', name: '', user: '' } : { id: 'EMP123456', name: 'História ao Vivo', user: '' });
+			var s = window.PAD_MOCK_LIST.project;
+			var retrancas = mode === 'nort' ? [] : s.retrancas;
+			var user = p.user || 'JBI';
+			var found = null;
+
+			retrancas.forEach(function (r) {
+				if (p.id.indexOf(r.code) === 0 && (!found || r.code.length > found.code.length)) found = r;
+			});
+
+			var name = p.name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+			var values = { id: p.id, projeto: name, usuario: user, retranca: found ? found.path.split('/').pop() : '', data: '2026-10-31' };
+			var fill = function (pattern) {
+				return pattern.replace(/\{(\w+)\}/g, function (all, t) {
+					return values[t] != null ? values[t] : '';
+				}).replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
+			};
+			var fileBase = fill(s.fileName);
+			var base = found ? s.root + '/' + found.path : s.root;
+			var target = base ? (s.folder && fileBase ? base + '/' + fileBase : base) : '';
+			var toMac = function (x) {
+				return x.replace(/^\/\/[^\/]+/, '/Volumes');
+			};
+
+			return {
+				id: p.id,
+				name: p.name,
+				user: p.user || 'JBI',
+				defaultUser: 'JBI',
+				hasItems: true,
+				file: window.PAD_MOCK_SAVED || '',
+				retranca: found ? { code: found.code, name: found.path.split('/').pop() } : null,
+				hasRetrancas: retrancas.length > 0,
+				target: target ? toMac(target) : '',
+				fileName: fileBase ? fileBase + '.aep' : '',
+				compName: p.id || p.name ? fill(s.compName.replace('{comp}', 'comp final')) : '',
+				renderCount: 3,
+				selected: false,
+				collectFiles: s.collectFiles,
+				collectFonts: s.collectFonts
+			};
+		},
+
+		projectSet: function (a) {
+			var p = window.PAD_MOCK_PROJECT || {};
+
+			window.PAD_MOCK_PROJECT = { id: (a.id || '').toUpperCase().replace(/\s+/g, ''), name: (a.name || '').trim(), user: a.user === 'JBI' ? '' : a.user || '' };
+			if (p.id !== window.PAD_MOCK_PROJECT.id) window.PAD_MOCK_SAVED = '';
+
+			return api.projectInfo();
+		},
+
+		projectRename: function () {
+			if (mode === 'fail') throw new Error('#PAD_090 - nenhuma comp de render: selecione as comps ou use o comentário de render (EXPORT).');
+
+			return { count: 3, names: [] };
+		},
+
+		projectSave: function (a) {
+			var info = api.projectInfo();
+
+			if (!a.overwrite && !info.file && window.PAD_MOCK_EXISTS) throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: salve de novo para substituir.');
+
+			window.PAD_MOCK_EXISTS = true;
+			window.PAD_MOCK_SAVED = (a.path || info.target) + '/' + info.fileName;
+
+			return { messages: [], data: { file: window.PAD_MOCK_SAVED, copied: a.collectFiles ? 12 : 0, fonts: !!a.collectFonts } };
+		},
+
+		projectOpenFolder: function () {
+			return { path: '/Volumes/cdesign' };
+		},
+
+		projectRetrancasFromIndex: function () {
+			return {
+				retrancas: [
+					{ code: 'INS', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/CANAL/institucional' },
+					{ code: 'EMP', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/JORNAIS/em ponto' },
+					{ code: 'MAC', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/MARCA E COMUNICACAO' }
+				]
+			};
 		},
 
 		openFolder: function (a) {

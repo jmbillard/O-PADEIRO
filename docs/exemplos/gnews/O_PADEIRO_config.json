@@ -206,6 +206,148 @@
 			"icon": ""
 		}
 	],
+	"PROJECT": {
+		"root": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO",
+		"folder": true,
+		"fileName": "{id} {projeto}",
+		"compName": "{usuario} PROMO - {id} {projeto}",
+		"retrancas": [
+			{
+				"code": "INS",
+				"path": "CANAL/institucional"
+			},
+			{
+				"code": "DIG",
+				"path": "CANAL/digital"
+			},
+			{
+				"code": "PIL",
+				"path": "CANAL/pilula"
+			},
+			{
+				"code": "MKT",
+				"path": "CANAL/marketing"
+			},
+			{
+				"code": "NDL",
+				"path": "VINHETAS/nunca desliga"
+			},
+			{
+				"code": "BIP",
+				"path": "VINHETAS/bip"
+			},
+			{
+				"code": "ASE",
+				"path": "VINHETAS/a seguir"
+			},
+			{
+				"code": "EMN",
+				"path": "JORNAIS/edicao da meia noite"
+			},
+			{
+				"code": "EMP",
+				"path": "JORNAIS/em ponto"
+			},
+			{
+				"code": "CON",
+				"path": "JORNAIS/conexao"
+			},
+			{
+				"code": "EST",
+				"path": "JORNAIS/estudio i"
+			},
+			{
+				"code": "GMN",
+				"path": "JORNAIS/globonews mais"
+			},
+			{
+				"code": "EDE",
+				"path": "JORNAIS/edicao das 18h"
+			},
+			{
+				"code": "EPA",
+				"path": "JORNAIS/em pauta"
+			},
+			{
+				"code": "JDE",
+				"path": "JORNAIS/jornal das dez"
+			},
+			{
+				"code": "EDO",
+				"path": "JORNAIS/especial de domingo"
+			},
+			{
+				"code": "ELE",
+				"path": "FACTUAIS/eleicoes brasil"
+			},
+			{
+				"code": "EUA",
+				"path": "FACTUAIS/eua"
+			},
+			{
+				"code": "MUN",
+				"path": "FACTUAIS/mundo"
+			},
+			{
+				"code": "RET",
+				"path": "FACTUAIS/retrospectiva"
+			},
+			{
+				"code": "COB",
+				"path": "FACTUAIS/coberturas"
+			},
+			{
+				"code": "INT",
+				"path": "PROGRAMAS/internacional"
+			},
+			{
+				"code": "CID",
+				"path": "PROGRAMAS/cidades e solucoes"
+			},
+			{
+				"code": "GAB",
+				"path": "PROGRAMAS/fernando gabeira"
+			},
+			{
+				"code": "DOC",
+				"path": "PROGRAMAS/documentario"
+			},
+			{
+				"code": "MIR",
+				"path": "PROGRAMAS/miriam leitao"
+			},
+			{
+				"code": "DAV",
+				"path": "PROGRAMAS/roberto davila"
+			},
+			{
+				"code": "PAP",
+				"path": "PROGRAMAS/papo de politica"
+			},
+			{
+				"code": "MSC",
+				"path": "PROGRAMAS/dialogos"
+			},
+			{
+				"code": "CEN",
+				"path": "PROGRAMAS/central"
+			},
+			{
+				"code": "DEB",
+				"path": "PROGRAMAS/debate"
+			},
+			{
+				"code": "ESP",
+				"path": "PROGRAMAS/especial"
+			},
+			{
+				"code": "MAC",
+				"path": "MARCA E COMUNICACAO"
+			}
+		],
+		"collectFiles": false,
+		"collectFonts": false
+	},
 	"APPEARANCE": {
 		"mode": "light",
 		"background": "solid",

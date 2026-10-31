@@ -19,6 +19,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
 	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
+	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
 	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -61,6 +62,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10" cy="10" r="5.2" /></clipPath></defs>' +
 			'<circle cx="10" cy="10" r="7.2" /><path d="m15.300 15.300 5.200 5.200" />' +
 			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10" y="18.300" text-anchor="middle">A</text></g></g>',
+		// projeto: a claquete bate
+		project:
+			'<g class="anim-clap"><rect x="3.5" y="10" width="17" height="9.5" rx="1.5" />' +
+			'<g class="clap-top"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
 
@@ -166,6 +171,42 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
 		},
 
+		// janela do projeto: ID, nome, retranca, renomear e salvar
+		project: function () {
+			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+		},
+
+		// salvar direto na pasta da retranca (com o coletar da configuração)
+		saveProject: async function () {
+			var info = await call('projectInfo');
+
+			if (!info.id && !info.name) {
+				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+				throw new Error('#PAD_090 - preencha o ID ou o nome do projeto (janela PROJETO).');
+			}
+
+			var path = '';
+
+			if (!info.target) {
+				path = PAD_BRIDGE.pickFolder('Pasta para salvar o projeto');
+
+				if (!path) return;
+			}
+
+			var res;
+
+			try {
+				res = await call('projectSave', { path: path, collectFiles: info.collectFiles, collectFonts: info.collectFonts, open: true });
+			} catch (err) {
+				if (!/#PAD_092/.test(err.message)) throw err;
+
+				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+				throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: para substituir, salve pela janela PROJETO.');
+			}
+
+			report(res, 'projeto salvo: ' + (res.data && res.data.file ? res.data.file : info.fileName));
+		},
+
 		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
 		convertPaths: async function () {
 			await call('requestConverter');
@@ -205,6 +246,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			}
 		],
 		[
+			{
+				key: 'projeto',
+				config: 'project',
+				label: 'Projeto',
+				icon: 'project',
+				tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca, renomear e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
+				left: actions.project,
+				right: actions.saveProject
+			},
 			{
 				key: 'pastas',
 				config: 'drives',

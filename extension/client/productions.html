@@ -23,6 +23,7 @@
 				<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 				<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
 				<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCA</button>
+				<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
 				<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 			</div>
 			<div class="prods-tools">
@@ -196,6 +197,37 @@
 				<p class="cfg-hint">identificadas automaticamente no índice (cada lista dele vira uma categoria). dê a cada uma o nome que aparece na busca; sem nome, vale o automático.</p>
 				<div class="drive-rows" id="category-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-categories">atualizar as categorias pelo webhook</button>
+			</div>
+
+			<!-- aba PROJETO (a janela PROJETO: pasta, nomes e retrancas) -->
+			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">pasta dos projetos</p>
+				<p class="cfg-hint">onde os projetos são salvos. a pasta de cada retranca fica dentro desta; sem pasta, a janela PROJETO pede uma ao salvar.</p>
+				<div class="cfg-path has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><input type="text" class="cfg-input" id="proj-root" placeholder="//servidor/share/PROJETOS" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos"><button type="button" class="mini-button" id="proj-root-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+				<label class="cfg-switch">
+					<input type="checkbox" id="proj-folder">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">uma pasta para cada projeto (com o nome do arquivo)</span>
+				</label>
+
+				<p class="cfg-title prods-section-title">nomes</p>
+				<p class="cfg-hint">variáveis: <b>{id}</b> <b>{projeto}</b> <b>{usuario}</b> (a sigla) <b>{retranca}</b> <b>{data}</b>; nas comps também <b>{comp}</b> (o nome atual da comp). o nome do projeto segue o formato da aba RENOMEAR (acentos e caixa).</p>
+				<div class="has-field-icon" title="nome do arquivo .aep"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><input type="text" class="cfg-input" id="proj-file-pattern" placeholder="{id} {projeto}" spellcheck="false" autocomplete="off" aria-label="Nome do arquivo"></div>
+				<div class="has-field-icon" title="nome das comps de render"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /></svg><input type="text" class="cfg-input" id="proj-comp-pattern" placeholder="{usuario} PROMO - {id} {projeto}" spellcheck="false" autocomplete="off" aria-label="Nome das comps de render"></div>
+				<p class="rename-result" id="proj-pattern-preview"></p>
+
+				<p class="cfg-title prods-section-title">ao salvar</p>
+				<p class="cfg-hint">o padrão dos interruptores da janela PROJETO (cada pessoa ainda pode mudar na hora).</p>
+				<div class="proj-cfg-switches">
+					<label class="cfg-switch"><input type="checkbox" id="proj-def-files"><span class="cfg-switch-track"></span><span class="cfg-switch-label">coletar arquivos</span></label>
+					<label class="cfg-switch"><input type="checkbox" id="proj-def-fonts"><span class="cfg-switch-track"></span><span class="cfg-switch-label">coletar fontes</span></label>
+				</div>
+
+				<p class="cfg-title prods-section-title">retrancas</p>
+				<p class="cfg-hint">o começo do ID do projeto indica a retranca: <b>EMP</b>123456 → a pasta de <b>EMP</b>. a pasta pode ser dentro da pasta dos projetos (JORNAIS/em ponto) ou um caminho completo. vale o código mais longo que combinar.</p>
+				<div class="drive-rows" id="retranca-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-retranca">+ nova retranca</button>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-retrancas-index" title="usa as entradas da busca no formato “COD - nome” (com o caminho delas)">importar do índice da busca</button>
 			</div>
 
 			<!-- aba APARÊNCIA (o tema de todas as janelas) -->

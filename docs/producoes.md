@@ -2,9 +2,9 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em oito abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **busca** e **aparência**.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em nove abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **busca**, **projeto** e **aparência**.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, buscar → busca, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, buscar → busca, projeto → projeto, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 ## 📍 produções
 
@@ -154,6 +154,33 @@ a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
 - **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias*' lê o índice de novo.
 
 > 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
+
+<br>
+
+---
+
+<br>
+
+## 📍 projeto
+
+a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são salvos e como são nomeados.
+
+- **pasta dos projetos** → a raiz: a pasta de cada retranca fica dentro dela. sem pasta, a janela PROJETO pede uma ao salvar.
+- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo (o projeto, os `project files` e as `FONTS` ficam juntos).
+- **nomes** → o nome do arquivo `.aep` e o das comps de render, com variáveis:
+
+  | variável | vira |
+  | --- | --- |
+  | `{id}` | o ID do projeto (ex: `EMP123456`) |
+  | `{projeto}` | o nome do projeto, no formato da aba **renomear** (acentos e caixa) |
+  | `{usuario}` | a sigla de quem salva (na janela PROJETO; por padrão, as 3 primeiras letras do usuário do sistema) |
+  | `{retranca}` | o nome da pasta da retranca (ex: `em ponto`) |
+  | `{data}` | a data de hoje (`aaaa-mm-dd`) |
+  | `{comp}` | só nas comps: o nome atual da comp |
+
+  embaixo dos campos, um exemplo mostra como os nomes ficam.
+- **ao salvar** → o padrão dos interruptores '*coletar arquivos*' e '*coletar fontes*' da janela.
+- **retrancas** → o começo do ID indica a retranca: `EMP123456` → a pasta de `EMP`. a pasta pode ficar dentro da pasta dos projetos (`JORNAIS/em ponto`) ou ser um caminho completo. vale o código mais longo que combinar (`EMP` ganha de `EM`). '*importar do índice da busca*' traz as entradas da busca no formato `COD - nome`, com o caminho delas.
 
 <br>
 
