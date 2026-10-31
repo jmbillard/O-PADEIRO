@@ -10,24 +10,24 @@
 */
 
 // Organização (a aba ORGANIZAR da configuração substitui):
-//   folders          → a árvore de pastas: nome, pasta pai ('' = raiz) e o que ela recebe ('content'):
+//   folders          → a árvore de pastas: nome, pasta pai ('' = raiz) e os tipos que ela recebe ('contents'):
 //                      render (comps de render), precomps (as outras comps), videos, imagens, audio,
-//                      solidos, dados, missing (arquivos ausentes) ou '' (só agrupa outras pastas)
+//                      solidos, dados, missing (arquivos ausentes); sem tipos, só agrupa outras pastas
 //   renderComments   → comentários (ou parte deles) que mandam a comp para a pasta de render
 //   autoComment      → comentário dado às comps selecionadas sem comentário (e às criadas pelos templates)
 //   dataExtensions   → extensões tratadas como arquivos de dados
 //   commentSubfolders→ o comentário (antes de ':') vira subpasta
 var PAD_ORGANIZE = {
 	folders: [
-		{ name: '01 COMPS', parent: '', content: 'render' },
-		{ name: '02 PRECOMPS', parent: '', content: 'precomps' },
-		{ name: '03 ARQUIVOS', parent: '', content: '' },
-		{ name: 'VIDEOS', parent: '03 ARQUIVOS', content: 'videos' },
-		{ name: 'IMAGENS', parent: '03 ARQUIVOS', content: 'imagens' },
-		{ name: 'AUDIO', parent: '03 ARQUIVOS', content: 'audio' },
-		{ name: 'SOLIDOS', parent: '03 ARQUIVOS', content: 'solidos' },
-		{ name: 'DADOS', parent: '03 ARQUIVOS', content: 'dados' },
-		{ name: 'MISSING', parent: '', content: 'missing' }
+		{ name: '01 COMPS', parent: '', contents: ['render'] },
+		{ name: '02 PRECOMPS', parent: '', contents: ['precomps'] },
+		{ name: '03 ARQUIVOS', parent: '', contents: [] },
+		{ name: 'VIDEOS', parent: '03 ARQUIVOS', contents: ['videos'] },
+		{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens'] },
+		{ name: 'AUDIO', parent: '03 ARQUIVOS', contents: ['audio'] },
+		{ name: 'SOLIDOS', parent: '03 ARQUIVOS', contents: ['solidos'] },
+		{ name: 'DADOS', parent: '03 ARQUIVOS', contents: ['dados'] },
+		{ name: 'MISSING', parent: '', contents: ['missing'] }
 	],
 	renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
 	autoComment: 'EXPORTAR',
@@ -96,11 +96,11 @@ function projectTemplateFolders() {
 	for (var i = 0; i < PAD_ORGANIZE.folders.length; i++) {
 		var def = PAD_ORGANIZE.folders[i];
 
-		if (def.content == 'missing') continue;
+		if (def.contents.length == 1 && def.contents[0] == 'missing') continue; // só quando há arquivos ausentes
 
 		var folder = padEnsureOrganizeFolder(def, made);
 
-		if (def.content) folders[def.content] = folder;
+		for (var c = 0; c < def.contents.length; c++) folders[def.contents[c]] = folder;
 	}
 
 	folders._made = made;
@@ -272,7 +272,7 @@ function populateProjectFolders() {
 		var missingDef = null;
 
 		for (var m = 0; m < PAD_ORGANIZE.folders.length; m++) {
-			if (PAD_ORGANIZE.folders[m].content == 'missing') missingDef = PAD_ORGANIZE.folders[m];
+			if (PAD_ORGANIZE.folders[m].contents.indexOf('missing') >= 0) missingDef = PAD_ORGANIZE.folders[m];
 		}
 
 		populateFootageItemFolders(footage.missingArray, missingDef ? padEnsureOrganizeFolder(missingDef, folders._made) : null, cache);

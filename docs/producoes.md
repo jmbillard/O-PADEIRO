@@ -99,15 +99,19 @@ a aba **renomear** define como o botão **renomear** (na barra) padroniza os nom
 
 a aba **organizar** define a árvore de pastas que o botão **organizar** (na barra) monta no projeto. vem preenchida com a árvore de sempre (`01 COMPS`, `02 PRECOMPS`, `03 ARQUIVOS` com `VIDEOS`, `IMAGENS`, `AUDIO`, `SOLIDOS` e `DADOS`, e `MISSING`).
 
-- **árvore de pastas** → cada pasta tem o **nome**, **dentro de** qual pasta ela fica (ou na raiz) e o que ela **recebe**: comps de render, outras comps, vídeos, imagens, áudio, sólidos, dados ou arquivos ausentes. pastas que não recebem nada só agrupam outras (como `03 ARQUIVOS`). as subpastas aparecem recuadas embaixo da pasta delas.
-- **comps de render** → a comp vai para a pasta de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
+a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à direita, os **tipos de item** e os ajustes.
+
+- **árvore** → clique no nome para renomear a pasta. arraste a pasta pelos pontinhos: **sobre outra pasta**, ela entra; **entre duas pastas** (aparece uma linha), fica no mesmo nível; sobre **raiz do projeto**, volta para a raiz. '*+ nova pasta*' cria uma pasta na raiz; o **×** (passe o mouse) exclui.
+- **tipos de item** → comps de render, outras comps, vídeos, imagens, áudio, sólidos, dados e arquivos ausentes. arraste um tipo (o cartão da direita ou a etiqueta na árvore) para a pasta que deve recebê-lo; uma pasta pode receber mais de um tipo. cada cartão mostra onde o tipo está. o **×** da etiqueta (ou soltar o tipo na raiz) tira o tipo da pasta.
+- **comps de render** → a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
 - **o comentário vira subpasta** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`).
 
 > 🚩 *obs:*\
-> • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas para a pasta de cima.\
-> • o que não tem pasta na árvore fica na raiz do projeto.\
+> • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas e os tipos dela para a pasta de cima.\
+> • o tipo que não está em nenhuma pasta fica na raiz do projeto (aparece na linha **raiz do projeto**).\
+> • `Esc` cancela um arrasto; perto das bordas, a árvore rola sozinha.\
 > • a pasta dos arquivos ausentes só é criada quando há algum arquivo ausente.
 
 <br>

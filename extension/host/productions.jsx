@@ -350,7 +350,7 @@ function padReadRename() {
 ---------------------------------------------------------------
 
 'ORGANIZE' no O_PADEIRO_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
-{ folders: [{ name, parent, content }], renderComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
+{ folders: [{ name, parent, contents: [...] }], renderComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
 Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
 
 */
@@ -386,16 +386,26 @@ function padCleanOrganize(o) {
 
 	for (i = 0; i < (o.folders || []).length; i++) {
 		var name = padTrim(o.folders[i].name).replace(/\s+/g, ' ');
-		var content = padTrim(o.folders[i].content);
+		// 'contents' (lista) ou 'content' (um tipo só, como nas primeiras versões)
+		var list = o.folders[i].contents instanceof Array ? o.folders[i].contents : (padTrim(o.folders[i].content) ? [padTrim(o.folders[i].content)] : []);
+		var kept = [];
 
 		if (name == '') throw new Error('#PAD_084 - organizar: a pasta ' + (i + 1) + ' precisa de um nome.');
 		if (names[name.toUpperCase()]) throw new Error('#PAD_084 - organizar: a pasta "' + name + '" aparece mais de uma vez.');
-		if (content != '' && PAD_ORGANIZE_CONTENTS.indexOf(content) < 0) throw new Error('#PAD_084 - organizar: conteúdo desconhecido em "' + name + '".');
-		if (content != '' && contents[content]) throw new Error('#PAD_084 - organizar: "' + name + '" e "' + contents[content] + '" recebem o mesmo conteúdo.');
+
+		for (var t = 0; t < list.length; t++) {
+			var content = padTrim(list[t]);
+
+			if (content == '') continue;
+			if (PAD_ORGANIZE_CONTENTS.indexOf(content) < 0) throw new Error('#PAD_084 - organizar: tipo desconhecido em "' + name + '".');
+			if (contents[content]) throw new Error('#PAD_084 - organizar: "' + name + '" e "' + contents[content] + '" recebem o mesmo tipo.');
+
+			contents[content] = name;
+			kept.push(content);
+		}
 
 		names[name.toUpperCase()] = true;
-		if (content != '') contents[content] = name;
-		clean.folders.push({ name: name, parent: padTrim(o.folders[i].parent), content: content });
+		clean.folders.push({ name: name, parent: padTrim(o.folders[i].parent), contents: kept });
 	}
 
 	// pasta pai: precisa existir e não pode formar ciclo

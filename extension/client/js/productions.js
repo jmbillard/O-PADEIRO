@@ -28,7 +28,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
 		rename: { types: [], fixed: [] }, // tipos de peça e nomes fixos (aba RENOMEAR); termos editados como texto
-		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR
+		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		tab: 'prods'
 	};
 
@@ -242,7 +242,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		return {
 			folders: o.folders.map(function (f) {
-				return { name: f.name.trim(), parent: f.parent, content: f.content };
+				return { name: f.name.trim(), parent: f.parent, contents: f.contents.slice() };
 			}),
 			renderComments: commaList(o.renderComments),
 			autoComment: o.autoComment.trim(),
@@ -941,28 +941,37 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Organizar
+	   Organizar: a árvore (esquerda) e os tipos de item (direita),
+	   com arrastar e soltar por eventos de mouse (o CEP não entrega
+	   os de ponteiro nem o arrastar nativo)
 	   ========================================================= */
 
-	var FOLDER_ICON = ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'];
-	var CONTENTS = [
-		['', '— só agrupa'],
-		['render', 'comps de render'],
-		['precomps', 'outras comps'],
-		['videos', 'vídeos'],
-		['imagens', 'imagens'],
-		['audio', 'áudio'],
-		['solidos', 'sólidos'],
-		['dados', 'dados'],
-		['missing', 'arquivos ausentes']
+	var FOLDER_PATH = 'M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z';
+	var TYPES = [
+		['render', 'comps de render', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M10 9.5v5l4.5-2.5z']],
+		['precomps', 'outras comps', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M7.5 4.5v15M16.5 4.5v15']],
+		['videos', 'vídeos', ['M4 6.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M16 10l4-2.5v9L16 14']],
+		['imagens', 'imagens', ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'm4.5 16 4.5-4.5 4 4 2.5-2.5 4 4', 'M15 9h.01']],
+		['audio', 'áudio', ['M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2']],
+		['solidos', 'sólidos', ['M5 5h14v14H5z']],
+		['dados', 'dados', ['M4 5.5h16v13H4z', 'M4 10h16M4 14.5h16M10 5.5v13']],
+		['missing', 'arquivos ausentes', ['M12 4 3 19.5h18z', 'M12 10v4.5M12 17.5h.01']]
 	];
+
+	function typeLabel(key) {
+		var t = TYPES.filter(function (x) {
+			return x[0] === key;
+		})[0];
+
+		return t ? t[1] : key;
+	}
 
 	function setOrganize(o) {
 		var data = o || {};
 
 		state.organize = {
 			folders: (data.folders || []).map(function (f) {
-				return { name: f.name || '', parent: f.parent || '', content: f.content || '' };
+				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || (f.content ? [f.content] : [])).slice() };
 			}),
 			renderComments: (data.renderComments || []).join(', '),
 			autoComment: data.autoComment || '',
@@ -976,6 +985,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
 	}
 
+	function folderByName(name) {
+		return state.organize.folders.filter(function (f) {
+			return sameName(f.name, name);
+		})[0] || null;
+	}
+
+	// a pasta e as que estão dentro dela (em qualquer nível)
+	function subtree(folder) {
+		var out = [folder];
+
+		for (var i = 0; i < out.length; i++) {
+			state.organize.folders.forEach(function (f) {
+				if (out.indexOf(f) < 0 && f.parent && sameName(f.parent, out[i].name)) out.push(f);
+			});
+		}
+
+		return out;
+	}
+
 	// ordem de árvore: cada pasta logo depois da pasta pai, com a profundidade (para o recuo)
 	function folderTree() {
 		var folders = state.organize.folders;
@@ -985,7 +1013,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		function add(parentName, depth) {
 			folders.forEach(function (f) {
 				if (placed.indexOf(f) >= 0) return;
-				if (parentName === null ? (f.parent === '' || !folders.some(function (p) { return p !== f && sameName(p.name, f.parent); })) : sameName(f.parent, parentName)) {
+
+				var isRoot = f.parent === '' || !folderByName(f.parent) || sameName(f.parent, f.name);
+
+				if (parentName === null ? isRoot : sameName(f.parent, parentName)) {
 					placed.push(f);
 					out.push({ folder: f, depth: depth });
 					if (depth < 12) add(f.name, depth + 1);
@@ -1001,86 +1032,130 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return out;
 	}
 
-	function selectBox(options, value, label, onChange) {
-		var wrap = el('span', 'select');
-		var select = el('select');
+	function folderOf(type) {
+		return state.organize.folders.filter(function (f) {
+			return f.contents.indexOf(type) >= 0;
+		})[0] || null;
+	}
 
-		options.forEach(function (o) {
-			var option = el('option', null, o[1]);
+	function svgIcon(paths) {
+		var node = svg(paths);
 
-			option.value = o[0];
-			select.appendChild(option);
+		node.setAttribute('aria-hidden', 'true');
+
+		return node;
+	}
+
+	function chip(type, onRemove) {
+		var node = el('span', 'org-chip');
+		var x = el('button');
+
+		node.setAttribute('data-type', type);
+		node.appendChild(document.createTextNode(typeLabel(type)));
+		x.type = 'button';
+		x.title = 'tirar da pasta (vai para a raiz)';
+		x.setAttribute('aria-label', 'tirar ' + typeLabel(type) + ' da pasta');
+		x.appendChild(svgIcon(ICONS.remove));
+		x.addEventListener('click', onRemove);
+		node.appendChild(x);
+
+		return node;
+	}
+
+	function unassign(type) {
+		state.organize.folders.forEach(function (f) {
+			var i = f.contents.indexOf(type);
+
+			if (i >= 0) f.contents.splice(i, 1);
 		});
-		select.value = value;
-		select.setAttribute('aria-label', label);
-		select.disabled = !state.available;
-		select.addEventListener('change', function () {
-			onChange(select.value);
-		});
-		wrap.appendChild(select);
-		PAD_DROPDOWN.enhance(select);
-
-		return wrap;
 	}
 
 	function renderOrganize() {
 		if (!state.organize) return;
 
-		var list = $('folder-list');
+		var tree = $('org-tree');
 		var o = state.organize;
+		var scroll = tree.scrollTop;
 
-		list.textContent = '';
+		tree.textContent = '';
+
+		// a raiz do projeto: recebe pastas soltas aqui e mostra os tipos que não entram em pasta nenhuma
+		var root = el('div', 'org-folder is-root');
+		var rootChips = el('div', 'org-chips');
+
+		root.setAttribute('data-root', '1');
+		root.appendChild(svgIcon(['M3.5 7.5A2 2 0 0 1 5.5 5.5h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M3.5 9.5h17']));
+		root.appendChild(el('span', 'org-root-label', 'raiz do projeto'));
+		TYPES.forEach(function (t) {
+			if (!folderOf(t[0])) rootChips.appendChild(chip(t[0], function () { }));
+		});
+		Array.prototype.forEach.call(rootChips.querySelectorAll('button'), function (b) {
+			b.remove(); // na raiz não há o que tirar
+		});
+		rootChips.style.paddingLeft = '22px';
+		root.appendChild(rootChips);
+		tree.appendChild(root);
 
 		folderTree().forEach(function (item) {
 			var f = item.folder;
-			var row = el('div', 'organize-row');
-			var name = driveField(f.name, 'nome da pasta', 'nome da pasta', FOLDER_ICON, function (v) {
+			var row = el('div', 'org-folder' + (item.depth ? ' is-child' : ''));
+			var name = el('input', 'org-name');
+			var remove = el('button', 'org-remove');
+			var chips = el('div', 'org-chips');
+
+			row.setAttribute('data-index', o.folders.indexOf(f));
+			row.style.setProperty('--depth', item.depth + 1);
+			row.appendChild(PAD_SORT.handle());
+			row.appendChild(svgIcon([FOLDER_PATH]));
+
+			name.type = 'text';
+			name.value = f.name;
+			name.placeholder = 'nome da pasta';
+			name.spellcheck = false;
+			name.disabled = !state.available;
+			name.setAttribute('aria-label', 'nome da pasta');
+			name.addEventListener('input', function () {
 				// renomear leva as subpastas junto
 				o.folders.forEach(function (child) {
-					if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = v.trim();
+					if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = name.value.trim();
 				});
-				f.name = v;
-			}, function () {
-				// as subpastas sobem para a pasta pai da removida
+				f.name = name.value;
+				renderTypes();
+				updateDirty();
+			});
+			row.appendChild(name);
+
+			remove.type = 'button';
+			remove.title = 'excluir a pasta (as subpastas e os tipos sobem um nível)';
+			remove.setAttribute('aria-label', 'excluir a pasta ' + f.name);
+			remove.disabled = !state.available;
+			remove.appendChild(svgIcon(ICONS.remove));
+			remove.addEventListener('click', function () {
+				var up = folderByName(f.parent);
+
 				o.folders.forEach(function (child) {
 					if (child !== f && sameName(child.parent, f.name)) child.parent = f.parent;
 				});
+				if (up) up.contents = up.contents.concat(f.contents);
 				o.folders.splice(o.folders.indexOf(f), 1);
 				renderOrganize();
 				updateDirty();
 			});
+			row.appendChild(remove);
 
-			name.classList.add('organize-name');
-			if (item.depth) name.classList.add('is-child');
-			name.style.setProperty('--depth', item.depth);
-			name.querySelector('input').addEventListener('change', renderOrganize); // ao sair do campo, atualiza as listas de pasta pai
-
-			var parents = [['', 'raiz do projeto']].concat(o.folders.filter(function (p) {
-				return p !== f && p.name.trim();
-			}).map(function (p) {
-				return [p.name.trim(), p.name.trim()];
-			}));
-			var used = {};
-
-			o.folders.forEach(function (other) {
-				if (other !== f && other.content) used[other.content] = other.name.trim();
+			f.contents.forEach(function (type) {
+				chips.appendChild(chip(type, function () {
+					unassign(type);
+					renderOrganize();
+					updateDirty();
+				}));
 			});
-
-			row.appendChild(name);
-			row.appendChild(selectBox(parents, f.parent, 'pasta pai de ' + f.name, function (v) {
-				f.parent = v;
-				renderOrganize();
-				updateDirty();
-			}));
-			row.appendChild(selectBox(CONTENTS.map(function (c) {
-				return [c[0], c[0] && used[c[0]] ? c[1] + ' (em ' + used[c[0]] + ')' : c[1]];
-			}), f.content, 'o que ' + f.name + ' recebe', function (v) {
-				f.content = v;
-				renderOrganize();
-				updateDirty();
-			}));
-			list.appendChild(row);
+			row.appendChild(chips);
+			tree.appendChild(row);
 		});
+
+		tree.scrollTop = scroll;
+		renderTypes();
 
 		var fields = { 'org-render': 'renderComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
 
@@ -1093,15 +1168,236 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-new-folder').disabled = !state.available;
 	}
 
+	// os cartões dos tipos (direita), com o lugar de cada um
+	function renderTypes() {
+		var box = $('org-types');
+
+		box.textContent = '';
+
+		TYPES.forEach(function (t) {
+			var card = el('div', 'org-type');
+			var text = el('span', 'org-type-text');
+			var where = folderOf(t[0]);
+
+			card.setAttribute('data-type', t[0]);
+			card.title = 'arraste para uma pasta da árvore';
+			card.appendChild(svgIcon(t[2]));
+			text.appendChild(el('strong', null, t[1]));
+			text.appendChild(el('span', null, where ? 'em ' + (where.name.trim() || '(sem nome)') : 'na raiz do projeto'));
+			card.appendChild(text);
+			box.appendChild(card);
+		});
+	}
+
+	/* ---------- arrastar ---------- */
+
+	var drag = null; // { kind: 'folder' | 'type', folder, type, x, y, active, ghost, target }
+
+	function dropTarget(x, y) {
+		var hit = document.elementFromPoint(x, y);
+
+		if (!hit) return null;
+
+		var tree = $('org-tree');
+		var row = hit.closest('.org-folder');
+
+		if (drag.kind === 'type') {
+			if (row && row.hasAttribute('data-index')) return { mode: 'inside', folder: state.organize.folders[+row.getAttribute('data-index')], row: row };
+			if ((row && row.hasAttribute('data-root')) || hit.closest('.org-side') || hit.closest('.org-tree')) return { mode: 'root' };
+
+			return null;
+		}
+
+		if (row && row.hasAttribute('data-index')) {
+			var target = state.organize.folders[+row.getAttribute('data-index')];
+			var box = row.getBoundingClientRect();
+			var rel = (y - box.top) / box.height;
+			var mode = rel < 0.28 ? 'before' : rel > 0.72 ? 'after' : 'inside';
+
+			if (subtree(drag.folder).indexOf(target) >= 0) return null; // não entra nela mesma
+
+			return { mode: mode, folder: target, row: row };
+		}
+
+		if ((row && row.hasAttribute('data-root')) || (hit.closest('.org-tree') === tree)) return { mode: 'root' };
+
+		return null;
+	}
+
+	function showTarget(t) {
+		var tree = $('org-tree');
+		var line = tree.querySelector('.org-line');
+
+		Array.prototype.forEach.call(tree.querySelectorAll('.is-drop-inside'), function (r) {
+			r.classList.remove('is-drop-inside');
+		});
+		$('pane-organize').querySelector('.org-side').classList.toggle('is-drop-target', !!(t && t.mode === 'root' && drag.kind === 'type'));
+
+		if (!t) {
+			if (line) line.remove();
+			return;
+		}
+
+		if (t.mode === 'inside') t.row.classList.add('is-drop-inside');
+		if (t.mode === 'root') tree.querySelector('[data-root]').classList.add('is-drop-inside');
+
+		if (t.mode === 'before' || t.mode === 'after') {
+			if (!line) {
+				line = el('div', 'org-line');
+				tree.appendChild(line);
+			}
+
+			var treeBox = tree.getBoundingClientRect();
+			var rowBox = t.row.getBoundingClientRect();
+
+			line.style.left = rowBox.left - treeBox.left + 'px';
+			line.style.width = rowBox.width + 'px';
+			line.style.top = (t.mode === 'before' ? rowBox.top : rowBox.bottom) - treeBox.top + tree.scrollTop - 1 + 'px';
+		} else if (line) {
+			line.remove();
+		}
+	}
+
+	function applyDrop(t) {
+		var o = state.organize;
+
+		if (drag.kind === 'type') {
+			unassign(drag.type);
+			if (t.mode === 'inside') t.folder.contents.push(drag.type);
+			return;
+		}
+
+		var f = drag.folder;
+
+		o.folders.splice(o.folders.indexOf(f), 1);
+
+		if (t.mode === 'inside') {
+			f.parent = t.folder.name.trim();
+			o.folders.push(f);
+		} else if (t.mode === 'root') {
+			f.parent = '';
+			o.folders.push(f);
+		} else {
+			f.parent = t.folder.parent;
+			o.folders.splice(o.folders.indexOf(t.folder) + (t.mode === 'after' ? 1 : 0), 0, f);
+		}
+	}
+
+	function onDragMove(e) {
+		if (!drag) return;
+
+		if (!drag.active) {
+			if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 5) return;
+
+			drag.active = true;
+			drag.ghost = el('div', 'org-ghost', drag.kind === 'folder' ? (drag.folder.name.trim() || 'pasta') : typeLabel(drag.type));
+			document.body.appendChild(drag.ghost);
+			document.body.classList.add('is-org-dragging');
+		}
+
+		e.preventDefault();
+		drag.ghost.style.left = e.clientX + 'px';
+		drag.ghost.style.top = e.clientY + 'px';
+		drag.lastX = e.clientX;
+		drag.lastY = e.clientY;
+		drag.target = dropTarget(e.clientX, e.clientY);
+		showTarget(drag.target);
+		autoScroll();
+	}
+
+	// perto das bordas da árvore, ela rola sozinha enquanto o arrasto continua
+	function autoScroll() {
+		clearTimeout(drag.scrollTimer);
+
+		var tree = $('org-tree');
+		var box = tree.getBoundingClientRect();
+		var y = drag.lastY;
+		var step = 0;
+
+		if (drag.lastX < box.left || drag.lastX > box.right) return;
+		if (y < box.top + 28 && y > box.top - 40) step = -8;
+		if (y > box.bottom - 28 && y < box.bottom + 40) step = 8;
+		if (!step) return;
+
+		tree.scrollTop += step;
+		drag.target = dropTarget(drag.lastX, drag.lastY);
+		showTarget(drag.target);
+		drag.scrollTimer = setTimeout(function () {
+			if (drag && drag.active) autoScroll();
+		}, 30);
+	}
+
+	function endDrag(e, cancel) {
+		window.removeEventListener('mousemove', onDragMove, true);
+		window.removeEventListener('mouseup', onDragUp, true);
+		window.removeEventListener('keydown', onDragKey, true);
+
+		if (!drag) return;
+
+		var d = drag;
+
+		clearTimeout(d.scrollTimer);
+		if (d.ghost) d.ghost.remove();
+		document.body.classList.remove('is-org-dragging');
+		showTarget(null);
+		drag = null;
+
+		if (d.active && !cancel && d.target) {
+			drag = d;
+			applyDrop(d.target);
+			drag = null;
+			renderOrganize();
+			updateDirty();
+		}
+	}
+
+	function onDragUp(e) {
+		endDrag(e, false);
+	}
+
+	function onDragKey(e) {
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			endDrag(e, true);
+		}
+	}
+
+	function startDrag(e, data) {
+		if (e.button !== 0 || !state.available) return;
+
+		e.preventDefault();
+		drag = Object.assign({ x: e.clientX, y: e.clientY, active: false, target: null }, data);
+		window.addEventListener('mousemove', onDragMove, true);
+		window.addEventListener('mouseup', onDragUp, true);
+		window.addEventListener('keydown', onDragKey, true);
+	}
+
 	function bindOrganize() {
+		// pastas: pelo puxador (ou pelo ícone); tipos: pelas etiquetas da árvore e pelos cartões da direita
+		$('pane-organize').addEventListener('mousedown', function (e) {
+			if (e.target.closest('button:not(.drag-handle), input')) return;
+
+			var row = e.target.closest('.org-folder[data-index]');
+			var tag = e.target.closest('.org-chip, .org-type');
+
+			if (tag) return startDrag(e, { kind: 'type', type: tag.getAttribute('data-type') });
+			if (row && e.target.closest('.drag-handle, svg')) startDrag(e, { kind: 'folder', folder: state.organize.folders[+row.getAttribute('data-index')] });
+		});
+
 		$('btn-new-folder').addEventListener('click', function () {
-			state.organize.folders.push({ name: '', parent: '', content: '' });
+			var name = 'NOVA PASTA';
+
+			for (var n = 2; folderByName(name); n++) name = 'NOVA PASTA ' + n;
+
+			state.organize.folders.push({ name: name, parent: '', contents: [] });
 			renderOrganize();
 			updateDirty();
 
-			var inputs = $('folder-list').querySelectorAll('.organize-name input');
+			var inputs = $('org-tree').querySelectorAll('.org-name');
+			var last = inputs[inputs.length - 1];
 
-			inputs[inputs.length - 1].focus();
+			last.focus();
+			last.select();
 		});
 
 		[['org-render', 'renderComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {

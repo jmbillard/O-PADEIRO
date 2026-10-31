@@ -688,52 +688,362 @@ body.prods-page {
   }
 }
 
-/* aba ORGANIZAR: árvore (a pasta recua conforme a profundidade), pasta pai e conteúdo */
-.organize-head,
-.organize-row {
+/* aba ORGANIZAR: a árvore à esquerda, no azul dos painéis; os tipos e ajustes à direita, no branco */
+.organize-pane {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 170px 190px;
-  align-items: center;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 16px 20px 18px;
 }
 
-.organize-head {
-  margin-top: 4px;
-  color: var(--text-tertiary);
+.organize-pane[hidden] {
+  display: none;
+}
+
+.org-card {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
+    linear-gradient(155deg, var(--blue-400) 0%, var(--blue-500) 46%, #5b5be8 100%);
+  color: white;
+}
+
+.org-eyebrow {
+  margin: 0;
+  padding: 16px 18px 8px;
+  color: rgb(255 255 255 / 72%);
   font-size: 0.66rem;
-  font-weight: 700;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.organize-head span {
-  padding-left: 13px;
-}
-
-.organize-row .cfg-input,
-.organize-row .dropdown-trigger {
-  min-height: 38px;
-  font-size: 0.8rem;
-}
-
-.organize-row .cfg-path .cfg-input {
-  padding-right: 40px;
-}
-
-/* recuo da subpasta, com uma linha guia */
-.organize-name {
+.org-tree {
   position: relative;
-  margin-left: calc(var(--depth, 0) * 22px);
+  min-height: 0;
+  flex: 1;
+  user-select: none; /* arrastar não seleciona o texto (o nome continua editável) */
+  padding: 2px 10px 12px;
+  overflow-y: auto;
+  scrollbar-color: rgb(255 255 255 / 40%) transparent;
+  scrollbar-width: thin;
 }
 
-.organize-name.is-child::before {
+.org-foot {
+  padding: 10px 14px 14px;
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+.org-add {
+  width: 100%;
+  min-height: 34px;
+  border: 1px dashed rgb(255 255 255 / 45%);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  transition: background-color 160ms ease;
+}
+
+.org-add:hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+
+/* uma pasta da árvore: puxador, pasta, nome (editável), tipos que recebe e × */
+.org-folder {
+  position: relative;
+  display: flex;
+  min-height: 38px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 1px 0 1px calc(var(--depth, 0) * 18px);
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.org-folder:hover {
+  background: rgb(255 255 255 / 9%);
+}
+
+.org-folder.is-root {
+  margin-bottom: 4px;
+  border-color: rgb(255 255 255 / 18%);
+}
+
+.org-folder>svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.org-folder .drag-handle {
+  margin-left: -2px;
+  color: rgb(255 255 255 / 45%);
+}
+
+.org-folder .drag-handle:hover,
+.org-folder .drag-handle:focus-visible {
+  color: white;
+}
+
+.org-name {
+  min-width: 70px;
+  user-select: text;
+  flex: 1 1 90px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: white;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+.org-name:focus {
+  border-color: rgb(255 255 255 / 60%);
+  background: rgb(255 255 255 / 12%);
+}
+
+.org-root-label {
+  flex: 1 1 auto;
+  color: rgb(255 255 255 / 78%);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.org-remove {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(255 255 255 / 0%);
+  cursor: pointer;
+}
+
+.org-folder:hover .org-remove,
+.org-remove:focus-visible {
+  color: rgb(255 255 255 / 75%);
+}
+
+.org-remove:hover {
+  background: rgb(255 255 255 / 16%);
+  color: white;
+}
+
+.org-remove svg,
+.org-chip svg,
+.org-type svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+/* subpastas: linha guia até a pasta de cima */
+.org-folder.is-child::before {
   position: absolute;
-  top: -10px;
-  left: -13px;
-  width: 9px;
-  height: 29px;
-  border-bottom: 1.5px solid var(--border-strong);
-  border-left: 1.5px solid var(--border-strong);
+  top: -6px;
+  left: -11px;
+  width: 8px;
+  height: 25px;
+  border-bottom: 1.5px solid rgb(255 255 255 / 30%);
+  border-left: 1.5px solid rgb(255 255 255 / 30%);
   border-bottom-left-radius: 5px;
   content: "";
+}
+
+.org-chips {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 42px;
+}
+
+.org-chips:empty {
+  display: none;
+}
+
+/* um tipo dentro de uma pasta (arrastável) */
+.org-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 4px 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 20%);
+  color: white;
+  cursor: grab;
+  font-size: 0.66rem;
+  font-weight: 700;
+  user-select: none;
+}
+
+.org-chip button {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(255 255 255 / 75%);
+  cursor: pointer;
+}
+
+.org-chip button:hover {
+  background: rgb(255 255 255 / 22%);
+  color: white;
+}
+
+.org-chip button svg {
+  width: 9px;
+  height: 9px;
+}
+
+/* destino do arrasto */
+.org-folder.is-drop-inside {
+  border-color: white;
+  background: rgb(255 255 255 / 18%);
+}
+
+.org-line {
+  position: absolute;
+  z-index: 3;
+  height: 2px;
+  border-radius: 2px;
+  background: white;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 25%);
+  pointer-events: none;
+}
+
+.org-side {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.org-side .prods-section-title {
+  margin-top: 8px;
+  padding: 0;
+}
+
+.org-side .prods-section-title:first-child {
+  margin-top: 0;
+}
+
+.org-side.is-drop-target .org-types {
+  border-radius: 14px;
+  outline: 2px dashed var(--blue-200);
+  outline-offset: 4px;
+}
+
+/* tipos de item: cartões arrastáveis com o lugar de cada um */
+.org-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+
+.org-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.org-type:hover {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+}
+
+.org-type>svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--blue-500);
+  stroke-width: 1.7;
+}
+
+.org-type-text {
+  display: grid;
+  min-width: 0;
+}
+
+.org-type-text strong {
+  color: var(--text-primary);
+  font-size: 0.74rem;
+}
+
+.org-type-text span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o que segue o mouse durante o arrasto */
+.org-ghost {
+  position: fixed;
+  z-index: 100;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-500);
+  box-shadow: 0 10px 24px rgb(30 42 80 / 24%);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 750;
+  pointer-events: none;
+  transform: translate(10px, 8px);
+}
+
+body.is-org-dragging,
+body.is-org-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
 }
 
 .organize-switch {
@@ -745,16 +1055,17 @@ body.prods-page {
   font-weight: 600;
 }
 
-@media (max-width: 680px) {
-  .organize-head {
-    display: none;
+@media (max-width: 700px) {
+  .organize-pane {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
   }
 
-  .organize-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  .org-card {
+    min-height: 320px;
   }
 
-  .organize-row>.organize-name {
-    grid-column: 1 / -1;
+  .org-side {
+    overflow: visible;
   }
 }
