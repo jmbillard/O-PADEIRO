@@ -1612,7 +1612,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(img);
 	}
 
-	var PERSON_BADGE = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="4" r="2" /><path d="M2.5 10.5a3.5 3.5 0 0 1 7 0z" /></svg>';
+	var PERSON_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-bg" cx="5.5" cy="5.5" r="5.5" /><circle cx="5.5" cy="4" r="1.5" /><path d="M2.9 9.17C3.2 7.3 4.3 6.6 5.5 6.6S7.8 7.3 8.1 9.17A4.5 4.5 0 0 1 2.9 9.17z" /></svg>';
 
 	function renderLinks() {
 		renderLinkList(state.links, 'link-list', false);

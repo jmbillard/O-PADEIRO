@@ -1280,22 +1280,24 @@ body.is-org-dragging * {
 /* link pessoal: o mesmo selo da barra (bonequinho) no canto do ícone */
 .link-badge {
   position: absolute;
-  right: -4px;
-  bottom: -4px;
-  display: grid;
-  width: 16px;
-  height: 16px;
-  place-items: center;
-  border: 1px solid var(--border);
+  right: -3px;
+  bottom: -3px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
-  background: white;
+  box-shadow: 0 0 0 1px var(--border);
   color: var(--blue-500);
   pointer-events: none;
 }
 
 .link-badge svg {
-  width: 10px !important;
-  height: 10px !important;
+  display: block;
+  width: 13px !important;
+  height: 13px !important;
   fill: currentcolor !important;
   stroke: none !important;
+}
+
+.link-badge .badge-bg {
+  fill: white;
 }
