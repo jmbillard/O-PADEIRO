@@ -1476,3 +1476,40 @@ body.is-org-dragging * {
   opacity: 0.6;
   text-decoration: line-through;
 }
+
+/* =========================================================
+   "na barra": mostrar / esconder a ferramenta da aba
+   ========================================================= */
+
+.bar-vis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-bottom: 4px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  background: var(--surface-soft);
+}
+
+.bar-vis:empty {
+  display: none;
+}
+
+.bar-vis-title {
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* no topo da aba: o mesmo respiro do título das seções; o título seguinte encosta um pouco mais */
+.cfg-pane > .bar-vis {
+  margin: 20px 0 -8px;
+}
+
+#pane-prods > .bar-vis {
+  margin: 20px 20px 14px; /* a aba de produções não tem recuo lateral: o da lista */
+}

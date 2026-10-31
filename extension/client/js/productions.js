@@ -33,6 +33,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
 		collect: { folders: [], projectFolders: false, saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
+		bar: { hidden: [] }, // ferramentas escondidas da barra (o interruptor no topo de cada aba)
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
@@ -326,12 +327,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function barForSave() {
+		return { hidden: state.bar.hidden.slice().sort() };
+	}
+
 	function appearanceForSave() {
 		return state.appearance ? Object.assign({}, state.appearance) : null;
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), appearance: appearanceForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -601,6 +606,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderAppearance();
 		renderProject();
 		renderCollect();
+		renderBarVis();
 	}
 
 	function showUnavailable(message) {
@@ -1720,6 +1726,59 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Mostrar na barra: um interruptor por ferramenta no topo da
+	   aba dela (escondida para a equipe toda)
+	   ========================================================= */
+
+	var BAR_TOOL_NAMES = { templates: 'Templates', fontes: 'Fontes', projeto: 'Projeto', coletar: 'Coletar', pastas: 'Pastas', renomear: 'Renomear', organizar: 'Organizar', buscar: 'Buscar', links: 'os links' };
+
+	function setBar(b) {
+		state.bar = { hidden: ((b && b.hidden) || []).slice() };
+		renderBarVis();
+	}
+
+	function renderBarVis() {
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-vis'), function (box) {
+			var tools = box.getAttribute('data-tools').split(' ');
+
+			box.textContent = '';
+			box.appendChild(el('span', 'bar-vis-title', 'na barra'));
+
+			tools.forEach(function (key) {
+				var label = el('label', 'cfg-switch');
+				var input = el('input');
+
+				input.type = 'checkbox';
+				input.checked = state.bar.hidden.indexOf(key) < 0;
+				input.disabled = !state.available;
+				input.setAttribute('data-bar-tool', key);
+				label.title = key === 'links' ? 'mostrar os links no começo da barra (de todo mundo)' : 'mostrar a ferramenta ' + BAR_TOOL_NAMES[key] + ' na barra (de todo mundo)';
+				label.appendChild(input);
+				label.appendChild(el('span', 'cfg-switch-track'));
+				label.appendChild(el('span', 'cfg-switch-label', 'mostrar ' + (key === 'links' ? 'os links' : BAR_TOOL_NAMES[key])));
+				box.appendChild(label);
+			});
+		});
+	}
+
+	function bindBarVis() {
+		document.addEventListener('change', function (e) {
+			var key = e.target.getAttribute && e.target.getAttribute('data-bar-tool');
+
+			if (!key) return;
+
+			var hidden = state.bar.hidden.filter(function (k) {
+				return k !== key;
+			});
+
+			if (!e.target.checked) hidden.push(key);
+
+			state.bar.hidden = hidden;
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
 	   Busca de caminhos
 	   ========================================================= */
 
@@ -2457,6 +2516,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setLinks(res.links);
 			setProject(res.project);
 			setCollect(res.collect);
+			setBar(res.bar);
 			setAppearance(res.appearance);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
@@ -2546,7 +2606,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), appearance: appearanceForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -2557,6 +2617,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.links) setLinks(res.links);
 			if (res.project) setProject(res.project);
 			if (res.collect) setCollect(res.collect);
+			if (res.bar) setBar(res.bar);
 			setAppearance(res.appearance || state.appearance);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -2673,6 +2734,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindAppearance();
 		bindProject();
 		bindCollect();
+		bindBarVis();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

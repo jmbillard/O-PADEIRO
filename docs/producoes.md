@@ -4,6 +4,8 @@
 
 a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em dez abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **coletar**, **busca**, **projeto** e **aparência**.
 
+> 🚩 *na barra:* no topo de cada aba de ferramenta, o interruptor '*mostrar …*' mostra ou esconde a ferramenta na barra de todo mundo (templates e fontes na aba produções, pastas em drives, renomear, organizar, coletar, buscar em busca, projeto e os links). a barra acompanha em alguns segundos; uma seção sem nenhuma ferramenta some junto com a divisória.
+
 > 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
 ## 📍 produções

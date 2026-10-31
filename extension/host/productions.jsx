@@ -70,6 +70,7 @@ PADX.saveProductions = function (a) {
 	var appearance = a.appearance ? padCleanAppearance(a.appearance) : null;
 	var project = a.project ? padCleanProject(a.project) : null;
 	var collect = a.collect ? padCleanCollect(a.collect) : null;
+	var bar = a.bar ? padCleanBar(a.bar) : null;
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -83,7 +84,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance, PROJECT: project, COLLECT: collect });
+		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance, PROJECT: project, COLLECT: collect, BAR: bar });
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -91,7 +92,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), project: padReadProject(), collect: padReadCollect(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), project: padReadProject(), collect: padReadCollect(), bar: padReadBar(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -693,6 +694,44 @@ PADX.savePersonalLinks = function (a) {
 	return { links: padReadPersonalLinks() };
 };
 
+/*
+
+---------------------------------------------------------------
+> ferramentas da barra (interruptor "mostrar na barra" de cada aba)
+---------------------------------------------------------------
+
+'BAR' no O_PADEIRO_config.json: { hidden: [...] }, as ferramentas escondidas da barra (para a equipe toda):
+templates, fontes, projeto, coletar, pastas, renomear, organizar, buscar e links (o bloco de links).
+
+*/
+
+var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'pastas', 'renomear', 'organizar', 'buscar', 'links'];
+
+function padCleanBar(o) {
+	var hidden = [];
+	var list = o && o.hidden instanceof Array ? o.hidden : [];
+
+	for (var i = 0; i < list.length; i++) {
+		var key = padTrim(list[i]).toLowerCase();
+
+		if (PAD_BAR_TOOLS.indexOf(key) >= 0 && hidden.indexOf(key) < 0) hidden.push(key);
+	}
+
+	return { hidden: hidden };
+}
+
+function padReadBar() {
+	var file = padConfigFile();
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return padCleanBar(data.BAR || {});
+	} catch (err) {
+		return { hidden: [] };
+	}
+}
+
 // Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
 PADX.barLinks = function () {
 	var file = padConfigFile();
@@ -703,7 +742,7 @@ PADX.barLinks = function () {
 		stamp = (file && file.exists ? file.modified.getTime() : 0) + '|' + (personal.exists ? personal.modified.getTime() : 0);
 	} catch (err) { }
 
-	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks() };
+	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), hidden: padReadBar().hidden };
 };
 
 // Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.

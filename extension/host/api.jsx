@@ -265,6 +265,7 @@ PADX.productions = function () {
 		appearance: padReadAppearance(),
 		project: padReadProject(),
 		collect: padReadCollect(),
+		bar: padReadBar(),
 		error: error
 	};
 };

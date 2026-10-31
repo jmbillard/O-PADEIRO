@@ -546,6 +546,37 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		$('links-divider').hidden = !links.length;
 	}
 
+	// ferramentas escondidas na configuração (o interruptor "mostrar" de cada aba): some o botão e, com a
+	// seção vazia, a seção e a divisória antes dela
+	function applyHidden(hidden) {
+		SECTIONS.forEach(function (section) {
+			section.forEach(function (def) {
+				var btn = $('btn-' + def.key);
+
+				if (btn) btn.hidden = hidden.indexOf(def.key) >= 0;
+			});
+		});
+
+		var groups = Array.prototype.slice.call($('tools').querySelectorAll('.bar-section'));
+		var first = true;
+
+		groups.forEach(function (group) {
+			var visible = Array.prototype.some.call(group.querySelectorAll('.bar-btn'), function (b) {
+				return !hidden.length || hidden.indexOf(b.id.replace('btn-', '')) < 0;
+			});
+			var divider = group.previousElementSibling && group.previousElementSibling.classList.contains('bar-divider') ? group.previousElementSibling : null;
+
+			group.hidden = !visible;
+			if (divider) divider.hidden = !visible || first;
+			if (visible) first = false;
+		});
+
+		if (hidden.indexOf('links') >= 0) {
+			$('links').hidden = true;
+			$('links-divider').hidden = true;
+		}
+	}
+
 	async function loadLinks() {
 		if (document.hidden) return;
 
@@ -556,6 +587,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			linksStamp = res.stamp;
 			renderLinks(res.links, res.personal || []);
+			applyHidden(res.hidden || []);
 		} catch (err) { }
 	}
 

@@ -44,6 +44,7 @@
 		<section class="prods-sheet">
 			<!-- aba PRODUÇÕES -->
 			<div class="cfg-pane" id="pane-prods" role="tabpanel">
+			<div class="bar-vis" data-tools="templates fontes"></div>
 			<div class="prods-list-head">
 				<p class="cfg-title">lista de produções</p>
 				<div class="picker-search prods-filter">
@@ -68,6 +69,7 @@
 
 			<!-- aba LINKS (os da barra) -->
 			<div class="cfg-pane drives-pane" id="pane-links" role="tabpanel" hidden>
+				<div class="bar-vis" data-tools="links"></div>
 				<p class="cfg-title prods-section-title">links da equipe</p>
 				<p class="cfg-hint">aparecem no começo da barra de todo mundo, nesta ordem (arraste pelos pontinhos para reordenar). o ícone é o do próprio site (favicon); clique nele para escolher outra imagem.</p>
 				<div class="drive-rows" id="link-list"></div>
@@ -97,6 +99,7 @@
 
 			<!-- aba DRIVES -->
 			<div class="cfg-pane drives-pane" id="pane-drives" role="tabpanel" hidden>
+				<div class="bar-vis" data-tools="pastas"></div>
 				<p class="cfg-title prods-section-title">drives da rede</p>
 				<p class="cfg-hint">a letra do Windows e o caminho de rede que ela representa. o padeiro usa este mapa para converter caminhos entre Windows e Mac (conversor, busca e caminhos dos templates).</p>
 				<div class="drive-rows" id="drive-list"></div>
@@ -117,6 +120,7 @@
 
 			<!-- aba RENOMEAR -->
 			<div class="cfg-pane drives-pane" id="pane-rename" role="tabpanel" hidden>
+				<div class="bar-vis" data-tools="renomear"></div>
 				<p class="cfg-title prods-section-title">tipos de peça</p>
 				<p class="cfg-hint">ao renomear, o padeiro procura um destes termos no nome da comp (ou da pasta dela) e aplica o prefixo e o comentário do tipo: <b>rodapé_joão silva</b> → <b>RDP - JOAO SILVA</b>. a ordem importa: vale o primeiro tipo encontrado (arraste para reordenar). os termos são palavras separadas por vírgula; o plural com S também vale.</p>
 								<div class="has-field-icon">
@@ -160,6 +164,7 @@
 				</div>
 
 				<div class="org-side">
+					<div class="bar-vis" data-tools="organizar"></div>
 					<p class="cfg-title prods-section-title">tipos de item</p>
 					<p class="cfg-hint">arraste cada tipo para a pasta da árvore que deve recebê-lo. o que fica na raiz não entra em pasta nenhuma. as pastas também se arrastam: sobre outra pasta, ela entra; entre duas, fica no mesmo nível.</p>
 					<div class="org-types" id="org-types"></div>
@@ -197,6 +202,7 @@
 				</div>
 
 				<div class="org-side">
+					<div class="bar-vis" data-tools="coletar"></div>
 					<p class="cfg-title prods-section-title">tipos de arquivo</p>
 					<p class="cfg-hint">o collect copia os arquivos usados no projeto para a pasta do projeto (a do .aep) e troca os caminhos no projeto. arraste cada tipo para a pasta que deve recebê-lo; o que fica na raiz (riscado) <b>não é coletado</b>.</p>
 					<div class="org-types" id="col-types"></div>
@@ -220,6 +226,7 @@
 
 			<!-- aba BUSCA (busca de caminhos, O ACESSORISTA) -->
 			<div class="cfg-pane drives-pane" id="pane-search" role="tabpanel" hidden>
+				<div class="bar-vis" data-tools="buscar"></div>
 				<p class="cfg-title prods-section-title">índice</p>
 				<p class="cfg-hint">de onde vem o índice de caminhos (atrações, projetos e outputs) que a busca usa.</p>
 				<div class="log-modes" id="search-source" role="radiogroup" aria-label="Origem do índice">
@@ -238,6 +245,7 @@
 
 			<!-- aba PROJETO (a janela PROJETO: pasta, nome do arquivo e retrancas) -->
 			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
+				<div class="bar-vis" data-tools="projeto"></div>
 				<p class="cfg-title prods-section-title">pasta dos projetos</p>
 				<p class="cfg-hint">onde os projetos são salvos. a pasta de cada retranca fica dentro desta; sem pasta, a janela PROJETO pede uma ao salvar.</p>
 				<div class="cfg-path has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><input type="text" class="cfg-input" id="proj-root" placeholder="//servidor/share/PROJETOS" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos"><button type="button" class="mini-button" id="proj-root-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
