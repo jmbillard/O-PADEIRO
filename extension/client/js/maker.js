@@ -329,8 +329,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var hasPreview = !!state.comp && $('preview-card').classList.contains('has-image');
 
 		return [
-			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{ key: 'name', label: 'nome', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'nome da configuração' },
+			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{
 				key: 'layers',
 				label: 'layers',
@@ -666,6 +666,32 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('save-hint').textContent = text || '';
 	}
 
+	// Depois de salvar: o aviso fica mais tempo e oferece gerar o preview em vídeo (.mp4).
+	function savedToast(data) {
+		var box = $('toast');
+
+		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 20000);
+
+		var action = el('button', 'toast-action', 'gerar preview .mp4');
+		var compId = state.comp.id;
+
+		action.type = 'button';
+		action.title = 'renderiza a comp principal em vídeo (H.264, meia resolução) ao lado do template: a janela de templates passa a mostrar o vídeo';
+		action.addEventListener('click', async function () {
+			action.disabled = true;
+			action.textContent = 'renderizando…';
+
+			try {
+				var res = await call('makerRenderPreview', { compId: compId, base: data.base });
+
+				toast('success', 'preview .mp4 gerado: ' + res.path);
+			} catch (err) {
+				toast('error', err.message);
+			}
+		});
+		box.insertBefore(action, box.lastChild);
+	}
+
 	async function save() {
 		if (state.saving) return;
 
@@ -711,7 +737,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			} else if (res.messages.length) {
 				toast('error', res.messages.join('\n'));
 			} else {
-				toast('success', 'template salvo: ' + res.data.path);
+				savedToast(res.data);
 			}
 		} catch (err) {
 			toast('error', err.message);

@@ -286,6 +286,79 @@ PADX.makerSave = function (a) {
 		fontCollect(folder + '/FONTS');
 		openFolder(folder);
 
-		return { saved: true, path: base + '_config.json', folder: folder };
+		return { saved: true, path: base + '_config.json', base: base, folder: folder };
 	});
+};
+
+// Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):
+// renderiza a comp principal pela fila de render com um template de output H.264, em meia resolução.
+// As saídas que já estavam na fila ficam de fora durante a renderização e voltam depois.
+// a: { compId, base }
+PADX.makerRenderPreview = function (a) {
+	var comp = padMakerComp(a.compId);
+	var rq = app.project.renderQueue;
+	var target = new File(a.base + '_preview.mp4');
+
+	if (rq.rendering) throw new Error('#PAD_075 - a fila de render já está renderizando: espere terminar e tente de novo.');
+
+	var paused = [];
+
+	for (var i = 1; i <= rq.numItems; i++) {
+		try {
+			if (rq.item(i).render) {
+				rq.item(i).render = false;
+				paused.push(rq.item(i));
+			}
+		} catch (err) { }
+	}
+
+	var item = rq.items.add(comp);
+
+	app.beginSuppressDialogs();
+
+	try {
+		try {
+			item.applyTemplate('Best Settings');
+		} catch (err) { }
+
+		try {
+			item.setSetting('Resolution', [2, 2]); // meia resolução: o preview é pequeno na janela
+		} catch (err) { }
+
+		var om = item.outputModule(1);
+		var templates = om.templates;
+		var h264 = '';
+
+		for (var t = 0; t < templates.length; t++) {
+			if (!/^_HIDDEN/.test(templates[t]) && /H\.?264/i.test(templates[t])) {
+				h264 = templates[t];
+				if (/match render settings/i.test(templates[t])) break; // o preferido, se houver
+			}
+		}
+
+		if (!h264) throw new Error('#PAD_076 - nenhum template de output H.264 no After Effects para gerar o preview em .mp4.');
+
+		om.applyTemplate(h264);
+
+		if (target.exists) target.remove();
+
+		om.file = target;
+		rq.render();
+	} finally {
+		try {
+			item.remove();
+		} catch (err) { }
+
+		for (var p = 0; p < paused.length; p++) {
+			try {
+				paused[p].render = true;
+			} catch (err) { }
+		}
+
+		app.endSuppressDialogs(false);
+	}
+
+	if (!target.exists) throw new Error('#PAD_077 - o preview em .mp4 não foi gerado.');
+
+	return { path: target.fsName };
 };

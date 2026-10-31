@@ -17,13 +17,14 @@ um template do padeiro é um conjunto de arquivos:
 
 1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
 2. abra a comp principal e `◗ clique direito` em **templates**, na barra.
-3. preencha o '*nome da configuração*', o '*exemplo de preenchimento*' e as '*dicas*'.
+3. preencha o '*nome da configuração*' (o primeiro campo, no topo), o '*exemplo de preenchimento*' e as '*dicas*'.
 4. posicione a agulha da timeline em um frame de referência e clique no preview ('*capturar preview*' aparece sobre ele no hover, ou direto quando ainda não há preview).
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
 6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
 7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
 8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
+10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo: o padeiro renderiza a comp principal (H.264, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
 
 - **↻** (cabeçalho) → limpa o formulário e começa de novo.
 - **⋯** (cabeçalho) → ajuda (esta página) e recarregar o painel.
@@ -32,7 +33,7 @@ um template do padeiro é um conjunto de arquivos:
 >
 > ![checklist do criador](images/criador-checklist.webp)
 
-o topo do criador, antes do **⋯**, mostra o que falta: **preview**, **nome**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+o topo do criador, antes do **⋯**, mostra o que falta: **nome**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
 
 ao salvar, o padeiro:
 

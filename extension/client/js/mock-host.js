@@ -363,7 +363,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_SAVED = a;
 
-			return { messages: [], data: { saved: true, path: '/mock/TARJA/TARJA TEMPLATE_config.json', folder: '/mock/TARJA' } };
+			return { messages: [], data: { saved: true, path: '/mock/TARJA/TARJA TEMPLATE_config.json', base: '/mock/TARJA/TARJA TEMPLATE', folder: '/mock/TARJA' } };
+		},
+
+		makerRenderPreview: async function (a) {
+			await wait(delay * 4); // a renderização leva um tempo
+
+			return { path: a.base + '_preview.mp4' };
 		},
 
 		requestConverter: function () {

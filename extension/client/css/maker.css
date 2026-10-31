@@ -132,6 +132,11 @@ body.maker-page {
   }
 }
 
+/* nome da configuração: o primeiro campo, na largura toda */
+.maker-name {
+  margin-bottom: 16px;
+}
+
 /* como criar */
 .maker-help {
   margin-bottom: 16px;
@@ -645,4 +650,29 @@ body.maker-page {
   .check-chip {
     padding: 5px;
   }
+}
+
+/* ação no aviso de template salvo (gerar o preview em vídeo) */
+.toast-action {
+  flex: 0 0 auto;
+  margin-left: 10px;
+  padding: 4px 12px;
+  border: 1px solid currentcolor;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.toast-action:hover:not(:disabled) {
+  background: white;
+}
+
+.toast-action:disabled {
+  cursor: progress;
+  opacity: 0.7;
 }
