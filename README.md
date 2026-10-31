@@ -276,11 +276,11 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_079` | configuração: letra de drive inválida ou repetida |
 | `#PAD_080` | configuração: o caminho do drive não é de rede (`//servidor/share/...`) |
 | `#PAD_081` | configuração: volume sem nome, repetido ou sem servidor |
-| `#PAD_082` | configuração: tipo de renomear sem prefixo, comentário ou termos, ou prefixo repetido |
+| `#PAD_082` | configuração: tipo de renomear sem prefixo, comentário ou termos, prefixo repetido ou separador inválido |
 | `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
 | `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
 | `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
-| `#PAD_086` | configuração: endereço do webhook da busca inválido |
+| `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 

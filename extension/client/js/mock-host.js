@@ -229,7 +229,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
 			}
 			if (a.search) {
-				if (!/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				if (a.search.source !== 'file' && !/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				if (a.search.source === 'file' && !a.search.file) throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 

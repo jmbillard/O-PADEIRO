@@ -264,14 +264,16 @@ function padApplyConfig() {
 	PAD_RENAME_TYPES = r.types;
 	PAD_RENAME_FIXED = r.fixed;
 	PAD_RENAME_OPTIONS = { removeSpecial: r.removeSpecial !== false, textCase: r.textCase || 'upperCase' };
+	globalSeparator = r.separator || ' - '; // também o dos nomes criados pelos templates
 	renameRefArray = padRenameRefs(r.types);
 
 	PAD_ORGANIZE = padReadOrganize();
 
 	var search = padReadSearch();
+	var origin = search.source == 'file' ? 'file|' + search.file : 'webhook|' + search.webhook;
 
-	// outro webhook: o índice guardado é de outro lugar, então é baixado de novo
-	if (search.webhook != PS_WEBHOOK_URL) {
+	// outra origem (webhook ou arquivo): o índice guardado é de outro lugar, então é lido de novo
+	if (origin != (PS_SOURCE == 'file' ? 'file|' + PS_INDEX_FILE : 'webhook|' + PS_WEBHOOK_URL)) {
 		try {
 			var cache = new File(tempFolder.fsName + '/path_index.json');
 
@@ -279,7 +281,9 @@ function padApplyConfig() {
 		} catch (err) { }
 	}
 
-	PS_WEBHOOK_URL = search.webhook;
+	PS_SOURCE = search.source;
+	PS_INDEX_FILE = search.file;
+	if (search.webhook) PS_WEBHOOK_URL = search.webhook;
 	PS_CATEGORIES = search.labels;
 }
 
@@ -299,7 +303,7 @@ Sem 'RENAME' no arquivo: os valores de lib/globals.js (os de sempre).
 var PAD_DEFAULT_RENAME = null;
 
 function padDefaultRename() {
-	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED, removeSpecial: PAD_RENAME_OPTIONS.removeSpecial, textCase: PAD_RENAME_OPTIONS.textCase }));
+	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED, removeSpecial: PAD_RENAME_OPTIONS.removeSpecial, textCase: PAD_RENAME_OPTIONS.textCase, separator: globalSeparator }));
 
 	return PAD_DEFAULT_RENAME;
 }
@@ -315,8 +319,14 @@ function padCleanRename(r) {
 		types: [],
 		fixed: [],
 		removeSpecial: r.removeSpecial !== false,
-		textCase: /^(upperCase|lowerCase|titleCase|keep)$/.test(r.textCase) ? r.textCase : 'upperCase'
+		textCase: /^(upperCase|lowerCase|titleCase|keep)$/.test(r.textCase) ? r.textCase : 'upperCase',
+		separator: r.separator == null ? ' - ' : String(r.separator)
 	};
+
+	// os espaços contam (' - '); vai para nomes de comp e de arquivo
+	if (clean.separator == '' || clean.separator.length > 5 || /[\\\/:*?"<>|]/.test(clean.separator)) {
+		throw new Error('#PAD_082 - renomear: o separador precisa ter de 1 a 5 caracteres, sem \\ / : * ? " < > |.');
+	}
 	var seen = {};
 	var i;
 
@@ -499,8 +509,10 @@ function padReadOrganize() {
 > busca de caminhos (aba BUSCA da configuração)
 ---------------------------------------------------------------
 
-'SEARCH' no O_PADEIRO_config.json: { webhook, labels: [{ key, label }] }.
+'SEARCH' no O_PADEIRO_config.json: { source, webhook, file, labels: [{ key, label }] }.
+  source  → de onde vem o índice: 'webhook' ou 'file'
   webhook → o endereço que devolve o índice de caminhos (lib/acessorista.js)
+  file    → um arquivo JSON com o índice (o mesmo formato que o webhook devolve), no lugar do webhook
   labels  → nome de exibição de cada categoria (as categorias vêm do próprio índice; sem nome, o automático)
 Sem 'SEARCH' no arquivo: os valores de lib/acessorista.js (os de sempre).
 
@@ -509,20 +521,24 @@ Sem 'SEARCH' no arquivo: os valores de lib/acessorista.js (os de sempre).
 var PAD_DEFAULT_SEARCH = null;
 
 function padDefaultSearch() {
-	if (!PAD_DEFAULT_SEARCH) PAD_DEFAULT_SEARCH = JSON.parse(JSON.stringify({ webhook: PS_WEBHOOK_URL, labels: PS_CATEGORIES }));
+	if (!PAD_DEFAULT_SEARCH) PAD_DEFAULT_SEARCH = JSON.parse(JSON.stringify({ source: PS_SOURCE, webhook: PS_WEBHOOK_URL, file: PS_INDEX_FILE, labels: PS_CATEGORIES }));
 
 	return PAD_DEFAULT_SEARCH;
 }
 
 // Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
 function padCleanSearch(o) {
-	var clean = { webhook: padTrim(o.webhook), labels: [] };
+	var clean = { source: o.source == 'file' ? 'file' : 'webhook', webhook: padTrim(o.webhook), file: padTrim(o.file), labels: [] };
 	var seen = {};
+	var validHook = /^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook);
 
 	// o endereço vai para a linha de comando do curl: sem espaços, aspas nem símbolos do terminal
-	if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+	if (clean.source == 'webhook' && !validHook) {
 		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 	}
+
+	if (clean.source == 'file' && clean.file == '') throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
+	if (!validHook) clean.webhook = ''; // guardado só se for válido
 
 	for (var i = 0; i < (o.labels || []).length; i++) {
 		var key = padTrim(o.labels[i].key);

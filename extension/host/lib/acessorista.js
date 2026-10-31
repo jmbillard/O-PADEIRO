@@ -5,6 +5,11 @@ var PS_WEBHOOK_URL = 'https://workflows.jmbillard.com/webhook/path-search';
 
 var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 
+// De onde vem o índice (configuração > busca): 'webhook' (PS_WEBHOOK_URL) ou 'file' (PS_INDEX_FILE, o mesmo JSON
+// que o webhook devolveria, num arquivo da rede).
+var PS_SOURCE = 'webhook';
+var PS_INDEX_FILE = '';
+
 var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
 
 var PS_SMB = {
@@ -179,7 +184,16 @@ function psDownloadIndex(cacheFile) {
 
 	if (partFile.exists) partFile.remove();
 
-	if (appOs == 'Win') {
+	// índice num arquivo: copia em vez de baixar
+	if (PS_SOURCE == 'file') {
+		try {
+			var source = new File(padPath(PS_INDEX_FILE));
+
+			if (!source.exists || !source.copy(partFile.fsName)) return false;
+		} catch (err) {
+			return false;
+		}
+	} else if (appOs == 'Win') {
 		cmd =
 			'cmd.exe /c curl.exe -s -L --connect-timeout 5 --max-time 25 -X POST' +
 			' -H "Content-Type: application/json"' +

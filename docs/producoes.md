@@ -102,7 +102,7 @@ a aba **drives** é o mapa da rede que o padeiro usa para converter caminhos ent
 a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os tipos de sempre; outra equipe ajusta para os tipos de peça dela.
 
 - **testar** (no topo) → digite o nome de uma comp e veja na hora como ela fica com a tabela em edição.
-- **formato do nome** → **remover acentos e caracteres especiais** (ligado: **JOÃO!** vira **JOAO**) e a **caixa de texto** do nome: CAIXA ALTA, caixa baixa, Título ou como está. valem para a parte descritiva; o prefixo do tipo fica como foi escrito.
+- **formato do nome** → a **caixa de texto** (CAIXA ALTA, caixa baixa, Título ou como está), o **separador** entre o prefixo e o nome (` - `; os espaços contam) e **remover acentos e caracteres especiais** (ligado: **JOÃO!** vira **JOAO**). a caixa e os acentos valem para a parte descritiva; o prefixo do tipo fica como foi escrito. o separador também é o dos nomes criados pelos templates.
 - **tipos de peça** → o **prefixo** do nome, o **comentário** da comp e os **termos** que identificam o tipo no nome da comp (ou da pasta dela), separados por vírgula. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
 - **nomes fixos** → a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome. ex: **LOGO GLOBO**.
 
@@ -128,7 +128,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps de render** → a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
-- **o comentário vira subpasta** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
+- **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\
 > • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas e os tipos dela para a pasta de cima.\
@@ -146,8 +146,12 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 
 a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
 
-- **webhook** → o endereço que devolve o índice de caminhos (atrações, projetos e outputs). ao trocar, o índice é baixado de novo na próxima busca.
-- **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias pelo webhook*' baixa o índice de novo.
+- **índice** → de onde vem o índice de caminhos (atrações, projetos e outputs):
+  - **webhook** → um endereço da web que devolve o índice.
+  - **arquivo de índice** → um arquivo JSON (na rede, por exemplo) no mesmo formato que o webhook devolveria: `{ "categoria": [ { "atracao": "...", "mac": { "caminho": "..." }, "win": { "caminho": "..." } } ] }`. dá para usar a busca sem nenhum webhook.
+
+  o índice é lido de novo a cada 30 s; ao trocar a origem, é lido na hora.
+- **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias*' lê o índice de novo.
 
 > 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
 

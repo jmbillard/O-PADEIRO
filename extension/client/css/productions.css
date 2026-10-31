@@ -756,7 +756,7 @@ body.prods-page {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 40%);
-  border-radius: 22px;
+  border-radius: 22px 22px 32px 32px; /* embaixo, concêntrico com o '+ nova pasta' (raio 17 + 14 de respiro + borda) */
   background:
     radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
     linear-gradient(155deg, var(--blue-400) 0%, var(--blue-500) 46%, #5b5be8 100%);
@@ -785,7 +785,7 @@ body.prods-page {
 }
 
 .org-foot {
-  padding: 10px 14px 14px;
+  padding: 14px;
   border-top: 1px solid rgb(255 255 255 / 20%);
 }
 
@@ -1307,9 +1307,18 @@ body.is-org-dragging * {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
+  gap: 10px 12px;
   margin: 2px 0 4px;
+}
+
+.rename-sep {
+  width: 120px;
+}
+
+/* os espaços do separador contam: aparecem como pontinhos */
+.rename-sep .cfg-input {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  white-space: pre;
 }
 
 .rename-format .cfg-switch-label {
@@ -1318,11 +1327,5 @@ body.is-org-dragging * {
 }
 
 .rename-case {
-  min-width: 150px;
-}
-
-.rename-case-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  min-width: 170px;
 }

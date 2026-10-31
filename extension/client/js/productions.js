@@ -27,9 +27,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		saving: false,
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
-		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase' }, // aba RENOMEAR; termos editados como texto
+		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
-		search: { webhook: '', labels: {} }, // aba BUSCA: endereço e { chave: nome de exibição }
+		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCA: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
@@ -234,7 +234,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				return { match: f.match.trim(), name: f.name.trim() };
 			}),
 			removeSpecial: state.rename.removeSpecial,
-			textCase: state.rename.textCase
+			textCase: state.rename.textCase,
+			separator: state.rename.separator
 		};
 	}
 
@@ -262,7 +263,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var labels = state.search.labels;
 
 		return {
+			source: state.search.source,
 			webhook: state.search.webhook.trim(),
+			file: state.search.file.trim(),
 			labels: Object.keys(labels).filter(function (key) {
 				return labels[key].trim();
 			}).map(function (key) {
@@ -626,7 +629,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var SERVER_ICON = ['M5.5 4.5h13a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 9V6a1.5 1.5 0 0 1 1.5-1.5zM5.5 13.5h13a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18v-3a1.5 1.5 0 0 1 1.5-1.5z', 'M7.5 7.5h.01M7.5 16.5h.01'];
-	var NETWORK_ICON = ['M12 4v5M6 15v-3h12v3M4 15h4v5H4zM10 15h4v5h-4zM16 15h4v5h-4zM9 4h6v5H9z'];
+	var NETWORK_ICON = ['M5.5 6h13a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z', 'M3.5 13h17', 'M16.5 15.5h.01M13.5 15.5h.01']; // um HD
 
 	function setDrives(d) {
 		var clone = JSON.parse(JSON.stringify(d || { drives: [], shares: [], defaultServer: '' }));
@@ -784,7 +787,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				return { match: f.match || '', name: f.name || '' };
 			}),
 			removeSpecial: data.removeSpecial !== false,
-			textCase: data.textCase || 'upperCase'
+			textCase: data.textCase || 'upperCase',
+			separator: data.separator == null ? ' - ' : data.separator
 		};
 		renderRename();
 	}
@@ -865,6 +869,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		$('rename-special').checked = state.rename.removeSpecial;
 		$('rename-special').disabled = !state.available;
+		if ($('rename-sep').value !== state.rename.separator) $('rename-sep').value = state.rename.separator;
+		$('rename-sep').disabled = !state.available;
 		$('rename-case').value = state.rename.textCase;
 		$('rename-case').disabled = !state.available;
 		PAD_DROPDOWN.refresh($('rename-case'));
@@ -953,7 +959,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			strip(found.terms);
 			clean = renameFormat(clean.replace(/[\s_\-]+/g, ' ').trim(), data);
 			result.comment = found.comment;
-			result.name = clean && clean.toUpperCase() !== found.prefix ? found.prefix + ' - ' + clean : found.prefix;
+			result.name = clean && clean.toUpperCase() !== found.prefix ? found.prefix + data.separator + clean : found.prefix;
 		}
 
 		var norm = renameNorm(raw);
@@ -1007,6 +1013,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		PAD_DROPDOWN.enhance($('rename-case'));
 		$('rename-case').addEventListener('change', function () {
 			state.rename.textCase = this.value;
+			updateDirty();
+			testRename();
+		});
+		$('rename-sep').addEventListener('input', function () {
+			state.rename.separator = this.value;
 			updateDirty();
 			testRename();
 		});
@@ -1527,7 +1538,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			labels[l.key] = l.label;
 		});
 
-		state.search = { webhook: data.webhook || '', labels: labels };
+		state.search = { source: data.source === 'file' ? 'file' : 'webhook', webhook: data.webhook || '', file: data.file || '', labels: labels };
 		renderSearch();
 	}
 
@@ -1542,6 +1553,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (hook.value !== state.search.webhook) hook.value = state.search.webhook;
 		hook.disabled = !state.available;
+
+		var fromFile = state.search.source === 'file';
+		var file = $('search-file');
+
+		Array.prototype.forEach.call(document.querySelectorAll('input[name="search-source"]'), function (radio) {
+			radio.checked = radio.value === state.search.source;
+			radio.disabled = !state.available;
+		});
+		if (file.value !== state.search.file) file.value = state.search.file;
+		file.disabled = $('search-file-pick').disabled = !state.available;
+		$('search-webhook-field').hidden = fromFile;
+		$('search-file-field').hidden = !fromFile;
+		$('search-source-hint').textContent = fromFile
+			? 'um arquivo JSON no mesmo formato que o webhook devolveria ({ "categoria": [ { "atracao", "mac": { "caminho" }, "win": { "caminho" } } ] }). ele é relido a cada 30 s.'
+			: 'o índice é pedido ao endereço a cada 30 s (e guardado no computador entre um pedido e outro).';
+		$('btn-categories').textContent = fromFile ? 'atualizar as categorias pelo arquivo' : 'atualizar as categorias pelo webhook';
 		$('btn-categories').disabled = !state.available;
 		list.textContent = '';
 
@@ -1606,7 +1633,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (force) toast('error', err.message);
 		} finally {
 			btn.disabled = !state.available;
-			btn.textContent = 'atualizar as categorias pelo webhook';
+			btn.textContent = state.search.source === 'file' ? 'atualizar as categorias pelo arquivo' : 'atualizar as categorias pelo webhook';
 			renderSearch();
 		}
 	}
@@ -1619,6 +1646,32 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		$('btn-categories').addEventListener('click', function () {
 			loadCategories(true);
+		});
+
+		$('search-source').addEventListener('change', function (e) {
+			if (e.target.name !== 'search-source') return;
+
+			state.search.source = e.target.value;
+			renderSearch();
+			updateDirty();
+		});
+
+		$('search-file').addEventListener('input', function () {
+			state.search.file = this.value;
+			updateDirty();
+		});
+
+		$('search-file-pick').addEventListener('click', async function () {
+			var picked = PAD_BRIDGE.pickFile('Selecione o arquivo de índice', ['json']);
+
+			if (!picked) return;
+
+			try {
+				picked = (await call('canonicalPath', { path: picked })).path || picked;
+			} catch (err) { }
+
+			state.search.file = $('search-file').value = picked;
+			updateDirty();
 		});
 	}
 

@@ -1473,6 +1473,7 @@ body {
 
 .cfg-switch-track {
   position: relative;
+  flex: 0 0 auto; /* com texto longo ao lado, o interruptor não encolhe */
   width: 38px;
   height: 22px;
   border-radius: var(--radius-pill);
