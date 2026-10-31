@@ -56,6 +56,7 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		closeOpen();
 
 		var popover = el('div', 'dropdown-popover');
+		popover.setAttribute('data-motion', 'off'); // filtra a cada tecla: sem animar os itens
 		var items = [];
 		var active = Math.max(0, select.selectedIndex);
 		var query = '';

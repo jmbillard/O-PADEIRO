@@ -523,9 +523,34 @@ body.prods-page {
   opacity: 0.45;
 }
 
+.log-webhook-field {
+  position: relative;
+}
+
+.log-webhook-field[hidden] {
+  display: none;
+}
+
+.log-webhook-field>svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-width: 1.6;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.log-webhook-field:focus-within>svg {
+  stroke: var(--blue-500);
+}
+
 .log-webhook {
   min-height: 36px;
-  padding: 6px 12px;
+  padding: 6px 12px 6px 36px;
   font-size: 0.78rem;
 }
 

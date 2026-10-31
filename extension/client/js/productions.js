@@ -476,7 +476,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		if (webhook.value !== state.log.webhook) webhook.value = state.log.webhook;
-		webhook.hidden = mode !== 'webhook';
+		$('log-webhook-field').hidden = mode !== 'webhook';
 		webhook.disabled = !state.available;
 		$('log-hint').textContent = LOG_HINTS[mode] || '';
 	}
@@ -699,6 +699,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function init() {
 		state.newIcon = defaultIcon();
+
+		// a altura padrão da janela subiu 120 px (manifest): quem já tinha a janela ganha a nova altura uma vez
+		try {
+			if (PAD_BRIDGE.inCep() && !localStorage.getItem('pad.productions.height640')) {
+				localStorage.setItem('pad.productions.height640', '1');
+				if (window.innerHeight < 640) PAD_BRIDGE.resizeWindow(window.innerWidth, 640);
+			}
+		} catch (err) { }
 		bindLog();
 
 		$('btn-new').addEventListener('click', addRow);
