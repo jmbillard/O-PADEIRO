@@ -41,12 +41,16 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 ## 📍 links
 
-a aba **links** define os links que aparecem no começo da barra (ex: a planilha de apontamento de projetos).
+a aba **links** define os links que aparecem no começo da barra, em duas listas:
 
-- cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon.
-- arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
+- **links da equipe** → ficam no arquivo da rede e aparecem na barra de todo mundo (ex: a planilha de apontamento de projetos).
+- **meus links** → só neste computador (na pasta de dados do usuário). aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
 
-> 🚩 *obs:* sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.
+cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
+
+> 🚩 *obs:*\
+> • sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.\
+> • os seus links podem ser editados e salvos mesmo sem acesso à lista da rede.
 
 <br>
 

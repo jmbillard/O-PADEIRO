@@ -154,7 +154,22 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		barLinks: function () {
 			var list = window.PAD_MOCK_LIST;
 
-			return { stamp: list ? list.stamp : 1, links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }] };
+			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
+
+			return { stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks'), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal };
+		},
+
+		personalLinks: function () {
+			return { links: JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]') };
+		},
+
+		savePersonalLinks: function (a) {
+			var bad = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
+
+			if (bad) throw new Error('#PAD_087 - meus links: "' + (bad.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
+			localStorage.setItem('pad.mock.personalLinks', JSON.stringify(a.links));
+
+			return { links: a.links };
 		},
 
 		requestConfigTab: function (a) {

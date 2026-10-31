@@ -628,16 +628,53 @@ function padReadLinks() {
 	}
 }
 
-// Links para a barra, com a data da lista (a barra só redesenha quando ela muda).
-PADX.barLinks = function () {
-	var file = padConfigFile();
-	var stamp = 0;
+// Links pessoais: os do usuário, só neste computador (pasta de dados do usuário), mesma forma dos da equipe.
+function padPersonalLinksFile() {
+	return new File(scriptPreferencesPath + '/personal_links.json');
+}
+
+function padReadPersonalLinks() {
+	var file = padPersonalLinksFile();
+
+	if (!file.exists) return [];
 
 	try {
-		stamp = file && file.exists ? file.modified.getTime() : 0;
+		return padCleanLinks(JSON.parse(readFileContent(file)).LINKS || []);
+	} catch (err) {
+		return [];
+	}
+}
+
+PADX.personalLinks = function () {
+	return { links: padReadPersonalLinks() };
+};
+
+// a: { links }
+PADX.savePersonalLinks = function (a) {
+	var clean;
+
+	try {
+		clean = padCleanLinks(a.links || []);
+	} catch (err) {
+		throw new Error(err.message.replace('#PAD_087 - links:', '#PAD_087 - meus links:'));
+	}
+
+	saveTextFile(JSON.stringify({ LINKS: clean }, null, '\t'), padPersonalLinksFile().fsName);
+
+	return { links: padReadPersonalLinks() };
+};
+
+// Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
+PADX.barLinks = function () {
+	var file = padConfigFile();
+	var personal = padPersonalLinksFile();
+	var stamp = '';
+
+	try {
+		stamp = (file && file.exists ? file.modified.getTime() : 0) + '|' + (personal.exists ? personal.modified.getTime() : 0);
 	} catch (err) { }
 
-	return { stamp: stamp, links: padReadLinks() };
+	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks() };
 };
 
 // Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.

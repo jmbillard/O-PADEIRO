@@ -94,7 +94,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
-- **links** (no começo da barra) → os links da equipe, com o ícone de cada site (ex: a planilha de apontamento de projetos). a lista fica na [configuração](docs/producoes.md#-links).
+- **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
   `◖` → abre o painel de templates.\
   `◗` → abre o criador de templates (com a comp principal aberta).

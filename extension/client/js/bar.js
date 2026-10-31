@@ -402,29 +402,42 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return m ? m[1] + '/favicon.ico' : '';
 	}
 
-	function renderLinks(links) {
+	// selo dos links pessoais: um bonequinho (cabeça e tronco)
+	var PERSON_BADGE = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="4" r="2" /><path d="M2.5 10.5a3.5 3.5 0 0 1 7 0z" /></svg>';
+
+	// os da equipe e, logo depois, os pessoais (com o selo)
+	function renderLinks(team, personal) {
 		var box = $('links');
+		var links = team.concat(personal.map(function (l) {
+			return Object.assign({ personal: true }, l);
+		}));
 
 		box.textContent = '';
 
 		links.forEach(function (link) {
-			var btn = el('button', 'bar-icon bar-link');
+			var btn = el('button', 'bar-icon bar-link' + (link.personal ? ' is-personal' : ''));
 			var img = el('img');
 			var custom = PAD_UTIL.decodeIcon(link.icon);
 
 			btn.type = 'button';
-			btn.title = link.name + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar os links';
+			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : '') + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar os links';
 			btn.setAttribute('aria-label', link.name);
 			img.alt = '';
 			img.src = custom || faviconUrl(link.url);
 
 			// sem favicon (site sem o arquivo, rede fora): o ícone de link
 			img.addEventListener('error', function () {
-				btn.textContent = '';
-				btn.appendChild(svgIcon('link'));
+				img.replaceWith(svgIcon('link'));
 			});
 
 			btn.appendChild(img);
+
+			if (link.personal) {
+				var badge = el('span', 'bar-link-badge');
+
+				badge.innerHTML = PERSON_BADGE;
+				btn.appendChild(badge);
+			}
 			bind(btn, async function () {
 				await requireNetwork('PAD_007');
 				PAD_BRIDGE.openUrl(link.url);
@@ -445,7 +458,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (res.stamp === linksStamp) return;
 
 			linksStamp = res.stamp;
-			renderLinks(res.links);
+			renderLinks(res.links, res.personal || []);
 		} catch (err) { }
 	}
 

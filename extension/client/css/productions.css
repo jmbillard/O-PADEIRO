@@ -1276,3 +1276,26 @@ body.is-org-dragging * {
     grid-column: 2 / -1;
   }
 }
+
+/* link pessoal: o mesmo selo da barra (bonequinho) no canto do ícone */
+.link-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--blue-500);
+  pointer-events: none;
+}
+
+.link-badge svg {
+  width: 10px !important;
+  height: 10px !important;
+  fill: currentcolor !important;
+  stroke: none !important;
+}

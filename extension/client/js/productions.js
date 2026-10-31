@@ -31,6 +31,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		organize: { folders: [], renderComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { webhook: '', labels: {} }, // aba BUSCA: endereço e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
+		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
+		personalSnapshot: '[]',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
 		tab: 'prods'
 	};
@@ -273,12 +275,23 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	function personalForSave() {
+		return state.personal.map(function (l) {
+			return { name: l.name.trim(), url: l.url.trim(), icon: l.icon || '' };
+		});
+	}
+
 	function currentSnapshot() {
 		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave() });
 	}
 
+	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
+	function personalDirty() {
+		return JSON.stringify(personalForSave()) !== state.personalSnapshot;
+	}
+
 	function updateDirty() {
-		var dirty = currentSnapshot() !== state.snapshot;
+		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 
 		$('dirty').hidden = !dirty;
 
@@ -526,7 +539,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// Sem a lista compartilhada não há o que editar: a lista é uma só para a equipe (nada de cópia local).
 	function setAvailable(available) {
 		state.available = available;
-		['btn-save', 'btn-import', 'btn-export'].forEach(function (id) {
+		['btn-import', 'btn-export'].forEach(function (id) {
 			$(id).disabled = !available;
 		});
 		state.newBtn.disabled = !available;
@@ -1599,12 +1612,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(img);
 	}
 
+	var PERSON_BADGE = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="4" r="2" /><path d="M2.5 10.5a3.5 3.5 0 0 1 7 0z" /></svg>';
+
 	function renderLinks() {
-		var list = $('link-list');
+		renderLinkList(state.links, 'link-list', false);
+		renderLinkList(state.personal, 'personal-list', true);
+		$('btn-new-link').disabled = !state.available;
+	}
+
+	// 'personal': os links do usuário (editáveis mesmo sem a lista da rede)
+	function renderLinkList(links, listId, personal) {
+		var list = $(listId);
+		var enabled = personal || state.available;
 
 		list.textContent = '';
 
-		state.links.forEach(function (link, i) {
+		links.forEach(function (link, i) {
 			var row = el('div', 'link-row');
 			var iconWrap = el('div', 'link-icon');
 			var iconBtn = el('button', 'prod-icon');
@@ -1612,7 +1635,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			iconBtn.type = 'button';
 			iconBtn.title = link.icon ? 'ícone escolhido: clique para trocar' : 'ícone do site (favicon): clique para escolher outra imagem';
-			iconBtn.disabled = !state.available;
+			iconBtn.disabled = !enabled;
 			linkIconContent(iconBtn, link);
 			iconBtn.addEventListener('click', async function () {
 				var file = PAD_BRIDGE.pickFile('Selecione o ícone do link', ['png', 'jpg', 'jpeg']);
@@ -1628,6 +1651,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				}
 			});
 			iconWrap.appendChild(iconBtn);
+
+			if (personal) {
+				var badge = el('span', 'link-badge');
+
+				badge.innerHTML = PERSON_BADGE;
+				iconWrap.appendChild(badge);
+			}
 
 			if (link.icon) {
 				var reset = el('button', 'link-reset', '↺');
@@ -1647,7 +1677,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			name.value = link.name;
 			name.placeholder = 'nome (aparece na dica)';
 			name.spellcheck = false;
-			name.disabled = !state.available;
+			name.disabled = !enabled;
 			name.setAttribute('aria-label', 'nome do link ' + (i + 1));
 			name.addEventListener('input', function () {
 				link.name = name.value;
@@ -1658,10 +1688,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				link.url = v;
 				if (!link.icon) linkIconContent(iconBtn, link); // o favicon acompanha o endereço
 			}, function () {
-				state.links.splice(i, 1);
+				links.splice(i, 1);
 				renderLinks();
 				updateDirty();
 			});
+
+			if (personal) {
+				url.querySelector('input').disabled = false;
+				url.querySelector('.mini-button').disabled = false;
+			}
 
 			row.appendChild(PAD_SORT.handle());
 			row.appendChild(iconWrap);
@@ -1669,25 +1704,54 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			row.appendChild(url);
 			list.appendChild(row);
 		});
-
-		$('btn-new-link').disabled = !state.available;
 	}
 
 	function bindLinks() {
-		$('btn-new-link').addEventListener('click', function () {
-			state.links.push({ name: '', url: '', icon: '' });
-			renderLinks();
-			updateDirty();
-			$('link-list').lastChild.querySelector('input.cfg-input').focus();
-		});
+		[['btn-new-link', 'link-list', 'links'], ['btn-new-personal', 'personal-list', 'personal']].forEach(function (k) {
+			$(k[0]).addEventListener('click', function () {
+				state[k[2]].push({ name: '', url: '', icon: '' });
+				renderLinks();
+				updateDirty();
+				$(k[1]).lastChild.querySelector('input.cfg-input').focus();
+			});
 
-		PAD_SORT.enable($('link-list'), '.link-row', function (from, to) {
-			var moved = state.links.splice(from, 1)[0];
+			PAD_SORT.enable($(k[1]), '.link-row', function (from, to) {
+				var moved = state[k[2]].splice(from, 1)[0];
 
-			state.links.splice(to, 0, moved);
-			renderLinks();
-			updateDirty();
+				state[k[2]].splice(to, 0, moved);
+				renderLinks();
+				updateDirty();
+			});
 		});
+	}
+
+	async function loadPersonal() {
+		try {
+			state.personal = (await call('personalLinks')).links.map(function (l) {
+				return { name: l.name || '', url: l.url || '', icon: l.icon || '' };
+			});
+		} catch (err) {
+			state.personal = [];
+		}
+
+		state.personalSnapshot = JSON.stringify(personalForSave());
+		renderLinks();
+		updateDirty();
+	}
+
+	// grava os links pessoais (à parte da lista da rede). Lança o erro do host.
+	async function savePersonal() {
+		if (!personalDirty()) return false;
+
+		var res = await call('savePersonalLinks', { links: personalForSave() });
+
+		state.personal = res.links.map(function (l) {
+			return { name: l.name, url: l.url, icon: l.icon || '' };
+		});
+		state.personalSnapshot = JSON.stringify(personalForSave());
+		renderLinks();
+
+		return true;
 	}
 
 	/* =========================================================
@@ -1750,6 +1814,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	async function load() {
+		loadPersonal(); // os pessoais não dependem da rede
 		$('list').classList.remove('is-settled'); // ao ler a lista, as linhas entram animadas de novo
 
 		try {
@@ -1822,7 +1887,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	async function save() {
-		if (state.saving || !state.available) return;
+		if (state.saving) return;
+
+		// só os links pessoais mudaram (ou a lista da rede está inacessível): grava só eles, no computador
+		if (!state.available || currentSnapshot() === state.snapshot) {
+			if (!personalDirty()) {
+				if (!state.available) return;
+			} else {
+				try {
+					await savePersonal();
+					updateDirty();
+					toast('success', 'meus links salvos (só neste computador).');
+				} catch (err) {
+					showTab('links');
+					toast('error', err.message);
+				}
+
+				return;
+			}
+		}
 
 		if (!state.rows.length) return toast('error', '#PAD_051 - a lista de produções não pode ficar vazia.');
 
@@ -1857,6 +1940,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			render();
 			updateDirty();
 			checkFolders(state.rows);
+			try {
+				await savePersonal();
+			} catch (err) {
+				showTab('links');
+				toast('error', err.message);
+				return;
+			}
+
+			updateDirty();
 			toast('success', 'configuração salva: ' + state.rows.length + (state.rows.length === 1 ? ' produção' : ' produções') + ' (os painéis atualizam sozinhos).');
 		} catch (err) {
 			if (tabForError(err.message)) showTab(tabForError(err.message));
