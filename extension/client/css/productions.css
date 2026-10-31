@@ -571,8 +571,3 @@ body.prods-page {
 .prods-list.is-settled>.prod-row {
   animation: none;
 }
-
-/* no cartão arrastado, o puxador sem o fundo de foco (só os pontinhos) */
-.prod-row.is-dragging .drag-handle {
-  background: transparent;
-}

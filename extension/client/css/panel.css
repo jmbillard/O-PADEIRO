@@ -211,7 +211,9 @@ body {
   flex: 1;
   flex-direction: column;
   border: 1px solid rgb(255 255 255 / 40%);
-  border-radius: var(--radius-large);
+  /* cantos concêntricos: em cima com a busca (pílula de raio 27 a 15 px da borda), embaixo com os botões
+     redondos do rodapé (raio 19, também a 15 px) */
+  border-radius: 42px 42px 34px 34px;
   background: rgb(255 255 255 / 13%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 16%),
@@ -441,7 +443,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 14px;
   border-top: 1px solid rgb(255 255 255 / 20%);
   color: rgb(255 255 255 / 70%);
   font-size: 0.68rem;
@@ -1298,9 +1300,9 @@ body {
 
 .cfg-row {
   flex-wrap: wrap;
-  padding: 8px 10px;
+  padding: 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-small);
+  border-radius: calc(var(--radius-small) + 9px); /* concêntrico: raio dos campos + respiro (8) + borda (1) */
   background: white;
 }
 
@@ -1630,7 +1632,7 @@ body {
   overflow-y: auto;
   padding: 7px;
   border: 1px solid var(--border);
-  border-radius: 13px;
+  border-radius: 16px; /* concêntrico: raio dos itens (8) + respiro (7) + borda (1) */
   background: white;
   box-shadow:
     0 18px 45px rgb(30 42 80 / 16%),
@@ -2191,9 +2193,7 @@ body.motion-ready .eyebrow {
   color: var(--border-strong);
   cursor: grab;
   touch-action: none;
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .drag-handle svg {
@@ -2203,14 +2203,15 @@ body.motion-ready .eyebrow {
   stroke: none;
 }
 
-.drag-handle:hover,
-.drag-handle:focus-visible {
-  background: var(--surface-soft);
+/* sem fundo nem contorno: só os pontinhos mudam de cor (azuis quando o puxador está em uso) */
+.drag-handle:hover {
   color: var(--text-secondary);
 }
 
-.drag-handle:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+.drag-handle:focus-visible,
+.is-dragging .drag-handle {
+  outline: none;
+  color: var(--blue-500);
 }
 
 .is-sorting,
