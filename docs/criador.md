@@ -21,7 +21,7 @@ um template do padeiro é um conjunto de arquivos:
 4. posicione a agulha da timeline em um frame de referência e clique no preview ('*capturar preview*' aparece sobre ele no hover, ou direto quando ainda não há preview).
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
 6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
-7. escolha a '*pasta de mídias*' (opcional) e as '*pastas de output*'.
+7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
 8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
 

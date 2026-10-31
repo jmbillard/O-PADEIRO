@@ -687,6 +687,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		}
 	}
 
+	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; o × esvazia e esconde.
+	function showImportRow(on) {
+		$('import-row').hidden = !on;
+		$('btn-import-add').hidden = on;
+	}
+
 	function resetForm() {
 		$('f-config').value = '';
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
@@ -696,6 +702,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		PAD_DROPDOWN.refresh($('f-case'));
 		$('f-separator').value = '\\n';
 		$('f-import').value = '';
+		showImportRow(false);
 		state.layers = [];
 		state.outputs = [''];
 		state.comp = null;
@@ -749,6 +756,14 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var inputs = $('outputs').querySelectorAll('input');
 
 			inputs[inputs.length - 1].focus();
+		});
+		$('btn-import-add').addEventListener('click', function () {
+			showImportRow(true);
+			$('f-import').focus();
+		});
+		$('remove-import').addEventListener('click', function () {
+			$('f-import').value = '';
+			showImportRow(false);
 		});
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de mídias');
