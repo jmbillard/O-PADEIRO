@@ -377,16 +377,6 @@ svg {
   font-size: 0.82rem;
 }
 
-.queue-actions {
-  position: relative;
-  z-index: 21;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .button-secondary {
   border-color: var(--border);
   background: white;
@@ -1067,11 +1057,6 @@ body.motion-ready .queue-content {
   .queue-header {
     flex-direction: column;
     gap: 17px;
-  }
-
-  .queue-actions {
-    width: 100%;
-    justify-content: flex-start;
   }
 
   .empty-state {

@@ -46,7 +46,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
 
 - **★ fixados** → passe o mouse em um template e clique na estrela para fixá-lo; clique de novo para desafixar. não há limite de fixados.
 - **recentes** → os templates usados por último.
-  - um template entra nos recentes quando você **preenche** (ao clicar em '*Preencher*', quando o template começa a ser importado) ou **importa** (duplo clique na lista ou '*Importar template*'). só selecionar não conta.
+  - um template entra nos recentes quando você **preenche** (ao clicar em '*Preencher*', quando o template começa a ser importado) ou **importa** (duplo clique na lista ou o botão de importar, no rodapé). só selecionar não conta.
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
   - o limite é de **5 templates**: quando entra o 6º, o mais antigo sai.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos de 5.
@@ -65,7 +65,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
 - **dicas** → como preencher esse template.
 - **abrir output** → abre as pastas de output do template.
 - **avisos** → com o template à vista, os avisos (erros de output, config salva, fontes) aparecem logo abaixo do preview, sem repetir mensagens iguais, e fecham no ×.
-- **importar template** → importa o template para o projeto, sem preencher.
+- **importar** (o botão redondo com a seta para baixo, no rodapé, antes de '*Abrir output*') → importa o template para o projeto, sem preencher.
 - **✎ editar config** → abre o editor do arquivo de configuração (veja [editor de config](#editor-de-config)).
 
 ### fontes do template

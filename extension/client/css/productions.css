@@ -214,58 +214,6 @@ body.prods-page {
   transform: none;
 }
 
-/* importar e exportar (rodapé): a seta desce / sobe no hover e volta ao sair */
-.io-button {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: white;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.io-button:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.io-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 2px;
-}
-
-.io-button svg {
-  width: 18px;
-  height: 18px;
-  overflow: visible;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.io-arrow {
-  transition: transform 280ms var(--ease-soft);
-}
-
-#btn-import:hover .io-arrow {
-  transform: translateY(2.5px);
-}
-
-#btn-export:hover .io-arrow {
-  transform: translateY(-2.5px);
-}
-
 .prod-row.has-error .cfg-input {
   border-color: var(--danger);
   box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
@@ -297,6 +245,10 @@ body.prods-page {
 
 .prods-dirty[hidden] {
   display: none;
+}
+
+.prods-bar {
+  justify-content: flex-start; /* quebrando a linha, os botões ficam juntos à esquerda */
 }
 
 .prods-bar .button-primary {

@@ -2297,3 +2297,63 @@ body.motion-ready .eyebrow {
 .has-field-icon>select {
   padding-left: 40px;
 }
+
+/* importar / exportar (botão redondo de ícone, rodapés): a seta desce / sobe no hover e volta ao sair */
+.io-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.io-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.io-button:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.io-button svg {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.io-arrow {
+  transition: transform 280ms var(--ease-soft);
+}
+
+#btn-import:hover .io-arrow {
+  transform: translateY(2.5px);
+}
+
+#btn-export:hover .io-arrow {
+  transform: translateY(-2.5px);
+}
+
+/* janela estreita: o botão principal encolhe em vez de cair para outra linha */
+@media (max-width: 400px) {
+  .action-bar .button-primary {
+    min-width: max-content; /* encolhe até o tamanho do texto, sem quebrar em duas linhas */
+    flex: 1;
+  }
+}

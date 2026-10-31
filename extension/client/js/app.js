@@ -897,7 +897,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			$('view-' + view).hidden = view !== name;
 		});
 
-		$('queue-actions').hidden = name !== 'input';
 		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
 		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
