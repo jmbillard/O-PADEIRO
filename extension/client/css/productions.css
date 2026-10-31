@@ -548,3 +548,8 @@ body.prods-page {
 .prods-list.is-settled>.prod-row {
   animation: none;
 }
+
+/* "+ nova produção" no fim da lista: 10 px abaixo da última produção, como os outros "+" */
+.prods-list>.prods-add {
+  margin: 3px 0 4px;
+}

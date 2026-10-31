@@ -335,6 +335,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!state.rows.length) {
 			list.appendChild(el('p', 'prods-empty', 'nenhuma produção: clique em “+ nova produção”.'));
+			appendNewButton();
 			appendFileInfo();
 			return;
 		}
@@ -343,6 +344,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			list.appendChild(buildRow(row));
 		});
 
+		appendNewButton();
 		appendFileInfo();
 		applyFilter();
 	}
@@ -372,7 +374,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		list.classList.toggle('is-filtered', key !== '');
 
-		if (state.rows.length && !shown) list.insertBefore(el('p', 'prods-empty prods-nomatch', 'nenhuma produção casa com “' + $('filter').value.trim() + '”.'), state.fileInfo && state.fileInfo.parentNode === list ? state.fileInfo : null);
+		if (state.rows.length && !shown) list.insertBefore(el('p', 'prods-empty prods-nomatch', 'nenhuma produção casa com “' + $('filter').value.trim() + '”.'), state.newBtn.parentNode === list ? state.newBtn : null);
 	}
 
 	// ↑ ↓ num campo vão para o mesmo campo da linha de cima / de baixo.
@@ -422,6 +424,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} catch (err) { }
 	}
 
+	// "+ nova produção": logo abaixo das produções, como o "+ novo output" do criador
+	function appendNewButton() {
+		state.newBtn.hidden = false;
+		$('list').appendChild(state.newBtn);
+	}
+
 	// o caminho da lista fica no fim da lista de pastas
 	function appendFileInfo() {
 		if (state.fileInfo && !state.fileInfo.hidden) $('list').appendChild(state.fileInfo);
@@ -441,9 +449,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// Sem a lista compartilhada não há o que editar: a lista é uma só para a equipe (nada de cópia local).
 	function setAvailable(available) {
 		state.available = available;
-		['btn-new', 'btn-save', 'btn-import', 'btn-export'].forEach(function (id) {
+		['btn-save', 'btn-import', 'btn-export'].forEach(function (id) {
 			$(id).disabled = !available;
 		});
+		state.newBtn.disabled = !available;
 		renderLog();
 	}
 
@@ -709,7 +718,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} catch (err) { }
 		bindLog();
 
-		$('btn-new').addEventListener('click', addRow);
+		state.newBtn = $('btn-new'); // a lista é redesenhada: o botão é guardado e reposto no fim dela
+		state.newBtn.addEventListener('click', addRow);
 		$('btn-save').addEventListener('click', save);
 		$('btn-import').addEventListener('click', importList);
 		$('btn-export').addEventListener('click', exportList);

@@ -37,6 +37,9 @@
 		<section class="prods-sheet">
 			<p class="cfg-title prods-section-title">lista de produções</p>
 
+			<!-- "+ nova produção" entra no fim da lista (render), como o "+ novo output" -->
+			<button type="button" class="button button-secondary button-compact add-button prods-add" id="btn-new" hidden>+ nova produção</button>
+
 			<div class="prods-list" id="list">
 				<div class="oven-loader is-light" role="status">
 					<div class="oven" aria-hidden="true"><span class="oven-glow"></span><span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span><span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>
@@ -67,7 +70,6 @@
 				<button type="button" class="io-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
 				</button>
-				<button type="button" class="button button-secondary" id="btn-new">+ nova produção</button>
 				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
 				<button type="button" class="button button-primary" id="btn-save">Salvar lista</button>
 			</div>
