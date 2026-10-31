@@ -70,7 +70,7 @@
 							<div class="picker-search">
 								<svg viewBox="0 0 24 24"><use href="#i-search" /></svg>
 								<input type="search" id="search" placeholder="buscar template" autocomplete="off" spellcheck="false" aria-label="Buscar template">
-								<button type="button" class="picker-clear" id="search-clear" aria-label="Limpar busca" hidden>×</button>
+								<button type="button" class="picker-clear" id="search-clear" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 							</div>
 
 							<div class="picker-list" id="tree" role="tree" aria-label="Templates">
@@ -159,7 +159,7 @@
 
 					<div class="action-bar is-anchored">
 						<button type="button" class="io-button" id="btn-import" title="Importar o template para o projeto, sem preencher" aria-label="Importar o template para o projeto, sem preencher"><svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg></button>
-						<button type="button" class="button button-secondary" id="btn-output" title="Abrir a pasta de output do template">Abrir output</button>
+						<button type="button" class="io-button io-output" id="btn-output" title="Abrir a pasta de output do template" aria-label="Abrir a pasta de output do template"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
 						<button type="button" class="button button-primary" id="btn-fill">Preencher: 1</button>
 					</div>
 				</div>
@@ -202,18 +202,20 @@
 							<select id="render-template" aria-label="Template de output"></select>
 						</span>
 						<ul class="render-outputs" id="render-outputs"></ul>
-						<div class="action-bar">
-							<button type="button" class="button button-secondary" id="btn-skip-queue">Concluir sem fila</button>
-							<button type="button" class="button button-primary" id="btn-queue">Criar fila de render</button>
-						</div>
 					</div>
 
 					<div class="queue-content">
 						<ul class="file-list" id="file-list"></ul>
 					</div>
 
+					<!-- as ações da fila ficam no rodapé, como nas outras telas -->
+					<div class="run-footer action-bar is-anchored" id="queue-footer" hidden>
+						<button type="button" class="button button-secondary" id="btn-skip-queue">Concluir sem fila</button>
+						<button type="button" class="button button-primary" id="btn-queue">Criar fila de render</button>
+					</div>
+
 					<div class="run-footer action-bar is-anchored" id="run-footer" hidden>
-						<button type="button" class="button button-secondary" id="btn-output-run">Abrir output</button>
+						<button type="button" class="io-button io-output" id="btn-output-run" title="Abrir a pasta de output" aria-label="Abrir a pasta de output"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
 						<button type="button" class="button button-primary" id="btn-again">Novo preenchimento</button>
 					</div>
 				</div>

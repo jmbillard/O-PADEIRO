@@ -384,6 +384,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		icon.hidden = !url;
 		icon.title = prod ? prod.name + '\n\ndois cliques: editar a lista de produções' : 'dois cliques: editar a lista de produções';
 		if (url) icon.src = url;
+
+		// na barra vertical estreita o seletor mostra só a seta: o nome da produção vai na dica
+		var trigger = $('production')._dropdownTrigger;
+
+		if (trigger) trigger.title = (prod ? prod.name + '\n\n' : '') + 'abra e digite para filtrar';
 	}
 
 	async function loadProductions() {

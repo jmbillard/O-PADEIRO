@@ -70,6 +70,9 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 
 		if (!text || !document.contains(el)) return;
 
+		// menu ⋯ aberto: a dica do botão ficaria por cima do menu
+		if (el.matches('summary') && el.parentElement && el.parentElement.open) return;
+
 		balloon().textContent = text;
 		place(el);
 		tip.classList.add('is-visible');

@@ -1517,6 +1517,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		$('run-footer').hidden = true;
 		showView('run');
 		setStage('3 · preenchendo', state.info.name, begin.templateName);
@@ -1603,6 +1604,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
 		setStage('4 · render', null, 'selecione o template de output para continuar');
 		$('render-options').hidden = false;
+		$('queue-footer').hidden = false;
 		setPickerLocked(true);
 		select.focus();
 	}
@@ -1615,6 +1617,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		store.set('outputTemplate', template);
 		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');
 
@@ -1632,6 +1635,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			notify('error', err.message);
 			setBusy(false);
 			$('render-options').hidden = false;
+			$('queue-footer').hidden = false;
 			return;
 		}
 
@@ -1671,6 +1675,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		run.finished = true;
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		$('run-footer').hidden = false;
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
@@ -1984,6 +1989,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
+			$('queue-footer').hidden = true;
 
 			if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 		});

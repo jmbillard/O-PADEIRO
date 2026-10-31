@@ -443,25 +443,6 @@ body.maker-page {
   flex: 1;
 }
 
-.maker-add {
-  width: 100%;
-  margin-top: 4px;
-  border-style: dashed;
-}
-
-/* direto no cartão (+ layers), o gap é o do cartão (14): desconta para ficar a 10 px da lista, como os outros "+" */
-.cfg-card>.maker-add {
-  margin-top: -4px;
-}
-
-.maker-add:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  box-shadow: none;
-  color: var(--blue-500);
-  transform: none;
-}
-
 /* sem comp */
 .maker-state {
   display: grid;

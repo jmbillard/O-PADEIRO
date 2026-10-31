@@ -287,6 +287,16 @@ body {
   line-height: 1;
 }
 
+/* o mesmo × desenhado dos botões de remover */
+.picker-clear svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
 .picker-clear:hover {
   background: rgb(255 255 255 / 30%);
 }
@@ -1449,47 +1459,8 @@ body {
   transform: translateY(2.5px);
 }
 
-/* botão redondo de ícone sobre fundo claro (rodapés) */
-.round-button {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: white;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.round-button:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.round-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 2px;
-}
-
-.round-button svg {
-  width: 18px;
-  height: 18px;
-  overflow: visible;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.round-button:hover .anim-refresh {
+/* botão redondo de ícone dos rodapés: é o .io-button (fim do arquivo); o de recomeçar gira no hover */
+.io-button:hover .anim-refresh {
   animation: icon-spin 650ms var(--ease-soft);
 }
 
@@ -1782,7 +1753,9 @@ body.motion-ready .eyebrow {
   position: relative;
 }
 
-.tree-item>.tree-row {
+/* a coluna da estrela (favorito) é reservada também nas pastas: contadores e selos AEP alinhados */
+.tree-item>.tree-row,
+.tree-folder>.tree-row {
   padding-right: 38px;
 }
 
@@ -2356,4 +2329,54 @@ body.motion-ready .eyebrow {
     min-width: max-content; /* encolhe até o tamanho do texto, sem quebrar em duas linhas */
     flex: 1;
   }
+}
+
+/* abrir output: a pastinha de output da busca de caminhos; no hover a frente abre e o quadro sobe */
+.io-output .folder-content,
+.io-output .folder-front {
+  fill: white;
+  transition:
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.io-output svg * {
+  transform-box: fill-box;
+}
+
+.io-output .folder-front {
+  transform-origin: 50% 100%;
+}
+
+.io-output:hover:not(:disabled) .folder-content,
+.io-output:hover:not(:disabled) .folder-front {
+  fill: var(--blue-50);
+}
+
+.io-output:hover:not(:disabled) .folder-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+.io-output:hover:not(:disabled) .folder-content {
+  transform: translateY(-2px);
+}
+
+/* "+" de adicionar (layers, outputs, mídias): largura toda, tracejado, a 10 px da lista acima */
+.add-button {
+  width: 100%;
+  margin-top: 4px;
+  border-style: dashed;
+}
+
+/* direto no cartão, o gap é o do cartão (14): desconta para ficar a 10 px da lista, como os outros "+" */
+.cfg-card>.add-button {
+  margin-top: -4px;
+}
+
+.add-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  box-shadow: none;
+  color: var(--blue-500);
+  transform: none;
 }

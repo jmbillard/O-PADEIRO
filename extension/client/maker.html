@@ -140,7 +140,7 @@ use 1 linha vazia para criar mais de 1 versão do mesmo template.</textarea>
 								<p class="cfg-hint">a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.</p>
 							</div>
 							<div class="cfg-rows" id="layers"></div>
-							<button type="button" class="button button-secondary button-compact maker-add" id="btn-layers" title="adicionar à lista os layers selecionados na comp principal">+ layers</button>
+							<button type="button" class="button button-secondary button-compact add-button" id="btn-layers" title="adicionar à lista os layers selecionados na comp principal">+ layers</button>
 						</section>
 
 						<section class="cfg-card">
@@ -154,12 +154,12 @@ use 1 linha vazia para criar mais de 1 versão do mesmo template.</textarea>
 									<button type="button" class="mini-button" id="pick-import" title="escolher pasta" aria-label="escolher pasta"><svg viewBox="0 0 24 24"><path d="M3.500 7.500A1.500 1.500 0 0 1 5 6h4l2 2.500h8a1.500 1.500 0 0 1 1.500 1.500v7a1.500 1.500 0 0 1-1.500 1.500H5A1.500 1.500 0 0 1 3.500 17z" /></svg></button>
 									<button type="button" class="mini-button" id="remove-import" title="remover a pasta de mídias" aria-label="remover a pasta de mídias"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 								</div>
-								<button type="button" class="button button-secondary button-compact maker-add" id="btn-import-add">+ pasta de mídias</button>
+								<button type="button" class="button button-secondary button-compact add-button" id="btn-import-add">+ pasta de mídias</button>
 							</div>
 							<div class="cfg-field">
 								<span class="cfg-label">Pastas de output</span>
 								<div class="cfg-rows" id="outputs"></div>
-								<button type="button" class="button button-secondary button-compact maker-add" id="btn-output">+ novo output</button>
+								<button type="button" class="button button-secondary button-compact add-button" id="btn-output">+ novo output</button>
 							</div>
 						</section>
 					</div>
@@ -168,7 +168,7 @@ use 1 linha vazia para criar mais de 1 versão do mesmo template.</textarea>
 
 			<div class="action-bar is-anchored maker-bar" id="bar">
 				<div class="maker-bar-left">
-					<button type="button" class="round-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
+					<button type="button" class="io-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
 						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
 					</button>
 					<button type="button" class="button button-secondary" id="btn-test" title="testar o preenchimento com o exemplo">Testar agora</button>

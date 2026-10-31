@@ -63,9 +63,9 @@ no topo da lista, antes das pastas, ficam dois atalhos:
 - **preview** → a imagem `_preview.png` do template (transparências aparecem sobre um fundo xadrez). se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
 - **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
 - **dicas** → como preencher esse template.
-- **abrir output** → abre as pastas de output do template.
+- **abrir output** (o botão redondo com a pastinha, no rodapé) → abre as pastas de output do template.
 - **avisos** → com o template à vista, os avisos (erros de output, config salva, fontes) aparecem logo abaixo do preview, sem repetir mensagens iguais, e fecham no ×.
-- **importar** (o botão redondo com a seta para baixo, no rodapé, antes de '*Abrir output*') → importa o template para o projeto, sem preencher.
+- **importar** (o botão redondo com a seta para baixo, no rodapé, antes do de output) → importa o template para o projeto, sem preencher.
 - **✎ editar config** → abre o editor do arquivo de configuração (veja [editor de config](#editor-de-config)).
 
 ### fontes do template

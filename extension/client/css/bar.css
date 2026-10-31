@@ -505,6 +505,29 @@ body.bar-page {
   }
 }
 
+/* barra vertical estreita (até 100 px): o seletor de produção não cabe com o nome; fica só a seta,
+   num botão redondo (o nome aparece na dica e na lista) */
+@media (max-aspect-ratio: 1/1) and (max-width: 100px) {
+  .bar-prod .select {
+    width: 34px;
+    min-width: 0;
+  }
+
+  .bar-prod .dropdown-trigger {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .bar-prod .dropdown-label {
+    display: none;
+  }
+
+  .bar-prod .select::after {
+    right: 50%;
+    transform: translate(50%, -70%) rotate(45deg);
+  }
+}
+
 /* 100% vertical (só cabe uma coluna): rótulo ao lado do ícone, em lista */
 @media (max-aspect-ratio: 1/1) and (max-width: 159px) {
   .bar-section {

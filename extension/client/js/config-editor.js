@@ -65,6 +65,29 @@ são preservadas ao salvar.
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
 	};
 
+	// ícones no início dos campos (os mesmos do criador)
+	var FIELD_ICONS = {
+		tag: '<path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" />',
+		comp: '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" />',
+		prefix: '<path d="M5 5v14" /><path d="M9 9h10M9 15h7" />',
+		time: '<circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" />',
+		textCase: '<path d="M3 18 7.5 6 12 18M4.7 13.5h5.6" /><path d="M20.5 12v6M20.5 14.6c0 1.9-1.3 3.4-3 3.4s-2.8-1.4-2.8-3.1 1.2-3.1 2.9-3.1 2.9 1.2 2.9 2.8" />',
+		separator: '<path d="M19 5v7a3 3 0 0 1-3 3H6" /><path d="m9.5 11.5-3.5 3.5 3.5 3.5" />',
+		media: '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="m7.5 11 2.8-2.8 2.2 2.2 1.5-1.5 2.5 2.5" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />',
+		output: '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />'
+	};
+
+	// põe o ícone no início do campo: 'box' é o próprio contêiner (span.select, div.cfg-path) ou um novo
+	function withIcon(control, icon, box) {
+		var wrap = box || el('div');
+
+		wrap.classList.add('has-field-icon');
+		wrap.insertAdjacentHTML('afterbegin', '<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">' + FIELD_ICONS[icon] + '</svg>');
+		if (!box) wrap.appendChild(control);
+
+		return wrap;
+	}
+
 	function miniButton(icon, title, onClick) {
 		var btn = el('button', 'mini-button');
 
@@ -147,14 +170,14 @@ são preservadas ao salvar.
 			return box;
 		}
 
-		function field(parent, key, label, control, hint) {
+		function field(parent, key, label, control, hint, icon) {
 			var wrap = el('div', 'cfg-field');
 			var lab = el('label', 'cfg-label', label);
 
 			control.id = 'cfg-' + key;
 			lab.htmlFor = control.id;
 			wrap.appendChild(lab);
-			wrap.appendChild(control);
+			wrap.appendChild(icon ? withIcon(control, icon, control.classList.contains('select') ? control : null) : control);
 			if (hint) wrap.appendChild(el('p', 'cfg-hint', hint));
 
 			fields[key] = { wrap: wrap, control: control };
@@ -211,26 +234,26 @@ são preservadas ao salvar.
 		var idGrid = el('div', 'cfg-grid');
 
 		idCard.appendChild(idGrid);
-		field(idGrid, 'configName', 'Nome da configuração', input(base.configName), 'identifica o template no log.');
-		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.');
+		field(idGrid, 'configName', 'Nome da configuração', input(base.configName), 'identifica o template no log.', 'tag');
+		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */
 
-		var nameCard = card('Nome e texto');
+		var nameCard = card('Nomenclatura');
 		var nameGrid = el('div', 'cfg-grid');
 
 		nameCard.appendChild(nameGrid);
-		field(nameGrid, 'prefix', 'Prefixo', input(base.prefix), 'início do nome de todas as comps criadas (opcional). "ignore" não preenche, só importa o template.');
-		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.');
+		field(nameGrid, 'prefix', 'Prefixo (opcional)', input(base.prefix), 'início do nome de todas as comps criadas. "ignore" não preenche, só importa o template.', 'prefix');
+		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.', 'time');
 
 		var caseSel = select(CASES, base.textCase);
 
-		field(nameGrid, 'textCase', 'Caixa de texto', caseSel);
+		field(nameGrid, 'textCase', 'Caixa de texto', caseSel, null, 'textCase');
 		fields.textCase.control = caseSel.control;
 		caseSel.removeAttribute('id');
 		caseSel.control.id = 'cfg-textCase';
 
-		field(nameGrid, 'separator', 'Separador de informações', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para uma informação por linha. com 1 layer só, o texto inteiro vai para ele.');
+		field(nameGrid, 'separator', 'Separador de informações', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para uma informação por linha. com 1 layer só, o texto inteiro vai para ele.', 'separator');
 
 		var namePreview = el('p', 'cfg-preview');
 
@@ -238,7 +261,7 @@ são preservadas ao salvar.
 
 		/* ---------- 3. exemplo e dicas ---------- */
 
-		var textCard = card('Exemplo e dicas');
+		var textCard = card('Formulário');
 		var textGrid = el('div', 'cfg-grid');
 
 		textCard.appendChild(textGrid);
@@ -306,7 +329,7 @@ são preservadas ao salvar.
 		}
 
 		layersCard.appendChild(
-			textButton('+ adicionar layer', 'button-secondary button-compact', function () {
+			textButton('+ layer', 'button-secondary button-compact add-button', function () {
 				var last = layers.length ? layers[layers.length - 1].layerIndex : 0;
 
 				layers.push({ layerIndex: (last || 0) + 1, method: 'textContent' });
@@ -347,7 +370,7 @@ são preservadas ao salvar.
 
 		/* ---------- 6. pastas ---------- */
 
-		var pathCard = card('Pastas');
+		var pathCard = card('Caminhos');
 		var importRow = el('div', 'cfg-field');
 		var importLine = el('div', 'cfg-path');
 		var importInput = input(base.importPath);
@@ -355,8 +378,9 @@ são preservadas ao salvar.
 		importInput.id = 'cfg-importPath';
 		importInput.addEventListener('input', changed);
 		fields.importPath = { wrap: importRow, control: importInput };
-		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de importação'), { htmlFor: 'cfg-importPath' }));
+		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de mídias (opcional)'), { htmlFor: 'cfg-importPath' }));
 		importLine.appendChild(importInput);
+		withIcon(importInput, 'media', importLine);
 		importLine.appendChild(pickButton(importInput));
 		importRow.appendChild(importLine);
 		importRow.appendChild(el('p', 'cfg-hint', 'pasta padrão para importar novos footages no projeto.'));
@@ -365,9 +389,11 @@ são preservadas ao salvar.
 		var outputsWrap = el('div', 'cfg-field');
 		var outputsList = el('div', 'cfg-rows');
 
+		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render.');
+
 		outputsWrap.appendChild(el('span', 'cfg-label', 'Pastas de output'));
 		outputsWrap.appendChild(outputsList);
-		outputsWrap.appendChild(el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render.'));
+		outputsWrap.appendChild(outputsHint);
 		pathCard.appendChild(outputsWrap);
 
 		function pickButton(target) {
@@ -425,12 +451,14 @@ são preservadas ao salvar.
 				line.appendChild(node);
 				line.appendChild(pick);
 				line.appendChild(remove);
+				withIcon(node, 'output', line);
 				outputsList.appendChild(line);
 			});
 		}
 
-		pathCard.appendChild(
-			textButton('+ adicionar output', 'button-secondary button-compact', function () {
+		// o "+" logo abaixo da lista (antes da explicação), como no criador
+		outputsWrap.insertBefore(
+			textButton('+ novo output', 'button-secondary button-compact add-button', function () {
 				outputs.push('');
 				renderOutputs();
 				changed();
@@ -438,7 +466,8 @@ são preservadas ao salvar.
 				var inputs = outputsList.querySelectorAll('input');
 
 				inputs[inputs.length - 1].focus();
-			})
+			}),
+			outputsHint
 		);
 
 		/* ---------- barra de ações ---------- */
