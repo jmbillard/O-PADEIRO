@@ -37,7 +37,14 @@ body.maker-page {
 
 .maker-tools {
   display: flex;
+  min-width: 0;
+  align-items: center;
   gap: 8px;
+}
+
+/* o que falta para salvar: no topo, antes do "⋯" */
+.maker-tools .maker-check {
+  justify-content: flex-end;
 }
 
 .maker-sheet {
@@ -117,6 +124,7 @@ body.maker-page {
 
 .maker-help ol {
   display: grid;
+  overflow: hidden;
   gap: 5px;
   margin: 10px 0 2px;
   padding-left: 18px;
@@ -128,6 +136,67 @@ body.maker-page {
 /* projeto */
 .maker .preview-card {
   max-height: 260px;
+}
+
+/* capturar preview: um véu com o ícone de imagem, no hover ou sem preview */
+.preview-capture {
+  position: absolute;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border: 0;
+  background: rgb(240 245 255 / 0%);
+  color: var(--blue-500);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    background-color 200ms ease;
+}
+
+.preview-card:not(.has-image) .preview-capture,
+.preview-card:hover .preview-capture,
+.preview-capture:focus-visible {
+  opacity: 1;
+}
+
+.preview-card.has-image:hover .preview-capture,
+.preview-card.has-image .preview-capture:focus-visible {
+  background: rgb(240 245 255 / 82%);
+  backdrop-filter: blur(2px);
+}
+
+.preview-capture svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.preview-capture .capture-sun,
+.preview-capture .capture-hill {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.preview-capture:hover .capture-sun {
+  transform: translateY(-1.5px);
+}
+
+.preview-capture:hover .capture-hill {
+  transform: translateY(1px);
+}
+
+.preview-capture:disabled {
+  cursor: progress;
+  opacity: 0.6;
 }
 
 .maker-comp {
@@ -226,19 +295,14 @@ body.maker-page {
   background: #fff8f8;
 }
 
-.maker-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .maker .cfg-path .cfg-input {
   flex: 1;
 }
 
 .maker-add {
-  justify-self: start;
+  width: 100%;
   margin-top: 4px;
+  border-style: dashed;
 }
 
 /* sem comp */
@@ -275,6 +339,14 @@ body.maker-page {
 
 .maker-bar .button-primary {
   margin-left: auto;
+}
+
+/* começar de novo e testar agora: canto esquerdo do rodapé */
+.maker-bar-left {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .maker-hint {
@@ -335,38 +407,6 @@ body.maker-page {
   .maker-scroll {
     padding-inline: 14px;
   }
-}
-
-/* rótulo com ação ao lado (exemplo ← layers) */
-.maker-label-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.maker-label-line .pill-btn {
-  padding: 3px 11px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: white;
-  color: #505c72;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.66rem;
-  font-weight: 680;
-  transition:
-    background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    transform 220ms var(--ease-soft);
-}
-
-.maker-label-line .pill-btn:hover {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-  transform: translateY(-1px);
 }
 
 /* o que falta para salvar */

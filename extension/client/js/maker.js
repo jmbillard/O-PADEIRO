@@ -557,6 +557,40 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		}
 	}
 
+	// "como criar um template": a lista abre e fecha deslizando (o <details> nativo só aparece e some)
+	function animateDetails(details) {
+		var summary = details.querySelector('summary');
+		var body = details.querySelector('ol');
+		var anim = null;
+
+		summary.addEventListener('click', function (e) {
+			e.preventDefault();
+
+			if (!body.animate) return (details.open = !details.open);
+
+			var opening = !details.open;
+			var start = anim ? body.offsetHeight : opening ? 0 : body.offsetHeight;
+
+			if (anim) anim.cancel();
+
+			details.open = true;
+
+			var end = opening ? body.scrollHeight : 0;
+
+			anim = body.animate(
+				[
+					{ height: start + 'px', opacity: opening ? 0 : 1 },
+					{ height: end + 'px', opacity: opening ? 1 : 0 }
+				],
+				{ duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' }
+			);
+			anim.onfinish = function () {
+				anim = null;
+				details.open = opening;
+			};
+		});
+	}
+
 	function buildConfig() {
 		return {
 			configName: $('f-config').value.trim(),
@@ -728,6 +762,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de mídias');
 		});
+		animateDetails(document.querySelector('.maker-help'));
 		$('btn-save').addEventListener('click', save);
 		$('btn-reset').addEventListener('click', resetForm);
 		$('btn-retry').addEventListener('click', start);

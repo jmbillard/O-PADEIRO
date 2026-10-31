@@ -15,9 +15,7 @@
 		<header class="maker-top">
 			<p class="eyebrow">criar template</p>
 			<div class="maker-tools">
-				<button type="button" class="icon-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
-					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
-				</button>
+				<div class="maker-check" id="checklist" aria-label="o que falta para salvar"></div>
 				<details class="actions-menu header-menu" id="app-menu">
 					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 					<div class="menu-popover">
@@ -55,14 +53,16 @@
 							<div class="cfg-card-head"><h3 class="cfg-title">Projeto</h3></div>
 							<div class="preview-card" id="preview-card">
 								<img id="preview" alt="Preview do template" hidden>
-								<div class="preview-fallback"><span>sem preview</span></div>
+								<button type="button" class="preview-capture" id="btn-capture" title="capturar o frame de preview, a comp principal e o tempo de referência">
+									<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2.5" /><circle class="capture-sun" cx="9" cy="10" r="1.6" /><path class="capture-hill" d="m4.500 17.500 5-5 3.500 3.500 2.500-2.500 4 4" /></svg>
+									<span>capturar preview</span>
+								</button>
 							</div>
 							<div class="maker-comp">
 								<span class="maker-comp-label">comp principal</span>
 								<strong id="comp-name">—</strong>
 								<span class="maker-comp-time" id="comp-time"></span>
 							</div>
-							<button type="button" class="button button-secondary button-compact" id="btn-capture" title="capturar o frame de preview, a comp principal e o tempo de referência">Capturar preview</button>
 							<div class="maker-fonts" id="fonts" hidden>
 								<span class="maker-comp-label">fontes usadas</span>
 								<ul id="fonts-list"></ul>
@@ -76,12 +76,12 @@
 								<input class="cfg-input" id="f-config" type="text" spellcheck="false" autocomplete="off" placeholder="identifica o template no log">
 							</div>
 							<div class="cfg-field">
-								<div class="maker-label-line">
-									<label class="cfg-label" for="f-example">Exemplo de preenchimento</label>
-									<button type="button" class="pill-btn" id="btn-example" title="montar o exemplo com o texto atual dos layers editáveis (na ordem da lista)">puxar dos layers</button>
-								</div>
-								<textarea class="cfg-input cfg-textarea" id="f-example" rows="4" spellcheck="false">INFORMAÇÃO 1
+								<label class="cfg-label" for="f-example">Exemplo de preenchimento</label>
+								<div class="cfg-area">
+									<textarea class="cfg-input cfg-textarea" id="f-example" rows="4" spellcheck="false">INFORMAÇÃO 1
 INFORMAÇÃO 2</textarea>
+									<button type="button" class="mini-button area-tool" id="btn-example" title="puxar dos layers: montar o exemplo com o texto atual dos layers editáveis (na ordem da lista)" aria-label="puxar o exemplo dos layers"><svg viewBox="0 0 24 24"><path class="import-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg></button>
+								</div>
 								<p class="cfg-hint">linha vazia separa as versões do template.</p>
 							</div>
 							<div class="cfg-field">
@@ -124,10 +124,7 @@ INFORMAÇÃO 2</textarea>
 								<p class="cfg-hint">a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.</p>
 							</div>
 							<div class="cfg-rows" id="layers"></div>
-							<div class="maker-actions">
-								<button type="button" class="button button-secondary button-compact" id="btn-layers" title="adicionar à lista os layers selecionados na comp principal">+ layers</button>
-								<button type="button" class="button button-secondary button-compact" id="btn-test" title="testar o preenchimento com o exemplo">Testar agora</button>
-							</div>
+							<button type="button" class="button button-secondary button-compact maker-add" id="btn-layers" title="adicionar à lista os layers selecionados na comp principal">+ layers</button>
 						</section>
 
 						<section class="cfg-card">
@@ -150,7 +147,12 @@ INFORMAÇÃO 2</textarea>
 			</div>
 
 			<div class="action-bar is-anchored maker-bar" id="bar">
-				<div class="maker-check" id="checklist" aria-label="o que falta para salvar"></div>
+				<div class="maker-bar-left">
+					<button type="button" class="round-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
+						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+					</button>
+					<button type="button" class="button button-secondary" id="btn-test" title="testar o preenchimento com o exemplo">Testar agora</button>
+				</div>
 				<span class="maker-hint" id="save-hint"></span>
 				<button type="button" class="button button-primary" id="btn-save">Salvar template</button>
 			</div>
