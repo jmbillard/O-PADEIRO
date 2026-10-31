@@ -49,18 +49,23 @@
 		}
 	}
 
-	// Loader temático: pães saindo do forninho (css/loader.css).
+	// Loader temático (css/loader.css): vídeos saindo do forninho pela esteira e caindo numa pasta.
+	var OVEN_INNER =
+		'<span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span>' +
+		'<span class="oven-belt"><span class="belt-ticks"></span></span>' +
+		'<span class="oven-folder folder-back"><svg viewBox="0 0 46 38"><path d="M4 35V6.5A2.5 2.5 0 0 1 6.5 4H17l4 4.5h17.5A2.5 2.5 0 0 1 41 11v24" /></svg></span>' +
+		'<span class="oven-track">' +
+		'<span class="vid v1"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span><span class="vid v2"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span><span class="vid v3"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span>' +
+		'</span>' +
+		'<span class="oven-folder folder-front"><svg viewBox="0 0 46 38"><path d="M4 35h37l3.5-19H8.5z" /></svg></span>';
+
 	function ovenLoader(title, hint, light, compact) {
 		var box = document.createElement('div');
 
 		box.className = 'oven-loader' + (light ? ' is-light' : '') + (compact ? ' is-compact' : '');
 		box.setAttribute('role', 'status');
 		box.innerHTML =
-			'<div class="oven" aria-hidden="true"><span class="oven-glow"></span>' +
-			'<span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span>' +
-			'<span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>' +
-			'<span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span>' +
-			'<span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>' +
+			'<div class="oven" aria-hidden="true">' + OVEN_INNER + '</div>' +
 			'<strong class="oven-title"></strong><span class="oven-hint"></span>';
 		box.querySelector('.oven-title').textContent = title;
 		box.querySelector('.oven-hint').textContent = hint || '';
