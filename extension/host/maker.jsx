@@ -58,7 +58,7 @@ PADX.makerState = function () {
 		selected.push(padLayerInfo(item.selectedLayers[i]));
 	}
 
-	return { hasComp: true, compId: item.id, compName: item.name, time: item.time, selected: selected };
+	return { hasComp: true, compId: item.id, compName: item.name, time: item.time, frameRate: item.frameRate, selected: selected };
 };
 
 // Fontes usadas no projeto (a leitura pode demorar em projetos grandes): { name (PostScript), family,
@@ -100,6 +100,7 @@ PADX.makerCapture = function () {
 		compId: comp.id,
 		compName: comp.name,
 		time: comp.time,
+		frameRate: comp.frameRate,
 		preview: PADX_makerPreview,
 		selected: PADX.makerState().selected
 	};

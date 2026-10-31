@@ -108,11 +108,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 	}
 
-	function formatTime(seconds) {
-		var s = Math.max(0, seconds || 0);
-		var min = Math.floor(s / 60);
-
-		return (min ? min + 'min ' : '') + (s - min * 60).toFixed(2) + 's';
+	// Tempo de referência em frames inteiros (o After Effects guarda em segundos).
+	function formatFrame(seconds, fps) {
+		return 'frame ' + Math.round(Math.max(0, seconds || 0) * (fps || 30));
 	}
 
 	/* =========================================================
@@ -418,8 +416,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	function showComp() {
+		var time = $('comp-time');
+
 		$('comp-name').textContent = state.comp ? state.comp.name : '—';
-		$('comp-time').textContent = state.comp ? 'tempo de referência: ' + formatTime(state.comp.time) : '';
+		time.lastChild.textContent = state.comp ? formatFrame(state.comp.time, state.comp.fps) : '';
+		time.hidden = !state.comp;
+		time.title = state.comp ? 'tempo de referência: ' + (state.comp.time || 0).toFixed(2) + ' s a ' + (Math.round((state.comp.fps || 30) * 100) / 100) + ' fps' : '';
 	}
 
 	// Prévia de cada fonte: o nome e um texto fixo desenhado com ela. A fonte vem do próprio arquivo
@@ -485,7 +487,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				toast(null, 'a comp principal mudou: a lista de layers foi limpa.');
 			}
 
-			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			state.comp = { id: res.compId, name: res.compName, time: res.time, fps: res.frameRate };
 			showComp();
 			showPreview(res.preview);
 			loadFonts();
@@ -575,7 +577,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				inputs: exampleInputs()
 			});
 
-			state.comp = { id: res.compId, name: res.compName, time: res.time };
+			state.comp = { id: res.compId, name: res.compName, time: res.time, fps: res.frameRate };
 			showComp();
 			showPreview(res.preview);
 		} catch (err) {

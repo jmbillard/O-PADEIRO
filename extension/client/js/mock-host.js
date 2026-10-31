@@ -316,14 +316,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerState: function () {
 			if (/nocomp/.test(location.search) && !window.PAD_MOCK_COMP) return { hasComp: false };
 
-			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }] };
+			return { hasComp: true, compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }] };
 		},
 
 		makerCapture: async function () {
 			await wait(delay);
 			window.PAD_MOCK_COMP = true;
 
-			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, preview: previewSvg(), selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 102, index: 2, name: 'cargo', isText: true, text: 'Ator' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
 		makerFonts: async function () {
@@ -353,7 +353,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerTest: async function () {
 			await wait(delay);
 
-			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, preview: previewSvg(), selected: [] };
+			return { compId: 7, compName: 'TARJA TEMPLATE', time: 2, frameRate: 29.97, preview: previewSvg(), selected: [] };
 		},
 
 		makerSave: async function (a) {

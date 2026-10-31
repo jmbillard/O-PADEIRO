@@ -235,9 +235,32 @@ body.maker-page {
 .maker-comp {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
+  align-items: center;
+  gap: 4px 8px;
   min-width: 0;
+}
+
+/* ícone de comp (película, como na busca de textos) antes do nome; relógio antes do frame */
+.maker-comp .comp-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin-left: 2px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.maker-comp .comp-icon .film-holes {
+  stroke-dasharray: 1.6 2.4;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
+}
+
+.maker-comp:hover .comp-icon .film-holes {
+  stroke-dashoffset: -8;
 }
 
 .maker-comp-label {
@@ -258,9 +281,23 @@ body.maker-page {
 }
 
 .maker-comp-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
   color: var(--text-secondary);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
+}
+
+.maker-comp-time svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .maker-fonts {
