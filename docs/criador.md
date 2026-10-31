@@ -57,7 +57,8 @@ ao salvar, o padeiro:
 
 - **+ layers** → adiciona os layers selecionados na comp principal.
 - **método** → '*conteúdo do texto*' preenche um layer de texto; '*nome do layer*' renomeia o layer.
-- **↑ ↓ ×** → reordenam ou removem o layer.
+- **⠿ puxador** (à esquerda) → arraste para mudar a ordem dos layers (com o puxador em foco, `↑` `↓` também movem).
+- **×** (dentro do campo do método) → remove o layer.
 - clique no nome do layer → seleciona o layer na comp.
 - **testar agora** (rodapé, ao lado de começar de novo) → preenche os layers com o primeiro bloco do exemplo e captura um novo preview (o texto do exemplo não muda).
 

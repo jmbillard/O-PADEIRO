@@ -60,8 +60,6 @@ são preservadas ao salvar.
 	}
 
 	var ICONS = {
-		up: ['m6 14 6-6 6 6'],
-		down: ['m6 10 6 6 6-6'],
 		remove: ['M6 6l12 12M18 6 6 18'],
 		plus: ['M12 5v14M5 12h14'],
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
@@ -256,6 +254,11 @@ são preservadas ao salvar.
 
 		function renderLayers() {
 			layersList.textContent = '';
+			PAD_SORT.enable(layersList, '.cfg-row', function (from, to) {
+				layers.splice(to, 0, layers.splice(from, 1)[0]);
+				renderLayers();
+				changed();
+			});
 
 			if (layers.length === 0) {
 				layersList.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: o template será duplicado sem preencher nada.'));
@@ -280,36 +283,22 @@ são preservadas ao salvar.
 					changed();
 				});
 
+				// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
+				var remove = miniButton('remove', 'remover layer', function () {
+					layers.splice(i, 1);
+					renderLayers();
+					changed();
+				});
+
+				remove.classList.add('row-remove');
+				methodSel.classList.add('has-remove');
+				methodSel.appendChild(remove);
+
+				row.appendChild(PAD_SORT.handle());
 				row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 				row.appendChild(el('span', 'cfg-row-prefix', 'layer'));
 				row.appendChild(num);
 				row.appendChild(methodSel);
-
-				var actions = el('span', 'cfg-row-actions');
-				var up = miniButton('up', 'subir', function () {
-					layers.splice(i - 1, 0, layers.splice(i, 1)[0]);
-					renderLayers();
-					changed();
-				});
-				var down = miniButton('down', 'descer', function () {
-					layers.splice(i + 1, 0, layers.splice(i, 1)[0]);
-					renderLayers();
-					changed();
-				});
-
-				up.disabled = i === 0;
-				down.disabled = i === layers.length - 1;
-
-				actions.appendChild(up);
-				actions.appendChild(down);
-				actions.appendChild(
-					miniButton('remove', 'remover layer', function () {
-						layers.splice(i, 1);
-						renderLayers();
-						changed();
-					})
-				);
-				row.appendChild(actions);
 				layersList.appendChild(row);
 			});
 

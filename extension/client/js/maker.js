@@ -66,8 +66,6 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	var ICONS = {
-		up: ['m6 14 6-6 6 6'],
-		down: ['m6 10 6 6 6-6'],
 		remove: ['M6 6l12 12M18 6 6 18'],
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
 	};
@@ -178,6 +176,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var list = $('layers');
 
 		list.textContent = '';
+		PAD_SORT.enable(list, '.cfg-row', function (from, to) {
+			state.layers.splice(to, 0, state.layers.splice(from, 1)[0]);
+			renderLayers();
+		});
 
 		if (!state.layers.length) {
 			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
@@ -213,31 +215,20 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layer.method = select.value;
 			});
 
+			// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
+			var remove = miniButton('remove', 'remover layer', function () {
+				state.layers.splice(i, 1);
+				renderLayers();
+			});
+
+			remove.classList.add('row-remove');
+			selWrap.classList.add('has-remove');
+			selWrap.appendChild(remove);
+
+			row.appendChild(PAD_SORT.handle());
 			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 			row.appendChild(name);
 			row.appendChild(selWrap);
-
-			var actions = el('span', 'cfg-row-actions');
-			var up = miniButton('up', 'subir', function () {
-				state.layers.splice(i - 1, 0, state.layers.splice(i, 1)[0]);
-				renderLayers();
-			});
-			var down = miniButton('down', 'descer', function () {
-				state.layers.splice(i + 1, 0, state.layers.splice(i, 1)[0]);
-				renderLayers();
-			});
-
-			up.disabled = i === 0;
-			down.disabled = i === state.layers.length - 1;
-			actions.appendChild(up);
-			actions.appendChild(down);
-			actions.appendChild(
-				miniButton('remove', 'remover layer', function () {
-					state.layers.splice(i, 1);
-					renderLayers();
-				})
-			);
-			row.appendChild(actions);
 			list.appendChild(row);
 
 			PAD_DROPDOWN.enhance(select);

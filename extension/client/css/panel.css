@@ -1251,7 +1251,7 @@ body {
 }
 
 .cfg-num {
-  width: 84px;
+  width: 64px;
   flex: 0 0 auto;
 }
 
@@ -2174,4 +2174,83 @@ body.motion-ready .eyebrow {
 .pad-tooltip.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* linhas reordenáveis (js/sortable.js): puxador à esquerda, × dentro do campo do método */
+.drag-handle {
+  display: grid;
+  width: 22px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--border-strong);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+  fill: currentcolor;
+  stroke: none;
+}
+
+.drag-handle:hover,
+.drag-handle:focus-visible {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+}
+
+.drag-handle:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+}
+
+.is-sorting,
+.is-sorting .drag-handle {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.is-sorting>.cfg-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.cfg-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  border-color: var(--blue-200);
+  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
+  transition: none;
+}
+
+.select.has-remove .dropdown-trigger,
+.select.has-remove select {
+  padding-right: 66px;
+}
+
+.select.has-remove>.row-remove {
+  position: absolute;
+  z-index: 1;
+  top: calc(50% - 14px);
+  right: 30px;
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.select.has-remove>.row-remove:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--danger-bg);
+  color: var(--danger);
+  transform: none;
 }
