@@ -2255,3 +2255,45 @@ body.motion-ready .eyebrow {
   color: var(--danger);
   transform: none;
 }
+
+/* ícone no início do campo (o rótulo, quando há, continua em cima). Sem animação: só fica azul com o foco */
+.has-field-icon {
+  position: relative;
+}
+
+.has-field-icon[hidden] {
+  display: none;
+}
+
+.has-field-icon>.field-icon {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: stroke 160ms ease;
+}
+
+/* pastinhas: o conteúdo e a frente cobrem o que fica atrás deles */
+.has-field-icon>.field-icon .folder-content,
+.has-field-icon>.field-icon .folder-front {
+  fill: white;
+}
+
+.has-field-icon:focus-within>.field-icon {
+  stroke: var(--blue-500);
+}
+
+.has-field-icon>.cfg-input,
+.has-field-icon .dropdown-trigger,
+.has-field-icon>select {
+  padding-left: 40px;
+}

@@ -541,13 +541,19 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		return true;
 	}
 
+	// pastinha de output (a mesma da busca de caminhos, sem a animação)
+	var OUTPUT_ICON = '<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">' +
+		'<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" />' +
+		'<g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g>' +
+		'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
+
 	function renderOutputs() {
 		var list = $('outputs');
 
 		list.textContent = '';
 
 		state.outputs.forEach(function (path, i) {
-			var line = el('div', 'cfg-path');
+			var line = el('div', 'cfg-path has-field-icon');
 			var input = el('input', 'cfg-input');
 			var pick = miniButton('folder', 'escolher pasta', async function () {
 				if (await pickPathInto(input, 'Selecione a pasta de output')) {
@@ -572,6 +578,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			});
 
 			remove.disabled = state.outputs.length === 1; // mantém ao menos uma pasta
+			line.insertAdjacentHTML('beforeend', OUTPUT_ICON);
 			line.appendChild(input);
 			line.appendChild(pick);
 			line.appendChild(remove);
