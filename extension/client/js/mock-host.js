@@ -329,7 +329,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		makerFonts: async function () {
 			await wait(delay);
 
-			return { fonts: ['Gotham Bold', 'Gotham Book', 'Globo Sans Condensed'] };
+			return {
+				fonts: [
+					{ name: 'Georgia-Bold', family: 'Georgia', style: 'Bold', location: window.PAD_MOCK_FONT_FILE || '' },
+					{ name: 'Gotham-Book', family: 'Gotham', style: 'Book', location: '' },
+					{ name: 'GloboSans-Condensed', family: 'Globo Sans', style: 'Condensed', location: '' }
+				]
+			};
 		},
 
 		makerSelection: function () {

@@ -269,26 +269,61 @@ body.maker-page {
 }
 
 .maker-fonts ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.maker-fonts li {
-  max-width: 100%;
-  padding: 2px 9px;
-  overflow: hidden;
-  border-radius: var(--radius-pill);
-  background: white;
+/* uma fonte por linha: o nome e um texto fixo desenhado com ela */
+.font-item {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 8px 12px 9px;
   border: 1px solid var(--border);
-  color: #505c72;
-  font-size: 0.68rem;
-  font-weight: 650;
+  border-radius: var(--radius-small);
+  background: white;
+}
+
+.font-name {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.font-sample {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  line-height: 1.3;
+  opacity: 0.35;
+  text-overflow: ellipsis;
+  transition: opacity 240ms ease;
+  white-space: nowrap;
+}
+
+.font-item.is-ready .font-sample {
+  opacity: 1;
+}
+
+/* a fonte não carregou (não instalada e sem arquivo): a prévia fica esmaecida, com aviso */
+.font-item.is-missing .font-sample {
+  font-size: 0.78rem;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.font-item.is-missing .font-sample::after {
+  content: " · prévia indisponível";
+  color: var(--waiting);
+  font-style: normal;
+  font-weight: 700;
 }
 
 .maker .cfg-card>.button {

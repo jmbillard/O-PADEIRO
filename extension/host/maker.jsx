@@ -61,9 +61,10 @@ PADX.makerState = function () {
 	return { hasComp: true, compId: item.id, compName: item.name, time: item.time, selected: selected };
 };
 
-// Fontes usadas no projeto (a leitura pode demorar em projetos grandes).
+// Fontes usadas no projeto (a leitura pode demorar em projetos grandes): { name (PostScript), family,
+// style, location (arquivo da fonte, para a prévia) }.
 PADX.makerFonts = function () {
-	return { fonts: getFontNames() };
+	return { fonts: getProjectFonts() };
 };
 
 // Confere se dá para criar um template agora (barra principal).

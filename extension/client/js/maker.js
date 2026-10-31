@@ -422,17 +422,54 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('comp-time').textContent = state.comp ? 'tempo de referência: ' + formatTime(state.comp.time) : '';
 	}
 
+	// Prévia de cada fonte: o nome e um texto fixo desenhado com ela. A fonte vem do próprio arquivo
+	// (location) ou, sem ele, das fontes instaladas pelo nome PostScript; se nada carregar, avisa.
+	var FONT_SAMPLE = 'Pão quentinho ÁÉÇÕ 0123';
+
+	function fontPreview(font, i) {
+		var li = el('li', 'font-item');
+		var label = el('span', 'font-name', [font.family, font.style].filter(Boolean).join(' ') || font.name);
+		var sample = el('span', 'font-sample', FONT_SAMPLE);
+		var id = 'pad-font-' + i + '-' + Date.now();
+		var sources = [];
+
+		li.title = font.name + (font.location ? '\n' + font.location : '');
+		li.appendChild(label);
+		li.appendChild(sample);
+
+		if (font.location) sources.push('url("' + PAD_UTIL.fileUrl(font.location) + '")');
+		if (font.name) sources.push('local("' + font.name.replace(/"/g, '') + '")');
+
+		if (!sources.length || !window.FontFace) {
+			li.classList.add('is-missing');
+			return li;
+		}
+
+		var face = new FontFace(id, sources.join(', '));
+
+		face.load().then(
+			function (loaded) {
+				document.fonts.add(loaded);
+				sample.style.fontFamily = '"' + id + '", sans-serif';
+				li.classList.add('is-ready');
+			},
+			function () {
+				li.classList.add('is-missing');
+				sample.title = 'prévia indisponível: a fonte não está instalada neste computador';
+			}
+		);
+
+		return li;
+	}
+
 	async function loadFonts() {
 		try {
 			var res = await call('makerFonts');
 			var list = $('fonts-list');
 
 			list.textContent = '';
-			res.fonts.forEach(function (name) {
-				var li = el('li', null, name);
-
-				li.title = name;
-				list.appendChild(li);
+			res.fonts.forEach(function (font, i) {
+				list.appendChild(fontPreview(font, i));
 			});
 			$('fonts').hidden = res.fonts.length === 0;
 		} catch (err) { }

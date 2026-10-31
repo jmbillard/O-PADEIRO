@@ -50,18 +50,6 @@ function getProjectFonts() {
 	return fonts;
 }
 
-// Nomes das fontes usadas no projeto.
-function getFontNames() {
-	var fonts = getProjectFonts();
-	var names = [];
-
-	for (var f = 0; f < fonts.length; f++) {
-		names.push(fonts[f].name);
-	}
-
-	return names;
-}
-
 // Copia os arquivos das fontes usadas no projeto para 'savePath'.
 // Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada.
 function fontCollect(savePath) {
