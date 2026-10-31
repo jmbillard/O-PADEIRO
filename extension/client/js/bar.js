@@ -68,9 +68,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			'<g class="clap-top"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></g>',
 		// coletar: pasta cheia de arquivos; no hover os arquivos sobem
 		collect:
-			'<g class="anim-collect"><path d="M3.5 18V9.2a1.5 1.5 0 0 1 1.5-1.5h.6" /><path d="M19.4 9.5h.1a1.5 1.5 0 0 1 .5 1.1v.9" />' +
-			'<path class="collect-file f1" d="M7 11.5V4.8a1 1 0 0 1 1-1h3.4l2.1 2.1v5.6" />' +
-			'<path class="collect-file f2" d="M14.6 11.5V8.4a1 1 0 0 1 1-1h2.4a1 1 0 0 1 1 1v3.1" />' +
+			// o fundo da pasta só aparece fora dos arquivos (à esquerda e à direita), para não vazar atrás deles
+			'<g class="anim-collect"><path d="M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h1" /><path d="M19.2 9.6a1.5 1.5 0 0 1 1.3 1.5v.4" />' +
+			'<path class="collect-file f1" d="M7 11.5V4.8a1 1 0 0 1 1-1h3.2l2 2v5.7" />' +
+			'<path class="collect-file f2" d="M14.4 11.5V8.2a1 1 0 0 1 1-1h1.8a1 1 0 0 1 1 1v3.3" />' +
 			'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
 		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
 	};
