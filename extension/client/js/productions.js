@@ -29,8 +29,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	};
 
 	var LOG_HINTS = {
-		webhook: 'cada render da fila é enviado para este endereço (data, template, quantidade, usuário, máquina e pasta).',
-		csv: 'cada render da fila vira uma linha no “O_PADEIRO_log.csv”, na pasta de templates da produção escolhida.',
+		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina e projeto).',
+		csv: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da produção (um arquivo só, na pasta de templates dela).',
 		off: 'nada é registrado.'
 	};
 
@@ -491,11 +491,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function validateLog() {
 		var log = logForSave();
-		var bad = log.mode === 'webhook' && !/^https?:\/\/\S+$/i.test(log.webhook);
+		var bad = log.mode === 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(log.webhook);
 
 		$('log-webhook').classList.toggle('has-error', bad);
 
-		return bad ? '#PAD_078 - log: preencha o endereço do webhook (http:// ou https://).' : null;
+		return bad ? '#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).' : null;
 	}
 
 	function bindLog() {

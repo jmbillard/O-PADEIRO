@@ -281,7 +281,7 @@ templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo:
 */
 
 var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
-var PAD_LOG_COLUMNS = ['data', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
+var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
 
 function padDefaultLog() {
 	return { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
@@ -296,8 +296,9 @@ function padCleanLog(log) {
 	clean.mode = log.mode == 'csv' || log.mode == 'off' ? log.mode : 'webhook';
 	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
 
-	if (clean.mode == 'webhook' && !/^https?:\/\/\S+$/i.test(clean.webhook)) {
-		throw new Error('#PAD_078 - log: preencha o endereço do webhook (http:// ou https://).');
+	// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
+	if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+		throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 	}
 
 	return clean;
@@ -319,12 +320,11 @@ function padCsvValue(value) {
 	return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 }
 
-// Pasta de templates da produção escolhida na barra (onde fica o CSV do log).
-function padSelectedProductionFolder() {
-	var name = PADX.selectedProduction().name;
+// Pasta de templates de uma produção da lista (onde fica o CSV do log).
+function padProductionFolder(name) {
 	var config = padConfigFile();
 
-	if (!config || !config.exists) return null;
+	if (!name || !config || !config.exists) return null;
 
 	var list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
 
@@ -335,31 +335,79 @@ function padSelectedProductionFolder() {
 	return null;
 }
 
+// Acrescenta linhas ao CSV de uma pasta (um arquivo só por produção). Devolve false se não conseguiu gravar.
+function padAppendCsv(folderPath, lines) {
+	var folder = new Folder(folderPath);
+
+	if (!folder.exists) return false;
+
+	var file = new File(folder.fsName + '/' + PAD_LOG_FILE_NAME);
+	var isNew = !file.exists;
+
+	file.encoding = 'UTF-8';
+	file.lineFeed = 'Unix';
+
+	// aberto no Excel (bloqueado) ou rede fora: fica para a próxima
+	if (!file.open('a')) return false;
+
+	// arquivo novo: BOM (o Excel reconhece os acentos) e o cabeçalho; ';' é o separador do Excel em pt-BR
+	var ok = isNew ? file.write('\uFEFF' + PAD_LOG_COLUMNS.join(';') + '\n') : true;
+
+	ok = ok && file.write(lines.join('\n') + '\n');
+	file.close();
+
+	return ok !== false;
+}
+
+// Linhas que não puderam ser gravadas, guardadas na máquina até a próxima vez: [{ folder, line }]
+function padPendingLogFile() {
+	return new File(scriptPreferencesPath + '/log_pendente.json');
+}
+
 function padWriteLog(record) {
 	var settings = padReadLogSettings();
 
 	if (settings.mode == 'off') return;
 	if (settings.mode == 'webhook') return sendToWebhookWithCurl(record, settings.webhook);
 
-	var folder = padSelectedProductionFolder();
-
-	if (!folder || !folder.exists) return;
-
-	var file = new File(folder.fsName + '/' + PAD_LOG_FILE_NAME);
-	var isNew = !file.exists;
+	var folder = padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
 
-	file.encoding = 'UTF-8';
-	file.lineFeed = 'Unix';
-	file.open('a');
+	var pendingFile = padPendingLogFile();
+	var pending = [];
 
-	// arquivo novo: BOM (o Excel reconhece os acentos) e o cabeçalho; ';' é o separador do Excel em pt-BR
-	if (isNew) file.write('\uFEFF' + PAD_LOG_COLUMNS.join(';') + '\n');
+	if (pendingFile.exists) {
+		try {
+			pending = JSON.parse(readFileContent(pendingFile)) || [];
+		} catch (err) { }
+	}
 
-	file.write(line.join(';') + '\n');
-	file.close();
+	if (folder) pending.push({ folder: folder.fsName, line: line.join(';') });
+
+	// agrupa por pasta, mantendo a ordem; o que não puder ser gravado continua pendente
+	var folders = [];
+	var lines = {};
+	var left = [];
+
+	for (var i = 0; i < pending.length; i++) {
+		if (!lines[pending[i].folder]) {
+			lines[pending[i].folder] = [];
+			folders.push(pending[i].folder);
+		}
+
+		lines[pending[i].folder].push(pending[i].line);
+	}
+
+	for (var f = 0; f < folders.length; f++) {
+		if (padAppendCsv(folders[f], lines[folders[f]])) continue;
+
+		for (var l = 0; l < lines[folders[f]].length; l++) left.push({ folder: folders[f], line: lines[folders[f]][l] });
+	}
+
+	if (left.length) saveTextFile(JSON.stringify(left), pendingFile.fsName);
+	else if (pendingFile.exists) pendingFile.remove();
 }
 
 // Produção escolhida na barra principal, gravada em 'selected_production.json'.
@@ -808,6 +856,7 @@ PADX.fillBegin = function (a) {
 		}
 
 		PADX_run = {
+			production: PADX.selectedProduction().name, // a produção do template (só dá para preencher os da produção escolhida)
 			projectFile: projectFile,
 			files: files,
 			templateData: templateData,
@@ -981,6 +1030,7 @@ PADX.fillFinish = function () {
 		};
 
 		padWriteLog({
+			producao: run.production || '',
 			template: run.templateData.configName,
 			quantidade: run.count,
 			user: system.userName,

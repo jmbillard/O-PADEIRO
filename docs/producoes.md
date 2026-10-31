@@ -35,15 +35,17 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 ## 📍 logs
 
-na parte de baixo do editor, **logs** define o que o padeiro registra a cada fila de render criada (data, template, quantidade, usuário, máquina e pasta de saída). vale para a equipe toda e é gravado junto com a lista, em '*Salvar lista*'.
+na parte de baixo do editor, **logs** define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto. vale para a equipe toda e é gravado junto com a lista, em '*Salvar lista*'.
 
 | opção | o que faz |
 | --- | --- |
 | **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
-| **CSV na pasta da produção** | acrescenta uma linha ao `O_PADEIRO_log.csv`, na pasta de templates da produção escolhida na barra (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
+| **CSV na pasta da produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
 | **desligado** | não registra nada |
 
-> 🚩 *obs:* o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".
+> 🚩 *obs:*\
+> • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
+> • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
 
 <br>
 
