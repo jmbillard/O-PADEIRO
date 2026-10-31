@@ -49,15 +49,57 @@
 		}
 	}
 
-	// Loader temático (css/loader.css): vídeos saindo do forninho pela esteira e caindo numa pasta.
-	var OVEN_INNER =
-		'<span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span>' +
-		'<span class="oven-belt"><span class="belt-ticks"></span></span>' +
-		'<span class="oven-folder folder-back"><svg viewBox="0 0 46 38"><path d="M4 35V6.5A2.5 2.5 0 0 1 6.5 4H17l4 4.5h17.5A2.5 2.5 0 0 1 41 11v24" /></svg></span>' +
-		'<span class="oven-track">' +
-		'<span class="vid v1"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span><span class="vid v2"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span><span class="vid v3"><svg viewBox="0 0 24 30"><path d="M4 2.5h11l5.5 5.5v19.5H4z" /><path d="M15 2.5V8h5.5" /><path d="M10 13.5v8l6-4z" /></svg></span>' +
-		'</span>' +
-		'<span class="oven-folder folder-front"><svg viewBox="0 0 46 38"><path d="M4 35h37l3.5-19H8.5z" /></svg></span>';
+	// Loader temático (css/loader.css): um roteiro (doc do Word) cai na boca do forno, o forno trabalha e
+	// sai um vídeo pulando para a esteira, que leva até a pasta. Um SVG só, animado por CSS (transform e
+	// opacity). Os ids das máscaras e recortes são únicos por loader (pode haver mais de um na página).
+	var ovenSeq = 0;
+	var PAGE = 'M4 2.5h11l5.5 5.5v19.5H4z';
+
+	function ovenArt() {
+		var n = ++ovenSeq;
+		var gap = 'ov-gap-' + n;
+		var hide = 'ov-hide-' + n;
+		var file = function (kind, silhouette) {
+			var inner = silhouette
+				? '<path d="' + PAGE + '" fill="black" stroke="black" stroke-width="5" />'
+				: '<path class="o" d="' + PAGE + '" /><path class="d" d="M15 2.5V8h5.5" />' +
+				  (kind === 'doc'
+					? '<path class="d" d="M12 12.5h5.5M12 16h5.5M8 19.5h9.5M8 23h9.5" /><rect class="f" x="1.5" y="9.5" width="9" height="8" rx="1.5" />'
+					: '<path class="f" d="M10 13.5v8l6-4z" />');
+
+			// 24 x 30 → 38,4 x 48 (escala 1,6; o traço é compensado no CSS para ficar igual ao resto)
+			return '<g class="ov-' + kind + '"><g class="ov-file" transform="translate(30.8 66) scale(1.6)">' + inner + '</g></g>';
+		};
+
+		return '<svg class="oven-art" viewBox="0 0 300 120">' +
+			'<defs>' +
+			// onde os arquivos aparecem: acima da porta (que abre), entre o forno e a pasta, e dentro do fundo da pasta
+			'<clipPath id="' + gap + '"><rect class="ov-gap" x="-20" y="-80" width="116" height="144" /><rect x="96" y="-80" width="118" height="168" /><rect x="214" y="-80" width="90" height="138" />' +
+			'<path d="M214 88V60.5a2.5 2.5 0 0 1 2.5-2.5H236l5 5h48.5a2.5 2.5 0 0 1 2.5 2.5V88z" /></clipPath>' +
+			// os arquivos passam na frente do forno: as linhas do forno somem atrás deles
+			'<mask id="' + hide + '" maskUnits="userSpaceOnUse" x="-20" y="-80" width="340" height="220"><rect x="-20" y="-80" width="340" height="220" fill="white" />' + file('doc', true) + file('vid', true) + '</mask>' +
+			'</defs>' +
+			'<g class="ov-shake">' +
+			'<g mask="url(#' + hide + ')"><rect class="o" x="6" y="32" width="88" height="84" rx="14" /><path class="m" d="M6 56h88" />' +
+			'<circle class="b" cx="23.5" cy="43.5" r="5.5" /><circle class="b" cx="46.5" cy="43.5" r="5.5" /><circle class="b" cx="69.5" cy="43.5" r="5.5" />' +
+			'<path class="b ov-knob" d="M20.5 45l6-3" /><path class="b ov-knob" d="M43.5 43.5h6" /><path class="b ov-knob" d="M66.8 41.5l5.4 4" />' +
+			'<rect class="b" x="19" y="67" width="62" height="36" rx="7" clip-path="url(#' + gap + ')" /></g>' +
+			'</g>' +
+			'<rect class="o ov-belt" x="102" y="88" width="104" height="20" rx="10" /><rect class="m" x="105.5" y="91.5" width="97" height="13" rx="6.5" />' +
+			['112', '154', '196'].map(function (x) {
+				return '<g class="ov-wheel"><circle class="b" cx="' + x + '" cy="98" r="4.2" /><circle class="f" cx="' + (+x + 1.9) + '" cy="96.6" r="1" /></g>';
+			}).join('') +
+			'<g class="ov-folder"><path class="o" mask="url(#' + hide + ')" d="M214 116V60.5a2.5 2.5 0 0 1 2.5-2.5H236l5 5h48.5a2.5 2.5 0 0 1 2.5 2.5V88" /></g>' +
+			'<g clip-path="url(#' + gap + ')">' + file('doc') + file('vid') + '</g>' +
+			'<g class="ov-shake"><g class="ov-door"><rect class="b" x="16" y="64" width="68" height="42" rx="10" /><rect class="d" x="33" y="69" width="30" height="5" rx="2.5" /><rect class="d" x="22" y="81" width="56" height="20" rx="6" /></g></g>' +
+			'<g class="ov-folder"><g class="ov-flap"><path class="o" d="M214 116h78l6-28H220z" /></g></g>' +
+			'</svg>';
+	}
+
+	// Os loaders escritos direto no HTML (<div class="oven"></div>) recebem o desenho aqui.
+	Array.prototype.forEach.call(document.querySelectorAll('.oven:empty'), function (node) {
+		node.innerHTML = ovenArt();
+	});
 
 	function ovenLoader(title, hint, light, compact) {
 		var box = document.createElement('div');
@@ -65,7 +107,7 @@
 		box.className = 'oven-loader' + (light ? ' is-light' : '') + (compact ? ' is-compact' : '');
 		box.setAttribute('role', 'status');
 		box.innerHTML =
-			'<div class="oven" aria-hidden="true">' + OVEN_INNER + '</div>' +
+			'<div class="oven" aria-hidden="true">' + ovenArt() + '</div>' +
 			'<strong class="oven-title"></strong><span class="oven-hint"></span>';
 		box.querySelector('.oven-title').textContent = title;
 		box.querySelector('.oven-hint').textContent = hint || '';
