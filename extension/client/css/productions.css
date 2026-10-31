@@ -529,6 +529,8 @@ body.prods-page {
   transition: none;
 }
 
-.prod-row.is-dragging {
+/* a animação de entrada prende o 'transform' das linhas: fora durante o arraste e depois de reordenar */
+.is-sorting>.prod-row,
+.prods-list.is-settled>.prod-row {
   animation: none;
 }

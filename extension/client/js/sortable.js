@@ -61,7 +61,11 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			var step = boxes.length > 1 ? boxes[1].top - boxes[0].top : boxes[0].height;
 			var to = from;
 
-			grip.setPointerCapture(e.pointerId);
+			// os eventos vêm da janela (o CEP nem sempre respeita a captura do ponteiro no botão)
+			try {
+				grip.setPointerCapture(e.pointerId);
+			} catch (err) { }
+
 			row.classList.add('is-dragging');
 			list.classList.add('is-sorting');
 
@@ -97,9 +101,9 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			}
 
 			function end() {
-				grip.removeEventListener('pointermove', move);
-				grip.removeEventListener('pointerup', end);
-				grip.removeEventListener('pointercancel', end);
+				window.removeEventListener('pointermove', move, true);
+				window.removeEventListener('pointerup', end, true);
+				window.removeEventListener('pointercancel', end, true);
 				list.classList.remove('is-sorting');
 				row.classList.remove('is-dragging');
 				all.forEach(function (r) {
@@ -109,9 +113,9 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 				if (to !== from) onMove(from, to);
 			}
 
-			grip.addEventListener('pointermove', move);
-			grip.addEventListener('pointerup', end);
-			grip.addEventListener('pointercancel', end);
+			window.addEventListener('pointermove', move, true);
+			window.addEventListener('pointerup', end, true);
+			window.addEventListener('pointercancel', end, true);
 		});
 
 		// teclado: com o puxador em foco, ↑ ↓ mudam a ordem

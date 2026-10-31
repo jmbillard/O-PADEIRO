@@ -82,7 +82,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 
 		hide();
 
-		if (!el) return;
+		if (!el || document.querySelector('.is-sorting')) return; // arrastando para reordenar: sem dica por cima
 
 		// o 'title' pode ter sido trocado pelo código desde o último hover
 		if (el.hasAttribute('title')) {

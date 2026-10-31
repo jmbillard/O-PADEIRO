@@ -525,6 +525,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	async function load() {
+		$('list').classList.remove('is-settled'); // ao ler a lista, as linhas entram animadas de novo
+
 		try {
 			var res = await call('productions', {});
 
@@ -748,6 +750,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var moved = state.rows.splice(from, 1)[0];
 
 			state.rows.splice(to, 0, moved);
+			$('list').classList.add('is-settled'); // sem a animação de entrada ao redesenhar
 			render();
 			updateDirty();
 		});
