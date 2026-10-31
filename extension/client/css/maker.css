@@ -317,11 +317,37 @@ body.maker-page {
 .font-item {
   display: grid;
   min-width: 0;
-  gap: 2px;
-  padding: 8px 12px 9px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 10px;
+  padding: 8px 12px 9px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
   background: white;
+}
+
+/* Tt: instalada · CC: Adobe Fonts / Creative Cloud (ou sem arquivo neste computador) */
+.font-badge {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.font-badge.is-adobe {
+  background: #fdecec;
+  color: #d14b4b;
+  font-family: inherit;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .font-name {

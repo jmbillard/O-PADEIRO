@@ -62,9 +62,25 @@ PADX.makerState = function () {
 };
 
 // Fontes usadas no projeto (a leitura pode demorar em projetos grandes): { name (PostScript), family,
-// style, location (arquivo da fonte, para a prévia) }.
+// style, location (arquivo da fonte, para a prévia), adobe (Adobe Fonts / Creative Cloud ou sem arquivo
+// neste computador) }.
 PADX.makerFonts = function () {
-	return { fonts: getProjectFonts() };
+	var fonts = getProjectFonts();
+
+	for (var f = 0; f < fonts.length; f++) {
+		var font = fonts[f];
+		var adobe = !font.location || /\/CoreSync\/plugins\/livetype\//i.test(font.location.replace(/\\/g, '/'));
+
+		try {
+			var info = app.fonts.getFontsByPostScriptName(font.name); // After Effects 2024 ou mais novo
+
+			if (info.length && info[0].isFromAdobeFonts) adobe = true;
+		} catch (err) { }
+
+		font.adobe = adobe || !new File(font.location).exists;
+	}
+
+	return { fonts: fonts };
 };
 
 // Confere se dá para criar um template agora (barra principal).

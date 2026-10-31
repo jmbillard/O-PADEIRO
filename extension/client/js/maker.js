@@ -419,18 +419,26 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var time = $('comp-time');
 
 		$('comp-name').textContent = state.comp ? state.comp.name : '—';
-		time.lastChild.textContent = state.comp ? formatFrame(state.comp.time, state.comp.fps) : '';
+		time.lastChild.textContent = state.comp ? (state.comp.time || 0).toFixed(2) + ' s (' + formatFrame(state.comp.time, state.comp.fps) + ')' : '';
 		time.hidden = !state.comp;
-		time.title = state.comp ? 'tempo de referência: ' + (state.comp.time || 0).toFixed(2) + ' s a ' + (Math.round((state.comp.fps || 30) * 100) / 100) + ' fps' : '';
+		time.title = state.comp ? 'tempo de referência, a ' + (Math.round((state.comp.fps || 30) * 100) / 100) + ' fps' : '';
 	}
 
 	// Prévia de cada fonte: o nome e um texto fixo desenhado com ela. A fonte vem do próprio arquivo
 	// (location) ou, sem ele, das fontes instaladas pelo nome PostScript; se nada carregar, avisa.
 	var FONT_SAMPLE = 'Pão Quentinho ÁÉÇÕ 0123 %&@#';
 
+	function fontLabel(font) {
+		return [font.family, font.style].filter(Boolean).join(' ') || font.name || '';
+	}
+
 	function fontPreview(font, i) {
 		var li = el('li', 'font-item');
-		var label = el('span', 'font-name', [font.family, font.style].filter(Boolean).join(' ') || font.name);
+		var label = el('span', 'font-name', fontLabel(font));
+		var badge = el('span', 'font-badge' + (font.adobe ? ' is-adobe' : ''), font.adobe ? 'CC' : 'Tt');
+
+		badge.title = font.adobe ? 'não instalada neste computador (provavelmente do Adobe Fonts / Creative Cloud)' : 'instalada neste computador';
+		li.appendChild(badge);
 		var sample = el('span', 'font-sample', FONT_SAMPLE);
 		var id = 'pad-font-' + i + '-' + Date.now();
 		var sources = [];
@@ -470,6 +478,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var list = $('fonts-list');
 
 			list.textContent = '';
+			// em ordem alfabética, pelo nome mostrado (família e estilo)
+			res.fonts.sort(function (a, b) {
+				return fontLabel(a).localeCompare(fontLabel(b), 'pt-BR', { sensitivity: 'base' });
+			});
 			res.fonts.forEach(function (font, i) {
 				list.appendChild(fontPreview(font, i));
 			});
