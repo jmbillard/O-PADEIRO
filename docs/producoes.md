@@ -174,6 +174,8 @@ a aba **aparência** define o visual de todas as janelas do padeiro, para a equi
 
 > 🚩 *obs:* enquanto você edita, só esta janela mostra a prévia; ao salvar, as outras janelas mudam em alguns segundos.
 
+> 💡 *exemplo:* [config da PROMO GNEWS](exemplos/gnews/README.md): pastas, nomenclatura, busca e barra montadas a partir da barra antiga da promo, com o que ainda falta para chegar igual.
+
 <br>
 
 ---
