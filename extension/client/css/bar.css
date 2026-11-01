@@ -515,6 +515,22 @@ body.bar-page {
   }
 }
 
+/* 100% vertical e estreita demais para os nomes (o js marca .is-icons): só os ícones, e os links de 2 em 2 */
+@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
+  .is-icons .bar-btn {
+    justify-content: center;
+    padding: 7px;
+  }
+
+  .is-icons .bar-btn .bar-label {
+    display: none;
+  }
+
+  .is-icons #links {
+    max-width: 53px; /* 2 × 26 + 1 */
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .bar-btn.is-busy,

@@ -451,6 +451,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			tools.appendChild(group);
 		});
+		fitLabels();
 	}
 
 	/* =========================================================
@@ -510,14 +511,41 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			box.appendChild(btn);
 		});
 
-		// na vertical (de 3 em 3, centralizados), a linha incompleta fica em cima: uma quebra antes do item que
-		// abre a primeira linha cheia (CSS: #links .links-break, só no layout vertical)
-		var rest = links.length % 3;
-
-		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // com 1 ou 2 links não há linha cheia
-
+		placeLinksBreak();
 		box.hidden = !links.length;
 		$('links-divider').hidden = !links.length;
+	}
+
+	// na vertical os links vão em linhas centralizadas (de 3; só ícones, de 2) e a incompleta fica em cima:
+	// uma quebra antes do item que abre a primeira linha cheia (CSS: #links .links-break, só na vertical)
+	function placeLinksBreak() {
+		var box = $('links');
+		var old = box.querySelector('.links-break');
+
+		if (old) old.remove();
+
+		var cols = document.body.classList.contains('is-icons') ? 2 : 3;
+		var rest = box.children.length % cols;
+
+		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // sem linha cheia: nada
+	}
+
+	// 100% vertical: se algum nome não cabe, a barra mostra só os ícones (o nome fica na dica)
+	var LIST_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 159px)');
+
+	function fitLabels() {
+		var body = document.body;
+		var was = body.classList.contains('is-icons');
+		var cut = false;
+
+		if (LIST_MEDIA.matches) {
+			body.classList.remove('is-icons');
+			cut = Array.prototype.some.call(document.querySelectorAll('#tools .bar-label'), function (label) {
+				return label.scrollWidth > label.clientWidth + 1;
+			});
+		}
+		body.classList.toggle('is-icons', cut);
+		if (cut !== was) placeLinksBreak();
 	}
 
 	// os links também podem ser escondidos (configuração > ferramentas)
@@ -588,6 +616,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		loadLinks().then(function () {
 			if (!toolsLayout) buildTools(DEFAULT_ITEMS, []);
 		});
+		window.addEventListener('resize', fitLabels);
+		if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLabels);
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
 
