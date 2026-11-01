@@ -1976,7 +1976,12 @@ body.is-org-dragging * {
 
 /* o bonequinho tem o peso embaixo (cabeça pequena, ombros largos): sobe um pouco para alinhar com o texto */
 .tab-group[data-scope="mine"] svg {
-  transform: translateY(-1.5px);
+  transform: translateY(-2.5px);
+}
+
+/* o globo também fica um pouco abaixo do meio das letras (só maiúsculas) */
+.tab-group[data-scope="team"] svg {
+  transform: translateY(-1px);
 }
 
 .scope-note.is-mine > svg {
