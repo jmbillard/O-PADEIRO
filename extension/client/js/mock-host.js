@@ -71,6 +71,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
+	function mockBar() {
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'], hidden: [] };
+	}
+
 	var api = {
 		ping: function () {
 			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta5', network: mode !== 'nonet' };
@@ -166,7 +170,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
-				bar: { hidden: JSON.parse(localStorage.getItem('pad.mock.barHidden') || '[]') },
+				bar: mockBar(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
@@ -185,9 +189,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
 
-			var hidden = JSON.parse(localStorage.getItem('pad.mock.barHidden') || '[]'); // as janelas do navegador não dividem o host de mentira
+			var bar = mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
 
-			return { hidden: hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + hidden.join(), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal };
+			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal };
 		},
 
 		personalLinks: function () {
@@ -269,7 +273,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é uma variável.');
 				window.PAD_MOCK_LIST.project = JSON.parse(JSON.stringify(a.project));
 			}
-			if (a.bar) localStorage.setItem('pad.mock.barHidden', JSON.stringify(a.bar.hidden));
+			if (a.bar) {
+				// como o host: sem separador no começo, no fim ou dois seguidos
+				var items = a.bar.items.filter(function (k, i, all) {
+					return k !== 'divider' || (i > 0 && all[i - 1] !== 'divider');
+				});
+
+				while (items[items.length - 1] === 'divider') items.pop();
+				localStorage.setItem('pad.mock.bar', JSON.stringify({ items: items, hidden: a.bar.hidden }));
+			}
 			if (a.collect) {
 				var seenType = {};
 
@@ -288,7 +300,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: { hidden: JSON.parse(localStorage.getItem('pad.mock.barHidden') || '[]') }, appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

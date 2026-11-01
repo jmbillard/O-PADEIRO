@@ -92,7 +92,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-as ferramentas podem ser escondidas da barra (para a equipe toda) pelo interruptor '*mostrar …*' no topo da aba de cada uma, na [configuração](docs/producoes.md).
+a ordem das ferramentas, os grupos (separadores) e quais aparecem são definidos para a equipe toda na aba **ferramentas** da [configuração](docs/producoes.md#-ferramentas).
 
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 

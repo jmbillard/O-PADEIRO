@@ -259,90 +259,91 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Estrutura da barra
 	   ========================================================= */
 
-	var SECTIONS = [
-		[
-			{
-				key: 'templates',
-				config: 'prods',
-				label: 'Templates',
-				icon: 'templates',
-				tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
-				left: actions.templates,
-				right: actions.createTemplate
+	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba FERRAMENTAS).
+	var TOOLS = [
+		{
+			key: 'templates',
+			config: 'prods',
+			label: 'Templates',
+			icon: 'templates',
+			tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
+			left: actions.templates,
+			right: actions.createTemplate
+		},
+		{
+			key: 'fontes',
+			config: 'prods',
+			label: 'Fontes',
+			icon: 'fonts',
+			tips: [L_CLICK + 'instalar as fontes usadas no template', R_CLICK + 'fazer o collect das fontes usadas no projeto'],
+			left: actions.installFonts,
+			right: actions.collectFonts
+		},
+		{
+			key: 'projeto',
+			config: 'project',
+			label: 'Projeto',
+			icon: 'project',
+			tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
+			left: actions.project,
+			right: actions.saveProject
+		},
+		{
+			key: 'coletar',
+			config: 'collect',
+			label: 'Coletar',
+			icon: 'collect',
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'coletar em outra pasta…'],
+			left: function () {
+				return actions.collect('');
 			},
-			{
-				key: 'fontes',
-				config: 'prods',
-				label: 'Fontes',
-				icon: 'fonts',
-				tips: [L_CLICK + 'instalar as fontes usadas no template', R_CLICK + 'fazer o collect das fontes usadas no projeto'],
-				left: actions.installFonts,
-				right: actions.collectFonts
-			}
-		],
-		[
-			{
-				key: 'projeto',
-				config: 'project',
-				label: 'Projeto',
-				icon: 'project',
-				tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
-				left: actions.project,
-				right: actions.saveProject
-			},
-			{
-				key: 'coletar',
-				config: 'collect',
-				label: 'Coletar',
-				icon: 'collect',
-				tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'coletar em outra pasta…'],
-				left: function () {
-					return actions.collect('');
-				},
-				right: actions.collectTo
-			},
-			{
-				key: 'pastas',
-				config: 'drives',
-				label: 'Pastas',
-				icon: 'folders',
-				tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
-				left: actions.openLastOutput,
-				right: actions.convertPaths
-			}
-		],
-		[
-			{
-				key: 'renomear',
-				config: 'rename',
-				label: 'Renomear',
-				icon: 'rename',
-				tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
-				left: actions.renameComps,
-				right: actions.renameOutputs
-			},
-			{
-				key: 'organizar',
-				config: 'organize',
-				label: 'Organizar',
-				icon: 'organize',
-				tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'organizar o projeto', R_CLICK + 'criar estrutura de pastas do projeto'],
-				left: actions.organizeProject,
-				right: actions.createProjectFolders
-			}
-		],
-		[
-			{
-				key: 'buscar',
-				config: 'search',
-				label: 'Buscar',
-				icon: 'search',
-				tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
-				left: actions.searchPaths,
-				right: actions.searchTexts
-			}
-		]
+			right: actions.collectTo
+		},
+		{
+			key: 'pastas',
+			config: 'drives',
+			label: 'Pastas',
+			icon: 'folders',
+			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
+			left: actions.openLastOutput,
+			right: actions.convertPaths
+		},
+		{
+			key: 'renomear',
+			config: 'rename',
+			label: 'Renomear',
+			icon: 'rename',
+			tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
+			left: actions.renameComps,
+			right: actions.renameOutputs
+		},
+		{
+			key: 'organizar',
+			config: 'organize',
+			label: 'Organizar',
+			icon: 'organize',
+			tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'organizar o projeto', R_CLICK + 'criar estrutura de pastas do projeto'],
+			left: actions.organizeProject,
+			right: actions.createProjectFolders
+		},
+		{
+			key: 'buscar',
+			config: 'search',
+			label: 'Buscar',
+			icon: 'search',
+			tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
+			left: actions.searchPaths,
+			right: actions.searchTexts
+		}
 	];
+
+	var DEFAULT_ITEMS = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
+
+	function toolDef(key) {
+		return TOOLS.filter(function (t) {
+			return t.key === key;
+		})[0] || null;
+	}
 
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
@@ -456,10 +457,30 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 	}
 
-	function buildTools() {
-		var tools = $('tools');
+	var toolsLayout = ''; // a ordem e as escondidas desenhadas agora (só redesenha quando mudam)
 
-		SECTIONS.forEach(function (section, i) {
+	// Monta a barra na ordem da configuração: 'divider' separa os grupos; as escondidas ficam de fora e
+	// um grupo sem nenhuma ferramenta não aparece (nem a divisória dele).
+	function buildTools(items, hidden) {
+		var key = items.join() + '|' + hidden.join();
+
+		if (key === toolsLayout) return;
+
+		toolsLayout = key;
+
+		var tools = $('tools');
+		var groups = [[]];
+
+		tools.textContent = '';
+
+		items.forEach(function (item) {
+			if (item === 'divider') groups.push([]);
+			else if (hidden.indexOf(item) < 0 && toolDef(item)) groups[groups.length - 1].push(toolDef(item));
+		});
+
+		groups.filter(function (g) {
+			return g.length;
+		}).forEach(function (section, i) {
 			if (i > 0) tools.appendChild(el('span', 'bar-divider'));
 
 			var group = el('div', 'bar-section');
@@ -482,7 +503,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			tools.appendChild(group);
 		});
-
 	}
 
 	/* =========================================================
@@ -546,35 +566,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		$('links-divider').hidden = !links.length;
 	}
 
-	// ferramentas escondidas na configuração (o interruptor "mostrar" de cada aba): some o botão e, com a
-	// seção vazia, a seção e a divisória antes dela
-	function applyHidden(hidden) {
-		SECTIONS.forEach(function (section) {
-			section.forEach(function (def) {
-				var btn = $('btn-' + def.key);
+	// os links também podem ser escondidos (configuração > ferramentas)
+	function applyLinksHidden(hidden) {
+		if (hidden.indexOf('links') < 0) return;
 
-				if (btn) btn.hidden = hidden.indexOf(def.key) >= 0;
-			});
-		});
-
-		var groups = Array.prototype.slice.call($('tools').querySelectorAll('.bar-section'));
-		var first = true;
-
-		groups.forEach(function (group) {
-			var visible = Array.prototype.some.call(group.querySelectorAll('.bar-btn'), function (b) {
-				return !hidden.length || hidden.indexOf(b.id.replace('btn-', '')) < 0;
-			});
-			var divider = group.previousElementSibling && group.previousElementSibling.classList.contains('bar-divider') ? group.previousElementSibling : null;
-
-			group.hidden = !visible;
-			if (divider) divider.hidden = !visible || first;
-			if (visible) first = false;
-		});
-
-		if (hidden.indexOf('links') >= 0) {
-			$('links').hidden = true;
-			$('links-divider').hidden = true;
-		}
+		$('links').hidden = true;
+		$('links-divider').hidden = true;
 	}
 
 	async function loadLinks() {
@@ -587,7 +584,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			linksStamp = res.stamp;
 			renderLinks(res.links, res.personal || []);
-			applyHidden(res.hidden || []);
+			buildTools(res.items && res.items.length ? res.items : DEFAULT_ITEMS, res.hidden || []);
+			applyLinksHidden(res.hidden || []);
 		} catch (err) { }
 	}
 
@@ -619,7 +617,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	async function init() {
-		buildTools();
 
 		document.addEventListener('pad-theme', function (e) {
 			applyLogo(e.detail);
@@ -633,7 +630,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			horizontal: true
 		});
 
-		loadLinks();
+		// a barra é montada na ordem da configuração; sem ela (rede fora), na ordem padrão
+		loadLinks().then(function () {
+			if (!toolsLayout) buildTools(DEFAULT_ITEMS, []);
+		});
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
 

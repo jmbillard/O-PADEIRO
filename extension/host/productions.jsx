@@ -697,27 +697,52 @@ PADX.savePersonalLinks = function (a) {
 /*
 
 ---------------------------------------------------------------
-> ferramentas da barra (interruptor "mostrar na barra" de cada aba)
+> ferramentas da barra (aba FERRAMENTAS da configuração)
 ---------------------------------------------------------------
 
-'BAR' no O_PADEIRO_config.json: { hidden: [...] }, as ferramentas escondidas da barra (para a equipe toda):
-templates, fontes, projeto, coletar, pastas, renomear, organizar, buscar e links (o bloco de links).
+'BAR' no O_PADEIRO_config.json: { items: [...], hidden: [...] } (aba FERRAMENTAS, vale para a equipe toda):
+  items  → a ordem das ferramentas na barra; 'divider' separa os grupos. ferramentas: templates, fontes,
+           projeto, coletar, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
+  hidden → as escondidas da barra (as mesmas chaves, e 'links' para o bloco de links)
 
 */
 
-var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'pastas', 'renomear', 'organizar', 'buscar', 'links'];
+var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'pastas', 'renomear', 'organizar', 'buscar'];
+var PAD_BAR_DEFAULT_ITEMS = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
 
 function padCleanBar(o) {
+	var items = [];
 	var hidden = [];
-	var list = o && o.hidden instanceof Array ? o.hidden : [];
+	var seen = {};
+	var list = o && o.items instanceof Array && o.items.length ? o.items : PAD_BAR_DEFAULT_ITEMS;
+	var i;
 
-	for (var i = 0; i < list.length; i++) {
+	for (i = 0; i < list.length; i++) {
 		var key = padTrim(list[i]).toLowerCase();
 
-		if (PAD_BAR_TOOLS.indexOf(key) >= 0 && hidden.indexOf(key) < 0) hidden.push(key);
+		if (key == 'divider') {
+			if (items.length && items[items.length - 1] != 'divider') items.push(key); // sem separador no começo nem dois seguidos
+		} else if (PAD_BAR_TOOLS.indexOf(key) >= 0 && !seen[key]) {
+			seen[key] = true;
+			items.push(key);
+		}
 	}
 
-	return { hidden: hidden };
+	for (i = 0; i < PAD_BAR_TOOLS.length; i++) {
+		if (!seen[PAD_BAR_TOOLS[i]]) items.push(PAD_BAR_TOOLS[i]); // ferramenta nova (ou esquecida): no fim
+	}
+
+	while (items.length && items[items.length - 1] == 'divider') items.pop();
+
+	var h = o && o.hidden instanceof Array ? o.hidden : [];
+
+	for (i = 0; i < h.length; i++) {
+		var k = padTrim(h[i]).toLowerCase();
+
+		if ((PAD_BAR_TOOLS.indexOf(k) >= 0 || k == 'links') && hidden.indexOf(k) < 0) hidden.push(k);
+	}
+
+	return { items: items, hidden: hidden };
 }
 
 function padReadBar() {
@@ -728,7 +753,7 @@ function padReadBar() {
 
 		return padCleanBar(data.BAR || {});
 	} catch (err) {
-		return { hidden: [] };
+		return padCleanBar({});
 	}
 }
 
@@ -742,7 +767,9 @@ PADX.barLinks = function () {
 		stamp = (file && file.exists ? file.modified.getTime() : 0) + '|' + (personal.exists ? personal.modified.getTime() : 0);
 	} catch (err) { }
 
-	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), hidden: padReadBar().hidden };
+	var bar = padReadBar();
+
+	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), items: bar.items, hidden: bar.hidden };
 };
 
 // Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.

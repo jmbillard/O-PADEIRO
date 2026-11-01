@@ -33,7 +33,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
 		collect: { folders: [], projectFolders: false, saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
-		bar: { hidden: [] }, // ferramentas escondidas da barra (o interruptor no topo de cada aba)
+		bar: { items: [], hidden: [] }, // aba FERRAMENTAS: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
@@ -328,7 +328,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function barForSave() {
-		return { hidden: state.bar.hidden.slice().sort() };
+		return { items: state.bar.items.slice(), hidden: state.bar.hidden.slice().sort() };
 	}
 
 	function appearanceForSave() {
@@ -606,7 +606,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderAppearance();
 		renderProject();
 		renderCollect();
-		renderBarVis();
+		renderTools();
 	}
 
 	function showUnavailable(message) {
@@ -1726,54 +1726,124 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Mostrar na barra: um interruptor por ferramenta no topo da
-	   aba dela (escondida para a equipe toda)
+	   Ferramentas: a ordem da barra (arrastar), mostrar / esconder
+	   e separadores entre os grupos
 	   ========================================================= */
 
-	var BAR_TOOL_NAMES = { templates: 'Templates', fontes: 'Fontes', projeto: 'Projeto', coletar: 'Coletar', pastas: 'Pastas', renomear: 'Renomear', organizar: 'Organizar', buscar: 'Buscar', links: 'os links' };
+	var DEFAULT_BAR = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
+
+	// nome, o que os cliques fazem e o ícone (os mesmos traços da barra)
+	var TOOL_INFO = {
+		templates: ['Templates', 'preencher templates · criar novo template', ['M6 4.5h12a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 17V7A2.5 2.5 0 0 1 6 4.5z', 'M3.5 9.5h17M9 9.5v10']],
+		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']],
+		projeto: ['Projeto', 'janela do projeto · salvar na pasta da retranca', ['M5 10h14.5v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-8z', 'M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z', 'm8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4']],
+		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', ['M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h.4', 'M6 11.5V4a1 1 0 0 1 1-1h4.6l2.7 2.7v5.8', 'M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z']],
+		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5', 'M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z']],
+		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', ['M5.5 6.5h13a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3h-13a3 3 0 0 1-3-3v-5a3 3 0 0 1 3-3z', 'M6 12h2.4M10.3 12h2.4M14.6 12h2.4M18.6 9.6v4.8']],
+		organizar: ['Organizar', 'organizar o projeto · criar as pastas', ['m12 3-8.5 4.25L12 11.5l8.5-4.25z', 'm3.5 12 8.5 4.25L20.5 12', 'm3.5 16.5 8.5 4.25 8.5-4.25']],
+		buscar: ['Buscar', 'busca de caminhos · busca em textos', ['M16.5 10a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z', 'm15 15 5 5']]
+	};
 
 	function setBar(b) {
-		state.bar = { hidden: ((b && b.hidden) || []).slice() };
-		renderBarVis();
+		var data = b || {};
+
+		state.bar = {
+			items: (data.items && data.items.length ? data.items : DEFAULT_BAR).slice(),
+			hidden: (data.hidden || []).slice()
+		};
+		renderTools();
 	}
 
-	function renderBarVis() {
-		Array.prototype.forEach.call(document.querySelectorAll('.bar-vis'), function (box) {
-			var tools = box.getAttribute('data-tools').split(' ');
+	function toggleHidden(key, show) {
+		state.bar.hidden = state.bar.hidden.filter(function (k) {
+			return k !== key;
+		});
 
-			box.textContent = '';
-			box.appendChild(el('span', 'bar-vis-title', 'na barra'));
+		if (!show) state.bar.hidden.push(key);
+	}
 
-			tools.forEach(function (key) {
-				var label = el('label', 'cfg-switch');
-				var input = el('input');
+	function renderTools() {
+		var list = $('tool-list');
 
-				input.type = 'checkbox';
-				input.checked = state.bar.hidden.indexOf(key) < 0;
-				input.disabled = !state.available;
-				input.setAttribute('data-bar-tool', key);
-				label.title = key === 'links' ? 'mostrar os links no começo da barra (de todo mundo)' : 'mostrar a ferramenta ' + BAR_TOOL_NAMES[key] + ' na barra (de todo mundo)';
-				label.appendChild(input);
-				label.appendChild(el('span', 'cfg-switch-track'));
-				label.appendChild(el('span', 'cfg-switch-label', 'mostrar ' + (key === 'links' ? 'os links' : BAR_TOOL_NAMES[key])));
-				box.appendChild(label);
+		if (!list) return;
+
+		var disabled = !state.available;
+
+		list.textContent = '';
+		$('bar-links').checked = state.bar.hidden.indexOf('links') < 0;
+		$('bar-links').disabled = disabled;
+		$('btn-new-divider').disabled = disabled;
+
+		state.bar.items.forEach(function (key, i) {
+			var row = el('div', 'tool-row');
+
+			row.appendChild(PAD_SORT.handle());
+
+			if (key === 'divider') {
+				var remove = miniButton('remove', 'tirar o separador', function () {
+					state.bar.items.splice(i, 1);
+					renderTools();
+					updateDirty();
+				});
+
+				row.classList.add('is-divider');
+				row.appendChild(el('span', 'tool-divider-line', 'separador'));
+				remove.disabled = disabled;
+				row.appendChild(remove);
+				list.appendChild(row);
+				return;
+			}
+
+			var info = TOOL_INFO[key] || [key, '', []];
+			var icon = el('span', 'tool-icon');
+			var text = el('span', 'tool-text');
+			var label = el('label', 'cfg-switch');
+			var input = el('input');
+			var shown = state.bar.hidden.indexOf(key) < 0;
+			var ico = svg(info[2]);
+
+			ico.setAttribute('aria-hidden', 'true');
+			icon.appendChild(ico);
+			text.appendChild(el('strong', null, info[0]));
+			text.appendChild(el('span', null, info[1]));
+			input.type = 'checkbox';
+			input.checked = shown;
+			input.disabled = disabled;
+			input.addEventListener('change', function () {
+				toggleHidden(key, input.checked);
+				row.classList.toggle('is-off', !input.checked);
+				updateDirty();
 			});
+			label.title = 'mostrar ' + info[0] + ' na barra (de todo mundo)';
+			label.appendChild(input);
+			label.appendChild(el('span', 'cfg-switch-track'));
+			row.classList.toggle('is-off', !shown);
+			row.appendChild(icon);
+			row.appendChild(text);
+			row.appendChild(label);
+			list.appendChild(row);
 		});
 	}
 
-	function bindBarVis() {
-		document.addEventListener('change', function (e) {
-			var key = e.target.getAttribute && e.target.getAttribute('data-bar-tool');
+	function bindTools() {
+		$('bar-links').addEventListener('change', function () {
+			toggleHidden('links', this.checked);
+			updateDirty();
+		});
 
-			if (!key) return;
+		// um separador novo entra no fim; arraste para o lugar
+		$('btn-new-divider').addEventListener('click', function () {
+			state.bar.items.push('divider');
+			renderTools();
+			updateDirty();
+			$('tool-list').lastChild.scrollIntoView({ block: 'nearest' });
+		});
 
-			var hidden = state.bar.hidden.filter(function (k) {
-				return k !== key;
-			});
+		PAD_SORT.enable($('tool-list'), '.tool-row', function (from, to) {
+			var moved = state.bar.items.splice(from, 1)[0];
 
-			if (!e.target.checked) hidden.push(key);
-
-			state.bar.hidden = hidden;
+			state.bar.items.splice(to, 0, moved);
+			renderTools();
 			updateDirty();
 		});
 	}
@@ -2427,7 +2497,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance'];
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools'];
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2734,12 +2804,27 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindAppearance();
 		bindProject();
 		bindCollect();
-		bindBarVis();
+		bindTools();
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');
 
 			if (tab) showTab(tab.getAttribute('data-tab'));
+		});
+
+		// ↑ ↓ (e ← →, na fila estreita) andam pelas abas
+		$('tabs').addEventListener('keydown', function (e) {
+			var step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+			var tabs = Array.prototype.slice.call($('tabs').querySelectorAll('.tab'));
+			var at = tabs.indexOf(document.activeElement);
+
+			if (!step || at < 0) return;
+
+			var next = tabs[(at + step + tabs.length) % tabs.length];
+
+			e.preventDefault();
+			showTab(next.getAttribute('data-tab'));
+			next.focus();
 		});
 		showTab('prods');
 

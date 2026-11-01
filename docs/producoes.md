@@ -2,9 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em dez abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **coletar**, **busca**, **projeto** e **aparência**.
-
-> 🚩 *na barra:* no topo de cada aba de ferramenta, o interruptor '*mostrar …*' mostra ou esconde a ferramenta na barra de todo mundo (templates e fontes na aba produções, pastas em drives, renomear, organizar, coletar, buscar em busca, projeto e os links). a barra acompanha em alguns segundos; uma seção sem nenhuma ferramenta some junto com a divisória.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em onze abas, na coluna da esquerda: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **coletar**, **busca**, **projeto**, **aparência** e **ferramentas**. recarregar e o `⋯` ficam no pé da coluna; em janela estreita, as abas viram uma fila no topo.
 
 > 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
@@ -219,6 +217,23 @@ a aba **aparência** define o visual de todas as janelas do padeiro, para a equi
 > 🚩 *obs:* enquanto você edita, só esta janela mostra a prévia; ao salvar, as outras janelas mudam em alguns segundos.
 
 > 💡 *exemplo:* [config da PROMO GNEWS](exemplos/gnews/README.md): pastas, nomenclatura, busca e barra montadas a partir da barra antiga da promo, com o que ainda falta para chegar igual.
+
+<br>
+
+---
+
+<br>
+
+## 📍 ferramentas
+
+a aba **ferramentas** monta a barra de todo mundo:
+
+- **ordem** → arraste cada ferramenta pelos pontinhos.
+- **mostrar** → o interruptor de cada ferramenta mostra ou esconde ela na barra (esmaecida na lista quando escondida).
+- **separadores** → '*+ separador*' acrescenta um no fim da lista; arraste para o lugar. cada separador divide a barra em grupos (a divisória entre eles); o **×** tira. um grupo sem nenhuma ferramenta visível some junto com a divisória.
+- **links** → '*mostrar os links no começo da barra*' esconde ou mostra o bloco de links.
+
+> 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.
 
 <br>
 
