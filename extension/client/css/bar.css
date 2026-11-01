@@ -515,7 +515,8 @@ body.bar-page {
   }
 }
 
-/* 100% vertical e estreita demais para os nomes (o js marca .is-icons): só os ícones, e os links em coluna única */
+/* 100% vertical e estreita demais para os nomes: só os ícones, e os links em coluna única.
+   abaixo de 140px sempre (a coluna com nomes precisa de uns 135); acima, quando o js vê um nome cortado (.is-icons) */
 @media (max-aspect-ratio: 1/1) and (max-width: 159px) {
   .is-icons .bar-btn {
     justify-content: center;
@@ -528,6 +529,21 @@ body.bar-page {
 
   .is-icons #links {
     max-width: 26px; /* um por linha */
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 139px) {
+  .bar-btn {
+    justify-content: center;
+    padding: 7px;
+  }
+
+  .bar-btn .bar-label {
+    display: none;
+  }
+
+  #links {
+    max-width: 26px;
   }
 }
 

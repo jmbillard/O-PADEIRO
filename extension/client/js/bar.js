@@ -524,7 +524,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (old) old.remove();
 
-		var cols = document.body.classList.contains('is-icons') ? 1 : 3;
+		var cols = document.body.classList.contains('is-icons') || ICON_MEDIA.matches ? 1 : 3;
 		var rest = box.children.length % cols;
 
 		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // sem linha cheia: nada
@@ -532,13 +532,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// 100% vertical: se algum nome não cabe, a barra mostra só os ícones (o nome fica na dica)
 	var LIST_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 159px)');
+	var ICON_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 139px)'); // só ícones pelo css
 
 	function fitLabels() {
 		var body = document.body;
 		var was = body.classList.contains('is-icons');
 		var cut = false;
 
-		if (LIST_MEDIA.matches) {
+		if (LIST_MEDIA.matches && !ICON_MEDIA.matches) {
 			body.classList.remove('is-icons');
 			// um nome cortado ou a coluna mais larga que a barra (no CEP a coluna pode não encolher)
 			var bar = $('bar');
@@ -550,7 +551,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			});
 		}
 		body.classList.toggle('is-icons', cut);
-		if (cut !== was) placeLinksBreak();
+		if (cut !== was || ICON_MEDIA.matches !== fitLabels.media) placeLinksBreak();
+		fitLabels.media = ICON_MEDIA.matches;
 	}
 
 	// os links também podem ser escondidos (configuração > ferramentas)
