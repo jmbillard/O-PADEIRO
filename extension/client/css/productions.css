@@ -1549,58 +1549,78 @@ body.is-org-dragging * {
   gap: 20px;
 }
 
-/* o quadrado de cores: a matiz gira em volta (vermelho em cima), o centro clareia até o branco e a borda
-   escurece até o preto. clique ou arraste para escolher (JS: bindSwatchTile) */
+/* o quadradinho: o espectro na borda, branco no meio */
 .swatch-tile {
   position: relative;
-  width: 196px; /* a altura das duas linhas ao lado, com uma aberta */
-  height: 196px;
+  width: 170px; /* a altura das duas linhas ao lado, com uma aberta */
+  height: 170px;
   flex: 0 0 auto;
-  overflow: hidden;
   border-radius: 26px;
-  background:
-    radial-gradient(circle closest-side, #fff 0%, rgb(255 255 255 / 0%) 50%, rgb(0 0 0 / 0%) 50%, #000 100%),
-    conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
-  box-shadow:
-    inset 0 0 0 1px rgb(0 0 0 / 8%),
-    0 6px 18px rgb(30 42 80 / 12%);
-  cursor: crosshair;
-  user-select: none;
+  background: conic-gradient(from 210deg, #ff3b3b, #ffd23b, #46e05a, #36d9ff, #4b6bff, #c64bff, #ff3bb0, #ff3b3b);
+  box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
 }
 
-/* um marcador por amostra: anel branco com a cor dentro (a aberta, maior) */
-.swatch-mark {
+.swatch-tile::after {
+  position: absolute;
+  inset: 9px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 62%); /* o espectro aparece por trás, suave */
+  box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
+  content: "";
+}
+
+/* as amostras: círculos sólidos com contorno branco, sobrepostos no canto */
+.swatch-dot {
   position: absolute;
   z-index: 1;
-  width: 18px;
-  height: 18px;
-  margin: -9px 0 0 -9px;
-  border: 3px solid white;
+  top: 24px;
+  left: 24px;
+  width: 44px;
+  height: 44px;
+  border: 4px solid white;
   border-radius: 50%;
   background: var(--dot, #5184f8);
-  box-shadow: 0 1px 6px rgb(0 0 0 / 45%);
-  pointer-events: none;
-  transition:
-    width 180ms var(--ease-soft),
-    height 180ms var(--ease-soft),
-    margin 180ms var(--ease-soft),
-    opacity 200ms ease;
+  box-shadow: 0 2px 8px rgb(20 30 70 / 30%);
+  cursor: pointer;
+  transition: transform 200ms var(--ease-soft);
 }
 
-.swatch-mark.is-active {
+.swatch-dot.is-second {
   z-index: 2;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  left: 56px;
 }
 
-.swatch-mark.is-disabled {
+.swatch-dot:hover {
+  transform: scale(1.12);
+}
+
+/* sólido: a segunda cor some do quadradinho; a linha dela fica, desabilitada */
+.swatch-dot.is-disabled {
   z-index: 0;
-  opacity: 0.35;
+  cursor: default;
+  opacity: 0; /* sólido: a segunda amostra some do quadradinho (a linha dela fica, desabilitada) */
+  pointer-events: none;
+  transform: scale(0.6);
 }
 
-.swatch-tile.is-dragging .swatch-mark {
-  transition: none;
+.swatch-dot.is-disabled input {
+  pointer-events: none;
+}
+
+.swatch-dot {
+  transition:
+    transform 200ms var(--ease-soft),
+    opacity 220ms ease,
+    filter 220ms ease;
+}
+
+.swatch-dot input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 /* cada amostra ao lado: a cor, o nome e o hex; clicando, abrem saturação e brilho */

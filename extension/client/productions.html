@@ -296,20 +296,19 @@
 				</div>
 
 				<p class="cfg-title prods-section-title">cores</p>
-				<!-- as cores: um quadrado com todas as cores (a matiz gira em volta, o centro clareia até o branco, a
-				     borda escurece até o preto) e um marcador por amostra (degradê: início e fim; sólido: a primeira,
-				     com a segunda desabilitada). ao lado, cada amostra com o hex e, ao clicar, matiz, saturação e brilho -->
+				<!-- as cores: um quadradinho com o espectro na borda e as duas amostras dentro (degradê: início e
+				     fim; sólido: a primeira, com a segunda desabilitada). clique numa amostra para escolher a cor;
+				     ao lado, cada uma com o hex e, ao clicar, saturação e brilho -->
 				<div class="app-swatch">
-					<div class="swatch-tile" title="clique ou arraste: a matiz gira em volta, o centro clareia e a borda escurece">
-						<span class="swatch-mark" data-slot="2"></span>
-						<span class="swatch-mark" data-slot="1"></span>
+					<div class="swatch-tile" aria-label="Cores">
+						<label class="swatch-dot" data-slot="1" title="clique para escolher a cor"><input type="color" data-slot="1" aria-label="cor 1"></label>
+						<label class="swatch-dot is-second" data-slot="2" title="clique para escolher a cor"><input type="color" data-slot="2" aria-label="cor 2"></label>
 					</div>
 					<!-- cada amostra: a cor, o nome e o hex; clicando, abrem saturação e brilho -->
 					<div class="swatch-rows">
 						<div class="swatch-row" data-slot="1">
 							<div class="swatch-head" role="button" tabindex="0" aria-expanded="false" title="clique para ajustar saturação e brilho"><i class="swatch-mini"></i><span class="swatch-name">início</span><input type="text" class="cfg-input" data-hex="1" spellcheck="false" maxlength="7" aria-label="código da cor 1"><svg class="swatch-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></div>
 							<div class="swatch-sliders" hidden>
-								<label class="swatch-slider"><span>matiz</span><input type="range" min="0" max="360" step="1" data-hue="1" aria-label="matiz da cor 1"></label>
 								<label class="swatch-slider"><span>saturação</span><input type="range" min="0" max="100" step="1" data-sat="1" aria-label="saturação da cor 1"></label>
 								<label class="swatch-slider"><span>brilho</span><input type="range" min="0" max="100" step="1" data-val="1" aria-label="brilho da cor 1"></label>
 							</div>
@@ -317,7 +316,6 @@
 						<div class="swatch-row" data-slot="2">
 							<div class="swatch-head" role="button" tabindex="0" aria-expanded="false" title="clique para ajustar saturação e brilho"><i class="swatch-mini"></i><span class="swatch-name">fim</span><input type="text" class="cfg-input" data-hex="2" spellcheck="false" maxlength="7" aria-label="código da cor 2"><svg class="swatch-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></div>
 							<div class="swatch-sliders" hidden>
-								<label class="swatch-slider"><span>matiz</span><input type="range" min="0" max="360" step="1" data-hue="2" aria-label="matiz da cor 2"></label>
 								<label class="swatch-slider"><span>saturação</span><input type="range" min="0" max="100" step="1" data-sat="2" aria-label="saturação da cor 2"></label>
 								<label class="swatch-slider"><span>brilho</span><input type="range" min="0" max="100" step="1" data-val="2" aria-label="brilho da cor 2"></label>
 							</div>
