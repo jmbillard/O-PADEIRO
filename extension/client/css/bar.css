@@ -211,7 +211,7 @@ body.bar-page {
   transform: translateY(-1px) scale(1.08);
 }
 
-/* na horizontal, os links ficam numa linha só; na vertical, de 2 em 2 (abaixo, no layout vertical) */
+/* na horizontal, os links ficam numa linha só; na vertical, de 3 em 3 (abaixo, no layout vertical) */
 #links {
   display: grid;
   grid-auto-flow: column;
@@ -400,7 +400,7 @@ body.bar-page {
 
   #links {
     grid-auto-flow: row;
-    grid-template-columns: repeat(2, 26px);
+    grid-template-columns: repeat(3, 26px);
     grid-template-rows: none;
     justify-content: center;
     gap: 0 1px;
