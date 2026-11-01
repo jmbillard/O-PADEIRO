@@ -2501,8 +2501,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// a amostra anda pelo miolo todo: o ângulo em volta do centro é a matiz (0° em cima, sentido horário) e a
 	// distância do centro é a saturação (no centro, 0; na borda, 100). a distância é medida "em quadrado" (o
 	// maior entre x e y), para a saturação máxima ser a borda inteira, cantos incluídos.
-	// SWATCH_SPAN: do centro até onde a amostra encosta na borda do miolo (metade do miolo - o raio dela)
-	var SWATCH_SPAN = 44;
+	// SWATCH_SPAN: do centro até onde a amostra encosta na borda do miolo (metade do miolo, 62.5px, menos o
+	// raio dela, 15px): num canto, ela fica concêntrica com o canto arredondado do miolo
+	var SWATCH_SPAN = 47.5;
 
 	// a partir do centro (o css centraliza a amostra em 50% / 50%): funciona com a aba ainda escondida
 	function placeSwatchDot(dot, hue, sat) {

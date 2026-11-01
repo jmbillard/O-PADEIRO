@@ -1578,19 +1578,19 @@ body.is-org-dragging * {
   border-radius: 15px;
   background: rgb(255 255 255 / 30%); /* o miolo aparece por trás, suave */
   backdrop-filter: blur(26px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
-  box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
-  content: "";
+  content: ""; /* sem brilho em volta: a borda fica com o espectro chapado */
 }
 
-/* as amostras: círculos sólidos com contorno branco, sobre a própria matiz (o js posiciona) */
+/* as amostras: círculos sólidos com contorno branco, sobre a própria matiz (o js posiciona); o raio é o
+   do canto do miolo (15px): num canto, a amostra fica concêntrica com ele */
 .swatch-dot {
   position: absolute;
   z-index: 1;
   top: 50%;
   left: 50%;
-  width: 36px;
-  height: 36px;
-  margin: -18px 0 0 -18px; /* o centro da amostra no ponto */
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px; /* o centro da amostra no ponto */
   border: 3px solid white;
   border-radius: 50%;
   background: var(--dot, #5184f8);
