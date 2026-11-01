@@ -534,8 +534,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var LIST_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 159px)');
 	var ICON_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 139px)'); // só ícones pelo css
 
+	// o AE não desenha o painel com menos de ~132px e corta a sobra: se a janela nativa (outerWidth) for
+	// menor que a página, é ela que aparece; o css centraliza o bloco de ícones nela
+	function fitVisible() {
+		var outer = window.outerWidth;
+
+		if (outer > 40 && outer < window.innerWidth) document.body.style.setProperty('--bar-visible', outer + 'px');
+		else document.body.style.removeProperty('--bar-visible');
+	}
+
 	function fitLabels() {
 		var body = document.body;
+
+		fitVisible();
 		var was = body.classList.contains('is-icons');
 		var cut = false;
 
@@ -627,6 +638,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLabels);
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
+
+		// diagnóstico (temporário): a dica do pãozinho mostra os tamanhos que o painel informa
+		var logoTitle = $('logo').title;
+
+		$('logo').addEventListener('mouseenter', function () {
+			$('logo').title = logoTitle + '\npágina ' + window.innerWidth + ' · janela ' + window.outerWidth + ' · tela ' + screen.availWidth + ' · escala ' + window.devicePixelRatio;
+		});
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
