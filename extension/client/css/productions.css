@@ -670,17 +670,16 @@ body.prods-page {
 }
 
 .prods-filter {
-  min-width: 140px;
-  max-width: 280px;
-  flex: 0 1 280px;
-  margin: 0;
+  margin: 16px 20px 4px;
 }
 
 .prods-filter input {
+  min-height: 50px;
   border-color: var(--border-strong);
   background: var(--surface);
   box-shadow: none;
   color: var(--text-primary);
+  font-size: 0.95rem;
 }
 
 .prods-filter input::placeholder {
@@ -697,25 +696,13 @@ body.prods-page {
   stroke: var(--text-tertiary);
 }
 
+.prods-filter:focus-within>svg {
+  stroke: var(--blue-500);
+}
+
 .prods-filter .picker-clear {
   background: var(--surface-soft);
   color: var(--text-secondary);
-}
-
-.prods-filter>svg {
-  left: 13px;
-  width: 16px;
-  height: 16px;
-}
-
-.prods-filter input {
-  min-height: 34px;
-  padding: 5px 34px 5px 36px;
-  font-size: 0.78rem;
-}
-
-.prods-filter .picker-clear {
-  right: 6px;
 }
 
 .prod-row[hidden] {
@@ -725,11 +712,6 @@ body.prods-page {
 /* o filtro só vale para a aba de produções */
 .prods-filter[hidden] {
   display: none;
-}
-
-.prods-filter .picker-clear {
-  width: 24px;
-  height: 24px;
 }
 
 /* lista compartilhada inacessível */

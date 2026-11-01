@@ -21,7 +21,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 3. clique no **disquete** (ou `Ctrl/Cmd+S`).
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
-- **filtrar** (ao lado do título da lista) → mostra só as produções com o termo no nome ou no caminho.
+- **buscar** (a barra no topo da aba) → mostra só as produções com o termo no nome ou no caminho.
 - **importar / exportar** (os botões com setas, no canto inferior esquerdo, só nesta aba) → lê ou grava uma lista completa, com os ícones.
 - **recarregar** → lê a configuração de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.

@@ -55,13 +55,14 @@
 		<section class="prods-sheet">
 			<!-- aba PRODUÇÕES -->
 			<div class="cfg-pane" id="pane-prods" role="tabpanel">
+			<!-- busca grande no topo da folha (como as outras buscas); o título da lista vem logo abaixo -->
+			<div class="picker-search prods-filter">
+				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+				<input type="search" id="filter" placeholder="buscar produção (nome ou pasta)" autocomplete="off" spellcheck="false" aria-label="Buscar produção">
+				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+			</div>
 			<div class="prods-list-head">
 				<p class="cfg-title">lista de produções</p>
-				<div class="picker-search prods-filter">
-					<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
-					<input type="search" id="filter" placeholder="filtrar produções" autocomplete="off" spellcheck="false" aria-label="Filtrar produções">
-					<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar filtro" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
-				</div>
 			</div>
 
 			<!-- "+ nova produção" entra no fim da lista (render), como o "+ novo output" -->
