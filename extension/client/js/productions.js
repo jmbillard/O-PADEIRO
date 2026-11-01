@@ -2379,6 +2379,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return swatchHue[key] != null ? swatchHue[key] : hsv.h;
 	}
 
+	// a saturação de cada amostra também fica guardada: com brilho zero a cor perde a saturação
+	var swatchSatMem = {};
+
+	function swatchSat(key) {
+		var hsv = hexToHsv(state.appearance[key]);
+
+		if (hsv.v > 0) swatchSatMem[key] = hsv.s;
+
+		return swatchSatMem[key] != null ? swatchSatMem[key] : hsv.s;
+	}
+
 	function mixHex(a, b) {
 		var out = '#';
 
@@ -2439,7 +2450,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var row = hex.closest('.swatch-row');
 			var hsv = hexToHsv(a[key]);
 			var h = hueOf(key, a[key]);
-			var sat = row.querySelector('[data-sat]');
 			var val = row.querySelector('[data-val]');
 			var off = slot === '2' && solid; // sólido: a segunda cor fica desabilitada (não some)
 
@@ -2447,7 +2457,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			input.disabled = !state.available || off;
 			input.parentNode.style.setProperty('--dot', a[key]);
 			input.parentNode.classList.toggle('is-disabled', off);
-			placeSwatchDot(input.parentNode, h, swatchDist[key]);
+			placeSwatchDot(input.parentNode, h, swatchSat(key));
 			if (document.activeElement !== hex) hex.value = a[key];
 			hex.disabled = !state.available || off;
 			row.style.setProperty('--dot', a[key]);
@@ -2455,10 +2465,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			row.querySelector('.swatch-name').textContent = slot === '2' ? 'fim' : solid ? 'cor' : 'início';
 
 			// os trilhos mostram o que cada slider faz com esta cor
-			if (document.activeElement !== sat) sat.value = Math.round(hsv.s);
 			if (document.activeElement !== val) val.value = Math.round(hsv.v);
-			sat.disabled = val.disabled = !state.available || off;
-			sat.style.setProperty('--track', 'linear-gradient(to right, ' + hsvToHex(h, 0, hsv.v) + ', ' + hsvToHex(h, 100, hsv.v) + ')');
+			val.disabled = !state.available || off;
 			val.style.setProperty('--track', 'linear-gradient(to right, #000, ' + hsvToHex(h, hsv.s, 100) + ')');
 		});
 
@@ -2490,25 +2498,24 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('app-logo-reset').hidden = !a.logo;
 	}
 
-	// a amostra anda pelo miolo todo, mas só o ângulo em volta do centro vale: é a matiz (0° em cima, sentido
-	// horário). a distância do centro não muda a cor (saturação e brilho são dos sliders): ela só fica
-	// guardada para a amostra continuar onde foi solta. a distância é medida "em quadrado" (o maior entre x
-	// e y), para a amostra chegar aos cantos. SWATCH_SPAN: do centro até a borda do miolo (76px - o raio dela)
-	var SWATCH_SPAN = 54;
-	var swatchDist = {}; // por cor: a distância do centro, de 0 a 1 (sem ela, na borda)
+	// a amostra anda pelo miolo todo: o ângulo em volta do centro é a matiz (0° em cima, sentido horário) e a
+	// distância do centro é a saturação (no centro, 0; na borda, 100). a distância é medida "em quadrado" (o
+	// maior entre x e y), para a saturação máxima ser a borda inteira, cantos incluídos.
+	// SWATCH_SPAN: do centro até onde a amostra encosta na borda do miolo (metade do miolo - o raio dela)
+	var SWATCH_SPAN = 44;
 
 	// a partir do centro (o css centraliza a amostra em 50% / 50%): funciona com a aba ainda escondida
-	function placeSwatchDot(dot, hue, dist) {
+	function placeSwatchDot(dot, hue, sat) {
 		var a = hue * Math.PI / 180;
 		var sx = Math.sin(a);
 		var sy = -Math.cos(a);
-		var k = SWATCH_SPAN * (dist == null ? 1 : dist) / Math.max(Math.abs(sx), Math.abs(sy));
+		var k = SWATCH_SPAN * Math.max(0, Math.min(100, sat)) / 100 / Math.max(Math.abs(sx), Math.abs(sy));
 
 		dot.style.left = 'calc(50% + ' + (k * sx).toFixed(1) + 'px)';
 		dot.style.top = 'calc(50% + ' + (k * sy).toFixed(1) + 'px)';
 	}
 
-	// arrastar uma amostra (ou clicar/arrastar no quadradinho, para a linha aberta) muda só a matiz;
+	// arrastar uma amostra (ou clicar/arrastar no quadradinho, para a linha aberta) muda a matiz e a saturação;
 	// o CEP não entrega pointer events: mouse events
 	function bindSwatchDrag() {
 		var tile = document.querySelector('.swatch-tile');
@@ -2516,7 +2523,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!tile) return;
 
-		// o ponto do mouse (preso ao miolo) → matiz e distância do centro
+		// o ponto do mouse (preso ao miolo) → matiz e saturação
 		function pointAt(e) {
 			var box = tile.getBoundingClientRect();
 			var dx = Math.max(-SWATCH_SPAN, Math.min(SWATCH_SPAN, e.clientX - (box.left + box.width / 2)));
@@ -2524,7 +2531,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			return {
 				h: dx || dy ? (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360 : null,
-				d: Math.max(Math.abs(dx), Math.abs(dy)) / SWATCH_SPAN
+				s: Math.max(Math.abs(dx), Math.abs(dy)) / SWATCH_SPAN * 100
 			};
 		}
 
@@ -2535,9 +2542,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var h = pt.h == null ? hueOf(key, state.appearance[key]) : pt.h;
 
 			swatchHue[key] = h;
-			swatchDist[key] = pt.d;
-			// só a matiz muda; sem saturação ou brilho ela não aparece: a cor volta a ter os dois
-			changeAppearance(key, hsvToHex(h, hsv.s < 8 ? 70 : hsv.s, hsv.v < 8 ? 80 : hsv.v));
+			// sem brilho nenhuma cor aparece: volta a ter brilho
+			changeAppearance(key, hsvToHex(h, pt.s, hsv.v < 8 ? 80 : hsv.v));
 		}
 
 		function move(e) {
@@ -2595,7 +2601,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// o miolo do quadradinho segue a saturação e o brilho da cor ativa (a da linha aberta)
+	// o miolo do quadradinho mostra as cores no brilho da cor ativa (a da linha aberta)
 	function updateSwatchWheel() {
 		var tile = document.querySelector('.swatch-tile');
 		var row = document.querySelector('.swatch-row.is-open');
@@ -2612,9 +2618,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			dot.classList.toggle('is-active', dot.getAttribute('data-slot') === slot);
 		});
 
-		// as matizes em volta, na saturação e no brilho da cor ativa
-		for (var h = 0; h <= 360; h += 30) stops.push(hsvToHex(h % 360, hsv.s, hsv.v));
-		tile.style.setProperty('--wheel', 'conic-gradient(' + stops.join(', ') + ')');
+		// as matizes em volta, saturadas na borda e indo para o cinza no centro (a saturação), no brilho da cor ativa
+		var gray = hsvToHex(0, 0, hsv.v);
+		var g = parseInt(gray.substr(1, 2), 16);
+
+		for (var h = 0; h <= 360; h += 30) stops.push(hsvToHex(h % 360, 100, hsv.v));
+		tile.style.setProperty('--wheel', 'radial-gradient(circle at center, ' + gray + ' 0, ' + gray + ' 6%, rgba(' + g + ',' + g + ',' + g + ',0) 72%), conic-gradient(' + stops.join(', ') + ')');
 	}
 
 	function openSwatchRow(row) {
@@ -2654,14 +2663,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		// saturação e brilho: mudam a cor da amostra mantendo a matiz
-		Array.prototype.forEach.call(document.querySelectorAll('[data-sat], [data-val]'), function (range) {
+		// brilho: muda a cor da amostra mantendo a matiz e a saturação (as do quadradinho)
+		Array.prototype.forEach.call(document.querySelectorAll('[data-val]'), function (range) {
 			range.addEventListener('input', function () {
-				var key = slotKey(range.getAttribute('data-sat') || range.getAttribute('data-val'));
-				var row = range.closest('.swatch-row');
+				var key = slotKey(range.getAttribute('data-val'));
 				var h = hueOf(key, state.appearance[key]);
 
-				changeAppearance(key, hsvToHex(h, +row.querySelector('[data-sat]').value, +row.querySelector('[data-val]').value));
+				changeAppearance(key, hsvToHex(h, swatchSat(key), +range.value));
 			});
 		});
 

@@ -1552,10 +1552,10 @@ body.is-org-dragging * {
 /* o quadradinho: o espectro na borda, branco no meio */
 .swatch-tile {
   position: relative;
-  width: 170px; /* a altura das duas linhas ao lado, com uma aberta */
-  height: 170px;
+  width: 143px; /* a altura das duas linhas ao lado, com uma aberta */
+  height: 143px;
   flex: 0 0 auto;
-  border-radius: 26px;
+  border-radius: 24px;
   /* a roda de matizes: o ângulo é a matiz (0° em cima = vermelho, sentido horário), como as amostras */
   background: conic-gradient(hsl(0, 95%, 60%), hsl(60, 95%, 55%), hsl(120, 80%, 52%), hsl(180, 90%, 52%), hsl(240, 95%, 64%), hsl(300, 90%, 62%), hsl(360, 95%, 60%));
   cursor: crosshair;
@@ -1566,7 +1566,7 @@ body.is-org-dragging * {
 .swatch-tile::before {
   position: absolute;
   inset: 9px;
-  border-radius: 18px;
+  border-radius: 15px;
   background: var(--wheel, transparent);
   content: "";
   transition: background 120ms linear;
@@ -1575,7 +1575,7 @@ body.is-org-dragging * {
 .swatch-tile::after {
   position: absolute;
   inset: 9px;
-  border-radius: 18px;
+  border-radius: 15px;
   background: rgb(255 255 255 / 30%); /* o miolo aparece por trás, suave */
   backdrop-filter: blur(26px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
   box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
@@ -1588,10 +1588,10 @@ body.is-org-dragging * {
   z-index: 1;
   top: 50%;
   left: 50%;
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px; /* o centro da amostra no ponto */
-  border: 4px solid white;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px; /* o centro da amostra no ponto */
+  border: 3px solid white;
   border-radius: 50%;
   background: var(--dot, #5184f8);
   box-shadow: 0 2px 8px rgb(20 30 70 / 30%);
