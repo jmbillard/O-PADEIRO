@@ -451,7 +451,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			tools.appendChild(group);
 		});
-		fitLabels();
 	}
 
 	/* =========================================================
@@ -524,47 +523,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (old) old.remove();
 
-		var cols = document.body.classList.contains('is-icons') || ICON_MEDIA.matches ? 1 : 3;
+		var cols = ICON_MEDIA.matches ? 1 : 3;
 		var rest = box.children.length % cols;
 
 		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // sem linha cheia: nada
 	}
 
-	// 100% vertical: se algum nome não cabe, a barra mostra só os ícones (o nome fica na dica)
-	var LIST_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 159px)');
-	var ICON_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 139px)'); // só ícones pelo css
+	// 100% vertical e bem estreita: só os ícones (css); a quebra dos links muda junto
+	var ICON_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 99px)');
 
-	// o AE não desenha o painel com menos de ~132px e corta a sobra: se a janela nativa (outerWidth) for
-	// menor que a página, é ela que aparece; o css centraliza o bloco de ícones nela
-	function fitVisible() {
-		var outer = window.outerWidth;
-
-		if (outer > 40 && outer < window.innerWidth) document.body.style.setProperty('--bar-visible', outer + 'px');
-		else document.body.style.removeProperty('--bar-visible');
-	}
-
-	function fitLabels() {
-		var body = document.body;
-
-		fitVisible();
-		var was = body.classList.contains('is-icons');
-		var cut = false;
-
-		if (LIST_MEDIA.matches && !ICON_MEDIA.matches) {
-			body.classList.remove('is-icons');
-			// um nome cortado ou a coluna mais larga que a barra (no CEP a coluna pode não encolher)
-			var bar = $('bar');
-			var style = getComputedStyle(bar);
-			var room = bar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-
-			cut = $('tools').scrollWidth > room + 1 || Array.prototype.some.call(document.querySelectorAll('#tools .bar-btn, #tools .bar-label'), function (node) {
-				return node.scrollWidth > node.clientWidth + 1 || node.getBoundingClientRect().right > bar.getBoundingClientRect().right;
-			});
-		}
-		body.classList.toggle('is-icons', cut);
-		if (cut !== was || ICON_MEDIA.matches !== fitLabels.media) placeLinksBreak();
-		fitLabels.media = ICON_MEDIA.matches;
-	}
+	if (ICON_MEDIA.addListener) ICON_MEDIA.addListener(placeLinksBreak);
 
 	// os links também podem ser escondidos (configuração > ferramentas)
 	function applyLinksHidden(hidden) {
@@ -634,17 +602,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		loadLinks().then(function () {
 			if (!toolsLayout) buildTools(DEFAULT_ITEMS, []);
 		});
-		window.addEventListener('resize', fitLabels);
-		if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLabels);
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
-
-		// diagnóstico (temporário): a dica do pãozinho mostra os tamanhos que o painel informa
-		var logoTitle = $('logo').title;
-
-		$('logo').addEventListener('mouseenter', function () {
-			$('logo').title = logoTitle + '\npágina ' + window.innerWidth + ' · janela ' + window.outerWidth + ' · tela ' + screen.availWidth + ' · escala ' + window.devicePixelRatio;
-		});
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);

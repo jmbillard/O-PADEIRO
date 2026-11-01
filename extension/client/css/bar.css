@@ -515,37 +515,8 @@ body.bar-page {
   }
 }
 
-/* 100% vertical e estreita demais para os nomes: só os ícones, e os links em coluna única.
-   abaixo de 140px sempre (a coluna com nomes precisa de uns 135); acima, quando o js vê um nome cortado (.is-icons) */
-@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
-  .is-icons .bar-btn {
-    justify-content: center;
-    padding: 7px;
-  }
-
-  .is-icons .bar-btn .bar-label {
-    display: none;
-  }
-
-  .is-icons #links {
-    max-width: 26px; /* um por linha */
-  }
-}
-
-@media (max-aspect-ratio: 1/1) and (max-width: 139px) {
-  /* o AE não desenha o painel com menos de ~132px: mais estreito que isso, ele corta a sobra à direita.
-     a coluna e o pãozinho ficam num bloco de 64px encostado na esquerda, sempre à vista */
-  .bar {
-    align-items: flex-start;
-    /* --bar-visible: a largura que aparece de fato (o js tenta descobrir); sem ela, 8px de margem */
-    padding-left: max(8px, calc((var(--bar-visible, 80px) - 64px) / 2));
-  }
-
-  .bar-main,
-  .bar-info {
-    width: 64px;
-  }
-
+/* 100% vertical e bem estreita: só os ícones, e os links em coluna única (até aqui os nomes vão cortando com …) */
+@media (max-aspect-ratio: 1/1) and (max-width: 99px) {
   .bar-btn {
     justify-content: center;
     padding: 7px;
@@ -556,7 +527,7 @@ body.bar-page {
   }
 
   #links {
-    max-width: 26px;
+    max-width: 26px; /* um por linha */
   }
 }
 
