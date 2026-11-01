@@ -1839,3 +1839,74 @@ body.is-org-dragging * {
   box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
   transition: none;
 }
+
+/* =========================================================
+   organizar / coletar: a árvore continua o azul das abas, de
+   cima a baixo (sem cantos), com um divisor entre as duas; a
+   folha branca desliza para a direita ao entrar na aba
+   ========================================================= */
+
+@media (min-width: 621px) {
+  .prods {
+    --tree-w: clamp(280px, 44%, 460px);
+  }
+
+  .prods-sheet {
+    position: relative;
+    background-clip: content-box; /* o recuo da esquerda fica sem o branco: aparece o degradê da janela */
+    transition: padding-left 380ms var(--ease-soft);
+  }
+
+  .prods.has-tree .prods-sheet {
+    padding-left: var(--tree-w);
+  }
+
+  .prods.has-tree .organize-pane {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prods.has-tree .org-card {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--tree-w);
+    border: 0;
+    border-left: 1px solid rgb(255 255 255 / 26%);
+    border-radius: 0;
+    background: transparent;
+    animation: tree-in 420ms var(--ease-soft) both;
+  }
+
+  .prods.has-tree .org-eyebrow {
+    padding-top: 22px;
+  }
+
+  /* o "+ nova pasta" no pé, com o centro na altura do "Salvar" */
+  .prods.has-tree .org-foot {
+    display: flex;
+    min-height: calc(var(--footer-center) * 2);
+    align-items: center;
+    padding: 0 14px;
+  }
+}
+
+@keyframes tree-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prods-sheet,
+  .prods.has-tree .org-card {
+    animation: none;
+    transition: none;
+  }
+}

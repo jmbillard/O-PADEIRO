@@ -2554,6 +2554,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function showTab(name) {
 		state.tab = name;
 
+		// organizar e coletar: a árvore vira uma faixa azul ao lado das abas (CSS: .has-tree)
+		$('prods').classList.toggle('has-tree', name === 'organize' || name === 'collect');
+
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var on = tab.getAttribute('data-tab') === name;
 
