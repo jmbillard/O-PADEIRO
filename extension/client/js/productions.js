@@ -2334,6 +2334,51 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// cada mudança vira prévia nesta janela; as outras mudam ao salvar
+	// hex ↔ HSV (matiz 0-360, saturação e brilho 0-100), para os sliders das amostras
+	function hexToHsv(hex) {
+		var r = parseInt(hex.substr(1, 2), 16) / 255;
+		var g = parseInt(hex.substr(3, 2), 16) / 255;
+		var b = parseInt(hex.substr(5, 2), 16) / 255;
+		var max = Math.max(r, g, b);
+		var d = max - Math.min(r, g, b);
+		var h = 0;
+
+		if (d) {
+			if (max === r) h = ((g - b) / d) % 6;
+			else if (max === g) h = (b - r) / d + 2;
+			else h = (r - g) / d + 4;
+			h = (h * 60 + 360) % 360;
+		}
+
+		return { h: h, s: max ? (d / max) * 100 : 0, v: max * 100 };
+	}
+
+	function hsvToHex(h, sat, val) {
+		var s = sat / 100;
+		var v = val / 100;
+		var c = v * s;
+		var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+		var m = v - c;
+		var rgb = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+
+		return '#' + rgb.map(function (n) {
+			var t = Math.round((n + m) * 255);
+
+			return (t < 16 ? '0' : '') + t.toString(16);
+		}).join('');
+	}
+
+	// a matiz de cada amostra fica guardada: com saturação ou brilho em zero, a cor não tem matiz
+	var swatchHue = {};
+
+	function hueOf(key, hex) {
+		var hsv = hexToHsv(hex);
+
+		if (hsv.s > 0 && hsv.v > 0) swatchHue[key] = hsv.h;
+
+		return swatchHue[key] != null ? swatchHue[key] : hsv.h;
+	}
+
 	function mixHex(a, b) {
 		var out = '#';
 
@@ -2373,13 +2418,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			var key = input.getAttribute('data-key');
 			var hex = document.querySelector('[data-hex="' + key + '"]');
+			var row = hex.closest('.swatch-row');
+			var hsv = hexToHsv(a[key]);
+			var h = hueOf(key, a[key]);
+			var sat = row.querySelector('[data-sat]');
+			var val = row.querySelector('[data-val]');
 
 			input.value = a[key];
 			input.disabled = !state.available;
 			input.parentNode.style.setProperty('--dot', a[key]);
 			if (document.activeElement !== hex) hex.value = a[key];
 			hex.disabled = !state.available;
-			hex.parentNode.style.setProperty('--dot', a[key]);
+			row.style.setProperty('--dot', a[key]);
+
+			// os trilhos mostram o que cada slider faz com esta cor
+			if (document.activeElement !== sat) sat.value = Math.round(hsv.s);
+			if (document.activeElement !== val) val.value = Math.round(hsv.v);
+			sat.disabled = val.disabled = !state.available;
+			sat.style.setProperty('--track', 'linear-gradient(to right, ' + hsvToHex(h, 0, hsv.v) + ', ' + hsvToHex(h, 100, hsv.v) + ')');
+			val.style.setProperty('--track', 'linear-gradient(to right, #000, ' + hsvToHex(h, hsv.s, 100) + ')');
 		});
 
 		// degradê: as amostras de início e fim; sólido: só a cor
@@ -2427,6 +2484,44 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			input.addEventListener('input', function () {
 				changeAppearance(input.getAttribute('data-key'), input.value.toLowerCase());
+			});
+		});
+
+		// saturação e brilho: mudam a cor da amostra mantendo a matiz
+		Array.prototype.forEach.call(document.querySelectorAll('[data-sat], [data-val]'), function (range) {
+			range.addEventListener('input', function () {
+				var key = range.getAttribute('data-sat') || range.getAttribute('data-val');
+				var row = range.closest('.swatch-row');
+				var h = hueOf(key, state.appearance[key]);
+
+				changeAppearance(key, hsvToHex(h, +row.querySelector('[data-sat]').value, +row.querySelector('[data-val]').value));
+			});
+		});
+
+		// clicar na linha (amostra, nome, hex) abre os sliders dela; uma aberta por vez
+		Array.prototype.forEach.call(document.querySelectorAll('.swatch-head'), function (head) {
+			function toggle() {
+				var row = head.closest('.swatch-row');
+				var open = !row.classList.contains('is-open');
+
+				Array.prototype.forEach.call(document.querySelectorAll('.swatch-row'), function (r) {
+					var on = r === row && open;
+
+					r.classList.toggle('is-open', on);
+					r.querySelector('.swatch-head').setAttribute('aria-expanded', on ? 'true' : 'false');
+					r.querySelector('.swatch-sliders').hidden = !on;
+				});
+			}
+
+			head.addEventListener('click', function (e) {
+				if (e.target.matches('input') && head.closest('.swatch-row').classList.contains('is-open')) return; // editando o hex
+				toggle();
+			});
+			head.addEventListener('keydown', function (e) {
+				if ((e.key === 'Enter' || e.key === ' ') && e.target === head) {
+					e.preventDefault();
+					toggle();
+				}
 			});
 		});
 

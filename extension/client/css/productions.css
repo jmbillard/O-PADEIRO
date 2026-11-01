@@ -1545,27 +1545,27 @@ body.is-org-dragging * {
 /* aba APARÊNCIA */
 .app-swatch {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 /* o quadradinho: o espectro na borda, branco no meio */
 .swatch-tile {
   position: relative;
-  width: 92px;
-  height: 92px;
+  width: 150px;
+  height: 150px;
   flex: 0 0 auto;
-  border-radius: 20px;
+  border-radius: 26px;
   background: conic-gradient(from 210deg, #ff3b3b, #ffd23b, #46e05a, #36d9ff, #4b6bff, #c64bff, #ff3bb0, #ff3b3b);
   box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
 }
 
 .swatch-tile::after {
   position: absolute;
-  inset: 7px;
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: 0 0 6px 2px var(--surface);
+  inset: 9px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 62%); /* o espectro aparece por trás, suave */
+  box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
   content: "";
 }
 
@@ -1573,11 +1573,11 @@ body.is-org-dragging * {
 .swatch-dot {
   position: absolute;
   z-index: 1;
-  top: 16px;
-  left: 16px;
-  width: 30px;
-  height: 30px;
-  border: 3px solid white;
+  top: 24px;
+  left: 24px;
+  width: 44px;
+  height: 44px;
+  border: 4px solid white;
   border-radius: 50%;
   background: var(--dot, #5184f8);
   box-shadow: 0 2px 8px rgb(20 30 70 / 30%);
@@ -1587,7 +1587,7 @@ body.is-org-dragging * {
 
 .swatch-dot.is-second {
   z-index: 2;
-  left: 38px;
+  left: 56px;
 }
 
 .swatch-dot:hover {
@@ -1607,45 +1607,134 @@ body.is-org-dragging * {
   cursor: pointer;
 }
 
-/* o hex de cada amostra, ao lado */
-.swatch-hexes {
+/* cada amostra ao lado: a cor, o nome e o hex; clicando, abrem saturação e brilho */
+.swatch-rows {
   display: grid;
-  gap: 6px;
-}
-
-.swatch-hex {
-  display: flex;
-  align-items: center;
+  min-width: 0;
+  flex: 1;
+  max-width: 420px;
   gap: 8px;
 }
 
-.swatch-hex[hidden] {
+.swatch-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.swatch-row[hidden] {
   display: none;
 }
 
-.swatch-hex::before {
-  width: 12px;
-  height: 12px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--dot, #5184f8);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 10%);
-  content: "";
+.swatch-row.is-open {
+  border-color: var(--blue-200);
+  box-shadow: 0 8px 22px rgb(30 42 80 / 8%);
 }
 
-.swatch-hex span {
-  width: 42px;
+.swatch-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 10px;
+  border-radius: var(--radius-medium);
+  cursor: pointer;
+  outline: none;
+}
+
+.swatch-head:hover {
+  background: var(--surface-soft);
+}
+
+.swatch-head:focus-visible {
+  box-shadow: 0 0 0 3px rgb(79 130 255 / 22%);
+}
+
+.swatch-mini {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--dot, #5184f8);
+  box-shadow: 0 1px 5px rgb(20 30 70 / 30%);
+}
+
+.swatch-name {
+  flex: 1;
   color: var(--text-label);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.swatch-head .cfg-input {
+  width: 104px;
+  min-height: 32px;
+  padding: 4px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+.swatch-chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform 240ms var(--ease-soft);
+}
+
+.swatch-row.is-open .swatch-chevron {
+  transform: rotate(180deg);
+}
+
+.swatch-sliders {
+  display: grid;
+  gap: 10px;
+  padding: 4px 14px 14px 44px;
+}
+
+.swatch-sliders[hidden] {
+  display: none;
+}
+
+.swatch-slider {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
   font-weight: 650;
 }
 
-.swatch-hex .cfg-input {
-  width: 104px;
-  min-height: 34px;
-  padding: 5px 10px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
+/* o trilho mostra o que o slider faz com a cor (--track, do JS) */
+.swatch-slider input[type="range"] {
+  width: 100%;
+  height: 12px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--track, var(--border));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.swatch-slider input[type="range"]::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--dot, #5184f8);
+  box-shadow: 0 1px 5px rgb(20 30 70 / 40%);
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* prévia: o fundo das janelas (degradê ou sólido) com um botão de destaque */
