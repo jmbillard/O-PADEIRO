@@ -1556,7 +1556,9 @@ body.is-org-dragging * {
   height: 170px;
   flex: 0 0 auto;
   border-radius: 26px;
-  background: conic-gradient(from 210deg, #ff3b3b, #ffd23b, #46e05a, #36d9ff, #4b6bff, #c64bff, #ff3bb0, #ff3b3b);
+  /* a roda de matizes: o ângulo é a matiz (0° em cima = vermelho, sentido horário), como as amostras */
+  background: conic-gradient(hsl(0, 95%, 60%), hsl(60, 95%, 55%), hsl(120, 80%, 52%), hsl(180, 90%, 52%), hsl(240, 95%, 64%), hsl(300, 90%, 62%), hsl(360, 95%, 60%));
+  cursor: crosshair;
   box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
 }
 
@@ -1570,25 +1572,37 @@ body.is-org-dragging * {
   content: "";
 }
 
-/* as amostras: círculos sólidos com contorno branco, sobrepostos no canto */
+/* as amostras: círculos sólidos com contorno branco, sobre a própria matiz (o js posiciona) */
 .swatch-dot {
   position: absolute;
   z-index: 1;
-  top: 24px;
-  left: 24px;
+  top: 50%;
+  left: 50%;
   width: 44px;
   height: 44px;
+  margin: -22px 0 0 -22px; /* o centro da amostra no ponto */
   border: 4px solid white;
   border-radius: 50%;
   background: var(--dot, #5184f8);
   box-shadow: 0 2px 8px rgb(20 30 70 / 30%);
-  cursor: pointer;
+  cursor: grab;
   transition: transform 200ms var(--ease-soft);
 }
 
 .swatch-dot.is-second {
   z-index: 2;
-  left: 56px;
+}
+
+/* arrastando: a amostra acompanha o mouse */
+.swatch-tile.is-dragging,
+.swatch-tile.is-dragging .swatch-dot,
+.swatch-tile.is-dragging .swatch-dot input {
+  cursor: grabbing;
+}
+
+.swatch-dot.is-dragging {
+  z-index: 3;
+  transform: scale(1.12);
 }
 
 .swatch-dot:hover {
@@ -1621,7 +1635,7 @@ body.is-org-dragging * {
   width: 100%;
   height: 100%;
   opacity: 0;
-  cursor: pointer;
+  cursor: grab;
 }
 
 /* cada amostra ao lado: a cor, o nome e o hex; clicando, abrem saturação e brilho */

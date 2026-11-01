@@ -2447,6 +2447,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			input.disabled = !state.available || off;
 			input.parentNode.style.setProperty('--dot', a[key]);
 			input.parentNode.classList.toggle('is-disabled', off);
+			placeSwatchDot(input.parentNode, h);
 			if (document.activeElement !== hex) hex.value = a[key];
 			hex.disabled = !state.available || off;
 			row.style.setProperty('--dot', a[key]);
@@ -2488,6 +2489,98 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('app-logo-reset').hidden = !a.logo;
 	}
 
+	// a amostra fica sobre a própria matiz, num círculo em volta do centro do quadradinho
+	var SWATCH_RING = 54;
+
+	// a partir do centro (o css centraliza a amostra em 50% / 50%): funciona com a aba ainda escondida
+	function placeSwatchDot(dot, hue) {
+		var a = hue * Math.PI / 180;
+
+		dot.style.left = 'calc(50% + ' + (SWATCH_RING * Math.sin(a)).toFixed(1) + 'px)';
+		dot.style.top = 'calc(50% - ' + (SWATCH_RING * Math.cos(a)).toFixed(1) + 'px)';
+	}
+
+	// arrastar uma amostra (ou clicar/arrastar no quadradinho, para a linha aberta) muda só a matiz;
+	// o CEP não entrega pointer events: mouse events
+	function bindSwatchDrag() {
+		var tile = document.querySelector('.swatch-tile');
+		var drag = null;
+
+		if (!tile) return;
+
+		function hueAt(e) {
+			var box = tile.getBoundingClientRect();
+			var dx = e.clientX - (box.left + box.width / 2);
+			var dy = e.clientY - (box.top + box.height / 2);
+
+			return (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+		}
+
+		function apply(e) {
+			var key = slotKey(drag.slot);
+			var hsv = hexToHsv(state.appearance[key]);
+			var h = hueAt(e);
+
+			swatchHue[key] = h;
+			// sem saturação ou brilho a matiz não aparece: volta a ter cor
+			changeAppearance(key, hsvToHex(h, hsv.s < 8 ? 70 : hsv.s, hsv.v < 8 ? 80 : hsv.v));
+		}
+
+		function move(e) {
+			if (!drag) return;
+			if (!drag.moved && Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 4) return;
+			drag.moved = true;
+			tile.classList.add('is-dragging');
+			drag.dot.classList.add('is-dragging');
+			apply(e);
+		}
+
+		function up() {
+			if (!drag) return;
+			document.removeEventListener('mousemove', move);
+			document.removeEventListener('mouseup', up);
+			tile.classList.remove('is-dragging');
+			drag.dot.classList.remove('is-dragging');
+			// arrastou: o clique que vem depois não abre o seletor de cor
+			if (drag.moved) {
+				var swallow = function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+				};
+
+				tile.addEventListener('click', swallow, true);
+				setTimeout(function () {
+					tile.removeEventListener('click', swallow, true);
+				}, 0);
+			}
+			drag = null;
+		}
+
+		tile.addEventListener('mousedown', function (e) {
+			var dot = e.target.closest('.swatch-dot');
+			var open = document.querySelector('.swatch-row.is-open:not(.is-disabled)');
+
+			if (e.button !== 0 || !state.available) return;
+			if (!dot && !open) return;
+			if (!dot) dot = tile.querySelector('.swatch-dot[data-slot="' + open.getAttribute('data-slot') + '"]');
+			if (!dot || dot.classList.contains('is-disabled')) return;
+
+			drag = { dot: dot, slot: dot.getAttribute('data-slot'), x: e.clientX, y: e.clientY, moved: false };
+			openSwatchRow(document.querySelector('.swatch-row[data-slot="' + drag.slot + '"]'));
+			document.addEventListener('mousemove', move);
+			document.addEventListener('mouseup', up);
+
+			// no fundo do quadradinho o clique já leva a amostra até ali
+			if (!e.target.closest('.swatch-dot')) {
+				e.preventDefault();
+				drag.moved = true;
+				tile.classList.add('is-dragging');
+				dot.classList.add('is-dragging');
+				apply(e);
+			}
+		});
+	}
+
 	function openSwatchRow(row) {
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-row'), function (r) {
 			var on = r === row;
@@ -2515,6 +2608,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				if (e.target.name === pair[0]) changeAppearance(pair[1], e.target.value);
 			});
 		});
+
+		bindSwatchDrag();
 
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			input.addEventListener('input', function () {
