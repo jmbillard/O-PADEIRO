@@ -1864,10 +1864,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		out.forEach(function (key) {
 			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']] : TOOL_INFO[key];
-			var card = el('div', 'tool-card');
-			var text = el('span', 'tool-text');
+			var card = el('div', 'org-type tool-card');
+			var text = el('span', 'org-type-text');
 			var icon = svg(info[2]);
-			var add = el('button', 'mini-button tool-add');
+			var add = el('button', 'tool-add');
 
 			icon.setAttribute('aria-hidden', 'true');
 			card.appendChild(icon);
