@@ -276,51 +276,6 @@ body.prods-page {
   }
 }
 
-/* organizar e coletar: a árvore entra no cartão, ao lado das abas, separada por um divisor; o cartão se
-   alarga (a largura anima) */
-.prods-tree-slot {
-  display: flex;
-  width: 0;
-  min-height: 0;
-  flex-direction: column;
-  overflow: hidden;
-  border-left: 1px solid transparent;
-  transition:
-    width 420ms var(--ease-soft),
-    border-color 300ms ease;
-}
-
-.prods.has-tree .prods-tree-slot {
-  width: var(--tree-w, 380px);
-  border-left-color: rgb(255 255 255 / 22%);
-}
-
-.prods-tree-slot .org-card {
-  width: var(--tree-w, 380px); /* largura final desde o começo: o conteúdo não se espreme enquanto o cartão abre */
-  min-width: var(--tree-w, 380px);
-  flex: 1;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  animation: tree-in 420ms var(--ease-soft) both;
-}
-
-.prods-tree-slot .org-foot {
-  border-top-color: rgb(255 255 255 / 16%);
-}
-
-@keyframes tree-in {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 /* o rodapé do cartão (recarregar e "⋯"), como o dos templates; o menu abre para cima */
 .prods-top .menu-popover {
   top: auto;
@@ -336,7 +291,7 @@ body.prods-page {
   background: var(--surface);
 }
 
-/* janela estreita: o cartão vira uma fila no topo (abas que rolam + os botões); a árvore fica na aba */
+/* janela estreita: o cartão vira uma fila no topo (abas que rolam + os botões) */
 @media (max-width: 760px) {
   .prods {
     grid-template-columns: minmax(0, 1fr);
@@ -347,8 +302,7 @@ body.prods-page {
     padding: 12px 12px 10px;
   }
 
-  .prods-eyebrow,
-  .prods-tree-slot {
+  .prods-eyebrow {
     display: none;
   }
 
@@ -1906,7 +1860,3 @@ body.is-org-dragging * {
   transition: none;
 }
 
-/* a árvore está no cartão das abas: a aba fica só com a coluna da direita */
-.prods.has-tree .organize-pane {
-  grid-template-columns: minmax(0, 1fr);
-}

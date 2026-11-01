@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em onze abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **coletar**, **busca**, **projeto**, **aparência** e **ferramentas**. as abas ficam num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar e o `⋯` no rodapé dele. em **organizar** e **coletar**, o cartão se alarga e a árvore aparece ao lado das abas. em janela estreita, o cartão vira uma fila no topo.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) reúne o que vale para a equipe toda, em onze abas: **produções**, **links**, **logs**, **drives**, **renomear**, **organizar**, **coletar**, **busca**, **projeto**, **aparência** e **ferramentas**. as abas ficam num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar e o `⋯` no rodapé dele. em janela estreita, o cartão vira uma fila no topo.
 
 > 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links → links). tudo fica no mesmo arquivo compartilhado, `O_PADEIRO_config.json`, e é gravado junto em '*Salvar*' (ou `Ctrl/Cmd+S`).
 
