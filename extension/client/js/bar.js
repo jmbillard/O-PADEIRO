@@ -514,7 +514,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		// começa na coluna 1 (CSS: #links .row-start, só no layout vertical)
 		var rest = links.length % 3;
 
-		if (rest) box.children[rest].classList.add('row-start');
+		if (rest && box.children[rest]) box.children[rest].classList.add('row-start'); // com 1 ou 2 links não há linha cheia
 
 		box.hidden = !links.length;
 		$('links-divider').hidden = !links.length;

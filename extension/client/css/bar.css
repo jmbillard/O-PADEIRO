@@ -42,12 +42,20 @@ body.bar-page {
   gap: 10px;
 }
 
-.bar-main> :first-child {
-  margin-left: auto;
+/* centraliza o conteúdo com margens automáticas em duas pontas vazias (e não no primeiro/último item:
+   o bloco de links pode estar escondido); o -10px desconta o gap que elas criam */
+.bar-main::before,
+.bar-main::after {
+  flex: 0 0 auto;
+  content: "";
 }
 
-.bar-main> :last-child {
-  margin-right: auto;
+.bar-main::before {
+  margin: 0 -10px 0 auto;
+}
+
+.bar-main::after {
+  margin: 0 auto 0 -10px;
 }
 
 /* logo: na ponta direita (na vertical, embaixo) */
@@ -380,12 +388,12 @@ body.bar-page {
     flex-direction: column;
   }
 
-  .bar-main> :first-child {
-    margin: auto 0 0;
+  .bar-main::before {
+    margin: auto 0 -10px;
   }
 
-  .bar-main> :last-child {
-    margin: 0 0 auto;
+  .bar-main::after {
+    margin: -10px 0 auto;
   }
 
   .bar-group {
