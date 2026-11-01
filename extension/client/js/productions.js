@@ -2463,6 +2463,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		ensureSwatchOpen();
+		updateSwatchWheel();
 
 		$('app-font').value = a.font;
 		$('app-font').disabled = !state.available;
@@ -2581,6 +2582,27 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	// o miolo do quadradinho segue a saturação e o brilho da cor ativa (a da linha aberta)
+	function updateSwatchWheel() {
+		var tile = document.querySelector('.swatch-tile');
+		var row = document.querySelector('.swatch-row.is-open');
+		var a = state.appearance;
+
+		if (!tile || !row || !a) return;
+
+		var slot = row.getAttribute('data-slot');
+		var hsv = hexToHsv(a[slotKey(slot)]);
+		var stops = [];
+
+		// a amostra ativa fica por cima da outra
+		Array.prototype.forEach.call(tile.querySelectorAll('.swatch-dot'), function (dot) {
+			dot.classList.toggle('is-active', dot.getAttribute('data-slot') === slot);
+		});
+
+		for (var h = 0; h <= 360; h += 30) stops.push(hsvToHex(h % 360, hsv.s, hsv.v));
+		tile.style.setProperty('--wheel', 'conic-gradient(' + stops.join(', ') + ')');
+	}
+
 	function openSwatchRow(row) {
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-row'), function (r) {
 			var on = r === row;
@@ -2589,6 +2611,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			r.querySelector('.swatch-head').setAttribute('aria-expanded', on ? 'true' : 'false');
 			r.querySelector('.swatch-sliders').hidden = !on;
 		});
+		updateSwatchWheel();
 	}
 
 	// sempre uma linha aberta (e não a desabilitada): a primeira, se for preciso

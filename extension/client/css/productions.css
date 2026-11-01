@@ -1562,11 +1562,21 @@ body.is-org-dragging * {
   box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
 }
 
+/* o miolo: a mesma roda, na saturação e no brilho da cor ativa (o js preenche --wheel) */
+.swatch-tile::before {
+  position: absolute;
+  inset: 9px;
+  border-radius: 18px;
+  background: var(--wheel, transparent);
+  content: "";
+  transition: background 120ms linear;
+}
+
 .swatch-tile::after {
   position: absolute;
   inset: 9px;
   border-radius: 18px;
-  background: rgb(255 255 255 / 55%); /* o espectro aparece por trás, suave */
+  background: rgb(255 255 255 / 30%); /* o miolo aparece por trás, suave */
   backdrop-filter: blur(26px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
   box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
   content: "";
@@ -1589,7 +1599,7 @@ body.is-org-dragging * {
   transition: transform 200ms var(--ease-soft);
 }
 
-.swatch-dot.is-second {
+.swatch-dot.is-active {
   z-index: 2;
 }
 
