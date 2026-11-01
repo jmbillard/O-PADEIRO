@@ -1837,6 +1837,21 @@ body.is-org-dragging * {
   background: rgb(255 255 255 / 45%);
 }
 
+.bar-row .mini-button {
+  margin-left: auto;
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 12%);
+  color: white;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+/* o × aparece com o mouse em cima (ou com o foco) */
+.bar-row:hover .mini-button,
+.bar-row .mini-button:focus-visible {
+  opacity: 1;
+}
+
 .bar-row.is-divider .mini-button {
   border-color: rgb(255 255 255 / 30%);
   background: rgb(255 255 255 / 12%);
@@ -1908,4 +1923,16 @@ body.is-org-dragging * {
   font-size: 0.7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tool-card .tool-add {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tool-cards-empty {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
 }

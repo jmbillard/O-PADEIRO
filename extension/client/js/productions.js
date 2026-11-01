@@ -1779,6 +1779,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	// a ferramenta (ou os links) sai da barra: vira um bloco no lado branco
+	function removeFromBar(key) {
+		toggleHidden(key, false);
+		renderTools();
+		updateDirty();
+	}
+
 	function renderTools() {
 		var list = $('tool-list');
 
@@ -1786,21 +1793,31 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		var disabled = !state.available;
 		var cards = $('tool-cards');
+		var linksShown = state.bar.hidden.indexOf('links') < 0;
 
 		list.textContent = '';
 		cards.textContent = '';
-		$('bar-links').checked = state.bar.hidden.indexOf('links') < 0;
-		$('bar-links').disabled = disabled;
 		$('btn-new-divider').disabled = disabled;
 
-		// os links, no começo (não se arrastam)
-		if (state.bar.hidden.indexOf('links') < 0) {
+		function removeButton(title, onClick) {
+			var btn = miniButton('remove', title, onClick);
+
+			btn.disabled = disabled;
+
+			return btn;
+		}
+
+		// os links, no começo (não se arrastam; o × tira)
+		if (linksShown) {
 			var links = el('div', 'bar-row is-links');
 			var chain = svg(['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']);
 
 			chain.setAttribute('aria-hidden', 'true');
 			links.appendChild(chain);
 			links.appendChild(el('span', 'bar-row-label', 'links'));
+			links.appendChild(removeButton('tirar os links da barra', function () {
+				removeFromBar('links');
+			}));
 			list.appendChild(links);
 			list.appendChild(el('div', 'bar-row-rule'));
 		}
@@ -1812,7 +1829,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			row.appendChild(PAD_SORT.handle());
 
 			if (key === 'divider') {
-				var remove = miniButton('remove', 'tirar o separador', function () {
+				row.classList.add('is-divider');
+				row.appendChild(el('span', 'bar-row-line'));
+				row.appendChild(removeButton('tirar o separador', function () {
 					var at = -1;
 					var seen = -1;
 
@@ -1824,57 +1843,63 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					if (at >= 0) state.bar.items.splice(at, 1);
 					renderTools();
 					updateDirty();
-				});
-
-				row.classList.add('is-divider');
-				row.appendChild(el('span', 'bar-row-line'));
-				remove.disabled = disabled;
-				row.appendChild(remove);
+				}));
 			} else {
 				row.appendChild(svgTool(key));
 				row.appendChild(el('span', 'bar-row-label', (TOOL_INFO[key] || [key])[0]));
+				row.appendChild(removeButton('tirar ' + (TOOL_INFO[key] || [key])[0] + ' da barra', function () {
+					removeFromBar(key);
+				}));
 			}
 
 			list.appendChild(row);
 		});
 
-		// as ferramentas (direita): cartão com o que fazem e o interruptor
-		Object.keys(TOOL_INFO).forEach(function (key) {
-			var info = TOOL_INFO[key];
+		// fora da barra (direita): um bloco por ferramenta tirada; o + põe de volta, no fim da barra
+		var out = Object.keys(TOOL_INFO).filter(function (key) {
+			return state.bar.hidden.indexOf(key) >= 0;
+		});
+
+		if (!linksShown) out.unshift('links');
+
+		out.forEach(function (key) {
+			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']] : TOOL_INFO[key];
 			var card = el('div', 'tool-card');
 			var text = el('span', 'tool-text');
-			var label = el('label', 'cfg-switch');
-			var input = el('input');
-			var shown = state.bar.hidden.indexOf(key) < 0;
+			var icon = svg(info[2]);
+			var add = el('button', 'mini-button tool-add');
 
-			card.classList.toggle('is-off', !shown);
-			card.appendChild(svgTool(key));
+			icon.setAttribute('aria-hidden', 'true');
+			card.appendChild(icon);
 			text.appendChild(el('strong', null, info[0]));
 			text.appendChild(el('span', null, info[1]));
-			input.type = 'checkbox';
-			input.checked = shown;
-			input.disabled = disabled;
-			input.addEventListener('change', function () {
-				toggleHidden(key, input.checked);
+			card.appendChild(text);
+			add.type = 'button';
+			add.textContent = '+';
+			add.title = 'pôr ' + info[0] + ' de volta na barra' + (key === 'links' ? '' : ' (no fim)');
+			add.setAttribute('aria-label', add.title);
+			add.disabled = disabled;
+			add.addEventListener('click', function () {
+				toggleHidden(key, true);
+
+				// volta no fim da barra
+				if (key !== 'links') {
+					state.bar.items = state.bar.items.filter(function (k) {
+						return k !== key;
+					}).concat([key]);
+				}
+
 				renderTools();
 				updateDirty();
 			});
-			label.title = (shown ? 'tirar ' : 'pôr ') + info[0] + (shown ? ' da barra' : ' na barra') + ' (de todo mundo)';
-			label.appendChild(input);
-			label.appendChild(el('span', 'cfg-switch-track'));
-			card.appendChild(text);
-			card.appendChild(label);
+			card.appendChild(add);
 			cards.appendChild(card);
 		});
+
+		if (!out.length) cards.appendChild(el('p', 'tool-cards-empty', 'todas as ferramentas estão na barra.'));
 	}
 
 	function bindTools() {
-		$('bar-links').addEventListener('change', function () {
-			toggleHidden('links', this.checked);
-			renderTools();
-			updateDirty();
-		});
-
 		// um separador novo entra no fim; arraste para o lugar
 		$('btn-new-divider').addEventListener('click', function () {
 			state.bar.items.push('divider');

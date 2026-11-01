@@ -226,12 +226,12 @@ a aba **aparência** define o visual de todas as janelas do padeiro, para a equi
 
 ## 📍 ferramentas
 
-a aba **ferramentas** monta a barra de todo mundo, no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, as **ferramentas**.
+a aba **ferramentas** monta a barra de todo mundo, no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
 - **ordem** → arraste cada ferramenta da barra pelos pontinhos.
+- **tirar** → o **×** de uma ferramenta (ou dos links, no topo) tira ela da barra; passe o mouse para ver o ×.
+- **fora da barra** → cada ferramenta tirada vira um bloco à direita, com o que ela faz; o **+** põe de volta, no fim da barra (os links voltam ao começo).
 - **separadores** → '*+ separador*' (no pé da barra) acrescenta um no fim; arraste para o lugar. cada separador vira uma divisória na barra; o **×** tira. um grupo sem nenhuma ferramenta some junto com a divisória.
-- **ferramentas** → o interruptor de cada cartão põe ou tira a ferramenta da barra (a que sai volta no fim da barra quando entra de novo).
-- **links** → '*mostrar os links no começo da barra*' esconde ou mostra o bloco de links (no topo da barra, quando aparece).
 
 > 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.
 
