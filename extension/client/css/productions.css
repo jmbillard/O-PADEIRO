@@ -19,9 +19,8 @@ body.prods-page {
 .prods {
   display: grid;
   height: 100%;
-  grid-template-columns: 168px minmax(0, 1fr);
+  grid-template-columns: 184px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
-  padding: 14px 0 0;
 }
 
 /* abas na vertical, no degradê à esquerda da folha */
@@ -29,7 +28,7 @@ body.prods-page {
   grid-column: 1;
   grid-row: 1;
   min-height: 0;
-  padding: 4px 12px 14px 14px;
+  padding: 18px 12px 14px 14px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -48,7 +47,8 @@ body.prods-page {
 
 .prods-nav .tab {
   justify-content: flex-start;
-  padding: 9px 10px;
+  gap: 10px;
+  padding: 8px 10px;
   border-radius: var(--radius-small);
   letter-spacing: 0.12em;
   text-align: left;
@@ -63,6 +63,184 @@ body.prods-page {
 
 .prods-nav .tab[aria-selected="true"] {
   background: rgb(255 255 255 / 16%);
+}
+
+/* o ícone no lugar da bolinha */
+.prods-nav .tab::before {
+  display: none;
+}
+
+.prods-nav .tab svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.prods-nav .tab svg * {
+  transform-box: fill-box;
+}
+
+/* animações dos ícones (as mesmas ideias da barra) */
+.ti-sheet .ti-row,
+.ti-sheet .ti-col,
+.ti-link path,
+.ti-folder .ti-front,
+.ti-layers path,
+.ti-collect .ti-file1,
+.ti-collect .ti-file2,
+.ti-lens,
+.ti-palette,
+.ti-knob {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.tab:hover .ti-sheet .ti-row {
+  transform: translateY(2px);
+}
+
+.tab:hover .ti-sheet .ti-col {
+  transform: translateX(2px);
+}
+
+.tab:hover .ti-link .ti-link-a {
+  transform: translate(1.2px, -1.2px);
+}
+
+.tab:hover .ti-link .ti-link-b {
+  transform: translate(-1.2px, 1.2px);
+}
+
+.ti-log .ti-line {
+  transform-origin: 0 50%;
+}
+
+.tab:hover .ti-log .ti-line {
+  animation: ti-write 160ms ease-out backwards;
+}
+
+.tab:hover .ti-log .ti-line:nth-of-type(2) {
+  animation-delay: 100ms;
+}
+
+.tab:hover .ti-log .ti-line:nth-of-type(3) {
+  animation-delay: 200ms;
+}
+
+.ti-folder .ti-front {
+  transform-origin: 50% 100%;
+}
+
+.tab:hover .ti-folder .ti-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+.ti-type .ti-char {
+  transform-origin: 0 50%;
+}
+
+.tab:hover .ti-type .ti-char {
+  animation: ti-write 140ms ease-out backwards;
+}
+
+.tab:hover .ti-type .ti-char:nth-of-type(2) {
+  animation-delay: 110ms;
+}
+
+.tab:hover .ti-type .ti-char:nth-of-type(3) {
+  animation-delay: 220ms;
+}
+
+.tab:hover .ti-layers .ti-top {
+  transform: translateY(-2.6px);
+}
+
+.tab:hover .ti-layers .ti-bottom {
+  transform: translateY(2.6px);
+}
+
+.ti-collect .ti-file1,
+.ti-collect .ti-file2 {
+  transform-origin: 50% 100%;
+}
+
+.tab:hover .ti-collect .ti-file1 {
+  transform: translateY(-1.4px) rotate(-6deg);
+}
+
+.tab:hover .ti-collect .ti-file2 {
+  transform: translateY(-1px) rotate(5deg);
+}
+
+.ti-lens {
+  transform-origin: 40% 40%;
+}
+
+.tab:hover .ti-lens {
+  transform: translate(-1.5px, -1.5px) rotate(-8deg);
+}
+
+.ti-clap-top {
+  transform-origin: 0 100%;
+}
+
+.tab:hover .ti-clap-top {
+  animation: ti-clap 620ms var(--ease-soft);
+}
+
+.tab:hover .ti-palette {
+  transform: rotate(-14deg);
+}
+
+.tab:hover .ti-k1 {
+  transform: translateX(8px);
+}
+
+.tab:hover .ti-k2 {
+  transform: translateX(-7px);
+}
+
+.tab:hover .ti-k3 {
+  transform: translateX(5px);
+}
+
+@keyframes ti-write {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ti-clap {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  35% {
+    transform: rotate(-18deg);
+  }
+
+  60% {
+    transform: rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prods-nav .tab svg * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* recarregar e "⋯" no pé da coluna das abas, com o centro na altura do "Salvar" */
@@ -93,7 +271,6 @@ body.prods-page {
   grid-row: 1 / span 2;
   min-height: 0;
   flex-direction: column;
-  border-top-left-radius: var(--radius-large);
   background: var(--surface);
 }
 
@@ -137,7 +314,14 @@ body.prods-page {
   .prods-sheet {
     grid-column: 1 / span 2;
     grid-row: 2;
-    border-top-left-radius: 0;
+  }
+
+  .prods-nav {
+    padding-top: 14px;
+  }
+
+  .prods-top {
+    padding-top: 14px;
   }
 }
 
