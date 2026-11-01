@@ -82,6 +82,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	var ICONS = {
+		add: ['M12 5.5v13M5.5 12h13'],
 		remove: ['M6 6l12 12M18 6 6 18'],
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
 	};
@@ -1867,15 +1868,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var card = el('div', 'org-type tool-card');
 			var text = el('span', 'org-type-text');
 			var icon = svg(info[2]);
-			var add = el('button', 'tool-add');
+			var add = miniButton('add', '', function () { });
 
 			icon.setAttribute('aria-hidden', 'true');
 			card.appendChild(icon);
 			text.appendChild(el('strong', null, info[0]));
 			text.appendChild(el('span', null, info[1]));
 			card.appendChild(text);
-			add.type = 'button';
-			add.textContent = '+';
+			add.classList.add('tool-add');
 			add.title = 'pôr ' + info[0] + ' de volta na barra' + (key === 'links' ? '' : ' (no fim)');
 			add.setAttribute('aria-label', add.title);
 			add.disabled = disabled;

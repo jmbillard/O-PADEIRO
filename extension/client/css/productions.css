@@ -1870,32 +1870,23 @@ body.is-org-dragging * {
   transition: none;
 }
 
-/* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + sem círculo */
+/* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + como os botões dentro dos campos */
 .org-type.tool-card {
   cursor: default;
 }
 
-.tool-add {
+.tool-add.mini-button {
+  width: 28px;
+  height: 28px;
   margin-left: auto;
-  padding: 0 2px;
-  border: 0;
+  border-color: transparent;
   background: transparent;
-  color: var(--blue-500);
-  cursor: pointer;
-  font: inherit;
-  font-size: 1.1rem;
-  font-weight: 650;
-  line-height: 1;
-  transition: transform 220ms var(--ease-soft);
+  color: var(--text-tertiary);
 }
 
-.tool-add:hover:not(:disabled) {
-  transform: scale(1.25);
-}
-
-.tool-add:disabled {
-  opacity: 0.4;
-  cursor: default;
+.tool-add.mini-button:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
 }
 
 .tool-cards-empty {
@@ -1903,4 +1894,9 @@ body.is-org-dragging * {
   margin: 4px 0 0;
   color: var(--text-tertiary);
   font-size: 0.74rem;
+}
+
+/* "+ separador" logo abaixo dos blocos, como o "+ novo output" */
+#btn-new-divider {
+  margin-top: 4px;
 }
