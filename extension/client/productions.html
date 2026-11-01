@@ -312,17 +312,25 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="app-defaults">restaurar a aparência padrão</button>
 			</div>
 
-			<!-- aba FERRAMENTAS (a barra: ordem, grupos e o que aparece) -->
-			<div class="cfg-pane drives-pane" id="pane-tools" role="tabpanel" hidden>
-				<p class="cfg-title prods-section-title">barra</p>
-				<p class="cfg-hint">as ferramentas na barra de todo mundo, nesta ordem. arraste pelos pontinhos para reordenar; o interruptor mostra ou esconde a ferramenta; os separadores dividem a barra em grupos (um grupo sem nenhuma ferramenta visível some junto com o separador).</p>
-				<label class="cfg-switch tools-links">
-					<input type="checkbox" id="bar-links">
-					<span class="cfg-switch-track"></span>
-					<span class="cfg-switch-label">mostrar os links no começo da barra</span>
-				</label>
-				<div class="tool-rows" id="tool-list"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-divider">+ separador</button>
+			<!-- aba FERRAMENTAS: à esquerda, a barra em fila única (azul, como a própria barra); à direita, as ferramentas -->
+			<div class="cfg-pane organize-pane" id="pane-tools" role="tabpanel" hidden>
+				<div class="org-card tools-card">
+					<div class="tools-bar" id="tool-list" aria-label="A barra, na ordem"></div>
+					<div class="org-foot">
+						<button type="button" class="org-add" id="btn-new-divider">+ separador</button>
+					</div>
+				</div>
+
+				<div class="org-side">
+					<p class="cfg-title prods-section-title">ferramentas</p>
+					<p class="cfg-hint">a barra de todo mundo, à esquerda, na ordem: arraste pelos pontinhos para reordenar. os separadores dividem a barra em grupos; '+ separador' acrescenta um no fim (arraste para o lugar) e o × tira. aqui, o interruptor de cada ferramenta põe ou tira ela da barra.</p>
+					<div class="tool-cards" id="tool-cards"></div>
+					<label class="cfg-switch organize-switch">
+						<input type="checkbox" id="bar-links">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label">mostrar os links no começo da barra</span>
+					</label>
+				</div>
 			</div>
 
 

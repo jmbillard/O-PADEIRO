@@ -1752,57 +1752,143 @@ body.is-org-dragging * {
 }
 
 /* =========================================================
-   aba FERRAMENTAS: a ordem da barra, com separadores
+   aba FERRAMENTAS: a barra em fila única (no azul, como a
+   própria barra) e as ferramentas no branco
    ========================================================= */
 
-.tools-links {
-  margin: 2px 0 6px;
+.tools-bar {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 12px;
+  overflow-y: auto;
+  user-select: none;
+  scrollbar-color: rgb(255 255 255 / 40%) transparent;
+  scrollbar-width: thin;
 }
 
-.tool-rows {
-  display: grid;
-  gap: 6px;
-}
-
-.tool-row {
-  display: grid;
-  grid-template-columns: 22px 38px minmax(0, 1fr) auto;
+.bar-row {
+  display: flex;
+  min-height: 46px;
   align-items: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 6px 14px 6px 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-medium);
-  background: var(--surface);
-}
-
-.tool-row.is-off {
-  background: var(--surface-soft);
-}
-
-.tool-row.is-off .tool-icon,
-.tool-row.is-off .tool-text {
-  opacity: 0.45;
-}
-
-.tool-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+  gap: 12px;
+  padding: 4px 10px 4px 2px;
+  border-radius: var(--radius-small);
   color: white;
+  transition: background-color 160ms ease;
 }
 
-.tool-icon svg {
-  width: 22px;
-  height: 22px;
+.bar-row:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.bar-row > svg {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.7;
+}
+
+.bar-row-label {
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 720;
+}
+
+.bar-row .drag-handle {
+  color: rgb(255 255 255 / 55%);
+}
+
+.bar-row.is-links {
+  min-height: 38px;
+  padding-left: 30px;
+  opacity: 0.8;
+}
+
+.bar-row.is-links > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bar-row.is-links:hover {
+  background: none;
+}
+
+.bar-row-rule {
+  height: 1px;
+  margin: 2px 12px;
+  background: rgb(255 255 255 / 26%);
+}
+
+/* separador: a divisória da barra */
+.bar-row.is-divider {
+  min-height: 30px;
+}
+
+.bar-row-line {
+  height: 1px;
+  flex: 1;
+  background: rgb(255 255 255 / 45%);
+}
+
+.bar-row.is-divider .mini-button {
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 12%);
+  color: white;
+}
+
+.is-sorting > .bar-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting > .bar-row.is-dragging {
+  position: relative;
+  z-index: 2;
+  background: rgb(255 255 255 / 18%);
+  box-shadow: 0 12px 28px rgb(20 30 90 / 25%);
+  transition: none;
+}
+
+/* as ferramentas (direita) */
+.tool-cards {
+  display: grid;
+  gap: 6px;
+}
+
+.tool-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+}
+
+.tool-card > svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.tool-card.is-off {
+  background: var(--surface-soft);
+}
+
+.tool-card.is-off > svg,
+.tool-card.is-off .tool-text {
+  opacity: 0.5;
 }
 
 .tool-text {
@@ -1813,7 +1899,7 @@ body.is-org-dragging * {
 
 .tool-text strong {
   color: var(--text-primary);
-  font-size: 0.84rem;
+  font-size: 0.82rem;
 }
 
 .tool-text span {
@@ -1823,43 +1909,3 @@ body.is-org-dragging * {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* separador: uma linha com o nome, mais baixa que as ferramentas */
-.tool-row.is-divider {
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  min-height: 34px;
-  padding-block: 2px;
-  border-style: dashed;
-  background: transparent;
-}
-
-.tool-divider-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-tertiary);
-  font-size: 0.62rem;
-  font-weight: 750;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.tool-divider-line::before,
-.tool-divider-line::after {
-  height: 1px;
-  flex: 1;
-  background: var(--border-strong);
-  content: "";
-}
-
-.is-sorting > .tool-row {
-  transition: transform 180ms var(--ease-soft);
-}
-
-.is-sorting > .tool-row.is-dragging {
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
-  transition: none;
-}
-

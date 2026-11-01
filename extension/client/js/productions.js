@@ -1764,48 +1764,91 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!show) state.bar.hidden.push(key);
 	}
 
+	function svgTool(key) {
+		var node = svg((TOOL_INFO[key] || [key, '', []])[2]);
+
+		node.setAttribute('aria-hidden', 'true');
+
+		return node;
+	}
+
+	// a barra (esquerda): só as que aparecem, na ordem, com os separadores
+	function visibleItems() {
+		return state.bar.items.filter(function (k) {
+			return k === 'divider' || state.bar.hidden.indexOf(k) < 0;
+		});
+	}
+
 	function renderTools() {
 		var list = $('tool-list');
 
 		if (!list) return;
 
 		var disabled = !state.available;
+		var cards = $('tool-cards');
 
 		list.textContent = '';
+		cards.textContent = '';
 		$('bar-links').checked = state.bar.hidden.indexOf('links') < 0;
 		$('bar-links').disabled = disabled;
 		$('btn-new-divider').disabled = disabled;
 
-		state.bar.items.forEach(function (key, i) {
-			var row = el('div', 'tool-row');
+		// os links, no começo (não se arrastam)
+		if (state.bar.hidden.indexOf('links') < 0) {
+			var links = el('div', 'bar-row is-links');
+			var chain = svg(['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']);
 
+			chain.setAttribute('aria-hidden', 'true');
+			links.appendChild(chain);
+			links.appendChild(el('span', 'bar-row-label', 'links'));
+			list.appendChild(links);
+			list.appendChild(el('div', 'bar-row-rule'));
+		}
+
+		visibleItems().forEach(function (key, i) {
+			var row = el('div', 'bar-row');
+
+			row.setAttribute('data-index', i);
 			row.appendChild(PAD_SORT.handle());
 
 			if (key === 'divider') {
 				var remove = miniButton('remove', 'tirar o separador', function () {
-					state.bar.items.splice(i, 1);
+					var at = -1;
+					var seen = -1;
+
+					// o i-ésimo item visível, na lista completa
+					state.bar.items.forEach(function (k, j) {
+						if (k === 'divider' || state.bar.hidden.indexOf(k) < 0) seen++;
+						if (seen === i && at < 0) at = j;
+					});
+					if (at >= 0) state.bar.items.splice(at, 1);
 					renderTools();
 					updateDirty();
 				});
 
 				row.classList.add('is-divider');
-				row.appendChild(el('span', 'tool-divider-line', 'separador'));
+				row.appendChild(el('span', 'bar-row-line'));
 				remove.disabled = disabled;
 				row.appendChild(remove);
-				list.appendChild(row);
-				return;
+			} else {
+				row.appendChild(svgTool(key));
+				row.appendChild(el('span', 'bar-row-label', (TOOL_INFO[key] || [key])[0]));
 			}
 
-			var info = TOOL_INFO[key] || [key, '', []];
-			var icon = el('span', 'tool-icon');
+			list.appendChild(row);
+		});
+
+		// as ferramentas (direita): cartão com o que fazem e o interruptor
+		Object.keys(TOOL_INFO).forEach(function (key) {
+			var info = TOOL_INFO[key];
+			var card = el('div', 'tool-card');
 			var text = el('span', 'tool-text');
 			var label = el('label', 'cfg-switch');
 			var input = el('input');
 			var shown = state.bar.hidden.indexOf(key) < 0;
-			var ico = svg(info[2]);
 
-			ico.setAttribute('aria-hidden', 'true');
-			icon.appendChild(ico);
+			card.classList.toggle('is-off', !shown);
+			card.appendChild(svgTool(key));
 			text.appendChild(el('strong', null, info[0]));
 			text.appendChild(el('span', null, info[1]));
 			input.type = 'checkbox';
@@ -1813,23 +1856,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			input.disabled = disabled;
 			input.addEventListener('change', function () {
 				toggleHidden(key, input.checked);
-				row.classList.toggle('is-off', !input.checked);
+				renderTools();
 				updateDirty();
 			});
-			label.title = 'mostrar ' + info[0] + ' na barra (de todo mundo)';
+			label.title = (shown ? 'tirar ' : 'pôr ') + info[0] + (shown ? ' da barra' : ' na barra') + ' (de todo mundo)';
 			label.appendChild(input);
 			label.appendChild(el('span', 'cfg-switch-track'));
-			row.classList.toggle('is-off', !shown);
-			row.appendChild(icon);
-			row.appendChild(text);
-			row.appendChild(label);
-			list.appendChild(row);
+			card.appendChild(text);
+			card.appendChild(label);
+			cards.appendChild(card);
 		});
 	}
 
 	function bindTools() {
 		$('bar-links').addEventListener('change', function () {
 			toggleHidden('links', this.checked);
+			renderTools();
 			updateDirty();
 		});
 
@@ -1841,10 +1883,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			$('tool-list').lastChild.scrollIntoView({ block: 'nearest' });
 		});
 
-		PAD_SORT.enable($('tool-list'), '.tool-row', function (from, to) {
-			var moved = state.bar.items.splice(from, 1)[0];
+		// reordena as visíveis; as escondidas ficam no fim da lista completa (voltam no fim da barra)
+		PAD_SORT.enable($('tool-list'), '.bar-row:not(.is-links)', function (from, to) {
+			var visible = visibleItems();
+			var moved = visible.splice(from, 1)[0];
 
-			state.bar.items.splice(to, 0, moved);
+			visible.splice(to, 0, moved);
+			state.bar.items = visible.concat(state.bar.items.filter(function (k) {
+				return k !== 'divider' && state.bar.hidden.indexOf(k) >= 0;
+			}));
 			renderTools();
 			updateDirty();
 		});
