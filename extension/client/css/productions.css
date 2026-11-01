@@ -1973,3 +1973,12 @@ body.is-org-dragging * {
     display: none;
   }
 }
+
+/* o bonequinho tem o peso embaixo (cabeça pequena, ombros largos): sobe um pouco para alinhar com o texto */
+.tab-group[data-scope="mine"] svg {
+  transform: translateY(-1.5px);
+}
+
+.scope-note.is-mine > svg {
+  transform: translateY(-1px);
+}
