@@ -14,9 +14,8 @@
 
 <body class="prods-page">
 	<main class="prods" id="prods">
-		<!-- como o painel de templates: título no degradê e um cartão de vidro com as abas e os botões no rodapé -->
+		<!-- como o painel de templates: um cartão de vidro com as abas e, no rodapé, recarregar, salvar e "⋯" -->
 		<aside class="prods-side">
-			<p class="eyebrow prods-eyebrow">configuração</p>
 			<div class="picker prods-card" id="prods-card">
 				<div class="prods-card-body">
 					<nav class="prods-nav">
@@ -38,6 +37,9 @@
 				<div class="picker-footer prods-top">
 					<button type="button" class="icon-button" id="btn-reload" title="Recarregar a configuração do arquivo" aria-label="Recarregar a configuração do arquivo">
 						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
+					</button>
+					<button type="button" class="icon-button prods-save" id="btn-save" title="Salvar (Ctrl/Cmd+S)" aria-label="Salvar">
+						<svg viewBox="0 0 24 24"><path d="M5.5 3.5h10.6l4.4 4.4v10.6a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z" /><path class="save-tab" d="M8 3.5V8h7V3.5" /><path d="M7.5 20.5v-6h9v6" /></svg>
 					</button>
 					<details class="actions-menu header-menu" id="app-menu">
 						<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
@@ -335,7 +337,6 @@
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
 				</button>
 				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
-				<button type="button" class="button button-primary" id="btn-save">Salvar</button>
 			</div>
 		</section>
 

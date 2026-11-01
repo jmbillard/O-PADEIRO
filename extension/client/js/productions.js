@@ -349,6 +349,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 
 		$('dirty').hidden = !dirty;
+		$('btn-save').classList.toggle('is-dirty', dirty); // o disquete ganha um ponto com alterações não salvas
 
 		return dirty;
 	}
@@ -2549,7 +2550,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				});
 				renderProject();
 				updateDirty();
-				toast(added ? 'success' : null, added ? added + (added === 1 ? ' retranca importada' : ' retrancas importadas') + ' do índice. clique em “Salvar” para aplicar.' : 'nenhuma retranca nova no índice (entradas no formato “COD - nome”).');
+				toast(added ? 'success' : null, added ? added + (added === 1 ? ' retranca importada' : ' retrancas importadas') + ' do índice. clique no disquete para salvar.' : 'nenhuma retranca nova no índice (entradas no formato “COD - nome”).');
 			} catch (err) {
 				toast('error', err.message);
 			} finally {
@@ -2776,7 +2777,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.saving = true;
 		$('btn-save').disabled = true;
-		$('btn-save').textContent = 'Salvando…';
+		$('btn-save').classList.add('is-busy');
 
 		try {
 			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), stamp: state.stamp });
@@ -2813,7 +2814,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} finally {
 			state.saving = false;
 			$('btn-save').disabled = false;
-			$('btn-save').textContent = 'Salvar';
+			$('btn-save').classList.remove('is-busy');
 		}
 	}
 
@@ -2843,7 +2844,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			render();
 			updateDirty();
 			checkFolders(state.rows);
-			toast('success', 'lista importada: ' + state.rows.length + ' produções. clique em “Salvar” para aplicar.');
+			toast('success', 'lista importada: ' + state.rows.length + ' produções. clique no disquete para salvar.');
 		} catch (err) {
 			toast('error', err.message);
 		}

@@ -28,11 +28,7 @@ body.prods-page {
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: 18px 14px 14px;
-}
-
-.prods-eyebrow {
-  margin: 0 0 12px 6px;
+  padding: 14px;
 }
 
 .prods-card {
@@ -49,7 +45,7 @@ body.prods-page {
 }
 
 .prods-nav {
-  width: 186px;
+  width: 214px;
   flex: 0 0 auto;
   min-height: 0;
   padding: 14px;
@@ -276,12 +272,61 @@ body.prods-page {
   }
 }
 
-/* o rodapé do cartão (recarregar e "⋯"), como o dos templates; o menu abre para cima */
+/* o rodapé do cartão: recarregar e salvar à esquerda, "⋯" à direita; o menu abre para cima */
+.prods-top .actions-menu {
+  margin-left: auto;
+}
+
 .prods-top .menu-popover {
   top: auto;
   right: auto;
   bottom: calc(100% + 8px);
-  left: 0;
+  left: 0; /* abre para a direita, por cima da folha (à esquerda não cabe) */
+}
+
+/* salvar (disquete): ponto com alterações não salvas; pulsa enquanto grava */
+.prods-save {
+  position: relative;
+}
+
+.prods-save::after {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffcf5c;
+  box-shadow: 0 0 0 2px rgb(60 80 200 / 35%);
+  content: "";
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 180ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.prods-save.is-dirty::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.prods-save .save-tab {
+  transition: transform 260ms var(--ease-soft);
+}
+
+.prods-save:hover:not(:disabled) .save-tab {
+  transform: translateY(1.2px);
+}
+
+.prods-save.is-busy svg {
+  animation: save-pulse 700ms ease-in-out infinite;
+}
+
+@keyframes save-pulse {
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .prods-sheet {
@@ -300,10 +345,6 @@ body.prods-page {
 
   .prods-side {
     padding: 12px 12px 10px;
-  }
-
-  .prods-eyebrow {
-    display: none;
   }
 
   .prods-card {
