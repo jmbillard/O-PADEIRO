@@ -1605,8 +1605,7 @@ body.is-org-dragging * {
 
 /* arrastando: a amostra acompanha o mouse */
 .swatch-tile.is-dragging,
-.swatch-tile.is-dragging .swatch-dot,
-.swatch-tile.is-dragging .swatch-dot input {
+.swatch-tile.is-dragging .swatch-dot {
   cursor: grabbing;
 }
 
@@ -1628,10 +1627,6 @@ body.is-org-dragging * {
   transform: scale(0.6);
 }
 
-.swatch-dot.is-disabled input {
-  pointer-events: none;
-}
-
 .swatch-dot {
   transition:
     transform 200ms var(--ease-soft),
@@ -1639,14 +1634,6 @@ body.is-org-dragging * {
     filter 220ms ease;
 }
 
-.swatch-dot input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: grab;
-}
 
 /* cada amostra ao lado: a cor, o nome e o hex; clicando, abrem saturação e brilho */
 .swatch-rows {

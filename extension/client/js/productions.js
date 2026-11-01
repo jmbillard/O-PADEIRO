@@ -2445,7 +2445,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		['1', '2'].forEach(function (slot) {
 			var key = slotKey(slot);
-			var input = document.querySelector('.swatch-dot input[data-slot="' + slot + '"]');
+			var dot = document.querySelector('.swatch-dot[data-slot="' + slot + '"]');
 			var hex = document.querySelector('[data-hex="' + slot + '"]');
 			var row = hex.closest('.swatch-row');
 			var hsv = hexToHsv(a[key]);
@@ -2453,11 +2453,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var val = row.querySelector('[data-val]');
 			var off = slot === '2' && solid; // sólido: a segunda cor fica desabilitada (não some)
 
-			input.value = a[key];
-			input.disabled = !state.available || off;
-			input.parentNode.style.setProperty('--dot', a[key]);
-			input.parentNode.classList.toggle('is-disabled', off);
-			placeSwatchDot(input.parentNode, h, swatchSat(key));
+			dot.style.setProperty('--dot', a[key]);
+			dot.classList.toggle('is-disabled', off);
+			placeSwatchDot(dot, h, swatchSat(key));
 			if (document.activeElement !== hex) hex.value = a[key];
 			hex.disabled = !state.available || off;
 			row.style.setProperty('--dot', a[key]);
@@ -2657,12 +2655,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		bindSwatchDrag();
-
-		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
-			input.addEventListener('input', function () {
-				changeAppearance(slotKey(input.getAttribute('data-slot')), input.value.toLowerCase());
-			});
-		});
 
 		// brilho: muda a cor da amostra mantendo a matiz e a saturação (as do quadradinho)
 		Array.prototype.forEach.call(document.querySelectorAll('[data-val]'), function (range) {
