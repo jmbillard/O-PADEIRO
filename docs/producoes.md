@@ -8,14 +8,14 @@ as abas ficam em dois grupos, conforme **onde** cada uma é salva:
 
 | grupo | abas | onde fica |
 | --- | --- | --- |
-| 🌐 **equipe · rede** | produções, links, logs, drives, renomear, organizar, coletar, busca, projeto | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
-| 👤 **só você · local** | aparência, ferramentas, meus links | na pasta de dados do usuário, neste computador: não muda nada para os outros |
+| 🌐 **equipe** | produções, links, logs, drives, renomear, organizar, coletar, busca, projeto | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
+| 👤 **local** | aparência, ferramentas, meus links | na pasta de dados do usuário, neste computador: não muda nada para os outros |
 
-uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede* ou 👤 *só você · salvo neste computador*).
+uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede* ou 👤 *local · salvo neste computador*).
 
 **padrão da equipe** → a aparência e as ferramentas têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **ferramentas**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links da equipe → links, os seus → meus links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é seu neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links da equipe → links, os seus → meus links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
 ## 📍 produções
 
@@ -52,7 +52,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 ## 📍 links
 
-a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). a aba **meus links** (👤 só você) tem os seus: ficam só neste computador e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
+a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). a aba **meus links** (👤 local) tem os seus: ficam só neste computador e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
 
 cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
 
@@ -213,7 +213,7 @@ a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são s
 
 ## 📍 aparência
 
-a aba **aparência** (👤 só você) define o visual de todas as janelas do padeiro **neste computador**. sem personalização, vale o padrão da equipe (que se edita em **⋯ > editar o padrão da equipe**).
+a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro **neste computador**. sem personalização, vale o padrão da equipe (que se edita em **⋯ > editar o padrão da equipe**).
 
 - **modo** → claro, escuro ou automático (segue o sistema).
 - **fundo** → degradê ou sólido (a cor de destaque).
@@ -234,7 +234,7 @@ a aba **aparência** (👤 só você) define o visual de todas as janelas do pad
 
 ## 📍 ferramentas
 
-a aba **ferramentas** (👤 só você) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
+a aba **ferramentas** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
 - **ordem** → arraste cada ferramenta da barra pelos pontinhos.
 - **tirar** → o **×** de uma ferramenta (ou dos links, no topo) tira ela da barra; passe o mouse para ver o ×.

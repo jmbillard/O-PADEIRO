@@ -2642,7 +2642,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
 	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools', 'mylinks'];
-	var MINE_TABS = ['appearance', 'tools', 'mylinks']; // só desta pessoa (este computador); as outras, da equipe (rede)
+	var MINE_TABS = ['appearance', 'tools', 'mylinks']; // local (este computador); as outras, da equipe (rede)
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2702,9 +2702,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
 		} else if (tab === 'mylinks') {
-			text.innerHTML = '<b>só você</b> · salvo neste computador, não muda nada para os outros';
+			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros';
 		} else {
-			text.innerHTML = '<b>só você</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
+			text.innerHTML = '<b>local</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
 		}
 
 		box.appendChild(text);
@@ -2894,7 +2894,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				try {
 					await savePersonal();
 					updateDirty();
-					toast('success', 'suas preferências salvas (só neste computador).');
+					toast('success', 'salvo: local (neste computador).');
 				} catch (err) {
 					if (/#PAD_087/.test(err.message)) showTab('mylinks');
 					toast('error', err.message);
@@ -2952,7 +2952,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}
 
 			updateDirty();
-			toast('success', 'salvo: equipe (na rede)' + (mine ? ' e suas preferências (neste computador)' : '') + '. os painéis atualizam sozinhos.');
+			toast('success', 'salvo: equipe (na rede)' + (mine ? ' e local (neste computador)' : '') + '. os painéis atualizam sozinhos.');
 		} catch (err) {
 			if (tabForError(err.message)) showTab(tabForError(err.message));
 			toast('error', err.message);
