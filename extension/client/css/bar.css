@@ -485,7 +485,21 @@ body.bar-page {
     flex: 0 0 auto;
   }
 
-  /* as ferramentas em lista, pela esquerda; os links e a logo ficam no centro */
+  /* uma coluna só com a largura do maior botão, centralizada: os botões e os divisores ficam todos
+     com essa largura (os links e a logo no centro dela) */
+  .bar-main {
+    display: grid;
+    grid-template-columns: minmax(0, max-content);
+    justify-content: center;
+    align-content: center;
+    row-gap: 10px;
+  }
+
+  .bar-main::before,
+  .bar-main::after {
+    display: none;
+  }
+
   .bar-tools {
     align-items: stretch;
   }
@@ -493,7 +507,7 @@ body.bar-page {
   .bar-divider {
     width: auto;
     align-self: stretch;
-    margin: 0 10px;
+    margin: 0;
   }
 
   .bar-pin {
