@@ -2391,8 +2391,23 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return out;
 	}
 
+	// as duas amostras: a 1 é o início do degradê (no sólido, a cor do fundo: 'accent'); a 2, o fim
+	function slotKey(slot) {
+		if (String(slot) === '2') return 'gradientEnd';
+
+		return state.appearance && state.appearance.background === 'solid' ? 'accent' : 'gradientStart';
+	}
+
 	function changeAppearance(key, value) {
-		state.appearance[key] = value;
+		var a = state.appearance;
+
+		// a cor 1 é a mesma nos dois modos: ao trocar, passa de um campo para o outro
+		if (key === 'background' && value !== a.background) {
+			if (value === 'solid') a.accent = a.gradientStart;
+			else a.gradientStart = a.accent;
+		}
+
+		a[key] = value;
 
 		// no degradê só há início e fim: o destaque (botões, realces) é o tom do meio entre os dois
 		if (state.appearance.background !== 'solid' && (key === 'gradientStart' || key === 'gradientEnd')) {
@@ -2415,39 +2430,37 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
-			var key = input.getAttribute('data-key');
-			var hex = document.querySelector('[data-hex="' + key + '"]');
+		var solid = a.background === 'solid';
+
+		['1', '2'].forEach(function (slot) {
+			var key = slotKey(slot);
+			var input = document.querySelector('.swatch-dot input[data-slot="' + slot + '"]');
+			var hex = document.querySelector('[data-hex="' + slot + '"]');
 			var row = hex.closest('.swatch-row');
 			var hsv = hexToHsv(a[key]);
 			var h = hueOf(key, a[key]);
 			var sat = row.querySelector('[data-sat]');
 			var val = row.querySelector('[data-val]');
+			var off = slot === '2' && solid; // sólido: a segunda cor fica desabilitada (não some)
 
 			input.value = a[key];
-			input.disabled = !state.available;
+			input.disabled = !state.available || off;
 			input.parentNode.style.setProperty('--dot', a[key]);
+			input.parentNode.classList.toggle('is-disabled', off);
 			if (document.activeElement !== hex) hex.value = a[key];
-			hex.disabled = !state.available;
+			hex.disabled = !state.available || off;
 			row.style.setProperty('--dot', a[key]);
+			row.classList.toggle('is-disabled', off);
+			row.querySelector('.swatch-name').textContent = slot === '2' ? 'fim' : solid ? 'cor' : 'início';
 
 			// os trilhos mostram o que cada slider faz com esta cor
 			if (document.activeElement !== sat) sat.value = Math.round(hsv.s);
 			if (document.activeElement !== val) val.value = Math.round(hsv.v);
-			sat.disabled = val.disabled = !state.available;
+			sat.disabled = val.disabled = !state.available || off;
 			sat.style.setProperty('--track', 'linear-gradient(to right, ' + hsvToHex(h, 0, hsv.v) + ', ' + hsvToHex(h, 100, hsv.v) + ')');
 			val.style.setProperty('--track', 'linear-gradient(to right, #000, ' + hsvToHex(h, hsv.s, 100) + ')');
 		});
 
-		// degradê: as amostras de início e fim; sólido: só a cor
-		var solid = a.background === 'solid';
-
-		Array.prototype.forEach.call(document.querySelectorAll('#pane-appearance [data-gradient]'), function (node) {
-			node.hidden = solid;
-		});
-		Array.prototype.forEach.call(document.querySelectorAll('#pane-appearance [data-solid]'), function (node) {
-			node.hidden = !solid;
-		});
 		ensureSwatchOpen();
 
 		$('app-font').value = a.font;
@@ -2485,34 +2498,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// sem linha aberta entre as que aparecem (troca de degradê / sólido): abre a primeira
+	// sempre uma linha aberta (e não a desabilitada): a primeira, se for preciso
 	function ensureSwatchOpen() {
-		var rows = Array.prototype.filter.call(document.querySelectorAll('.swatch-row'), function (r) {
-			return !r.hidden;
+		var rows = Array.prototype.slice.call(document.querySelectorAll('.swatch-row'));
+		var open = rows.filter(function (r) {
+			return r.classList.contains('is-open') && !r.classList.contains('is-disabled');
 		});
 
-		if (rows.length && !rows.some(function (r) { return r.classList.contains('is-open'); })) openSwatchRow(rows[0]);
-	}
-
-	// o quadradinho acompanha a altura das linhas (com a aberta): os dois blocos terminam juntos
-	function syncSwatchTile() {
-		var rows = document.querySelector('.swatch-rows');
-		var tile = document.querySelector('.swatch-tile');
-
-		if (!rows || !tile) return;
-
-		function fit() {
-			var h = Math.round(rows.getBoundingClientRect().height);
-
-			if (h > 60) tile.style.width = tile.style.height = h + 'px';
-		}
-
-		if (window.ResizeObserver) new ResizeObserver(fit).observe(rows);
-		fit();
+		if (!open.length && rows.length) openSwatchRow(rows[0]);
 	}
 
 	function bindAppearance() {
-		syncSwatchTile();
 
 		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
 			$(pair[0]).addEventListener('change', function (e) {
@@ -2522,14 +2518,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			input.addEventListener('input', function () {
-				changeAppearance(input.getAttribute('data-key'), input.value.toLowerCase());
+				changeAppearance(slotKey(input.getAttribute('data-slot')), input.value.toLowerCase());
 			});
 		});
 
 		// saturação e brilho: mudam a cor da amostra mantendo a matiz
 		Array.prototype.forEach.call(document.querySelectorAll('[data-sat], [data-val]'), function (range) {
 			range.addEventListener('input', function () {
-				var key = range.getAttribute('data-sat') || range.getAttribute('data-val');
+				var key = slotKey(range.getAttribute('data-sat') || range.getAttribute('data-val'));
 				var row = range.closest('.swatch-row');
 				var h = hueOf(key, state.appearance[key]);
 
@@ -2540,7 +2536,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		// clicar na linha (amostra, nome, hex) abre os sliders dela; sempre uma aberta (a do quadradinho alinha com ela)
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-head'), function (head) {
 			function toggle() {
-				openSwatchRow(head.closest('.swatch-row'));
+				var row = head.closest('.swatch-row');
+
+				if (!row.classList.contains('is-disabled')) openSwatchRow(row);
 			}
 
 			head.addEventListener('click', function (e) {
@@ -2559,7 +2557,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			hex.addEventListener('input', function () {
 				var v = hex.value.trim().toLowerCase();
 
-				if (/^#?[0-9a-f]{6}$/.test(v)) changeAppearance(hex.getAttribute('data-hex'), v.charAt(0) === '#' ? v : '#' + v);
+				if (/^#?[0-9a-f]{6}$/.test(v)) changeAppearance(slotKey(hex.getAttribute('data-hex')), v.charAt(0) === '#' ? v : '#' + v);
 			});
 			hex.addEventListener('blur', renderAppearance);
 		});
