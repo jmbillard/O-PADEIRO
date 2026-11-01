@@ -1735,16 +1735,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var DEFAULT_BAR = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
 
-	// nome, o que os cliques fazem e o ícone (os mesmos traços da barra)
+	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
-		templates: ['Templates', 'preencher templates · criar novo template', ['M6 4.5h12a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 17V7A2.5 2.5 0 0 1 6 4.5z', 'M3.5 9.5h17M9 9.5v10']],
-		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']],
-		projeto: ['Projeto', 'janela do projeto · salvar na pasta da retranca', ['M5 10h14.5v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-8z', 'M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z', 'm8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4']],
-		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', ['M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h.4', 'M6 11.5V4a1 1 0 0 1 1-1h4.6l2.7 2.7v5.8', 'M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z']],
-		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5', 'M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z']],
-		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', ['M5.5 6.5h13a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3h-13a3 3 0 0 1-3-3v-5a3 3 0 0 1 3-3z', 'M6 12h2.4M10.3 12h2.4M14.6 12h2.4M18.6 9.6v4.8']],
-		organizar: ['Organizar', 'organizar o projeto · criar as pastas', ['m12 3-8.5 4.25L12 11.5l8.5-4.25z', 'm3.5 12 8.5 4.25L20.5 12', 'm3.5 16.5 8.5 4.25 8.5-4.25']],
-		buscar: ['Buscar', 'busca de caminhos · busca em textos', ['M16.5 10a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z', 'm15 15 5 5']]
+		templates: ['Templates', 'preencher templates · criar novo template', 'templates'],
+		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
+		projeto: ['Projeto', 'janela do projeto · salvar na pasta da retranca', 'project'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
+		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
+		organizar: ['Organizar', 'organizar o projeto · criar as pastas', 'organize'],
+		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search']
 	};
 
 	function setBar(b) {
@@ -1766,11 +1766,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function svgTool(key) {
-		var node = svg((TOOL_INFO[key] || [key, '', []])[2]);
-
-		node.setAttribute('aria-hidden', 'true');
-
-		return node;
+		return PAD_ICONS.svg(key === 'links' ? 'link' : (TOOL_INFO[key] || [key, '', ''])[2]);
 	}
 
 	// a barra (esquerda): só as que aparecem, na ordem, com os separadores
@@ -1811,10 +1807,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		// os links, no começo (não se arrastam; o × tira)
 		if (linksShown) {
 			var links = el('div', 'bar-row is-links');
-			var chain = svg(['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']);
-
-			chain.setAttribute('aria-hidden', 'true');
-			links.appendChild(chain);
+			links.appendChild(svgTool('links'));
 			links.appendChild(el('span', 'bar-row-label', 'links'));
 			links.appendChild(removeButton('tirar os links da barra', function () {
 				removeFromBar('links');
@@ -1864,13 +1857,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!linksShown) out.unshift('links');
 
 		out.forEach(function (key) {
-			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1']] : TOOL_INFO[key];
+			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', 'link'] : TOOL_INFO[key];
 			var card = el('div', 'org-type tool-card');
 			var text = el('span', 'org-type-text');
-			var icon = svg(info[2]);
+			var icon = svgTool(key);
 			var add = miniButton('add', '', function () { });
 
-			icon.setAttribute('aria-hidden', 'true');
 			card.appendChild(icon);
 			text.appendChild(el('strong', null, info[0]));
 			text.appendChild(el('span', null, info[1]));
@@ -2607,6 +2599,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		tools: '<g class="ti-sliders"><path d="M4 7h16M4 12h16M4 17h16" /><circle class="ti-knob ti-k1" cx="8" cy="7" r="1.8" /><circle class="ti-knob ti-k2" cx="15" cy="12" r="1.8" /><circle class="ti-knob ti-k3" cx="10" cy="17" r="1.8" /></g>'
 	};
 
+	// abas com o mesmo desenho da ferramenta na barra (o de coletar tem máscaras: vem de js/icons.js)
+	var TAB_TOOL_ICONS = { collect: 'collect', search: 'search' };
+
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var icon = TAB_ICONS[tab.getAttribute('data-tab')];
@@ -2618,7 +2613,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			node.setAttribute('viewBox', '0 0 24 24');
 			node.setAttribute('aria-hidden', 'true');
-			node.innerHTML = icon;
+			node.innerHTML = TAB_TOOL_ICONS[tab.getAttribute('data-tab')] ? PAD_ICONS.markup(TAB_TOOL_ICONS[tab.getAttribute('data-tab')]) : icon;
 			tab.textContent = '';
 			tab.appendChild(node);
 			tab.appendChild(label);

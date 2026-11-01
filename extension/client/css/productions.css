@@ -1900,3 +1900,32 @@ body.is-org-dragging * {
 #btn-new-divider {
   margin-top: 4px;
 }
+
+/* ícones da barra (js/icons.js) na configuração: a letra da lupa só aparece na animação da barra */
+.lens-letter {
+  opacity: 0;
+}
+
+/* aba coletar: as folhas sobem e abrem em leque, como na barra */
+.prods-nav .anim-collect .collect-file {
+  transform-origin: 50% 100%;
+  transition: transform 320ms var(--ease-soft);
+}
+
+.prods-nav .tab:hover .anim-collect .f1 {
+  transform: translateY(-1.6px) rotate(-6deg);
+}
+
+.prods-nav .tab:hover .anim-collect .f2 {
+  transform: translateY(-1.2px) rotate(5deg);
+}
+
+/* aba busca: a lupa procura */
+.prods-nav .anim-search {
+  transform-origin: 40% 40%;
+  transition: transform 320ms var(--ease-soft);
+}
+
+.prods-nav .tab:hover .anim-search {
+  transform: translate(-1.5px, -1.5px) rotate(-8deg);
+}

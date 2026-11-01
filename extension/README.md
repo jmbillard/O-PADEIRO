@@ -45,6 +45,7 @@ O-PADEIRO/
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
    │     ├─ util.js              → ícones das produções, forninho, URLs de arquivo
+   │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
    │     └─ <painel>.js          → lógica de cada painel
    ├─ host/                      → ExtendScript (roda dentro do After Effects)
