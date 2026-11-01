@@ -516,7 +516,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		$('links-divider').hidden = !links.length;
 	}
 
-	// na vertical os links vão em linhas centralizadas (de 3; só ícones, de 2) e a incompleta fica em cima:
+	// na vertical os links vão em linhas centralizadas de 3 (só ícones: um embaixo do outro) e a incompleta fica em cima:
 	// uma quebra antes do item que abre a primeira linha cheia (CSS: #links .links-break, só na vertical)
 	function placeLinksBreak() {
 		var box = $('links');
@@ -524,7 +524,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (old) old.remove();
 
-		var cols = document.body.classList.contains('is-icons') ? 2 : 3;
+		var cols = document.body.classList.contains('is-icons') ? 1 : 3;
 		var rest = box.children.length % cols;
 
 		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // sem linha cheia: nada

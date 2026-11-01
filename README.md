@@ -86,7 +86,7 @@ o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes)
 
 ## 📍 a barra principal
 
-a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado (estreita demais para os nomes, só os ícones, e os links de 2 em 2).
+a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado (estreita demais para os nomes, só os ícones, com os links um embaixo do outro).
 
 > ![barra principal](docs/images/barra.webp)
 
