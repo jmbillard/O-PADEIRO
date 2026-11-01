@@ -540,8 +540,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (LIST_MEDIA.matches) {
 			body.classList.remove('is-icons');
-			cut = Array.prototype.some.call(document.querySelectorAll('#tools .bar-label'), function (label) {
-				return label.scrollWidth > label.clientWidth + 1;
+			// um nome cortado ou a coluna mais larga que a barra (no CEP a coluna pode não encolher)
+			var bar = $('bar');
+			var style = getComputedStyle(bar);
+			var room = bar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+
+			cut = $('tools').scrollWidth > room + 1 || Array.prototype.some.call(document.querySelectorAll('#tools .bar-btn, #tools .bar-label'), function (node) {
+				return node.scrollWidth > node.clientWidth + 1 || node.getBoundingClientRect().right > bar.getBoundingClientRect().right;
 			});
 		}
 		body.classList.toggle('is-icons', cut);
