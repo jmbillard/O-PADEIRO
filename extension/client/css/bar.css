@@ -211,18 +211,18 @@ body.bar-page {
   transform: translateY(-1px) scale(1.08);
 }
 
-/* os links são menores que as ferramentas: de 2 em 2 (na horizontal, 2 por coluna; na vertical, 2 por linha) */
+/* na horizontal, os links ficam numa linha só; na vertical, de 2 em 2 (abaixo, no layout vertical) */
 #links {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(2, 26px);
+  grid-template-rows: 30px;
   align-content: center;
-  gap: 0 1px;
+  gap: 2px;
 }
 
 #links .bar-link {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
 }
 
 #links .bar-link img,
@@ -256,8 +256,8 @@ body.bar-page {
 
 .bar-icon svg,
 .bar-btn svg {
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   overflow: visible;
   fill: none;
   stroke: currentcolor;
@@ -403,6 +403,12 @@ body.bar-page {
     grid-template-columns: repeat(2, 26px);
     grid-template-rows: none;
     justify-content: center;
+    gap: 0 1px;
+  }
+
+  #links .bar-link {
+    width: 26px;
+    height: 26px;
   }
 
   .bar-tools {
