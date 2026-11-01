@@ -533,6 +533,17 @@ body.bar-page {
 }
 
 @media (max-aspect-ratio: 1/1) and (max-width: 139px) {
+  /* o AE não desenha o painel com menos de ~132px: mais estreito que isso, ele corta a sobra à direita.
+     a coluna e o pãozinho ficam num bloco de 64px encostado na esquerda, sempre à vista */
+  .bar {
+    align-items: flex-start;
+  }
+
+  .bar-main,
+  .bar-info {
+    width: 64px;
+  }
+
   .bar-btn {
     justify-content: center;
     padding: 7px;
