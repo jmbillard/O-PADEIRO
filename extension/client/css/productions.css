@@ -1635,7 +1635,8 @@ body.is-org-dragging * {
 .swatch-row {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: var(--radius-medium);
+  /* cantos concêntricos com a amostra: margem de 12px + raio de 12px */
+  border-radius: 24px;
   background: var(--surface);
   transition:
     border-color 180ms ease,
@@ -1664,8 +1665,8 @@ body.is-org-dragging * {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px 8px 44px; /* a amostra fica à esquerda, fora do fluxo */
-  border-radius: var(--radius-medium);
+  padding: 8px 12px 8px 48px; /* a amostra fica à esquerda, fora do fluxo */
+  border-radius: 23px;
   cursor: pointer;
   outline: none;
 }
@@ -1681,7 +1682,7 @@ body.is-org-dragging * {
 .swatch-mini {
   position: absolute;
   top: 12px;
-  left: 10px;
+  left: 12px;
   width: 24px;
   height: 24px;
   border: 3px solid white;
@@ -1730,7 +1731,7 @@ body.is-org-dragging * {
 .swatch-sliders {
   display: grid;
   gap: 10px;
-  padding: 4px 14px 14px 44px;
+  padding: 4px 14px 14px 48px;
 }
 
 .swatch-sliders[hidden] {
