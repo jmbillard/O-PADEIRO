@@ -463,6 +463,35 @@ body.bar-page {
     flex: 0 0 auto;
   }
 
+  /* tudo alinhado pela esquerda, na mesma linha dos ícones das ferramentas */
+  .bar-group {
+    align-items: flex-start;
+  }
+
+  #links {
+    justify-content: start;
+    padding-left: 8px;
+  }
+
+  .bar-tools {
+    align-items: stretch;
+  }
+
+  .bar-divider {
+    width: auto;
+    align-self: stretch;
+    margin: 0 10px;
+  }
+
+  .bar-info {
+    align-items: flex-start;
+    padding-left: 6px;
+  }
+
+  .bar-logo {
+    justify-items: start;
+  }
+
   .bar-pin {
     gap: 6px;
   }
