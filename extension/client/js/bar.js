@@ -628,6 +628,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
 
+		// a dica do pãozinho mostra o tamanho que a barra recebe do painel (para conferir o layout no AE)
+		var logoTitle = $('logo').title;
+
+		$('logo').addEventListener('mouseenter', function () {
+			var bar = $('bar');
+
+			$('logo').title = logoTitle + '\npainel: ' + window.innerWidth + ' × ' + window.innerHeight + ' px · barra: ' + bar.clientWidth + ' px · janela: ' + window.outerWidth + ' px';
+		});
+
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
