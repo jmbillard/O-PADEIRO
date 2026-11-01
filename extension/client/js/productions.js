@@ -1539,7 +1539,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		function bind() {
 			// pastas: pelo puxador (ou pelo ícone); tipos: pelas etiquetas da árvore e pelos cartões da direita
-			$(cfg.paneId).addEventListener('mousedown', function (e) {
+			// a árvore pode estar no cartão das abas (fora da aba): o mesmo início de arrasto nos dois lugares
+			function onDown(e) {
+				if (e._padTree) return;
+
+				e._padTree = true;
+
 				if (e.target.closest('button:not(.drag-handle), input')) return;
 
 				var row = e.target.closest('.org-folder[data-index]');
@@ -1547,7 +1552,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 				if (tag) return startDrag(e, { kind: 'type', type: tag.getAttribute('data-type') });
 				if (row && e.target.closest('.drag-handle, svg')) startDrag(e, { kind: 'folder', folder: M().folders[+row.getAttribute('data-index')] });
-			});
+			}
+
+			$(cfg.paneId).addEventListener('mousedown', onDown);
+			$(cfg.treeId).closest('.org-card').addEventListener('mousedown', onDown);
 
 			$(cfg.newBtnId).addEventListener('click', function () {
 				var name = 'NOVA PASTA';
@@ -2533,6 +2541,27 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		tools: '<g class="ti-sliders"><path d="M4 7h16M4 12h16M4 17h16" /><circle class="ti-knob ti-k1" cx="8" cy="7" r="1.8" /><circle class="ti-knob ti-k2" cx="15" cy="12" r="1.8" /><circle class="ti-knob ti-k3" cx="10" cy="17" r="1.8" /></g>'
 	};
 
+	// Organizar e coletar: a árvore da aba entra no cartão das abas (ao lado delas) e volta para a aba ao sair.
+	// Em janela estreita, fica na aba (o cartão vira uma fila no topo).
+	var WIDE = window.matchMedia ? window.matchMedia('(min-width: 761px)') : { matches: true };
+
+	function placeTree(name) {
+		var slot = $('tree-slot');
+		var wanted = WIDE.matches && (name === 'organize' || name === 'collect') ? $('pane-' + name).querySelector('.org-card') || slot.querySelector('#' + (name === 'organize' ? 'org-tree' : 'col-tree')).closest('.org-card') : null;
+
+		Array.prototype.forEach.call(slot.querySelectorAll('.org-card'), function (card) {
+			if (card === wanted) return;
+
+			var pane = card.querySelector('#org-tree') ? $('pane-organize') : $('pane-collect');
+
+			pane.insertBefore(card, pane.firstChild);
+		});
+
+		if (wanted && wanted.parentNode !== slot) slot.appendChild(wanted);
+
+		$('prods').classList.toggle('has-tree', !!wanted);
+	}
+
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var icon = TAB_ICONS[tab.getAttribute('data-tab')];
@@ -2554,8 +2583,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function showTab(name) {
 		state.tab = name;
 
-		// organizar e coletar: a árvore vira uma faixa azul ao lado das abas (CSS: .has-tree)
-		$('prods').classList.toggle('has-tree', name === 'organize' || name === 'collect');
+		placeTree(name);
 
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var on = tab.getAttribute('data-tab') === name;
@@ -2843,6 +2871,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindTools();
 
 		decorateTabs();
+
+		if (WIDE.addEventListener) {
+			WIDE.addEventListener('change', function () {
+				placeTree(state.tab);
+			});
+		}
 
 		$('tabs').addEventListener('click', function (e) {
 			var tab = e.target.closest('.tab');

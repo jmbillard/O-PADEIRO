@@ -19,16 +19,40 @@ body.prods-page {
 .prods {
   display: grid;
   height: 100%;
-  grid-template-columns: 184px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
 }
 
-/* abas na vertical, no degradê à esquerda da folha */
-.prods-nav {
-  grid-column: 1;
-  grid-row: 1;
+/* a coluna azul, como a busca do painel de templates: título no degradê e o cartão de vidro */
+.prods-side {
+  display: flex;
+  min-width: 0;
   min-height: 0;
-  padding: 18px 12px 14px 14px;
+  flex-direction: column;
+  padding: 18px 14px 14px;
+}
+
+.prods-eyebrow {
+  margin: 0 0 12px 6px;
+}
+
+.prods-card {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 26px 26px 34px 34px; /* em cima, concêntrico com a aba (raio 12, 14 de respiro); embaixo, com os botões */
+}
+
+.prods-card-body {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.prods-nav {
+  width: 186px;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 14px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -45,24 +69,33 @@ body.prods-page {
   padding-left: 0;
 }
 
+/* abas como as linhas da lista de templates: a escolhida vira a pílula branca */
 .prods-nav .tab {
   justify-content: flex-start;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
   border-radius: var(--radius-small);
+  color: rgb(255 255 255 / 78%);
   letter-spacing: 0.12em;
   text-align: left;
   transition:
-    color 220ms ease,
-    background-color 220ms ease;
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .prods-nav .tab:hover {
-  background: rgb(255 255 255 / 8%);
+  background: rgb(255 255 255 / 10%);
+  color: white;
 }
 
 .prods-nav .tab[aria-selected="true"] {
-  background: rgb(255 255 255 / 16%);
+  border-color: white;
+  background: var(--surface);
+  box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
+  color: var(--blue-600);
 }
 
 /* o ícone no lugar da bolinha */
@@ -243,16 +276,52 @@ body.prods-page {
   }
 }
 
-/* recarregar e "⋯" no pé da coluna das abas, com o centro na altura do "Salvar" */
-.prods-top {
+/* organizar e coletar: a árvore entra no cartão, ao lado das abas, separada por um divisor; o cartão se
+   alarga (a largura anima) */
+.prods-tree-slot {
   display: flex;
-  grid-column: 1;
-  grid-row: 2;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px calc(var(--footer-center) - 19px) 22px; /* 19 = meio botão */
+  width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid transparent;
+  transition:
+    width 420ms var(--ease-soft),
+    border-color 300ms ease;
 }
 
+.prods.has-tree .prods-tree-slot {
+  width: var(--tree-w, 380px);
+  border-left-color: rgb(255 255 255 / 22%);
+}
+
+.prods-tree-slot .org-card {
+  width: var(--tree-w, 380px); /* largura final desde o começo: o conteúdo não se espreme enquanto o cartão abre */
+  min-width: var(--tree-w, 380px);
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  animation: tree-in 420ms var(--ease-soft) both;
+}
+
+.prods-tree-slot .org-foot {
+  border-top-color: rgb(255 255 255 / 16%);
+}
+
+@keyframes tree-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* o rodapé do cartão (recarregar e "⋯"), como o dos templates; o menu abre para cima */
 .prods-top .menu-popover {
   top: auto;
   right: auto;
@@ -260,48 +329,58 @@ body.prods-page {
   left: 0;
 }
 
-.prods-tools {
-  display: flex;
-  gap: 8px;
-}
-
 .prods-sheet {
   display: flex;
-  grid-column: 2;
-  grid-row: 1 / span 2;
   min-height: 0;
   flex-direction: column;
   background: var(--surface);
 }
 
-/* janela estreita: as abas voltam para uma fila no topo, que rola na horizontal */
-@media (max-width: 620px) {
+/* janela estreita: o cartão vira uma fila no topo (abas que rolam + os botões); a árvore fica na aba */
+@media (max-width: 760px) {
   .prods {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
 
+  .prods-side {
+    padding: 12px 12px 10px;
+  }
+
+  .prods-eyebrow,
+  .prods-tree-slot {
+    display: none;
+  }
+
+  .prods-card {
+    flex-direction: row;
+    align-items: center;
+    border-radius: 999px;
+  }
+
   .prods-nav {
-    grid-row: 1;
-    padding: 0 6px 12px 14px;
+    width: auto;
+    min-width: 0;
+    flex: 1;
+    padding: 6px;
     overflow-x: auto;
     overflow-y: hidden;
   }
 
   .prods-nav .tabs {
     flex-direction: row;
-    gap: 2px;
   }
 
   .prods-nav .tab {
     flex: 0 0 auto;
-    padding: 7px 9px;
+    padding: 7px 10px;
+    border-radius: 999px;
   }
 
   .prods-top {
-    grid-column: 2;
-    grid-row: 1;
-    padding: 0 14px 12px 0;
+    padding: 6px;
+    border-top: 0;
+    border-left: 1px solid rgb(255 255 255 / 20%);
   }
 
   .prods-top .menu-popover {
@@ -309,19 +388,6 @@ body.prods-page {
     right: 0;
     bottom: auto;
     left: auto;
-  }
-
-  .prods-sheet {
-    grid-column: 1 / span 2;
-    grid-row: 2;
-  }
-
-  .prods-nav {
-    padding-top: 14px;
-  }
-
-  .prods-top {
-    padding-top: 14px;
   }
 }
 
@@ -1840,73 +1906,7 @@ body.is-org-dragging * {
   transition: none;
 }
 
-/* =========================================================
-   organizar / coletar: a árvore continua o azul das abas, de
-   cima a baixo (sem cantos), com um divisor entre as duas; a
-   folha branca desliza para a direita ao entrar na aba
-   ========================================================= */
-
-@media (min-width: 621px) {
-  .prods {
-    --tree-w: clamp(280px, 44%, 460px);
-  }
-
-  .prods-sheet {
-    position: relative;
-    background-clip: content-box; /* o recuo da esquerda fica sem o branco: aparece o degradê da janela */
-    transition: padding-left 380ms var(--ease-soft);
-  }
-
-  .prods.has-tree .prods-sheet {
-    padding-left: var(--tree-w);
-  }
-
-  .prods.has-tree .organize-pane {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .prods.has-tree .org-card {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: var(--tree-w);
-    border: 0;
-    border-left: 1px solid rgb(255 255 255 / 26%);
-    border-radius: 0;
-    background: transparent;
-    animation: tree-in 420ms var(--ease-soft) both;
-  }
-
-  .prods.has-tree .org-eyebrow {
-    padding-top: 22px;
-  }
-
-  /* o "+ nova pasta" no pé, com o centro na altura do "Salvar" */
-  .prods.has-tree .org-foot {
-    display: flex;
-    min-height: calc(var(--footer-center) * 2);
-    align-items: center;
-    padding: 0 14px;
-  }
-}
-
-@keyframes tree-in {
-  from {
-    opacity: 0;
-    transform: translateX(-14px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .prods-sheet,
-  .prods.has-tree .org-card {
-    animation: none;
-    transition: none;
-  }
+/* a árvore está no cartão das abas: a aba fica só com a coluna da direita */
+.prods.has-tree .organize-pane {
+  grid-template-columns: minmax(0, 1fr);
 }
