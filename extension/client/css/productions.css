@@ -1843,3 +1843,133 @@ body.is-org-dragging * {
 .prods-nav .tab:hover .anim-search {
   transform: translate(-1.5px, -1.5px) rotate(-8deg);
 }
+
+/* =========================================================
+   equipe (rede) × só você (este computador)
+   ========================================================= */
+
+/* os grupos de abas no cartão */
+.tab-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 12px 4px;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.6rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tab-group:first-child {
+  margin-top: 2px;
+}
+
+.tab-group span {
+  color: white;
+  font-weight: 800;
+}
+
+.tab-group svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.tab-group[data-scope="mine"] {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+/* a faixa no topo da folha: onde a aba aberta é salva */
+.scope-note {
+  display: flex;
+  min-height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.scope-note:empty {
+  display: none;
+}
+
+.scope-note > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.scope-note b {
+  color: var(--text-primary);
+}
+
+.scope-note.is-team > svg {
+  color: var(--blue-500);
+}
+
+.scope-note.is-mine {
+  background: #fff9eb;
+}
+
+.scope-note.is-mine > svg {
+  color: #c98a12;
+}
+
+/* editando o padrão da equipe: a faixa fica azul, para não esquecer */
+.scope-note.is-editing-team {
+  background: var(--blue-50);
+  color: var(--blue-600);
+}
+
+.scope-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope-action {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 650;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.scope-action:hover {
+  border-color: var(--blue-200);
+  color: var(--blue-500);
+}
+
+@media (max-width: 760px) {
+  .tab-group {
+    display: none;
+  }
+}

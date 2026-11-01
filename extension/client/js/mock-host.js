@@ -71,6 +71,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
+	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
+	function mockPrefs() {
+		return JSON.parse(localStorage.getItem('pad.mock.prefs') || 'null') || { appearance: null, bar: null };
+	}
+
 	function mockBar() {
 		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'], hidden: [] };
 	}
@@ -171,6 +176,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
 				bar: mockBar(),
+				personal: mockPrefs(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
@@ -180,8 +186,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		appearance: function () {
 			var stored = JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null');
+			var mine = mockPrefs().appearance;
 
-			return { stamp: localStorage.getItem('pad.mock.appearance') || 'padrão', appearance: stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
+			return { stamp: (localStorage.getItem('pad.mock.appearance') || 'padrão') + '|' + localStorage.getItem('pad.mock.prefs'), appearance: mine || stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
+		},
+
+		personalPrefs: function () {
+			return mockPrefs();
+		},
+
+		savePersonalPrefs: function (a) {
+			localStorage.setItem('pad.mock.prefs', JSON.stringify({ appearance: a.appearance || null, bar: a.bar || null }));
+
+			return mockPrefs();
 		},
 
 		barLinks: function () {
@@ -189,7 +206,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
 
-			var bar = mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
+			var bar = mockPrefs().bar || mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
 
 			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal };
 		},

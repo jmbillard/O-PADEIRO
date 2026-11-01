@@ -93,7 +93,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadAppearance(), project: padReadProject(), collect: padReadCollect(), bar: padReadBar(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadTeamAppearance(), project: padReadProject(), collect: padReadCollect(), bar: padReadTeamBar(), personal: PADX.personalPrefs(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -736,7 +736,8 @@ function padCleanBar(o) {
 	return { items: items, hidden: hidden };
 }
 
-function padReadBar() {
+// A barra da equipe (o padrão, na rede).
+function padReadTeamBar() {
 	try {
 		var data = padConfigData();
 
@@ -744,6 +745,19 @@ function padReadBar() {
 	} catch (err) {
 		return padCleanBar({});
 	}
+}
+
+// A barra desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+function padReadBar() {
+	var mine = padPersonalData().BAR;
+
+	if (mine) {
+		try {
+			return padCleanBar(mine);
+		} catch (err) { }
+	}
+
+	return padReadTeamBar();
 }
 
 // Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
@@ -757,7 +771,7 @@ PADX.barLinks = function () {
 	} catch (err) { }
 
 	try {
-		stamp = PAD_CONFIG_CACHE.stamp + '|' + (personal.exists ? personal.modified.getTime() : 0);
+		stamp = PAD_CONFIG_CACHE.stamp + '|' + (personal.exists ? personal.modified.getTime() : 0) + '|' + padPersonalStamp();
 	} catch (err) { }
 
 	var bar = padReadBar();
@@ -832,7 +846,8 @@ function padCleanAppearance(o) {
 	return clean;
 }
 
-function padReadAppearance() {
+// A aparência da equipe (o padrão, na rede).
+function padReadTeamAppearance() {
 	try {
 		var data = padConfigData();
 
@@ -842,14 +857,105 @@ function padReadAppearance() {
 	}
 }
 
-// O tema, com a data do arquivo (as janelas só reaplicam quando ele muda).
+// A aparência desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+function padReadAppearance() {
+	var mine = padPersonalData().APPEARANCE;
+
+	if (mine) {
+		try {
+			return padCleanAppearance(mine);
+		} catch (err) { }
+	}
+
+	return padReadTeamAppearance();
+}
+
+// O tema, com a data dos arquivos (as janelas só reaplicam quando mudam).
 PADX.appearance = function () {
-	var file = padConfigFile();
 	var stamp = 0;
 
 	try {
-		stamp = file && file.exists ? file.modified.getTime() : 0;
+		padConfigData();
 	} catch (err) { }
 
+	stamp = PAD_CONFIG_CACHE.stamp + '|' + padPersonalStamp();
+
 	return { stamp: stamp, appearance: padReadAppearance() };
+};
+
+/*
+
+---------------------------------------------------------------
+> preferências pessoais (aparência e ferramentas, só neste computador)
+---------------------------------------------------------------
+
+'personal_config.json' na pasta de dados do usuário: { APPEARANCE, BAR }, só as que a pessoa personalizou.
+Sem elas, vale o padrão da equipe (APPEARANCE e BAR do O_PADEIRO_config.json, na rede).
+
+*/
+
+var PAD_PERSONAL_CACHE = { stamp: -1, data: {} };
+
+function padPersonalConfigFile() {
+	return new File(scriptPreferencesPath + '/personal_config.json');
+}
+
+function padPersonalStamp() {
+	var file = padPersonalConfigFile();
+
+	try {
+		return file.exists ? file.modified.getTime() : 0;
+	} catch (err) {
+		return 0;
+	}
+}
+
+function padPersonalData() {
+	var stamp = padPersonalStamp();
+
+	if (stamp != PAD_PERSONAL_CACHE.stamp) {
+		PAD_PERSONAL_CACHE.stamp = stamp;
+		PAD_PERSONAL_CACHE.data = {};
+
+		if (stamp) {
+			try {
+				PAD_PERSONAL_CACHE.data = JSON.parse(readFileContent(padPersonalConfigFile())) || {};
+			} catch (err) { }
+		}
+	}
+
+	return PAD_PERSONAL_CACHE.data;
+}
+
+// { appearance, bar }: as personalizadas (null = usa o padrão da equipe)
+PADX.personalPrefs = function () {
+	var d = padPersonalData();
+	var out = { appearance: null, bar: null };
+
+	try {
+		if (d.APPEARANCE) out.appearance = padCleanAppearance(d.APPEARANCE);
+	} catch (err) { }
+
+	try {
+		if (d.BAR) out.bar = padCleanBar(d.BAR);
+	} catch (err) { }
+
+	return out;
+};
+
+// a: { appearance, bar } (null = voltar ao padrão da equipe)
+PADX.savePersonalPrefs = function (a) {
+	var data = {};
+
+	if (a.appearance) data.APPEARANCE = padCleanAppearance(a.appearance);
+	if (a.bar) data.BAR = padCleanBar(a.bar);
+
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify(data, null, '\t'), padPersonalConfigFile().fsName);
+	PAD_PERSONAL_CACHE.stamp = -1;
+
+	return PADX.personalPrefs();
 };

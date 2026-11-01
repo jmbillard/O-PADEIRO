@@ -485,7 +485,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var custom = PAD_UTIL.decodeIcon(link.icon);
 
 			btn.type = 'button';
-			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : '') + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar os links';
+			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : '') + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar ' + (link.personal ? 'os meus links' : 'os links');
 			btn.setAttribute('aria-label', link.name);
 			img.alt = '';
 			img.src = custom || faviconUrl(link.url);
@@ -506,7 +506,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			bind(btn, async function () {
 				await requireNetwork('PAD_007');
 				PAD_BRIDGE.openUrl(link.url);
-			}, null, 'links');
+			}, null, link.personal ? 'mylinks' : 'links');
 			box.appendChild(btn);
 		});
 

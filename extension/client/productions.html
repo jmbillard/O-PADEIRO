@@ -21,6 +21,7 @@
 				<div class="prods-card-body">
 					<nav class="prods-nav">
 						<div class="tabs" id="tabs" role="tablist" aria-label="Configuração" aria-orientation="vertical">
+							<p class="tab-group" data-scope="team" title="salvo na rede: vale para todo mundo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><span>equipe</span> · rede</p>
 							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">PRODUÇÕES</button>
 							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
 							<button type="button" class="tab" role="tab" data-tab="logs" aria-selected="false">LOGS</button>
@@ -30,8 +31,10 @@
 							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
 							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCA</button>
 							<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
+							<p class="tab-group" data-scope="mine" title="salvo só neste computador: não muda nada para os outros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg><span>só você</span> · local</p>
 							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">FERRAMENTAS</button>
+							<button type="button" class="tab" role="tab" data-tab="mylinks" aria-selected="false">MEUS LINKS</button>
 						</div>
 					</nav>
 				</div>
@@ -45,6 +48,7 @@
 					<details class="actions-menu header-menu" id="app-menu">
 						<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 						<div class="menu-popover">
+							<button type="button" data-action="team" id="menu-team">Editar o padrão da equipe</button>
 							<button type="button" data-action="docs">Ajuda / documentação</button>
 							<button type="button" data-action="reload">Recarregar painel</button>
 						</div>
@@ -54,6 +58,9 @@
 		</aside>
 
 		<section class="prods-sheet">
+			<!-- onde a aba aberta é salva (equipe, na rede · só você, neste computador) -->
+			<div class="scope-note" id="scope-note" aria-live="polite"></div>
+
 			<!-- aba PRODUÇÕES -->
 			<div class="cfg-pane" id="pane-prods" role="tabpanel">
 			<!-- busca grande no topo da folha (como as outras buscas); o título da lista vem logo abaixo -->
@@ -85,7 +92,10 @@
 				<p class="cfg-hint">aparecem no começo da barra de todo mundo, nesta ordem (arraste pelos pontinhos para reordenar). o ícone é o do próprio site (favicon); clique nele para escolher outra imagem.</p>
 				<div class="drive-rows" id="link-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link da equipe</button>
+			</div>
 
+			<!-- aba MEUS LINKS (só neste computador) -->
+			<div class="cfg-pane drives-pane" id="pane-mylinks" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">meus links</p>
 				<p class="cfg-hint">só neste computador: aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
 				<div class="drive-rows" id="personal-list"></div>

@@ -36,6 +36,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bar: { items: [], hidden: [] }, // aba FERRAMENTAS: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
+		// aparência e ferramentas: o padrão da equipe (rede) e as desta pessoa (este computador); state.appearance
+		// e state.bar apontam para o que está sendo editado (o da pessoa ou, em "editar o padrão da equipe", o da equipe)
+		team: { appearance: null, bar: null },
+		mine: { appearance: null, bar: null },
+		editTeam: false,
+		custom: { appearance: false, bar: false }, // a pessoa personalizou (senão, segue o padrão da equipe)
+		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -328,12 +335,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
-	function barForSave() {
-		return { items: state.bar.items.slice(), hidden: state.bar.hidden.slice().sort() };
+	function barForSave(bar) {
+		bar = bar || state.team.bar;
+
+		return bar ? { items: bar.items.slice(), hidden: bar.hidden.slice().sort() } : null;
 	}
 
 	function appearanceForSave() {
-		return state.appearance ? Object.assign({}, state.appearance) : null;
+		return state.team.appearance ? Object.assign({}, state.team.appearance) : null;
 	}
 
 	function currentSnapshot() {
@@ -341,15 +350,39 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
+	// as preferências pessoais: null = igual ao padrão da equipe (a pessoa não personalizou)
+	function prefsForSave() {
+		var m = state.mine;
+		var t = state.team;
+
+		return {
+			appearance: state.custom.appearance && m.appearance ? Object.assign({}, m.appearance) : null,
+			bar: state.custom.bar && m.bar ? barForSave(m.bar) : null
+		};
+	}
+
+	// uma mudança feita no modo pessoal (não no padrão da equipe) personaliza a aparência / a barra
+	function markCustom() {
+		var m = state.mine;
+		var t = state.team;
+
+		if (state.editTeam || !m.appearance) return;
+		if (JSON.stringify(m.appearance) !== JSON.stringify(t.appearance)) state.custom.appearance = true;
+		if (JSON.stringify(barForSave(m.bar)) !== JSON.stringify(barForSave(t.bar))) state.custom.bar = true;
+	}
+
 	function personalDirty() {
-		return JSON.stringify(personalForSave()) !== state.personalSnapshot;
+		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot;
 	}
 
 	function updateDirty() {
+		markCustom();
+
 		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 
 		$('dirty').hidden = !dirty;
 		$('btn-save').classList.toggle('is-dirty', dirty); // o disquete ganha um ponto com alterações não salvas
+		renderScope();
 
 		return dirty;
 	}
@@ -1748,14 +1781,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search']
 	};
 
+	// o padrão da equipe (rede)
 	function setBar(b) {
 		var data = b || {};
 
-		state.bar = {
+		state.team.bar = {
 			items: (data.items && data.items.length ? data.items : DEFAULT_BAR).slice(),
 			hidden: (data.hidden || []).slice()
 		};
-		renderTools();
+		activatePrefs();
 	}
 
 	function toggleHidden(key, show) {
@@ -1787,7 +1821,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function renderTools() {
 		var list = $('tool-list');
 
-		if (!list) return;
+		if (!list || !state.bar) return;
 
 		var disabled = !state.available;
 		var cards = $('tool-cards');
@@ -2231,29 +2265,72 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// grava os links pessoais (à parte da lista da rede). Lança o erro do host.
+	// grava o que é só desta pessoa (links pessoais e preferências), neste computador. Lança o erro do host.
 	async function savePersonal() {
-		if (!personalDirty()) return false;
+		var saved = false;
 
-		var res = await call('savePersonalLinks', { links: personalForSave() });
+		if (JSON.stringify(personalForSave()) !== state.personalSnapshot) {
+			var res = await call('savePersonalLinks', { links: personalForSave() });
 
-		state.personal = res.links.map(function (l) {
-			return { name: l.name, url: l.url, icon: l.icon || '' };
-		});
-		state.personalSnapshot = JSON.stringify(personalForSave());
-		renderLinks();
+			state.personal = res.links.map(function (l) {
+				return { name: l.name, url: l.url, icon: l.icon || '' };
+			});
+			state.personalSnapshot = JSON.stringify(personalForSave());
+			renderLinks();
+			saved = true;
+		}
 
-		return true;
+		var prefs = prefsForSave();
+
+		if (JSON.stringify(prefs) !== state.prefsSnapshot) {
+			await call('savePersonalPrefs', prefs);
+			state.prefsSnapshot = JSON.stringify(prefs);
+			saved = true;
+		}
+
+		renderScope();
+
+		return saved;
 	}
 
 	/* =========================================================
 	   Aparência
 	   ========================================================= */
 
+	// o padrão da equipe (rede)
 	function setAppearance(a) {
-		state.appearance = Object.assign({}, PAD_THEME.defaults, a || {});
-		state.savedAppearance = Object.assign({}, state.appearance);
-		renderAppearance();
-		PAD_THEME.apply(state.appearance);
+		state.team.appearance = Object.assign({}, PAD_THEME.defaults, a || {});
+		state.savedAppearance = Object.assign({}, state.team.appearance);
+		activatePrefs();
+	}
+
+	// as desta pessoa (este computador): sem personalização, uma cópia do padrão da equipe
+	function setPersonal(p) {
+		var data = p || {};
+
+		state.custom = { appearance: !!data.appearance, bar: !!data.bar };
+		state.mine.appearance = Object.assign({}, PAD_THEME.defaults, data.appearance || state.team.appearance || {});
+		state.mine.bar = JSON.parse(JSON.stringify(data.bar || state.team.bar || { items: DEFAULT_BAR.slice(), hidden: [] }));
+		state.prefsSnapshot = JSON.stringify(prefsForSave());
+		activatePrefs();
+	}
+
+	// aponta state.appearance / state.bar para o que se edita agora e redesenha
+	function activatePrefs() {
+		// sem personalização, a pessoa vê (e começa a editar) o padrão da equipe atual
+		if (state.mine.appearance && !state.custom.appearance && state.team.appearance) state.mine.appearance = Object.assign({}, state.team.appearance);
+		if (state.mine.bar && !state.custom.bar && state.team.bar) state.mine.bar = JSON.parse(JSON.stringify(state.team.bar));
+
+		var src = state.editTeam || !state.mine.appearance ? state.team : state.mine;
+
+		state.appearance = src.appearance;
+		state.bar = src.bar || state.team.bar || state.bar;
+		if (state.appearance) {
+			renderAppearance();
+			PAD_THEME.apply(state.appearance);
+		}
+		renderTools();
+		renderScope();
 	}
 
 	// cada mudança vira prévia nesta janela; as outras mudam ao salvar
@@ -2360,7 +2437,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		$('app-defaults').addEventListener('click', function () {
-			state.appearance = Object.assign({}, PAD_THEME.defaults);
+			Object.assign(state.appearance, PAD_THEME.defaults); // o mesmo objeto (o da pessoa ou o da equipe)
 			PAD_THEME.apply(state.appearance);
 			renderAppearance();
 			updateDirty();
@@ -2564,7 +2641,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools'];
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools', 'mylinks'];
+	var MINE_TABS = ['appearance', 'tools', 'mylinks']; // só desta pessoa (este computador); as outras, da equipe (rede)
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2585,6 +2663,75 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   Abas
 	   ========================================================= */
 
+	/* ---------- onde a aba é salva (a faixa no topo da folha) ---------- */
+
+	var SCOPE_GLOBE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg>';
+	var SCOPE_PERSON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
+
+	// a pessoa personalizou (difere do padrão da equipe)?
+	function isPersonalized(tab) {
+
+		return tab === 'appearance' ? state.custom.appearance : tab === 'tools' ? state.custom.bar : false;
+	}
+
+	function scopeButton(text, onClick) {
+		var btn = el('button', 'scope-action', text);
+
+		btn.type = 'button';
+		btn.addEventListener('click', onClick);
+
+		return btn;
+	}
+
+	function renderScope() {
+		var box = $('scope-note');
+		var tab = state.tab;
+
+		if (!box) return;
+
+		var mine = MINE_TABS.indexOf(tab) >= 0;
+		var team = !mine || (state.editTeam && tab !== 'mylinks');
+		var text = el('span', 'scope-text');
+
+		box.textContent = '';
+		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
+		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
+
+		if (!mine) {
+			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
+		} else if (team) {
+			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
+		} else if (tab === 'mylinks') {
+			text.innerHTML = '<b>só você</b> · salvo neste computador, não muda nada para os outros';
+		} else {
+			text.innerHTML = '<b>só você</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
+		}
+
+		box.appendChild(text);
+
+		if (mine && team) {
+			box.appendChild(scopeButton('voltar às minhas preferências', function () {
+				setEditTeam(false);
+			}));
+		} else if (mine && tab !== 'mylinks' && isPersonalized(tab)) {
+			box.appendChild(scopeButton('voltar ao padrão da equipe', function () {
+				if (tab === 'appearance') state.custom.appearance = false;
+				if (tab === 'tools') state.custom.bar = false;
+				activatePrefs();
+				updateDirty();
+			}));
+		}
+	}
+
+	// "editar o padrão da equipe" (menu ⋯): aparência e ferramentas passam a editar o da rede
+	function setEditTeam(on) {
+		state.editTeam = on;
+		$('menu-team').textContent = on ? 'Voltar às minhas preferências' : 'Editar o padrão da equipe';
+		activatePrefs();
+		if (on && MINE_TABS.indexOf(state.tab) < 0) showTab('appearance');
+		if (on) toast(null, 'editando o padrão da equipe (aparência e ferramentas): vale para quem não personalizou.');
+	}
+
 	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
 	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
 	var TAB_TOOL_ICONS = { prods: 'templates', drives: 'folders', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
@@ -2599,7 +2746,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var key = tab.getAttribute('data-tab');
-			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key];
+			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key === 'mylinks' ? 'links' : key];
 
 			if (!icon || tab.querySelector('svg')) return;
 
@@ -2617,6 +2764,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function showTab(name) {
 		state.tab = name;
+		renderScope();
 
 
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
@@ -2686,6 +2834,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setCollect(res.collect);
 			setBar(res.bar);
 			setAppearance(res.appearance);
+			setPersonal(res.personal);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
@@ -2745,9 +2894,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				try {
 					await savePersonal();
 					updateDirty();
-					toast('success', 'meus links salvos (só neste computador).');
+					toast('success', 'suas preferências salvas (só neste computador).');
 				} catch (err) {
-					showTab('links');
+					if (/#PAD_087/.test(err.message)) showTab('mylinks');
 					toast('error', err.message);
 				}
 
@@ -2786,22 +2935,24 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.project) setProject(res.project);
 			if (res.collect) setCollect(res.collect);
 			if (res.bar) setBar(res.bar);
-			setAppearance(res.appearance || state.appearance);
+			setAppearance(res.appearance || state.team.appearance);
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			render();
 			updateDirty();
 			checkFolders(state.rows);
+			var mine = false;
+
 			try {
-				await savePersonal();
+				mine = await savePersonal();
 			} catch (err) {
-				showTab('links');
+				if (/#PAD_087/.test(err.message)) showTab('mylinks');
 				toast('error', err.message);
 				return;
 			}
 
 			updateDirty();
-			toast('success', 'configuração salva: ' + state.rows.length + (state.rows.length === 1 ? ' produção' : ' produções') + ' (os painéis atualizam sozinhos).');
+			toast('success', 'salvo: equipe (na rede)' + (mine ? ' e suas preferências (neste computador)' : '') + '. os painéis atualizam sozinhos.');
 		} catch (err) {
 			if (tabForError(err.message)) showTab(tabForError(err.message));
 			toast('error', err.message);
@@ -2938,6 +3089,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-import').addEventListener('click', importList);
 		$('btn-export').addEventListener('click', exportList);
 		PAD_UTIL.bindMenu($('app-menu'), DOCS_URL);
+		$('menu-team').addEventListener('click', function () {
+			setEditTeam(!state.editTeam);
+		});
 
 		$('btn-reload').addEventListener('click', function () {
 			confirmDiscard(load);

@@ -313,10 +313,11 @@ PADX.productions = function () {
 		organize: padReadOrganize(),
 		search: padReadSearch(),
 		links: padReadLinks(),
-		appearance: padReadAppearance(),
+		appearance: padReadTeamAppearance(), // o padrão da equipe (a pessoa pode personalizar: personal)
 		project: padReadProject(),
 		collect: padReadCollect(),
-		bar: padReadBar(),
+		bar: padReadTeamBar(),
+		personal: PADX.personalPrefs(),
 		error: error
 	};
 };

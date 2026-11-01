@@ -20,7 +20,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
 | **O PADEIRO projeto** | ID e nome do projeto, retranca e salvar na pasta da retranca → [documentação](docs/projeto.md) |
-| **O PADEIRO configuração** | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência → [documentação](docs/producoes.md) |
+| **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca, projeto) e o que é só seu (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -92,7 +92,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-a ordem das ferramentas, os grupos (separadores) e quais aparecem são definidos para a equipe toda na aba **ferramentas** da [configuração](docs/producoes.md#-ferramentas).
+a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **ferramentas** da [configuração](docs/producoes.md#-ferramentas): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
 
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
