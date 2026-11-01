@@ -1,6 +1,6 @@
 # Exemplo: config da PROMO GNEWS
 
-Uma configuração do O PADEIRO montada a partir do **PROMO-GNEWS-script** (a barra ScriptUI da PROMO GNEWS). Ela recria, com os recursos de configuração da v2.0 beta5, a organização de pastas do projeto, a cor do menu principal na barra e a busca de caminhos com as retrancas da promo.
+Uma configuração do O PADEIRO montada a partir do **PROMO-GNEWS-script** (a barra ScriptUI da PROMO GNEWS). Ela recria, com os recursos de configuração da v2.0 beta6, a organização de pastas do projeto, a cor do menu principal na barra e a busca de caminhos com as retrancas da promo.
 
 | arquivo | o que é |
 | --- | --- |
