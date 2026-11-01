@@ -1564,7 +1564,8 @@ body.is-org-dragging * {
   position: absolute;
   inset: 9px;
   border-radius: 18px;
-  background: rgb(255 255 255 / 62%); /* o espectro aparece por trás, suave */
+  background: rgb(255 255 255 / 55%); /* o espectro aparece por trás, suave */
+  backdrop-filter: blur(16px) saturate(1.15); /* difunde a mistura das cores (e o ponto do centro) */
   box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
   content: "";
 }
