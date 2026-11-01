@@ -2448,6 +2448,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		Array.prototype.forEach.call(document.querySelectorAll('#pane-appearance [data-solid]'), function (node) {
 			node.hidden = !solid;
 		});
+		ensureSwatchOpen();
 
 		$('app-font').value = a.font;
 		$('app-font').disabled = !state.available;
@@ -2474,7 +2475,45 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('app-logo-reset').hidden = !a.logo;
 	}
 
+	function openSwatchRow(row) {
+		Array.prototype.forEach.call(document.querySelectorAll('.swatch-row'), function (r) {
+			var on = r === row;
+
+			r.classList.toggle('is-open', on);
+			r.querySelector('.swatch-head').setAttribute('aria-expanded', on ? 'true' : 'false');
+			r.querySelector('.swatch-sliders').hidden = !on;
+		});
+	}
+
+	// sem linha aberta entre as que aparecem (troca de degradê / sólido): abre a primeira
+	function ensureSwatchOpen() {
+		var rows = Array.prototype.filter.call(document.querySelectorAll('.swatch-row'), function (r) {
+			return !r.hidden;
+		});
+
+		if (rows.length && !rows.some(function (r) { return r.classList.contains('is-open'); })) openSwatchRow(rows[0]);
+	}
+
+	// o quadradinho acompanha a altura das linhas (com a aberta): os dois blocos terminam juntos
+	function syncSwatchTile() {
+		var rows = document.querySelector('.swatch-rows');
+		var tile = document.querySelector('.swatch-tile');
+
+		if (!rows || !tile) return;
+
+		function fit() {
+			var h = Math.round(rows.getBoundingClientRect().height);
+
+			if (h > 60) tile.style.width = tile.style.height = h + 'px';
+		}
+
+		if (window.ResizeObserver) new ResizeObserver(fit).observe(rows);
+		fit();
+	}
+
 	function bindAppearance() {
+		syncSwatchTile();
+
 		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
 			$(pair[0]).addEventListener('change', function (e) {
 				if (e.target.name === pair[0]) changeAppearance(pair[1], e.target.value);
@@ -2498,19 +2537,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		// clicar na linha (amostra, nome, hex) abre os sliders dela; uma aberta por vez
+		// clicar na linha (amostra, nome, hex) abre os sliders dela; sempre uma aberta (a do quadradinho alinha com ela)
 		Array.prototype.forEach.call(document.querySelectorAll('.swatch-head'), function (head) {
 			function toggle() {
-				var row = head.closest('.swatch-row');
-				var open = !row.classList.contains('is-open');
-
-				Array.prototype.forEach.call(document.querySelectorAll('.swatch-row'), function (r) {
-					var on = r === row && open;
-
-					r.classList.toggle('is-open', on);
-					r.querySelector('.swatch-head').setAttribute('aria-expanded', on ? 'true' : 'false');
-					r.querySelector('.swatch-sliders').hidden = !on;
-				});
+				openSwatchRow(head.closest('.swatch-row'));
 			}
 
 			head.addEventListener('click', function (e) {

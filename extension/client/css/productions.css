@@ -1552,10 +1552,13 @@ body.is-org-dragging * {
 /* o quadradinho: o espectro na borda, branco no meio */
 .swatch-tile {
   position: relative;
-  width: 150px;
+  width: 150px; /* o JS iguala à altura das linhas ao lado (com a aberta) */
   height: 150px;
   flex: 0 0 auto;
   border-radius: 26px;
+  transition:
+    width 260ms var(--ease-soft),
+    height 260ms var(--ease-soft);
   background: conic-gradient(from 210deg, #ff3b3b, #ffd23b, #46e05a, #36d9ff, #4b6bff, #c64bff, #ff3bb0, #ff3b3b);
   box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
 }
