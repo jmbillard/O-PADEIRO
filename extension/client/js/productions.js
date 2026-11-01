@@ -2334,8 +2334,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// cada mudança vira prévia nesta janela; as outras mudam ao salvar
+	function mixHex(a, b) {
+		var out = '#';
+
+		for (var i = 1; i < 7; i += 2) {
+			var v = Math.round((parseInt(a.substr(i, 2), 16) + parseInt(b.substr(i, 2), 16)) / 2);
+
+			out += (v < 16 ? '0' : '') + v.toString(16);
+		}
+
+		return out;
+	}
+
 	function changeAppearance(key, value) {
 		state.appearance[key] = value;
+
+		// no degradê só há início e fim: o destaque (botões, realces) é o tom do meio entre os dois
+		if (state.appearance.background !== 'solid' && (key === 'gradientStart' || key === 'gradientEnd')) {
+			state.appearance.accent = mixHex(state.appearance.gradientStart, state.appearance.gradientEnd);
+		}
 		PAD_THEME.apply(state.appearance);
 		renderAppearance();
 		updateDirty();
@@ -2353,19 +2370,26 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		Array.prototype.forEach.call(document.querySelectorAll('.app-color input[type="color"]'), function (input) {
+		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			var key = input.getAttribute('data-key');
 			var hex = document.querySelector('[data-hex="' + key + '"]');
 
 			input.value = a[key];
 			input.disabled = !state.available;
+			input.parentNode.style.setProperty('--dot', a[key]);
 			if (document.activeElement !== hex) hex.value = a[key];
 			hex.disabled = !state.available;
+			hex.parentNode.style.setProperty('--dot', a[key]);
 		});
 
-		// fundo sólido: as pontas do degradê não valem
-		Array.prototype.forEach.call(document.querySelectorAll('.app-color[data-gradient]'), function (box) {
-			box.classList.toggle('is-off', a.background === 'solid');
+		// degradê: as amostras de início e fim; sólido: só a cor
+		var solid = a.background === 'solid';
+
+		Array.prototype.forEach.call(document.querySelectorAll('#pane-appearance [data-gradient]'), function (node) {
+			node.hidden = solid;
+		});
+		Array.prototype.forEach.call(document.querySelectorAll('#pane-appearance [data-solid]'), function (node) {
+			node.hidden = !solid;
 		});
 
 		$('app-font').value = a.font;
@@ -2400,7 +2424,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		Array.prototype.forEach.call(document.querySelectorAll('.app-color input[type="color"]'), function (input) {
+		Array.prototype.forEach.call(document.querySelectorAll('.swatch-dot input[type="color"]'), function (input) {
 			input.addEventListener('input', function () {
 				changeAppearance(input.getAttribute('data-key'), input.value.toLowerCase());
 			});

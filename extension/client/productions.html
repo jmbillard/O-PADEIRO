@@ -292,14 +292,23 @@
 				<p class="cfg-title prods-section-title">fundo</p>
 				<div class="log-modes" id="app-bg" role="radiogroup" aria-label="Fundo">
 					<label class="log-radio"><input type="radio" name="app-bg" value="gradient"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">degradê</span></label>
-					<label class="log-radio"><input type="radio" name="app-bg" value="solid"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">sólido (a cor de destaque)</span></label>
+					<label class="log-radio"><input type="radio" name="app-bg" value="solid"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">sólido</span></label>
 				</div>
 
 				<p class="cfg-title prods-section-title">cores</p>
-				<div class="app-colors">
-					<label class="app-color"><input type="color" data-key="accent"><span class="app-color-text"><strong>destaque</strong><input type="text" class="cfg-input" data-hex="accent" spellcheck="false" maxlength="7" aria-label="cor de destaque"></span></label>
-					<label class="app-color" data-gradient><input type="color" data-key="gradientStart"><span class="app-color-text"><strong>início do degradê</strong><input type="text" class="cfg-input" data-hex="gradientStart" spellcheck="false" maxlength="7" aria-label="início do degradê"></span></label>
-					<label class="app-color" data-gradient><input type="color" data-key="gradientEnd"><span class="app-color-text"><strong>fim do degradê</strong><input type="text" class="cfg-input" data-hex="gradientEnd" spellcheck="false" maxlength="7" aria-label="fim do degradê"></span></label>
+				<!-- as cores: um quadradinho com o espectro na borda e as amostras dentro (degradê: início e fim;
+				     sólido: uma cor). clique numa amostra para escolher a cor; ao lado, o hex de cada uma -->
+				<div class="app-swatch">
+					<div class="swatch-tile" aria-label="Cores">
+						<label class="swatch-dot" data-solid title="cor (fundo sólido): clique para escolher"><input type="color" data-key="accent" aria-label="cor"></label>
+						<label class="swatch-dot" data-gradient title="início do degradê: clique para escolher"><input type="color" data-key="gradientStart" aria-label="início do degradê"></label>
+						<label class="swatch-dot is-second" data-gradient title="fim do degradê: clique para escolher"><input type="color" data-key="gradientEnd" aria-label="fim do degradê"></label>
+					</div>
+					<div class="swatch-hexes">
+						<label class="swatch-hex" data-solid><span>cor</span><input type="text" class="cfg-input" data-hex="accent" spellcheck="false" maxlength="7" aria-label="cor"></label>
+						<label class="swatch-hex" data-gradient><span>início</span><input type="text" class="cfg-input" data-hex="gradientStart" spellcheck="false" maxlength="7" aria-label="início do degradê"></label>
+						<label class="swatch-hex" data-gradient><span>fim</span><input type="text" class="cfg-input" data-hex="gradientEnd" spellcheck="false" maxlength="7" aria-label="fim do degradê"></label>
+					</div>
 				</div>
 				<div class="app-preview" id="app-preview" aria-hidden="true"><span class="app-preview-chip">botão</span><span class="app-preview-text">o fundo das janelas, a barra e os destaques</span></div>
 

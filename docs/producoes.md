@@ -216,8 +216,8 @@ a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são s
 a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro **neste computador**. sem personalização, vale o padrão da equipe (que se edita em **⋯ > editar o padrão da equipe**).
 
 - **modo** → claro, escuro ou automático (segue o sistema).
-- **fundo** → degradê ou sólido (a cor de destaque).
-- **cores** → a cor de **destaque** (botões, títulos, seleção) e as pontas do **degradê** (o fundo das janelas e da barra). os tons claros (seleção, avisos, bordas de foco) são calculados a partir do destaque. clique no quadradinho para escolher a cor ou digite o código (`#rrggbb`).
+- **fundo** → degradê ou sólido.
+- **cores** → o quadradinho com o espectro mostra as amostras: no **degradê**, duas (início e fim, o fundo das janelas e da barra); no **sólido**, uma (a cor do fundo e dos destaques). clique numa amostra para escolher a cor, ou digite o código ao lado (`#rrggbb`). no degradê, o destaque (botões, títulos, seleção) é o tom do meio entre início e fim; os tons claros (seleção, avisos, bordas de foco) são calculados a partir dele.
 - **fonte** → Inter (padrão), a do sistema, Helvetica / Arial, Segoe UI, Roboto, Georgia ou monoespaçada. a fonte precisa estar instalada no computador.
 - **logo da barra** → uma imagem no lugar do pãozinho (reduzida para caber, sem cortar; PNG com fundo transparente fica melhor). '*voltar ao pãozinho*' desfaz.
 - **restaurar a aparência padrão** → volta tudo ao visual de sempre.
