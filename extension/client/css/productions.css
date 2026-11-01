@@ -1577,7 +1577,7 @@ body.is-org-dragging * {
   inset: 9px;
   border-radius: 18px;
   background: rgb(255 255 255 / 30%); /* o miolo aparece por trás, suave */
-  backdrop-filter: blur(14px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
+  backdrop-filter: blur(26px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
   box-shadow: 0 0 10px 4px rgb(255 255 255 / 55%);
   content: "";
 }
