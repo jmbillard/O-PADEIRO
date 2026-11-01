@@ -82,10 +82,8 @@ function padCleanProject(o) {
 }
 
 function padReadProject() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.PROJECT ? padCleanProject(data.PROJECT) : PAD_DEFAULT_PROJECT;
 	} catch (err) {

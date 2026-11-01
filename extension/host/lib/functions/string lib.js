@@ -12,12 +12,6 @@ function deleteFileExt(str) {
 	return str.replace(/\.[0-9a-z]+$/i, ''); // /\.[0-9a-z]+$/i: Encontra um ponto seguido de um ou mais caracteres alfanuméricos no final da string
 }
 
-// Obtém a extensão de um nome de arquivo (em minúsculas).
-function getFileExt(str) {
-	var match = str.match(/\.[0-9a-z]+$/i); // /\.[0-9a-z]+$/i: Encontra um ponto seguido de um ou mais caracteres alfanuméricos no final da string
-	return match ? match[0].toLowerCase() : ''; // Retorna a extensão em minúsculas ou uma string vazia se não encontrar
-}
-
 // Limita o tamanho de um nome, adicionando reticências (...) no meio se necessário.
 function limitNameSize(name, limit) {
 	// Se o nome já for menor ou igual ao limite, retorna o nome original

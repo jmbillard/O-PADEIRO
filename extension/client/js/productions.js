@@ -2585,27 +2585,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   Abas
 	   ========================================================= */
 
-	// Ícone de cada aba (o da ferramenta, quando há uma), com uma animação no hover (CSS: .ti-*).
+	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
+	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
+	var TAB_TOOL_ICONS = { prods: 'templates', drives: 'folders', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
+
 	var TAB_ICONS = {
-		prods: '<g class="ti-sheet"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path class="ti-row" d="M3.5 9.5h17" /><path class="ti-col" d="M9 9.5v10" /></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
-		drives: '<g class="ti-folder"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" /><path class="ti-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
-		rename: '<g class="ti-type"><rect x="2.5" y="6.5" width="19" height="11" rx="3" /><path class="ti-char" d="M6 12h2.4" /><path class="ti-char" d="M10.3 12h2.4" /><path class="ti-char" d="M14.6 12h2.4" /><path class="ti-caret" d="M18.6 9.6v4.8" /></g>',
-		organize: '<g class="ti-layers"><path class="ti-top" d="m12 3-8.5 4.25L12 11.5l8.5-4.25z" /><path d="m3.5 12 8.5 4.25L20.5 12" /><path class="ti-bottom" d="m3.5 16.5 8.5 4.25 8.5-4.25" /></g>',
-		collect: '<g class="ti-collect"><path d="M3.5 18V7.6A1.5 1.5 0 0 1 5 6.1h.4" /><path class="ti-file1" d="M6 11.5V4a1 1 0 0 1 1-1h4.6l2.7 2.7v5.8" /><path class="ti-file2" d="M10 11.5V6.5a1 1 0 0 1 1-1h4.8l2.7 2.7v3.3" /><path d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
-		search: '<g class="ti-lens"><circle cx="10" cy="10" r="6.5" /><path d="m15 15 5 5" /></g>',
-		project: '<g class="ti-clap"><rect x="3.5" y="10" width="17" height="9.5" rx="1.5" /><g class="ti-clap-top"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></g>',
 		appearance: '<g class="ti-palette"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.6-1-2.6 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7c0-4.2-3.8-7.3-8.5-7.3z" /><circle class="ti-dot" cx="7.5" cy="11" r=".9" /><circle class="ti-dot" cx="10" cy="7.3" r=".9" /><circle class="ti-dot" cx="14.5" cy="7.3" r=".9" /></g>',
 		tools: '<g class="ti-sliders"><path d="M4 7h16M4 12h16M4 17h16" /><circle class="ti-knob ti-k1" cx="8" cy="7" r="1.8" /><circle class="ti-knob ti-k2" cx="15" cy="12" r="1.8" /><circle class="ti-knob ti-k3" cx="10" cy="17" r="1.8" /></g>'
 	};
 
-	// abas com o mesmo desenho da ferramenta na barra (o de coletar tem máscaras: vem de js/icons.js)
-	var TAB_TOOL_ICONS = { collect: 'collect', search: 'search' };
-
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
-			var icon = TAB_ICONS[tab.getAttribute('data-tab')];
+			var key = tab.getAttribute('data-tab');
+			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key];
 
 			if (!icon || tab.querySelector('svg')) return;
 
@@ -2614,7 +2608,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			node.setAttribute('viewBox', '0 0 24 24');
 			node.setAttribute('aria-hidden', 'true');
-			node.innerHTML = TAB_TOOL_ICONS[tab.getAttribute('data-tab')] ? PAD_ICONS.markup(TAB_TOOL_ICONS[tab.getAttribute('data-tab')]) : icon;
+			node.innerHTML = icon;
 			tab.textContent = '';
 			tab.appendChild(node);
 			tab.appendChild(label);

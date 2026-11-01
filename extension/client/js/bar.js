@@ -47,20 +47,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// os desenhos ficam em js/icons.js (os mesmos da configuração)
 
 	function svgIcon(name) {
-		var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-		svg.setAttribute('viewBox', '0 0 24 24');
-
-		if (window.PAD_ICONS && PAD_ICONS.has(name)) {
-			svg.innerHTML = PAD_ICONS.markup(name, '');
-		} else {
-			var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-
-			use.setAttribute('href', '#i-' + name);
-			svg.appendChild(use);
-		}
-
-		return svg;
+		return PAD_ICONS.svg(name, ''); // a barra tem uma cópia de cada: os ids das máscaras ficam sem sufixo
 	}
 
 	function toast(kind, text, ms) {

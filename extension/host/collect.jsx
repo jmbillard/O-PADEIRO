@@ -94,10 +94,8 @@ function padCleanCollect(o) {
 }
 
 function padReadCollect() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.COLLECT ? padCleanCollect(data.COLLECT) : PAD_DEFAULT_COLLECT;
 	} catch (err) {
@@ -139,9 +137,7 @@ function padCollectFolderPath(settings, type) {
 var PAD_IMAGE_EXT = /\.(png|jpe?g|tiff?|exr|dpx|tga|bmp|psd|cin|hdr|sgi|webp|gif|heic|ai|eps|pdf|svg|cr2|dng|arw|nef)$/i;
 
 function padItemExt(item) {
-	var m = /(\.[^.\/\\]+)$/.exec(decodeURI(item.file.name));
-
-	return m ? m[1].toLowerCase() : '';
+	return getFileExt(decodeURI(item.file.name));
 }
 
 // Sequência de imagens: não é still, com extensão de imagem e um número no fim do nome.

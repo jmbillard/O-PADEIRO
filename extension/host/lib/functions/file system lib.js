@@ -133,6 +133,7 @@ function openFolder(folderPath) {
 	}
 }
 
+// Extensão de um nome de arquivo, com o ponto e em minúsculas ('' sem extensão).
 function getFileExt(fileName) {
 	var dotIndex = fileName.lastIndexOf('.');
 	if (dotIndex === -1) return '';

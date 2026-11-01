@@ -49,6 +49,7 @@ function padWriteConfig(file, changes) {
 	}
 
 	saveTextFile(JSON.stringify(data, null, '\t'), file.fsName);
+	padConfigInvalidate();
 
 	// confere o que foi gravado
 	JSON.parse(readFileContent(new File(file.fsName)));
@@ -211,10 +212,8 @@ function padCleanDrives(d) {
 }
 
 function padReadDrives() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.DRIVES ? padCleanDrives(data.DRIVES) : padDefaultDrives();
 	} catch (err) {
@@ -369,10 +368,8 @@ function padCleanRename(r) {
 }
 
 function padReadRename() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.RENAME ? padCleanRename(data.RENAME) : padDefaultRename();
 	} catch (err) {
@@ -500,10 +497,8 @@ function padCleanOrganize(o) {
 }
 
 function padReadOrganize() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.ORGANIZE ? padCleanOrganize(data.ORGANIZE) : padDefaultOrganize();
 	} catch (err) {
@@ -562,10 +557,8 @@ function padCleanSearch(o) {
 }
 
 function padReadSearch() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.SEARCH ? padCleanSearch(data.SEARCH) : padDefaultSearch();
 	} catch (err) {
@@ -647,10 +640,8 @@ function padCleanLinks(list) {
 }
 
 function padReadLinks() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.LINKS ? padCleanLinks(data.LINKS) : PAD_DEFAULT_LINKS;
 	} catch (err) {
@@ -746,10 +737,8 @@ function padCleanBar(o) {
 }
 
 function padReadBar() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return padCleanBar(data.BAR || {});
 	} catch (err) {
@@ -759,12 +748,16 @@ function padReadBar() {
 
 // Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
 PADX.barLinks = function () {
-	var file = padConfigFile();
 	var personal = padPersonalLinksFile();
 	var stamp = '';
 
+	// a data da configuração vem do cache (padConfigData): sem perguntar de novo à rede
 	try {
-		stamp = (file && file.exists ? file.modified.getTime() : 0) + '|' + (personal.exists ? personal.modified.getTime() : 0);
+		padConfigData();
+	} catch (err) { }
+
+	try {
+		stamp = PAD_CONFIG_CACHE.stamp + '|' + (personal.exists ? personal.modified.getTime() : 0);
 	} catch (err) { }
 
 	var bar = padReadBar();
@@ -840,10 +833,8 @@ function padCleanAppearance(o) {
 }
 
 function padReadAppearance() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.APPEARANCE ? padCleanAppearance(data.APPEARANCE) : PAD_DEFAULT_APPEARANCE;
 	} catch (err) {

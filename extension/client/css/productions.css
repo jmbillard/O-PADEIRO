@@ -116,25 +116,10 @@ body.prods-page {
 }
 
 /* animações dos ícones (as mesmas ideias da barra) */
-.ti-sheet .ti-row,
-.ti-sheet .ti-col,
 .ti-link path,
-.ti-folder .ti-front,
-.ti-layers path,
-.ti-collect .ti-file1,
-.ti-collect .ti-file2,
-.ti-lens,
 .ti-palette,
 .ti-knob {
   transition: transform 320ms var(--ease-soft);
-}
-
-.tab:hover .ti-sheet .ti-row {
-  transform: translateY(2px);
-}
-
-.tab:hover .ti-sheet .ti-col {
-  transform: translateX(2px);
 }
 
 .tab:hover .ti-link .ti-link-a {
@@ -159,67 +144,6 @@ body.prods-page {
 
 .tab:hover .ti-log .ti-line:nth-of-type(3) {
   animation-delay: 200ms;
-}
-
-.ti-folder .ti-front {
-  transform-origin: 50% 100%;
-}
-
-.tab:hover .ti-folder .ti-front {
-  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
-}
-
-.ti-type .ti-char {
-  transform-origin: 0 50%;
-}
-
-.tab:hover .ti-type .ti-char {
-  animation: ti-write 140ms ease-out backwards;
-}
-
-.tab:hover .ti-type .ti-char:nth-of-type(2) {
-  animation-delay: 110ms;
-}
-
-.tab:hover .ti-type .ti-char:nth-of-type(3) {
-  animation-delay: 220ms;
-}
-
-.tab:hover .ti-layers .ti-top {
-  transform: translateY(-2.6px);
-}
-
-.tab:hover .ti-layers .ti-bottom {
-  transform: translateY(2.6px);
-}
-
-.ti-collect .ti-file1,
-.ti-collect .ti-file2 {
-  transform-origin: 50% 100%;
-}
-
-.tab:hover .ti-collect .ti-file1 {
-  transform: translateY(-1.4px) rotate(-6deg);
-}
-
-.tab:hover .ti-collect .ti-file2 {
-  transform: translateY(-1px) rotate(5deg);
-}
-
-.ti-lens {
-  transform-origin: 40% 40%;
-}
-
-.tab:hover .ti-lens {
-  transform: translate(-1.5px, -1.5px) rotate(-8deg);
-}
-
-.ti-clap-top {
-  transform-origin: 0 100%;
-}
-
-.tab:hover .ti-clap-top {
-  animation: ti-clap 620ms var(--ease-soft);
 }
 
 .tab:hover .ti-palette {
@@ -804,10 +728,6 @@ body.prods-page {
   border-color: var(--danger);
 }
 
-.prods-log-title {
-  margin-bottom: 2px;
-}
-
 .log-modes {
   display: flex;
   flex-wrap: wrap;
@@ -1063,16 +983,6 @@ body.prods-page {
     radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
     linear-gradient(155deg, var(--blue-400) 0%, var(--blue-500) 46%, var(--blue-600) 100%);
   color: white;
-}
-
-.org-eyebrow {
-  margin: 0;
-  padding: 16px 18px 8px;
-  color: rgb(255 255 255 / 72%);
-  font-size: 0.66rem;
-  font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
 
 .org-tree {
@@ -1922,25 +1832,6 @@ body.is-org-dragging * {
 /* "+ separador" logo abaixo dos blocos, como o "+ novo output" */
 #btn-new-divider {
   margin-top: 4px;
-}
-
-/* ícones da barra (js/icons.js) na configuração: a letra da lupa só aparece na animação da barra */
-.lens-letter {
-  opacity: 0;
-}
-
-/* aba coletar: as folhas sobem e abrem em leque, como na barra */
-.prods-nav .anim-collect .collect-file {
-  transform-origin: 50% 100%;
-  transition: transform 320ms var(--ease-soft);
-}
-
-.prods-nav .tab:hover .anim-collect .f1 {
-  transform: translateY(-1.6px) rotate(-6deg);
-}
-
-.prods-nav .tab:hover .anim-collect .f2 {
-  transform: translateY(-1.2px) rotate(5deg);
 }
 
 /* aba busca: a lupa procura */

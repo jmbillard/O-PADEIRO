@@ -168,6 +168,57 @@ function padConfigFile() {
 	return padSharedConfigFile();
 }
 
+// Conteúdo da configuração compartilhada, já interpretado. O arquivo fica na rede e é lido por várias
+// seções e janelas o tempo todo: só é lido de novo quando a data dele muda, e a data é conferida no máximo
+// a cada 1,5 s. Quem usa não altera o objeto (as funções padClean* devolvem cópias).
+// Lança Error se não houver arquivo ou se ele não for um JSON válido.
+var PAD_CONFIG_CACHE = { path: '', stamp: -1, data: null, error: null, checked: 0 };
+
+function padConfigData() {
+	var c = PAD_CONFIG_CACHE;
+	var now = new Date().getTime();
+
+	if (now - c.checked < 1500 && c.stamp != -1) {
+		if (c.error) throw c.error;
+
+		return c.data;
+	}
+
+	c.checked = now;
+
+	var file = padConfigFile();
+
+	if (!file) {
+		c.stamp = -1;
+		throw new Error(padNoSharedListError());
+	}
+
+	var stamp = file.modified.getTime();
+
+	if (file.fsName != c.path || stamp != c.stamp) {
+		c.path = file.fsName;
+		c.stamp = stamp;
+		c.data = null;
+		c.error = null;
+
+		try {
+			c.data = JSON.parse(readFileContent(file));
+		} catch (err) {
+			c.error = err;
+		}
+	}
+
+	if (c.error) throw c.error;
+
+	return c.data;
+}
+
+// Depois de gravar: a próxima leitura vai ao arquivo (a data pode não mudar em menos de 1 s na rede).
+function padConfigInvalidate() {
+	PAD_CONFIG_CACHE.stamp = -1;
+	PAD_CONFIG_CACHE.checked = 0;
+}
+
 function padNoSharedListError() {
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
@@ -235,7 +286,7 @@ PADX.productions = function () {
 	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
-		list = JSON.parse(readFileContent(configFile)).PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
+		list = padConfigData().PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
 	} catch (err) {
 		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
 		list = [];
@@ -307,10 +358,8 @@ function padCleanLog(log) {
 }
 
 function padReadLogSettings() {
-	var file = padConfigFile();
-
 	try {
-		var data = JSON.parse(readFileContent(file));
+		var data = padConfigData();
 
 		return data.LOG ? padCleanLog(data.LOG) : padDefaultLog();
 	} catch (err) {

@@ -39,6 +39,7 @@ O-PADEIRO/
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
    │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
+   │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
