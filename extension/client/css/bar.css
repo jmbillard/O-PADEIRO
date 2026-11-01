@@ -411,6 +411,10 @@ body.bar-page {
     height: 26px;
   }
 
+  #links .row-start {
+    grid-column-start: 1;
+  }
+
   .bar-tools {
     flex-direction: column;
     align-items: center;
