@@ -510,11 +510,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			box.appendChild(btn);
 		});
 
-		// na vertical (de 3 em 3), a linha incompleta fica em cima: o item que abre a primeira linha cheia
-		// começa na coluna 1 (CSS: #links .row-start, só no layout vertical)
+		// na vertical (de 3 em 3, centralizados), a linha incompleta fica em cima: uma quebra antes do item que
+		// abre a primeira linha cheia (CSS: #links .links-break, só no layout vertical)
 		var rest = links.length % 3;
 
-		if (rest && box.children[rest]) box.children[rest].classList.add('row-start'); // com 1 ou 2 links não há linha cheia
+		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // com 1 ou 2 links não há linha cheia
 
 		box.hidden = !links.length;
 		$('links-divider').hidden = !links.length;

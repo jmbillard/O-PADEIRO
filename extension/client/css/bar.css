@@ -233,6 +233,11 @@ body.bar-page {
   height: 30px;
 }
 
+/* a quebra de linha dos links só vale na vertical */
+#links .links-break {
+  display: none;
+}
+
 #links .bar-link img,
 #links .bar-link svg {
   width: 21px;
@@ -406,21 +411,26 @@ body.bar-page {
     flex-direction: column;
   }
 
+  /* de 3 em 3, cada linha centralizada; a incompleta fica em cima (o js põe a quebra antes da 1ª linha cheia) */
   #links {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, 26px);
-    grid-template-rows: none;
+    display: flex;
+    max-width: 80px; /* 3 × 26 + 2 × 1 */
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 0 1px;
+    margin: 0 auto;
+  }
+
+  #links .links-break {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
   }
 
   #links .bar-link {
     width: 26px;
     height: 26px;
-  }
-
-  #links .row-start {
-    grid-column-start: 1;
   }
 
   .bar-tools {
@@ -475,16 +485,7 @@ body.bar-page {
     flex: 0 0 auto;
   }
 
-  /* tudo alinhado pela esquerda, na mesma linha dos ícones das ferramentas */
-  .bar-group {
-    align-items: flex-start;
-  }
-
-  #links {
-    justify-content: start;
-    padding-left: 8px;
-  }
-
+  /* as ferramentas em lista, pela esquerda; os links e a logo ficam no centro */
   .bar-tools {
     align-items: stretch;
   }
@@ -493,15 +494,6 @@ body.bar-page {
     width: auto;
     align-self: stretch;
     margin: 0 10px;
-  }
-
-  .bar-info {
-    align-items: flex-start;
-    padding-left: 6px;
-  }
-
-  .bar-logo {
-    justify-items: start;
   }
 
   .bar-pin {
