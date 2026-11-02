@@ -32,7 +32,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCAR: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
-		collect: { folders: [], projectFolders: false, saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
+		collect: { folders: [], saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
@@ -333,7 +333,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			folders: c.folders.map(function (f) {
 				return { name: f.name.trim(), parent: f.parent, contents: f.contents.slice() };
 			}),
-			projectFolders: c.projectFolders,
 			saveAfter: c.saveAfter
 		};
 	}
@@ -1727,7 +1726,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			folders: (data.folders || []).map(function (f) {
 				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || []).slice() };
 			}),
-			projectFolders: data.projectFolders === true,
 			saveAfter: data.saveAfter !== false
 		};
 		renderCollect();
@@ -1750,7 +1748,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: a janela projeto salva aqui');
 			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
-			if (state.collect.projectFolders && f.contents.some(function (t) { return t !== 'fontes' && t !== 'projeto'; })) notes.push('as pastas do painel de projeto');
 			if (!notes.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -1764,9 +1761,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return sub;
 		},
 		after: function () {
-			$('col-project-folders').checked = state.collect.projectFolders;
 			$('col-save').checked = state.collect.saveAfter;
-			['col-project-folders', 'col-save', 'btn-new-col-folder', 'btn-col-default'].forEach(function (id) {
+			['col-save', 'btn-new-col-folder', 'btn-col-default'].forEach(function (id) {
 				$(id).disabled = !state.available;
 			});
 		}
@@ -1778,12 +1774,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindCollect() {
 		colTree.bind();
-
-		$('col-project-folders').addEventListener('change', function () {
-			state.collect.projectFolders = this.checked;
-			renderCollect();
-			updateDirty();
-		});
 
 		$('col-save').addEventListener('change', function () {
 			state.collect.saveAfter = this.checked;

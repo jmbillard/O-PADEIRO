@@ -151,7 +151,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
 							{ name: '03 SAIDA', parent: '', contents: [] }
 						],
-						projectFolders: false,
 						saveAfter: true
 					},
 					items: [

@@ -74,7 +74,7 @@ A aba *project* do script vira a janela [PROJETO](../../projeto.md):
 
 ### Coletar (COLLECT)
 
-O botão **coletar** da barra faz o collect do script: todos os tipos de arquivo vão para `project files`, repetindo as pastas do painel de projeto (`projectFolders`), e as fontes para `FONTS`. As sequências de imagens também são copiadas (o script deixava de fora).
+O botão **coletar** da barra faz o collect do script: todos os tipos de arquivo vão para `project files` (cada um na pasta do seu tipo) e as fontes para `FONTS`. As sequências de imagens também são copiadas (o script deixava de fora).
 
 ### Barra (APPEARANCE e LINKS)
 

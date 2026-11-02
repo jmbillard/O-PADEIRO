@@ -93,7 +93,6 @@ a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto*
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
 - **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
-- **repetir as pastas do painel de projeto** → ligado, dentro da pasta do tipo o arquivo fica nas mesmas pastas em que está no painel de projeto (ex: `videos / Material`).
 - **salvar o projeto depois de coletar** → grava o projeto já apontando para as cópias.
 <br>
 

@@ -14,7 +14,6 @@ quadros do trecho usado), cada uma na própria subpasta.
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
                    'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de
                    cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
-  projectFolders → repete, dentro da pasta do tipo, as pastas do painel de projeto onde o item está
   saveAfter      → salva o projeto depois de coletar (com os caminhos novos)
 Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 
@@ -34,13 +33,12 @@ var PAD_DEFAULT_COLLECT = {
 		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
 		{ name: '03 SAIDA', parent: '', contents: [] }
 	],
-	projectFolders: false,
 	saveAfter: true
 };
 
 // Valida e normaliza a seção vinda do painel. Lança Error com a mensagem.
 function padCleanCollect(o) {
-	var clean = { folders: [], projectFolders: o.projectFolders === true, saveAfter: o.saveAfter !== false };
+	var clean = { folders: [], saveAfter: o.saveAfter !== false }; // 'projectFolders' (antigo) é ignorado
 	var names = {};
 	var owner = {};
 	var i;
@@ -285,15 +283,6 @@ function padEnsureFolder(path) {
 	return folder;
 }
 
-// Pastas do painel de projeto onde o item está ('a/b/'), para repetir na coleta.
-function padItemProjectPath(item) {
-	var sub = '';
-
-	for (var f = item.parentFolder; f && f != app.project.rootFolder; f = f.parentFolder) sub = sanitizeFileName(f.name) + '/' + sub;
-
-	return sub;
-}
-
 function padCopySequence(item, folderPath) {
 	var seq = padSequenceFrames(item);
 	var folder = padEnsureFolder(folderPath + '/' + seq.base);
@@ -360,11 +349,7 @@ function padCollectFiles(target, settings) {
 		if (paths[kind] == null) continue; // tipo fora da árvore: não é coletado
 		if (String(item.file.fsName).replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) continue; // já está na pasta do projeto
 
-		var folderPath = root.fsName + '/' + paths[kind];
-
-		if (settings.projectFolders) folderPath += '/' + padItemProjectPath(item);
-
-		folderPath = folderPath.replace(/\/+$/, '');
+		var folderPath = (root.fsName + '/' + paths[kind]).replace(/\/+$/, '');
 
 		try {
 			if (kind == 'sequencias') {
