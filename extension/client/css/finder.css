@@ -151,7 +151,7 @@ body.finder-page {
 
 /* ligado = o inverso do desligado: trilho opaco e bolinha esmaecida */
 .chip.is-on .chip-check::after {
-  background: rgb(79 130 255 / 30%);
+  background: var(--blue-300); /* o destaque esmaecido: acompanha as cores escolhidas */
   box-shadow: none;
   transform: translateX(12px);
 }
