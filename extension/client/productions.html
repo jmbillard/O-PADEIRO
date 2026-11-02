@@ -194,15 +194,13 @@
 			<div class="cfg-pane organize-pane" id="pane-organize" role="tabpanel" hidden>
 				<div class="org-card">
 					<div class="org-tree" id="org-tree"></div>
-					<div class="org-foot">
-						<button type="button" class="org-add" id="btn-new-folder">+ nova pasta</button>
-					</div>
 				</div>
 
 				<div class="org-side">
 					<p class="cfg-title prods-section-title">tipos de item</p>
 					<p class="cfg-hint">arraste cada tipo para a pasta da árvore que deve recebê-lo. o que fica na raiz não entra em pasta nenhuma. as pastas também se arrastam: sobre outra pasta, ela entra; entre duas, fica no mesmo nível.</p>
 					<div class="org-types" id="org-types"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-folder">+ nova pasta</button>
 
 					<p class="cfg-title prods-section-title">comps de render</p>
 					<p class="cfg-hint">a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).</p>
@@ -230,15 +228,13 @@
 			<div class="cfg-pane organize-pane" id="pane-collect" role="tabpanel" hidden>
 				<div class="org-card">
 					<div class="org-tree" id="col-tree"></div>
-					<div class="org-foot">
-						<button type="button" class="org-add" id="btn-new-col-folder">+ nova pasta</button>
-					</div>
 				</div>
 
 				<div class="org-side">
 					<p class="cfg-title prods-section-title">tipos de arquivo</p>
 					<p class="cfg-hint">a estrutura de cada projeto. o collect copia os arquivos usados para ela e troca os caminhos no projeto; a janela PROJETO cria as pastas ao salvar e põe o .aep na pasta do tipo <b>projeto</b> (a raiz da estrutura é a pasta de cima). arraste cada tipo para a sua pasta; o que fica na raiz (riscado) <b>não é coletado</b>. pastas sem tipo também são criadas.</p>
 					<div class="org-types" id="col-types"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-col-folder">+ nova pasta</button>
 
 					<p class="cfg-title prods-section-title">sequências de imagens</p>
 					<p class="cfg-hint">copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela (render_0001.png → render). a interpretação do item (fps, alpha) é mantida.</p>
