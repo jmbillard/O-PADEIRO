@@ -117,9 +117,19 @@ body.prods-page {
 
 /* animações dos ícones (as mesmas ideias da barra) */
 .ti-link path,
-.ti-palette,
-.ti-knob {
+.ti-theme,
+.ti-row {
   transition: transform 320ms var(--ease-soft);
+}
+
+/* aparência: o meio círculo (claro / escuro) cheio; no hover, ele gira e troca de lado */
+.ti-half {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.ti-theme {
+  transform-origin: center;
 }
 
 .tab:hover .ti-link .ti-link-a {
@@ -146,20 +156,17 @@ body.prods-page {
   animation-delay: 200ms;
 }
 
-.tab:hover .ti-palette {
-  transform: rotate(-14deg);
+.tab:hover .ti-theme {
+  transform: rotate(180deg);
 }
 
-.tab:hover .ti-k1 {
-  transform: translateX(8px);
+/* layout: a linha com o puxador desce uma posição e a de baixo sobe (reordenar) */
+.tab:hover .ti-r1 {
+  transform: translateY(6px);
 }
 
-.tab:hover .ti-k2 {
-  transform: translateX(-7px);
-}
-
-.tab:hover .ti-k3 {
-  transform: translateX(5px);
+.tab:hover .ti-r2 {
+  transform: translateY(-6px);
 }
 
 @keyframes ti-write {

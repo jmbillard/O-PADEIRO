@@ -3210,8 +3210,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		network: '<g class="ti-server"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-line" d="M7.5 7.5h.01M7.5 16.5h.01" /></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
-		appearance: '<g class="ti-palette"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.6-1-2.6 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7c0-4.2-3.8-7.3-8.5-7.3z" /><circle class="ti-dot" cx="7.5" cy="11" r=".9" /><circle class="ti-dot" cx="10" cy="7.3" r=".9" /><circle class="ti-dot" cx="14.5" cy="7.3" r=".9" /></g>',
-		tools: '<g class="ti-sliders"><path d="M4 7h16M4 12h16M4 17h16" /><circle class="ti-knob ti-k1" cx="8" cy="7" r="1.8" /><circle class="ti-knob ti-k2" cx="15" cy="12" r="1.8" /><circle class="ti-knob ti-k3" cx="10" cy="17" r="1.8" /></g>'
+		appearance: '<g class="ti-theme"><circle cx="12" cy="12" r="8" /><path class="ti-half" d="M12 4a8 8 0 0 1 0 16z" /></g>',
+		tools: '<g class="ti-list"><g class="ti-row ti-r1"><path d="M9 6h11" /><path d="M4 5.5h.01M4 6.5h.01M5 5.5h.01M5 6.5h.01" /></g><g class="ti-row ti-r2"><path d="M9 12h11" /><path d="M4.5 11v2" /></g><g class="ti-row ti-r3"><path d="M9 18h11" /><path d="M4.5 17v2" /></g></g>'
 	};
 
 	function decorateTabs() {
