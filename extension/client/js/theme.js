@@ -48,6 +48,34 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		}).join('');
 	}
 
+	// contraste (WCAG) entre duas cores
+	function luminance(hex) {
+		return rgb(hex).map(function (v) {
+			v /= 255;
+
+			return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+		}).reduce(function (sum, v, i) {
+			return sum + v * [0.2126, 0.7152, 0.0722][i];
+		}, 0);
+	}
+
+	function contrast(a, b) {
+		var x = luminance(a);
+		var y = luminance(b);
+
+		return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+	}
+
+	// o destaque também pinta textos (títulos, opções, avisos): se ficar claro demais no fundo (ou escuro
+	// demais, no modo escuro), escurece (ou clareia) aos poucos até dar para ler; a matiz fica a mesma
+	function readable(color, surface, dark) {
+		var out = color;
+
+		for (var t = 0.05; contrast(out, surface) < 4.5 && t <= 1; t += 0.05) out = mix(color, dark ? '#ffffff' : '#000000', t);
+
+		return out;
+	}
+
 	function isDark(theme) {
 		if (theme.mode === 'dark') return true;
 		if (theme.mode === 'auto') return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -69,11 +97,13 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		root.setAttribute('data-theme', dark ? 'dark' : 'light');
 		root.setAttribute('data-bg', solid ? 'solid' : 'gradient');
 
-		// destaque e degradê (sólido: as pontas viram o destaque)
-		set('--blue-500', t.accent);
+		// destaque e degradê (sólido: as pontas viram o destaque). --blue-500 também é cor de texto: vai na
+		// versão legível; o meio dos degradês (--blue-mid) fica com a cor escolhida, como está
+		set('--blue-500', readable(t.accent, surface, dark));
+		set('--blue-mid', t.accent);
 		set('--blue-400', solid ? t.accent : t.gradientStart);
 		set('--blue-600', solid ? t.accent : t.gradientEnd);
-		set('--blue-700', mix(t.accent, '#000000', 0.25));
+		set('--blue-700', mix(readable(t.accent, surface, dark), '#000000', 0.25));
 
 		// tons claros (no escuro, misturados com a superfície escura)
 		set('--blue-50', mix(t.accent, surface, dark ? 0.86 : 0.95));

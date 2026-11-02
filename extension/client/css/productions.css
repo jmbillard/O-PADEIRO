@@ -981,7 +981,7 @@ body.prods-page {
   border-radius: 22px 22px 32px 32px; /* embaixo, concêntrico com o '+ nova pasta' (raio 17 + 14 de respiro + borda) */
   background:
     radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
-    linear-gradient(155deg, var(--blue-400) 0%, var(--blue-500) 46%, var(--blue-600) 100%);
+    linear-gradient(155deg, var(--blue-400) 0%, var(--blue-mid, var(--blue-500)) 46%, var(--blue-600) 100%);
   color: white;
 }
 
@@ -1791,7 +1791,7 @@ body.is-org-dragging * {
   margin-top: 4px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: linear-gradient(145deg, var(--blue-400), var(--blue-500) 45%, var(--blue-600));
+  background: linear-gradient(145deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 45%, var(--blue-600));
   color: white;
   font-size: 0.74rem;
   font-weight: 650;

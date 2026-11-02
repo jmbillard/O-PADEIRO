@@ -99,7 +99,7 @@ body {
       transparent 28%),
     linear-gradient(145deg,
       var(--blue-400) 0%,
-      var(--blue-500) 42%,
+      var(--blue-mid, var(--blue-500)) 42%,
       var(--blue-600) 100%);
   color: var(--text-primary);
   font-family:
@@ -227,7 +227,7 @@ svg {
       transparent 28%),
     linear-gradient(155deg,
       var(--blue-400) 0%,
-      var(--blue-500) 43%,
+      var(--blue-mid, var(--blue-500)) 43%,
       var(--blue-600) 100%);
   color: var(--text-on-brand);
   transition: padding 620ms var(--ease-enter);
@@ -530,7 +530,7 @@ svg {
   background:
     linear-gradient(90deg,
       var(--blue-400),
-      var(--blue-500),
+      var(--blue-mid, var(--blue-500)),
       var(--blue-600));
   box-shadow: 0 2px 8px rgb(79 130 255 / 28%);
   transition: width 600ms var(--ease-soft);
