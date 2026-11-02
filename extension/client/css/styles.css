@@ -24,8 +24,10 @@
   --text-primary: #202636;
   --text-secondary: #687184;
   --text-tertiary: #8b94a6;
-  --text-on-brand: #ffffff;
-  --text-on-brand-muted: rgb(255 255 255 / 78%);
+  /* texto sobre o degradê: branco; com cores claras o tema (theme.js) troca por um tom escuro */
+  --on-brand: 255 255 255;
+  --text-on-brand: rgb(var(--on-brand));
+  --text-on-brand-muted: rgb(var(--on-brand) / 78%);
 
   --border: #e5e9f0;
   --border-strong: #d7dde8;
@@ -279,7 +281,7 @@ svg {
 }
 
 .eyebrow {
-  color: rgb(255 255 255 / 68%);
+  color: rgb(var(--on-brand) / 68%);
 }
 
 /* Typewriter */

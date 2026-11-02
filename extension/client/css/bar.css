@@ -145,14 +145,14 @@ body.bar-page {
 }
 
 .bar-version {
-  color: rgb(255 255 255 / 72%);
+  color: rgb(var(--on-brand) / 72%);
   font-size: 0.58rem;
   font-weight: 750;
   letter-spacing: 0.08em;
 }
 
 .bar-logo:hover .bar-version {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 /* produção */
@@ -164,7 +164,7 @@ body.bar-page {
   place-items: center;
   border: 0;
   background: transparent;
-  color: rgb(255 255 255 / 92%);
+  color: rgb(var(--on-brand) / 92%);
   cursor: pointer;
   transition:
     color 200ms ease,
@@ -286,7 +286,7 @@ body.bar-page {
 }
 
 .bar-label {
-  color: rgb(255 255 255 / 78%);
+  color: rgb(var(--on-brand) / 78%);
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -296,12 +296,12 @@ body.bar-page {
 
 .bar-icon:hover:not(:disabled),
 .bar-btn:hover:not(:disabled) {
-  color: white;
+  color: rgb(var(--on-brand));
   transform: translateY(-1px);
 }
 
 .bar-btn:hover:not(:disabled) .bar-label {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .bar-btn:active:not(:disabled),

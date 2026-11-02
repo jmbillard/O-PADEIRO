@@ -54,17 +54,17 @@ body.maker-page {
   padding: 3px 2px;
   border: 0;
   background: transparent;
-  color: rgb(255 255 255 / 72%);
+  color: rgb(var(--on-brand) / 72%);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .maker-tools .check-chip:hover {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .maker-tools .check-chip.is-ok {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .maker-tools .check-dot {

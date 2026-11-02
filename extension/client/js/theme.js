@@ -29,6 +29,7 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		mono: 'ui-monospace, Menlo, Consolas, monospace'
 	};
 	var SURFACE = { light: '#ffffff', dark: '#1c2130' };
+	var BRAND_INK = '#18213a'; // o texto escuro sobre degradês claros
 	var current = null;
 	var stamp = null;
 
@@ -111,6 +112,18 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		set('--blue-100', mix(t.accent, surface, dark ? 0.8 : 0.9));
 		set('--blue-200', mix(t.accent, surface, dark ? 0.6 : 0.74));
 		set('--blue-300', mix(t.accent, surface, dark ? 0.35 : 0.42));
+
+		// texto sobre o degradê: branco, a não ser que o degradê seja claro demais para ele (contraste médio
+		// abaixo de 3:1 nas pontas e no meio) e o escuro se leia melhor
+		var stops = solid ? [t.accent] : [t.gradientStart, t.accent, t.gradientEnd];
+		var average = function (ink) {
+			return stops.reduce(function (sum, c) {
+				return sum + contrast(ink, c);
+			}, 0) / stops.length;
+		};
+		var white = average('#ffffff');
+
+		set('--on-brand', white >= 3 || white >= average(BRAND_INK) ? '255 255 255' : rgb(BRAND_INK).join(' '));
 
 		set('--font-ui', FONTS[t.font] || FONTS.inter);
 

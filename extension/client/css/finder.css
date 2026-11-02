@@ -97,7 +97,7 @@ body.finder-page {
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
-  color: rgb(255 255 255 / 66%);
+  color: rgb(var(--on-brand) / 66%);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 750;
@@ -106,7 +106,7 @@ body.finder-page {
 }
 
 .chip:hover {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .chip:focus-visible {
@@ -142,7 +142,7 @@ body.finder-page {
 }
 
 .chip.is-on {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .chip.is-on .chip-check {
@@ -610,11 +610,11 @@ body.finder-page {
 
 .finder-pane.is-idle .finder-state {
   padding-top: 8px;
-  color: rgb(255 255 255 / 78%);
+  color: rgb(var(--on-brand) / 78%);
 }
 
 .finder-pane.is-idle .finder-state strong {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .finder-pane.is-idle .oven-loader.is-light {

@@ -8,10 +8,10 @@
    ========================================================= */
 
 .oven-loader {
-  --oven-line: rgb(255 255 255 / 92%);
-  --oven-dash: rgb(255 255 255 / 92%);
-  --oven-text: white;
-  --oven-hint: rgb(255 255 255 / 72%);
+  --oven-line: rgb(var(--on-brand, 255 255 255) / 92%);
+  --oven-dash: rgb(var(--on-brand, 255 255 255) / 92%);
+  --oven-text: rgb(var(--on-brand, 255 255 255));
+  --oven-hint: rgb(var(--on-brand, 255 255 255) / 72%);
   --oven-cycle: 4s;
 
   display: grid;
