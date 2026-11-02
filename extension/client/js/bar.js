@@ -534,8 +534,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	if (ICON_MEDIA.addListener) ICON_MEDIA.addListener(placeLinksBreak);
 
-	// Rede ou modo local, no começo da barra: um servidor (rede) ou um notebook (local), com um selo dizendo
-	// por quê: o bonequinho (ligado na configuração) ou o alerta (a rede não está respondendo).
+	// Rede ou modo local, no começo da barra: o servidor (rede); o servidor com o alerta amarelo (a rede não
+	// está respondendo: o padeiro usa as cópias deste computador); o notebook (modo local, ligado na configuração).
 	var NET_ICONS = {
 		network: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>', // o servidor (o mesmo da aba drives)
 		local: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5.5" width="14" height="9.5" rx="1.8" /><path d="M3 18.5h18" /></svg>'
@@ -552,12 +552,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		netState = key;
 		btn.hidden = false;
 		btn.className = 'bar-icon bar-net is-' + key;
-		btn.innerHTML = NET_ICONS[local ? 'local' : 'network'];
+		btn.innerHTML = NET_ICONS[key === 'forced' ? 'local' : 'network'];
 
-		if (local) {
+		if (key === 'offline') {
 			var badge = el('span', 'bar-link-badge bar-net-badge');
 
-			badge.innerHTML = forced ? PERSON_BADGE : WARN_BADGE;
+			badge.innerHTML = WARN_BADGE;
 			btn.appendChild(badge);
 		}
 

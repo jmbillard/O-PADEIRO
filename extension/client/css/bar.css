@@ -549,7 +549,7 @@ body.bar-page {
 }
 
 .bar-net-badge .badge-warn {
-  fill: #f2a93b;
+  fill: #f5bf24;
 }
 
 .bar-net-badge .badge-mark {
@@ -564,7 +564,7 @@ body.bar-page {
 }
 
 .bar-net.is-offline .bar-net-badge {
-  color: #f2a93b;
+  color: #f5bf24;
 }
 
 /* na vertical (coluna única), o ícone da rede fica no centro, como os links */
