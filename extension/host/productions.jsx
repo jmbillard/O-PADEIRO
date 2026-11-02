@@ -57,6 +57,8 @@ function padWriteConfig(file, changes) {
 
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
+	if (padHomeOffice()) throw new Error('#PAD_096 - home office: a configuração da equipe fica na rede. desligue o home office (configuração > computador) para editar.');
+
 	var file = padConfigFile();
 
 	if (!file) throw new Error(padNoSharedListError());

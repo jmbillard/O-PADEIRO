@@ -201,6 +201,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return mockPrefs();
 		},
 
+		machinePrefs: function () {
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', homeOffice: false };
+
+			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, m);
+		},
+
+		saveMachinePrefs: function (a) {
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', homeOffice: !!a.homeOffice }));
+
+			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+		},
+
 		barLinks: function () {
 			var list = window.PAD_MOCK_LIST;
 

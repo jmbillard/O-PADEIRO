@@ -127,6 +127,138 @@ function padDisplayPaths(list) {
 	return out;
 }
 
+/*
+
+---------------------------------------------------------------
+> este computador (configuração > LOCAL > computador)
+---------------------------------------------------------------
+
+'machine_config.json' na pasta de dados do usuário:
+  user       → a sigla do designer ({usuario} no nome do projeto); vazia: as 3 primeiras letras do usuário
+  projects   → a pasta padrão dos projetos neste computador (no lugar da raiz da equipe; as retrancas
+               relativas ficam dentro dela)
+  outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
+  homeOffice → 100% local: nada depende da rede. a configuração vem da última cópia guardada neste
+               computador, os projetos vão para 'projects' (ou a Área de Trabalho), os renders para
+               'outputs' (ou a Área de Trabalho) e os logs esperam a volta para a rede
+
+*/
+
+var PAD_MACHINE_CACHE = { stamp: -1, data: {} };
+
+function padMachineFile() {
+	return new File(scriptPreferencesPath + '/machine_config.json');
+}
+
+function padMachineData() {
+	var file = padMachineFile();
+	var stamp = 0;
+
+	try {
+		stamp = file.exists ? file.modified.getTime() : 0;
+	} catch (err) { }
+
+	if (stamp != PAD_MACHINE_CACHE.stamp) {
+		PAD_MACHINE_CACHE.stamp = stamp;
+		PAD_MACHINE_CACHE.data = {};
+
+		if (stamp) {
+			try {
+				PAD_MACHINE_CACHE.data = JSON.parse(readFileContent(file)) || {};
+			} catch (err) { }
+		}
+	}
+
+	return PAD_MACHINE_CACHE.data;
+}
+
+function padHomeOffice() {
+	return padMachineData().homeOffice === true;
+}
+
+// Caminho de pasta digitado: barras normais, sem barra no fim.
+function padMachinePath(path) {
+	return String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
+}
+
+function padCleanUser(user) {
+	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 6).toUpperCase();
+}
+
+function padDefaultUser() {
+	return String(system.userName || '').replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
+}
+
+// Sigla do designer: a deste computador; sem ela, a antiga (project_user.json) ou a padrão.
+function padMachineUser() {
+	var user = padCleanUser(padMachineData().user);
+
+	if (user) return user;
+
+	var legacy = new File(scriptPreferencesPath + '/project_user.json');
+
+	if (legacy.exists) {
+		try {
+			user = padCleanUser(JSON.parse(readFileContent(legacy)).user);
+		} catch (err) { }
+	}
+
+	return user || padDefaultUser();
+}
+
+PADX.machinePrefs = function () {
+	var d = padMachineData();
+
+	return {
+		user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(),
+		defaultUser: padDefaultUser(),
+		projects: padMachinePath(d.projects),
+		outputs: padMachinePath(d.outputs),
+		homeOffice: d.homeOffice === true,
+		hasConfigCopy: padConfigCopyFile().exists
+	};
+};
+
+// a: { user, projects, outputs, homeOffice } (só os campos enviados mudam)
+PADX.saveMachinePrefs = function (a) {
+	var d = padMachineData();
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), homeOffice: d.homeOffice === true };
+
+	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
+	if (a.projects != null) data.projects = padMachinePath(a.projects);
+	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
+	if (a.homeOffice != null) data.homeOffice = a.homeOffice === true;
+
+	if (data.homeOffice && !d.homeOffice && !padConfigCopyFile().exists) {
+		// liga o home office: guarda já a cópia da configuração, se a rede ainda estiver aí
+		try {
+			padConfigData();
+		} catch (err) { }
+
+		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - home office: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
+	}
+
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify(data, null, '\t'), padMachineFile().fsName);
+	PAD_MACHINE_CACHE.stamp = -1;
+	padConfigInvalidate();
+
+	// a sigla antiga sai: agora fica aqui
+	var legacy = new File(scriptPreferencesPath + '/project_user.json');
+
+	if (legacy.exists) legacy.remove();
+
+	return PADX.machinePrefs();
+};
+
+// Cópia da configuração da equipe guardada neste computador (para o home office).
+function padConfigCopyFile() {
+	return new File(scriptPreferencesPath + '/config_copy.json');
+}
+
 // Lista de produções COMPARTILHADA ('O_PADEIRO_config.json'): fica na pasta do padeiro na rede,
 // ao lado da pasta da extensão. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
@@ -162,9 +294,15 @@ function padSharedConfigFile() {
 	return sibling.exists ? sibling : null;
 }
 
-// Arquivo da lista de produções: sempre o compartilhado na rede (todos usam a lista mais atual).
-// Sem ele não há lista: nada de cópia local, que ficaria desatualizada.
+// Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No home office,
+// a cópia guardada neste computador na última leitura da rede (sem tocar na rede).
 function padConfigFile() {
+	if (padHomeOffice()) {
+		var copy = padConfigCopyFile();
+
+		return copy.exists ? copy : null;
+	}
+
 	return padSharedConfigFile();
 }
 
@@ -202,7 +340,19 @@ function padConfigData() {
 		c.error = null;
 
 		try {
-			c.data = JSON.parse(readFileContent(file));
+			var text = readFileContent(file);
+
+			c.data = JSON.parse(text);
+
+			// lida da rede: guarda a cópia para o home office
+			if (!padHomeOffice()) {
+				try {
+					var folder = new Folder(scriptPreferencesPath);
+
+					if (!folder.exists) folder.create();
+					saveTextFile(text, padConfigCopyFile().fsName);
+				} catch (err) { }
+			}
 		} catch (err) {
 			c.error = err;
 		}
@@ -220,6 +370,8 @@ function padConfigInvalidate() {
 }
 
 function padNoSharedListError() {
+	if (padHomeOffice()) return '#PAD_096 - home office: não há uma cópia da configuração neste computador. desligue o home office (configuração > computador) com a rede conectada.';
+
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
@@ -273,7 +425,8 @@ PADX.ping = function () {
 		build: app.buildName,
 		os: appOs,
 		version: PADX_VERSION,
-		network: netAccess()
+		network: netAccess(),
+		homeOffice: padHomeOffice()
 	};
 };
 
@@ -318,6 +471,7 @@ PADX.productions = function () {
 		collect: padReadCollect(),
 		bar: padReadTeamBar(),
 		personal: PADX.personalPrefs(),
+		homeOffice: padHomeOffice(),
 		error: error
 	};
 };
@@ -420,11 +574,11 @@ function padWriteLog(record) {
 	var settings = padReadLogSettings();
 
 	if (settings.mode == 'off') return;
-	if (settings.mode == 'webhook') return sendToWebhookWithCurl(record, settings.webhook);
+	if (settings.mode == 'webhook') return padHomeOffice() ? null : sendToWebhookWithCurl(record, settings.webhook);
 
-	// CSV global: ao lado da lista de produções; por produção: na pasta de templates dela
-	var config = padConfigFile();
-	var folder = settings.mode == 'csvGlobal' ? (config && config.exists ? config.parent : null) : padProductionFolder(record.producao);
+	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
+	var config = padHomeOffice() ? new File(padSharedConfigPath()) : padConfigFile();
+	var folder = settings.mode == 'csvGlobal' ? (config && (padHomeOffice() || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
@@ -439,6 +593,13 @@ function padWriteLog(record) {
 	}
 
 	if (folder) pending.push({ folder: folder.fsName, line: line.join(';') });
+
+	// home office: nada na rede; as linhas esperam a volta (gravadas no próximo preenchimento fora dele)
+	if (padHomeOffice()) {
+		if (pending.length) saveTextFile(JSON.stringify(pending), pendingFile.fsName);
+
+		return;
+	}
 
 	// agrupa por pasta, mantendo a ordem; o que não puder ser gravado continua pendente
 	var folders = [];
@@ -1122,14 +1283,23 @@ PADX.queueBegin = function (a) {
 	var outputs = [];
 	var configured = run.templateData.outputPath;
 
+	var machine = padMachineData();
+	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
+
 	for (var o = 0; o < configured.length; o++) {
 		var outputPath = padPath(configured[o]);
+
+		// home office: tudo na pasta de saída deste computador (sem tocar na rede)
+		if (padHomeOffice()) {
+			outputs.push(padPath(localOutput));
+			continue;
+		}
 
 		if (!new Folder(outputPath).exists) {
 			// Substitui o caminho inexistente pelo caminho padrão
 			// o caminho já convertido para este sistema (no macOS, /Volumes/...)
 			warnings.push('#PAD_019 - output não pode ser acessado: ' + new Folder(outputPath).fsName);
-			outputPath = defaultTemplateConfigObj.outputPath[0];
+			outputPath = padPath(localOutput);
 		}
 
 		outputs.push(outputPath);

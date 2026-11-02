@@ -45,6 +45,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
+		machine: { user: '', projects: '', outputs: '', homeOffice: false }, // aba COMPUTADOR (só neste computador)
+		machineSnapshot: '',
+		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
 		tab: 'prods'
 	};
@@ -371,8 +374,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (JSON.stringify(barForSave(m.bar)) !== JSON.stringify(barForSave(t.bar))) state.custom.bar = true;
 	}
 
+	function machineForSave() {
+		var m = state.machine;
+
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), homeOffice: !!m.homeOffice };
+	}
+
 	function personalDirty() {
-		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot;
+		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot || (state.machineSnapshot !== '' && JSON.stringify(machineForSave()) !== state.machineSnapshot);
 	}
 
 	function updateDirty() {
@@ -2250,7 +2259,70 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
+	/* =========================================================
+	   Computador (sigla, pastas padrão e home office)
+	   ========================================================= */
+
+	function setMachine(m) {
+		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', homeOffice: !!m.homeOffice };
+		state.defaultUser = m.defaultUser || '';
+		state.machineSnapshot = JSON.stringify(machineForSave());
+		renderMachine();
+	}
+
+	function renderMachine() {
+		var m = state.machine;
+
+		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
+			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
+		});
+		$('machine-user').placeholder = state.defaultUser;
+		$('machine-projects').placeholder = state.project && state.project.root ? state.project.root : 'a pasta da equipe';
+		$('machine-home').checked = m.homeOffice;
+	}
+
+	async function loadMachine() {
+		try {
+			setMachine(await call('machinePrefs'));
+		} catch (err) { }
+
+		updateDirty();
+	}
+
+	function bindMachine() {
+		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
+			$(pair[0]).addEventListener('input', function () {
+				if (pair[1] === 'user') this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+				state.machine[pair[1]] = this.value;
+				updateDirty();
+			});
+		});
+
+		$('machine-home').addEventListener('change', function () {
+			state.machine.homeOffice = this.checked;
+			updateDirty();
+		});
+
+		[['machine-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['machine-outputs-pick', 'outputs', 'Pasta de saída neste computador']].forEach(function (k) {
+			$(k[0]).addEventListener('click', async function () {
+				var picked = PAD_BRIDGE.pickFolder(k[2], state.machine[k[1]]);
+
+				if (!picked) return;
+
+				try {
+					picked = (await call('canonicalPath', { path: picked })).path || picked;
+				} catch (err) { }
+
+				state.machine[k[1]] = picked;
+				renderMachine();
+				updateDirty();
+			});
+		});
+	}
+
 	async function loadPersonal() {
+		loadMachine();
+
 		try {
 			state.personal = (await call('personalLinks')).links.map(function (l) {
 				return { name: l.name || '', url: l.url || '', icon: l.icon || '' };
@@ -2286,6 +2358,18 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			await call('savePersonalPrefs', prefs);
 			state.prefsSnapshot = JSON.stringify(prefs);
 			saved = true;
+		}
+
+		var machine = machineForSave();
+
+		if (state.machineSnapshot !== '' && JSON.stringify(machine) !== state.machineSnapshot) {
+			var home = JSON.parse(state.machineSnapshot).homeOffice;
+
+			setMachine(await call('saveMachinePrefs', machine));
+			saved = true;
+
+			// o home office troca de onde vem a configuração da equipe (rede ou a cópia deste computador)
+			if (home !== state.machine.homeOffice) setTimeout(load, 0);
 		}
 
 		renderScope();
@@ -2921,8 +3005,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools', 'mylinks'];
-	var MINE_TABS = ['appearance', 'tools', 'mylinks']; // local (este computador); as outras, da equipe (rede)
+	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools', 'mylinks', 'machine'];
+	var MINE_TABS = ['appearance', 'tools', 'mylinks', 'machine']; // local (este computador); as outras, da equipe (rede)
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -2970,19 +3054,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!box) return;
 
 		var mine = MINE_TABS.indexOf(tab) >= 0;
-		var team = !mine || (state.editTeam && tab !== 'mylinks');
+		var team = !mine || (state.editTeam && tab !== 'mylinks' && tab !== 'machine');
 		var text = el('span', 'scope-text');
 
 		box.textContent = '';
 		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
 		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
 
-		if (!mine) {
+		if (!mine && state.machine.homeOffice) {
+			text.innerHTML = '<b>equipe</b> · home office: a cópia guardada neste computador, só para ler';
+		} else if (!mine) {
 			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
-		} else if (tab === 'mylinks') {
-			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros';
+		} else if (tab === 'mylinks' || tab === 'machine') {
+			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros' + (tab === 'machine' && state.machine.homeOffice ? ' · <b>home office</b>' : '');
 		} else {
 			text.innerHTML = '<b>local</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
 		}
@@ -2993,7 +3079,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			box.appendChild(scopeButton('voltar às minhas preferências', function () {
 				setEditTeam(false);
 			}));
-		} else if (mine && tab !== 'mylinks' && isPersonalized(tab)) {
+		} else if (mine && tab !== 'mylinks' && tab !== 'machine' && isPersonalized(tab)) {
 			box.appendChild(scopeButton('voltar ao padrão da equipe', function () {
 				if (tab === 'appearance') state.custom.appearance = false;
 				if (tab === 'tools') state.custom.bar = false;
@@ -3017,6 +3103,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TAB_TOOL_ICONS = { prods: 'templates', drives: 'folders', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
 
 	var TAB_ICONS = {
+		machine: '<g class="ti-laptop"><rect x="5" y="5" width="14" height="10" rx="1.8" /><path d="M3 18.5h18" /><path class="ti-line" d="M9.5 9.5h5" /></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
 		appearance: '<g class="ti-palette"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.6-1-2.6 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7c0-4.2-3.8-7.3-8.5-7.3z" /><circle class="ti-dot" cx="7.5" cy="11" r=".9" /><circle class="ti-dot" cx="10" cy="7.3" r=".9" /><circle class="ti-dot" cx="14.5" cy="7.3" r=".9" /></g>',
@@ -3111,6 +3198,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setSearch(res.search);
 			setLinks(res.links);
 			setProject(res.project);
+			renderMachine();
 			setCollect(res.collect);
 			setBar(res.bar);
 			setAppearance(res.appearance);
@@ -3332,6 +3420,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindLinks();
 		bindAppearance();
 		bindProject();
+		bindMachine();
 		bindCollect();
 		bindTools();
 

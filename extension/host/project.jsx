@@ -99,27 +99,9 @@ function padReadProject() {
 
 */
 
-function padProjectUserFile() {
-	return new File(scriptPreferencesPath + '/project_user.json');
-}
-
-function padDefaultUser() {
-	return String(system.userName || '').replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
-}
-
-// Sigla do usuário (gravada neste computador; sem ela, as 3 primeiras letras do usuário do sistema).
+// Sigla do usuário: a deste computador (configuração > computador; padMachineUser, em api.jsx).
 function padProjectUser() {
-	var file = padProjectUserFile();
-
-	if (file.exists) {
-		try {
-			var user = JSON.parse(readFileContent(file)).user;
-
-			if (user) return String(user);
-		} catch (err) { }
-	}
-
-	return padDefaultUser();
+	return padMachineUser();
 }
 
 function padXmpGet(field) {
@@ -168,10 +150,11 @@ function padProjectRetranca(settings, id) {
 
 	if (!found) return null;
 
-	var path = padProjectIsAbsolute(found.path) ? found.path : settings.root + '/' + found.path;
+	var absolute = padProjectIsAbsolute(found.path);
+	var path = absolute ? found.path : settings.root + '/' + found.path;
 	var parts = path.split('/');
 
-	return { code: found.code, path: path, name: parts[parts.length - 1] };
+	return { code: found.code, path: path, name: parts[parts.length - 1], absolute: absolute };
 }
 
 function padFillPattern(pattern, values) {
@@ -185,11 +168,18 @@ function padFillPattern(pattern, values) {
 
 // Tudo o que a janela mostra: dados do XMP, retranca, destino e os nomes que serão usados.
 function padProjectState() {
-	var settings = padReadProject();
+	var team = padReadProject();
+	var home = padHomeOffice();
+	var localRoot = padMachinePath(padMachineData().projects);
+	// a raiz: a deste computador (se houver) ou a da equipe; no home office, sempre local (ou a Área de Trabalho)
+	var settings = { root: home ? localRoot || '~/Desktop' : localRoot || team.root, folder: team.folder, fileName: team.fileName, retrancas: team.retrancas };
 	var id = padCleanProjectId(padXmpGet('identifier'));
 	var name = padCleanProjectName(padXmpGet('title'));
 	var user = padProjectUser();
 	var retranca = padProjectRetranca(settings, id);
+
+	// home office: a pasta de uma retranca com caminho completo fica na rede; o projeto vai para a raiz local
+	if (home && retranca && retranca.absolute) retranca = { code: retranca.code, path: settings.root, name: retranca.name, absolute: true, local: true };
 	var values = {
 		id: id,
 		projeto: name ? padRenameFormat(name) : '',
@@ -219,7 +209,8 @@ PADX.projectInfo = function () {
 		hasRetrancas: s.settings.retrancas.length > 0,
 		target: s.target ? padDisplayPath(s.target) : '',
 		fileName: s.fileBase ? s.fileBase + '.aep' : '',
-		saved: !!s.file
+		saved: !!s.file,
+		homeOffice: padHomeOffice()
 	};
 };
 
@@ -228,19 +219,7 @@ PADX.projectSet = function (a) {
 	if (a.id != null && padCleanProjectId(a.id) != padCleanProjectId(padXmpGet('identifier'))) setXMPData('identifier', padCleanProjectId(a.id));
 	if (a.name != null && padCleanProjectName(a.name) != padCleanProjectName(padXmpGet('title'))) setXMPData('title', padCleanProjectName(a.name));
 
-	if (a.user != null) {
-		var user = String(a.user).replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 6).toUpperCase();
-		var file = padProjectUserFile();
-
-		if (user == '' || user == padDefaultUser()) {
-			if (file.exists) file.remove();
-		} else {
-			var folder = new Folder(scriptPreferencesPath);
-
-			if (!folder.exists) folder.create();
-			saveTextFile(JSON.stringify({ user: user }), file.fsName);
-		}
-	}
+	if (a.user != null && padCleanUser(a.user) != padMachineUser()) PADX.saveMachinePrefs({ user: a.user });
 
 	return PADX.projectInfo();
 };

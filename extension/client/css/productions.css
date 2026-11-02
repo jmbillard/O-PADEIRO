@@ -2186,3 +2186,8 @@ body.is-org-dragging * {
 .scope-note.is-mine > svg {
   transform: translateY(-1px);
 }
+
+/* aba COMPUTADOR: a sigla é curta */
+.machine-user {
+  max-width: 220px;
+}

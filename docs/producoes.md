@@ -248,6 +248,28 @@ a aba **ferramentas** (👤 local) monta a **sua** barra (sem personalização, 
 
 <br>
 
+## 📍 computador
+
+a aba **computador** (👤 local) guarda o que é só desta máquina:
+
+- **sigla do designer** → a sua sigla, usada na variável `{usuario}` do nome dos projetos. vazia, vale a padrão (as 3 primeiras letras do usuário do sistema). é a mesma do bonequinho da [janela projeto](projeto.md).
+- **pasta dos projetos** → onde a janela projeto salva neste computador, no lugar da pasta da equipe (aba **projeto**). as retrancas com caminho relativo ficam dentro dela; as com caminho completo continuam onde estão. vazia, vale a da equipe.
+- **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
+- **home office** → **100% local**: nada depende da rede.
+  - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede conectada); ela fica só para leitura.
+  - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
+  - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
+  - os logs esperam a volta para a rede (o webhook não é chamado).
+  - a barra mostra **HO** ao lado da versão.
+
+> 🚩 *obs:* para ligar o home office pela primeira vez, abra a configuração uma vez com a rede conectada (é quando a cópia é guardada). os templates continuam vindo das pastas das produções: fora da rede, só os que estiverem neste computador.
+
+<br>
+
+---
+
+<br>
+
 ## 📍 teclado
 
 | tecla | o que faz |
