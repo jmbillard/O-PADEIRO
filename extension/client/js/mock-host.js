@@ -142,13 +142,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					},
 					collect: {
 						folders: [
-							{ name: 'project files', parent: '', contents: [] },
-							{ name: 'videos', parent: 'project files', contents: ['videos'] },
-							{ name: 'sequencias', parent: 'project files', contents: ['sequencias'] },
-							{ name: 'imagens', parent: 'project files', contents: ['imagens'] },
-							{ name: 'audio', parent: 'project files', contents: ['audio'] },
-							{ name: 'dados', parent: 'project files', contents: ['dados'] },
-							{ name: 'FONTS', parent: '', contents: ['fontes'] }
+							{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
+							{ name: '02 ARQUIVOS', parent: '', contents: [] },
+							{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
+							{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
+							{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
+							{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
+							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
+							{ name: '03 SAIDA', parent: '', contents: [] }
 						],
 						projectFolders: false,
 						saveAfter: true

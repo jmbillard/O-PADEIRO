@@ -54,7 +54,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são salvos e o nome do arquivo.
 
 - **pasta dos projetos** → a raiz: a pasta de cada retranca fica dentro dela. sem pasta, a janela PROJETO pede uma ao salvar.
-- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo (o projeto, os `project files` e as `FONTS` ficam juntos).
+- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo, com a [estrutura do coletar](#-coletar) dentro (o `.aep` em `01 PROJETOS`, os arquivos em `02 ARQUIVOS`, as saídas em `03 SAIDA`).
 - **nome do arquivo** → o nome do `.aep`, com variáveis:
 
   | variável | vira |
@@ -75,10 +75,23 @@ a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são s
 
 ## 📍 coletar
 
-a aba **coletar** define onde o botão **coletar** (na barra) copia os arquivos usados no projeto: uma árvore de pastas **dentro da pasta do projeto** (a do `.aep`), no mesmo jeito da aba organizar. vem preenchida com `project files` (`videos`, `sequencias`, `imagens`, `audio`, `dados`) e `FONTS`.
+a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela **projeto** salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
+
+```
+01 PROJETOS        ← o .aep (tipo projeto)
+02 ARQUIVOS
+   FONTS           ← fontes
+   IMAGENS         ← imagens e sequências de imagens
+   VÍDEOS          ← vídeos
+   AUDIOS          ← áudio
+   DADOS           ← dados (json, csv, txt...)
+03 SAIDA           ← previews e finais para avaliação (criada vazia)
+```
+
+a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01 PROJETOS`). pastas sem tipo (como `02 ARQUIVOS` e `03 SAIDA`) também são criadas. '*usar a estrutura padrão*' (abaixo das opções) troca a árvore por esta.
 
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
-- **tipos de arquivo** → vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado**.
+- **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
 - **repetir as pastas do painel de projeto** → ligado, dentro da pasta do tipo o arquivo fica nas mesmas pastas em que está no painel de projeto (ex: `videos / Material`).
 - **salvar o projeto depois de coletar** → grava o projeto já apontando para as cópias.

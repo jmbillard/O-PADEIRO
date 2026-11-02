@@ -1699,12 +1699,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var COLLECT_TYPES = [
+		['projeto', 'projeto (.aep)', ['M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z', 'M13.5 3.5V8H18']],
 		['videos', 'vídeos', TYPES.filter(function (t) { return t[0] === 'videos'; })[0][2]],
 		['sequencias', 'sequências de imagens', ['M8 4.5h10.5a1.5 1.5 0 0 1 1.5 1.5v10.5', 'M5.5 7h11a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19.5v-11A1.5 1.5 0 0 1 5.5 7z', 'm4.5 18 4-4 3.5 3.5 2-2 3.5 3.5']],
 		['imagens', 'imagens', TYPES.filter(function (t) { return t[0] === 'imagens'; })[0][2]],
 		['audio', 'áudio', TYPES.filter(function (t) { return t[0] === 'audio'; })[0][2]],
 		['dados', 'dados', TYPES.filter(function (t) { return t[0] === 'dados'; })[0][2]],
 		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']]
+	];
+
+	// a estrutura padrão (a mesma do host, PAD_DEFAULT_COLLECT): o .aep em 01, os arquivos em 02, as saídas em 03
+	var DEFAULT_COLLECT_FOLDERS = [
+		{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
+		{ name: '02 ARQUIVOS', parent: '', contents: [] },
+		{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
+		{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
+		{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
+		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
+		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
+		{ name: '03 SAIDA', parent: '', contents: [] }
 	];
 
 	function setCollect(c) {
@@ -1735,8 +1748,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rowHint: function (f, depth) {
 			var notes = [];
 
+			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: a janela projeto salva aqui');
 			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
-			if (state.collect.projectFolders && f.contents.some(function (t) { return t !== 'fontes'; })) notes.push('as pastas do painel de projeto');
+			if (state.collect.projectFolders && f.contents.some(function (t) { return t !== 'fontes' && t !== 'projeto'; })) notes.push('as pastas do painel de projeto');
 			if (!notes.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -1752,7 +1766,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		after: function () {
 			$('col-project-folders').checked = state.collect.projectFolders;
 			$('col-save').checked = state.collect.saveAfter;
-			['col-project-folders', 'col-save', 'btn-new-col-folder'].forEach(function (id) {
+			['col-project-folders', 'col-save', 'btn-new-col-folder', 'btn-col-default'].forEach(function (id) {
 				$(id).disabled = !state.available;
 			});
 		}
@@ -1774,6 +1788,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('col-save').addEventListener('change', function () {
 			state.collect.saveAfter = this.checked;
 			updateDirty();
+		});
+
+		// troca a árvore pela estrutura padrão (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA); salvar grava
+		$('btn-col-default').addEventListener('click', function () {
+			state.collect.folders = JSON.parse(JSON.stringify(DEFAULT_COLLECT_FOLDERS));
+			renderCollect();
+			updateDirty();
+			toast('success', 'estrutura padrão na árvore. salve para gravar.');
 		});
 	}
 

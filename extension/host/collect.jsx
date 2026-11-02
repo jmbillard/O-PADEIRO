@@ -11,24 +11,28 @@ quadros do trecho usado), cada uma na própria subpasta.
 
 'COLLECT' no O_PADEIRO_config.json:
   folders        → a árvore, dentro da pasta do projeto: [{ name, parent, contents: [...] }]
-                   tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado
+                   tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
+                   'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de
+                   cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
   projectFolders → repete, dentro da pasta do tipo, as pastas do painel de projeto onde o item está
   saveAfter      → salva o projeto depois de coletar (com os caminhos novos)
 Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 
 */
 
-var PAD_COLLECT_CONTENTS = ['videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes'];
+var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes'];
 
+// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo) e as saídas em 03.
 var PAD_DEFAULT_COLLECT = {
 	folders: [
-		{ name: 'project files', parent: '', contents: [] },
-		{ name: 'videos', parent: 'project files', contents: ['videos'] },
-		{ name: 'sequencias', parent: 'project files', contents: ['sequencias'] },
-		{ name: 'imagens', parent: 'project files', contents: ['imagens'] },
-		{ name: 'audio', parent: 'project files', contents: ['audio'] },
-		{ name: 'dados', parent: 'project files', contents: ['dados'] },
-		{ name: 'FONTS', parent: '', contents: ['fontes'] }
+		{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
+		{ name: '02 ARQUIVOS', parent: '', contents: [] },
+		{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
+		{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
+		{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
+		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
+		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
+		{ name: '03 SAIDA', parent: '', contents: [] }
 	],
 	projectFolders: false,
 	saveAfter: true
@@ -124,6 +128,53 @@ function padCollectFolderPath(settings, type) {
 	}
 
 	return parts.join('/');
+}
+
+// Caminho de uma pasta da árvore (relativo à raiz do projeto).
+function padCollectPathOf(settings, folder) {
+	var byName = {};
+	var parts = [];
+
+	for (var i = 0; i < settings.folders.length; i++) byName[settings.folders[i].name.toUpperCase()] = settings.folders[i];
+
+	for (var n = 0; folder && n < 30; n++) {
+		parts.unshift(folder.name);
+		folder = folder.parent ? byName[folder.parent.toUpperCase()] : null;
+	}
+
+	return parts.join('/');
+}
+
+// Cria a estrutura inteira na raiz (as pastas sem tipo também, como a de saída).
+function padCollectStructure(root, settings) {
+	for (var i = 0; i < settings.folders.length; i++) {
+		var parts = padCollectPathOf(settings, settings.folders[i]).split('/');
+		var path = new Folder(root).fsName;
+
+		for (var p = 0; p < parts.length; p++) {
+			path += '/' + parts[p];
+			padEnsureFolder(path);
+		}
+	}
+}
+
+// A raiz da estrutura de um .aep: a pasta de cima, se ele está na pasta do tipo 'projeto' (01 PROJETOS);
+// senão, a pasta dele.
+function padCollectRoot(file, settings) {
+	var folder = file.parent;
+	var sub = padCollectFolderPath(settings, 'projeto');
+
+	if (!sub) return folder.fsName;
+
+	var parts = sub.split('/');
+	var cur = folder;
+
+	for (var i = parts.length - 1; i >= 0; i--) {
+		if (!cur || decodeURI(cur.name).toUpperCase() != parts[i].toUpperCase()) return folder.fsName;
+		cur = cur.parent;
+	}
+
+	return cur ? cur.fsName : folder.fsName;
 }
 
 /*
@@ -355,7 +406,7 @@ PADX.collectProject = function (a) {
 
 	var settings = padReadCollect();
 	var file = app.project.file;
-	var target = a.path ? padPath(a.path) : file ? file.parent.fsName : '';
+	var target = a.path ? padPath(a.path) : file ? padCollectRoot(file, settings) : '';
 
 	if (!target) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 
@@ -371,13 +422,17 @@ PADX.collectProject = function (a) {
 		var res;
 
 		padGroup('coletar arquivos', function () {
+			padCollectStructure(target, settings);
 			res = padCollectFiles(target, settings);
+			padCollectStructure(target, settings); // o collect das fontes apaga a pasta delas se não houver nenhuma
 		});
 
-		// projeto sem arquivo, coletado numa pasta escolhida: salva lá
+		// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
 		if (settings.saveAfter) {
+			var sub = padCollectFolderPath(settings, 'projeto');
+
 			if (file) app.project.save();
-			else app.project.save(new File(new Folder(target).fsName + '/' + (padProjectState().fileBase || 'projeto') + '.aep'));
+			else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padProjectState().fileBase || 'projeto') + '.aep'));
 		}
 
 		if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));

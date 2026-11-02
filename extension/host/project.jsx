@@ -191,8 +191,11 @@ function padProjectState() {
 	var base = retranca ? retranca.path : settings.root;
 	var target = base ? (settings.folder && fileBase ? base + '/' + fileBase : base) : '';
 	var file = app.project.file;
+	// com uma pasta para cada projeto, ela recebe a estrutura do coletar e o .aep vai na pasta do tipo
+	// 'projeto' (ex: 01 PROJETOS)
+	var aepSub = settings.folder ? padCollectFolderPath(padReadCollect(), 'projeto') || '' : '';
 
-	return { settings: settings, id: id, name: name, user: user, retranca: retranca, values: values, fileBase: fileBase, target: target, file: file };
+	return { settings: settings, id: id, name: name, user: user, retranca: retranca, values: values, fileBase: fileBase, target: target, aepSub: aepSub, file: file };
 }
 
 PADX.projectInfo = function () {
@@ -208,7 +211,7 @@ PADX.projectInfo = function () {
 		retranca: s.retranca ? { code: s.retranca.code, name: s.retranca.name } : null,
 		hasRetrancas: s.settings.retrancas.length > 0,
 		target: s.target ? padDisplayPath(s.target) : '',
-		fileName: s.fileBase ? s.fileBase + '.aep' : '',
+		fileName: s.fileBase ? (s.aepSub ? s.aepSub + '/' : '') + s.fileBase + '.aep' : '',
 		saved: !!s.file,
 		localMode: padLocalMode()
 	};
@@ -240,10 +243,17 @@ PADX.projectSave = function (a) {
 	if (!target) throw new Error('#PAD_091 - sem pasta de destino: defina a pasta raiz dos projetos (configuração > projeto) ou escolha a pasta.');
 	if (!s.fileBase) throw new Error('#PAD_091 - o nome do arquivo ficou vazio: confira o ID, o nome do projeto e o padrão do nome.');
 
-	var folder = new Folder(padPath(target));
+	var root = new Folder(padPath(target));
+
+	if (!root.exists) root.create();
+	if (!root.exists) throw new Error('#PAD_091 - não foi possível criar a pasta: ' + padDisplayPath(target));
+
+	// uma pasta para cada projeto: a estrutura do coletar (01, 02, 03...) e o .aep na pasta dele
+	if (s.settings.folder) padCollectStructure(root.fsName, padReadCollect());
+
+	var folder = new Folder(root.fsName + (s.aepSub ? '/' + s.aepSub : ''));
 
 	if (!folder.exists) folder.create();
-	if (!folder.exists) throw new Error('#PAD_091 - não foi possível criar a pasta: ' + padDisplayPath(target));
 
 	var file = new File(folder.fsName + '/' + s.fileBase + '.aep');
 	var current = app.project.file;
@@ -256,15 +266,15 @@ PADX.projectSave = function (a) {
 	setXMPData('date', padToday());
 	app.project.save(file);
 
-	if (a.open) openFolder(folder.fsName);
+	if (a.open) openFolder(root.fsName);
 
-	return { file: padDisplayPath(file.fsName), folder: padDisplayPath(folder.fsName) };
+	return { file: padDisplayPath(file.fsName), folder: padDisplayPath(root.fsName) };
 };
 
 // Abre a pasta do projeto salvo ou, sem ele, a do destino.
 PADX.projectOpenFolder = function () {
 	var s = padProjectState();
-	var path = s.file ? s.file.parent.fsName : '';
+	var path = s.file ? padCollectRoot(s.file, padReadCollect()) : '';
 
 	if (!path && s.target) {
 		var target = new Folder(padPath(s.target));

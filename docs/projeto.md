@@ -39,7 +39,7 @@ a linha **arquivo** mostra o nome do `.aep`, pelo padrão da [configuração > p
 
 ## 📍 salvar projeto
 
-salva o projeto na pasta mostrada no cartão, com o nome do **arquivo**. com '*uma pasta para cada projeto*' (configuração), cria uma pasta com o mesmo nome.
+salva o projeto na pasta mostrada no cartão, com o nome do **arquivo**. com '*uma pasta para cada projeto*' (configuração), cria uma pasta com o mesmo nome e, dentro dela, a [estrutura do coletar](producoes.md#-coletar): o `.aep` vai em `01 PROJETOS`, com `02 ARQUIVOS` e `03 SAIDA` ao lado (a linha **arquivo** mostra `01 PROJETOS/…`).
 
 - já existe um projeto com o mesmo nome na pasta → o padeiro avisa; clique de novo em '*Salvar projeto*' (logo em seguida) para substituir. salvar de novo o próprio projeto não pergunta.
 - **⋯ > salvar em outra pasta…** → escolhe a pasta na hora (a pasta do projeto é criada dentro dela).

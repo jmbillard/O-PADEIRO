@@ -151,7 +151,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 ### coletar
 
-`◖ clique esquerdo` → copia os arquivos usados no projeto para a pasta do projeto (a do `.aep`), na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar), e troca os caminhos no projeto para as cópias. depois, salva o projeto (se ligado na configuração).
+`◖ clique esquerdo` → copia os arquivos usados no projeto para a estrutura do projeto, na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar) (padrão: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com FONTS, IMAGENS, VÍDEOS, AUDIOS e DADOS, e `03 SAIDA`), e troca os caminhos no projeto para as cópias. a raiz é a pasta de cima da `01 PROJETOS` (ou a pasta do `.aep`, se ele não estiver nela). depois, salva o projeto (se ligado na configuração).
 
 - cada tipo (vídeos, sequências de imagens, imagens, áudio, dados e fontes) vai para a sua pasta; tipos fora da árvore não são coletados.
 - **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
