@@ -2307,16 +2307,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var home = /^~(\/|$)/.test(teamPath);
 			var box = el('div', 'drive-row machine-tpl');
 			var label = el('div', 'machine-tpl-name');
-			var field = el('div', 'cfg-path has-field-icon');
+			var field = el('div', 'cfg-path');
 			var input = el('input', 'cfg-input');
 			var pick = el('button', 'mini-button');
-			var ico = svg(FOLDER_ICON);
 
 			label.appendChild(el('b', null, name));
 			label.appendChild(el('span', null, home ? 'local · a daqui vale sempre' : 'rede · a daqui é a cópia'));
 			label.title = teamPath;
 
-			ico.setAttribute('class', 'field-icon');
 			input.type = 'text';
 			input.value = state.machine.templates[name] || '';
 			input.placeholder = home ? teamPath : 'sem cópia';
@@ -2345,7 +2343,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				updateDirty();
 			});
 
-			field.appendChild(ico);
 			field.appendChild(input);
 			field.appendChild(pick);
 			box.appendChild(label);
