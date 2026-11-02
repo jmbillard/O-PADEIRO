@@ -1635,12 +1635,11 @@ body.is-org-dragging * {
 }
 
 
-/* cada amostra ao lado: a cor, o nome e o hex; clicando, abrem saturação e brilho */
+/* cada amostra ao lado: a cor, o nome e o hex; clicando, abre o brilho; ocupam o resto da largura */
 .swatch-rows {
   display: grid;
   min-width: 0;
   flex: 1;
-  max-width: 420px;
   gap: 8px;
 }
 
