@@ -91,7 +91,7 @@ body.prods-page {
   border-color: white;
   background: var(--surface);
   box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
-  color: var(--blue-600);
+  color: var(--blue-ink, var(--blue-600));
 }
 
 /* o ícone no lugar da bolinha */
@@ -2118,7 +2118,7 @@ body.is-org-dragging * {
 /* editando o padrão da equipe: a faixa fica azul, para não esquecer */
 .scope-note.is-editing-team {
   background: var(--blue-50);
-  color: var(--blue-600);
+  color: var(--blue-ink, var(--blue-600));
 }
 
 .scope-text {

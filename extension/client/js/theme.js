@@ -101,6 +101,7 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		// versão legível; o meio dos degradês (--blue-mid) fica com a cor escolhida, como está
 		set('--blue-500', readable(t.accent, surface, dark));
 		set('--blue-mid', t.accent);
+		set('--blue-ink', readable(solid ? t.accent : t.gradientEnd, surface, dark)); // a ponta escura, como texto
 		set('--blue-400', solid ? t.accent : t.gradientStart);
 		set('--blue-600', solid ? t.accent : t.gradientEnd);
 		set('--blue-700', mix(readable(t.accent, surface, dark), '#000000', 0.25));
