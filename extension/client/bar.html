@@ -15,10 +15,13 @@
 <body class="bar-page">
 
 	<main class="bar" id="bar">
-		<div class="bar-main">
-		<!-- rede ou modo local (ligado na configuração ou com a rede fora): preenchido pelo bar.js -->
-		<button type="button" class="bar-icon bar-net" id="net-status" hidden></button>
+		<!-- rede ou modo local (ligado na configuração ou com a rede fora), na ponta oposta à do pãozinho:
+		     preenchido pelo bar.js -->
+		<div class="bar-group bar-status">
+			<button type="button" class="bar-icon bar-net" id="net-status" hidden></button>
+		</div>
 
+		<div class="bar-main">
 		<!-- links da equipe (configuração > links): preenchidos pelo bar.js -->
 		<div class="bar-group bar-pin" id="links" hidden></div>
 

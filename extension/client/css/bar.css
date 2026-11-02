@@ -563,10 +563,9 @@ body.bar-page {
   color: #f5bf24;
 }
 
-/* na vertical (coluna única), o ícone da rede fica no centro, como os links */
-@media (max-aspect-ratio: 1/1) {
-  .bar-main > .bar-net {
-    justify-self: center;
-    align-self: center;
-  }
+/* rede / local: na ponta oposta à do pãozinho (esquerda na horizontal, topo na vertical) */
+.bar-status {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
 }
