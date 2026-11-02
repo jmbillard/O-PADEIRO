@@ -1554,6 +1554,43 @@ body {
   white-space: nowrap;
 }
 
+/* ícone antes de cada opção (no rótulo e na lista): desenho de traço ou letras (AB, Aa…) */
+.dropdown-icon {
+  display: inline-flex;
+  width: 22px;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.dropdown-svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.dropdown-svg .is-fill {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.dropdown-letters {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.dropdown-item.has-icon {
+  display: flex;
+  align-items: center;
+}
+
 .select-large .dropdown-trigger {
   min-height: 44px;
   padding-inline: 16px 36px;
@@ -2487,4 +2524,9 @@ body.motion-ready .eyebrow {
   border-radius: 6px;
   outline: 2px solid rgb(255 255 255 / 80%);
   outline-offset: 2px;
+}
+
+/* as letras (AB, Aa) sentam na mesma linha do rótulo */
+.dropdown-trigger .dropdown-letters {
+  transform: translateY(1px);
 }

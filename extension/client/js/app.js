@@ -2072,7 +2072,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (PAD_BRIDGE.inCep() && window.innerWidth > COMPACT_WIDTH) PAD_BRIDGE.resizeWindow(COMPACT_WIDTH, window.innerHeight);
 
 		bindEvents();
-		PAD_DROPDOWN.enhance($('render-template'));
+		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
 		PAD_DROPDOWN.enhance($('production'));
 		$('production').addEventListener('change', onProductionChange);
 

@@ -231,7 +231,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			row.appendChild(selWrap);
 			list.appendChild(row);
 
-			PAD_DROPDOWN.enhance(select);
+			PAD_DROPDOWN.enhance(select, 'layerMethod');
 		});
 
 		updateSeparatorState();
@@ -831,7 +831,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	function init() {
-		PAD_DROPDOWN.enhance($('f-case'));
+		PAD_DROPDOWN.enhance($('f-case'), 'textCase');
 
 		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {
 			$(id).addEventListener('input', updateNamePreview);

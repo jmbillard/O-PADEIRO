@@ -179,6 +179,7 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 	window.PAD_THEME = {
 		apply: apply,
 		defaults: DEFAULTS,
+		FONTS: FONTS,
 		current: function () {
 			return current;
 		}

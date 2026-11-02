@@ -199,7 +199,7 @@ são preservadas ao salvar.
 			return node;
 		}
 
-		function select(options, value) {
+		function select(options, value, icons) {
 			var wrap = el('span', 'select select-large');
 			var node = el('select');
 
@@ -213,7 +213,7 @@ são preservadas ao salvar.
 			node.value = value;
 			wrap.appendChild(node);
 			wrap.control = node;
-			PAD_DROPDOWN.enhance(node);
+			PAD_DROPDOWN.enhance(node, icons);
 
 			return wrap;
 		}
@@ -246,7 +246,7 @@ são preservadas ao salvar.
 		field(nameGrid, 'prefix', 'Prefixo (opcional)', input(base.prefix), 'início do nome de todas as comps criadas. "ignore" não preenche, só importa o template.', 'prefix');
 		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.', 'time');
 
-		var caseSel = select(CASES, base.textCase);
+		var caseSel = select(CASES, base.textCase, 'textCase');
 
 		field(nameGrid, 'textCase', 'Caixa de texto', caseSel, null, 'textCase');
 		fields.textCase.control = caseSel.control;
@@ -290,7 +290,7 @@ são preservadas ao salvar.
 			layers.forEach(function (layer, i) {
 				var row = el('div', 'cfg-row');
 				var num = input(layer.layerIndex, 'number');
-				var methodSel = select(METHODS, layer.method);
+				var methodSel = select(METHODS, layer.method, 'layerMethod');
 
 				num.min = '1';
 				num.step = '1';

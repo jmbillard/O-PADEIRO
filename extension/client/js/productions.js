@@ -1098,7 +1098,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('rename-test').addEventListener('input', testRename);
 
-		PAD_DROPDOWN.enhance($('rename-case'));
+		PAD_DROPDOWN.enhance($('rename-case'), 'textCase');
 		$('rename-case').addEventListener('change', function () {
 			state.rename.textCase = this.value;
 			updateDirty();
@@ -2648,7 +2648,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindAppearance() {
 
 		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
-			PAD_DROPDOWN.enhance($(pair[0]));
+			PAD_DROPDOWN.enhance($(pair[0]), pair[0] === 'app-mode' ? 'mode' : 'background');
 			$(pair[0]).addEventListener('change', function () {
 				changeAppearance(pair[1], $(pair[0]).value);
 			});
@@ -2695,7 +2695,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			hex.addEventListener('blur', renderAppearance);
 		});
 
-		PAD_DROPDOWN.enhance($('app-font'));
+		PAD_DROPDOWN.enhance($('app-font'), 'font');
 		$('app-font').addEventListener('change', function () {
 			changeAppearance('font', this.value);
 		});
