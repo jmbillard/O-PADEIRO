@@ -544,10 +544,6 @@ body.bar-page {
   position: relative;
 }
 
-.bar-net.is-network {
-  color: rgb(var(--on-brand) / 62%);
-}
-
 .bar-net-badge .badge-warn {
   fill: #f5bf24;
 }
