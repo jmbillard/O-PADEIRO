@@ -779,7 +779,7 @@ PADX.barLinks = function () {
 
 	var bar = padReadBar();
 
-	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), items: bar.items, hidden: bar.hidden };
+	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
 };
 
 // Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.

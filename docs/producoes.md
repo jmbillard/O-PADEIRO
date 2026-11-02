@@ -265,7 +265,7 @@ a aba **computador** (👤 local) guarda o que é só desta máquina:
   - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
   - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
-  - a barra mostra **· local** ao lado da versão (ligado à mão ou com a rede fora); a aba computador avisa quando a rede caiu.
+  - o ícone no começo da barra mostra o modo: **globo** na rede, **notebook** no modo local, com um selo dizendo por quê (o **bonequinho**: ligado por você; o **alerta** laranja: a rede caiu). um clique abre esta aba. a aba computador também avisa quando a rede caiu.
 
 > 🚩 *obs:* a cópia da configuração é guardada na primeira vez que o padeiro abre com a rede: sem ela, o modo local não liga (`#PAD_096`). a configuração da equipe só volta a ser editável com a rede.
 

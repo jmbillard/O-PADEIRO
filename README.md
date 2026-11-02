@@ -97,6 +97,7 @@ a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba *
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
+- **rede / local** (o primeiro ícone) → **globo**: tudo vem da rede. **notebook**: modo local, com o **bonequinho** se foi você que ligou ou o **alerta** laranja se a rede caiu. `◖` abre a [configuração > computador](docs/producoes.md#-computador).
 - **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
   `◖` → abre o painel de templates.\

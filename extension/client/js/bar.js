@@ -534,6 +534,43 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	if (ICON_MEDIA.addListener) ICON_MEDIA.addListener(placeLinksBreak);
 
+	// Rede ou modo local, no começo da barra: um globo (rede) ou um notebook (local), com um selo dizendo
+	// por quê: o bonequinho (ligado na configuração) ou o alerta (a rede não está respondendo).
+	var NET_ICONS = {
+		network: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.4 3.5 5.2 3.5 8.5s-1.1 6.1-3.5 8.5M12 3.5C9.6 5.9 8.5 8.7 8.5 12s1.1 6.1 3.5 8.5" /></svg>',
+		local: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5.5" width="14" height="9.5" rx="1.8" /><path d="M3 18.5h18" /></svg>'
+	};
+	var WARN_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-warn" cx="5.5" cy="5.5" r="5.5" /><path class="badge-mark" d="M5.5 2.7v3.3" /><circle class="badge-dot" cx="5.5" cy="8.1" r=".85" /></svg>';
+	var netState = '';
+
+	function applyNet(local, forced) {
+		var key = local ? (forced ? 'forced' : 'offline') : 'network';
+		var btn = $('net-status');
+
+		if (key === netState) return;
+
+		netState = key;
+		btn.hidden = false;
+		btn.className = 'bar-icon bar-net is-' + key;
+		btn.innerHTML = NET_ICONS[local ? 'local' : 'network'];
+
+		if (local) {
+			var badge = el('span', 'bar-link-badge bar-net-badge');
+
+			badge.innerHTML = forced ? PERSON_BADGE : WARN_BADGE;
+			btn.appendChild(badge);
+		}
+
+		var text = {
+			network: 'rede: configuração, templates e busca vêm da rede',
+			forced: 'modo local, ligado por você (configuração > computador): nada tenta a rede',
+			offline: 'modo local: a rede não está respondendo. o padeiro usa as cópias deste computador e volta sozinho quando a rede voltar'
+		}[key];
+
+		btn.title = text + '\n' + L_CLICK + 'configuração > computador';
+		btn.setAttribute('aria-label', text);
+	}
+
 	// os links também podem ser escondidos (configuração > ferramentas)
 	function applyLinksHidden(hidden) {
 		if (hidden.indexOf('links') < 0) return;
@@ -547,6 +584,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		try {
 			var res = await call('barLinks');
+
+			applyNet(!!res.localMode, !!res.localForced);
 
 			if (res.stamp === linksStamp) return;
 
@@ -605,6 +644,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
 
+		$('net-status').addEventListener('click', function () {
+			actions.config('machine');
+		});
+
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
@@ -612,8 +655,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		try {
 			var info = await call('ping');
 
-			$('version').textContent = 'v' + info.version + (info.localMode ? ' · local' : ''); // modo local (ligado ou sem a rede)
-			if (info.localMode) $('logo').title += '\nmodo local' + (info.localForced ? '' : ' (a rede não está respondendo)') + ': nada tenta a rede (configuração > computador)';
+			$('version').textContent = 'v' + info.version;
 
 			if (!info.network) {
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);

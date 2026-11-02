@@ -538,3 +538,39 @@ body.bar-page {
     animation: none;
   }
 }
+
+/* rede / modo local, no começo da barra: o selo diz por quê (bonequinho: ligado por você; alerta: rede fora) */
+.bar-net {
+  position: relative;
+}
+
+.bar-net.is-network {
+  color: rgb(var(--on-brand) / 62%);
+}
+
+.bar-net-badge .badge-warn {
+  fill: #f2a93b;
+}
+
+.bar-net-badge .badge-mark {
+  fill: none;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+.bar-net-badge .badge-dot {
+  fill: white;
+}
+
+.bar-net.is-offline .bar-net-badge {
+  color: #f2a93b;
+}
+
+/* na vertical (coluna única), o ícone da rede fica no centro, como os links */
+@media (max-aspect-ratio: 1/1) {
+  .bar-main > .bar-net {
+    justify-self: center;
+    align-self: center;
+  }
+}

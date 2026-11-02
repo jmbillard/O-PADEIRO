@@ -72,6 +72,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	var run = null;
 
 	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
+	function mockMachine() {
+		return JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+	}
+
 	function mockPrefs() {
 		return JSON.parse(localStorage.getItem('pad.mock.prefs') || 'null') || { appearance: null, bar: null };
 	}
@@ -226,7 +230,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var bar = mockPrefs().bar || mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
 
-			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal };
+			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal, localMode: !!(mockMachine().localMode || localStorage.getItem('pad.mock.offline')), localForced: !!mockMachine().localMode };
 		},
 
 		personalLinks: function () {
