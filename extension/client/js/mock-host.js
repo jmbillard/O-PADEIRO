@@ -204,13 +204,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		machinePrefs: function () {
 			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', homeOffice: false };
 
-			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, m);
+			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true, templates: {} }, m);
 		},
 
 		saveMachinePrefs: function (a) {
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', homeOffice: !!a.homeOffice }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, homeOffice: !!a.homeOffice }));
 
 			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+		},
+
+		syncTemplates: function (a) {
+			if (!a.to) throw new Error('#PAD_097 - ' + a.name + ': escolha a pasta deste computador antes de copiar.');
+
+			return { copied: 12, same: 3, failed: [], to: a.to };
 		},
 
 		barLinks: function () {

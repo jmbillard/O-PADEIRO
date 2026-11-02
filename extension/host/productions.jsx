@@ -58,6 +58,7 @@ function padWriteConfig(file, changes) {
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
 	if (padHomeOffice()) throw new Error('#PAD_096 - home office: a configuração da equipe fica na rede. desligue o home office (configuração > computador) para editar.');
+	if (padConfigIsCopy()) throw new Error('#PAD_096 - sem a rede: a configuração aberta é a cópia deste computador, só para ler. tente de novo com a rede.');
 
 	var file = padConfigFile();
 
@@ -960,4 +961,63 @@ PADX.savePersonalPrefs = function (a) {
 	PAD_PERSONAL_CACHE.stamp = -1;
 
 	return PADX.personalPrefs();
+};
+
+/*
+
+---------------------------------------------------------------
+> cópia local dos templates (configuração > computador)
+---------------------------------------------------------------
+
+Copia a pasta de templates de uma produção (na rede) para a pasta dela neste computador: só os arquivos
+novos ou com outra data / tamanho. Nada é apagado na cópia.
+
+*/
+
+function padCopyTree(from, to, stats) {
+	if (!to.exists) to.create();
+
+	var items = from.getFiles();
+
+	for (var i = 0; i < items.length; i++) {
+		var item = items[i];
+		var name = decodeURI(item.name);
+
+		if (/^\./.test(name)) continue; // .DS_Store, ocultos
+
+		if (item instanceof Folder) {
+			padCopyTree(item, new Folder(to.fsName + '/' + name), stats);
+			continue;
+		}
+
+		var dest = new File(to.fsName + '/' + name);
+
+		try {
+			if (dest.exists && dest.length == item.length && dest.modified.getTime() >= item.modified.getTime()) {
+				stats.same++;
+				continue;
+			}
+		} catch (err) { }
+
+		if (item.copy(dest.fsName)) stats.copied++;
+		else stats.failed.push(name);
+	}
+}
+
+// a: { name, from, to } (from: a pasta da equipe; to: a deste computador)
+PADX.syncTemplates = function (a) {
+	if (padHomeOffice()) throw new Error('#PAD_097 - home office: a cópia dos templates precisa da rede. desligue o home office para atualizar.');
+
+	var from = new Folder(padPath(a.from));
+	var to = new Folder(padPath(a.to));
+
+	if (!a.to) throw new Error('#PAD_097 - ' + a.name + ': escolha a pasta deste computador antes de copiar.');
+	if (!from.exists) throw new Error('#PAD_097 - ' + a.name + ': a pasta da rede não pode ser acessada: ' + padDisplayPath(from.fsName));
+	if (from.fsName == to.fsName) throw new Error('#PAD_097 - ' + a.name + ': a pasta deste computador é a mesma da rede.');
+
+	var stats = { copied: 0, same: 0, failed: [] };
+
+	padCopyTree(from, to, stats);
+
+	return { copied: stats.copied, same: stats.same, failed: stats.failed.slice(0, 10), to: padDisplayPath(to.fsName) };
 };

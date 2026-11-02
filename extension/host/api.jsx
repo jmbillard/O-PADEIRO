@@ -214,6 +214,7 @@ PADX.machinePrefs = function () {
 		defaultUser: padDefaultUser(),
 		projects: padMachinePath(d.projects),
 		outputs: padMachinePath(d.outputs),
+		templates: padMachineTemplates(d.templates),
 		homeOffice: d.homeOffice === true,
 		hasConfigCopy: padConfigCopyFile().exists
 	};
@@ -222,11 +223,12 @@ PADX.machinePrefs = function () {
 // a: { user, projects, outputs, homeOffice } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), homeOffice: d.homeOffice === true };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), homeOffice: d.homeOffice === true };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
+	if (a.templates != null) data.templates = padMachineTemplates(a.templates);
 	if (a.homeOffice != null) data.homeOffice = a.homeOffice === true;
 
 	if (data.homeOffice && !d.homeOffice && !padConfigCopyFile().exists) {
@@ -253,6 +255,47 @@ PADX.saveMachinePrefs = function (a) {
 
 	return PADX.machinePrefs();
 };
+
+// Pastas de templates neste computador: { 'nome da produção': caminho }.
+function padMachineTemplates(o) {
+	var out = {};
+
+	if (!o || typeof o != 'object') return out;
+
+	for (var name in o) {
+		if (!o.hasOwnProperty(name)) continue;
+
+		var path = padMachinePath(o[name]);
+
+		if (path) out[name] = path;
+	}
+
+	return out;
+}
+
+// Caminho da equipe que já é deste computador (a pasta do usuário): a deste computador vale sempre.
+function padIsHomePath(path) {
+	return /^~(\/|$)/.test(String(path));
+}
+
+// A pasta de templates de uma produção que vale agora:
+//   - com uma pasta neste computador e o caminho da equipe local (~/...): a deste computador, sempre;
+//   - com uma pasta neste computador e o caminho da equipe na rede: ela é a cópia, usada no home office
+//     ou quando a da rede não responde;
+//   - sem pasta neste computador: a da equipe.
+// → { path, local } (local: está usando a pasta deste computador)
+function padProductionPath(name, teamPath) {
+	var local = padMachineTemplates(padMachineData().templates)[name];
+
+	if (!local) return { path: teamPath, local: false };
+	if (padIsHomePath(teamPath) || padHomeOffice()) return { path: local, local: true };
+
+	var team = new Folder(padPath(teamPath));
+
+	if (team.exists) return { path: teamPath, local: false };
+
+	return { path: local, local: true };
+}
 
 // Cópia da configuração da equipe guardada neste computador (para o home office).
 function padConfigCopyFile() {
@@ -297,13 +340,19 @@ function padSharedConfigFile() {
 // Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No home office,
 // a cópia guardada neste computador na última leitura da rede (sem tocar na rede).
 function padConfigFile() {
-	if (padHomeOffice()) {
-		var copy = padConfigCopyFile();
+	var copy = padConfigCopyFile();
 
-		return copy.exists ? copy : null;
-	}
+	if (padHomeOffice()) return copy.exists ? copy : null;
 
-	return padSharedConfigFile();
+	// sem a rede: a cópia (só leitura), para o padeiro continuar funcionando
+	return padSharedConfigFile() || (copy.exists ? copy : null);
+}
+
+// A configuração lida agora é a cópia deste computador (home office ou rede fora)?
+function padConfigIsCopy() {
+	var file = padConfigFile();
+
+	return !!file && file.fsName == padConfigCopyFile().fsName;
 }
 
 // Conteúdo da configuração compartilhada, já interpretado. O arquivo fica na rede e é lido por várias
@@ -344,8 +393,8 @@ function padConfigData() {
 
 			c.data = JSON.parse(text);
 
-			// lida da rede: guarda a cópia para o home office
-			if (!padHomeOffice()) {
+			// lida da rede: guarda a cópia para o home office (e para quando a rede cair)
+			if (file.fsName != padConfigCopyFile().fsName) {
 				try {
 					var folder = new Folder(scriptPreferencesPath);
 
@@ -448,9 +497,13 @@ PADX.productions = function () {
 	var productions = [];
 
 	for (var i = 0; i < list.length; i++) {
+		var effective = padProductionPath(list[i].name, list[i].templatesPath);
+
 		productions.push({
 			name: list[i].name,
-			templatesPath: list[i].templatesPath,
+			templatesPath: list[i].templatesPath, // o da equipe (o editor da configuração edita este)
+			path: effective.path, // o que vale neste computador agora (o painel de templates lê este)
+			local: effective.local,
 			icon: list[i].icon || null // literal de string binária (PNG); decodificado no painel
 		});
 	}
@@ -472,6 +525,7 @@ PADX.productions = function () {
 		bar: padReadTeamBar(),
 		personal: PADX.personalPrefs(),
 		homeOffice: padHomeOffice(),
+		fromCopy: padConfigIsCopy(),
 		error: error
 	};
 };

@@ -223,7 +223,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var trigger = select._dropdownTrigger;
 
-		if (trigger) trigger.title = (current ? 'produção: ' + current.name + '\n\n' : '') + 'abra e digite para filtrar';
+		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.local ? '\nusando a pasta deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
 	}
 
 	// Troca a produção mostrada (escolhida aqui ou em outro painel).
@@ -301,6 +301,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// Acompanha a produção escolhida na barra e a conexão com o After Effects.
 	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
+	// a pasta de templates que vale neste computador (a cópia local, no home office ou sem a rede)
+	function prodPath(prod) {
+		return prod ? prod.path || prod.templatesPath : '';
+	}
+
 	async function refreshProductionList(selectedName) {
 		var current = state.productions[state.production];
 
@@ -319,7 +324,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return prod.name === wanted;
 		});
 
-		var same = current && index >= 0 && state.productions[index].name === current.name && state.productions[index].templatesPath === current.templatesPath;
+		var same = current && index >= 0 && state.productions[index].name === current.name && prodPath(state.productions[index]) === prodPath(current);
 
 		if (same) {
 			state.production = index;
@@ -379,7 +384,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.loadHint = 'pastas de rede podem demorar um pouco';
 		state.tree = null;
 		state.byUri = {};
-		state.templatesPath = prod ? prod.templatesPath : '';
+		state.templatesPath = prod ? prodPath(prod) : '';
 		state.treeStatus = prod ? 'loading' : 'empty';
 		renderTree();
 
@@ -404,7 +409,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		try {
 			var res = await readTemplateTree(
-				prod.templatesPath,
+				prodPath(prod),
 				function (folders, name) {
 					if (cached || loadId !== state.loadId) return; // com a cópia na tela, a leitura é silenciosa
 
@@ -427,7 +432,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			} else {
 				var text = JSON.stringify(res.tree);
 
-				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prod.templatesPath, tree: res.tree }) }).catch(function () { });
+				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prodPath(prod), tree: res.tree }) }).catch(function () { });
 
 				// com a cópia na tela, só redesenha se a pasta mudou
 				if (cached && cached.text === text) {
@@ -466,7 +471,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			var data = JSON.parse(res.text);
 
-			if (!data || data.path !== prod.templatesPath || !data.tree) return null;
+			if (!data || data.path !== prodPath(prod) || !data.tree) return null;
 
 			return { tree: data.tree, text: JSON.stringify(data.tree) };
 		} catch (err) {

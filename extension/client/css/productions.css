@@ -2191,3 +2191,38 @@ body.is-org-dragging * {
 .machine-user {
   max-width: 220px;
 }
+
+/* aba COMPUTADOR: templates por produção (nome | pasta daqui | copiar) */
+.machine-tpl {
+  grid-template-columns: minmax(110px, 180px) minmax(0, 1fr) auto;
+}
+
+.machine-tpl-name {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.machine-tpl-name b {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.machine-tpl-name span {
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.machine-sync.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* produção local: sem "copiar", mas a coluna continua (os campos alinham) */
+.machine-sync.is-placeholder {
+  visibility: hidden;
+}

@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', homeOffice: false }, // aba COMPUTADOR (só neste computador)
+		machine: { user: '', projects: '', outputs: '', templates: {}, homeOffice: false }, // aba COMPUTADOR (só neste computador)
 		machineSnapshot: '',
 		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -377,7 +377,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function machineForSave() {
 		var m = state.machine;
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), homeOffice: !!m.homeOffice };
+		var templates = {};
+
+		Object.keys(m.templates).sort().forEach(function (name) {
+			if (m.templates[name].trim()) templates[name] = m.templates[name].trim();
+		});
+
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, homeOffice: !!m.homeOffice };
 	}
 
 	function personalDirty() {
@@ -2264,7 +2270,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	function setMachine(m) {
-		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', homeOffice: !!m.homeOffice };
+		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', templates: Object.assign({}, m.templates || {}), homeOffice: !!m.homeOffice };
 		state.defaultUser = m.defaultUser || '';
 		state.machineSnapshot = JSON.stringify(machineForSave());
 		renderMachine();
@@ -2279,6 +2285,101 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('machine-user').placeholder = state.defaultUser;
 		$('machine-projects').placeholder = state.project && state.project.root ? state.project.root : 'a pasta da equipe';
 		$('machine-home').checked = m.homeOffice;
+		renderMachineTemplates();
+	}
+
+	// uma linha por produção da equipe: o nome, a pasta deste computador e, para as da rede, o "copiar"
+	function renderMachineTemplates() {
+		var list = $('machine-templates');
+
+		if (!list || document.activeElement && list.contains(document.activeElement)) return;
+
+		list.textContent = '';
+
+		state.rows.forEach(function (row) {
+			var name = row.name.trim();
+
+			if (!name) return;
+
+			var teamPath = row.path.trim();
+			var home = /^~(\/|$)/.test(teamPath);
+			var box = el('div', 'drive-row machine-tpl');
+			var label = el('div', 'machine-tpl-name');
+			var field = el('div', 'cfg-path has-field-icon');
+			var input = el('input', 'cfg-input');
+			var pick = el('button', 'mini-button');
+			var ico = svg(FOLDER_ICON);
+
+			label.appendChild(el('b', null, name));
+			label.appendChild(el('span', null, home ? 'local · a daqui vale sempre' : 'rede · a daqui é a cópia'));
+			label.title = teamPath;
+
+			ico.setAttribute('class', 'field-icon');
+			input.type = 'text';
+			input.value = state.machine.templates[name] || '';
+			input.placeholder = home ? teamPath : 'sem cópia';
+			input.spellcheck = false;
+			input.setAttribute('aria-label', 'pasta de ' + name + ' neste computador');
+			input.addEventListener('input', function () {
+				state.machine.templates[name] = input.value;
+				updateDirty();
+			});
+
+			pick.type = 'button';
+			pick.title = 'escolher a pasta';
+			pick.setAttribute('aria-label', 'escolher a pasta de ' + name);
+			pick.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg>';
+			pick.addEventListener('click', async function () {
+				var picked = PAD_BRIDGE.pickFolder('Pasta de ' + name + ' neste computador', input.value || teamPath);
+
+				if (!picked) return;
+
+				try {
+					picked = (await call('canonicalPath', { path: picked })).path || picked;
+				} catch (err) { }
+
+				state.machine.templates[name] = picked;
+				input.value = picked;
+				updateDirty();
+			});
+
+			field.appendChild(ico);
+			field.appendChild(input);
+			field.appendChild(pick);
+			box.appendChild(label);
+			box.appendChild(field);
+
+			{
+				var sync = el('button', 'button button-secondary button-compact machine-sync' + (home ? ' is-placeholder' : ''), 'copiar');
+
+				sync.type = 'button';
+				sync.title = 'copiar da rede o que é novo ou mudou';
+				sync.disabled = home || state.machine.homeOffice;
+				if (home) sync.setAttribute('aria-hidden', 'true');
+				sync.addEventListener('click', async function () {
+					var to = (state.machine.templates[name] || '').trim();
+
+					sync.disabled = true;
+					sync.classList.add('is-busy');
+
+					try {
+						var res = await call('syncTemplates', { name: name, from: teamPath, to: to });
+
+						toast(res.failed.length ? 'error' : 'success', name + ': ' + res.copied + (res.copied === 1 ? ' arquivo copiado' : ' arquivos copiados') + (res.same ? ', ' + res.same + ' já em dia' : '') + (res.failed.length ? '. não copiados: ' + res.failed.join(', ') : '.'));
+					} catch (err) {
+						toast('error', err.message);
+					}
+
+					sync.disabled = state.machine.homeOffice;
+					sync.classList.remove('is-busy');
+				});
+				box.appendChild(sync);
+			}
+
+			list.appendChild(box);
+		});
+
+		if (!list.children.length) list.appendChild(el('p', 'cfg-hint', 'nenhuma produção na lista da equipe.'));
 	}
 
 	async function loadMachine() {
@@ -3061,8 +3162,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
 		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
 
-		if (!mine && state.machine.homeOffice) {
-			text.innerHTML = '<b>equipe</b> · home office: a cópia guardada neste computador, só para ler';
+		if (!mine && (state.machine.homeOffice || state.fromCopy)) {
+			text.innerHTML = '<b>equipe</b> · ' + (state.machine.homeOffice ? 'home office' : 'sem a rede') + ': a cópia guardada neste computador, só para ler';
 		} else if (!mine) {
 			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
 		} else if (team) {
@@ -3198,7 +3299,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setSearch(res.search);
 			setLinks(res.links);
 			setProject(res.project);
-			renderMachine();
 			setCollect(res.collect);
 			setBar(res.bar);
 			setAppearance(res.appearance);
@@ -3206,8 +3306,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
+			state.fromCopy = !!res.fromCopy;
+			renderMachine();
 
 			if (res.error) toast('error', res.error);
+			else if (res.fromCopy && !res.homeOffice) toast('error', 'sem a rede: a configuração da equipe aberta é a cópia deste computador, só para ler.', 7000);
 		} catch (err) {
 			state.rows = [];
 			setAvailable(false);

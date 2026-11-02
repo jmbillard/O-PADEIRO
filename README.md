@@ -315,7 +315,8 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_093` | coletar: itens que não puderam ser coletados (sem permissão, arquivo ausente) |
 | `#PAD_094` | configuração: árvore do coletar inválida (nome vazio, repetido ou com `\ / : * ? " < > \|`, pasta pai inexistente, ciclo, tipo em duas pastas) ou sem nenhum tipo |
 | `#PAD_095` | coletar: projeto não salvo (use o clique direito para escolher a pasta) |
-| `#PAD_096` | home office: sem cópia da configuração neste computador, ou tentativa de editar a configuração da equipe |
+| `#PAD_096` | home office ou sem a rede: sem cópia da configuração neste computador, ou tentativa de editar a configuração da equipe |
+| `#PAD_097` | cópia dos templates: sem pasta neste computador, pasta da rede inacessível ou home office ligado |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>
