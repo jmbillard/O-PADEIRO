@@ -282,17 +282,23 @@
 
 			<!-- aba APARÊNCIA (o tema de todas as janelas) -->
 			<div class="cfg-pane drives-pane" id="pane-appearance" role="tabpanel" hidden>
-				<p class="cfg-title prods-section-title">modo</p>
-				<div class="log-modes" id="app-mode" role="radiogroup" aria-label="Modo">
-					<label class="log-radio"><input type="radio" name="app-mode" value="light"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">claro</span></label>
-					<label class="log-radio"><input type="radio" name="app-mode" value="dark"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">escuro</span></label>
-					<label class="log-radio" title="segue o modo do sistema"><input type="radio" name="app-mode" value="auto"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">automático</span></label>
-				</div>
-
-				<p class="cfg-title prods-section-title">fundo</p>
-				<div class="log-modes" id="app-bg" role="radiogroup" aria-label="Fundo">
-					<label class="log-radio"><input type="radio" name="app-bg" value="gradient"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">degradê</span></label>
-					<label class="log-radio"><input type="radio" name="app-bg" value="solid"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">sólido</span></label>
+				<!-- modo e fundo: dois menus na mesma linha -->
+				<div class="app-pair">
+					<div class="app-field">
+						<p class="cfg-title prods-section-title">modo</p>
+						<span class="select select-large"><select id="app-mode" aria-label="Modo">
+							<option value="light">claro</option>
+							<option value="dark">escuro</option>
+							<option value="auto">automático (o do sistema)</option>
+						</select></span>
+					</div>
+					<div class="app-field">
+						<p class="cfg-title prods-section-title">fundo</p>
+						<span class="select select-large"><select id="app-bg" aria-label="Fundo">
+							<option value="gradient">degradê</option>
+							<option value="solid">sólido</option>
+						</select></span>
+					</div>
 				</div>
 
 				<p class="cfg-title prods-section-title">cores</p>

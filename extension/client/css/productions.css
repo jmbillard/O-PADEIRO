@@ -1809,6 +1809,23 @@ body.is-org-dragging * {
   max-width: 280px;
 }
 
+/* modo e fundo lado a lado (cada um com o título em cima) */
+.app-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 16px;
+}
+
+.app-field {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.app-field .prods-section-title {
+  margin-top: 0;
+}
+
 .app-logo {
   display: flex;
   flex-wrap: wrap;

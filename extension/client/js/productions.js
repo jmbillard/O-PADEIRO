@@ -2435,10 +2435,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!a) return;
 
 		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
-			Array.prototype.forEach.call(document.querySelectorAll('input[name="' + pair[0] + '"]'), function (radio) {
-				radio.checked = radio.value === a[pair[1]];
-				radio.disabled = !state.available;
-			});
+			$(pair[0]).value = a[pair[1]];
+			$(pair[0]).disabled = !state.available;
+			PAD_DROPDOWN.refresh($(pair[0]));
 		});
 
 		var solid = a.background === 'solid';
@@ -2649,8 +2648,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindAppearance() {
 
 		[['app-mode', 'mode'], ['app-bg', 'background']].forEach(function (pair) {
-			$(pair[0]).addEventListener('change', function (e) {
-				if (e.target.name === pair[0]) changeAppearance(pair[1], e.target.value);
+			PAD_DROPDOWN.enhance($(pair[0]));
+			$(pair[0]).addEventListener('change', function () {
+				changeAppearance(pair[1], $(pair[0]).value);
 			});
 		});
 
