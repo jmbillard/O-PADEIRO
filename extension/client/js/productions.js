@@ -26,17 +26,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		discardTimer: null,
 		saving: false,
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
-		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba DRIVES)
+		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
-		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCA: origem do índice e { chave: nome de exibição }
+		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCAR: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
 		collect: { folders: [], projectFolders: false, saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
-		bar: { items: [], hidden: [] }, // aba FERRAMENTAS: a ordem da barra ('divider' entre os grupos) e as escondidas
+		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
-		// aparência e ferramentas: o padrão da equipe (rede) e as desta pessoa (este computador); state.appearance
+		// aparência e layout: o padrão da equipe (rede) e as desta pessoa (este computador); state.appearance
 		// e state.bar apontam para o que está sendo editado (o da pessoa ou, em "editar o padrão da equipe", o da equipe)
 		team: { appearance: null, bar: null },
 		mine: { appearance: null, bar: null },
@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', templates: {}, localMode: false }, // aba COMPUTADOR (só neste computador)
+		machine: { user: '', projects: '', outputs: '', templates: {}, localMode: false }, // aba MEU USUÁRIO (só neste computador)
 		machineSnapshot: '',
 		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -3105,8 +3105,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'links', 'logs', 'drives', 'rename', 'organize', 'collect', 'search', 'project', 'appearance', 'tools', 'mylinks', 'machine'];
-	var MINE_TABS = ['appearance', 'tools', 'mylinks', 'machine']; // local (este computador); as outras, da equipe (rede)
+	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
+	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
+	var TAB_ALIASES = { logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['tools', 'mylinks-section'] };
+	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -3119,7 +3121,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			state.lastTabStamp = req.stamp;
 
 			if (initial && req.now - req.stamp > CONFIG_TAB_TTL) return;
-			if (TAB_NAMES.indexOf(req.tab) >= 0) showTab(req.tab);
+			if (TAB_NAMES.indexOf(req.tab) >= 0 || TAB_ALIASES[req.tab]) showTab(req.tab);
 		} catch (err) { }
 	}
 
@@ -3154,7 +3156,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!box) return;
 
 		var mine = MINE_TABS.indexOf(tab) >= 0;
-		var team = !mine || (state.editTeam && tab !== 'mylinks' && tab !== 'machine');
+		var team = !mine || (state.editTeam && tab !== 'machine');
 		var text = el('span', 'scope-text');
 
 		box.textContent = '';
@@ -3167,7 +3169,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
-		} else if (tab === 'mylinks' || tab === 'machine') {
+		} else if (tab === 'machine') {
 			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros' + (tab === 'machine' && (state.machine.localMode || state.offline) ? ' · <b>modo local</b>' : '');
 		} else {
 			text.innerHTML = '<b>local</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
@@ -3179,7 +3181,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			box.appendChild(scopeButton('voltar às minhas preferências', function () {
 				setEditTeam(false);
 			}));
-		} else if (mine && tab !== 'mylinks' && tab !== 'machine' && isPersonalized(tab)) {
+		} else if (mine && tab !== 'machine' && isPersonalized(tab)) {
 			box.appendChild(scopeButton('voltar ao padrão da equipe', function () {
 				if (tab === 'appearance') state.custom.appearance = false;
 				if (tab === 'tools') state.custom.bar = false;
@@ -3189,21 +3191,23 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		}
 	}
 
-	// "editar o padrão da equipe" (menu ⋯): aparência e ferramentas passam a editar o da rede
+	// "editar o padrão da equipe" (menu ⋯): aparência e layout passam a editar o da rede
 	function setEditTeam(on) {
 		state.editTeam = on;
+		$('mylinks-section').hidden = on; // os meus links são sempre deste computador: fora do padrão da equipe
 		$('menu-team').textContent = on ? 'Voltar às minhas preferências' : 'Editar o padrão da equipe';
 		activatePrefs();
 		if (on && MINE_TABS.indexOf(state.tab) < 0) showTab('appearance');
-		if (on) toast(null, 'editando o padrão da equipe (aparência e ferramentas): vale para quem não personalizou.');
+		if (on) toast(null, 'editando o padrão da equipe (aparência e layout): vale para quem não personalizou.');
 	}
 
 	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
 	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
-	var TAB_TOOL_ICONS = { prods: 'templates', drives: 'folders', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
+	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
 
 	var TAB_ICONS = {
-		machine: '<g class="ti-laptop"><rect x="5" y="5" width="14" height="10" rx="1.8" /><path d="M3 18.5h18" /><path class="ti-line" d="M9.5 9.5h5" /></g>',
+		machine: '<g class="ti-user"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
+		network: '<g class="ti-server"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-line" d="M7.5 7.5h.01M7.5 16.5h.01" /></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
 		appearance: '<g class="ti-palette"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.6-1-2.6 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7c0-4.2-3.8-7.3-8.5-7.3z" /><circle class="ti-dot" cx="7.5" cy="11" r=".9" /><circle class="ti-dot" cx="10" cy="7.3" r=".9" /><circle class="ti-dot" cx="14.5" cy="7.3" r=".9" /></g>',
@@ -3213,7 +3217,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var key = tab.getAttribute('data-tab');
-			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key === 'mylinks' ? 'links' : key];
+			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key];
 
 			if (!icon || tab.querySelector('svg')) return;
 
@@ -3230,6 +3234,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function showTab(name) {
+		var alias = TAB_ALIASES[name];
+
+		if (alias) {
+			name = alias[0];
+			if (alias[1]) {
+				setTimeout(function () {
+					var section = $(alias[1]);
+
+					if (section && section.scrollIntoView) section.scrollIntoView({ block: 'start', behavior: 'smooth' });
+				}, 60);
+			}
+		}
+
 		state.tab = name;
 		renderScope();
 
@@ -3255,8 +3272,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// erro do host numa seção: abre a aba dela
 	function tabForError(message) {
-		if (/#PAD_078/.test(message)) return 'logs';
-		if (/#PAD_0(79|80|81)/.test(message)) return 'drives';
+		if (/#PAD_078/.test(message)) return 'network';
+		if (/#PAD_0(79|80|81)/.test(message)) return 'drives'; // aba rede, na seção dos drives
 		if (/#PAD_08[23]/.test(message)) return 'rename';
 		if (/#PAD_08[45]/.test(message)) return 'organize';
 		if (/#PAD_086/.test(message)) return 'search';
@@ -3383,7 +3400,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var logProblem = validateLog();
 
 		if (logProblem) {
-			showTab('logs');
+			showTab('network');
 			$('log-webhook').focus();
 			return toast('error', logProblem);
 		}

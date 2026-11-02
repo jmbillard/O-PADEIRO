@@ -22,20 +22,18 @@
 					<nav class="prods-nav">
 						<div class="tabs" id="tabs" role="tablist" aria-label="Configuração" aria-orientation="vertical">
 							<p class="tab-group" data-scope="team" title="salvo na rede: vale para todo mundo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><span>equipe</span></p>
-							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">PRODUÇÕES</button>
-							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
-							<button type="button" class="tab" role="tab" data-tab="logs" aria-selected="false">LOGS</button>
-							<button type="button" class="tab" role="tab" data-tab="drives" aria-selected="false">DRIVES</button>
+							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">TEMPLATES</button>
+							<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
+							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
 							<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 							<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
-							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
-							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCA</button>
-							<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
+							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCAR</button>
+							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
+							<button type="button" class="tab" role="tab" data-tab="network" aria-selected="false">REDE</button>
 							<p class="tab-group" data-scope="mine" title="salvo só neste computador: não muda nada para os outros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg><span>local</span></p>
 							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
-							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">FERRAMENTAS</button>
-							<button type="button" class="tab" role="tab" data-tab="mylinks" aria-selected="false">MEUS LINKS</button>
-							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">COMPUTADOR</button>
+							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">LAYOUT</button>
+							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">MEU USUÁRIO</button>
 						</div>
 					</nav>
 				</div>
@@ -62,7 +60,7 @@
 			<!-- onde a aba aberta é salva (equipe, na rede · local, neste computador) -->
 			<div class="scope-note" id="scope-note" aria-live="polite"></div>
 
-			<!-- aba PRODUÇÕES -->
+			<!-- aba TEMPLATES -->
 			<div class="cfg-pane" id="pane-prods" role="tabpanel">
 			<!-- busca grande no topo da folha (como as outras buscas); o título da lista vem logo abaixo -->
 			<div class="picker-search prods-filter">
@@ -95,15 +93,7 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link da equipe</button>
 			</div>
 
-			<!-- aba MEUS LINKS (só neste computador) -->
-			<div class="cfg-pane drives-pane" id="pane-mylinks" role="tabpanel" hidden>
-				<p class="cfg-title prods-section-title">meus links</p>
-				<p class="cfg-hint">só neste computador: aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
-				<div class="drive-rows" id="personal-list"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
-			</div>
-
-			<!-- aba COMPUTADOR (só neste computador: sigla, pastas padrão e modo local) -->
+			<!-- aba MEU USUÁRIO (só neste computador: sigla, pastas padrão e modo local) -->
 			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">sigla do designer</p>
 				<p class="cfg-hint">a sua sigla no nome dos projetos (<b>{usuario}</b>). vazia: as 3 primeiras letras do usuário do computador.</p>
@@ -131,8 +121,8 @@
 				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm das pastas acima, a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
-			<!-- aba LOGS -->
-			<div class="cfg-pane prods-log" id="pane-logs" role="tabpanel" hidden>
+			<!-- aba REDE: registro de uso e drives (configurados uma vez) -->
+			<div class="cfg-pane prods-log" id="pane-network" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">registro de uso</p>
 				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
 					<label class="log-radio" title="cada preenchimento é enviado para o webhook abaixo"><input type="radio" name="log-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
@@ -145,10 +135,8 @@
 					<input type="text" class="cfg-input log-webhook" id="log-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook" title="endereço do webhook (http:// ou https://)">
 				</div>
 				<p class="cfg-hint" id="log-hint"></p>
-			</div>
-
-			<!-- aba DRIVES -->
-			<div class="cfg-pane drives-pane" id="pane-drives" role="tabpanel" hidden>
+			
+				<div class="network-section" id="drives-section">
 				<p class="cfg-title prods-section-title">drives da rede</p>
 				<p class="cfg-hint">a letra do Windows e o caminho de rede que ela representa. o padeiro usa este mapa para converter caminhos entre Windows e Mac (conversor, busca e caminhos dos templates).</p>
 				<div class="drive-rows" id="drive-list"></div>
@@ -165,6 +153,7 @@
 					<input type="text" class="cfg-input" id="default-server" placeholder="servidor.empresa.com" spellcheck="false" autocomplete="off" aria-label="Servidor padrão">
 				</div>
 				<p class="cfg-hint">usado quando o volume não está em nenhuma das listas acima.</p>
+				</div>
 			</div>
 
 			<!-- aba RENOMEAR -->
@@ -268,7 +257,7 @@
 				</div>
 			</div>
 
-			<!-- aba BUSCA (busca de caminhos, O ACESSORISTA) -->
+			<!-- aba BUSCAR (busca de caminhos, O ACESSORISTA) -->
 			<div class="cfg-pane drives-pane" id="pane-search" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">índice</p>
 				<p class="cfg-hint">de onde vem o índice de caminhos (atrações, projetos e outputs) que a busca usa.</p>
@@ -380,7 +369,7 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="app-defaults">restaurar a aparência padrão</button>
 			</div>
 
-			<!-- aba FERRAMENTAS: à esquerda, a barra em fila única (azul, como a própria barra); à direita, as ferramentas -->
+			<!-- aba LAYOUT: à esquerda, a barra em fila única (azul, como a própria barra); à direita, as ferramentas -->
 			<div class="cfg-pane organize-pane" id="pane-tools" role="tabpanel" hidden>
 				<div class="org-card tools-card">
 					<div class="tools-bar" id="tool-list" aria-label="A barra, na ordem"></div>
@@ -391,6 +380,13 @@
 					<p class="cfg-hint">a barra de todo mundo, à esquerda, na ordem: arraste pelos pontinhos para reordenar e use o × para tirar uma ferramenta (ou os links). o que sai aparece aqui: o + põe de volta, no fim da barra. os separadores dividem a barra em grupos; '+ separador' (abaixo) acrescenta um no fim da barra.</p>
 					<div class="org-types tool-cards" id="tool-cards"></div>
 					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-divider">+ separador</button>
+
+					<div class="mylinks-section" id="mylinks-section">
+				<p class="cfg-title prods-section-title">meus links</p>
+				<p class="cfg-hint">só neste computador: aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
+				<div class="drive-rows" id="personal-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
+					</div>
 				</div>
 			</div>
 

@@ -1,4 +1,4 @@
-/* eslint-disable no-empty */
+﻿/* eslint-disable no-empty */
 /* eslint-disable no-redeclare */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-undef */
@@ -404,7 +404,7 @@ function findServerForShare(shareName) {
 		}
 	}
 
-	// Volumes sem letra de drive (aba DRIVES da configuração)
+	// Volumes sem letra de drive (aba REDE da configuração)
 	return (PAD_SHARE_SERVERS && PAD_SHARE_SERVERS[shareName]) || null;
 }
 

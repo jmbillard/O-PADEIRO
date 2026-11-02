@@ -207,7 +207,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Estrutura da barra
 	   ========================================================= */
 
-	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba FERRAMENTAS).
+	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba LAYOUT).
 	var TOOLS = [
 		{
 			key: 'templates',
@@ -563,15 +563,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		var text = {
 			network: 'rede: configuração, templates e busca vêm da rede',
-			forced: 'modo local, ligado por você (configuração > computador): nada tenta a rede',
+			forced: 'modo local, ligado por você (configuração > meu usuário): nada tenta a rede',
 			offline: 'modo local: a rede não está respondendo. o padeiro usa as cópias deste computador e volta sozinho quando a rede voltar'
 		}[key];
 
-		btn.title = text + '\n' + L_CLICK + 'configuração > computador';
+		btn.title = text + '\n' + L_CLICK + 'configuração > meu usuário';
 		btn.setAttribute('aria-label', text);
 	}
 
-	// os links também podem ser escondidos (configuração > ferramentas)
+	// os links também podem ser escondidos (configuração > layout)
 	function applyLinksHidden(hidden) {
 		if (hidden.indexOf('links') < 0) return;
 

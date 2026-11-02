@@ -8,22 +8,22 @@ as abas ficam em dois grupos, conforme **onde** cada uma é salva:
 
 | grupo | abas | onde fica |
 | --- | --- | --- |
-| 🌐 **equipe** | produções, links, logs, drives, renomear, organizar, coletar, busca, projeto | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
-| 👤 **local** | aparência, ferramentas, meus links | na pasta de dados do usuário, neste computador: não muda nada para os outros |
+| 🌐 **equipe** | templates, projeto, coletar, renomear, organizar, buscar, links, rede | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
+| 👤 **local** | aparência, layout (com os seus links), meu usuário | na pasta de dados do usuário, neste computador: não muda nada para os outros |
 
 uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede* ou 👤 *local · salvo neste computador*).
 
-**padrão da equipe** → a aparência e as ferramentas têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **ferramentas**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
+**padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → produções, pastas → drives, renomear, organizar, coletar, buscar → busca, projeto → projeto, links da equipe → links, os seus → meus links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar, buscar, projeto, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
-## 📍 produções
+## 📍 templates
 
-uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
+a aba **templates** é a lista de produções. uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
 
 a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config.json`, na pasta do padeiro na rede. quando alguém muda a lista, os painéis de todo mundo atualizam sozinhos.
 
-> 📟 *aba produções*:
+> 📟 *aba templates*:
 >
 > ![editor de produções](images/producoes.webp)
 
@@ -43,62 +43,45 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
-
 <br>
 
 ---
 
 <br>
 
-## 📍 links
+## 📍 projeto
 
-a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). a aba **meus links** (👤 local) tem os seus: ficam só neste computador e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
+a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são salvos e o nome do arquivo.
 
-cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
+- **pasta dos projetos** → a raiz: a pasta de cada retranca fica dentro dela. sem pasta, a janela PROJETO pede uma ao salvar.
+- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo (o projeto, os `project files` e as `FONTS` ficam juntos).
+- **nome do arquivo** → o nome do `.aep`, com variáveis:
 
-> 🚩 *obs:*\
-> • sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.\
-> • os seus links podem ser editados e salvos mesmo sem acesso à lista da rede.
+  | variável | vira |
+  | --- | --- |
+  | `{id}` | o ID do projeto (ex: `EMP123456`) |
+  | `{projeto}` | o nome do projeto, no formato da aba **renomear** (acentos e caixa) |
+  | `{usuario}` | a sigla de quem salva (na janela PROJETO; por padrão, as 3 primeiras letras do usuário do sistema) |
+  | `{retranca}` | o nome da pasta da retranca (ex: `em ponto`) |
+  | `{data}` | a data de hoje (`aaaa-mm-dd`) |
 
+  embaixo do campo, um exemplo mostra como o nome fica.
+- **retrancas** → o começo do ID indica a retranca: `EMP123456` → a pasta de `EMP`. a pasta pode ficar dentro da pasta dos projetos (`JORNAIS/em ponto`) ou ser um caminho completo. vale o código mais longo que combinar (`EMP` ganha de `EM`). '*importar do índice da busca*' traz as entradas da busca no formato `COD - nome`, com o caminho delas.
 <br>
 
 ---
 
 <br>
 
-## 📍 logs
+## 📍 coletar
 
-a aba **logs** define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
+a aba **coletar** define onde o botão **coletar** (na barra) copia os arquivos usados no projeto: uma árvore de pastas **dentro da pasta do projeto** (a do `.aep`), no mesmo jeito da aba organizar. vem preenchida com `project files` (`videos`, `sequencias`, `imagens`, `audio`, `dados`) e `FONTS`.
 
-| opção | o que faz |
-| --- | --- |
-| **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
-| **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
-| **CSV global** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
-| **desligado** | não registra nada |
-
-> 🚩 *obs:*\
-> • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
-> • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
-
-<br>
-
----
-
-<br>
-
-## 📍 drives
-
-a aba **drives** é o mapa da rede que o padeiro usa para converter caminhos entre Windows e Mac (conversor, busca de caminhos e os caminhos dos templates). vem preenchida com o mapa de sempre; outra equipe, com outros servidores, ajusta aqui.
-
-- **drives da rede** → a letra do Windows e o caminho de rede que ela representa (`//servidor/share/pasta`). ex: `L:` → `//vfx-ml-sp.../VFX/imagem/drive_l`: `L:\PROMO\x` vira `//vfx-ml-sp.../VFX/imagem/drive_l/PROMO/x` (e `/Volumes/drive_l/PROMO/x` no Mac).
-- **volumes sem letra** → volumes montados no Mac (`/Volumes/NOME`) que não têm letra no Windows: o nome do volume e o servidor onde ele está.
-- **servidor padrão** → usado quando o volume não está em nenhuma das listas.
-
-> 🚩 *obs:*\
-> • a letra pode ser digitada com ou sem `:`; caminhos com `\` são convertidos para `/` ao salvar.\
-> • os painéis passam a usar o mapa novo em alguns segundos, sem reiniciar o After Effects.
-
+- **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
+- **tipos de arquivo** → vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado**.
+- **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
+- **repetir as pastas do painel de projeto** → ligado, dentro da pasta do tipo o arquivo fica nas mesmas pastas em que está no painel de projeto (ex: `videos / Material`).
+- **salvar o projeto depois de coletar** → grava o projeto já apontando para as cópias.
 <br>
 
 ---
@@ -118,7 +101,6 @@ a aba **renomear** define como o botão **renomear** (na barra) padroniza os nom
 > • a ordem importa: vale o primeiro tipo encontrado. arraste pelos pontinhos para reordenar.\
 > • os termos são palavras: maiúsculas e acentos não importam (`rodape` reconhece **Rodapé**), e o plural com S também vale (`tarja` reconhece **TARJAS**). plurais irregulares entram como outro termo (`cartao, cartoes`).\
 > • o comentário do tipo também é usado pelo **organizar**.
-
 <br>
 
 ---
@@ -144,32 +126,15 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 > • o tipo que não está em nenhuma pasta fica na raiz do projeto (aparece na linha **raiz do projeto**).\
 > • `Esc` cancela um arrasto; perto das bordas, a árvore rola sozinha.\
 > • a pasta dos arquivos ausentes só é criada quando há algum arquivo ausente.
-
 <br>
 
 ---
 
 <br>
 
-## 📍 coletar
+## 📍 buscar
 
-a aba **coletar** define onde o botão **coletar** (na barra) copia os arquivos usados no projeto: uma árvore de pastas **dentro da pasta do projeto** (a do `.aep`), no mesmo jeito da aba organizar. vem preenchida com `project files` (`videos`, `sequencias`, `imagens`, `audio`, `dados`) e `FONTS`.
-
-- **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
-- **tipos de arquivo** → vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado**.
-- **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
-- **repetir as pastas do painel de projeto** → ligado, dentro da pasta do tipo o arquivo fica nas mesmas pastas em que está no painel de projeto (ex: `videos / Material`).
-- **salvar o projeto depois de coletar** → grava o projeto já apontando para as cópias.
-
-<br>
-
----
-
-<br>
-
-## 📍 busca
-
-a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
+a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**).
 
 - **índice** → de onde vem o índice de caminhos (atrações, projetos e outputs):
   - **webhook** → um endereço da web que devolve o índice.
@@ -179,32 +144,57 @@ a aba **busca** ajusta a busca de caminhos (**O ACESSORISTA**).
 - **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias*' lê o índice de novo.
 
 > 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
-
 <br>
 
 ---
 
 <br>
 
-## 📍 projeto
+## 📍 links
 
-a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são salvos e o nome do arquivo.
+a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). os seus (👤 local) ficam na aba **layout**, abaixo das ferramentas: ficam só neste computador e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
 
-- **pasta dos projetos** → a raiz: a pasta de cada retranca fica dentro dela. sem pasta, a janela PROJETO pede uma ao salvar.
-- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo (o projeto, os `project files` e as `FONTS` ficam juntos).
-- **nome do arquivo** → o nome do `.aep`, com variáveis:
+cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
 
-  | variável | vira |
-  | --- | --- |
-  | `{id}` | o ID do projeto (ex: `EMP123456`) |
-  | `{projeto}` | o nome do projeto, no formato da aba **renomear** (acentos e caixa) |
-  | `{usuario}` | a sigla de quem salva (na janela PROJETO; por padrão, as 3 primeiras letras do usuário do sistema) |
-  | `{retranca}` | o nome da pasta da retranca (ex: `em ponto`) |
-  | `{data}` | a data de hoje (`aaaa-mm-dd`) |
+> 🚩 *obs:*\
+> • sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.\
+> • os seus links podem ser editados e salvos mesmo sem acesso à lista da rede.
+<br>
 
-  embaixo do campo, um exemplo mostra como o nome fica.
-- **retrancas** → o começo do ID indica a retranca: `EMP123456` → a pasta de `EMP`. a pasta pode ficar dentro da pasta dos projetos (`JORNAIS/em ponto`) ou ser um caminho completo. vale o código mais longo que combinar (`EMP` ganha de `EM`). '*importar do índice da busca*' traz as entradas da busca no formato `COD - nome`, com o caminho delas.
+---
 
+<br>
+
+## 📍 rede
+
+a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca muda: onde fica o registro de uso e o mapa dos drives.
+
+### registro de uso
+
+define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
+
+| opção | o que faz |
+| --- | --- |
+| **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
+| **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
+| **CSV global** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
+| **desligado** | não registra nada |
+
+> 🚩 *obs:*\
+> • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
+> • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
+
+### drives
+
+é o mapa da rede que o padeiro usa para converter caminhos entre Windows e Mac (conversor, busca de caminhos e os caminhos dos templates). vem preenchida com o mapa de sempre; outra equipe, com outros servidores, ajusta aqui.
+
+- **drives da rede** → a letra do Windows e o caminho de rede que ela representa (`//servidor/share/pasta`). ex: `L:` → `//vfx-ml-sp.../VFX/imagem/drive_l`: `L:\PROMO\x` vira `//vfx-ml-sp.../VFX/imagem/drive_l/PROMO/x` (e `/Volumes/drive_l/PROMO/x` no Mac).
+- **volumes sem letra** → volumes montados no Mac (`/Volumes/NOME`) que não têm letra no Windows: o nome do volume e o servidor onde ele está.
+- **servidor padrão** → usado quando o volume não está em nenhuma das listas.
+
+> 🚩 *obs:*\
+> • a letra pode ser digitada com ou sem `:`; caminhos com `\` são convertidos para `/` ao salvar.\
+> • os painéis passam a usar o mapa novo em alguns segundos, sem reiniciar o After Effects.
 <br>
 
 ---
@@ -224,16 +214,15 @@ a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro
 > 🚩 *obs:* enquanto você edita, só esta janela mostra a prévia; ao salvar, as outras janelas mudam em alguns segundos.
 
 > 💡 *exemplo:* [config da PROMO GNEWS](exemplos/gnews/README.md): pastas, nomenclatura, busca e barra montadas a partir da barra antiga da promo, com o que ainda falta para chegar igual.
-
 <br>
 
 ---
 
 <br>
 
-## 📍 ferramentas
+## 📍 layout
 
-a aba **ferramentas** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
+a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
 - **ordem** → arraste cada ferramenta da barra pelos pontinhos.
 - **tirar** → o **×** de uma ferramenta (ou dos links, no topo) tira ela da barra; passe o mouse para ver o ×.
@@ -242,15 +231,16 @@ a aba **ferramentas** (👤 local) monta a **sua** barra (sem personalização, 
 
 > 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.
 
+**meus links** → abaixo, na coluna branca, os seus links: só neste computador, aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone (detalhes em [links](#-links)). eles não entram no padrão da equipe: em **⋯ > editar o padrão da equipe**, a seção some.
 <br>
 
 ---
 
 <br>
 
-## 📍 computador
+## 📍 meu usuário
 
-a aba **computador** (👤 local) guarda o que é só desta máquina:
+a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
 
 - **sigla do designer** → a sua sigla, usada na variável `{usuario}` do nome dos projetos. vazia, vale a padrão (as 3 primeiras letras do usuário do sistema). é a mesma do bonequinho da [janela projeto](projeto.md).
 - **pasta dos projetos** → onde a janela projeto salva neste computador, no lugar da pasta da equipe (aba **projeto**). as retrancas com caminho relativo ficam dentro dela; as com caminho completo continuam onde estão. vazia, vale a da equipe.
@@ -265,10 +255,9 @@ a aba **computador** (👤 local) guarda o que é só desta máquina:
   - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
   - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
-  - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique abre esta aba. a aba computador também avisa quando a rede caiu.
+  - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique abre esta aba. a aba meu usuário também avisa quando a rede caiu.
 
 > 🚩 *obs:* a cópia da configuração é guardada na primeira vez que o padeiro abre com a rede: sem ela, o modo local não liga (`#PAD_096`). a configuração da equipe só volta a ser editável com a rede.
-
 <br>
 
 ---

@@ -92,12 +92,12 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **ferramentas** da [configuração](docs/producoes.md#-ferramentas): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
+a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
 
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
-- **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > computador](docs/producoes.md#-computador).
+- **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > meu usuário](docs/producoes.md#-meu-usuário).
 - **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
   `◖` → abre o painel de templates.\

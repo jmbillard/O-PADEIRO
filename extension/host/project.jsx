@@ -99,7 +99,7 @@ function padReadProject() {
 
 */
 
-// Sigla do usuário: a deste computador (configuração > computador; padMachineUser, em api.jsx).
+// Sigla do usuário: a deste computador (configuração > meu usuário; padMachineUser, em api.jsx).
 function padProjectUser() {
 	return padMachineUser();
 }

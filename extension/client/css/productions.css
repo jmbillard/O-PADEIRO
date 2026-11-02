@@ -2232,3 +2232,29 @@ body.is-org-dragging * {
   margin: 0;
   border-radius: var(--radius-small);
 }
+
+/* LAYOUT: os meus links na coluna branca, abaixo dos blocos (nome em cima do endereço) */
+.mylinks-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mylinks-section[hidden] {
+  display: none;
+}
+
+.org-side .link-row {
+  grid-template-columns: 22px 40px minmax(0, 1fr);
+}
+
+.org-side .link-row > :nth-child(4) {
+  grid-column: 3 / -1;
+}
+
+/* REDE: os drives logo depois do registro de uso */
+.network-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

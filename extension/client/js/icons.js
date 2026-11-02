@@ -4,7 +4,7 @@
 > ícones das ferramentas da barra (barra e configuração)
 ---------------------------------------------------------------
 
-Os mesmos desenhos na barra, na aba FERRAMENTAS (prévia da barra e blocos) e nas abas da configuração.
+Os mesmos desenhos na barra, na aba LAYOUT (prévia da barra e blocos) e nas abas da configuração.
 Ícones com máscara ou recorte (coletar, buscar) levam ids: cada cópia recebe um sufixo próprio (uid).
 
   PAD_ICONS.markup(nome, uid) → o conteúdo do <svg viewBox="0 0 24 24">

@@ -174,7 +174,7 @@ function padMachineData() {
 	return PAD_MACHINE_CACHE.data;
 }
 
-// O modo local ligado à mão (configuração > computador). 'homeOffice' é o nome antigo da chave.
+// O modo local ligado à mão (configuração > meu usuário). 'homeOffice' é o nome antigo da chave.
 function padLocalForced() {
 	var d = padMachineData();
 
@@ -435,7 +435,7 @@ function padConfigInvalidate() {
 }
 
 function padNoSharedListError() {
-	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > computador) com a rede conectada.';
+	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > meu usuário) com a rede conectada.';
 
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }

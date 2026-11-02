@@ -57,7 +57,7 @@ function padWriteConfig(file, changes) {
 
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
-	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > computador) para editar.');
+	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > meu usuário) para editar.');
 	if (padConfigIsCopy()) throw new Error('#PAD_096 - sem a rede: a configuração aberta é a cópia deste computador, só para ler. tente de novo com a rede.');
 
 	var file = padConfigFile();
@@ -146,7 +146,7 @@ PADX.checkFolders = function (a) {
 /*
 
 ---------------------------------------------------------------
-> drives da rede (aba DRIVES da configuração)
+> drives da rede (aba REDE da configuração)
 ---------------------------------------------------------------
 
 'DRIVES' no O_PADEIRO_config.json: { drives: [{ letter, path }], shares: [{ share, server }], defaultServer }.
@@ -512,7 +512,7 @@ function padReadOrganize() {
 /*
 
 ---------------------------------------------------------------
-> busca de caminhos (aba BUSCA da configuração)
+> busca de caminhos (aba BUSCAR da configuração)
 ---------------------------------------------------------------
 
 'SEARCH' no O_PADEIRO_config.json: { source, webhook, file, labels: [{ key, label }] }.
@@ -691,10 +691,10 @@ PADX.savePersonalLinks = function (a) {
 /*
 
 ---------------------------------------------------------------
-> ferramentas da barra (aba FERRAMENTAS da configuração)
+> ferramentas da barra (aba LAYOUT da configuração)
 ---------------------------------------------------------------
 
-'BAR' no O_PADEIRO_config.json: { items: [...], hidden: [...] } (aba FERRAMENTAS, vale para a equipe toda):
+'BAR' no O_PADEIRO_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
   items  → a ordem das ferramentas na barra; 'divider' separa os grupos. ferramentas: templates, fontes,
            projeto, coletar, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
   hidden → as escondidas da barra (as mesmas chaves, e 'links' para o bloco de links)
@@ -889,7 +889,7 @@ PADX.appearance = function () {
 /*
 
 ---------------------------------------------------------------
-> preferências pessoais (aparência e ferramentas, só neste computador)
+> preferências pessoais (aparência e layout, só neste computador)
 ---------------------------------------------------------------
 
 'personal_config.json' na pasta de dados do usuário: { APPEARANCE, BAR }, só as que a pessoa personalizou.
@@ -966,7 +966,7 @@ PADX.savePersonalPrefs = function (a) {
 /*
 
 ---------------------------------------------------------------
-> cópia local dos templates (configuração > computador)
+> cópia local dos templates (configuração > meu usuário)
 ---------------------------------------------------------------
 
 Copia a pasta de templates de uma produção (na rede) para a pasta dela neste computador: só os arquivos
