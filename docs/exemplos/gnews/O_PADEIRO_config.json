@@ -375,8 +375,7 @@
 					"fontes"
 				]
 			}
-		],
-		"saveAfter": true
+		]
 	},
 	"APPEARANCE": {
 		"mode": "light",

@@ -32,7 +32,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCAR: origem do índice e { chave: nome de exibição }
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
-		collect: { folders: [], saveAfter: true }, // aba COLETAR (folders: { name, parent, contents })
+		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
@@ -332,8 +332,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return {
 			folders: c.folders.map(function (f) {
 				return { name: f.name.trim(), parent: f.parent, contents: f.contents.slice() };
-			}),
-			saveAfter: c.saveAfter
+			})
 		};
 	}
 
@@ -1725,8 +1724,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.collect = {
 			folders: (data.folders || []).map(function (f) {
 				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || []).slice() };
-			}),
-			saveAfter: data.saveAfter !== false
+			})
 		};
 		renderCollect();
 	}
@@ -1761,8 +1759,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return sub;
 		},
 		after: function () {
-			$('col-save').checked = state.collect.saveAfter;
-			['col-save', 'btn-new-col-folder', 'btn-col-default'].forEach(function (id) {
+			['btn-new-col-folder', 'btn-col-default'].forEach(function (id) {
 				$(id).disabled = !state.available;
 			});
 		}
@@ -1774,11 +1771,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindCollect() {
 		colTree.bind();
-
-		$('col-save').addEventListener('change', function () {
-			state.collect.saveAfter = this.checked;
-			updateDirty();
-		});
 
 		// troca a árvore pela estrutura padrão (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA); salvar grava
 		$('btn-col-default').addEventListener('click', function () {

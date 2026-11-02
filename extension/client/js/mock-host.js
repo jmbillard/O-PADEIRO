@@ -150,8 +150,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
 							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
 							{ name: '03 SAIDA', parent: '', contents: [] }
-						],
-						saveAfter: true
+						]
 					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },

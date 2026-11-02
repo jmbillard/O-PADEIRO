@@ -14,7 +14,6 @@ quadros do trecho usado), cada uma na própria subpasta.
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
                    'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de
                    cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
-  saveAfter      → salva o projeto depois de coletar (com os caminhos novos)
 Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 
 */
@@ -32,13 +31,12 @@ var PAD_DEFAULT_COLLECT = {
 		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
 		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
 		{ name: '03 SAIDA', parent: '', contents: [] }
-	],
-	saveAfter: true
+	]
 };
 
 // Valida e normaliza a seção vinda do painel. Lança Error com a mensagem.
 function padCleanCollect(o) {
-	var clean = { folders: [], saveAfter: o.saveAfter !== false }; // 'projectFolders' (antigo) é ignorado
+	var clean = { folders: [] }; // 'projectFolders' e 'saveAfter' (antigos) são ignorados: o coletar sempre salva
 	var names = {};
 	var owner = {};
 	var i;
@@ -412,13 +410,12 @@ PADX.collectProject = function (a) {
 			padCollectStructure(target, settings); // o collect das fontes apaga a pasta delas se não houver nenhuma
 		});
 
-		// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
-		if (settings.saveAfter) {
-			var sub = padCollectFolderPath(settings, 'projeto');
+		// coleta, troca os caminhos e salva, sempre. projeto sem arquivo, coletado numa pasta escolhida:
+		// salva lá (na pasta do .aep da estrutura)
+		var sub = padCollectFolderPath(settings, 'projeto');
 
-			if (file) app.project.save();
-			else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padProjectState().fileBase || 'projeto') + '.aep'));
-		}
+		if (file) app.project.save();
+		else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padProjectState().fileBase || 'projeto') + '.aep'));
 
 		if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
 		if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
@@ -429,7 +426,7 @@ PADX.collectProject = function (a) {
 			sequences: res.sequences,
 			frames: res.frames,
 			fonts: res.fonts != '',
-			saved: settings.saveAfter
+			saved: true
 		};
 	});
 };

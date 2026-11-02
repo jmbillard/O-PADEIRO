@@ -88,12 +88,12 @@ a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botã
 03 SAIDA           ← previews e finais para avaliação (criada vazia)
 ```
 
-a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01 PROJETOS`). pastas sem tipo (como `02 ARQUIVOS` e `03 SAIDA`) também são criadas. '*usar a estrutura padrão*' (abaixo das opções) troca a árvore por esta.
+a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01 PROJETOS`). pastas sem tipo (como `02 ARQUIVOS` e `03 SAIDA`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
 
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
 - **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
-- **salvar o projeto depois de coletar** → grava o projeto já apontando para as cópias.
+- **sempre salva** → depois de copiar, os itens apontam para as cópias e o projeto é salvo.
 <br>
 
 ---
