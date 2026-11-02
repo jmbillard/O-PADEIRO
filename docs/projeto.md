@@ -17,7 +17,7 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 - **ID** (`#`) → o código do projeto, em maiúsculas e sem espaços (ex: `EMP123456`). as primeiras letras indicam a retranca.
 - **sigla** (bonequinho) → a sua sigla, usada na variável `{usuario}`. fica só neste computador (a mesma da [configuração > computador](producoes.md#-computador)); vazia, vale a padrão (as 3 primeiras letras do usuário do sistema).
 
-> 🚩 *a pasta dos projetos deste computador e o modo **home office** (100% local) ficam na [configuração > computador](producoes.md#-computador).*
+> 🚩 *a pasta dos projetos deste computador e o **modo local** (sem a rede) ficam na [configuração > computador](producoes.md#-computador).*
 - **nome do projeto** → como você quiser escrever: os acentos e a caixa seguem o formato da aba **renomear** da configuração.
 
 o ID e o nome ficam gravados **no próprio projeto** (metadados XMP, `dc:identifier` e `dc:title`), um instante depois de digitar. abrir outro projeto troca os dados da janela. projetos feitos na barra antiga da PROMO GNEWS usam os mesmos campos: abrem aqui com o ID e o nome.

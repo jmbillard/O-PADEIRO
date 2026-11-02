@@ -44,8 +44,8 @@ PADX.pathsIndex = function (a) {
 	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
 	var downloaded = true;
 
-	// home office: só a cópia guardada (sem tocar na rede); fora dele, sem rede, a cópia também serve
-	if (padHomeOffice() && cacheFile.exists) downloaded = false;
+	// modo local (ligado ou com a rede fora): só a cópia guardada, sem tocar na rede
+	if (padLocalMode() && cacheFile.exists) downloaded = false;
 	else if (a.force || !psIsFresh(cacheFile)) downloaded = psDownloadIndex(cacheFile);
 
 	try {

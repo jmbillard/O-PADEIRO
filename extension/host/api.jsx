@@ -138,9 +138,11 @@ function padDisplayPaths(list) {
   projects   → a pasta padrão dos projetos neste computador (no lugar da raiz da equipe; as retrancas
                relativas ficam dentro dela)
   outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
-  homeOffice → 100% local: nada depende da rede. a configuração vem da última cópia guardada neste
-               computador, os projetos vão para 'projects' (ou a Área de Trabalho), os renders para
-               'outputs' (ou a Área de Trabalho) e os logs esperam a volta para a rede
+  templates  → { 'produção': pasta } a pasta de templates de cada produção neste computador
+  localMode  → modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem
+               da última cópia guardada neste computador, os templates das pastas daqui, os projetos vão
+               para 'projects' (ou a Área de Trabalho), os renders para 'outputs' (ou a Área de Trabalho)
+               e os logs esperam a volta para a rede
 
 */
 
@@ -172,8 +174,17 @@ function padMachineData() {
 	return PAD_MACHINE_CACHE.data;
 }
 
-function padHomeOffice() {
-	return padMachineData().homeOffice === true;
+// O modo local ligado à mão (configuração > computador). 'homeOffice' é o nome antigo da chave.
+function padLocalForced() {
+	var d = padMachineData();
+
+	return d.localMode === true || d.homeOffice === true;
+}
+
+// Modo local: ligado à mão ou a rede fora (a configuração da equipe só existe como a cópia deste
+// computador). Os dois funcionam igual: nada tenta a rede.
+function padLocalMode() {
+	return padLocalForced() || padConfigIsCopy();
 }
 
 // Caminho de pasta digitado: barras normais, sem barra no fim.
@@ -215,29 +226,30 @@ PADX.machinePrefs = function () {
 		projects: padMachinePath(d.projects),
 		outputs: padMachinePath(d.outputs),
 		templates: padMachineTemplates(d.templates),
-		homeOffice: d.homeOffice === true,
+		localMode: padLocalForced(),
+		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, homeOffice } (só os campos enviados mudam)
+// a: { user, projects, outputs, templates, localMode } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), homeOffice: d.homeOffice === true };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), localMode: padLocalForced() };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
 	if (a.templates != null) data.templates = padMachineTemplates(a.templates);
-	if (a.homeOffice != null) data.homeOffice = a.homeOffice === true;
+	if (a.localMode != null) data.localMode = a.localMode === true;
 
-	if (data.homeOffice && !d.homeOffice && !padConfigCopyFile().exists) {
-		// liga o home office: guarda já a cópia da configuração, se a rede ainda estiver aí
+	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
+		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
 		try {
 			padConfigData();
 		} catch (err) { }
 
-		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - home office: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
+		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - modo local: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
 	}
 
 	var folder = new Folder(scriptPreferencesPath);
@@ -280,15 +292,15 @@ function padIsHomePath(path) {
 
 // A pasta de templates de uma produção que vale agora:
 //   - com uma pasta neste computador e o caminho da equipe local (~/...): a deste computador, sempre;
-//   - com uma pasta neste computador e o caminho da equipe na rede: ela é a cópia, usada no home office
-//     ou quando a da rede não responde;
+//   - com uma pasta neste computador e o caminho da equipe na rede: ela é a cópia, usada no modo local
+//     (ligado ou com a rede fora) ou quando a pasta da rede não responde;
 //   - sem pasta neste computador: a da equipe.
 // → { path, local } (local: está usando a pasta deste computador)
 function padProductionPath(name, teamPath) {
 	var local = padMachineTemplates(padMachineData().templates)[name];
 
 	if (!local) return { path: teamPath, local: false };
-	if (padIsHomePath(teamPath) || padHomeOffice()) return { path: local, local: true };
+	if (padIsHomePath(teamPath) || padLocalMode()) return { path: local, local: true };
 
 	var team = new Folder(padPath(teamPath));
 
@@ -297,7 +309,7 @@ function padProductionPath(name, teamPath) {
 	return { path: local, local: true };
 }
 
-// Cópia da configuração da equipe guardada neste computador (para o home office).
+// Cópia da configuração da equipe guardada neste computador (para o modo local).
 function padConfigCopyFile() {
 	return new File(scriptPreferencesPath + '/config_copy.json');
 }
@@ -337,22 +349,25 @@ function padSharedConfigFile() {
 	return sibling.exists ? sibling : null;
 }
 
-// Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No home office,
-// a cópia guardada neste computador na última leitura da rede (sem tocar na rede).
+// Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No modo local
+// ligado, a cópia guardada neste computador na última leitura da rede (sem tocar na rede).
 function padConfigFile() {
 	var copy = padConfigCopyFile();
 
-	if (padHomeOffice()) return copy.exists ? copy : null;
+	if (padLocalForced()) return copy.exists ? copy : null;
 
 	// sem a rede: a cópia (só leitura), para o padeiro continuar funcionando
 	return padSharedConfigFile() || (copy.exists ? copy : null);
 }
 
-// A configuração lida agora é a cópia deste computador (home office ou rede fora)?
+// A configuração lida agora é a cópia deste computador (modo local ligado ou rede fora)?
+// (usa a leitura guardada de padConfigData: no máximo uma ida à rede a cada 1,5 s)
 function padConfigIsCopy() {
-	var file = padConfigFile();
+	try {
+		padConfigData();
+	} catch (err) { }
 
-	return !!file && file.fsName == padConfigCopyFile().fsName;
+	return PAD_CONFIG_CACHE.path != '' && PAD_CONFIG_CACHE.path == padConfigCopyFile().fsName;
 }
 
 // Conteúdo da configuração compartilhada, já interpretado. O arquivo fica na rede e é lido por várias
@@ -377,6 +392,7 @@ function padConfigData() {
 
 	if (!file) {
 		c.stamp = -1;
+		c.path = '';
 		throw new Error(padNoSharedListError());
 	}
 
@@ -393,7 +409,7 @@ function padConfigData() {
 
 			c.data = JSON.parse(text);
 
-			// lida da rede: guarda a cópia para o home office (e para quando a rede cair)
+			// lida da rede: guarda a cópia para o modo local (e para quando a rede cair)
 			if (file.fsName != padConfigCopyFile().fsName) {
 				try {
 					var folder = new Folder(scriptPreferencesPath);
@@ -419,7 +435,7 @@ function padConfigInvalidate() {
 }
 
 function padNoSharedListError() {
-	if (padHomeOffice()) return '#PAD_096 - home office: não há uma cópia da configuração neste computador. desligue o home office (configuração > computador) com a rede conectada.';
+	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > computador) com a rede conectada.';
 
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
@@ -475,7 +491,8 @@ PADX.ping = function () {
 		os: appOs,
 		version: PADX_VERSION,
 		network: netAccess(),
-		homeOffice: padHomeOffice()
+		localMode: padLocalMode(),
+		localForced: padLocalForced()
 	};
 };
 
@@ -524,7 +541,8 @@ PADX.productions = function () {
 		collect: padReadCollect(),
 		bar: padReadTeamBar(),
 		personal: PADX.personalPrefs(),
-		homeOffice: padHomeOffice(),
+		localMode: padLocalMode(),
+		localForced: padLocalForced(),
 		fromCopy: padConfigIsCopy(),
 		error: error
 	};
@@ -628,11 +646,13 @@ function padWriteLog(record) {
 	var settings = padReadLogSettings();
 
 	if (settings.mode == 'off') return;
-	if (settings.mode == 'webhook') return padHomeOffice() ? null : sendToWebhookWithCurl(record, settings.webhook);
+	var local = padLocalMode();
+
+	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
 
 	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
-	var config = padHomeOffice() ? new File(padSharedConfigPath()) : padConfigFile();
-	var folder = settings.mode == 'csvGlobal' ? (config && (padHomeOffice() || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
+	var config = local ? new File(padSharedConfigPath()) : padConfigFile();
+	var folder = settings.mode == 'csvGlobal' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
@@ -648,8 +668,8 @@ function padWriteLog(record) {
 
 	if (folder) pending.push({ folder: folder.fsName, line: line.join(';') });
 
-	// home office: nada na rede; as linhas esperam a volta (gravadas no próximo preenchimento fora dele)
-	if (padHomeOffice()) {
+	// modo local: nada na rede; as linhas esperam a volta (gravadas no próximo preenchimento fora dele)
+	if (local) {
 		if (pending.length) saveTextFile(JSON.stringify(pending), pendingFile.fsName);
 
 		return;
@@ -1338,13 +1358,14 @@ PADX.queueBegin = function (a) {
 	var configured = run.templateData.outputPath;
 
 	var machine = padMachineData();
+	var localMode = padLocalMode();
 	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
 
 	for (var o = 0; o < configured.length; o++) {
 		var outputPath = padPath(configured[o]);
 
-		// home office: tudo na pasta de saída deste computador (sem tocar na rede)
-		if (padHomeOffice()) {
+		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
+		if (localMode) {
 			outputs.push(padPath(localOutput));
 			continue;
 		}

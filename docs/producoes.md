@@ -257,17 +257,17 @@ a aba **computador** (👤 local) guarda o que é só desta máquina:
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 - **templates neste computador** → uma pasta deste computador para cada produção da lista:
   - produção com a pasta da equipe **local** (`~/...`, como a `Ω PASTA LOCAL`): a daqui vale **sempre** (cada um escolhe onde fica a sua).
-  - produção com a pasta da equipe **na rede**: a daqui é a **cópia**, usada no home office e quando a rede não responde. **copiar** traz da rede só os arquivos novos ou que mudaram (nada é apagado na cópia).
+  - produção com a pasta da equipe **na rede**: a daqui é a **cópia**, usada no modo local (ligado ou com a rede fora). **copiar** traz da rede só os arquivos novos ou que mudaram (nada é apagado na cópia).
   - sem pasta aqui, vale a da equipe.
-- **home office** → **100% local**: nada depende da rede.
-  - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede conectada); ela fica só para leitura.
-  - os templates vêm das **cópias** (templates neste computador) e a busca de caminhos usa o **último índice baixado**.
+- **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
+  - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
+  - os templates vêm das pastas deste computador (**templates neste computador**) e a busca de caminhos usa o **último índice baixado**.
   - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
   - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
-  - a barra mostra **HO** ao lado da versão.
+  - a barra mostra **· local** ao lado da versão (ligado à mão ou com a rede fora); a aba computador avisa quando a rede caiu.
 
-> 🚩 *obs:* para ligar o home office pela primeira vez, abra a configuração uma vez com a rede conectada (é quando a cópia é guardada). mesmo fora do home office, se a rede não responder, o padeiro usa as cópias (configuração, templates e índice) e avisa; a configuração da equipe só volta a ser editável com a rede.
+> 🚩 *obs:* a cópia da configuração é guardada na primeira vez que o padeiro abre com a rede: sem ela, o modo local não liga (`#PAD_096`). a configuração da equipe só volta a ser editável com a rede.
 
 <br>
 

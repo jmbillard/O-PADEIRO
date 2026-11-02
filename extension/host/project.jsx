@@ -169,16 +169,16 @@ function padFillPattern(pattern, values) {
 // Tudo o que a janela mostra: dados do XMP, retranca, destino e os nomes que serão usados.
 function padProjectState() {
 	var team = padReadProject();
-	var home = padHomeOffice();
+	var home = padLocalMode();
 	var localRoot = padMachinePath(padMachineData().projects);
-	// a raiz: a deste computador (se houver) ou a da equipe; no home office, sempre local (ou a Área de Trabalho)
+	// a raiz: a deste computador (se houver) ou a da equipe; no modo local, sempre a daqui (ou a Área de Trabalho)
 	var settings = { root: home ? localRoot || '~/Desktop' : localRoot || team.root, folder: team.folder, fileName: team.fileName, retrancas: team.retrancas };
 	var id = padCleanProjectId(padXmpGet('identifier'));
 	var name = padCleanProjectName(padXmpGet('title'));
 	var user = padProjectUser();
 	var retranca = padProjectRetranca(settings, id);
 
-	// home office: a pasta de uma retranca com caminho completo fica na rede; o projeto vai para a raiz local
+	// modo local: a pasta de uma retranca com caminho completo fica na rede; o projeto vai para a raiz local
 	if (home && retranca && retranca.absolute) retranca = { code: retranca.code, path: settings.root, name: retranca.name, absolute: true, local: true };
 	var values = {
 		id: id,
@@ -210,7 +210,7 @@ PADX.projectInfo = function () {
 		target: s.target ? padDisplayPath(s.target) : '',
 		fileName: s.fileBase ? s.fileBase + '.aep' : '',
 		saved: !!s.file,
-		homeOffice: padHomeOffice()
+		localMode: padLocalMode()
 	};
 };
 

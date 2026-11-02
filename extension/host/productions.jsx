@@ -57,7 +57,7 @@ function padWriteConfig(file, changes) {
 
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
-	if (padHomeOffice()) throw new Error('#PAD_096 - home office: a configuração da equipe fica na rede. desligue o home office (configuração > computador) para editar.');
+	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > computador) para editar.');
 	if (padConfigIsCopy()) throw new Error('#PAD_096 - sem a rede: a configuração aberta é a cópia deste computador, só para ler. tente de novo com a rede.');
 
 	var file = padConfigFile();
@@ -1006,7 +1006,7 @@ function padCopyTree(from, to, stats) {
 
 // a: { name, from, to } (from: a pasta da equipe; to: a deste computador)
 PADX.syncTemplates = function (a) {
-	if (padHomeOffice()) throw new Error('#PAD_097 - home office: a cópia dos templates precisa da rede. desligue o home office para atualizar.');
+	if (padLocalForced()) throw new Error('#PAD_097 - modo local: a cópia dos templates precisa da rede. desligue o modo local para atualizar.');
 
 	var from = new Folder(padPath(a.from));
 	var to = new Folder(padPath(a.to));

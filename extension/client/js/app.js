@@ -301,7 +301,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// Acompanha a produção escolhida na barra e a conexão com o After Effects.
 	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
-	// a pasta de templates que vale neste computador (a cópia local, no home office ou sem a rede)
+	// a pasta de templates que vale neste computador (a cópia local, no modo local)
 	function prodPath(prod) {
 		return prod ? prod.path || prod.templatesPath : '';
 	}

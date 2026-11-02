@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', templates: {}, homeOffice: false }, // aba COMPUTADOR (só neste computador)
+		machine: { user: '', projects: '', outputs: '', templates: {}, localMode: false }, // aba COMPUTADOR (só neste computador)
 		machineSnapshot: '',
 		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -383,7 +383,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (m.templates[name].trim()) templates[name] = m.templates[name].trim();
 		});
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, homeOffice: !!m.homeOffice };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, localMode: !!m.localMode };
 	}
 
 	function personalDirty() {
@@ -2266,11 +2266,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Computador (sigla, pastas padrão e home office)
+	   Computador (sigla, pastas padrão e modo local)
 	   ========================================================= */
 
 	function setMachine(m) {
-		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', templates: Object.assign({}, m.templates || {}), homeOffice: !!m.homeOffice };
+		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', templates: Object.assign({}, m.templates || {}), localMode: !!m.localMode };
+		state.offline = !!m.offline;
 		state.defaultUser = m.defaultUser || '';
 		state.machineSnapshot = JSON.stringify(machineForSave());
 		renderMachine();
@@ -2284,7 +2285,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		$('machine-user').placeholder = state.defaultUser;
 		$('machine-projects').placeholder = state.project && state.project.root ? state.project.root : 'a pasta da equipe';
-		$('machine-home').checked = m.homeOffice;
+		$('machine-local').checked = m.localMode;
+		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
 	}
 
@@ -2354,7 +2356,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 				sync.type = 'button';
 				sync.title = 'copiar da rede o que é novo ou mudou';
-				sync.disabled = home || state.machine.homeOffice;
+				sync.disabled = home || state.machine.localMode;
 				if (home) sync.setAttribute('aria-hidden', 'true');
 				sync.addEventListener('click', async function () {
 					var to = (state.machine.templates[name] || '').trim();
@@ -2370,7 +2372,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 						toast('error', err.message);
 					}
 
-					sync.disabled = state.machine.homeOffice;
+					sync.disabled = state.machine.localMode;
 					sync.classList.remove('is-busy');
 				});
 				box.appendChild(sync);
@@ -2399,8 +2401,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		});
 
-		$('machine-home').addEventListener('change', function () {
-			state.machine.homeOffice = this.checked;
+		$('machine-local').addEventListener('change', function () {
+			state.machine.localMode = this.checked;
 			updateDirty();
 		});
 
@@ -2464,13 +2466,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var machine = machineForSave();
 
 		if (state.machineSnapshot !== '' && JSON.stringify(machine) !== state.machineSnapshot) {
-			var home = JSON.parse(state.machineSnapshot).homeOffice;
+			var wasLocal = JSON.parse(state.machineSnapshot).localMode;
 
 			setMachine(await call('saveMachinePrefs', machine));
 			saved = true;
 
-			// o home office troca de onde vem a configuração da equipe (rede ou a cópia deste computador)
-			if (home !== state.machine.homeOffice) setTimeout(load, 0);
+			// o modo local troca de onde vem a configuração da equipe (rede ou a cópia deste computador)
+			if (wasLocal !== state.machine.localMode) setTimeout(load, 0);
 		}
 
 		renderScope();
@@ -3162,14 +3164,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
 		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
 
-		if (!mine && (state.machine.homeOffice || state.fromCopy)) {
-			text.innerHTML = '<b>equipe</b> · ' + (state.machine.homeOffice ? 'home office' : 'sem a rede') + ': a cópia guardada neste computador, só para ler';
+		if (!mine && (state.machine.localMode || state.fromCopy)) {
+			text.innerHTML = '<b>equipe</b> · modo local' + (state.machine.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler';
 		} else if (!mine) {
 			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
 		} else if (tab === 'mylinks' || tab === 'machine') {
-			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros' + (tab === 'machine' && state.machine.homeOffice ? ' · <b>home office</b>' : '');
+			text.innerHTML = '<b>local</b> · salvo neste computador, não muda nada para os outros' + (tab === 'machine' && (state.machine.localMode || state.offline) ? ' · <b>modo local</b>' : '');
 		} else {
 			text.innerHTML = '<b>local</b> · salvo neste computador · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o padrão da equipe');
 		}
@@ -3310,7 +3312,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			renderMachine();
 
 			if (res.error) toast('error', res.error);
-			else if (res.fromCopy && !res.homeOffice) toast('error', 'sem a rede: a configuração da equipe aberta é a cópia deste computador, só para ler.', 7000);
+			else if (res.fromCopy && !res.localForced) toast('error', 'sem a rede: o padeiro entrou no modo local (a configuração da equipe é a cópia deste computador, só para ler).');
 		} catch (err) {
 			state.rows = [];
 			setAvailable(false);

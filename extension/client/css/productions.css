@@ -2226,3 +2226,9 @@ body.is-org-dragging * {
 .machine-sync.is-placeholder {
   visibility: hidden;
 }
+
+/* aba COMPUTADOR: aviso de que a rede caiu (o modo local já vale) */
+.machine-offline {
+  margin: 0;
+  border-radius: var(--radius-small);
+}

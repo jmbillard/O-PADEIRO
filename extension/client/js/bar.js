@@ -612,8 +612,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		try {
 			var info = await call('ping');
 
-			$('version').textContent = 'v' + info.version + (info.homeOffice ? ' HO' : ''); // HO: home office (100% local)
-			if (info.homeOffice) $('logo').title += '\nhome office: 100% local (configuração > computador)';
+			$('version').textContent = 'v' + info.version + (info.localMode ? ' · local' : ''); // modo local (ligado ou sem a rede)
+			if (info.localMode) $('logo').title += '\nmodo local' + (info.localForced ? '' : ' (a rede não está respondendo)') + ': nada tenta a rede (configuração > computador)';
 
 			if (!info.network) {
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);

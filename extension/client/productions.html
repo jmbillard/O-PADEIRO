@@ -103,7 +103,7 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
 			</div>
 
-			<!-- aba COMPUTADOR (só neste computador: sigla, pastas padrão e home office) -->
+			<!-- aba COMPUTADOR (só neste computador: sigla, pastas padrão e modo local) -->
 			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">sigla do designer</p>
 				<p class="cfg-hint">a sua sigla no nome dos projetos (<b>{usuario}</b>). vazia: as 3 primeiras letras do usuário do computador.</p>
@@ -118,16 +118,17 @@
 				<div class="cfg-path has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M10 9.5v5l4.5-2.5z" /></svg><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 
 				<p class="cfg-title prods-section-title">templates neste computador</p>
-				<p class="cfg-hint">uma pasta deste computador para cada produção. se a pasta da equipe já é local (<b>~/...</b>), a daqui vale sempre. se é da rede, a daqui é a <b>cópia</b>: vale no home office e quando a rede não responde; <b>copiar</b> traz da rede só o que é novo ou mudou.</p>
+				<p class="cfg-hint">uma pasta deste computador para cada produção. se a pasta da equipe já é local (<b>~/...</b>), a daqui vale sempre. se é da rede, a daqui é a <b>cópia</b>: vale no modo local (ligado ou com a rede fora); <b>copiar</b> traz da rede só o que é novo ou mudou.</p>
 				<div class="drive-rows" id="machine-templates"></div>
 
-				<p class="cfg-title prods-section-title">home office</p>
+				<p class="cfg-title prods-section-title">modo local</p>
 				<label class="cfg-switch">
-					<input type="checkbox" id="machine-home">
+					<input type="checkbox" id="machine-local">
 					<span class="cfg-switch-track"></span>
-					<span class="cfg-switch-label">home office: 100% local, nada depende da rede</span>
+					<span class="cfg-switch-label">modo local: trabalhar sem a rede</span>
 				</label>
-				<p class="cfg-hint" id="machine-home-hint">a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede), os templates das cópias acima, a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede. a configuração da equipe não pode ser editada.</p>
+				<p class="scope-note machine-offline" id="machine-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
+				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm das pastas acima, a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
 			<!-- aba LOGS -->

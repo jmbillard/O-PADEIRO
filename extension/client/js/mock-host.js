@@ -202,13 +202,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		machinePrefs: function () {
-			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', homeOffice: false };
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false };
 
 			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true, templates: {} }, m);
 		},
 
 		saveMachinePrefs: function (a) {
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, homeOffice: !!a.homeOffice }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode }));
 
 			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
