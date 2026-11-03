@@ -70,6 +70,15 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return stripAccents(String(value || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
 	}
 
+	// o texto (já normalizado) contém o termo, ou um dos termos?
+	function hits(flat, query) {
+		var queries = Array.isArray(query) ? query : query ? [query] : [];
+
+		for (var i = 0; i < queries.length; i++) if (flat.indexOf(queries[i]) >= 0) return true;
+
+		return false;
+	}
+
 	// Nome com o termo buscado destacado. A busca compara só a-z / 0-9 sem acentos:
 	// cada caractere normalizado guarda a posição de origem para achar o trecho no texto original.
 	function highlightNode(tag, className, text, query) {
@@ -86,7 +95,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			}
 		}
 
-		var at = query ? flat.indexOf(query) : -1;
+		var queries = Array.isArray(query) ? query : query ? [query] : [];
+		var at = -1;
+
+		for (var q = 0; q < queries.length && at < 0; q++) {
+			at = flat.indexOf(queries[q]);
+			if (at >= 0) query = queries[q];
+		}
 
 		if (at < 0) {
 			node.textContent = text;
@@ -565,7 +580,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		parts.forEach(function (name, i) {
 			var target = prefix + parts.slice(0, i + 1).join(sep);
-			var crumb = el('button', 'crumb' + (i === parts.length - 1 ? ' is-last' : '') + (query && psNormalize(name).indexOf(query) >= 0 ? ' is-match' : ''), name);
+			var crumb = el('button', 'crumb' + (i === parts.length - 1 ? ' is-last' : '') + (hits(psNormalize(name), query) ? ' is-match' : ''), name);
 
 			crumb.type = 'button';
 			crumb.title = 'abrir ' + target;
@@ -832,25 +847,59 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return card;
 	}
 
+	// O termo é o começo do nome ou de um pattern de uma atração ("grep", "g rep" → G REPORTER)? Então a busca
+	// também procura os outros nomes dela (GLOBO REPORTER, G REPORTER): as mensagens, os cards e as pastas vêm junto.
+	var EXPAND_MIN = 3;
+
+	function expandQuery(query) {
+		var list = [query];
+		var also = [];
+
+		if (query.length < EXPAND_MIN) return { list: list, also: also };
+
+		state.paths.v2.cats.atracoes.forEach(function (a) {
+			var terms = [a.name].concat(a.pattern).map(psNormalize).filter(function (t) {
+				return t.length >= EXPAND_MIN;
+			});
+			var hit = terms.some(function (t) {
+				return t.indexOf(query) === 0;
+			});
+
+			if (!hit) return;
+
+			terms.forEach(function (t) {
+				if (list.indexOf(t) < 0 && t.indexOf(query) < 0) list.push(t); // o que já contém o termo já é achado por ele
+			});
+			if (psNormalize(a.name).indexOf(query) !== 0) also.push(a.name);
+		});
+
+		return { list: list, also: also };
+	}
+
 	function searchPathsV2() {
 		var p = state.paths;
 		var results = $('results-paths');
-		var query = psNormalize($('q-paths').value);
+		var typed = psNormalize($('q-paths').value);
 
 		results.textContent = '';
 
-		if (query.length < MIN_QUERY) {
+		if (typed.length < MIN_QUERY) {
 			showState(results, 'O ACESSORISTA', 'pesquise por atração, claquete, quem mandou, output ou caminho', true);
 			return;
 		}
 
+		var expanded = expandQuery(typed);
+		var query = expanded.list.length > 1 ? expanded.list : typed;
 		var any = false;
+
+		// buscando também pelos nomes da atração: avisa em cima (para não parecer resultado errado)
+		if (expanded.also.length) results.appendChild(el('p', 'finder-also', 'também: ' + expanded.also.slice(0, 3).join(' · ')));
 
 		V2_CATS.forEach(function (cat) {
 			if (p.hidden[cat.key]) return;
 
 			var matches = p.v2.cats[cat.key].filter(function (item) {
-				return item.hay.indexOf(query) >= 0;
+				return hits(item.hay, query);
 			});
 
 			if (!matches.length) return;
@@ -875,6 +924,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (!any) showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
 	}
+
 
 	/* =========================================================
 	   Aba TEXTOS
