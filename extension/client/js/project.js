@@ -573,7 +573,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	function renderEditor(cur) {
 		if (document.activeElement !== $('ed-claq')) $('ed-claq').value = cur.claquete;
 		if (document.activeElement !== $('ed-user')) $('ed-user').value = cur.designer;
-		$('ed-user').placeholder = cur.defaultUser || 'sigla';
+		$('ed-user').placeholder = cur.defaultUser || 'designer';
 		card($('ed-card'), cur.atracao || cur.fileName, cur.root || cur.file);
 		$('ed-card').title = cur.file;
 	}
@@ -714,7 +714,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			onEnter(id, editorSave);
 		});
 		$('ed-user').addEventListener('input', function () {
-			this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+			this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
 		});
 
 		// menu "⋯" do editor

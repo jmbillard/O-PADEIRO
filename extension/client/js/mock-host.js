@@ -207,13 +207,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		machinePrefs: function () {
 			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false };
 
-			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true, templates: {} }, m);
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {} }, m);
 		},
 
 		saveMachinePrefs: function (a) {
 			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode }));
 
-			return Object.assign({ defaultUser: 'JMB', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
 
 		syncTemplates: function (a) {
@@ -769,7 +769,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var p = window.PAD_MOCK_PROJECT || (window.PAD_MOCK_PROJECT = mode === 'noproj' ? { id: '', name: '', user: '' } : { id: 'EMP123456', name: 'História ao Vivo', user: '' });
 			var s = window.PAD_MOCK_LIST.project;
 			var retrancas = mode === 'nort' ? [] : s.retrancas;
-			var user = p.user || 'JBI';
+			var user = p.user || 'JMBILLARD';
 			var found = null;
 
 			retrancas.forEach(function (r) {
@@ -793,8 +793,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return {
 				id: p.id,
 				name: p.name,
-				user: p.user || 'JBI',
-				defaultUser: 'JBI',
+				user: p.user || 'JMBILLARD',
+				defaultUser: 'JMBILLARD',
 				hasItems: true,
 				file: window.PAD_MOCK_SAVED || '',
 				retranca: found ? { code: found.code, name: found.path.split('/').pop() } : null,
@@ -808,7 +808,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		projectSet: function (a) {
 			var p = window.PAD_MOCK_PROJECT || {};
 
-			window.PAD_MOCK_PROJECT = { id: (a.id || '').toUpperCase().replace(/\s+/g, ''), name: (a.name || '').trim(), user: a.user === 'JBI' ? '' : a.user || '' };
+			window.PAD_MOCK_PROJECT = { id: (a.id || '').toUpperCase().replace(/\s+/g, ''), name: (a.name || '').trim(), user: a.user === 'JMBILLARD' ? '' : a.user || '' };
 			if (p.id !== window.PAD_MOCK_PROJECT.id) window.PAD_MOCK_SAVED = '';
 
 			return api.projectInfo();
@@ -827,11 +827,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// janela PROJETO em etapas (?mock=created: projeto já criado)
 		projectCurrent: function () {
-			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JBI', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
+			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
 
-			if (!c) return { created: false, claquete: '', designer: 'JBI', defaultUser: 'JBI', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JBI' };
+			if (!c) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
 
-			return Object.assign({ created: true, defaultUser: 'JBI', fileName: c.file.split('/').pop(), hasItems: true, user: 'JBI' }, c);
+			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
 		},
 
 		projectLookup: function (a) {
@@ -921,7 +921,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			] : [];
 			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JBI' };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD' };
 		},
 
 		projectCreate: function (a) {
@@ -929,7 +929,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JBI', atracao: a.atracao, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
@@ -939,7 +939,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (c) {
 				c.claquete = String(a.claquete || '').toUpperCase();
-				c.designer = String(a.designer || 'JBI').toUpperCase();
+				c.designer = String(a.designer || 'JMBILLARD').toUpperCase();
 			}
 
 			return api.projectCurrent();

@@ -35,7 +35,7 @@ a **claquete**, o **designer**, a **atração** e a **pasta** ficam gravados **n
 
 ao abrir a janela com um projeto criado pela claquete:
 
-- **claquete** e **designer** (bonequinho) → a sigla do designer vazia vale a padrão (a da [configuração > meu usuário](producoes.md#-meu-usuário)).
+- **claquete** e **designer** (bonequinho) → o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
 - **pasta** → a atração e o caminho do projeto.
 - **trocar pasta…** → move o `.aep` para outra pasta.
 - **Salvar** → grava os campos e salva o projeto.

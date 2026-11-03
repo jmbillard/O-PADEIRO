@@ -2396,7 +2396,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindMachine() {
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
-				if (pair[1] === 'user') this.value = this.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
 				state.machine[pair[1]] = this.value;
 				updateDirty();
 			});

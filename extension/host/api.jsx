@@ -134,7 +134,7 @@ function padDisplayPaths(list) {
 ---------------------------------------------------------------
 
 'machine_config.json' na pasta de dados do usuário:
-  user       → a sigla do designer ({usuario} no nome do projeto); vazia: as 3 primeiras letras do usuário
+  user       → a sigla do designer ({usuario} no nome do projeto); vazia: o usuário do computador
   projects   → a pasta padrão dos projetos neste computador (no lugar da raiz da equipe; as retrancas
                relativas ficam dentro dela)
   outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
@@ -192,12 +192,14 @@ function padMachinePath(path) {
 	return String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
 }
 
+// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas
 function padCleanUser(user) {
-	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 6).toUpperCase();
+	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9._-]/g, '').substring(0, 24).toUpperCase();
 }
 
+// o padrão: o usuário do computador, completo (quem quiser uma sigla muda na configuração > meu usuário)
 function padDefaultUser() {
-	return String(system.userName || '').replaceSpecialCharacters().replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
+	return padCleanUser(system.userName || '');
 }
 
 // Sigla do designer: a deste computador; sem ela, a antiga (project_user.json) ou a padrão.

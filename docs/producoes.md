@@ -61,7 +61,7 @@ a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são s
   | --- | --- |
   | `{id}` | o ID do projeto (ex: `EMP123456`) |
   | `{projeto}` | o nome do projeto, no formato da aba **renomear** (acentos e caixa) |
-  | `{usuario}` | a sigla de quem salva (na janela PROJETO; por padrão, as 3 primeiras letras do usuário do sistema) |
+  | `{usuario}` | o designer (na janela PROJETO; por padrão, o usuário do sistema) |
   | `{retranca}` | o nome da pasta da retranca (ex: `em ponto`) |
   | `{data}` | a data de hoje (`aaaa-mm-dd`) |
 
@@ -254,7 +254,7 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 
 a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
 
-- **sigla do designer** → a sua sigla, usada na variável `{usuario}` do nome dos projetos. vazia, vale a padrão (as 3 primeiras letras do usuário do sistema). é a mesma do bonequinho da [janela projeto](projeto.md).
+- **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
 - **pasta dos projetos** → onde a janela projeto salva neste computador, no lugar da pasta da equipe (aba **projeto**). as retrancas com caminho relativo ficam dentro dela; as com caminho completo continuam onde estão. vazia, vale a da equipe.
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 - **templates neste computador** → uma pasta deste computador para cada produção da lista:

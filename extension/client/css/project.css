@@ -278,6 +278,7 @@ body.project-page {
 
 .wz-file.is-dup svg {
   color: #e0a40f;
+  stroke: var(--text-primary);
 }
 
 .wz-file.is-dup {
@@ -480,8 +481,9 @@ body.project-page {
 }
 
 .ed-user {
-  width: 108px;
-  flex: 0 0 auto;
+  width: 150px;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .ed-row .cfg-input {
