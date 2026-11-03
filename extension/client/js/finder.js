@@ -788,7 +788,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return box.firstChild;
 	}
 
-	// hoje 14:32 · ontem 09:10 · 28/10 · 28/10/2025
+	// hoje 14:32 · ontem 09:10 · 28/10 14:32 · 28/10/2025 14:32
 	function when(iso) {
 		var t = Date.parse(iso || '');
 
@@ -800,11 +800,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			return (n < 10 ? '0' : '') + n;
 		};
 		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
 
-		if (t >= day) return 'hoje ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-		if (t >= day - 86400000) return 'ontem ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+		if (t >= day) return 'hoje ' + time;
+		if (t >= day - 86400000) return 'ontem ' + time;
 
-		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
 	}
 
 	// o mesmo formato do "copiar link" do Teams: o id do chat como vem (19:…@thread.v2), o da mensagem e o contexto
