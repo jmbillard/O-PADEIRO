@@ -20,7 +20,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
 | **O PADEIRO projeto** | projeto novo pela claquete: acha a atração, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
-| **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca, projeto) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
+| **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 

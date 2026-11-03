@@ -1893,7 +1893,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TOOL_INFO = {
 		templates: ['Templates', 'preencher templates · criar novo template', 'templates'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
-		projeto: ['Projeto', 'janela do projeto · salvar na pasta da retranca', 'project'],
+		projeto: ['Projeto', 'novo projeto pela claquete · salvar o projeto', 'project'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
@@ -3137,7 +3137,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		projectPreview();
 	}
 
+	// a aba PROJETO saiu da janela: a configuração continua guardada como está (projectForSave)
 	function bindProject() {
+		if (!$('pane-project')) return;
+
 		[['proj-root', 'root'], ['proj-file-pattern', 'fileName']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				state.project[pair[1]] = this.value;
@@ -3210,9 +3213,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
+	var TAB_NAMES = ['prods', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
-	var TAB_ALIASES = { logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['tools', 'mylinks-section'] };
+	// a aba PROJETO saiu (a janela PROJETO cria pela claquete): o duplo clique em projeto abre a estrutura (COLETAR)
+	var TAB_ALIASES = { project: ['collect', ''], logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['tools', 'mylinks-section'] };
 	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
 
 	async function watchRequestedTab(initial) {
@@ -3385,7 +3389,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_086/.test(message)) return 'search';
 		if (/#PAD_087/.test(message)) return 'links';
 		if (/#PAD_088/.test(message)) return 'appearance';
-		if (/#PAD_089/.test(message)) return 'project';
+		if (/#PAD_089/.test(message)) return 'collect';
 		if (/#PAD_094/.test(message)) return 'collect';
 
 		return null;

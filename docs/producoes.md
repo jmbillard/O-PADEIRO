@@ -8,14 +8,14 @@ as abas ficam em dois grupos, conforme **onde** cada uma é salva:
 
 | grupo | abas | onde fica |
 | --- | --- | --- |
-| 🌐 **equipe** | templates, projeto, coletar, renomear, organizar, buscar, links, rede | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
+| 🌐 **equipe** | templates, coletar, renomear, organizar, buscar, links, rede | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
 | 👤 **local** | aparência, layout (com os seus links), meu usuário | na pasta de dados do usuário, neste computador: não muda nada para os outros |
 
 uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede* ou 👤 *local · salvo neste computador*).
 
 **padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar, buscar, projeto, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar e projeto → coletar, buscar, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
 ## 📍 templates
 
@@ -43,30 +43,6 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
-<br>
-
----
-
-<br>
-
-## 📍 projeto
-
-a aba **projeto** ajusta a janela [PROJETO](projeto.md): onde os projetos são salvos e o nome do arquivo.
-
-- **pasta dos projetos** → a raiz: a pasta de cada retranca fica dentro dela. sem pasta, a janela PROJETO pede uma ao salvar.
-- **uma pasta para cada projeto** → cria, dentro da pasta da retranca, uma pasta com o nome do arquivo, com a [estrutura do coletar](#-coletar) dentro (o `.aep` em `01 PROJETOS`, os arquivos em `02 ARQUIVOS`, as saídas em `03 SAIDA`).
-- **nome do arquivo** → o nome do `.aep`, com variáveis:
-
-  | variável | vira |
-  | --- | --- |
-  | `{id}` | o ID do projeto (ex: `EMP123456`) |
-  | `{projeto}` | o nome do projeto, no formato da aba **renomear** (acentos e caixa) |
-  | `{usuario}` | o designer (na janela PROJETO; por padrão, o usuário do sistema) |
-  | `{retranca}` | o nome da pasta da retranca (ex: `em ponto`) |
-  | `{data}` | a data de hoje (`aaaa-mm-dd`) |
-
-  embaixo do campo, um exemplo mostra como o nome fica.
-- **retrancas** → o começo do ID indica a retranca: `EMP123456` → a pasta de `EMP`. a pasta pode ficar dentro da pasta dos projetos (`JORNAIS/em ponto`) ou ser um caminho completo. vale o código mais longo que combinar (`EMP` ganha de `EM`). '*importar do índice da busca*' traz as entradas da busca no formato `COD - nome`, com o caminho delas.
 <br>
 
 ---
@@ -255,7 +231,7 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
 
 - **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
-- **pasta dos projetos** → onde a janela projeto salva neste computador, no lugar da pasta da equipe (aba **projeto**). as retrancas com caminho relativo ficam dentro dela; as com caminho completo continuam onde estão. vazia, vale a da equipe.
+- **pasta dos projetos** → a pasta padrão dos projetos neste computador (usada pelo modo local).
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 - **templates neste computador** → uma pasta deste computador para cada produção da lista:
   - produção com a pasta da equipe **local** (`~/...`, como a `Ω PASTA LOCAL`): a daqui vale **sempre** (cada um escolhe onde fica a sua).
