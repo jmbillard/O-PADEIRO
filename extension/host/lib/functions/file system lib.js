@@ -313,8 +313,8 @@ function normalizeNetworkPath(pathStr, options) {
 		}
 
 		// macParts[0] = "Volumes"
-		// macParts[1] = nome do share
-		var shareName = macParts[1];
+		// macParts[1] = nome do share (sem o sufixo -1 a -5 que o macOS põe ao montar o mesmo share de novo)
+		var shareName = macParts[1].replace(/-[1-5]$/, '');
 		var subPathParts = macParts.slice(2);
 
 		// Procura o servidor correto nas globais DRIVE_MAP
