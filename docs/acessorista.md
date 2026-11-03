@@ -19,7 +19,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 | balão | **Teams** (últimos 45 dias) | quem mandou - cargo, a data e, embaixo, o caminho da mensagem | o balão abre a mensagem no Teams |
 | quadro do Trello | **Trello** (últimos 45 dias) | cards em grade: a claquete, o redator e o editor | o card abre no Trello |
 | TV de tubo | **atrações** | o nome e as linhas **PROJETO** e **OUTPUT** | — |
-| película | **filmes** | o nome e a linha **OUTPUT** | — |
+| película | **filmes** | o título, o ano de produção entre parênteses e a linha **OUTPUT** | — |
 | servidor | **servidor** (caminhos fixos) | o nome e a linha **CAMINHO** | — |
 
 - **categorias** → TEAMS, TRELLO, ATRAÇÕES, FILMES e SERVIDOR: cada uma tem um interruptor para entrar ou sair da busca.

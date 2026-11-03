@@ -344,7 +344,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				return { name: a.name || '', pattern: a.pattern || [], proj: full(a.proj), out: full(a.out), hay: hay([a.name].concat(a.pattern || [], [full(a.proj), full(a.out)])) };
 			}),
 			filmes: (data.filmes || []).map(function (f) {
-				return { name: f.name || '', out: full(f.out), hay: hay([f.name, full(f.out)]) };
+				return { name: f.name || '', year: f.year ? String(f.year) : '', out: full(f.out), hay: hay([f.name, f.year, full(f.out)]) };
 			}),
 			servidor: (info.servidor || []).map(function (s) {
 				return { name: s.name, path: s.path, server: s.server, share: s.share, hay: hay([s.name, s.path]) };
@@ -805,12 +805,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	// Atrações, filmes e servidor: o ícone e o nome; embaixo, uma linha por caminho (PROJETO, OUTPUT, CAMINHO)
-	function placeItem(icon, name, lines, query, group) {
+	function placeItem(icon, name, lines, query, group, year) {
 		var card = el('article', 'at-card');
 		var head = el('div', 'at-head');
 
 		head.appendChild(svgNode(icon));
 		head.appendChild(highlightNode('b', null, name, query));
+		if (year) head.appendChild(el('span', 'at-year', '(' + year + ')')); // filmes: o ano de produção
 		card.appendChild(head);
 
 		lines.forEach(function (line) {
@@ -858,7 +859,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				if (cat.key === 'teams') list.appendChild(teamsItem(item, query));
 				else if (cat.key === 'trello') list.appendChild(trelloItem(item, query));
 				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PROJETO', item.proj], ['OUTPUT', item.out]], query));
-				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query));
+				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
 				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
 			});
 

@@ -865,6 +865,12 @@ button.tr-card:focus-visible {
   white-space: nowrap;
 }
 
+.at-year {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+
 .at-head>svg {
   width: 19px;
   height: 19px;
