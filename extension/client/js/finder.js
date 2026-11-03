@@ -135,6 +135,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 					return idx.s.charAt(at + off) === '1';
 				});
 
+				// passar para a palavra seguinte sem uma quebra no termo só vale depois de uma letra sozinha
+				// ('grep' → 'G REPORTER', '311' → '3/11'), não depois de uma palavra ('nao' ✗ 'NA ORDEM')
+				for (var p = at + 1; ok && p < at + term.q.length; p++) {
+					if (idx.s.charAt(p) === '1' && term.b.indexOf(p - at) < 0 && idx.s.charAt(p - 1) !== '1') ok = false;
+				}
+
 				if (ok) return { at: at, query: term.q };
 			}
 		}
