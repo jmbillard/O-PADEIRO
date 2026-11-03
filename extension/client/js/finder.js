@@ -794,7 +794,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return box.firstChild;
 	}
 
-	// hoje 14:32 · ontem 09:10 · 28/10 14:32 · 28/10/2025 14:32
+	// hoje 14:32 · ontem 09:10 · terça 16:20 (até 6 dias atrás) · 28/10 14:32 · 28/10/2025 14:32
+	var WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
 	function when(iso) {
 		var t = Date.parse(iso || '');
 
@@ -808,8 +810,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
 
-		if (t >= day) return 'hoje ' + time;
-		if (t >= day - 86400000) return 'ontem ' + time;
+		// dias de calendário até hoje (meia-noite a meia-noite: a mudança de horário de verão não atrapalha)
+		var days = Math.round((day - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
+
+		if (days <= 0) return 'hoje ' + time;
+		if (days === 1) return 'ontem ' + time;
+		if (days <= 6) return WEEKDAYS[d.getDay()] + ' ' + time;
 
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
 	}
