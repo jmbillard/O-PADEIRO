@@ -741,8 +741,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
 
+	// o mesmo formato do "copiar link" do Teams: o id do chat como vem (19:…@thread.v2), o da mensagem e o contexto
 	function teamsLink(m) {
-		return m.chat && m.msg ? 'https://teams.microsoft.com/l/message/' + encodeURIComponent(m.chat) + '/' + encodeURIComponent(m.msg) + '?context=' + encodeURIComponent('{"contextType":"chat"}') : '';
+		if (!m.chat || !m.msg) return '';
+
+		var chat = /^[\w:@.\-]+$/.test(m.chat) ? m.chat : encodeURIComponent(m.chat);
+
+		return 'https://teams.microsoft.com/l/message/' + chat + '/' + encodeURIComponent(m.msg) + '?context=' + encodeURIComponent('{"contextType":"chat"}');
 	}
 
 	// Teams: o balão (abre a mensagem), quem mandou - cargo, a data; embaixo, o caminho
