@@ -29,7 +29,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
-		search: { source: 'webhook', webhook: '', file: '', labels: {} }, // aba BUSCAR: origem do índice e { chave: nome de exibição }
+		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
@@ -287,16 +287,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function searchForSave() {
-		var labels = state.search.labels;
-
 		return {
-			source: state.search.source,
-			webhook: state.search.webhook.trim(),
-			file: state.search.file.trim(),
-			labels: Object.keys(labels).filter(function (key) {
-				return labels[key].trim();
-			}).map(function (key) {
-				return { key: key, label: labels[key].trim() };
+			url: state.search.url.trim(),
+			servidor: state.search.servidor.map(function (r) {
+				return { name: r.name.trim(), path: r.path.trim() };
 			})
 		};
 	}
@@ -2075,145 +2069,96 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function setSearch(sc) {
 		var data = sc || {};
-		var labels = {};
 
-		(data.labels || []).forEach(function (l) {
-			labels[l.key] = l.label;
-		});
-
-		state.search = { source: data.source === 'file' ? 'file' : 'webhook', webhook: data.webhook || '', file: data.file || '', labels: labels };
+		state.search = {
+			url: data.url || '',
+			servidor: (data.servidor || []).map(function (r) {
+				return { name: r.name || '', path: r.path || '' };
+			})
+		};
 		renderSearch();
-	}
-
-	// nome automático (o mesmo do host): sem 'atracoes_', '_' vira espaço, maiúsculas
-	function autoLabel(key) {
-		return key.replace(/^atracoes_/, '').replace(/_/g, ' ').toUpperCase();
 	}
 
 	function renderSearch() {
 		var hook = $('search-webhook');
-		var list = $('category-list');
+		var list = $('servidor-list');
 
-		if (hook.value !== state.search.webhook) hook.value = state.search.webhook;
+		if (hook.value !== state.search.url) hook.value = state.search.url;
 		hook.disabled = !state.available;
-
-		var fromFile = state.search.source === 'file';
-		var file = $('search-file');
-
-		Array.prototype.forEach.call(document.querySelectorAll('input[name="search-source"]'), function (radio) {
-			radio.checked = radio.value === state.search.source;
-			radio.disabled = !state.available;
-		});
-		if (file.value !== state.search.file) file.value = state.search.file;
-		file.disabled = $('search-file-pick').disabled = !state.available;
-		$('search-webhook-field').hidden = fromFile;
-		$('search-file-field').hidden = !fromFile;
-		$('search-source-hint').textContent = fromFile
-			? 'um arquivo JSON no mesmo formato que o webhook devolveria ({ "categoria": [ { "atracao", "mac": { "caminho" }, "win": { "caminho" } } ] }). ele é relido a cada 30 s.'
-			: 'o índice é pedido ao endereço a cada 30 s (e guardado no computador entre um pedido e outro).';
-		$('btn-categories').textContent = fromFile ? 'atualizar as categorias pelo arquivo' : 'atualizar as categorias pelo webhook';
-		$('btn-categories').disabled = !state.available;
+		$('btn-new-servidor').disabled = !state.available;
 		list.textContent = '';
 
-		if (!state.categories) {
-			list.appendChild(el('p', 'category-empty', state.categoriesError || 'lendo as categorias do índice…'));
-			return;
-		}
+		state.search.servidor.forEach(function (row, i) {
+			var box = el('div', 'drive-row srv-row');
+			var nameField = el('div', 'has-field-icon');
+			var name = el('input', 'cfg-input');
+			var icon = svg(SERVER_ICON);
 
-		// as do índice, na ordem dele; depois as que só têm nome guardado (não vieram agora)
-		var rows = state.categories.map(function (c) {
-			return { key: c.key, auto: c.auto, count: c.count };
-		});
+			box.appendChild(PAD_SORT.handle());
 
-		Object.keys(state.search.labels).forEach(function (key) {
-			if (!rows.some(function (r) { return r.key === key; })) rows.push({ key: key, auto: autoLabel(key), count: 0, missing: true });
-		});
-
-		if (!rows.length) list.appendChild(el('p', 'category-empty', 'o índice não tem categorias.'));
-
-		rows.forEach(function (r) {
-			var row = el('div', 'category-row' + (r.missing ? ' is-missing' : ''));
-			var key = el('span', 'category-key', r.key);
-			var field = el('div', 'has-field-icon');
-			var input = el('input', 'cfg-input');
-			var icon = svg(TAG_ICON);
-
-			key.title = r.missing ? 'esta categoria não veio no índice agora' : 'categoria no índice';
 			icon.setAttribute('class', 'field-icon');
-			input.type = 'text';
-			input.value = state.search.labels[r.key] || '';
-			input.placeholder = r.auto;
-			input.spellcheck = false;
-			input.disabled = !state.available;
-			input.setAttribute('aria-label', 'nome de exibição de ' + r.key);
-			input.addEventListener('input', function () {
-				if (input.value.trim()) state.search.labels[r.key] = input.value;
-				else delete state.search.labels[r.key];
+			name.type = 'text';
+			name.value = row.name;
+			name.placeholder = 'nome (ex: #INGEST)';
+			name.spellcheck = false;
+			name.disabled = !state.available;
+			name.setAttribute('aria-label', 'nome do caminho fixo ' + (i + 1));
+			name.addEventListener('input', function () {
+				row.name = name.value;
 				updateDirty();
 			});
-			field.appendChild(icon);
-			field.appendChild(input);
-			row.appendChild(key);
-			row.appendChild(field);
-			row.appendChild(el('span', 'category-count', r.missing ? 'não veio' : r.count + (r.count === 1 ? ' item' : ' itens')));
-			list.appendChild(row);
+			nameField.appendChild(icon);
+			nameField.appendChild(name);
+			box.appendChild(nameField);
+
+			var path = driveField(row.path, '//servidor/share/pasta ou /Volumes/SHARE/pasta', 'caminho de ' + (row.name || 'caminho fixo ' + (i + 1)), FOLDER_ICON, function (v) {
+				row.path = v;
+			}, function () {
+				state.search.servidor.splice(i, 1);
+				renderSearch();
+				updateDirty();
+			});
+			var pick = miniButton('folder', 'escolher a pasta', async function () {
+				var picked = PAD_BRIDGE.pickFolder('Caminho fixo da busca', row.path);
+
+				if (!picked) return;
+
+				try {
+					picked = (await call('canonicalPath', { path: picked })).path || picked;
+				} catch (err) { }
+
+				row.path = picked;
+				if (!row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+				renderSearch();
+				updateDirty();
+			});
+
+			pick.disabled = !state.available;
+			path.insertBefore(pick, path.lastChild);
+			box.appendChild(path);
+			list.appendChild(box);
 		});
-	}
-
-	async function loadCategories(force) {
-		var btn = $('btn-categories');
-
-		btn.disabled = true;
-		btn.textContent = force ? 'baixando o índice…' : 'lendo…';
-
-		try {
-			var res = await call('searchCategories', { force: !!force });
-
-			state.categories = res.categories;
-			state.categoriesError = '';
-		} catch (err) {
-			state.categoriesError = err.message;
-			if (force) toast('error', err.message);
-		} finally {
-			btn.disabled = !state.available;
-			btn.textContent = state.search.source === 'file' ? 'atualizar as categorias pelo arquivo' : 'atualizar as categorias pelo webhook';
-			renderSearch();
-		}
 	}
 
 	function bindSearch() {
 		$('search-webhook').addEventListener('input', function () {
-			state.search.webhook = this.value;
+			state.search.url = this.value;
 			this.classList.remove('has-error');
 			updateDirty();
 		});
-		$('btn-categories').addEventListener('click', function () {
-			loadCategories(true);
-		});
 
-		$('search-source').addEventListener('change', function (e) {
-			if (e.target.name !== 'search-source') return;
-
-			state.search.source = e.target.value;
+		$('btn-new-servidor').addEventListener('click', function () {
+			state.search.servidor.push({ name: '', path: '' });
 			renderSearch();
 			updateDirty();
+			$('servidor-list').lastChild.querySelector('input.cfg-input').focus();
 		});
 
-		$('search-file').addEventListener('input', function () {
-			state.search.file = this.value;
-			updateDirty();
-		});
+		PAD_SORT.enable($('servidor-list'), '.srv-row', function (from, to) {
+			var moved = state.search.servidor.splice(from, 1)[0];
 
-		$('search-file-pick').addEventListener('click', async function () {
-			var picked = PAD_BRIDGE.pickFile('Selecione o arquivo de índice', ['json']);
-
-			if (!picked) return;
-
-			try {
-				picked = (await call('canonicalPath', { path: picked })).path || picked;
-			} catch (err) { }
-
-			state.search.file = $('search-file').value = picked;
+			state.search.servidor.splice(to, 0, moved);
+			renderSearch();
 			updateDirty();
 		});
 	}
@@ -3376,7 +3321,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		// as categorias da busca são lidas do índice na primeira vez que a aba abre
-		if (name === 'search' && !state.categories && state.available) loadCategories(false);
+
 
 	}
 

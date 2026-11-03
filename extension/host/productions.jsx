@@ -275,22 +275,11 @@ function padApplyConfig() {
 
 	PAD_ORGANIZE = padReadOrganize();
 
+	// busca de caminhos: o endereço do webhook novo e os caminhos fixos do servidor
 	var search = padReadSearch();
-	var origin = search.source == 'file' ? 'file|' + search.file : 'webhook|' + search.webhook;
 
-	// outra origem (webhook ou arquivo): o índice guardado é de outro lugar, então é lido de novo
-	if (origin != (PS_SOURCE == 'file' ? 'file|' + PS_INDEX_FILE : 'webhook|' + PS_WEBHOOK_URL)) {
-		try {
-			var cache = new File(tempFolder.fsName + '/path_index.json');
-
-			if (cache.exists) cache.remove();
-		} catch (err) { }
-	}
-
-	PS_SOURCE = search.source;
-	PS_INDEX_FILE = search.file;
-	if (search.webhook) PS_WEBHOOK_URL = search.webhook;
-	PS_CATEGORIES = search.labels;
+	PS_V2_URL = search.url;
+	PS_SERVIDOR = search.servidor;
 }
 
 /*
@@ -515,45 +504,51 @@ function padReadOrganize() {
 > busca de caminhos (aba BUSCAR da configuração)
 ---------------------------------------------------------------
 
-'SEARCH' no O_PADEIRO_config.json: { source, webhook, file, labels: [{ key, label }] }.
-  source  → de onde vem o índice: 'webhook' ou 'file'
-  webhook → o endereço que devolve o índice de caminhos (lib/acessorista.js)
-  file    → um arquivo JSON com o índice (o mesmo formato que o webhook devolve), no lugar do webhook
-  labels  → nome de exibição de cada categoria (as categorias vêm do próprio índice; sem nome, o automático)
-Sem 'SEARCH' no arquivo: os valores de lib/acessorista.js (os de sempre).
+'SEARCH' no O_PADEIRO_config.json: { url, servidor: [{ name, path }] }.
+  url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
+  servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
+Sem 'SEARCH' (ou no formato antigo, do índice que ficou só para o legacy): o webhook e os caminhos padrão.
 
 */
 
 var PAD_DEFAULT_SEARCH = null;
 
 function padDefaultSearch() {
-	if (!PAD_DEFAULT_SEARCH) PAD_DEFAULT_SEARCH = JSON.parse(JSON.stringify({ source: PS_SOURCE, webhook: PS_WEBHOOK_URL, file: PS_INDEX_FILE, labels: PS_CATEGORIES }));
+	if (!PAD_DEFAULT_SEARCH) {
+		var servidor = [];
 
-	return PAD_DEFAULT_SEARCH;
+		for (var i = 0; i < PS_LOCAL_SOURCES.servidor.length; i++) {
+			servidor.push({ name: PS_LOCAL_SOURCES.servidor[i].atracao, path: psSlashes(PS_LOCAL_SOURCES.servidor[i].win.caminho) });
+		}
+
+		PAD_DEFAULT_SEARCH = { url: PS_V2_DEFAULT_URL, servidor: servidor };
+	}
+
+	return JSON.parse(JSON.stringify(PAD_DEFAULT_SEARCH));
 }
 
 // Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
 function padCleanSearch(o) {
-	var clean = { source: o.source == 'file' ? 'file' : 'webhook', webhook: padTrim(o.webhook), file: padTrim(o.file), labels: [] };
-	var seen = {};
-	var validHook = /^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook);
+	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (legacy): os padrões
 
-	// o endereço vai para a linha de comando do curl: sem espaços, aspas nem símbolos do terminal
-	if (clean.source == 'webhook' && !validHook) {
+	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, servidor: [] };
+	var seen = {};
+
+	// o endereço também vai para a linha de comando do curl (plano B): sem espaços, aspas nem símbolos do terminal
+	if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.url)) {
 		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 	}
 
-	if (clean.source == 'file' && clean.file == '') throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
-	if (!validHook) clean.webhook = ''; // guardado só se for válido
+	for (var i = 0; i < (o.servidor || []).length; i++) {
+		var name = padTrim(o.servidor[i].name).replace(/\s+/g, ' ');
+		var path = padTrim(o.servidor[i].path).replace(/\\/g, '/').replace(/\/+$/, '');
 
-	for (var i = 0; i < (o.labels || []).length; i++) {
-		var key = padTrim(o.labels[i].key);
-		var label = padTrim(o.labels[i].label).replace(/\s+/g, ' ').toUpperCase();
+		if (name == '' && path == '') continue;
+		if (name == '' || path == '') throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
+		if (seen[name.toUpperCase()]) throw new Error('#PAD_086 - busca: o caminho fixo "' + name + '" aparece mais de uma vez.');
 
-		if (key == '' || label == '' || seen[key]) continue; // sem nome: o automático
-
-		seen[key] = true;
-		clean.labels.push({ key: key, label: label });
+		seen[name.toUpperCase()] = true;
+		clean.servidor.push({ name: name, path: path });
 	}
 
 	return clean;
@@ -569,8 +564,6 @@ function padReadSearch() {
 	}
 }
 
-// Categorias que o índice tem agora (da cópia local; sem ela, baixa). a: { force }
-// → { categories: [{ key, auto, count }], downloaded }
 PADX.searchCategories = function (a) {
 	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
 	var downloaded = false;

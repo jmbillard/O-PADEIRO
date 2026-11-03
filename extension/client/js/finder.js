@@ -18,7 +18,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/acessorista.md';
 
 	var MIN_QUERY = 2; // mínimo de caracteres na busca de caminhos
-	var MAX_RESULTS = 60; // máximo de atrações exibidas (somando as categorias)
 	var MAX_TEXT_ROWS = 300; // máximo de textos exibidos
 	var COMPS_PER_CHUNK = 4;
 	var TAB_REQUEST_TTL = 15000; // ms: pedido de aba da barra considerado "recente" ao abrir o painel
@@ -243,7 +242,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var state = {
 		tab: null,
-		paths: { index: [], ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' },
+		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' },
 		texts: { entries: [], comps: 0, ready: false, loading: false, loaded: false, loadId: 0, hint: '' },
 		lastTabStamp: 0
 	};
@@ -317,13 +316,13 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   quando a resposta chega com outro 'stamp'. sem a busca nova (e sem cópia), volta para o índice antigo.
 	   --------------------------------------------------------------- */
 
-	// categoria da busca nova → a chave antiga (os nomes da configuração > busca valem para as duas)
+	// as categorias da busca (a ordem é a dos resultados)
 	var V2_CATS = [
-		{ key: 'teams', old: 'atracoes_teams', label: 'TEAMS', max: 20 },
-		{ key: 'trello', old: 'atracoes_trello', label: 'TRELLO', max: 24 },
-		{ key: 'atracoes', old: 'atracoes', label: 'ATRAÇÕES', max: 20 },
-		{ key: 'filmes', old: 'filmes', label: 'FILMES', max: 20 },
-		{ key: 'servidor', old: 'servidor', label: 'SERVIDOR', max: 10 }
+		{ key: 'teams', label: 'TEAMS', max: 20 },
+		{ key: 'trello', label: 'TRELLO', max: 24 },
+		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
+		{ key: 'filmes', label: 'FILMES', max: 20 },
+		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
 	];
 	var V2_TIMEOUT = 25000;
 
@@ -508,58 +507,32 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			await nextPaint();
 		}
 
-		try {
-			if (await loadPathsV2(force)) {
-				p.loading = false;
-				return;
-			}
-		} catch (err) { }
-
-		await loadPathsV1(force);
-	}
-
-	// índice antigo (webhook anterior, montado no After Effects): o plano B
-	async function loadPathsV1(force) {
-		var p = state.paths;
-
-		p.loading = true;
-		p.ready = false;
-		p.error = '';
-		showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
-		await nextPaint();
+		var ok = false;
 
 		try {
-			var res = await call('pathsIndex', { force: !!force });
-
-			p.mode = 'v1';
-			p.index = res.index;
-			p.platform = res.platform;
-			p.ready = true;
-			p.loaded = true;
-			buildCategoryFilters();
-
-			if (!res.downloaded) toast(null, 'sem conexão com o workflow: usando o último índice salvo.');
+			ok = await loadPathsV2(force);
 		} catch (err) {
-			p.ready = false;
-			p.loaded = true;
 			p.error = err.message;
 		}
 
 		p.loading = false;
-		searchPaths();
+
+		if (!ok) {
+			p.ready = false;
+			p.loaded = true;
+			showState($('results-paths'), 'índice de caminhos indisponível', p.error && !/HTTP|tempo/.test(p.error) ? p.error : 'sem conexão com o workflow e sem cópia salva neste computador. clique em atualizar para tentar de novo.');
+		}
 	}
 
 	// Um chip por categoria do índice. A escolha é mantida ao atualizar o índice.
 	function buildCategoryFilters() {
 		var box = $('opts-paths');
 		var p = state.paths;
-		var sections = p.mode === 'v2'
-			? V2_CATS.filter(function (c) {
-				return p.v2.cats[c.key].length > 0;
-			}).map(function (c) {
-				return { category: { key: c.key, label: (p.info && p.info.labels[c.old]) || c.label } };
-			})
-			: p.index;
+		var sections = V2_CATS.filter(function (c) {
+			return p.v2.cats[c.key].length > 0;
+		}).map(function (c) {
+			return { category: { key: c.key, label: c.label } };
+		});
 
 		box.textContent = '';
 
@@ -596,31 +569,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		} finally {
 			if (btn) btn.classList.remove('is-busy');
 		}
-	}
-
-	// pastinhas com o conteúdo à mostra: documento (projeto) e quadro de filme (output). no hover a
-	// frente da pasta abre e o conteúdo sobe um pouco (CSS em finder.css)
-	var FOLDER_BACK = '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" />';
-	var FOLDER_FRONT = '<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />';
-	var CARD_ICONS = {
-		projeto: FOLDER_BACK + '<g class="folder-content"><path d="M8 12.500V4h5.500l2.500 2.500v6" /><path d="M13.500 4v2.500h2.500" /></g>' + FOLDER_FRONT,
-		output: FOLDER_BACK + '<g class="folder-content"><rect x="7" y="4.500" width="10" height="8" rx="1" /><path d="M9.500 4.500v8M14.500 4.500v8" /></g>' + FOLDER_FRONT
-	};
-
-	// projeto e output: ícones à direita do nome da atração
-	function iconButton(parent, kind, label, path, group) {
-		var btn = el('button', 'icon-button is-light card-icon');
-
-		btn.type = 'button';
-		btn.title = label + ':\n' + toPlatform(path, state.paths.platform) + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
-		btn.setAttribute('aria-label', label);
-		btn.dataset.copy = toPlatform(path, state.paths.platform);
-		btn.innerHTML = '<svg viewBox="0 0 24 24">' + CARD_ICONS[kind] + '</svg>';
-		btn.addEventListener('click', function () {
-			openPath(btn, path, group);
-		});
-
-		parent.appendChild(btn);
 	}
 
 	// Caminho em breadcrumb: cada pasta abre a si mesma; a que contém o termo buscado fica destacada.
@@ -692,83 +640,16 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		});
 	}
 
-	function groupCard(group, query) {
-		var card = el('article', 'result-card');
-		var head = el('div', 'result-head');
-		var icons = el('div', 'result-icons');
-
-		head.appendChild(highlightNode('h4', 'result-name', group.name, query));
-		head.firstChild.title = group.name;
-
-		if (group.projetos.length) iconButton(icons, 'projeto', 'abrir o projeto', group.projetos[0], group);
-		if (group.outputs.length) iconButton(icons, 'output', 'abrir o output', group.outputs[0], group);
-
-		head.appendChild(icons);
-		card.appendChild(head);
-
-		// sem caminho (ex: filmes, só com a pasta de output), o output aparece em breadcrumb
-		var paths = group.caminhos.length ? group.caminhos : group.outputs.slice(0, 1);
-
-		paths.forEach(function (path) {
-			card.appendChild(pathCrumbs(toPlatform(path, state.paths.platform), query, group));
-		});
-
-		return card;
-	}
-
 	function searchPaths() {
-		if (state.paths.mode === 'v2') return searchPathsV2();
-
-		var p = state.paths;
 		var results = $('results-paths');
-		var query = psNormalize($('q-paths').value);
 
-		if (p.loading) return;
-
-		results.textContent = '';
-
-		if (!p.ready) {
-			showState(results, 'índice de caminhos indisponível', p.error || 'clique em atualizar para baixar de novo.');
+		if (state.paths.loading && !state.paths.ready) return;
+		if (!state.paths.ready) {
+			if (!results.querySelector('.finder-state')) showState(results, 'índice de caminhos indisponível', 'clique em atualizar para tentar de novo.');
 			return;
 		}
 
-		if (query.length < MIN_QUERY) {
-			showState(results, 'O ACESSORISTA', 'pesquise por atração, projeto, output ou caminho', true);
-			return;
-		}
-
-		var total = 0;
-		var shown = 0;
-
-		p.index.forEach(function (section) {
-			if (p.hidden[section.category.key]) return;
-
-			var matches = section.groups.filter(function (g) {
-				return g.haystack.indexOf(query) >= 0;
-			});
-
-			total += matches.length;
-
-			if (!matches.length || shown >= MAX_RESULTS) return;
-
-			var box = el('section', 'result-section');
-			var title = el('h3', 'result-title', section.category.label);
-
-			title.appendChild(el('span', 'result-count', String(matches.length)));
-			box.appendChild(title);
-
-			for (var m = 0; m < matches.length && shown < MAX_RESULTS; m++, shown++) {
-				box.appendChild(groupCard(matches[m], query));
-			}
-
-			results.appendChild(box);
-		});
-
-		if (total === 0) {
-			showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
-		} else if (total > shown) {
-			results.appendChild(el('p', 'finder-more', 'mais ' + (total - shown) + ' — refine a busca'));
-		}
+		searchPathsV2();
 	}
 
 	/* ---------------------------------------------------------------
@@ -1022,7 +903,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			box.appendChild(list);
 			results.appendChild(box);
 			if (cat.key === 'trello') layoutTrello(list); // já na página: dá para medir as colunas
-			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + ((p.info && p.info.labels[cat.old]) || cat.label) + ' — refine a busca'));
+			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + cat.label + ' — refine a busca'));
 		});
 
 		if (!any) showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
@@ -1306,7 +1187,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 			PAD_KEYS.listNav({
 				root: results,
-				items: '.card-icon, .tm-msg, .tr-card, .crumb.is-last, .comp-title, .text-row',
+				items: '.tm-msg, .tr-card, .crumb.is-last, .comp-title, .text-row',
 				search: q,
 				typeToSearch: true
 			});

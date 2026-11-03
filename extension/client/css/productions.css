@@ -2153,3 +2153,15 @@ body.is-org-dragging * {
   flex-direction: column;
   gap: 8px;
 }
+
+/* aba BUSCAR: caminhos fixos do servidor (pontinhos | nome | caminho com pasta e ×) */
+.srv-row {
+  display: grid;
+  grid-template-columns: 22px minmax(150px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.srv-row .cfg-path .cfg-input {
+  padding-right: 72px; /* a pasta e o × dentro do campo */
+}

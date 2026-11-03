@@ -122,16 +122,12 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 
 ## 📍 buscar
 
-a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**).
+a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações da janela [PROJETO](projeto.md).
 
-- **índice** → de onde vem o índice de caminhos (atrações, projetos e outputs):
-  - **webhook** → um endereço da web que devolve o índice.
-  - **arquivo de índice** → um arquivo JSON (na rede, por exemplo) no mesmo formato que o webhook devolveria: `{ "categoria": [ { "atracao": "...", "mac": { "caminho": "..." }, "win": { "caminho": "..." } } ] }`. dá para usar a busca sem nenhum webhook.
+- **webhook** → o endereço do workflow **PROMO - BUSCAR**, que devolve o índice pronto (Teams, Trello, atrações e filmes). vazio, vale o padrão (`…/webhook/buscar`).
+- **servidor · caminhos fixos** → pastas que aparecem sempre na busca, com o ícone de servidor, para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, o **×** tira a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
 
-  o índice é lido de novo a cada 30 s; ao trocar a origem, é lido na hora.
-- **categorias** → identificadas automaticamente no índice que o webhook devolve (cada lista do índice vira uma categoria, com a quantidade de itens). dê a cada uma o nome que aparece na busca; sem nome, vale o automático (ex: `atracoes_teams` → **TEAMS**). '*atualizar as categorias*' lê o índice de novo.
-
-> 🚩 *obs:* uma categoria com nome guardado que não veio no índice aparece riscada, com '*não veio*'.
+> 🚩 *obs:* o índice antigo (com categorias e arquivo de índice) ficou só para o padeiro legacy.
 <br>
 
 ---

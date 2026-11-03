@@ -245,52 +245,6 @@ body.finder-page {
   flex: 1;
 }
 
-/* projeto e output: ícones à direita do nome */
-.result-icons {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 6px;
-}
-
-.card-icon svg {
-  overflow: visible;
-}
-
-.card-icon svg * {
-  transform-box: fill-box;
-}
-
-/* pastinha: a frente abre e o conteúdo sobe um pouco (volta ao sair). conteúdo e frente são
-   preenchidos com o fundo do botão para cobrir o que fica atrás deles */
-.card-icon .folder-front {
-  fill: var(--surface);
-  transform-origin: 50% 100%;
-  transition:
-    fill 180ms ease,
-    transform 300ms var(--ease-soft);
-}
-
-.card-icon:hover .folder-front {
-  fill: var(--blue-50);
-  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
-}
-
-.card-icon .folder-content {
-  fill: var(--surface);
-  transition:
-    fill 180ms ease,
-    transform 300ms var(--ease-soft);
-}
-
-.card-icon:hover .folder-content {
-  fill: var(--blue-50);
-}
-
-.card-icon:hover .folder-content {
-  transform: translateY(-2px);
-}
-
-.card-icon:focus-visible,
 .crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
@@ -298,10 +252,6 @@ body.finder-page {
   outline-offset: 2px;
 }
 
-.card-icon.is-busy {
-  pointer-events: none;
-  animation: bar-busy 700ms ease-in-out infinite alternate;
-}
 
 /* caminho em breadcrumb: as pastas iniciais saem com "…" quando não cabem */
 .path-crumbs {

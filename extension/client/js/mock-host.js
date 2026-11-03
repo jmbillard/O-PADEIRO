@@ -131,8 +131,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						{ name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }
 					],
 					search: {
-						webhook: 'https://workflows.jmbillard.com/webhook/path-search',
-						labels: [{ key: 'atracoes_teams', label: 'TEAMS' }, { key: 'atracoes_trello', label: 'TRELLO' }, { key: 'filmes', label: 'FILMES' }, { key: 'servidor', label: 'SERVIDOR' }]
+						url: 'https://workflows.jmbillard.com/webhook/buscar',
+						servidor: [
+							{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
+							{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
+						]
 					},
 					project: {
 						root: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO',
@@ -333,8 +336,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.collect = JSON.parse(JSON.stringify(a.collect));
 			}
 			if (a.search) {
-				if (a.search.source !== 'file' && !/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-				if (a.search.source === 'file' && !a.search.file) throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
+				if (a.search.url && !/^https?:\/\/\S+$/.test(a.search.url)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				a.search.servidor.forEach(function (r, i) {
+					if (!r.name !== !r.path) throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
+				});
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
@@ -465,10 +470,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				cache: '/tmp/busca_v2.json',
 				local: false,
 				platform: 'Mac',
-				servidor: [
-					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST', server: 'cpp-ml-sp', share: 'PROMO_REDE' },
-					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO', server: 'cpp-ml-sp', share: 'PROMO_REDE' }
-				],
+				servidor: ((window.PAD_MOCK_LIST && window.PAD_MOCK_LIST.search.servidor) || [
+					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
+					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
+				]).map(function (r) {
+					var m = /^\/\/([^\/]+)\/([^\/]+)/.exec(r.path);
+
+					return { name: r.name, path: r.path, server: m ? m[1] : '', share: m ? m[2] : '' };
+				}),
 				labels: { atracoes_teams: 'TEAMS', atracoes_trello: 'TRELLO', atracoes: 'ATRAÇÕES', filmes: 'FILMES', servidor: 'SERVIDOR' }
 			};
 		},

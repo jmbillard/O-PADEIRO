@@ -7,7 +7,9 @@ var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 
 // Busca nova (formato v2, workflow PROMO - BUSCAR): o índice já pronto, num GET. O painel do acessorista baixa
 // sozinho (sem travar o After Effects); o curl daqui é só o plano B.
-var PS_V2_URL = 'https://workflows.jmbillard.com/webhook/buscar';
+var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
+var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
+var PS_SERVIDOR = null; // caminhos fixos do servidor: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
 
 // De onde vem o índice (configuração > busca): 'webhook' (PS_WEBHOOK_URL) ou 'file' (PS_INDEX_FILE, o mesmo JSON
 // que o webhook devolveria, num arquivo da rede).

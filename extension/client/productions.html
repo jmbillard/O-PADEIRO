@@ -253,20 +253,14 @@
 
 			<!-- aba BUSCAR (busca de caminhos, O ACESSORISTA) -->
 			<div class="cfg-pane drives-pane" id="pane-search" role="tabpanel" hidden>
-				<p class="cfg-title prods-section-title">índice</p>
-				<p class="cfg-hint">de onde vem o índice de caminhos (atrações, projetos e outputs) que a busca usa.</p>
-				<div class="log-modes" id="search-source" role="radiogroup" aria-label="Origem do índice">
-					<label class="log-radio" title="o índice é pedido a um endereço da web"><input type="radio" name="search-source" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
-					<label class="log-radio" title="o índice é lido de um arquivo JSON (na rede, por exemplo)"><input type="radio" name="search-source" value="file"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">arquivo de índice</span></label>
-				</div>
-				<div class="has-field-icon" id="search-webhook-field"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="search-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook da busca"></div>
-				<div class="cfg-path has-field-icon" id="search-file-field" hidden><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><input type="text" class="cfg-input" id="search-file" placeholder="//servidor/share/indice.json" spellcheck="false" autocomplete="off" aria-label="Arquivo de índice"><button type="button" class="mini-button" id="search-file-pick" title="escolher o arquivo de índice" aria-label="escolher o arquivo de índice"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
-				<p class="cfg-hint" id="search-source-hint"></p>
+				<p class="cfg-title prods-section-title">webhook</p>
+				<p class="cfg-hint">o endereço do workflow <b>PROMO - BUSCAR</b>: devolve o índice pronto da busca de caminhos (Teams, Trello, atrações e filmes) e as atrações da janela PROJETO. vazio, vale o padrão.</p>
+				<div class="has-field-icon" id="search-webhook-field"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="search-webhook" placeholder="https://workflows.jmbillard.com/webhook/buscar" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook da busca"></div>
 
-				<p class="cfg-title prods-section-title">categorias</p>
-				<p class="cfg-hint">identificadas automaticamente no índice (cada lista dele vira uma categoria). dê a cada uma o nome que aparece na busca; sem nome, vale o automático.</p>
-				<div class="drive-rows" id="category-list"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-categories">atualizar as categorias pelo webhook</button>
+				<p class="cfg-title prods-section-title">servidor · caminhos fixos</p>
+				<p class="cfg-hint">pastas que aparecem sempre na busca de caminhos (com o ícone de servidor), para todo mundo. o caminho pode ser do Mac (/Volumes/...) ou da rede do Windows (\\servidor\share\...): o padeiro converte e monta o volume ao abrir. arraste pelos pontinhos para reordenar.</p>
+				<div class="drive-rows" id="servidor-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-servidor">+ novo caminho fixo</button>
 			</div>
 
 			<!-- aba APARÊNCIA (o tema de todas as janelas) -->

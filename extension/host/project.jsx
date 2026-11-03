@@ -363,24 +363,57 @@ function padCompact(text) {
 }
 
 // O índice da busca (a cópia guardada; baixa de novo se estiver velha e houver rede).
+// As atrações do índice da busca (webhook novo, formato v2), no formato que a janela usa:
+// [{ category, groups: [{ name, projetos, outputs, caminhos, patterns }] }]. A cópia é a mesma do acessorista
+// (busca_v2.json): baixada de novo se tiver mais de 30 s (no modo local, só a cópia).
 function padIndexGroups() {
-	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
+	var cacheFile = new File(tempFolder.fsName + '/busca_v2.json');
+	var text = '';
 
 	if (!(padLocalMode() && cacheFile.exists) && !psIsFresh(cacheFile)) {
 		try {
-			psDownloadIndex(cacheFile);
+			text = PADX.searchDownload({}).text;
+		} catch (err) { }
+	}
+
+	if (!text && cacheFile.exists) {
+		try {
+			text = readFileContent(cacheFile);
 		} catch (err) { }
 	}
 
 	var data = null;
 
 	try {
-		data = psReadJSON(cacheFile);
+		data = JSON.parse(text);
 	} catch (err) { }
 
-	if (!data) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
+	if (!data || data.v != 2) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 
-	return psBuildIndex(data);
+	var roots = data.roots || {};
+	var full = function (path) {
+		var m = /^([a-z]+):(.*)$/.exec(path || '');
+
+		return m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : path || '';
+	};
+	var groups = [];
+	var list = data.atracoes || [];
+
+	for (var i = 0; i < list.length; i++) {
+		var a = list[i];
+
+		if (!a || !a.name) continue;
+
+		groups.push({
+			name: a.name,
+			projetos: a.proj ? [full(a.proj)] : [],
+			outputs: a.out ? [full(a.out)] : [],
+			caminhos: [],
+			patterns: a.pattern || []
+		});
+	}
+
+	return [{ category: { key: 'atracoes', label: 'ATRAÇÕES' }, groups: groups }];
 }
 
 function padIsFilmPath(path) {

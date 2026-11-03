@@ -31,7 +31,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 
 > 🚩 *obs:*\
 > • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva.\
-> • se o workflow novo não responder e ainda não houver cópia, o painel usa o índice antigo.\
+> • o endereço do workflow e os caminhos fixos do servidor ficam na [configuração > buscar](producoes.md#-buscar).\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
 > • aparecem no máximo 20 itens por categoria (24 cards do Trello): refine o termo para ver os demais.
 

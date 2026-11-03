@@ -57,20 +57,26 @@ PADX.pathsIndex = function (a) {
 
 // Busca nova (v2): o que o painel precisa para baixar o índice sozinho. → { url, cache, local, platform, servidor, labels }
 PADX.searchInfo = function () {
-	var labels = {};
+	var list = PS_SERVIDOR || padDefaultSearch().servidor;
 	var servidor = [];
-	var i;
 
-	for (i = 0; i < PS_CATEGORIES.length; i++) labels[PS_CATEGORIES[i].key] = PS_CATEGORIES[i].label;
+	// o servidor e o share saem do caminho de rede (//servidor/share/...); no Mac (/Volumes/SHARE/...), o share
+	// (sem o -1 a -5 de um volume montado de novo) e o servidor pelo mapa de drives, na hora de abrir
+	for (var i = 0; i < list.length; i++) {
+		var path = psSlashes(list[i].path);
+		var unc = path.match(/^\/\/([^\/]+)\/([^\/]+)/);
+		var vol = path.match(/^\/Volumes\/([^\/]+)/i);
 
-	// os caminhos fixos do servidor ficam no painel (não vêm do webhook)
-	for (i = 0; i < PS_LOCAL_SOURCES.servidor.length; i++) {
-		var s = PS_LOCAL_SOURCES.servidor[i];
+		var share = '';
 
-		servidor.push({ name: s.atracao, path: psSlashes(s.win.caminho), mac: s.mac.caminho, server: s.fixedShareServer || '', share: s.fixedShare || '' });
+		// if/else: o ExtendScript agrupa o ternário encadeado do jeito errado
+		if (unc) share = unc[2];
+		else if (vol) share = vol[1].replace(/-[1-5]$/, '');
+
+		servidor.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
 	}
 
-	return { url: PS_V2_URL, cache: tempFolder.fsName + '/busca_v2.json', local: padLocalMode(), platform: appOs, servidor: servidor, labels: labels };
+	return { url: PS_V2_URL, cache: tempFolder.fsName + '/busca_v2.json', local: padLocalMode(), platform: appOs, servidor: servidor };
 };
 
 // Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
