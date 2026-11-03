@@ -777,7 +777,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var V2_ICONS = {
 		teams: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17h-1A2.5 2.5 0 0 1 3 14.5v-7A2.5 2.5 0 0 1 5.5 5z" /></svg>',
-		trello: '<svg viewBox="0 0 24 24" aria-hidden="true" class="tr-logo"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect class="tr-col" x="7" y="7" width="4" height="9.5" rx="1" /><rect class="tr-col" x="13" y="7" width="4" height="5.5" rx="1" /></svg>',
+		trello: '<svg viewBox="0 0 24 24" aria-hidden="true" class="tr-logo"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect class="tr-bar" x="7" y="7" width="4" height="9.5" rx="1" /><rect class="tr-bar" x="13" y="7" width="4" height="5.5" rx="1" /></svg>',
 		redator: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
 		editor: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5H7.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2M14.5 6.5h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2" /><path d="M12 4.5v15" /></svg>',
 		atracoes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>',
@@ -938,6 +938,38 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return { list: list, also: also };
 	}
 
+	// Trello em colunas: quantas couberem (210 px no mínimo), cada card na coluna mais curta, na ordem da lista
+	// (o mais novo em cima, à esquerda). refeito quando a janela muda de largura.
+	var TR_COL_MIN = 210;
+	var TR_GAP = 10;
+
+	function layoutTrello(grid) {
+		var cards = grid._cards || [];
+		var n = Math.max(1, Math.min(cards.length, Math.floor((grid.clientWidth + TR_GAP) / (TR_COL_MIN + TR_GAP))));
+
+		if (grid._cols === n && grid.children.length) return;
+
+		grid._cols = n;
+		grid.textContent = '';
+
+		var cols = [];
+
+		for (var c = 0; c < n; c++) cols.push(grid.appendChild(el('div', 'tr-col')));
+
+		cards.forEach(function (card) {
+			var shortest = cols[0];
+
+			cols.forEach(function (col) {
+				if (col.offsetHeight < shortest.offsetHeight) shortest = col;
+			});
+			shortest.appendChild(card);
+		});
+	}
+
+	function relayoutTrello() {
+		Array.prototype.forEach.call(document.querySelectorAll('#results-paths .tr-grid'), layoutTrello);
+	}
+
 	function searchPathsV2() {
 		var p = state.paths;
 		var results = $('results-paths');
@@ -971,17 +1003,20 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var box = el('section', 'result-section v2-' + cat.key);
 			var list = el('div', cat.key === 'trello' ? 'tr-grid' : cat.key === 'teams' ? 'tm-list' : 'at-list');
 
+			if (cat.key === 'trello') list._cards = [];
+
 			matches.slice(0, cat.max).forEach(function (item) {
 				if (cat.key === 'teams') list.appendChild(teamsItem(item, query));
-				else if (cat.key === 'trello') list.appendChild(trelloItem(item, query));
+				else if (cat.key === 'trello') list._cards.push(trelloItem(item, query));
 				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PROJETO', item.proj], ['OUTPUT', item.out]], query));
 				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
 				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
 			});
 
 			box.appendChild(list);
-			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + ((p.info && p.info.labels[cat.old]) || cat.label) + ' — refine a busca'));
 			results.appendChild(box);
+			if (cat.key === 'trello') layoutTrello(list); // já na página: dá para medir as colunas
+			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + ((p.info && p.info.labels[cat.old]) || cat.label) + ' — refine a busca'));
 		});
 
 		if (!any) showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
@@ -1323,6 +1358,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	var refitOnResize = false;
 
 	window.addEventListener('resize', function () {
+		relayoutTrello();
 		crumbsCollapse($('results-paths'));
 
 		if (!refitOnResize) return;

@@ -721,20 +721,25 @@ button.tm-msg:hover svg {
   padding-left: 34px;
 }
 
-/* Trello: cards em colunas (quantas couberem na largura), cada um com a altura do que tem: sem redator ou
-   editor, o card fica mais baixo e o de baixo sobe (sem buracos) */
+/* Trello: cards em colunas (quantas couberem na largura, montadas em js/finder.js): cada card vai para a coluna
+   mais curta, com a altura do que tem (sem redator ou editor, fica mais baixo e não sobra buraco) */
 .tr-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 4px 0;
-  column-gap: 10px;
-  column-width: 210px;
+}
+
+.tr-col {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 0;
+  gap: 10px;
 }
 
 .tr-card {
   display: grid;
-  width: 100%;
   min-width: 0;
-  margin: 0 0 10px;
-  break-inside: avoid;
   gap: 5px;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -817,7 +822,7 @@ button.tr-card:focus-visible {
   stroke: var(--blue-500);
 }
 
-.tr-card .tr-logo .tr-col {
+.tr-card .tr-logo .tr-bar {
   fill: var(--blue-500);
   stroke: none;
 }
