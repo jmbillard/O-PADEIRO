@@ -721,17 +721,20 @@ button.tm-msg:hover svg {
   padding-left: 34px;
 }
 
-/* Trello: cards em grade (quebram em linhas pela largura da janela) */
+/* Trello: cards em colunas (quantas couberem na largura), cada um com a altura do que tem: sem redator ou
+   editor, o card fica mais baixo e o de baixo sobe (sem buracos) */
 .tr-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 10px;
   padding: 4px 0;
+  column-gap: 10px;
+  column-width: 210px;
 }
 
 .tr-card {
   display: grid;
+  width: 100%;
   min-width: 0;
+  margin: 0 0 10px;
+  break-inside: avoid;
   gap: 5px;
   padding: 12px 14px;
   border: 1px solid var(--border);

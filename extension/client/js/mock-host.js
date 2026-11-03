@@ -498,7 +498,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						{ claq: 'G REPORTER 6 11', red: 'Felipe Salgado Souza', ed: 'Manuel Victor', card: '6a234fa81e187570432a5c12' },
 						{ claq: 'G REPORTER ESP 13 11', red: 'Renata Alves', ed: 'Bruno Teixeira', card: '693365db28fe6d3ed097f363' },
 						{ claq: 'G REPORTER 30 10', red: 'Felipe Salgado Souza', card: '692791339e921ddf5ca3dc4d' },
-						{ claq: 'Encontro 8/6', red: 'Juliana Amorim', ed: 'Bruno Regis', card: '6927932650d09a079178dcff' }
+						{ claq: 'Encontro 8/6', red: 'Juliana Amorim', ed: 'Bruno Regis', card: '6927932650d09a079178dcff' },
+						{ claq: 'VERT(G REPORTER/FUT) 4/11', card: '6927932650d09a079178dd00' },
+						{ claq: 'G REPORTER(Prologo) 31/10', red: 'Mila Teixeira', card: '6927932650d09a079178dd01' },
+						{ claq: 'G REPORTER 29/10', red: 'Mila Teixeira', ed: 'Alan Csouza', card: '6927932650d09a079178dd02' },
+						{ claq: 'G REPORTER 3/11 C-C', ed: 'Luiz Dutra', card: '6927932650d09a079178dd03' },
+						{ claq: 'G REPORTER(Prologo) 28/10', red: 'Mila Teixeira', card: '6927932650d09a079178dd04' },
+						{ claq: 'G REPORTER 27/10', red: 'Mila Teixeira', ed: 'Elisa Varajão', card: '6927932650d09a079178dd05' }
 					],
 					atracoes: [
 						{ name: 'Globo Repórter', pattern: ['G REPORTER', 'GLOBO REPORTER'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/JORNALISMO/GLOBO REPORTER/2021-2026/01 PROJETOS', out: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026' },
