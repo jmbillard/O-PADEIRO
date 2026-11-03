@@ -55,6 +55,60 @@ PADX.pathsIndex = function (a) {
 	}
 };
 
+// Busca nova (v2): o que o painel precisa para baixar o índice sozinho. → { url, cache, local, platform, servidor, labels }
+PADX.searchInfo = function () {
+	var labels = {};
+	var servidor = [];
+	var i;
+
+	for (i = 0; i < PS_CATEGORIES.length; i++) labels[PS_CATEGORIES[i].key] = PS_CATEGORIES[i].label;
+
+	// os caminhos fixos do servidor ficam no painel (não vêm do webhook)
+	for (i = 0; i < PS_LOCAL_SOURCES.servidor.length; i++) {
+		var s = PS_LOCAL_SOURCES.servidor[i];
+
+		servidor.push({ name: s.atracao, path: psSlashes(s.win.caminho), mac: s.mac.caminho, server: s.fixedShareServer || '', share: s.fixedShare || '' });
+	}
+
+	return { url: PS_V2_URL, cache: tempFolder.fsName + '/busca_v2.json', local: padLocalMode(), platform: appOs, servidor: servidor, labels: labels };
+};
+
+// Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
+// a: { force }  →  { text, downloaded }
+PADX.searchDownload = function (a) {
+	var cache = new File(tempFolder.fsName + '/busca_v2.json');
+	var part = new File(cache.fsName + '.part');
+	var downloaded = false;
+
+	if (!padLocalMode()) {
+		if (part.exists) part.remove();
+
+		var cmd = appOs == 'Win'
+			? 'cmd.exe /c curl.exe -s -L --compressed --connect-timeout 5 --max-time 25 -o "' + part.fsName.replace(/"/g, '') + '" "' + PS_V2_URL + '"'
+			: 'curl -s -L --compressed --connect-timeout 5 --max-time 25 -o ' + psShellQuote(part.fsName) + ' ' + psShellQuote(PS_V2_URL);
+
+		try {
+			system.callSystem(cmd);
+		} catch (err) { }
+
+		if (part.exists && part.length > 0) {
+			var text = readFileContent(part);
+
+			if (/^\s*\{\s*"v"\s*:\s*2/.test(text)) {
+				if (cache.exists) cache.remove();
+				part.rename(cache.name);
+				downloaded = true;
+			} else {
+				part.remove();
+			}
+		}
+	}
+
+	if (!cache.exists) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
+
+	return { text: readFileContent(new File(tempFolder.fsName + '/busca_v2.json')), downloaded: downloaded };
+};
+
 // Abre a pasta de um caminho (no macOS, monta o volume SMB se for preciso).
 // a: { path, server, share }
 PADX.openPath = function (a) {

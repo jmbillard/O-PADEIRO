@@ -239,7 +239,215 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   Aba CAMINHOS
 	   ========================================================= */
 
+	/* ---------------------------------------------------------------
+	   busca nova (v2): o índice pronto do workflow PROMO - BUSCAR (GET), baixado pelo próprio painel (Node,
+	   comprimido, em segundo plano: o After Effects não trava). a cópia salva aparece na hora e é trocada
+	   quando a resposta chega com outro 'stamp'. sem a busca nova (e sem cópia), volta para o índice antigo.
+	   --------------------------------------------------------------- */
+
+	// categoria da busca nova → a chave antiga (os nomes da configuração > busca valem para as duas)
+	var V2_CATS = [
+		{ key: 'teams', old: 'atracoes_teams', label: 'TEAMS', max: 20 },
+		{ key: 'trello', old: 'atracoes_trello', label: 'TRELLO', max: 24 },
+		{ key: 'atracoes', old: 'atracoes', label: 'ATRAÇÕES', max: 20 },
+		{ key: 'filmes', old: 'filmes', label: 'FILMES', max: 20 },
+		{ key: 'servidor', old: 'servidor', label: 'SERVIDOR', max: 10 }
+	];
+	var V2_TIMEOUT = 25000;
+
+	function nodeApi() {
+		try {
+			if (typeof require !== 'function') return null;
+
+			return { https: require('https'), http: require('http'), zlib: require('zlib'), fs: require('fs') };
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// GET com gzip (e redirecionamentos) pelo Node do painel
+	function httpGet(api, url, hops) {
+		return new Promise(function (resolve, reject) {
+			var mod = /^https:/i.test(url) ? api.https : api.http;
+			var req = mod.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: V2_TIMEOUT }, function (res) {
+				if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && (hops || 0) < 3) {
+					res.resume();
+					resolve(httpGet(api, new URL(res.headers.location, url).href, (hops || 0) + 1));
+					return;
+				}
+
+				if (res.statusCode !== 200) {
+					res.resume();
+					reject(new Error('HTTP ' + res.statusCode));
+					return;
+				}
+
+				var stream = /gzip/i.test(res.headers['content-encoding'] || '') ? res.pipe(api.zlib.createGunzip()) : res;
+				var chunks = [];
+
+				stream.on('data', function (c) {
+					chunks.push(c);
+				});
+				stream.on('end', function () {
+					resolve(Buffer.concat(chunks).toString('utf8'));
+				});
+				stream.on('error', reject);
+			});
+
+			req.on('timeout', function () {
+				req.destroy(new Error('tempo esgotado'));
+			});
+			req.on('error', reject);
+		});
+	}
+
+	function readCacheV2(api, file) {
+		try {
+			return api.fs.existsSync(file) ? api.fs.readFileSync(file, 'utf8') : '';
+		} catch (err) {
+			return '';
+		}
+	}
+
+	function writeCacheV2(api, file, text) {
+		try {
+			api.fs.writeFileSync(file + '.part', text, 'utf8');
+			api.fs.renameSync(file + '.part', file);
+		} catch (err) { }
+	}
+
+	// texto do webhook → { stamp, cats: { teams: [...], ... } } com o texto de busca de cada item
+	function parseV2(text, info) {
+		var data = JSON.parse(text);
+
+		if (!data || data.v !== 2) throw new Error('formato inesperado');
+
+		var roots = data.roots || {};
+		var full = function (path) {
+			var m = /^([a-z]+):(.*)$/.exec(path || '');
+
+			return m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : path || '';
+		};
+		var hay = function (parts) {
+			return psNormalize(parts.filter(Boolean).join('|'));
+		};
+		var cats = {
+			teams: (data.teams || []).map(function (t) {
+				var path = full(t.path);
+
+				return { from: t.from || '', role: t.role || '', at: t.at || '', chat: t.chat || '', msg: t.msg || '', path: path, hay: hay([t.from, path]) };
+			}),
+			trello: (data.trello || []).map(function (c) {
+				return { claq: c.claq || '', red: c.red || '', ed: c.ed || '', card: c.card || '', hay: hay([c.claq, c.red, c.ed]) };
+			}),
+			atracoes: (data.atracoes || []).map(function (a) {
+				return { name: a.name || '', pattern: a.pattern || [], proj: full(a.proj), out: full(a.out), hay: hay([a.name].concat(a.pattern || [], [full(a.proj), full(a.out)])) };
+			}),
+			filmes: (data.filmes || []).map(function (f) {
+				return { name: f.name || '', out: full(f.out), hay: hay([f.name, full(f.out)]) };
+			}),
+			servidor: (info.servidor || []).map(function (s) {
+				return { name: s.name, path: s.path, server: s.server, share: s.share, hay: hay([s.name, s.path]) };
+			})
+		};
+
+		return { stamp: data.stamp || '', cats: cats };
+	}
+
+	function applyV2(parsed) {
+		var p = state.paths;
+
+		p.mode = 'v2';
+		p.v2 = parsed;
+		p.stamp = parsed.stamp;
+		p.ready = true;
+		p.loaded = true;
+		buildCategoryFilters();
+	}
+
+	// → true quando a busca nova carregou (da cópia ou do webhook)
+	async function loadPathsV2(force) {
+		var p = state.paths;
+		var info = p.info || (p.info = await call('searchInfo'));
+		var api = nodeApi();
+		var shown = false;
+
+		p.platform = info.platform;
+
+		// 1. a cópia salva aparece na hora (sem esperar a rede)
+		if (api && !force) {
+			try {
+				var cached = readCacheV2(api, info.cache);
+
+				if (cached) {
+					applyV2(parseV2(cached, info));
+					p.loading = false;
+					searchPaths();
+					shown = true;
+				}
+			} catch (err) { }
+		}
+
+		if (info.local) return shown; // modo local: só a cópia
+
+		// 2. o webhook (pelo painel; se não der, pelo curl do After Effects)
+		var text = '';
+
+		try {
+			if (!api) throw new Error('sem Node');
+			text = await httpGet(api, info.url);
+			parseV2(text, info); // confere antes de guardar
+			writeCacheV2(api, info.cache, text);
+		} catch (err) {
+			try {
+				var res = await call('searchDownload', { force: !!force });
+
+				text = res.downloaded || !shown ? res.text : '';
+			} catch (err2) {
+				text = '';
+			}
+		}
+
+		if (text) {
+			var fresh = parseV2(text, info);
+
+			if (!shown || fresh.stamp !== p.stamp) {
+				applyV2(fresh);
+				p.loading = false;
+				searchPaths();
+			}
+
+			return true;
+		}
+
+		if (shown) toast(null, 'sem conexão com o workflow: usando o último índice salvo.');
+
+		return shown;
+	}
+
 	async function loadPaths(force) {
+		var p = state.paths;
+
+		p.loading = true;
+		p.error = '';
+
+		if (!p.ready || force) {
+			showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
+			await nextPaint();
+		}
+
+		try {
+			if (await loadPathsV2(force)) {
+				p.loading = false;
+				return;
+			}
+		} catch (err) { }
+
+		await loadPathsV1(force);
+	}
+
+	// índice antigo (webhook anterior, montado no After Effects): o plano B
+	async function loadPathsV1(force) {
 		var p = state.paths;
 
 		p.loading = true;
@@ -251,6 +459,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		try {
 			var res = await call('pathsIndex', { force: !!force });
 
+			p.mode = 'v1';
 			p.index = res.index;
 			p.platform = res.platform;
 			p.ready = true;
@@ -271,10 +480,18 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	// Um chip por categoria do índice. A escolha é mantida ao atualizar o índice.
 	function buildCategoryFilters() {
 		var box = $('opts-paths');
+		var p = state.paths;
+		var sections = p.mode === 'v2'
+			? V2_CATS.filter(function (c) {
+				return p.v2.cats[c.key].length > 0;
+			}).map(function (c) {
+				return { category: { key: c.key, label: (p.info && p.info.labels[c.old]) || c.label } };
+			})
+			: p.index;
 
 		box.textContent = '';
 
-		state.paths.index.forEach(function (section) {
+		sections.forEach(function (section) {
 			var cat = section.category;
 			var chip = el('button', 'chip' + (state.paths.hidden[cat.key] ? '' : ' is-on'));
 
@@ -428,6 +645,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	function searchPaths() {
+		if (state.paths.mode === 'v2') return searchPathsV2();
+
 		var p = state.paths;
 		var results = $('results-paths');
 		var query = psNormalize($('q-paths').value);
@@ -478,6 +697,177 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		} else if (total > shown) {
 			results.appendChild(el('p', 'finder-more', 'mais ' + (total - shown) + ' — refine a busca'));
 		}
+	}
+
+	/* ---------------------------------------------------------------
+	   busca nova: o layout de cada categoria (sem títulos: o ícone diz de onde vem)
+	   --------------------------------------------------------------- */
+
+	var V2_ICONS = {
+		teams: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17h-1A2.5 2.5 0 0 1 3 14.5v-7A2.5 2.5 0 0 1 5.5 5z" /></svg>',
+		trello: '<svg viewBox="0 0 24 24" aria-hidden="true" class="tr-logo"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect class="tr-col" x="7" y="7" width="4" height="9.5" rx="1" /><rect class="tr-col" x="13" y="7" width="4" height="5.5" rx="1" /></svg>',
+		redator: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
+		editor: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5H7.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2M14.5 6.5h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2" /><path d="M12 4.5v15" /></svg>',
+		atracoes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>',
+		filmes: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>',
+		servidor: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>'
+	};
+	var NO_GROUP = { server: '', share: '' };
+
+	function svgNode(markup) {
+		var box = document.createElement('span');
+
+		box.innerHTML = markup;
+
+		return box.firstChild;
+	}
+
+	// hoje 14:32 · ontem 09:10 · 28/10 · 28/10/2025
+	function when(iso) {
+		var t = Date.parse(iso || '');
+
+		if (isNaN(t)) return '';
+
+		var d = new Date(t);
+		var now = new Date();
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+		if (t >= day) return 'hoje ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+		if (t >= day - 86400000) return 'ontem ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
+	}
+
+	function teamsLink(m) {
+		return m.chat && m.msg ? 'https://teams.microsoft.com/l/message/' + encodeURIComponent(m.chat) + '/' + encodeURIComponent(m.msg) + '?context=' + encodeURIComponent('{"contextType":"chat"}') : '';
+	}
+
+	// Teams: o balão (abre a mensagem), quem mandou - cargo, a data; embaixo, o caminho
+	function teamsItem(m, query) {
+		var card = el('article', 'result-card tm-card');
+		var who = el('div', 'tm-who');
+		var link = teamsLink(m);
+		var bubble = el(link ? 'button' : 'span', 'tm-msg');
+
+		bubble.innerHTML = V2_ICONS.teams;
+
+		if (link) {
+			bubble.type = 'button';
+			bubble.title = 'abrir a mensagem no Teams';
+			bubble.setAttribute('aria-label', bubble.title);
+			bubble.addEventListener('click', function () {
+				PAD_BRIDGE.openUrl(link);
+			});
+		}
+
+		who.appendChild(bubble);
+		who.appendChild(highlightNode('b', null, m.from || 'mensagem', query));
+		if (m.role) who.appendChild(el('span', 'tm-role', '- ' + m.role));
+		if (m.at) who.appendChild(el('time', null, when(m.at)));
+		card.appendChild(who);
+		card.appendChild(pathCrumbs(toPlatform(m.path, state.paths.platform), query, NO_GROUP));
+
+		return card;
+	}
+
+	// Trello: o card (abre no Trello) com a claquete, o redator e o editor
+	function trelloItem(c, query) {
+		var card = el(c.card ? 'button' : 'div', 'tr-card');
+		var head = el('b', 'tr-claq');
+
+		if (c.card) {
+			card.type = 'button';
+			card.title = 'abrir o card no Trello';
+			card.addEventListener('click', function () {
+				PAD_BRIDGE.openUrl('https://trello.com/c/' + encodeURIComponent(c.card));
+			});
+		}
+
+		head.appendChild(svgNode(V2_ICONS.trello));
+		head.appendChild(highlightNode('i', null, c.claq, query));
+		card.appendChild(head);
+
+		[['redator', 'REDATOR', c.red], ['editor', 'EDITOR', c.ed]].forEach(function (row) {
+			if (!row[2]) return;
+
+			var line = el('span', 'tr-row');
+
+			line.appendChild(svgNode(V2_ICONS[row[0]]));
+			line.appendChild(el('em', null, row[1]));
+			line.appendChild(highlightNode('i', null, row[2], query));
+			card.appendChild(line);
+		});
+
+		return card;
+	}
+
+	// Atrações, filmes e servidor: o ícone e o nome; embaixo, uma linha por caminho (PROJETO, OUTPUT, CAMINHO)
+	function placeItem(icon, name, lines, query, group) {
+		var card = el('article', 'at-card');
+		var head = el('div', 'at-head');
+
+		head.appendChild(svgNode(icon));
+		head.appendChild(highlightNode('b', null, name, query));
+		card.appendChild(head);
+
+		lines.forEach(function (line) {
+			if (!line[1]) return;
+
+			var row = el('div', 'at-line');
+
+			row.appendChild(el('em', null, line[0]));
+			row.appendChild(pathCrumbs(toPlatform(line[1], state.paths.platform), query, group || NO_GROUP));
+			card.appendChild(row);
+		});
+
+		return card;
+	}
+
+	function searchPathsV2() {
+		var p = state.paths;
+		var results = $('results-paths');
+		var query = psNormalize($('q-paths').value);
+
+		results.textContent = '';
+
+		if (query.length < MIN_QUERY) {
+			showState(results, 'O ACESSORISTA', 'pesquise por atração, claquete, quem mandou, output ou caminho', true);
+			return;
+		}
+
+		var any = false;
+
+		V2_CATS.forEach(function (cat) {
+			if (p.hidden[cat.key]) return;
+
+			var matches = p.v2.cats[cat.key].filter(function (item) {
+				return item.hay.indexOf(query) >= 0;
+			});
+
+			if (!matches.length) return;
+
+			any = true;
+
+			var box = el('section', 'result-section v2-' + cat.key);
+			var list = el('div', cat.key === 'trello' ? 'tr-grid' : cat.key === 'teams' ? 'tm-list' : 'at-list');
+
+			matches.slice(0, cat.max).forEach(function (item) {
+				if (cat.key === 'teams') list.appendChild(teamsItem(item, query));
+				else if (cat.key === 'trello') list.appendChild(trelloItem(item, query));
+				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PROJETO', item.proj], ['OUTPUT', item.out]], query));
+				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query));
+				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
+			});
+
+			box.appendChild(list);
+			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + ((p.info && p.info.labels[cat.old]) || cat.label) + ' — refine a busca'));
+			results.appendChild(box);
+		});
+
+		if (!any) showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
 	}
 
 	/* =========================================================
@@ -757,7 +1147,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 			PAD_KEYS.listNav({
 				root: results,
-				items: '.card-icon, .crumb.is-last, .comp-title, .text-row',
+				items: '.card-icon, .tm-msg, .tr-card, .crumb.is-last, .comp-title, .text-row',
 				search: q,
 				typeToSearch: true
 			});

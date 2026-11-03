@@ -10,18 +10,28 @@ a janela abre com 720 px de largura e baixa: sem uma busca, ela mostra só o cab
 
 > <img src="images/acessorista-caminhos.webp" alt="busca de caminhos" width="420">
 
-`◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
+`◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, claquete, quem mandou, projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
 
-- **categorias** → TEAMS, TRELLO, SERVIDOR... cada uma tem um interruptor para entrar ou sair da busca.
+os resultados vêm sem títulos de seção: o ícone de cada item diz de onde ele vem.
+
+| ícone | de onde | o que mostra | o clique |
+| --- | --- | --- | --- |
+| balão | **Teams** (últimos 45 dias) | quem mandou - cargo, a data e, embaixo, o caminho da mensagem | o balão abre a mensagem no Teams |
+| quadro do Trello | **Trello** (últimos 45 dias) | cards em grade: a claquete, o redator e o editor | o card abre no Trello |
+| TV de tubo | **atrações** | o nome e as linhas **PROJETO** e **OUTPUT** | — |
+| película | **filmes** | o nome e a linha **OUTPUT** | — |
+| servidor | **servidor** (caminhos fixos) | o nome e a linha **CAMINHO** | — |
+
+- **categorias** → TEAMS, TRELLO, ATRAÇÕES, FILMES e SERVIDOR: cada uma tem um interruptor para entrar ou sair da busca.
 - **⋯** → ajuda (esta página) e recarregar o painel.
-- **pastinhas** (à direita do nome da atração) → a com documento abre a pasta de projeto; a com quadro de filme, a de output.
 - **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
 - **atualizar** (antes dos interruptores) → baixa os caminhos de novo.
 
 > 🚩 *obs:*\
-> • os caminhos vêm de um workflow e ficam em cache por 30 segundos, para trazer sempre os caminhos mais atuais do Teams. sem conexão, o último índice salvo é usado.\
-> • no macOS, os volumes de rede necessários são montados ao abrir uma pasta.\
-> • aparecem no máximo 60 atrações por busca (somando as categorias): refine o termo para ver as demais.
+> • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva.\
+> • se o workflow novo não responder e ainda não houver cópia, o painel usa o índice antigo.\
+> • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
+> • aparecem no máximo 20 itens por categoria (24 cards do Trello): refine o termo para ver os demais.
 
 ### textos
 

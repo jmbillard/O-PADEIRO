@@ -458,6 +458,60 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { tab: req.tab, stamp: req.stamp, now: Date.now() };
 		},
 
+		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar (o painel volta para o índice antigo)
+		searchInfo: function () {
+			return {
+				url: 'https://workflows.jmbillard.com/webhook/buscar',
+				cache: '/tmp/busca_v2.json',
+				local: false,
+				platform: 'Mac',
+				servidor: [
+					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST', server: 'cpp-ml-sp', share: 'PROMO_REDE' },
+					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO', server: 'cpp-ml-sp', share: 'PROMO_REDE' }
+				],
+				labels: { atracoes_teams: 'TEAMS', atracoes_trello: 'TRELLO', atracoes: 'ATRAÇÕES', filmes: 'FILMES', servidor: 'SERVIDOR' }
+			};
+		},
+
+		searchDownload: async function () {
+			await new Promise(function (r) { setTimeout(r, 300); });
+
+			if (/mock=v1/.test(location.search)) throw new Error('#PAD_058 - não foi possível carregar o índice.');
+
+			var H = 3600000;
+			var iso = function (h) { return new Date(Date.now() - h * H).toISOString().replace(/\.\d+Z$/, 'Z'); };
+			var srv = '//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER';
+
+			return {
+				downloaded: true,
+				text: JSON.stringify({
+					v: 2,
+					stamp: 'mock01',
+					generated: iso(0),
+					teams: [
+						{ at: iso(1), msg: '1793719190975', chat: '19:71c26c3266a7442394fac2e6fd73e284@thread.v2', from: 'Jean Billard', role: 'DESIGNER III', path: srv + '/ARTE SP/FAVELA POTENCIA/DUPLAS' },
+						{ at: iso(2), msg: '1793719049291', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Marcelo Nathan', role: 'DESIGNER I', path: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026/LETTERINGS/G REPORTER 6 11' },
+						{ at: iso(3), msg: '1793718145025', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Thiago Fornari', role: 'EDITOR MIDIAS AUDIOVISUAIS III', path: '//cpp-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/edit_output/_C# ABERTA & INTER/PARA_CDESIGN/EDIT_RJ/G REPORTER 6-11 N' },
+						{ at: iso(30), msg: '1793670338780', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Victor Mendes', role: 'DESIGNER III', path: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/SHOWS/POR DENTRO_NEY MATOGROSSO' }
+					],
+					trello: [
+						{ claq: 'G REPORTER 6 11', red: 'Felipe Salgado Souza', ed: 'Manuel Victor', card: '6a234fa81e187570432a5c12' },
+						{ claq: 'G REPORTER ESP 13 11', red: 'Renata Alves', ed: 'Bruno Teixeira', card: '693365db28fe6d3ed097f363' },
+						{ claq: 'G REPORTER 30 10', red: 'Felipe Salgado Souza', card: '692791339e921ddf5ca3dc4d' },
+						{ claq: 'Encontro 8/6', red: 'Juliana Amorim', ed: 'Bruno Regis', card: '6927932650d09a079178dcff' }
+					],
+					atracoes: [
+						{ name: 'Globo Repórter', pattern: ['G REPORTER', 'GLOBO REPORTER'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/JORNALISMO/GLOBO REPORTER/2021-2026/01 PROJETOS', out: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026' },
+						{ name: 'Festival de Inverno', pattern: ['FESTIVAL'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/FESTIVAL DE INVERNO/2026/01PROJETOS', out: srv + '/ARTE RJ/SHOWS/FESTIVAL DE INVERNO RIO/2026' }
+					],
+					filmes: [
+						{ name: '90 DECIBÉIS', out: srv + '/ARTE RJ/FILMES/TITULOS/_#_/90 DECIBEIS' },
+						{ name: 'O REPÓRTER DA MEIA-NOITE', out: srv + '/ARTE RJ/FILMES/TITULOS/_R_/O REPORTER DA MEIA NOITE' }
+					]
+				})
+			};
+		},
+
 		pathsIndex: async function (a) {
 			await wait(delay * 2);
 
