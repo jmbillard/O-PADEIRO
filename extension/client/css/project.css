@@ -1,5 +1,6 @@
 /* =========================================================
-   PROJETO — janelinha própria, fundo branco
+   PROJETO — janelinha própria, fundo branco: um projeto novo em etapas
+   (uma tela por vez) e, depois de criado, o editor
    ========================================================= */
 
 html,
@@ -18,62 +19,79 @@ body.project-page {
 
 .project {
   display: flex;
+  height: 100%;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px 16px calc(var(--footer-center) - 23px); /* 23 = meio botão: o centro dos botões fica no lugar de sempre */
 }
 
-.proj-fields {
-  display: grid;
-  gap: 10px;
-}
-
-.proj-row {
+.wz-screen {
   display: flex;
-  gap: 10px;
-}
-
-.proj-id {
-  min-width: 0;
+  min-height: 0;
   flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 18px 0;
 }
 
-.proj-id .cfg-input {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+.wz-screen[hidden] {
+  display: none;
 }
 
-.proj-user {
-  width: 104px;
-  flex: 0 0 auto;
+/* o título de cada etapa: só a palavra */
+.wz-title {
+  margin: 0;
+  color: var(--blue-500);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
 }
 
-.proj-user .cfg-input {
-  font-weight: 700;
-  letter-spacing: 0.06em;
+.wz-label {
+  margin: 2px 0 -6px 2px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
 }
 
-/* retranca e destino: o cartão azul, com a pastinha de abrir à direita */
+.wz-hint {
+  min-height: 1em;
+  margin: -6px 2px 0;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+.wz-hint:empty {
+  display: none;
+}
+
+/* a claquete: campo grande */
+.wz-claq .cfg-input {
+  min-height: 60px;
+  padding-left: 48px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.wz-claq .field-icon {
+  left: 16px;
+  width: 22px;
+  height: 22px;
+}
+
+/* a atração encontrada (e a pasta, no editor) */
 .proj-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 6px;
-  padding: 14px 12px 14px 16px;
+  min-width: 0;
+  gap: 5px;
+  padding: 13px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-medium);
   background: var(--surface-soft);
-  transition:
-    border-color 200ms ease,
-    background-color 200ms ease;
 }
 
-.proj-card.has-retranca {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
+.proj-card[hidden] {
+  display: none;
 }
 
 .proj-card-head {
@@ -81,21 +99,6 @@ body.project-page {
   min-width: 0;
   align-items: center;
   gap: 8px;
-}
-
-.proj-code {
-  flex: 0 0 auto;
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
-  color: var(--text-on-brand);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.proj-code[hidden] {
-  display: none;
 }
 
 .proj-retranca {
@@ -108,92 +111,368 @@ body.project-page {
   white-space: nowrap;
 }
 
-.proj-card:not(.has-retranca) .proj-retranca {
-  color: var(--text-tertiary);
-  font-weight: 650;
+.proj-target {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* o "…" no começo: o fim do caminho é o que importa */
+  text-align: left;
 }
 
-.proj-target {
+/* as opções (atrações, filmes): cartões com ícone, título, caminho e a bolinha */
+.wz-list {
+  display: grid;
+  min-height: 0;
+  gap: 8px;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
+}
+
+.wz-opt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.wz-opt:hover {
+  border-color: var(--border-hover);
+}
+
+.wz-opt.is-selected {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+  box-shadow: 0 0 0 3px rgb(79 130 255 / 12%);
+}
+
+.wz-opt svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-opt-text {
   display: grid;
   min-width: 0;
-  gap: 3px;
-  grid-column: 1;
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  font-weight: 620;
+  flex: 1;
+  gap: 2px;
 }
 
-/* o "…" fica no começo do caminho */
-.proj-target .path-line.is-tail .path-text {
+.wz-opt-text b {
+  overflow: hidden;
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-opt-text small {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* caminho: o "…" no começo (o fim é o que importa) */
+.wz-opt-text small.is-path {
   direction: rtl;
   text-align: left;
 }
 
-/* salvo em outro lugar: o destino novo aparece embaixo, em azul */
-.proj-target .path-line.is-target {
+.wz-radio {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+}
+
+.wz-opt.is-selected .wz-radio {
+  border: 5px solid var(--blue-500);
+}
+
+/* criar nova / filme novo: o cartão tracejado */
+.wz-opt.is-new {
+  border-style: dashed;
+  border-width: 1.5px;
+  border-color: var(--blue-200);
   color: var(--blue-500);
 }
 
-.proj-card.is-saved .proj-target .path-line:first-child:not(.is-target) {
-  color: var(--text-primary);
+.wz-opt.is-new.is-selected {
+  border-color: var(--blue-300);
 }
 
-.proj-target-empty {
-  color: var(--text-tertiary);
-}
-
-.proj-open {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-.proj-open:disabled {
-  opacity: 0.45;
-}
-
-/* os nomes que serão usados */
-.proj-names {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0 4px;
-}
-
-.proj-name-row {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 10px;
-}
-
-.proj-name-row dt {
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  font-weight: 750;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.proj-name-row dd {
+/* ARQUIVO: o nome que vai ficar */
+.wz-file {
+  display: flex;
   min-width: 0;
-  margin: 0;
-  overflow: hidden;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: var(--surface-soft);
   color: var(--text-primary);
-  font-size: 0.8rem;
-  font-weight: 650;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.wz-file span {
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.wz-file svg,
+.wz-preview svg,
+.wz-tree svg,
+.wz-meta svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-file.is-dup {
+  background: rgb(245 191 36 / 14%);
+}
+
+.wz-exist {
+  margin: -4px 2px 0;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  line-height: 1.6;
+}
+
+.wz-exist:empty {
+  display: none;
+}
+
+.wz-exist b {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.wz-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wz-chips[hidden] {
+  display: none;
+}
+
+.wz-chip,
+.wz-pill {
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.wz-chip.is-on {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.wz-pill:hover,
+.wz-chip:hover {
+  border-color: var(--border-hover);
+}
+
+/* NOVA: a pasta que vai ser criada */
+.wz-preview {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin: 0 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.wz-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+}
+
+.wz-preview b {
+  color: var(--text-primary);
+}
+
+/* CRIAR: a estrutura, no cartão azul */
+.wz-tree {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 55%, var(--blue-600));
+  color: rgb(var(--on-brand));
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.wz-tree-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding-left: calc(var(--depth, 0) * 18px);
+  white-space: nowrap;
+}
+
+.wz-tree-line span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wz-tree svg {
+  width: 15px;
+  height: 15px;
+  stroke: rgb(var(--on-brand));
+}
+
+.wz-tree-line.is-old {
+  opacity: 0.68;
+}
+
+.wz-tree-line.is-file span {
+  padding: 1px 9px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 24%);
+}
+
+.wz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wz-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.wz-meta svg {
+  width: 13px;
+  height: 13px;
+  stroke: var(--text-secondary);
+}
+
+/* editor */
+.ed-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ed-claq {
+  min-width: 0;
+  flex: 1;
+}
+
+.ed-user {
+  width: 108px;
+  flex: 0 0 auto;
+}
+
+.ed-row .cfg-input {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.ed-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* rodapé: voltar à esquerda, o botão da etapa à direita */
+.wz-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 8px 0 calc(var(--footer-center, 30px) - 23px);
+}
+
+.wz-foot .button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.wz-back {
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.wz-back:hover {
+  color: var(--text-secondary);
+}
+
 .proj-status {
   min-height: 1.2em;
-  margin: -4px 4px -6px;
+  margin: 0 18px 8px;
   overflow: hidden;
   color: var(--text-secondary);
   font-size: 0.72rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.proj-status:empty {
+  display: none;
 }
 
 .proj-status.is-error {
@@ -210,22 +489,6 @@ body.project-page {
   color: var(--success);
 }
 
-/* rodapé: "⋯" à esquerda, renomear e salvar à direita */
-.proj-footer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.proj-footer .button-primary {
-  margin-left: auto;
-}
-
-.proj-footer .button {
-  min-width: 0;
-  white-space: nowrap;
-}
-
 .actions-menu[open]>.icon-button.is-light {
   border-color: var(--blue-200);
   background: var(--blue-50);
@@ -237,17 +500,4 @@ body.project-page {
   bottom: calc(100% + 8px);
   left: 0;
   right: auto;
-}
-
-@media (max-width: 380px) {
-  .proj-footer .button {
-    flex: 1;
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .proj-name-row {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
 }

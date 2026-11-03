@@ -141,21 +141,60 @@ function padCollectPathOf(settings, folder) {
 	return parts.join('/');
 }
 
-// Cria a estrutura inteira na raiz (as pastas sem tipo também, como a de saída).
+// Nome de pasta para comparar: sem acentos, espaços e símbolos, em maiúsculas (01PROJETOS = 01 PROJETOS).
+function padFolderKey(name) {
+	return String(name || '').replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+// Pasta de projetos com outra grafia, comum no servidor: 01 PROJETOS, 01PROJETOS, 01 PROJETO, PROJETOS.
+function padIsProjectsFolderName(name) {
+	return /^(0?1)?PROJETOS?$/.test(padFolderKey(name));
+}
+
+// A subpasta 'name' de 'parent', aceitando uma que já exista com outra grafia (e a do .aep, com as
+// variações de PROJETOS). Cria com o nome da árvore se não houver.
+function padChildFolder(parent, name, isProjects) {
+	var key = padFolderKey(name);
+	var items = new Folder(parent).getFiles();
+
+	for (var i = 0; i < items.length; i++) {
+		if (!(items[i] instanceof Folder)) continue;
+
+		var other = decodeURI(items[i].name);
+
+		if (padFolderKey(other) == key || (isProjects && padIsProjectsFolderName(other))) return items[i];
+	}
+
+	return padEnsureFolder(new Folder(parent).fsName + '/' + name);
+}
+
+// Caminho da árvore ('02 ARQUIVOS/VÍDEOS') dentro da raiz, usando as pastas que já existem.
+function padCollectResolve(root, relPath, isProjects) {
+	var folder = new Folder(root);
+	var parts = String(relPath || '').split('/');
+
+	if (!folder.exists) folder.create();
+
+	for (var p = 0; p < parts.length; p++) {
+		if (parts[p] == '') continue;
+		folder = padChildFolder(folder.fsName, parts[p], isProjects && p == parts.length - 1);
+	}
+
+	return folder.fsName;
+}
+
+// Cria a estrutura inteira na raiz (as pastas sem tipo também, como a de saída), sem duplicar as que
+// já existem com outra grafia.
 function padCollectStructure(root, settings) {
 	for (var i = 0; i < settings.folders.length; i++) {
-		var parts = padCollectPathOf(settings, settings.folders[i]).split('/');
-		var path = new Folder(root).fsName;
+		var f = settings.folders[i];
 
-		for (var p = 0; p < parts.length; p++) {
-			path += '/' + parts[p];
-			padEnsureFolder(path);
-		}
+		padCollectResolve(root, padCollectPathOf(settings, f), f.contents.indexOf('projeto') >= 0);
 	}
 }
 
-// A raiz da estrutura de um .aep: a pasta de cima, se ele está na pasta do tipo 'projeto' (01 PROJETOS);
-// senão, a pasta dele.
+// A raiz da estrutura de um .aep: a pasta de cima, se ele está na pasta do tipo 'projeto' (01 PROJETOS,
+// com as grafias do servidor); senão, a pasta dele.
 function padCollectRoot(file, settings) {
 	var folder = file.parent;
 	var sub = padCollectFolderPath(settings, 'projeto');
@@ -166,7 +205,10 @@ function padCollectRoot(file, settings) {
 	var cur = folder;
 
 	for (var i = parts.length - 1; i >= 0; i--) {
-		if (!cur || decodeURI(cur.name).toUpperCase() != parts[i].toUpperCase()) return folder.fsName;
+		var name = cur ? decodeURI(cur.name) : '';
+		var ok = i == parts.length - 1 ? padIsProjectsFolderName(name) || padFolderKey(name) == padFolderKey(parts[i]) : padFolderKey(name) == padFolderKey(parts[i]);
+
+		if (!cur || !ok) return folder.fsName;
 		cur = cur.parent;
 	}
 
@@ -347,7 +389,7 @@ function padCollectFiles(target, settings) {
 		if (paths[kind] == null) continue; // tipo fora da árvore: não é coletado
 		if (String(item.file.fsName).replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) continue; // já está na pasta do projeto
 
-		var folderPath = (root.fsName + '/' + paths[kind]).replace(/\/+$/, '');
+		var folderPath = padCollectResolve(root.fsName, paths[kind], false);
 
 		try {
 			if (kind == 'sequencias') {
@@ -378,7 +420,7 @@ function padCollectFiles(target, settings) {
 		}
 	}
 
-	if (paths.fontes != null) res.fonts = fontCollect(root.fsName + '/' + paths.fontes);
+	if (paths.fontes != null) res.fonts = fontCollect(padCollectResolve(root.fsName, paths.fontes, false));
 
 	return res;
 }
@@ -389,7 +431,11 @@ PADX.collectProject = function (a) {
 
 	var settings = padReadCollect();
 	var file = app.project.file;
-	var target = a.path ? padPath(a.path) : file ? padCollectRoot(file, settings) : '';
+	var target = '';
+
+	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
+	if (a.path) target = padPath(a.path);
+	else if (file) target = padCollectRoot(file, settings);
 
 	if (!target) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 

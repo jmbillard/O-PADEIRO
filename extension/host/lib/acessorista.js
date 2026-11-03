@@ -286,6 +286,7 @@ function psBuildIndex(data) {
 					caminhos: [],
 					server: rec.fixedShareServer || '',
 					share: rec.fixedShare || '',
+					patterns: [], // o começo das claquetes da atração (coluna 'pattern' do índice), para a janela PROJETO
 					haystack: psNormalize(name)
 				};
 				groups.push(group);
@@ -293,6 +294,15 @@ function psBuildIndex(data) {
 
 			if (rec.fixedShareServer) group.server = rec.fixedShareServer;
 			if (rec.fixedShare) group.share = rec.fixedShare;
+
+			var pat = rec.pattern || rec.patterns || rec.padrao || '';
+			var pats = pat instanceof Array ? pat : String(pat).split(',');
+
+			for (var pp = 0; pp < pats.length; pp++) {
+				var one = String(pats[pp] || '').replace(/^\s+|\s+$/g, '');
+
+				if (one) group.patterns.push(one);
+			}
 
 			psAddUnique(group.projetos, projeto);
 			psAddUnique(group.outputs, output);

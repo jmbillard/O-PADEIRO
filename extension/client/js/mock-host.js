@@ -825,6 +825,123 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { file: window.PAD_MOCK_SAVED, folder: a.path || info.target };
 		},
 
+		// janela PROJETO em etapas (?mock=created: projeto já criado)
+		projectCurrent: function () {
+			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JBI', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
+
+			if (!c) return { created: false, claquete: '', designer: 'JBI', defaultUser: 'JBI', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JBI' };
+
+			return Object.assign({ created: true, defaultUser: 'JBI', fileName: c.file.split('/').pop(), hasItems: true, user: 'JBI' }, c);
+		},
+
+		projectLookup: function (a) {
+			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
+			var list = [
+				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
+				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS' },
+				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
+				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
+				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
+				{ name: 'Sessão da Tarde', pat: ['S TARDE', 'STARDE'], path: V + '/INSTITUCIONAL/ON AIR 2021/01PROJETOS' }
+			];
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var words = key(a.claquete).split(' ');
+			var pre = {};
+			var acc = '';
+
+			words.forEach(function (w) {
+				acc += w;
+				pre[acc] = true;
+			});
+
+			var out = [];
+
+			list.forEach(function (m) {
+				var score = 0;
+
+				m.pat.concat([m.name]).forEach(function (p) {
+					var k = key(p).replace(/ /g, '');
+
+					if (pre[k] && k.length > score) score = k.length;
+				});
+				if (score) out.push({ name: m.name, path: m.path, display: m.path, film: !!m.film, score: score });
+			});
+			out.sort(function (x, y) {
+				return y.score - x.score;
+			});
+
+			return { claquete: key(a.claquete), matches: a.claquete ? out : [] };
+		},
+
+		projectFilms: function (a) {
+			var all = ['NAO OLHE PARA CIMA', 'NAO NAO OLHE', 'NOITE DOS MORTOS VIVOS', 'NAO ME ABANDONE JAMAIS'];
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var t = key(a.title);
+			var films = all.map(function (f) {
+				var like = t.split(' ').filter(function (w) {
+					return w && f.split(' ').indexOf(w) >= 0;
+				}).length * 2 + (f.indexOf(t) === 0 ? 3 : 0);
+
+				return { name: f, path: a.path + '/_N_/' + f, raw: a.path + '/_N_/' + f, like: like };
+			}).filter(function (f) {
+				return f.like > 0;
+			}).sort(function (x, y) {
+				return y.like - x.like;
+			});
+
+			return { letter: '_N_', letterPath: a.path + '/_N_', films: films, newName: t, newPath: a.path + '/_N_/' + t };
+		},
+
+		projectBases: function () {
+			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
+
+			return { bases: [{ label: 'FILMES', path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', display: '…/FILMES/TITULOS', film: true }, { label: 'NOVELAS', path: V + '/NOVELAS', display: '…/Fileserver_3/NOVELAS', film: false }, { label: 'PROGRAMAS', path: V + '/PROGRAMAS', display: '…/Fileserver_3/PROGRAMAS', film: false }, { label: 'SHOWS', path: V + '/SHOWS', display: '…/Fileserver_3/SHOWS', film: false }] };
+		},
+
+		projectPlan: function (a) {
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var film = a.kind === 'film';
+			var base = film ? key(a.title) : key(a.atracao + ' ' + (a.what || ''));
+			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
+			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
+			var existing = !film && /MAIS VOCE/.test(root) ? ['MAIS VOCE CHROMA', 'MAIS VOCE CREDITOS'] : [];
+
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.indexOf(base) >= 0, user: 'JBI' };
+		},
+
+		projectCreate: function (a) {
+			var plan = api.projectPlan(a);
+
+			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
+
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JBI', atracao: a.atracao, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+
+			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
+		},
+
+		projectUpdate: function (a) {
+			var c = window.PAD_MOCK_CUR;
+
+			if (c) {
+				c.claquete = String(a.claquete || '').toUpperCase();
+				c.designer = String(a.designer || 'JBI').toUpperCase();
+			}
+
+			return api.projectCurrent();
+		},
+
+		projectMove: function (a) {
+			if (window.PAD_MOCK_CUR) window.PAD_MOCK_CUR.root = a.path;
+
+			return api.projectCurrent();
+		},
+
 		// ?mock=unsaved: projeto ainda não salvo
 		collectProject: function (a) {
 			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');

@@ -19,7 +19,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO projeto** | ID e nome do projeto, retranca e salvar na pasta da retranca → [documentação](docs/projeto.md) |
+| **O PADEIRO projeto** | projeto novo pela claquete: acha a atração, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
 | **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca, projeto) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
@@ -106,8 +106,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
 - **projeto**\
-  `◖` → abre a janela do [projeto](docs/projeto.md) (ID, nome, retranca e salvar).\
-  `◗` → salva o projeto direto na pasta da retranca.
+  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela claquete, ou o editor).\
+  `◗` → salva o projeto (sem projeto criado pela claquete, abre a janela).
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
   `◗` → coleta numa pasta escolhida.
@@ -225,7 +225,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🎬 projeto](docs/projeto.md) | ID e nome do projeto, retranca e salvar na pasta da retranca |
+| [🎬 projeto](docs/projeto.md) | projeto novo pela claquete, estrutura de pastas e editor |
 | [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
@@ -310,9 +310,9 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
 | `#PAD_089` | configuração: projeto com variável desconhecida no nome do arquivo, nome vazio ou retranca sem código / pasta |
-| `#PAD_090` | projeto: sem ID e sem nome |
-| `#PAD_091` | projeto: sem pasta de destino, nome do arquivo vazio ou pasta que não pôde ser criada |
-| `#PAD_092` | projeto: já existe um projeto com esse nome na pasta (salve de novo para substituir) |
+| `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
+| `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada |
+| `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |
 | `#PAD_093` | coletar: itens que não puderam ser coletados (sem permissão, arquivo ausente) |
 | `#PAD_094` | configuração: árvore do coletar inválida (nome vazio, repetido ou com `\ / : * ? " < > \|`, pasta pai inexistente, ciclo, tipo em duas pastas) ou sem nenhum tipo |
 | `#PAD_095` | coletar: projeto não salvo (use o clique direito para escolher a pasta) |

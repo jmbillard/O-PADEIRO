@@ -2,56 +2,53 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO projeto** guarda o **ID** e o **nome** do projeto aberto, descobre a **retranca** pelo começo do ID e, com ela, a pasta onde o projeto é salvo, com o nome padronizado.
+a janela **O PADEIRO projeto** cria um projeto novo a partir da **claquete**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da claquete, do designer e da pasta.
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
-abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto direto na pasta da retranca, sem abrir a janela.
+abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela claquete, abre a janela).
 
 > 📟 *janela projeto*:
 >
 > ![janela projeto](images/projeto.webp)
 
-## 📍 dados do projeto
+## 📍 projeto novo, em etapas
 
-- **ID** (`#`) → o código do projeto, em maiúsculas e sem espaços (ex: `EMP123456`). as primeiras letras indicam a retranca.
-- **sigla** (bonequinho) → a sua sigla, usada na variável `{usuario}`. fica só neste computador (a mesma da [configuração > meu usuário](producoes.md#-meu-usuário)); vazia, vale a padrão (as 3 primeiras letras do usuário do sistema).
+uma tela por vez; **‹ voltar** volta uma etapa.
 
-> 🚩 *a pasta dos projetos deste computador e o **modo local** (sem a rede) ficam na [configuração > meu usuário](producoes.md#-meu-usuário).*
-- **nome do projeto** → como você quiser escrever: os acentos e a caixa seguem o formato da aba **renomear** da configuração.
+1. **CLAQUETE** → digite a claquete (ex: `TELA 9 11`, `MAIS VOCE 30 10`). em segundo plano, o padeiro procura a atração no índice do [buscar](acessorista.md) (pelo começo da claquete: o padrão da atração ou o nome) e mostra a atração e o caminho dela.
+2. **PASTA** → só aparece quando a claquete combina com mais de uma atração, ou com nenhuma. escolha a atração, **criar nova** (filme inédito, novela nova…) ou **escolher uma pasta…** (o navegador de pastas).
+   - **NOVA** → o nome e **dentro de** qual pasta (as pastas das atrações). a pasta da atração nova é criada ao criar o projeto.
+3. **FILME** (atrações de filmes) → o título do filme. a lista mostra os filmes parecidos que já existem na pasta da letra; escolha um ou **filme novo**.
+   - a letra é a primeira do título, depois do artigo (*Os Três Patetas* → `_T_`); títulos com número vão para `_#_` (*101 Dálmatas*).
+   - o `.aep` tem o nome do filme (ex: `NAO NAO OLHE.aep`).
+4. **ARQUIVO** (programas, novelas…) → **o que é** (ex: `SERVIÇO`, `CRÉDITOS`, `CHROMA`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). uma atração pode ter vários projetos.
+   - a linha abaixo mostra os `.aep` que já estão na `01 PROJETOS` da atração.
+   - já existe um com o mesmo nome → **abrir o existente** ou **salvar como … 2**.
+5. **CRIAR** → o cartão azul mostra a estrutura (o que já existe aparece mais claro) e o arquivo. **Criar projeto** cria as pastas que faltam e salva o `.aep`.
 
-o ID e o nome ficam gravados **no próprio projeto** (metadados XMP, `dc:identifier` e `dc:title`), um instante depois de digitar. abrir outro projeto troca os dados da janela. projetos feitos na barra antiga da PROMO GNEWS usam os mesmos campos: abrem aqui com o ID e o nome.
+> 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
-## 📍 retranca e pasta
+a **claquete**, o **designer**, a **atração** e a **pasta** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage` e `dc:relation`).
 
-o cartão azul mostra a **retranca** encontrada (o código e o nome da pasta) e o **caminho**:
+## 📍 editor
 
-- projeto ainda não salvo → a pasta onde ele vai ser salvo (em azul).
-- projeto já salvo → onde ele está; se o destino mudou (outro ID), o novo aparece embaixo, em azul.
+ao abrir a janela com um projeto criado pela claquete:
 
-a pastinha à direita abre a pasta do projeto (ou, antes de salvar, a mais próxima do destino que já existe).
+- **claquete** e **designer** (bonequinho) → a sigla do designer vazia vale a padrão (a da [configuração > meu usuário](producoes.md#-meu-usuário)).
+- **pasta** → a atração e o caminho do projeto.
+- **trocar pasta…** → move o `.aep` para outra pasta.
+- **Salvar** → grava os campos e salva o projeto.
 
-> 🚩 *obs:* sem retranca para o ID, o projeto vai para a pasta dos projetos. sem pasta dos projetos configurada, '*Salvar projeto*' pede uma pasta.
-
-## 📍 nome do arquivo
-
-a linha **arquivo** mostra o nome do `.aep`, pelo padrão da [configuração > projeto](producoes.md#-projeto) (ex: `{id} {projeto}` → `EMP123456 historia ao vivo.aep`).
-
-## 📍 salvar projeto
-
-salva o projeto na pasta mostrada no cartão, com o nome do **arquivo**. com '*uma pasta para cada projeto*' (configuração), cria uma pasta com o mesmo nome e, dentro dela, a [estrutura do coletar](producoes.md#-coletar): o `.aep` vai em `01 PROJETOS`, com `02 ARQUIVOS` e `03 SAIDA` ao lado (a linha **arquivo** mostra `01 PROJETOS/…`).
-
-- já existe um projeto com o mesmo nome na pasta → o padeiro avisa; clique de novo em '*Salvar projeto*' (logo em seguida) para substituir. salvar de novo o próprio projeto não pergunta.
-- **⋯ > salvar em outra pasta…** → escolhe a pasta na hora (a pasta do projeto é criada dentro dela).
-- ao salvar, a pasta abre no Explorer / Finder.
+abrir outro projeto troca os dados da janela.
 
 ## 📍 coletar os arquivos
 
-depois de salvo, o botão **coletar** da barra copia os arquivos usados para a pasta do projeto (vídeos, sequências de imagens, imagens, áudio, dados e fontes), na árvore da [configuração > coletar](producoes.md#-coletar), e troca os caminhos no projeto. detalhes na [barra](../README.md#coletar).
+o botão **coletar** da barra varre o projeto, copia as mídias usadas (vídeos, sequências de imagens, imagens, áudio, dados e fontes) para a estrutura do projeto, troca os caminhos para as cópias e salva o projeto. detalhes na [barra](../README.md#coletar).
 
 ## 📍 menu ⋯
 
-- **salvar em outra pasta…**
-- **configuração do projeto** → abre a configuração na aba **projeto**.
+- **novo projeto pela claquete** → começa as etapas de novo.
+- **abrir a pasta** → no Explorer / Finder.
 - **ajuda / documentação** → esta página.
 - **recarregar painel**

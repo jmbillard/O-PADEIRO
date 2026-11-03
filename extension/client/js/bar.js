@@ -154,40 +154,22 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (path) await actions.collect(path);
 		},
 
-		// janela do projeto: ID, nome, retranca e salvar
+		// janela do projeto: um projeto novo pela claquete, ou o editor do atual
 		project: function () {
 			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
 		},
 
-		// salvar direto na pasta da retranca (com o coletar da configuração)
+		// salvar: projeto já criado pela claquete salva na hora; senão abre a janela PROJETO
 		saveProject: async function () {
-			var info = await call('projectInfo');
+			var cur = await call('projectCurrent');
 
-			if (!info.id && !info.name) {
+			if (!cur.created) {
 				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
-				throw new Error('#PAD_090 - preencha o ID ou o nome do projeto (janela PROJETO).');
+				return;
 			}
 
-			var path = '';
-
-			if (!info.target) {
-				path = PAD_BRIDGE.pickFolder('Pasta para salvar o projeto');
-
-				if (!path) return;
-			}
-
-			var res;
-
-			try {
-				res = await call('projectSave', { path: path, open: true });
-			} catch (err) {
-				if (!/#PAD_092/.test(err.message)) throw err;
-
-				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
-				throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: para substituir, salve pela janela PROJETO.');
-			}
-
-			toast('success', 'projeto salvo: ' + (res && res.file ? res.file : info.fileName));
+			await call('projectUpdate', { claquete: cur.claquete, designer: cur.designer });
+			toast('success', 'projeto salvo: ' + cur.fileName);
 		},
 
 		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
@@ -232,7 +214,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'project',
 			label: 'Projeto',
 			icon: 'project',
-			tips: [L_CLICK + 'abrir o PROJETO: ID, nome, retranca e salvar', R_CLICK + 'salvar o projeto na pasta da retranca'],
+			tips: [L_CLICK + 'abrir o PROJETO: novo pela claquete, ou o editor', R_CLICK + 'salvar o projeto'],
 			left: actions.project,
 			right: actions.saveProject
 		},
