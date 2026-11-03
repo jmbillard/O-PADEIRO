@@ -190,20 +190,22 @@ body.prods-page {
   animation: ti-led 560ms steps(1) 2;
 }
 
-/* meu usuário: levanta o braço e acena ("estou aqui") */
+/* meu usuário: o braço sai do ombro em curva, para fora e para cima (cresce do ombro), e acena ("estou aqui") */
 .prods-nav .tab svg .ti-arm {
   transform-box: view-box;
-  transform-origin: 16.4px 15.4px;
-  opacity: 0;
+  transform-origin: 16.6px 15.3px;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  opacity: 0; /* parado, nem a ponta arredondada aparece */
   transition:
-    transform 320ms var(--ease-soft),
-    opacity 120ms ease;
+    stroke-dashoffset 300ms var(--ease-soft),
+    opacity 80ms ease;
 }
 
 .prods-nav .tab:hover svg .ti-arm {
+  stroke-dashoffset: 0;
   opacity: 1;
-  transform: rotate(-142deg);
-  animation: ti-wave 520ms ease-in-out 300ms 2 alternate;
+  animation: ti-wave 380ms ease-in-out 300ms 4 alternate;
 }
 
 @keyframes ti-rack {
@@ -230,11 +232,11 @@ body.prods-page {
 
 @keyframes ti-wave {
   from {
-    transform: rotate(-142deg);
+    transform: rotate(0);
   }
 
   to {
-    transform: rotate(-118deg);
+    transform: rotate(12deg);
   }
 }
 
