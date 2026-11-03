@@ -260,6 +260,26 @@ body.project-page {
   stroke-width: 1.8;
 }
 
+/* o .aep com o ícone sólido, como os templates (as pastas ficam só no contorno) */
+.wz-file svg,
+.wz-tree-line.is-file svg {
+  fill: currentcolor;
+}
+
+.wz-file svg {
+  color: var(--blue-500);
+}
+
+.wz-file svg path:nth-child(2),
+.wz-tree-line.is-file svg path:nth-child(2) {
+  fill: none;
+  stroke: rgb(24 35 85 / 38%);
+}
+
+.wz-file.is-dup svg {
+  color: #e0a40f;
+}
+
 .wz-file.is-dup {
   background: rgb(245 191 36 / 14%);
 }
@@ -410,10 +430,18 @@ body.project-page {
   opacity: 0.68;
 }
 
+/* o arquivo: o destaque do cartão (pílula branca, texto azul) */
+.wz-tree-line.is-file svg {
+  color: rgb(var(--on-brand));
+}
+
 .wz-tree-line.is-file span {
-  padding: 1px 9px;
+  padding: 2px 10px;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 24%);
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 4px 12px rgb(24 35 85 / 18%);
+  color: var(--blue-ink, var(--blue-600));
+  font-weight: 800;
 }
 
 .wz-meta {
