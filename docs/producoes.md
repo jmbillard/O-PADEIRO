@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele. em janela estreita, o cartão vira uma fila no topo.
+a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
 
 as abas ficam em dois grupos, conforme **onde** cada uma é salva:
 
@@ -15,7 +15,7 @@ uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na
 
 **padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar, buscar, projeto, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar, buscar, projeto, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
 ## 📍 templates
 
@@ -33,7 +33,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
 - **buscar** (a barra no topo da aba) → mostra só as produções com o termo no nome ou no caminho.
-- **importar / exportar** (os botões com setas, no canto inferior esquerdo, só nesta aba) → lê ou grava uma lista completa, com os ícones.
+- **importar / exportar** (os botões com setas, ao lado da busca) → lê ou grava uma lista completa, com os ícones.
 - **recarregar** → lê a configuração de novo, descartando o que não foi salvo.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 
@@ -106,7 +106,7 @@ a aba **renomear** define como o botão **renomear** (na barra) padroniza os nom
 
 - **testar** (no topo) → digite o nome de uma comp e veja na hora como ela fica com a tabela em edição.
 - **formato do nome** → a **caixa de texto** (CAIXA ALTA, caixa baixa, Título ou como está), o **separador** entre o prefixo e o nome (` - `; os espaços contam) e **remover caracteres especiais** (ligado, tira acentos e símbolos: **JOÃO!** vira **JOAO**). a caixa e os acentos valem para a parte descritiva; o prefixo do tipo fica como foi escrito. o separador também é o dos nomes criados pelos templates.
-- **tipos de peça** → o **prefixo** do nome, o **comentário** da comp e os **termos** que identificam o tipo no nome da comp (ou da pasta dela), separados por vírgula. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
+- **tipos de peça** → o **prefixo** do nome, o **comentário** da comp e os **termos** que identificam o tipo no nome da comp (ou da pasta dela): digite um termo e a vírgula (ou Enter) para virar um chip; o `×` do chip (ou backspace no campo vazio) tira. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
 - **nomes fixos** → a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome. ex: **LOGO GLOBO**.
 
 > 🚩 *obs:*\

@@ -393,7 +393,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 
-		$('dirty').hidden = !dirty;
 		$('btn-save').classList.toggle('is-dirty', dirty); // o disquete ganha um ponto com alterações não salvas
 		renderScope();
 
@@ -773,6 +772,108 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return line;
 	}
 
+	// campo de termos em chips: a vírgula (ou Enter) fecha o termo; backspace no campo vazio apaga o último.
+	// o valor continua o texto "A, B, C" (o mesmo que a configuração guarda)
+	function tagField(value, placeholder, label, icon, onInput, onRemove) {
+		var line = el('div', 'cfg-path has-field-icon tag-field');
+		var box = el('div', 'cfg-input tag-box');
+		var input = el('input', 'tag-input');
+		var remove = miniButton('remove', 'remover', onRemove);
+		var ico = svg(icon);
+		var tags = split(value);
+
+		function split(text) {
+			return String(text || '').split(',').map(function (x) {
+				return x.trim();
+			}).filter(Boolean);
+		}
+
+		function emit() {
+			onInput(tags.concat(split(input.value)).join(', '));
+			updateDirty();
+		}
+
+		function has(term) {
+			return tags.some(function (t) {
+				return t.toUpperCase() === term.toUpperCase();
+			});
+		}
+
+		function commit() {
+			split(input.value).forEach(function (term) {
+				term = term.toUpperCase(); // como os outros campos do tipo
+				if (!has(term)) tags.push(term);
+			});
+			input.value = '';
+			draw();
+			emit();
+		}
+
+		function draw() {
+			Array.prototype.slice.call(box.querySelectorAll('.tag-chip')).forEach(function (c) {
+				c.remove();
+			});
+			tags.forEach(function (term, i) {
+				var chip = el('span', 'tag-chip');
+				var x = el('button', 'tag-chip-x');
+
+				chip.appendChild(el('span', null, term));
+				x.type = 'button';
+				x.title = 'tirar ' + term;
+				x.setAttribute('aria-label', 'tirar ' + term);
+				x.disabled = !state.available;
+				x.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>';
+				x.addEventListener('click', function (e) {
+					e.stopPropagation();
+					tags.splice(i, 1);
+					draw();
+					emit();
+					input.focus();
+				});
+				chip.appendChild(x);
+				box.insertBefore(chip, input);
+			});
+			input.placeholder = tags.length ? '' : placeholder;
+		}
+
+		ico.setAttribute('class', 'field-icon');
+		input.type = 'text';
+		input.spellcheck = false;
+		input.setAttribute('aria-label', label);
+		input.disabled = !state.available;
+		remove.disabled = !state.available;
+		input.addEventListener('input', function () {
+			if (input.value.indexOf(',') >= 0) commit();
+			else emit();
+		});
+		input.addEventListener('keydown', function (e) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				commit();
+			} else if (e.key === 'Backspace' && !input.value && tags.length) {
+				tags.pop();
+				draw();
+				emit();
+			}
+		});
+		input.addEventListener('blur', function () {
+			if (input.value.trim()) commit();
+		});
+		box.addEventListener('mousedown', function (e) {
+			if (e.target === box) {
+				e.preventDefault();
+				input.focus();
+			}
+		});
+		box.appendChild(input);
+		draw();
+		line.appendChild(ico);
+		line.appendChild(box);
+		line.appendChild(remove);
+
+		return line;
+	}
+
 	function renderDrives() {
 		if (!state.drives) return;
 
@@ -932,7 +1033,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				t.comment = v;
 			}));
 
-			var terms = driveField(t.terms, 'rodapé, rdp', 'termos do tipo ' + (t.prefix || i + 1), TAG_ICON, function (v) {
+			var terms = tagField(t.terms, 'rodapé, rdp', 'termos do tipo ' + (t.prefix || i + 1), TAG_ICON, function (v) {
 				t.terms = v;
 				testRename();
 			}, function () {
@@ -942,7 +1043,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				testRename();
 			});
 
-			terms.querySelector('input').title = 'palavras separadas por vírgula (o plural com S também vale)';
+			terms.title = 'digite um termo e a vírgula (ou Enter) para fechar; o plural com S também vale';
 			row.appendChild(terms);
 			types.appendChild(row);
 		});
@@ -3181,6 +3282,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		box.appendChild(text);
 
+		// alterações não salvas: o aviso fica aqui no topo, à direita (o disquete também ganha o ponto)
+		if ($('btn-save') && $('btn-save').classList.contains('is-dirty')) box.appendChild(el('span', 'prods-dirty', 'alterações não salvas'));
+
 		if (mine && team) {
 			box.appendChild(scopeButton('voltar às minhas preferências', function () {
 				setEditTeam(false);
@@ -3210,8 +3314,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
 
 	var TAB_ICONS = {
-		machine: '<g class="ti-user"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
-		network: '<g class="ti-server"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-line" d="M7.5 7.5h.01M7.5 16.5h.01" /></g>',
+		machine: '<g class="ti-user"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /><path class="ti-arm" d="M16.4 15.4l2.7 4.8" /></g>',
+		network: '<g class="ti-server"><g class="ti-rack ti-k1"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 7.5h.01" /></g><g class="ti-rack ti-k2"><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 16.5h.01" /></g></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
 		appearance: '<g class="ti-theme"><circle cx="12" cy="12" r="8" /><path class="ti-half" d="M12 4a8 8 0 0 1 0 16z" /></g>',
@@ -3270,8 +3374,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		// as categorias da busca são lidas do índice na primeira vez que a aba abre
 		if (name === 'search' && !state.categories && state.available) loadCategories(false);
 
-		// filtro, importar e exportar são da lista de produções
-		$('btn-import').hidden = $('btn-export').hidden = name !== 'prods';
 	}
 
 	// erro do host numa seção: abre a aba dela
@@ -3528,11 +3630,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function init() {
 		state.newIcon = defaultIcon();
 
-		// a altura padrão da janela subiu 120 px (manifest): quem já tinha a janela ganha a nova altura uma vez
+		// a janela não tem mais layout compacto (manifest: 940 × 800, mínimo 940 × 600): quem já tinha a
+		// janela menor ganha o tamanho novo uma vez
 		try {
-			if (PAD_BRIDGE.inCep() && !localStorage.getItem('pad.productions.height640')) {
-				localStorage.setItem('pad.productions.height640', '1');
-				if (window.innerHeight < 640) PAD_BRIDGE.resizeWindow(window.innerWidth, 640);
+			if (PAD_BRIDGE.inCep() && !localStorage.getItem('pad.productions.size940')) {
+				localStorage.setItem('pad.productions.size940', '1');
+				if (window.innerWidth < 940 || window.innerHeight < 800) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, 940), Math.max(window.innerHeight, 800));
 			}
 		} catch (err) { }
 		bindLog();

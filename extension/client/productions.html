@@ -63,10 +63,19 @@
 			<!-- aba TEMPLATES -->
 			<div class="cfg-pane" id="pane-prods" role="tabpanel">
 			<!-- busca grande no topo da folha (como as outras buscas); o título da lista vem logo abaixo -->
-			<div class="picker-search prods-filter">
-				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
-				<input type="search" id="filter" placeholder="buscar produção (nome ou pasta)" autocomplete="off" spellcheck="false" aria-label="Buscar produção">
-				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+			<!-- a busca e, ao lado, importar / exportar a lista -->
+			<div class="prods-filter-row">
+				<div class="picker-search prods-filter">
+					<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+					<input type="search" id="filter" placeholder="buscar produção (nome ou pasta)" autocomplete="off" spellcheck="false" aria-label="Buscar produção">
+					<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+				</div>
+				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
+					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
+				</button>
+				<button type="button" class="io-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
+					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
+				</button>
 			</div>
 			<div class="prods-list-head">
 				<p class="cfg-title">lista de produções</p>
@@ -377,15 +386,6 @@
 			</div>
 
 
-			<div class="action-bar is-anchored prods-bar">
-				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
-					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
-				</button>
-				<button type="button" class="io-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
-					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
-				</button>
-				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
-			</div>
 		</section>
 
 		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>

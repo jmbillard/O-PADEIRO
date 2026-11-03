@@ -169,6 +169,75 @@ body.prods-page {
   transform: translateY(-6px);
 }
 
+/* rede: as gavetas do servidor saem uma depois da outra e as luzinhas piscam (como na barra) */
+.prods-nav .tab svg .ti-rack {
+  transform-box: view-box;
+}
+
+.tab:hover .ti-k1 {
+  animation: ti-rack 560ms var(--ease-soft);
+}
+
+.tab:hover .ti-k2 {
+  animation: ti-rack 560ms var(--ease-soft) 90ms;
+}
+
+.ti-led {
+  stroke-width: 2.6;
+}
+
+.tab:hover .ti-led {
+  animation: ti-led 560ms steps(1) 2;
+}
+
+/* meu usuário: levanta o braço e acena ("estou aqui") */
+.prods-nav .tab svg .ti-arm {
+  transform-box: view-box;
+  transform-origin: 16.4px 15.4px;
+  opacity: 0;
+  transition:
+    transform 320ms var(--ease-soft),
+    opacity 120ms ease;
+}
+
+.prods-nav .tab:hover svg .ti-arm {
+  opacity: 1;
+  transform: rotate(-142deg);
+  animation: ti-wave 520ms ease-in-out 300ms 2 alternate;
+}
+
+@keyframes ti-rack {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(2.5px);
+  }
+}
+
+@keyframes ti-led {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes ti-wave {
+  from {
+    transform: rotate(-142deg);
+  }
+
+  to {
+    transform: rotate(-118deg);
+  }
+}
+
 @keyframes ti-write {
   from {
     opacity: 0;
@@ -265,56 +334,6 @@ body.prods-page {
   min-height: 0;
   flex-direction: column;
   background: var(--surface);
-}
-
-/* janela estreita: o cartão vira uma fila no topo (abas que rolam + os botões) */
-@media (max-width: 760px) {
-  .prods {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .prods-side {
-    padding: 12px 12px 10px;
-  }
-
-  .prods-card {
-    flex-direction: row;
-    align-items: center;
-    border-radius: 999px;
-  }
-
-  .prods-nav {
-    width: auto;
-    min-width: 0;
-    flex: 1;
-    padding: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .prods-nav .tabs {
-    flex-direction: row;
-  }
-
-  .prods-nav .tab {
-    flex: 0 0 auto;
-    padding: 7px 10px;
-    border-radius: 999px;
-  }
-
-  .prods-top {
-    padding: 6px;
-    border-top: 0;
-    border-left: 1px solid rgb(255 255 255 / 20%);
-  }
-
-  .prods-top .menu-popover {
-    top: calc(100% + 8px);
-    right: 0;
-    bottom: auto;
-    left: auto;
-  }
 }
 
 .prods-section-title {
@@ -495,43 +514,19 @@ body.prods-page {
   text-align: center;
 }
 
-/* barra de ações ancorada */
-.prods-bar.is-anchored {
-  margin: auto 0 0;
-  padding: 14px 20px calc(var(--footer-center) - 23px); /* 23 = meio botão */
-  align-items: center;
-  /* como o rodapé dos templates: sem linha, o conteúdo some num degradê branco ao passar por baixo */
-  background:
-    linear-gradient(to top,
-      var(--surface) 72%,
-      transparent);
-}
-
 .prods-dirty {
-  margin-left: 4px;
+  margin-left: auto;
   white-space: nowrap;
   color: var(--waiting);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-}
-
-.prods-dirty[hidden] {
-  display: none;
-}
-
-.prods-bar {
-  justify-content: flex-start; /* quebrando a linha, os botões ficam juntos à esquerda */
-}
-
-.prods-bar .button-primary {
-  margin-left: auto;
 }
 
 .finder-toast {
   position: fixed;
   z-index: 20;
   right: 12px;
-  bottom: 76px;
+  bottom: 20px;
   left: 12px;
   max-width: 520px;
   margin-inline: auto;
@@ -566,28 +561,6 @@ body.prods-page {
   display: none;
 }
 
-@media (max-width: 640px) {
-  /* sem separadores: um respiro maior entre as produções empilhadas */
-  .prod-row {
-    grid-template-columns: 22px 40px minmax(0, 1fr);
-    padding: 8px 0 14px;
-  }
-
-  .prod-path {
-    grid-column: 2 / -1;
-    grid-row: 2;
-  }
-
-}
-
-@media (max-width: 420px) {
-  .prods-list,
-  .prods-file,
-  .prods-bar.is-anchored {
-    padding-inline: 14px;
-  }
-}
-
 /* título da lista com o filtro ao lado (versão clara e compacta da busca do painel de templates) */
 .prods-list-head {
   display: flex;
@@ -600,8 +573,23 @@ body.prods-page {
   flex: 1 1 auto;
 }
 
-.prods-filter {
+/* a busca e os botões de importar / exportar, na mesma linha */
+.prods-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 16px 20px 4px;
+}
+
+.prods-filter {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+}
+
+.prods-filter-row .io-button {
+  width: 50px;
+  height: 50px;
 }
 
 .prods-filter input {
@@ -850,12 +838,6 @@ body.prods-page {
   border-color: var(--danger);
 }
 
-@media (max-width: 420px) {
-  .prods-log {
-    margin-inline: 14px;
-  }
-}
-
 /* arrastar para reordenar (com o filtro ativo, os puxadores somem: a ordem é a da lista inteira) */
 .prods-list.is-filtered .drag-handle {
   visibility: hidden;
@@ -866,17 +848,7 @@ body.prods-page {
 }
 
 .is-sorting>.prod-row.is-dragging {
-  position: relative;
-  z-index: 2;
-  /* cartão como um offset do conteúdo: a mesma margem dos quatro lados (os 7 px de cima e de baixo da linha)
-     e cantos concêntricos aos dos campos (raio dos campos + margem), sem mudar a posição do conteúdo */
-  --drag-offset: 7px;
-  margin-inline: calc(var(--drag-offset) * -1);
-  padding-inline: var(--drag-offset);
-  border-radius: calc(var(--radius-small) + var(--drag-offset));
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
-  transition: none;
+  --drag-inset: 2px -5px; /* a linha já tem 7 px em cima e embaixo */
 }
 
 /* a animação de entrada prende o 'transform' das linhas: fora durante o arraste e depois de reordenar */
@@ -942,29 +914,6 @@ body.prods-page {
 
 .is-sorting>.rename-row {
   transition: transform 180ms var(--ease-soft);
-}
-
-.is-sorting>.rename-row.is-dragging {
-  position: relative;
-  z-index: 2;
-  border-radius: var(--radius-small);
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
-  transition: none;
-}
-
-@media (max-width: 640px) {
-  .rename-head {
-    display: none;
-  }
-
-  .rename-row {
-    grid-template-columns: 22px 90px minmax(0, 1fr);
-  }
-
-  .rename-row>.cfg-path {
-    grid-column: 2 / -1;
-  }
 }
 
 /* aba ORGANIZAR: a árvore à esquerda, no azul dos painéis; os tipos e ajustes à direita, no branco */
@@ -1304,21 +1253,6 @@ body.is-org-dragging * {
   font-weight: 600;
 }
 
-@media (max-width: 700px) {
-  .organize-pane {
-    grid-template-columns: minmax(0, 1fr);
-    overflow-y: auto;
-  }
-
-  .org-card {
-    min-height: 320px;
-  }
-
-  .org-side {
-    overflow: visible;
-  }
-}
-
 /* ícone do tipo na etiqueta da árvore */
 .org-chip>svg {
   width: 12px;
@@ -1452,25 +1386,6 @@ body.is-org-dragging * {
 
 .is-sorting>.link-row {
   transition: transform 180ms var(--ease-soft);
-}
-
-.is-sorting>.link-row.is-dragging {
-  position: relative;
-  z-index: 2;
-  border-radius: var(--radius-small);
-  background: var(--surface);
-  box-shadow: 0 12px 28px rgb(30 42 80 / 16%);
-  transition: none;
-}
-
-@media (max-width: 640px) {
-  .link-row {
-    grid-template-columns: 22px 40px minmax(0, 1fr);
-  }
-
-  .link-row>.cfg-path {
-    grid-column: 2 / -1;
-  }
 }
 
 /* link pessoal: o mesmo selo da barra (bonequinho) no canto do ícone */
@@ -1617,7 +1532,6 @@ body.is-org-dragging * {
     opacity 220ms ease,
     filter 220ms ease;
 }
-
 
 /* cada amostra ao lado: a cor, o nome e o hex; clicando, abre o brilho; ocupam o resto da largura */
 .swatch-rows {
@@ -1978,12 +1892,10 @@ body.is-org-dragging * {
   transition: transform 180ms var(--ease-soft);
 }
 
-.is-sorting > .bar-row.is-dragging {
-  position: relative;
-  z-index: 2;
-  background: rgb(255 255 255 / 18%);
-  box-shadow: 0 12px 28px rgb(20 30 90 / 25%);
-  transition: none;
+.is-sorting>.bar-row.is-dragging {
+  --drag-inset: -1px 5px -1px -3px; /* a linha já tem 4 px em cima e embaixo, 2 à esquerda e 10 à direita */
+  --drag-bg: rgb(255 255 255 / 18%);
+  --drag-shadow: 0 12px 28px rgb(20 30 90 / 25%);
 }
 
 /* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + como os botões dentro dos campos */
@@ -2149,12 +2061,6 @@ body.is-org-dragging * {
 .scope-action:hover {
   border-color: var(--blue-200);
   color: var(--blue-500);
-}
-
-@media (max-width: 760px) {
-  .tab-group {
-    display: none;
-  }
 }
 
 /* o bonequinho tem o peso embaixo (cabeça pequena, ombros largos): sobe um pouco para alinhar com o texto */

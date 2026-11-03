@@ -183,11 +183,11 @@
 					<Geometry>
 						<Size>
 							<Width>940</Width>
-							<Height>640</Height>
+							<Height>800</Height>
 						</Size>
 						<MinSize>
-							<Width>320</Width>
-							<Height>320</Height>
+							<Width>940</Width>
+							<Height>600</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
