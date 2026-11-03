@@ -22,6 +22,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 | película | **filmes** | o título, o ano de produção entre parênteses e a linha **OUTPUT** | — |
 | servidor | **servidor** (caminhos fixos) | o nome e a linha **CAMINHO** | — |
 
+- **como a busca compara** → sem acentos, maiúsculas e pontuação, sempre a partir do começo de uma palavra: '*não*' acha '*NAO APAGAR*', mas não '*an**NA - O***'; '*3/11*' acha '*3/11*' e '*3 11*', mas não '*31/10*'.
 - **apelidos das atrações** → quando o que você digita é o começo do nome ou de um *pattern* de uma atração (com 3 letras ou mais), a busca também procura os outros nomes dela: '*GREP*' ou '*G REP*' trazem também o que tem **GLOBO REPORTER** e **G REPORTER** (mensagens, cards, pastas). em cima dos resultados aparece '*também: Globo Repórter*'.
 - **categorias** → TEAMS, TRELLO, ATRAÇÕES, FILMES e SERVIDOR: cada uma tem um interruptor para entrar ou sair da busca.
 - **⋯** → ajuda (esta página) e recarregar o painel.

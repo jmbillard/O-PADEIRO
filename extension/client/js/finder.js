@@ -70,46 +70,97 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return stripAccents(String(value || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
 	}
 
-	// o texto (já normalizado) contém o termo, ou um dos termos?
-	function hits(flat, query) {
-		var queries = Array.isArray(query) ? query : query ? [query] : [];
+	// Texto para a busca de caminhos: só a-z / 0-9 sem acentos ('f'), com a marca de onde cada palavra começa
+	// ('s': '1' no primeiro caractere de cada palavra) e, para o destaque, a posição de cada caractere no original.
+	function wordIndex(text) {
+		var f = '';
+		var s = '';
+		var origin = [];
+		var prevWord = false;
 
-		for (var i = 0; i < queries.length; i++) if (flat.indexOf(queries[i]) >= 0) return true;
+		text = String(text || '');
 
-		return false;
+		for (var i = 0; i < text.length; i++) {
+			var norm = psNormalize(text.charAt(i));
+
+			for (var k = 0; k < norm.length; k++) {
+				f += norm.charAt(k);
+				s += !prevWord && k === 0 ? '1' : '0';
+				origin.push(i);
+			}
+
+			prevWord = norm.length > 0;
+		}
+
+		return { f: f, s: s, origin: origin };
+	}
+
+	// O termo da busca: o texto normalizado ('q') e onde ele quebra palavras ('b': '3/11' → q '311', b [1]).
+	function makeQuery(text) {
+		var parts = stripAccents(String(text || '').toLowerCase()).split(/[^a-z0-9]+/).filter(Boolean);
+		var b = [];
+		var n = 0;
+
+		for (var i = 0; i < parts.length - 1; i++) {
+			n += parts[i].length;
+			b.push(n);
+		}
+
+		return { q: parts.join(''), b: b };
+	}
+
+	function asQueries(query) {
+		var list = Array.isArray(query) ? query : query ? [query] : [];
+
+		return list.map(function (x) {
+			return typeof x === 'string' ? { q: x, b: [] } : x;
+		});
+	}
+
+	// Onde o termo (ou o primeiro dos termos) aparece começando no início de uma palavra, com as quebras do termo
+	// caindo em quebras do texto: '3/11' acha '3 11' (e não '31/10'), 'grep' acha 'G REPORTER' e 'nao' não acha
+	// 'ANNA - O'. → { at, query } ou null
+	function wordHit(idx, query) {
+		var queries = asQueries(query);
+
+		for (var q = 0; q < queries.length; q++) {
+			var term = queries[q];
+
+			if (!term.q) continue;
+
+			for (var at = idx.f.indexOf(term.q); at >= 0; at = idx.f.indexOf(term.q, at + 1)) {
+				if (idx.s.charAt(at) !== '1') continue;
+
+				var ok = term.b.every(function (off) {
+					return idx.s.charAt(at + off) === '1';
+				});
+
+				if (ok) return { at: at, query: term.q };
+			}
+		}
+
+		return null;
+	}
+
+	// o texto contém o termo (no começo de uma palavra)? 'idx' pode ser o texto ou um wordIndex já pronto
+	function hits(idx, query) {
+		return !!wordHit(typeof idx === 'string' ? wordIndex(idx) : idx, query);
 	}
 
 	// Nome com o termo buscado destacado. A busca compara só a-z / 0-9 sem acentos:
 	// cada caractere normalizado guarda a posição de origem para achar o trecho no texto original.
 	function highlightNode(tag, className, text, query) {
 		var node = el(tag, className);
-		var flat = '';
-		var origin = [];
+		var idx = wordIndex(text);
+		var hit = wordHit(idx, query);
 
-		for (var i = 0; i < text.length; i++) {
-			var norm = psNormalize(text.charAt(i));
-
-			for (var k = 0; k < norm.length; k++) {
-				flat += norm.charAt(k);
-				origin.push(i);
-			}
-		}
-
-		var queries = Array.isArray(query) ? query : query ? [query] : [];
-		var at = -1;
-
-		for (var q = 0; q < queries.length && at < 0; q++) {
-			at = flat.indexOf(queries[q]);
-			if (at >= 0) query = queries[q];
-		}
-
-		if (at < 0) {
+		if (!hit) {
 			node.textContent = text;
 			return node;
 		}
 
-		var start = origin[at];
-		var end = origin[at + query.length - 1] + 1;
+		var start = idx.origin[hit.at];
+		var end = idx.origin[hit.at + hit.query.length - 1] + 1;
 
 		node.appendChild(document.createTextNode(text.slice(0, start)));
 		node.appendChild(el('mark', null, text.slice(start, end)));
@@ -344,7 +395,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			return m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : path || '';
 		};
 		var hay = function (parts) {
-			return psNormalize(parts.filter(Boolean).join('|'));
+			return wordIndex(parts.filter(Boolean).join(' | '));
 		};
 		var cats = {
 			teams: (data.teams || []).map(function (t) {
@@ -580,7 +631,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		parts.forEach(function (name, i) {
 			var target = prefix + parts.slice(0, i + 1).join(sep);
-			var crumb = el('button', 'crumb' + (i === parts.length - 1 ? ' is-last' : '') + (hits(psNormalize(name), query) ? ' is-match' : ''), name);
+			var crumb = el('button', 'crumb' + (i === parts.length - 1 ? ' is-last' : '') + (hits(name, query) ? ' is-match' : ''), name);
 
 			crumb.type = 'button';
 			crumb.title = 'abrir ' + target;
@@ -851,26 +902,30 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	// também procura os outros nomes dela (GLOBO REPORTER, G REPORTER): as mensagens, os cards e as pastas vêm junto.
 	var EXPAND_MIN = 3;
 
-	function expandQuery(query) {
-		var list = [query];
+	function expandQuery(typed) {
+		var list = [typed];
 		var also = [];
 
-		if (query.length < EXPAND_MIN) return { list: list, also: also };
+		if (typed.q.length < EXPAND_MIN) return { list: list, also: also };
 
 		state.paths.v2.cats.atracoes.forEach(function (a) {
-			var terms = [a.name].concat(a.pattern).map(psNormalize).filter(function (t) {
-				return t.length >= EXPAND_MIN;
+			var terms = [a.name].concat(a.pattern).map(makeQuery).filter(function (t) {
+				return t.q.length >= EXPAND_MIN;
 			});
 			var hit = terms.some(function (t) {
-				return t.indexOf(query) === 0;
+				return t.q.indexOf(typed.q) === 0;
 			});
 
 			if (!hit) return;
 
 			terms.forEach(function (t) {
-				if (list.indexOf(t) < 0 && t.indexOf(query) < 0) list.push(t); // o que já contém o termo já é achado por ele
+				var known = list.some(function (x) {
+					return x.q === t.q;
+				});
+
+				if (!known) list.push(t);
 			});
-			if (psNormalize(a.name).indexOf(query) !== 0) also.push(a.name);
+			if (makeQuery(a.name).q.indexOf(typed.q) !== 0) also.push(a.name);
 		});
 
 		return { list: list, also: also };
@@ -879,17 +934,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	function searchPathsV2() {
 		var p = state.paths;
 		var results = $('results-paths');
-		var typed = psNormalize($('q-paths').value);
+		var typed = makeQuery($('q-paths').value);
 
 		results.textContent = '';
 
-		if (typed.length < MIN_QUERY) {
+		if (typed.q.length < MIN_QUERY) {
 			showState(results, 'O ACESSORISTA', 'pesquise por atração, claquete, quem mandou, output ou caminho', true);
 			return;
 		}
 
 		var expanded = expandQuery(typed);
-		var query = expanded.list.length > 1 ? expanded.list : typed;
+		var query = expanded.list;
 		var any = false;
 
 		// buscando também pelos nomes da atração: avisa em cima (para não parecer resultado errado)

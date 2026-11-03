@@ -511,6 +511,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						{ name: 'Festival de Inverno', pattern: ['FESTIVAL'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/FESTIVAL DE INVERNO/2026/01PROJETOS', out: srv + '/ARTE RJ/SHOWS/FESTIVAL DE INVERNO RIO/2026' }
 					],
 					filmes: [
+						{ name: 'ANNA - O PERIGO TEM NOME', year: '2019', out: srv + '/ARTE RJ/FILMES/TITULOS/_A_/ANNA - O PERIGO TEM NOME' },
+						{ name: 'KING’S MAN: A ORIGEM', year: '2023', out: srv + '/ARTE RJ/FILMES/TITULOS/_K_/KINGSMAN - A ORIGEM' },
+						{ name: 'NÃO! NÃO OLHE!', year: '2022', out: srv + '/ARTE RJ/FILMES/TITULOS/_N_/NAO NAO OLHE' },
 						{ name: '90 DECIBÉIS', year: '2025', out: srv + '/ARTE RJ/FILMES/TITULOS/_#_/90 DECIBEIS' },
 						{ name: 'O REPÓRTER DA MEIA-NOITE', year: '2023', out: srv + '/ARTE RJ/FILMES/TITULOS/_R_/O REPORTER DA MEIA NOITE' }
 					]
