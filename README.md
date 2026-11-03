@@ -1,4 +1,4 @@
-# 🥖 O PADEIRO · v2.0 beta4
+# 🥖 O PADEIRO · v2.0 beta6
 
 🗨️ **pt-BR** ⚡ preenchimento em massa de templates e outras utilidades para o After Effects ⚡
 
@@ -15,10 +15,12 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 
 | painel | para que serve |
 | --- | --- |
-| **O PADEIRO** | a barra principal: produção, ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
+| **INSTALAR O PADEIRO.jsx** | instalar, atualizar ou remover o padeiro neste computador ([abaixo](#-instalação)) |
+| **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO produções** | editar a lista de produções da equipe → [documentação](docs/producoes.md) |
+| **O PADEIRO projeto** | projeto novo pela claquete: acha a atração, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
+| **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca, projeto) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -50,9 +52,13 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 1. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_config.json`).
 2. o instalador guia o passo a passo:
-   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: habilite a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
+   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
    - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
    - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
+
+   > 📟 *instalador (checagem):*
+   >
+   > <img src="docs/images/instalador.webp" alt="instalador do padeiro: checagem" width="380">
 3. **reinicie** o After Effects. no macOS, se o padeiro não aparecer em `Window` > `Extensions`, reinicie o computador: a liberação de extensões sem assinatura às vezes só vale depois disso.
 4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
@@ -67,12 +73,9 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 ### habilitando o acesso à rede
 
-o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes). para isso, acesse:\
-`Edit` > `Preferences` > `Scripting & Expressions...`\
-e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
+o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes). na checagem, o instalador abre sozinho a tela de preferências certa: marque '**Allow Scripts to Write Files and Access Network**' e clique em '*› verificar de novo*'.
 
-> 📋 *exemplo:*\
-> ![menu de preferências](docs/images/ae-menu-preferencias.png)
+> 📋 *a opção nas preferências de scripting:*\
 > ![preferências de scripting](docs/images/ae-preferencias-scripting.png)
 
 <br>
@@ -83,32 +86,39 @@ e habilite a opção '**Allow Scripts to Write Files and Access Network**'.
 
 ## 📍 a barra principal
 
-a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado.
+a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado (bem estreita, só os ícones, com os links um embaixo do outro).
 
 > ![barra principal](docs/images/barra.webp)
 
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas.
+a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
+
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 - **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
-- **produção** → escolhe a produção atual (a pasta de templates usada pelo painel de templates).\
-  `◖ clique DUPLO` no ícone da produção → abre o editor de produções.
-- **corrente** → abre a planilha de apontamento de projetos.
+- **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` no servidor abre a [configuração > rede](docs/producoes.md#-rede); no notebook, a [configuração > meu usuário](docs/producoes.md#-meu-usuário).
+- **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
   `◖` → abre o painel de templates.\
   `◗` → abre o criador de templates (com a comp principal aberta).
 - **fontes**\
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
+- **projeto**\
+  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela claquete, ou o editor).\
+  `◗` → salva o projeto (sem projeto criado pela claquete, abre a janela).
+- **coletar**\
+  `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
+  `◗` → coleta numa pasta escolhida.
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
 - **renomear**\
-  `◖` → renomeia as comps selecionadas.\
+  `◖` → renomeia as comps selecionadas (pelos tipos de peça da [configuração](docs/producoes.md#-renomear)).\
   `◗` → renomeia todas as saídas da fila de render.
 - **organizar**\
-  `◖` → organiza o projeto.\
+  `◖` → organiza o projeto (na árvore de pastas da [configuração](docs/producoes.md#-organizar)).\
   `◗` → cria só a estrutura de pastas do projeto.
 - **buscar**\
   `◖` → abre **O ACESSORISTA** na busca de caminhos.\
@@ -118,7 +128,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • a versão do padeiro aparece embaixo do pãozinho.\
-> • a produção escolhida vale para todos os painéis, que acompanham a troca na hora.
+> • a produção é escolhida no rodapé do painel de templates e vale para todos os painéis, que acompanham a troca na hora.
 
 <br>
 
@@ -138,6 +148,20 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas: o padeiro avisa quais ficaram de fora.
+
+### coletar
+
+`◖ clique esquerdo` → copia os arquivos usados no projeto para a estrutura do projeto, na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar) (padrão: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com FONTS, IMAGENS, VÍDEOS, AUDIOS e DADOS, e `03 SAIDA`), e troca os caminhos no projeto para as cópias. a raiz é a pasta de cima da `01 PROJETOS` (ou a pasta do `.aep`, se ele não estiver nela). depois, salva o projeto, sempre.
+
+- cada tipo (vídeos, sequências de imagens, imagens, áudio, dados e fontes) vai para a sua pasta; tipos fora da árvore não são coletados.
+- **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
+- arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
+
+`◗ clique direito` → escolhe a pasta na hora (projeto ainda não salvo: ele é salvo nela).
+
+> 🚩 *obs:*\
+> • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
+> • arquivos ausentes e fontes sem arquivo local (ex: Adobe Fonts) não são coletados: o padeiro avisa quais.
 
 ### pastas
 
@@ -178,6 +202,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 > 🚩 *obs:*\
 > • **selecione antes as comps principais** (as que serão renderizadas): elas recebem o comentário 'EXPORTAR' e vão para '01 COMPS'.\
+> • com uma pasta para as **comps editáveis** na árvore (configuração), comps com 'EDIT' no comentário vão para ela.\
 > • comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com o comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo renomear) vão para uma subpasta com esse nome.\
 > • as demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
 > • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto do comentário antes de ':' vira subpasta.\
@@ -197,9 +222,11 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 | | |
 | --- | --- |
+| [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🗂️ produções](docs/producoes.md) | a lista de produções compartilhada |
+| [🎬 projeto](docs/projeto.md) | projeto novo pela claquete, estrutura de pastas e editor |
+| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
 
@@ -271,6 +298,26 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
 | `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
 | `#PAD_077` | criador: o preview .mp4 não foi gerado |
+| `#PAD_078` | configuração: endereço do webhook do log inválido (vazio, sem http(s):// ou com espaços/aspas) |
+| `#PAD_079` | configuração: letra de drive inválida ou repetida |
+| `#PAD_080` | configuração: o caminho do drive não é de rede (`//servidor/share/...`) |
+| `#PAD_081` | configuração: volume sem nome, repetido ou sem servidor |
+| `#PAD_082` | configuração: tipo de renomear sem prefixo, comentário ou termos, prefixo repetido ou separador inválido |
+| `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
+| `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
+| `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
+| `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
+| `#PAD_087` | configuração: link sem nome ou com endereço inválido |
+| `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
+| `#PAD_089` | configuração: projeto com variável desconhecida no nome do arquivo, nome vazio ou retranca sem código / pasta |
+| `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
+| `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada |
+| `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |
+| `#PAD_093` | coletar: itens que não puderam ser coletados (sem permissão, arquivo ausente) |
+| `#PAD_094` | configuração: árvore do coletar inválida (nome vazio, repetido ou com `\ / : * ? " < > \|`, pasta pai inexistente, ciclo, tipo em duas pastas) ou sem nenhum tipo |
+| `#PAD_095` | coletar: projeto não salvo (use o clique direito para escolher a pasta) |
+| `#PAD_096` | modo local (ligado ou sem a rede): sem cópia da configuração neste computador, ou tentativa de editar a configuração da equipe |
+| `#PAD_097` | cópia dos templates: sem pasta neste computador, pasta da rede inacessível ou modo local ligado |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

@@ -18,6 +18,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O PADEIRO conversor | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
 | O PADEIRO produções | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
 | O PADEIRO criar template | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
+| O PADEIRO projeto | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
 
 <br>
 
@@ -29,7 +30,7 @@ O-PADEIRO/
 ├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
-   ├─ CSXS/manifest.xml          → os 6 painéis
+   ├─ CSXS/manifest.xml          → os 7 painéis
    ├─ .debug                     → portas de depuração (CEF)
    ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
@@ -37,13 +38,15 @@ O-PADEIRO/
    │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, vidro, folha branca)
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
-   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker
+   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
+   │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
    │     ├─ util.js              → ícones das produções, forninho, URLs de arquivo
+   │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
    │     └─ <painel>.js          → lógica de cada painel
    ├─ host/                      → ExtendScript (roda dentro do After Effects)
@@ -54,6 +57,8 @@ O-PADEIRO/
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
+   │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
+   │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
    └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
 ```
@@ -91,7 +96,7 @@ o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_c
 var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
-- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`).
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`, `collect.jsx`).
 - **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PROJETO</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/project.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="project-page">
+	<!-- um projeto novo em etapas (CLAQUETE → PASTA / FILME / NOVA → ARQUIVO → CRIAR); depois de criado, o editor.
+	     as etapas são telas desta mesma janela: uma aparece por vez -->
+	<main class="project" id="project">
+
+		<!-- CLAQUETE: o campo; a atração encontrada aparece logo abaixo -->
+		<section class="wz-screen" id="sc-claquete" hidden>
+			<p class="wz-title">CLAQUETE</p>
+			<div class="has-field-icon wz-claq">
+				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v8.5A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5z" /><path d="m4 10-.6-3 15-3.2.6 3z" /><path d="m8 6.3 2.2 2.9M12.6 5.3l2.2 2.9" /></svg>
+				<input type="text" class="cfg-input" id="claq" placeholder="ex: TELA 9 11" spellcheck="false" autocomplete="off" aria-label="Claquete">
+			</div>
+			<div class="proj-card" id="claq-found" hidden></div>
+			<p class="wz-hint" id="claq-hint"></p>
+			<footer class="wz-foot">
+				<span></span>
+				<button type="button" class="button button-primary" id="claq-next" disabled>Próximo</button>
+			</footer>
+		</section>
+
+		<!-- PASTA: mais de uma atração, ou nenhuma -->
+		<section class="wz-screen" id="sc-pasta" hidden>
+			<p class="wz-title">PASTA</p>
+			<p class="wz-hint" id="pasta-hint"></p>
+			<div class="wz-list" id="pasta-list" role="radiogroup" aria-label="Atração"></div>
+			<footer class="wz-foot">
+				<button type="button" class="wz-back" data-back>‹ voltar</button>
+				<button type="button" class="button button-primary" id="pasta-next" disabled>Próximo</button>
+			</footer>
+		</section>
+
+		<!-- NOVA: uma atração nova (filme inédito, novela nova…) -->
+		<section class="wz-screen" id="sc-nova" hidden>
+			<p class="wz-title">NOVA</p>
+			<p class="wz-label">NOME</p>
+			<div class="has-field-icon">
+				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
+				<input type="text" class="cfg-input" id="nova-name" placeholder="ex: NÃO! NÃO OLHE!" spellcheck="false" autocomplete="off" aria-label="Nome">
+			</div>
+			<p class="wz-label">DENTRO DE</p>
+			<span class="select select-large"><select id="nova-base" aria-label="Dentro de"></select></span>
+			<p class="wz-preview" id="nova-preview"></p>
+			<footer class="wz-foot">
+				<button type="button" class="wz-back" data-back>‹ voltar</button>
+				<button type="button" class="button button-primary" id="nova-next" disabled>Próximo</button>
+			</footer>
+		</section>
+
+		<!-- FILME: qual título (a pasta do filme, na pasta da letra) -->
+		<section class="wz-screen" id="sc-filme" hidden>
+			<p class="wz-title">FILME</p>
+			<p class="wz-hint" id="filme-hint"></p>
+			<div class="has-field-icon">
+				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg>
+				<input type="text" class="cfg-input" id="filme-title" placeholder="título do filme" spellcheck="false" autocomplete="off" aria-label="Título do filme">
+			</div>
+			<div class="wz-list" id="filme-list" role="radiogroup" aria-label="Filme"></div>
+			<footer class="wz-foot">
+				<button type="button" class="wz-back" data-back>‹ voltar</button>
+				<button type="button" class="button button-primary" id="filme-next" disabled>Próximo</button>
+			</footer>
+		</section>
+
+		<!-- ARQUIVO: o que é (o nome do .aep é a atração + isso) -->
+		<section class="wz-screen" id="sc-arquivo" hidden>
+			<p class="wz-title">ARQUIVO</p>
+			<p class="wz-label">O QUE É</p>
+			<div class="has-field-icon">
+				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
+				<input type="text" class="cfg-input" id="arq-what" placeholder="ex: SERVIÇO" spellcheck="false" autocomplete="off" aria-label="O que é">
+			</div>
+			<div class="wz-file" id="arq-file"></div>
+			<p class="wz-exist" id="arq-exist"></p>
+			<div class="wz-chips" id="arq-dup" hidden>
+				<button type="button" class="wz-chip is-on" data-mode="open">abrir o existente</button>
+				<button type="button" class="wz-chip" data-mode="increment" id="arq-increment"></button>
+			</div>
+			<footer class="wz-foot">
+				<button type="button" class="wz-back" data-back>‹ voltar</button>
+				<button type="button" class="button button-primary" id="arq-next">Próximo</button>
+			</footer>
+		</section>
+
+		<!-- CRIAR: a estrutura que vai ser criada (ou aproveitada) -->
+		<section class="wz-screen" id="sc-criar" hidden>
+			<p class="wz-title">CRIAR</p>
+			<div class="wz-tree" id="criar-tree"></div>
+			<div class="wz-meta" id="criar-meta"></div>
+			<footer class="wz-foot">
+				<button type="button" class="wz-back" data-back>‹ voltar</button>
+				<button type="button" class="button button-primary" id="criar-go">Criar projeto</button>
+			</footer>
+		</section>
+
+		<!-- depois de criado: o editor -->
+		<section class="wz-screen" id="sc-editor" hidden>
+			<p class="wz-title">CLAQUETE</p>
+			<div class="ed-row">
+				<div class="has-field-icon ed-claq">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v8.5A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5z" /><path d="m4 10-.6-3 15-3.2.6 3z" /><path d="m8 6.3 2.2 2.9M12.6 5.3l2.2 2.9" /></svg>
+					<input type="text" class="cfg-input" id="ed-claq" spellcheck="false" autocomplete="off" aria-label="Claquete">
+				</div>
+				<div class="has-field-icon ed-user" title="designer">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>
+					<input type="text" class="cfg-input" id="ed-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer">
+				</div>
+			</div>
+			<p class="wz-title">PASTA</p>
+			<section class="proj-card is-found" id="ed-card"></section>
+			<footer class="wz-foot">
+				<span class="ed-left">
+					<details class="actions-menu proj-menu" id="app-menu">
+						<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+						<div class="menu-popover">
+							<button type="button" data-action="new">Novo projeto pela claquete</button>
+							<button type="button" data-action="open">Abrir a pasta</button>
+							<button type="button" data-action="docs">Ajuda / documentação</button>
+							<button type="button" data-action="reload">Recarregar painel</button>
+						</div>
+					</details>
+					<button type="button" class="wz-pill" id="ed-move">trocar pasta…</button>
+				</span>
+				<button type="button" class="button button-primary" id="ed-save">Salvar</button>
+			</footer>
+		</section>
+
+		<p class="proj-status" id="proj-status" aria-live="polite"></p>
+	</main>
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/dropdown.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/project.js"></script>
+</body>
+
+</html>

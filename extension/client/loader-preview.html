@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<!--
+	Prévia do loader (css/loader.css + desenho em js/util.js), fora do After Effects:
+	abra este arquivo no navegador. Play / pausa, linha do tempo para ver quadro a quadro,
+	velocidade e tamanho reduzido. Não faz parte de nenhum painel.
+-->
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>PRÉVIA DO LOADER</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/loader.css">
+	<style>
+		body.preview-page {
+			display: block;
+			min-height: 100vh;
+			margin: 0;
+			padding: 20px;
+			background: #eef1f7;
+		}
+
+		.preview-stage {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+			gap: 14px;
+		}
+
+		.preview-card {
+			display: grid;
+			min-height: 300px;
+			place-items: center;
+			border-radius: 18px;
+		}
+
+		.preview-card.is-dark {
+			background: linear-gradient(155deg, #5aa0ff, #5b5be8);
+		}
+
+		.preview-card.is-light {
+			background: white;
+		}
+
+		.preview-controls {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 12px;
+			margin-top: 16px;
+			padding: 12px 16px;
+			border-radius: 14px;
+			background: white;
+			color: var(--text-secondary);
+			font-size: 0.8rem;
+			font-weight: 650;
+		}
+
+		.preview-controls button {
+			min-width: 84px;
+			padding: 8px 14px;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			background: white;
+			color: var(--text-primary);
+			cursor: pointer;
+			font: inherit;
+		}
+
+		.preview-controls button.is-on {
+			border-color: var(--blue-500);
+			background: var(--blue-500);
+			color: white;
+		}
+
+		.preview-controls input[type="range"] {
+			min-width: 180px;
+			flex: 1;
+		}
+
+		.preview-time {
+			min-width: 52px;
+			font-variant-numeric: tabular-nums;
+			text-align: right;
+		}
+	</style>
+</head>
+
+<body class="preview-page">
+	<div class="preview-stage" id="stage"></div>
+
+	<div class="preview-controls">
+		<button type="button" id="play" class="is-on">pausar</button>
+		<input type="range" id="scrub" min="0" max="4000" step="10" value="0" aria-label="Linha do tempo">
+		<span class="preview-time" id="time">0.00 s</span>
+		<span>velocidade</span>
+		<button type="button" data-speed="0.25">0,25x</button>
+		<button type="button" data-speed="0.5">0,5x</button>
+		<button type="button" data-speed="1" class="is-on">1x</button>
+		<button type="button" id="compact">reduzido</button>
+	</div>
+
+	<script src="js/util.js"></script>
+	<script>
+		(function () {
+			var CYCLE = 4000; // --oven-cycle
+			var stage = document.getElementById('stage');
+			var playBtn = document.getElementById('play');
+			var scrub = document.getElementById('scrub');
+			var time = document.getElementById('time');
+			var playing = true;
+			var compact = false;
+			var speed = 1;
+
+			function build() {
+				stage.textContent = '';
+				[true, false].forEach(function (dark) {
+					var card = document.createElement('div');
+
+					card.className = 'preview-card ' + (dark ? 'is-dark' : 'is-light');
+					card.appendChild(PAD_UTIL.ovenLoader(dark ? 'assando a lista de templates…' : 'lendo o template…', dark ? 'pastas de rede podem demorar um pouco' : 'abrindo o projeto e a config', !dark, compact));
+					stage.appendChild(card);
+				});
+				apply();
+			}
+
+			function animations() {
+				return document.getAnimations ? document.getAnimations() : [];
+			}
+
+			function apply() {
+				animations().forEach(function (a) {
+					a.playbackRate = speed;
+					if (playing) a.play();
+					else a.pause();
+				});
+			}
+
+			// a linha do tempo mostra o ponto do ciclo de 4 s (as animações curtas, esteira e rodas, acompanham)
+			function seek(ms) {
+				animations().forEach(function (a) {
+					a.currentTime = ms;
+				});
+			}
+
+			function tick() {
+				var a = animations().filter(function (x) {
+					return x.effect && x.effect.getTiming().duration >= CYCLE;
+				})[0];
+
+				if (a && playing) {
+					var t = a.currentTime % CYCLE;
+
+					scrub.value = t;
+					time.textContent = (t / 1000).toFixed(2) + ' s';
+				}
+
+				requestAnimationFrame(tick);
+			}
+
+			playBtn.addEventListener('click', function () {
+				playing = !playing;
+				playBtn.textContent = playing ? 'pausar' : 'play';
+				playBtn.classList.toggle('is-on', playing);
+				apply();
+			});
+
+			scrub.addEventListener('input', function () {
+				playing = false;
+				playBtn.textContent = 'play';
+				playBtn.classList.remove('is-on');
+				apply();
+				seek(+scrub.value);
+				time.textContent = (scrub.value / 1000).toFixed(2) + ' s';
+			});
+
+			Array.prototype.forEach.call(document.querySelectorAll('[data-speed]'), function (btn) {
+				btn.addEventListener('click', function () {
+					speed = +btn.getAttribute('data-speed');
+					document.querySelectorAll('[data-speed]').forEach(function (b) {
+						b.classList.toggle('is-on', b === btn);
+					});
+					apply();
+				});
+			});
+
+			document.getElementById('compact').addEventListener('click', function () {
+				compact = !compact;
+				this.classList.toggle('is-on', compact);
+				build();
+			});
+
+			build();
+			tick();
+		})();
+	</script>
+</body>
+
+</html>

@@ -9,24 +9,67 @@
 
 */
 
-// Estrutura padrão de pastas do projeto: { chave: [nome, chave da pasta pai] }
-var PROJECT_FOLDERS = {
-	render: ['01 COMPS', null],
-	precomps: ['02 PRECOMPS', null],
-	arquivos: ['03 ARQUIVOS', null],
-	videos: ['VIDEOS', 'arquivos'],
-	imagens: ['IMAGENS', 'arquivos'],
-	audio: ['AUDIO', 'arquivos'],
-	solidos: ['SOLIDOS', 'arquivos'],
-	dados: ['DADOS', 'arquivos'],
-	missing: ['MISSING', null]
+// Organização (a aba ORGANIZAR da configuração substitui):
+//   folders          → a árvore de pastas: nome, pasta pai ('' = raiz) e os tipos que ela recebe ('contents'):
+//                      render (comps de render), editaveis (comps editáveis), precomps (as outras comps),
+//                      videos, imagens, audio,
+//                      solidos, dados, missing (arquivos ausentes); sem tipos, só agrupa outras pastas
+//   renderComments   → comentários (ou parte deles) que mandam a comp para a pasta de render
+//   editComments     → comentários (ou parte deles) que mandam a comp para a pasta das editáveis
+//                      (sem pasta para 'editaveis', elas ficam com as outras comps)
+//   autoComment      → comentário dado às comps selecionadas sem comentário (e às criadas pelos templates)
+//   dataExtensions   → extensões tratadas como arquivos de dados
+//   commentSubfolders→ o comentário (antes de ':') vira subpasta
+var PAD_ORGANIZE = {
+	folders: [
+		{ name: '01 COMPS', parent: '', contents: ['render'] },
+		{ name: '02 PRECOMPS', parent: '', contents: ['precomps'] },
+		{ name: '03 ARQUIVOS', parent: '', contents: [] },
+		{ name: 'VIDEOS', parent: '03 ARQUIVOS', contents: ['videos'] },
+		{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens'] },
+		{ name: 'AUDIO', parent: '03 ARQUIVOS', contents: ['audio'] },
+		{ name: 'SOLIDOS', parent: '03 ARQUIVOS', contents: ['solidos'] },
+		{ name: 'DADOS', parent: '03 ARQUIVOS', contents: ['dados'] },
+		{ name: 'MISSING', parent: '', contents: ['missing'] }
+	],
+	renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
+	editComments: ['EDIT'],
+	autoComment: 'EXPORTAR',
+	dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
+	commentSubfolders: true
 };
 
-// Extensões tratadas como arquivos de dados
-var PROJECT_DATA_EXTENSIONS = ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'];
+// Pasta da árvore pelo nome (sem diferenciar maiúsculas).
+function padOrganizeFolder(name) {
+	for (var i = 0; i < PAD_ORGANIZE.folders.length; i++) {
+		if (PAD_ORGANIZE.folders[i].name.toUpperCase() == String(name).toUpperCase()) return PAD_ORGANIZE.folders[i];
+	}
 
-// Comentários que mandam a comp para a pasta de render
-var PROJECT_RENDER_COMMENTS = /EXPORT|LOGO GLOBO|TEMPLATE/;
+	return null;
+}
+
+// O comentário da comp manda para a pasta de render?
+function padIsRenderComment(comment) {
+	var c = String(comment).toUpperCase();
+
+	for (var i = 0; i < PAD_ORGANIZE.renderComments.length; i++) {
+		if (PAD_ORGANIZE.renderComments[i] != '' && c.indexOf(PAD_ORGANIZE.renderComments[i].toUpperCase()) >= 0) return true;
+	}
+
+	return false;
+}
+
+// O comentário da comp manda para a pasta das editáveis?
+function padIsEditComment(comment) {
+	var c = String(comment).toUpperCase();
+	var list = PAD_ORGANIZE.editComments || [];
+
+	for (var i = 0; i < list.length; i++) {
+		if (list[i] != '' && c.indexOf(String(list[i]).toUpperCase()) >= 0) return true;
+	}
+
+	return false;
+}
 
 // Pasta 'name' dentro de 'parent' (pasta raiz se null): reaproveita a existente ou cria uma nova.
 function getOrCreateFolder(name, parent) {
@@ -45,22 +88,38 @@ function getOrCreateFolder(name, parent) {
 	return folder;
 }
 
-// Cria (ou reaproveita) a estrutura padrão de pastas. Retorna { chave: FolderItem }.
-// Clicar de novo não duplica as pastas.
+// Cria (ou reaproveita) uma pasta da árvore e as pastas acima dela. 'made' guarda as já criadas.
+function padEnsureOrganizeFolder(def, made, depth) {
+	var key = def.name.toUpperCase();
+
+	if (made[key]) return made[key];
+	if ((depth || 0) > 20) throw new Error('#PAD_084 - organizar: a árvore de pastas tem um ciclo.');
+
+	var parentDef = def.parent ? padOrganizeFolder(def.parent) : null;
+	var parent = parentDef ? padEnsureOrganizeFolder(parentDef, made, (depth || 0) + 1) : null;
+
+	made[key] = getOrCreateFolder(def.name, parent);
+
+	return made[key];
+}
+
+// Cria (ou reaproveita) a árvore de pastas. Retorna { conteúdo: FolderItem } (render, precomps, videos...).
+// A pasta dos arquivos ausentes só aparece quando há algum (populateProjectFolders). Clicar de novo não duplica.
 function projectTemplateFolders() {
 	var folders = {};
+	var made = {};
 
-	// pastas raiz primeiro, para as subpastas encontrarem a pasta pai
-	for (var pass = 0; pass < 2; pass++) {
-		for (var key in PROJECT_FOLDERS) {
-			var parentKey = PROJECT_FOLDERS[key][1];
+	for (var i = 0; i < PAD_ORGANIZE.folders.length; i++) {
+		var def = PAD_ORGANIZE.folders[i];
 
-			if (folders[key] || (pass == 0) != (parentKey == null)) continue;
-			if (key == 'missing') continue; // só existe quando há arquivos ausentes
+		if (def.contents.length == 1 && def.contents[0] == 'missing') continue; // só quando há arquivos ausentes
 
-			folders[key] = getOrCreateFolder(PROJECT_FOLDERS[key][0], parentKey ? folders[parentKey] : null);
-		}
+		var folder = padEnsureOrganizeFolder(def, made);
+
+		for (var c = 0; c < def.contents.length; c++) folders[def.contents[c]] = folder;
 	}
+
+	folders._made = made;
 
 	return folders;
 }
@@ -134,7 +193,7 @@ function getFootage() {
 			// a extensão vem do arquivo: o item pode ter sido renomeado no projeto
 			var fileName = aItem.file ? aItem.file.displayName : aItem.name;
 
-			if (PROJECT_DATA_EXTENSIONS.indexOf(getFileExt(fileName)) >= 0) {
+			if (PAD_ORGANIZE.dataExtensions.indexOf(getFileExt(fileName).toLowerCase()) >= 0) {
 				footage.dataArray.push(aItem);
 				continue;
 			}
@@ -165,21 +224,25 @@ function getCommentFolder(cache, comment, parent) {
 	return cache[key];
 }
 
-// Move os footages para 'folder'; o comentário (antes de ':') vira subpasta.
+// Move os footages para 'folder' (sem pasta para o tipo: a raiz); o comentário (antes de ':') vira subpasta.
 function populateFootageItemFolders(itemArray, folder, cache) {
 	cache = cache || {};
+	folder = folder || app.project.rootFolder;
 
 	for (var s = 0; s < itemArray.length; s++) {
 		var aItem = itemArray[s];
-		var subFolderName = aItem.comment.split(':')[0].replaceSpecialCharacters().trim();
+		var subFolderName = PAD_ORGANIZE.commentSubfolders ? aItem.comment.split(':')[0].replaceSpecialCharacters().trim() : '';
 
 		aItem.parentFolder = subFolderName == '' ? folder : getCommentFolder(cache, subFolderName, folder);
 	}
 }
 
-// Comps para render (comentário EXPORTAR / LOGO GLOBO / TEMPLATE ou de um tipo conhecido como RODAPE)
-// vão para '01 COMPS'; as demais para '02 PRECOMPS'. O comentário vira subpasta.
+// Comps para render (comentário de render, como EXPORTAR, ou de um tipo de peça, como RODAPE) vão para a
+// pasta de render; as demais para a de precomps. O comentário vira subpasta (se ligado).
 function populateCompItemFolders(comps, folders, cache) {
+	var renderFolder = folders.render || app.project.rootFolder;
+	var precompFolder = folders.precomps || app.project.rootFolder;
+
 	var typeComments = [];
 
 	cache = cache || {};
@@ -188,20 +251,23 @@ function populateCompItemFolders(comps, folders, cache) {
 		typeComments.push(renameRefArray[p].comment);
 	}
 
-	var typeRegExp = new RegExp('(' + typeComments.join('|') + ')', 'i');
+	var typeRegExp = typeComments.length ? new RegExp('(' + typeComments.join('|') + ')', 'i') : null;
+	var sub = PAD_ORGANIZE.commentSubfolders;
 
 	for (var c = 0; c < comps.length; c++) {
 		var comp = comps[c];
 		var compComment = comp.comment.toUpperCase().trim();
 
-		if (compComment.match(PROJECT_RENDER_COMMENTS)) {
-			comp.parentFolder = folders.render;
-		} else if (compComment.match(typeRegExp)) {
-			comp.parentFolder = getCommentFolder(cache, compComment, folders.render);
-		} else if (compComment == '') {
-			comp.parentFolder = folders.precomps;
+		if (padIsRenderComment(compComment)) {
+			comp.parentFolder = renderFolder;
+		} else if (folders.editaveis && padIsEditComment(compComment)) {
+			comp.parentFolder = folders.editaveis; // a pasta já é a das editáveis: sem subpasta pelo comentário
+		} else if (typeRegExp && compComment.match(typeRegExp)) {
+			comp.parentFolder = sub ? getCommentFolder(cache, compComment, renderFolder) : renderFolder;
+		} else if (compComment == '' || !sub) {
+			comp.parentFolder = precompFolder;
 		} else {
-			comp.parentFolder = getCommentFolder(cache, compComment, folders.precomps);
+			comp.parentFolder = getCommentFolder(cache, compComment, precompFolder);
 		}
 	}
 }
@@ -221,17 +287,23 @@ function populateProjectFolders() {
 	populateFootageItemFolders(footage.dataArray, folders.dados, cache);
 
 	if (footage.missingArray.length > 0) {
-		populateFootageItemFolders(footage.missingArray, getOrCreateFolder(PROJECT_FOLDERS.missing[0], null), cache);
+		var missingDef = null;
+
+		for (var m = 0; m < PAD_ORGANIZE.folders.length; m++) {
+			if (PAD_ORGANIZE.folders[m].contents.indexOf('missing') >= 0) missingDef = PAD_ORGANIZE.folders[m];
+		}
+
+		populateFootageItemFolders(footage.missingArray, missingDef ? padEnsureOrganizeFolder(missingDef, folders._made) : null, cache);
 	}
 }
 
 // Organização completa: desfaz as pastas atuais, organiza tudo e remove as pastas que sobrarem vazias.
-// As comps selecionadas sem comentário são marcadas como 'EXPORTAR' (vão para a pasta de render).
+// As comps selecionadas sem comentário recebem o comentário automático (ex: 'EXPORTAR', vão para a pasta de render).
 function organizeProject() {
 	var selection = app.project.selection;
 
 	for (var i = 0; i < selection.length; i++) {
-		if (selection[i] instanceof CompItem && selection[i].comment == '') selection[i].comment = 'EXPORTAR';
+		if (selection[i] instanceof CompItem && selection[i].comment == '') selection[i].comment = PAD_ORGANIZE.autoComment;
 	}
 
 	deleteProjectFolders();

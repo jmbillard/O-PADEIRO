@@ -3,6 +3,10 @@
    ========================================================= */
 
 :root {
+  /* rodapés: o centro dos botões fica sempre a esta distância do fundo da janela (alinha a busca e o
+     formulário lado a lado e todas as janelas entre si). botões de 46 px nas barras brancas; 38 px no
+     rodapé do cartão de templates (dentro do cartão, com 15 px de respiro) */
+  --footer-center: 50px;
   --blue-50: #f2f6ff;
   --blue-100: #e9f1ff;
   --blue-200: #c9d9f8;
@@ -20,11 +24,20 @@
   --text-primary: #202636;
   --text-secondary: #687184;
   --text-tertiary: #8b94a6;
-  --text-on-brand: #ffffff;
-  --text-on-brand-muted: rgb(255 255 255 / 78%);
+  /* texto sobre o degradê: branco; com cores claras o tema (theme.js) troca por um tom escuro */
+  --on-brand: 255 255 255;
+  --text-on-brand: rgb(var(--on-brand));
+  --text-on-brand-muted: rgb(var(--on-brand) / 78%);
 
   --border: #e5e9f0;
   --border-strong: #d7dde8;
+  --border-hover: #ccd5e3;
+
+  /* rótulos e controles (tons fixos que o modo escuro troca) */
+  --text-label: #4e5a6f;
+  --text-control: #505c72;
+  --danger-surface: #fff8f8;
+  --success-surface: #effaf5;
 
   --waiting: #9a6500;
   --waiting-bg: #fff4d7;
@@ -88,11 +101,11 @@ body {
       transparent 28%),
     linear-gradient(145deg,
       var(--blue-400) 0%,
-      var(--blue-500) 42%,
+      var(--blue-mid, var(--blue-500)) 42%,
       var(--blue-600) 100%);
   color: var(--text-primary);
   font-family:
-    Inter,
+    var(--font-ui, Inter),
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -216,7 +229,7 @@ svg {
       transparent 28%),
     linear-gradient(155deg,
       var(--blue-400) 0%,
-      var(--blue-500) 43%,
+      var(--blue-mid, var(--blue-500)) 43%,
       var(--blue-600) 100%);
   color: var(--text-on-brand);
   transition: padding 620ms var(--ease-enter);
@@ -268,7 +281,7 @@ svg {
 }
 
 .eyebrow {
-  color: rgb(255 255 255 / 68%);
+  color: rgb(var(--on-brand) / 68%);
 }
 
 /* Typewriter */
@@ -316,6 +329,10 @@ svg {
   margin-top: 10px;
 }
 
+.validation-messages:empty {
+  margin-top: 0; /* sem avisos, o cartão de templates desce até o rodapé alinhado */
+}
+
 .validation-message {
   margin: 0;
   padding: 9px 11px;
@@ -344,9 +361,9 @@ svg {
   isolation: isolate;
   background:
     radial-gradient(circle at 100% 0%,
-      #f0f4ff,
+      var(--blue-50),
       transparent 31%),
-    white;
+    var(--surface);
 }
 
 .queue-header {
@@ -377,24 +394,14 @@ svg {
   font-size: 0.82rem;
 }
 
-.queue-actions {
-  position: relative;
-  z-index: 21;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .button-secondary {
   border-color: var(--border);
-  background: white;
-  color: #505c72;
+  background: var(--surface);
+  color: var(--text-control);
 }
 
 .button-secondary:hover:not(:disabled) {
-  border-color: #ccd5e3;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
   box-shadow: 0 5px 14px rgb(32 45 82 / 7%);
   transform: translateY(-1px);
@@ -431,7 +438,7 @@ svg {
 }
 
 .actions-menu[open] summary {
-  border-color: #c7d2e2;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
@@ -444,8 +451,8 @@ svg {
   display: grid;
   padding: 7px;
   border: 1px solid var(--border);
-  border-radius: 13px;
-  background: white;
+  border-radius: 16px; /* concêntrico: raio dos itens (8) + respiro (7) + borda (1) */
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 16%),
     0 4px 12px rgb(30 42 80 / 7%);
@@ -499,7 +506,7 @@ svg {
 }
 
 .progress-header strong {
-  color: #4e5a6f;
+  color: var(--text-label);
   font-weight: 650;
 }
 
@@ -513,7 +520,7 @@ svg {
   height: 6px;
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: #edf1f6;
+  background: var(--surface-muted);
 }
 
 .progress-bar {
@@ -525,7 +532,7 @@ svg {
   background:
     linear-gradient(90deg,
       var(--blue-400),
-      var(--blue-500),
+      var(--blue-mid, var(--blue-500)),
       var(--blue-600));
   box-shadow: 0 2px 8px rgb(79 130 255 / 28%);
   transition: width 600ms var(--ease-soft);
@@ -590,7 +597,7 @@ svg {
   height: 46px;
   border: 1px solid #dfe5ef;
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
   box-shadow: var(--shadow-soft);
 }
 
@@ -609,11 +616,11 @@ svg {
 .empty-illustration span:nth-child(3) {
   top: 2px;
   left: 16px;
-  border-color: #cfdbf2;
+  border-color: var(--border-hover);
   background:
     linear-gradient(135deg,
       var(--blue-50),
-      white);
+      var(--surface));
 }
 
 .empty-state h3 {
@@ -663,8 +670,8 @@ svg {
 }
 
 .file-item:hover {
-  border-color: #dfe5ef;
-  background: white;
+  border-color: var(--border-hover);
+  background: var(--surface);
   box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
@@ -672,12 +679,12 @@ svg {
 .file-item.is-processing {
   overflow: hidden;
   border-color: var(--blue-200);
-  background: #f4f8ff;
+  background: var(--blue-50);
   box-shadow: none;
 }
 
 .file-item.is-processing:hover {
-  border-color: #b9cef4;
+  border-color: var(--border-hover);
   box-shadow: 0 8px 22px rgb(48 103 214 / 7%);
 }
 
@@ -714,7 +721,7 @@ svg {
   place-items: center;
   border: 1px solid #dae3f2;
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 5px 12px rgb(35 50 92 / 7%);
   color: var(--blue-500);
   font-size: 0.58rem;
@@ -754,7 +761,7 @@ svg {
   display: -webkit-box;
   overflow: hidden;
   margin: 9px 0 0;
-  color: #5d687c;
+  color: var(--text-label);
   font-size: 0.75rem;
   line-height: 1.48;
   overflow-wrap: anywhere;
@@ -916,7 +923,7 @@ body.motion-ready .queue-content {
 @keyframes completed-flash {
   40% {
     border-color: #bde5d2;
-    background: #effaf5;
+    background: var(--success-surface);
   }
 }
 
@@ -1067,11 +1074,6 @@ body.motion-ready .queue-content {
   .queue-header {
     flex-direction: column;
     gap: 17px;
-  }
-
-  .queue-actions {
-    width: 100%;
-    justify-content: flex-start;
   }
 
   .empty-state {

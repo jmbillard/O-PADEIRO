@@ -198,8 +198,71 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Produções
 	   ========================================================= */
 
-	// A produção é escolhida na barra principal: ela grava a escolha em um arquivo
-	// compartilhado e o painel acompanha (host: PADX.selectedProduction).
+	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions'; // janela de configuração (produções, logs, drives)
+
+	// A produção é escolhida no rodapé deste painel: a escolha fica num arquivo compartilhado
+	// (host: PADX.setProduction / selectedProduction), que o log e os outros painéis também leem.
+	function renderProductionSelect() {
+		var select = $('production');
+		var current = state.productions[state.production];
+
+		select.textContent = '';
+
+		state.productions.forEach(function (prod) {
+			var option = el('option', null, prod.name);
+
+			option.value = prod.name;
+			select.appendChild(option);
+		});
+
+		if (!state.productions.length) select.appendChild(el('option', null, 'sem produções'));
+
+		select.disabled = !state.productions.length;
+		if (current) select.value = current.name;
+		PAD_DROPDOWN.refresh(select);
+
+		var trigger = select._dropdownTrigger;
+
+		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.local ? '\nusando a pasta deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
+	}
+
+	// Troca a produção mostrada (escolhida aqui ou em outro painel).
+	async function switchProduction(index) {
+		state.production = index;
+		state.selected = null;
+		state.info = null;
+		state.run = null;
+		setExpanded(false);
+		clearNotices();
+		pickerMessage();
+		updateSearchPlaceholder();
+		renderProductionSelect();
+		await loadTree();
+	}
+
+	async function onProductionChange() {
+		var select = $('production');
+		var index = state.productions.findIndex(function (prod) {
+			return prod.name === select.value;
+		});
+
+		if (index < 0 || index === state.production) return;
+
+		// no meio de um preenchimento a troca espera: volta para a produção atual
+		if (state.busy || runIsOpen() || state.editor) {
+			renderProductionSelect();
+			pickerMessage('error', 'termine (ou feche) o preenchimento antes de trocar de produção.');
+			return;
+		}
+
+		try {
+			await call('setProduction', { name: select.value });
+		} catch (err) {
+			pickerMessage('error', err.message);
+		}
+
+		await switchProduction(index);
+	}
 	async function loadProductions() {
 		try {
 			var res = await call('productions', {});
@@ -226,6 +289,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.production = found >= 0 ? found : 0;
 		updateSearchPlaceholder();
+		renderProductionSelect();
 		await loadTree();
 	}
 
@@ -237,6 +301,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// Acompanha a produção escolhida na barra e a conexão com o After Effects.
 	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
+	// a pasta de templates que vale neste computador (a cópia local, no modo local)
+	function prodPath(prod) {
+		return prod ? prod.path || prod.templatesPath : '';
+	}
+
 	async function refreshProductionList(selectedName) {
 		var current = state.productions[state.production];
 
@@ -255,22 +324,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return prod.name === wanted;
 		});
 
-		var same = current && index >= 0 && state.productions[index].name === current.name && state.productions[index].templatesPath === current.templatesPath;
+		var same = current && index >= 0 && state.productions[index].name === current.name && prodPath(state.productions[index]) === prodPath(current);
 
 		if (same) {
 			state.production = index;
+			renderProductionSelect();
 			return;
 		}
 
-		state.production = index >= 0 ? index : 0;
-		state.selected = null;
-		state.info = null;
-		state.run = null;
-		setExpanded(false);
-		clearNotices();
-		pickerMessage();
-		updateSearchPlaceholder();
-		await loadTree();
+		await switchProduction(index >= 0 ? index : 0);
 	}
 
 	async function watchProduction() {
@@ -306,15 +368,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (index < 0) return;
 
-		state.production = index;
-		state.selected = null;
-		state.info = null;
-		state.run = null;
-		setExpanded(false);
-		clearNotices();
-		pickerMessage();
-		updateSearchPlaceholder();
-		await loadTree();
+		await switchProduction(index);
 	}
 
 	/* =========================================================
@@ -330,7 +384,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.loadHint = 'pastas de rede podem demorar um pouco';
 		state.tree = null;
 		state.byUri = {};
-		state.templatesPath = prod ? prod.templatesPath : '';
+		state.templatesPath = prod ? prodPath(prod) : '';
 		state.treeStatus = prod ? 'loading' : 'empty';
 		renderTree();
 
@@ -355,7 +409,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		try {
 			var res = await readTemplateTree(
-				prod.templatesPath,
+				prodPath(prod),
 				function (folders, name) {
 					if (cached || loadId !== state.loadId) return; // com a cópia na tela, a leitura é silenciosa
 
@@ -378,7 +432,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			} else {
 				var text = JSON.stringify(res.tree);
 
-				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prod.templatesPath, tree: res.tree }) }).catch(function () { });
+				call('saveTemplateTreeCache', { production: prod.name, text: JSON.stringify({ path: prodPath(prod), tree: res.tree }) }).catch(function () { });
 
 				// com a cópia na tela, só redesenha se a pasta mudou
 				if (cached && cached.text === text) {
@@ -417,7 +471,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			var data = JSON.parse(res.text);
 
-			if (!data || data.path !== prod.templatesPath || !data.tree) return null;
+			if (!data || data.path !== prodPath(prod) || !data.tree) return null;
 
 			return { tree: data.tree, text: JSON.stringify(data.tree) };
 		} catch (err) {
@@ -736,22 +790,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return li;
 	}
 
-	// Loader temático: pães saindo do forninho (css/loader.css).
+	// Loader temático (css/loader.css, desenho em util.js)
 	function ovenLoader(title, hint, light) {
-		var box = el('div', 'oven-loader' + (light ? ' is-light is-compact' : ''));
-
-		box.setAttribute('role', 'status');
-		box.innerHTML =
-			'<div class="oven" aria-hidden="true"><span class="oven-glow"></span>' +
-			'<span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span>' +
-			'<span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span>' +
-			'<span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span>' +
-			'<span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>' +
-			'<strong class="oven-title"></strong><span class="oven-hint"></span>';
-		box.querySelector('.oven-title').textContent = title;
-		box.querySelector('.oven-hint').textContent = hint || '';
-
-		return box;
+		return PAD_UTIL.ovenLoader(title, hint, light, light);
 	}
 
 	function treeState(title, text) {
@@ -897,7 +938,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			$('view-' + view).hidden = view !== name;
 		});
 
-		$('queue-actions').hidden = name !== 'input';
 		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
 		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
@@ -1451,6 +1491,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (info && info.meta != null) li.querySelector('.file-metadata').textContent = info.meta;
 		if (info && info.message != null) li.querySelector('.file-message').textContent = info.message;
 
+		// pastas de saída: uma por linha, com o ícone de pasta
+		if (info && info.paths) {
+			var message = li.querySelector('.file-message');
+
+			message.textContent = '';
+			info.paths.forEach(function (path) {
+				message.appendChild(PAD_UTIL.pathLine(path));
+			});
+		}
+
 		if (status === 'success') {
 			li.classList.remove('just-completed');
 			void li.offsetWidth;
@@ -1518,6 +1568,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		$('run-footer').hidden = true;
 		showView('run');
 		setStage('3 · preenchendo', state.info.name, begin.templateName);
@@ -1598,12 +1649,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		outputs.textContent = '';
 		state.run.outputPath.forEach(function (path) {
-			outputs.appendChild(el('li', null, path));
+			outputs.appendChild(PAD_UTIL.pathLine(path, 'li'));
 		});
 
 		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
 		setStage('4 · render', null, 'selecione o template de output para continuar');
 		$('render-options').hidden = false;
+		$('queue-footer').hidden = false;
 		setPickerLocked(true);
 		select.focus();
 	}
@@ -1616,6 +1668,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		store.set('outputTemplate', template);
 		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');
 
@@ -1633,6 +1686,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			notify('error', err.message);
 			setBusy(false);
 			$('render-options').hidden = false;
+			$('queue-footer').hidden = false;
 			return;
 		}
 
@@ -1648,7 +1702,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			try {
 				var res = await call('queueStep', { index: item.hostIndex });
 
-				setItem(item.index, 'success', { meta: 'na fila de render', message: 'saída: ' + res.outputs.join('  ·  ') });
+				setItem(item.index, 'success', { meta: 'na fila de render', paths: res.outputs });
 			} catch (err) {
 				setItem(item.index, 'error', { meta: 'não entrou na fila de render', message: err.message });
 			}
@@ -1672,6 +1726,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		run.finished = true;
 		$('render-options').hidden = true;
+		$('queue-footer').hidden = true;
 		$('run-footer').hidden = false;
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
@@ -1746,6 +1801,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (action === 'refresh') await refreshTree();
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
+		if (action === 'config') PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
 		if (action === 'reload') location.reload();
 	}
 
@@ -1985,6 +2041,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
+			$('queue-footer').hidden = true;
 
 			if (await finishRun(null)) setTimeout(PAD_BRIDGE.closePanel, 900);
 		});
@@ -2020,7 +2077,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (PAD_BRIDGE.inCep() && window.innerWidth > COMPACT_WIDTH) PAD_BRIDGE.resizeWindow(COMPACT_WIDTH, window.innerHeight);
 
 		bindEvents();
-		PAD_DROPDOWN.enhance($('render-template'));
+		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
+		PAD_DROPDOWN.enhance($('production'));
+		$('production').addEventListener('change', onProductionChange);
 
 		setTimeout(function () {
 			document.body.classList.add('motion-ready');

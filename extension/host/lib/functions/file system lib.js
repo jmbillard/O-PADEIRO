@@ -1,4 +1,4 @@
-/* eslint-disable no-empty */
+﻿/* eslint-disable no-empty */
 /* eslint-disable no-redeclare */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-undef */
@@ -133,6 +133,7 @@ function openFolder(folderPath) {
 	}
 }
 
+// Extensão de um nome de arquivo, com o ponto e em minúsculas ('' sem extensão).
 function getFileExt(fileName) {
 	var dotIndex = fileName.lastIndexOf('.');
 	if (dotIndex === -1) return '';
@@ -324,7 +325,7 @@ function normalizeNetworkPath(pathStr, options) {
 				alert("#PAD_072 - Share '" + shareName + "' não encontrado no mapeamento.\n" +
 					"Usando servidor padrão.");
 			}
-			serverName = "vfx-ml-sp.servicos.corp.tvglobo.com.br";
+			serverName = PAD_DEFAULT_SERVER;
 		}
 
 		var winPath = "//" + serverName + "/" + shareName;
@@ -403,15 +404,8 @@ function findServerForShare(shareName) {
 		}
 	}
 
-	// Mapeamento adicional para shares conhecidos
-	var knownShares = {
-		'VFX': 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
-		'cdesign': 'egcdesign01.servicos.corp.tvglobo.com.br',
-		'EDIT_IN_PLACE': 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
-		'promo_ber': '10.193.48.13'
-	};
-
-	return knownShares[shareName] || null;
+	// Volumes sem letra de drive (aba REDE da configuração)
+	return (PAD_SHARE_SERVERS && PAD_SHARE_SERVERS[shareName]) || null;
 }
 
 /**

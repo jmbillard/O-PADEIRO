@@ -17,36 +17,332 @@ body.prods-page {
 }
 
 .prods {
-  display: flex;
+  display: grid;
   height: 100%;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+/* a coluna azul, como a busca do painel de templates: título no degradê e o cartão de vidro */
+.prods-side {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
   flex-direction: column;
-  padding: 14px 14px 0;
+  padding: 14px;
 }
 
-.prods-top {
+.prods-card {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 26px 26px 34px 34px; /* em cima, concêntrico com a aba (raio 12, 14 de respiro); embaixo, com os botões */
+}
+
+.prods-card-body {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.prods-nav {
+  width: 214px;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 14px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.prods-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.prods-nav .tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding-left: 0;
+}
+
+/* abas como as linhas da lista de templates: a escolhida vira a pílula branca */
+.prods-nav .tab {
+  justify-content: flex-start;
   gap: 10px;
-  padding: 2px 0 14px 5px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  color: rgb(var(--on-brand) / 78%);
+  letter-spacing: 0.12em;
+  text-align: left;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.prods-top .eyebrow {
-  margin: 0;
+.prods-nav .tab:hover {
+  background: rgb(255 255 255 / 10%);
+  color: rgb(var(--on-brand));
 }
 
-.prods-tools {
-  display: flex;
-  gap: 8px;
+.prods-nav .tab[aria-selected="true"] {
+  border-color: white;
+  background: var(--surface);
+  box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
+  color: var(--blue-ink, var(--blue-600));
+}
+
+/* o ícone no lugar da bolinha */
+.prods-nav .tab::before {
+  display: none;
+}
+
+.prods-nav .tab svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.prods-nav .tab svg * {
+  transform-box: fill-box;
+}
+
+/* animações dos ícones (as mesmas ideias da barra) */
+.ti-link path,
+.ti-theme,
+.ti-row {
+  transition: transform 320ms var(--ease-soft);
+}
+
+/* aparência: o meio círculo (claro / escuro) cheio; no hover, ele gira e troca de lado */
+.ti-half {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.ti-theme {
+  transform-origin: center;
+}
+
+.tab:hover .ti-link .ti-link-a {
+  transform: translate(1.2px, -1.2px);
+}
+
+.tab:hover .ti-link .ti-link-b {
+  transform: translate(-1.2px, 1.2px);
+}
+
+.ti-log .ti-line {
+  transform-origin: 0 50%;
+}
+
+.tab:hover .ti-log .ti-line {
+  animation: ti-write 160ms ease-out backwards;
+}
+
+.tab:hover .ti-log .ti-line:nth-of-type(2) {
+  animation-delay: 100ms;
+}
+
+.tab:hover .ti-log .ti-line:nth-of-type(3) {
+  animation-delay: 200ms;
+}
+
+.tab:hover .ti-theme {
+  transform: rotate(180deg);
+}
+
+/* layout: a linha com o puxador desce uma posição e a de baixo sobe (reordenar) */
+.tab:hover .ti-r1 {
+  transform: translateY(6px);
+}
+
+.tab:hover .ti-r2 {
+  transform: translateY(-6px);
+}
+
+/* rede: as gavetas do servidor saem uma depois da outra e as luzinhas piscam (como na barra) */
+.prods-nav .tab svg .ti-rack {
+  transform-box: view-box;
+}
+
+.tab:hover .ti-k1 {
+  animation: ti-rack 560ms var(--ease-soft);
+}
+
+.tab:hover .ti-k2 {
+  animation: ti-rack 560ms var(--ease-soft) 90ms;
+}
+
+.ti-led {
+  stroke-width: 2.6;
+}
+
+.tab:hover .ti-led {
+  animation: ti-led 560ms steps(1) 2;
+}
+
+/* meu usuário: a cabeça e os ombros sobem um pouco e descem de novo (a cabeça um pouco mais) */
+.tab:hover .ti-user .ti-head {
+  animation: ti-lift 520ms var(--ease-soft);
+}
+
+.tab:hover .ti-user .ti-body {
+  animation: ti-lift-body 520ms var(--ease-soft);
+}
+
+@keyframes ti-rack {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(2.5px);
+  }
+}
+
+@keyframes ti-led {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes ti-lift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-2.2px);
+  }
+}
+
+@keyframes ti-lift-body {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-1.2px);
+  }
+}
+
+@keyframes ti-write {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ti-clap {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  35% {
+    transform: rotate(-18deg);
+  }
+
+  60% {
+    transform: rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prods-nav .tab svg * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* o rodapé do cartão: recarregar e salvar à esquerda, "⋯" à direita; o menu abre para cima */
+.prods-top .actions-menu {
+  margin-left: auto;
+}
+
+.prods-top .menu-popover {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + 8px);
+  left: 0; /* abre para a direita, por cima da folha (à esquerda não cabe) */
+}
+
+/* salvar (disquete): ponto com alterações não salvas; pulsa enquanto grava */
+.prods-save {
+  position: relative;
+}
+
+.prods-save::after {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffcf5c;
+  box-shadow: 0 0 0 2px rgb(60 80 200 / 35%);
+  content: "";
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 180ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.prods-save.is-dirty::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.prods-save .save-tab {
+  transition: transform 260ms var(--ease-soft);
+}
+
+.prods-save:hover:not(:disabled) .save-tab {
+  transform: translateY(1.2px);
+}
+
+.prods-save.is-busy svg {
+  animation: save-pulse 700ms ease-in-out infinite;
+}
+
+@keyframes save-pulse {
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .prods-sheet {
   display: flex;
   min-height: 0;
-  flex: 1;
   flex-direction: column;
-  margin: 0 -14px;
-  background: white;
+  background: var(--surface);
+}
+
+.prods-section-title {
+  padding: 16px 20px 6px;
 }
 
 .prods-file {
@@ -54,7 +350,7 @@ body.prods-page {
   align-items: center;
   gap: 8px;
   margin: 0;
-  padding: 14px 20px 6px;
+  padding: 8px 0 4px;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.7rem;
@@ -111,7 +407,7 @@ body.prods-page {
 /* uma produção */
 .prod-row {
   display: grid;
-  grid-template-columns: 40px minmax(120px, 190px) minmax(0, 1fr);
+  grid-template-columns: 22px 40px minmax(120px, 190px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   padding: 7px 0;
@@ -210,58 +506,6 @@ body.prods-page {
   transform: none;
 }
 
-/* importar e exportar (rodapé): a seta desce / sobe no hover e volta ao sair */
-.io-button {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: white;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.io-button:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.io-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 2px;
-}
-
-.io-button svg {
-  width: 18px;
-  height: 18px;
-  overflow: visible;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.io-arrow {
-  transition: transform 280ms var(--ease-soft);
-}
-
-#btn-import:hover .io-arrow {
-  transform: translateY(2.5px);
-}
-
-#btn-export:hover .io-arrow {
-  transform: translateY(-2.5px);
-}
-
 .prod-row.has-error .cfg-input {
   border-color: var(--danger);
   box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
@@ -275,42 +519,26 @@ body.prods-page {
   text-align: center;
 }
 
-/* barra de ações ancorada */
-.prods-bar.is-anchored {
-  margin: auto 0 0;
-  padding: 14px 20px 16px;
-  align-items: center;
-  border-top: 1px solid var(--border);
-  background: white;
-}
-
 .prods-dirty {
-  margin-left: 4px;
-  color: var(--waiting);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.prods-dirty[hidden] {
-  display: none;
-}
-
-.prods-bar .button-primary {
   margin-left: auto;
+  white-space: nowrap;
+  color: var(--waiting);
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 .finder-toast {
   position: fixed;
   z-index: 20;
   right: 12px;
-  bottom: 76px;
+  bottom: 20px;
   left: 12px;
   max-width: 520px;
   margin-inline: auto;
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: white;
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 22%),
     0 4px 12px rgb(30 42 80 / 10%);
@@ -338,73 +566,76 @@ body.prods-page {
   display: none;
 }
 
-@media (max-width: 640px) {
-  /* sem separadores: um respiro maior entre as produções empilhadas */
-  .prod-row {
-    grid-template-columns: 40px minmax(0, 1fr);
-    padding: 8px 0 14px;
-  }
-
-  .prod-path {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
+/* título da lista com o filtro ao lado (versão clara e compacta da busca do painel de templates) */
+.prods-list-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 6px;
 }
 
-@media (max-width: 420px) {
-  .prods {
-    padding-inline: 10px;
-  }
-
-  .prods-sheet {
-    margin-inline: -10px;
-  }
-
-  .prods-list,
-  .prods-file,
-  .prods-bar.is-anchored {
-    padding-inline: 14px;
-  }
+.prods-list-head .cfg-title {
+  flex: 1 1 auto;
 }
 
-/* filtro no topo (versão compacta da busca do painel de templates) */
+/* a busca e os botões de importar / exportar, na mesma linha */
+.prods-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 20px 4px;
+}
+
 .prods-filter {
   min-width: 0;
-  max-width: 320px;
   flex: 1;
-  margin: 0 0 0 auto;
+  margin: 0;
 }
 
-.prods-filter>svg {
-  left: 13px;
-  width: 16px;
-  height: 16px;
+.prods-filter-row .io-button {
+  width: 50px;
+  height: 50px;
 }
 
 .prods-filter input {
-  min-height: 38px;
-  padding: 6px 36px 6px 38px;
-  font-size: 0.8rem;
+  min-height: 50px;
+  border-color: var(--border-strong);
+  background: var(--surface);
+  box-shadow: none;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.prods-filter input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.prods-filter input:focus {
+  border-color: var(--blue-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+}
+
+.prods-filter>svg {
+  stroke: var(--text-tertiary);
+}
+
+.prods-filter:focus-within>svg {
+  stroke: var(--blue-500);
 }
 
 .prods-filter .picker-clear {
-  right: 6px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
 }
 
 .prod-row[hidden] {
   display: none;
 }
 
-@media (max-width: 460px) {
-  .prods-top .eyebrow {
-    display: none;
-  }
-}
-
-.prods-filter .picker-clear {
-  width: 24px;
-  height: 24px;
+/* o filtro só vale para a aba de produções */
+.prods-filter[hidden] {
+  display: none;
 }
 
 /* lista compartilhada inacessível */
@@ -428,4 +659,1497 @@ body.prods-page {
 
 .prods-unavailable .button {
   margin-top: 10px;
+}
+
+/* logs: divisor e escolha de onde gravar o uso */
+/* abas da configuração: cada uma ocupa a folha branca e rola sozinha */
+.cfg-pane {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.cfg-pane[hidden] {
+  display: none;
+}
+
+.prods-log,
+.drives-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px 18px;
+  overflow-y: auto;
+}
+
+.drives-pane .prods-section-title {
+  margin-top: 10px;
+  padding: 16px 0 0;
+}
+
+.drives-pane .prods-section-title:first-child,
+.prods-log .prods-section-title {
+  margin-top: 0;
+  padding: 16px 0 0;
+}
+
+.drives-pane .cfg-hint {
+  margin-bottom: 4px;
+}
+
+/* uma linha do mapa: letra (ou volume) + caminho (ou servidor) com o × dentro */
+.drive-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.drive-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.drive-row.is-share {
+  grid-template-columns: minmax(110px, 200px) minmax(0, 1fr);
+}
+
+.drive-letter {
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.drive-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+.drive-row.has-error .cfg-input {
+  border-color: var(--danger);
+}
+
+.log-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 2px 0 4px;
+}
+
+.log-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 620;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* o círculo nativo fica escondido: o desenho é o do .log-radio-dot */
+.log-radio input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.log-radio-dot {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.log-radio-dot::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  content: '';
+  transform: scale(0);
+  transition: transform 180ms var(--ease-soft);
+}
+
+.log-radio:hover .log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot::after {
+  transform: scale(1);
+}
+
+.log-radio input:checked~.log-radio-text {
+  color: var(--text-primary);
+}
+
+.log-radio input:focus-visible+.log-radio-dot {
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 18%);
+}
+
+.log-radio input:disabled~* {
+  opacity: 0.45;
+}
+
+.log-webhook-field {
+  position: relative;
+}
+
+.log-webhook-field[hidden] {
+  display: none;
+}
+
+.log-webhook-field>svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-width: 1.6;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.log-webhook-field:focus-within>svg {
+  stroke: var(--blue-500);
+}
+
+.log-webhook {
+  min-height: 36px;
+  padding: 6px 12px 6px 36px;
+  font-size: 0.78rem;
+}
+
+.log-webhook[hidden] {
+  display: none;
+}
+
+.log-webhook.has-error {
+  border-color: var(--danger);
+}
+
+/* arrastar para reordenar (com o filtro ativo, os puxadores somem: a ordem é a da lista inteira) */
+.prods-list.is-filtered .drag-handle {
+  visibility: hidden;
+}
+
+.is-sorting>.prod-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.prod-row.is-dragging {
+  --drag-inset: 2px -5px; /* a linha já tem 7 px em cima e embaixo */
+}
+
+/* a animação de entrada prende o 'transform' das linhas: fora durante o arraste e depois de reordenar */
+.is-sorting>.prod-row,
+.prods-list.is-settled>.prod-row {
+  animation: none;
+}
+
+/* "+ nova produção" no fim da lista: 10 px abaixo da última produção, como os outros "+" */
+.prods-list>.prods-add {
+  margin: 3px 0 4px;
+}
+
+/* aba RENOMEAR: tipos de peça (puxador, prefixo, comentário, termos) */
+.rename-head,
+.rename-row {
+  display: grid;
+  grid-template-columns: 22px 96px minmax(110px, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.rename-head {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.rename-head span:not(:first-child) {
+  padding-left: 13px;
+}
+
+.rename-row .cfg-input {
+  min-height: 38px;
+  padding-block: 7px;
+  font-size: 0.8rem;
+}
+
+.rename-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+.rename-prefix {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.drive-row.is-fixed {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.rename-result {
+  min-height: 1.4em;
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+}
+
+.rename-result b {
+  color: var(--text-primary);
+}
+
+.is-sorting>.rename-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+/* aba ORGANIZAR: a árvore à esquerda, no azul dos painéis; os tipos e ajustes à direita, no branco */
+.organize-pane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 16px 20px 18px;
+}
+
+.organize-pane[hidden] {
+  display: none;
+}
+
+.org-card {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: 22px 22px 32px 32px; /* embaixo, concêntrico com o '+ nova pasta' (raio 17 + 14 de respiro + borda) */
+  background:
+    radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
+    linear-gradient(155deg, var(--blue-400) 0%, var(--blue-mid, var(--blue-500)) 46%, var(--blue-600) 100%);
+  color: rgb(var(--on-brand));
+}
+
+.org-tree {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  user-select: none; /* arrastar não seleciona o texto (o nome continua editável) */
+  padding: 12px 10px;
+  overflow-y: auto;
+  scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
+  scrollbar-width: thin;
+}
+
+/* uma pasta da árvore: puxador, pasta, nome (editável), tipos que recebe e × */
+.org-folder {
+  position: relative;
+  display: flex;
+  min-height: 38px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 1px 0 1px calc(var(--depth, 0) * 18px);
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.org-folder:hover {
+  background: rgb(255 255 255 / 9%);
+}
+
+.org-folder.is-root {
+  margin-bottom: 4px;
+  border-color: rgb(255 255 255 / 18%);
+}
+
+.org-folder>svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.org-folder .drag-handle {
+  margin-left: -2px;
+  color: rgb(var(--on-brand) / 45%);
+}
+
+.org-folder .drag-handle:hover,
+.org-folder .drag-handle:focus-visible {
+  color: rgb(var(--on-brand));
+}
+
+.org-name {
+  min-width: 70px;
+  user-select: text;
+  flex: 1 1 90px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: rgb(var(--on-brand));
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+.org-name:focus {
+  border-color: rgb(255 255 255 / 60%);
+  background: rgb(255 255 255 / 12%);
+}
+
+.org-root-label {
+  flex: 1 1 auto;
+  color: rgb(var(--on-brand) / 78%);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.org-remove {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--on-brand) / 0%);
+  cursor: pointer;
+}
+
+.org-folder:hover .org-remove,
+.org-remove:focus-visible {
+  color: rgb(var(--on-brand) / 75%);
+}
+
+.org-remove:hover {
+  background: rgb(255 255 255 / 16%);
+  color: rgb(var(--on-brand));
+}
+
+.org-remove svg,
+.org-type svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+/* subpastas: linha guia até a pasta de cima */
+.org-folder.is-child::before {
+  position: absolute;
+  top: -6px;
+  left: -11px;
+  width: 8px;
+  height: 25px;
+  border-bottom: 1.5px solid rgb(255 255 255 / 30%);
+  border-left: 1.5px solid rgb(255 255 255 / 30%);
+  border-bottom-left-radius: 5px;
+  content: "";
+}
+
+.org-chips {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 42px;
+}
+
+.org-chips:empty {
+  display: none;
+}
+
+/* um tipo dentro de uma pasta (arrastável) */
+.org-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 4px 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 20%);
+  color: rgb(var(--on-brand));
+  cursor: grab;
+  font-size: 0.66rem;
+  font-weight: 700;
+  user-select: none;
+}
+
+.org-chip button {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--on-brand) / 75%);
+  cursor: pointer;
+}
+
+.org-chip button:hover {
+  background: rgb(255 255 255 / 22%);
+  color: rgb(var(--on-brand));
+}
+
+.org-chip button svg {
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+/* destino do arrasto */
+.org-folder.is-drop-inside {
+  border-color: white;
+  background: rgb(255 255 255 / 18%);
+}
+
+.org-line {
+  position: absolute;
+  z-index: 3;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--surface);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 25%);
+  pointer-events: none;
+}
+
+.org-side {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.org-side .prods-section-title {
+  margin-top: 8px;
+  padding: 0;
+}
+
+.org-side .prods-section-title:first-child {
+  margin-top: 0;
+}
+
+.org-side.is-drop-target .org-types {
+  border-radius: 14px;
+  outline: 2px dashed var(--blue-200);
+  outline-offset: 4px;
+}
+
+/* tipos de item: cartões arrastáveis com o lugar de cada um */
+.org-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+}
+
+.org-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.org-type:hover {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+}
+
+.org-type>svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--blue-500);
+  stroke-width: 1.7;
+}
+
+.org-type-text {
+  display: grid;
+  min-width: 0;
+}
+
+.org-type-text strong {
+  color: var(--text-primary);
+  font-size: 0.74rem;
+}
+
+.org-type-text span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o que segue o mouse durante o arrasto */
+.org-ghost {
+  position: fixed;
+  z-index: 100;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-500);
+  box-shadow: 0 10px 24px rgb(30 42 80 / 24%);
+  color: rgb(var(--on-brand));
+  font-size: 0.72rem;
+  font-weight: 750;
+  pointer-events: none;
+  transform: translate(10px, 8px);
+}
+
+body.is-org-dragging,
+body.is-org-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.organize-switch {
+  margin-top: 6px;
+}
+
+.organize-switch .cfg-switch-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+/* ícone do tipo na etiqueta da árvore */
+.org-chip>svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  margin-left: -2px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+/* subpasta "fantasma": os comentários dos itens viram subpastas desta pasta */
+.org-sub-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 3px calc(var(--depth, 0) * 18px + 22px);
+  padding: 2px 6px;
+  color: rgb(var(--on-brand) / 55%);
+  font-size: 0.64rem;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.org-sub-hint svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-dasharray: 2.2 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+/* aba BUSCA: a categoria (chave do índice) e o nome de exibição */
+.category-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) 90px;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-key {
+  overflow: hidden;
+  padding: 0 4px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-count {
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.category-row.is-missing .category-key {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.category-empty {
+  margin: 0;
+  padding: 10px 0;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+}
+
+/* aba LINKS: puxador, ícone (favicon ou escolhido), nome e endereço com o × dentro */
+.link-row {
+  display: grid;
+  grid-template-columns: 22px 40px minmax(120px, 200px) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.link-icon {
+  position: relative;
+}
+
+.link-icon img {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  object-fit: contain;
+}
+
+.link-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+/* ícone escolhido: um ↺ no canto volta para o favicon */
+.link-reset {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.link-reset:hover {
+  border-color: var(--blue-200);
+  color: var(--blue-500);
+}
+
+.link-row .cfg-path .cfg-input {
+  padding-right: 40px;
+}
+
+.is-sorting>.link-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+/* link pessoal: o mesmo selo da barra (bonequinho) no canto do ícone */
+.link-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--blue-500);
+  pointer-events: none;
+}
+
+.link-badge svg {
+  display: block;
+  width: 13px !important;
+  height: 13px !important;
+  fill: currentcolor !important;
+  stroke: none !important;
+}
+
+.link-badge .badge-bg {
+  fill: var(--surface);
+}
+
+/* aba RENOMEAR: formato do nome (acentos e caixa) */
+.rename-format {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin: 2px 0 4px;
+}
+
+.rename-sep {
+  width: 120px;
+}
+
+/* os espaços do separador contam: aparecem como pontinhos */
+.rename-sep .cfg-input {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  white-space: pre;
+}
+
+.rename-format .cfg-switch-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.rename-case {
+  min-width: 170px;
+}
+
+/* aba APARÊNCIA */
+.app-swatch {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* o quadradinho: o espectro na borda, branco no meio */
+.swatch-tile {
+  position: relative;
+  width: 143px; /* a altura das duas linhas ao lado, com uma aberta */
+  height: 143px;
+  flex: 0 0 auto;
+  border-radius: 24px;
+  /* a roda de matizes: o ângulo é a matiz (0° em cima = vermelho, sentido horário), como as amostras */
+  background: conic-gradient(hsl(0, 95%, 60%), hsl(60, 95%, 55%), hsl(120, 80%, 52%), hsl(180, 90%, 52%), hsl(240, 95%, 64%), hsl(300, 90%, 62%), hsl(360, 95%, 60%));
+  cursor: crosshair;
+  box-shadow: 0 6px 18px rgb(30 42 80 / 12%);
+}
+
+/* o miolo: a mesma roda, na saturação e no brilho da cor ativa (o js preenche --wheel) */
+.swatch-tile::before {
+  position: absolute;
+  inset: 9px;
+  border-radius: 15px;
+  background: var(--wheel, transparent);
+  content: "";
+  transition: background 120ms linear;
+}
+
+.swatch-tile::after {
+  position: absolute;
+  inset: 9px;
+  border-radius: 15px;
+  background: rgb(255 255 255 / 30%); /* o miolo aparece por trás, suave */
+  backdrop-filter: blur(26px) saturate(1.2); /* difunde a mistura das cores (e o ponto do centro) */
+  content: ""; /* sem brilho em volta: a borda fica com o espectro chapado */
+}
+
+/* as amostras: círculos sólidos com contorno branco, sobre a própria matiz (o js posiciona); o raio é o
+   do canto do miolo (15px): num canto, a amostra fica concêntrica com ele */
+.swatch-dot {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px; /* o centro da amostra no ponto */
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--dot, #5184f8);
+  box-shadow: 0 2px 8px rgb(20 30 70 / 30%);
+  cursor: grab;
+  transition: transform 200ms var(--ease-soft);
+}
+
+.swatch-dot.is-active {
+  z-index: 2;
+}
+
+/* arrastando: a amostra acompanha o mouse */
+.swatch-tile.is-dragging,
+.swatch-tile.is-dragging .swatch-dot {
+  cursor: grabbing;
+}
+
+.swatch-dot.is-dragging {
+  z-index: 3;
+  transform: scale(1.12);
+}
+
+.swatch-dot:hover {
+  transform: scale(1.12);
+}
+
+/* sólido: a segunda cor some do quadradinho; a linha dela fica, desabilitada */
+.swatch-dot.is-disabled {
+  z-index: 0;
+  cursor: default;
+  opacity: 0; /* sólido: a segunda amostra some do quadradinho (a linha dela fica, desabilitada) */
+  pointer-events: none;
+  transform: scale(0.6);
+}
+
+.swatch-dot {
+  transition:
+    transform 200ms var(--ease-soft),
+    opacity 220ms ease,
+    filter 220ms ease;
+}
+
+/* cada amostra ao lado: a cor, o nome e o hex; clicando, abre o brilho; ocupam o resto da largura */
+.swatch-rows {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.swatch-row {
+  position: relative;
+  border: 1px solid var(--border);
+  /* cantos concêntricos com a amostra: margem de 12px + raio de 12px */
+  border-radius: 24px;
+  background: var(--surface);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.swatch-row.is-disabled {
+  background: var(--surface-soft);
+}
+
+.swatch-row.is-disabled .swatch-head {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.swatch-row.is-disabled .swatch-head:hover {
+  background: none;
+}
+
+.swatch-row.is-open {
+  border-color: var(--blue-200);
+  box-shadow: 0 8px 22px rgb(30 42 80 / 8%);
+}
+
+.swatch-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 48px; /* a amostra fica à esquerda, fora do fluxo */
+  border-radius: 23px;
+  cursor: pointer;
+  outline: none;
+}
+
+.swatch-head:hover {
+  background: var(--surface-soft);
+}
+
+.swatch-head:focus-visible {
+  box-shadow: 0 0 0 3px rgb(79 130 255 / 22%);
+}
+
+.swatch-mini {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  border: 3px solid white;
+  border-radius: 999px;
+  background: var(--dot, #5184f8);
+  box-shadow: 0 1px 5px rgb(20 30 70 / 30%);
+  transition: height 260ms var(--ease-soft);
+}
+
+/* aberta: a amostra vira uma pílula vertical, ao lado dos sliders, com a mesma margem em cima e embaixo */
+.swatch-row.is-open .swatch-mini {
+  height: calc(100% - 24px);
+}
+
+.swatch-name {
+  flex: 1;
+  color: var(--text-label);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.swatch-head .cfg-input {
+  width: 104px;
+  min-height: 32px;
+  padding: 4px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+.swatch-chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform 240ms var(--ease-soft);
+}
+
+.swatch-row.is-open .swatch-chevron {
+  transform: rotate(180deg);
+}
+
+.swatch-sliders {
+  display: grid;
+  gap: 10px;
+  padding: 4px 14px 14px 48px;
+}
+
+.swatch-sliders[hidden] {
+  display: none;
+}
+
+.swatch-slider {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+/* o trilho mostra o que o slider faz com a cor (--track, do JS) */
+.swatch-slider input[type="range"] {
+  width: 100%;
+  height: 12px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--track, var(--border));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.swatch-slider input[type="range"]::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--dot, #5184f8);
+  box-shadow: 0 1px 5px rgb(20 30 70 / 40%);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* prévia: o fundo das janelas (degradê ou sólido) com um botão de destaque */
+.app-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 45%, var(--blue-600));
+  color: rgb(var(--on-brand));
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.app-preview-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--blue-500);
+  font-weight: 750;
+}
+
+.app-font {
+  max-width: 280px;
+}
+
+/* modo e fundo lado a lado (cada um com o título em cima) */
+.app-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 16px;
+}
+
+.app-field {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.app-field .prods-section-title {
+  margin-top: 0;
+}
+
+.app-logo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo-box {
+  display: grid;
+  width: 74px;
+  height: 52px;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--blue-400), var(--blue-600));
+}
+
+.app-logo-box img,
+.appearance-loaf {
+  width: 44px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* =========================================================
+   aba PROJETO
+   ========================================================= */
+
+.drive-row.is-retranca {
+  grid-template-columns: 124px minmax(0, 1fr);
+}
+
+.retranca-code {
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rename-result .is-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* os dois "+" da lista de retrancas: o segundo logo abaixo do primeiro */
+#btn-new-retranca + .add-button {
+  margin-top: -2px;
+}
+
+/* =========================================================
+   aba COLETAR (a mesma árvore do organizar)
+   ========================================================= */
+
+/* na raiz ficam os tipos que não são coletados: riscados */
+#pane-collect .org-folder.is-root .org-chip {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* =========================================================
+   aba FERRAMENTAS: a barra em fila única (no azul, como a
+   própria barra) e as ferramentas no branco
+   ========================================================= */
+
+.tools-bar {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 12px;
+  overflow-y: auto;
+  user-select: none;
+  scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
+  scrollbar-width: thin;
+}
+
+.bar-row {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px 4px 2px;
+  border-radius: var(--radius-small);
+  color: rgb(var(--on-brand));
+  transition: background-color 160ms ease;
+}
+
+.bar-row:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.bar-row > svg {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.bar-row-label {
+  color: rgb(var(--on-brand));
+  font-size: 0.82rem;
+  font-weight: 720;
+}
+
+.bar-row .drag-handle {
+  color: rgb(var(--on-brand) / 55%);
+}
+
+.bar-row.is-links {
+  min-height: 38px;
+  padding-left: 30px;
+  opacity: 0.8;
+}
+
+.bar-row.is-links > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bar-row.is-links:hover {
+  background: none;
+}
+
+.bar-row-rule {
+  height: 1px;
+  margin: 2px 12px;
+  background: rgb(255 255 255 / 26%);
+}
+
+/* separador: a divisória da barra */
+.bar-row.is-divider {
+  min-height: 30px;
+}
+
+.bar-row-line {
+  height: 1px;
+  flex: 1;
+  background: rgb(255 255 255 / 45%);
+}
+
+.bar-row .mini-button {
+  margin-left: auto;
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 12%);
+  color: rgb(var(--on-brand));
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+/* o × aparece com o mouse em cima (ou com o foco) */
+.bar-row:hover .mini-button,
+.bar-row .mini-button:focus-visible {
+  opacity: 1;
+}
+
+.bar-row.is-divider .mini-button {
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 12%);
+  color: rgb(var(--on-brand));
+}
+
+.is-sorting > .bar-row {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting>.bar-row.is-dragging {
+  --drag-inset: -1px 5px -1px -3px; /* a linha já tem 4 px em cima e embaixo, 2 à esquerda e 10 à direita */
+  --drag-bg: rgb(255 255 255 / 18%);
+  --drag-shadow: 0 12px 28px rgb(20 30 90 / 25%);
+}
+
+/* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + como os botões dentro dos campos */
+.org-type.tool-card {
+  cursor: default;
+}
+
+.tool-add.mini-button {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.tool-add.mini-button:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
+}
+
+.tool-cards-empty {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+}
+
+/* "+ separador" logo abaixo dos blocos, como o "+ novo output" */
+#btn-new-divider {
+  margin-top: 4px;
+}
+
+/* aba busca: a lupa procura */
+.prods-nav .anim-search {
+  transform-origin: 40% 40%;
+  transition: transform 320ms var(--ease-soft);
+}
+
+.prods-nav .tab:hover .anim-search {
+  transform: translate(-1.5px, -1.5px) rotate(-8deg);
+}
+
+/* =========================================================
+   equipe (rede) × local (este computador)
+   ========================================================= */
+
+/* os grupos de abas no cartão */
+.tab-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 12px 4px;
+  white-space: nowrap;
+  color: rgb(var(--on-brand) / 58%);
+  font-size: 0.6rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tab-group:first-child {
+  margin-top: 2px;
+}
+
+.tab-group span {
+  color: rgb(var(--on-brand));
+  font-weight: 800;
+}
+
+.tab-group svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: rgb(var(--on-brand));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.tab-group[data-scope="mine"] {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+/* a faixa no topo da folha: onde a aba aberta é salva */
+.scope-note {
+  display: flex;
+  min-height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.scope-note:empty {
+  display: none;
+}
+
+.scope-note > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.scope-note b {
+  color: var(--text-primary);
+}
+
+.scope-note.is-team > svg {
+  color: var(--blue-500);
+}
+
+.scope-note.is-mine {
+  background: #fff9eb;
+}
+
+.scope-note.is-mine > svg {
+  color: #c98a12;
+}
+
+/* editando o padrão da equipe: a faixa fica azul, para não esquecer */
+.scope-note.is-editing-team {
+  background: var(--blue-50);
+  color: var(--blue-ink, var(--blue-600));
+}
+
+.scope-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scope-action {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 650;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.scope-action:hover {
+  border-color: var(--blue-200);
+  color: var(--blue-500);
+}
+
+/* o bonequinho tem o peso embaixo (cabeça pequena, ombros largos): sobe um pouco para alinhar com o texto */
+.tab-group[data-scope="mine"] svg {
+  transform: translateY(-2.5px);
+}
+
+/* o globo também fica um pouco abaixo do meio das letras (só maiúsculas) */
+.tab-group[data-scope="team"] svg {
+  transform: translateY(-1px);
+}
+
+.scope-note.is-mine > svg {
+  transform: translateY(-1px);
+}
+
+/* aba COMPUTADOR: a sigla é curta */
+.machine-user {
+  max-width: 220px;
+}
+
+/* aba COMPUTADOR: templates por produção (nome | pasta daqui | copiar) */
+.machine-tpl {
+  grid-template-columns: minmax(110px, 180px) minmax(0, 1fr) auto;
+}
+
+.machine-tpl-name {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.machine-tpl-name b {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.machine-tpl-name span {
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.machine-sync.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* produção local: sem "copiar", mas a coluna continua (os campos alinham) */
+.machine-sync.is-placeholder {
+  visibility: hidden;
+}
+
+/* aba COMPUTADOR: aviso de que a rede caiu (o modo local já vale) */
+.machine-offline {
+  margin: 0;
+  border-radius: var(--radius-small);
+}
+
+/* LAYOUT: os meus links na coluna branca, abaixo dos blocos (nome em cima do endereço) */
+.mylinks-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mylinks-section[hidden] {
+  display: none;
+}
+
+.org-side .link-row {
+  grid-template-columns: 22px 40px minmax(0, 1fr);
+}
+
+.org-side .link-row > :nth-child(4) {
+  grid-column: 3 / -1;
+}
+
+/* REDE: os drives logo depois do registro de uso */
+.network-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

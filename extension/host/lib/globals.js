@@ -23,53 +23,41 @@ UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX"] = "Y:";
 
 UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_p"] = "P:";
 
-var renameRefArray = [
-	(RODAPE = {
-		prefix: 'RDP',
-		comment: 'RODAPE',
-		regExpStr: ['RODAP[EÉ](S)*', 'RDP(S)*']
-	}),
-	(CARTAO = {
-		prefix: 'CRT',
-		comment: 'CARTAO',
-		regExpStr: ['CART[ÃA]O', 'CART[ÕO]ES', 'CRT(S)*']
-	}),
-	(LETTERING = {
-		prefix: 'LETT',
-		comment: 'LETTERING',
-		regExpStr: ['LETTERING(S)*', 'LETT(S)*', 'LET(S)*']
-	}),
-	(CONFRONTO = {
-		prefix: 'CONFRONTO',
-		comment: 'CONFRONTO',
-		regExpStr: ['CONFRONTO(S)*']
-	}),
-	(TARJA = {
-		prefix: 'TARJA',
-		comment: 'TARJA',
-		regExpStr: ['TARJA(S)*', 'TRJ(S)*', 'TAR(S)*']
-	}),
-	(PASSAGEM = {
-		prefix: 'PASSAGEM',
-		comment: 'PASSAGEM',
-		regExpStr: ['PASSAGEM(S)*', 'TRANSI[CÇ][ÃA]O', 'TRANSI[CÇ][ÕO]ES', 'LAPADA(S)*']
-	}),
-	(ASSINATURA = {
-		prefix: 'ASSINA',
-		comment: 'ASSINATURA',
-		regExpStr: ['ASSINATURA(S)*', 'ASSINA(S)*', 'ASS']
-	}),
-	(FOTO = {
-		prefix: 'FOTO',
-		comment: 'FOTO',
-		regExpStr: ['FOTO(S)*', 'IMG(S)*', '(IMAGEM|IMAGENS)']
-	}),
-	(REFERENCIA = {
-		prefix: 'REF',
-		comment: 'REFERENCIA',
-		regExpStr: ['REFERENCIA(S)*', 'PREVIEW(S)*', '(REF|PREV)(S)*']
-	})
+// Volumes (shares) que não têm letra de drive: share → servidor, para converter /Volumes/SHARE em //servidor/SHARE.
+var PAD_SHARE_SERVERS = {
+	VFX: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
+	cdesign: 'egcdesign01.servicos.corp.tvglobo.com.br',
+	EDIT_IN_PLACE: 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
+	promo_ber: '10.193.48.13'
+};
+
+// Servidor usado quando o share não está em nenhum dos mapas.
+var PAD_DEFAULT_SERVER = 'vfx-ml-sp.servicos.corp.tvglobo.com.br';
+
+// Tipos de peça para renomear (a aba RENOMEAR da configuração substitui): prefixo do nome, comentário da comp e
+// os termos que identificam o tipo no nome da comp ou da pasta (palavras; o plural com S também vale).
+// A ordem importa: vale o primeiro tipo encontrado.
+var PAD_RENAME_TYPES = [
+	{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+	{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+	{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+	{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
+	{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+	{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
+	{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
+	{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
+	{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
 ];
+
+// Formato do nome: removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep (como está).
+// O prefixo do tipo fica sempre como foi escrito.
+var PAD_RENAME_OPTIONS = { removeSpecial: true, textCase: 'upperCase' };
+
+// Nomes fixos: se o nome (ou o comentário) da comp contém o termo, ela passa a se chamar 'name'.
+var PAD_RENAME_FIXED = [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }];
+
+// Montada a partir de PAD_RENAME_TYPES (padRenameRefs, em rename lib.js): { prefix, comment, regExpStr: [...] }
+var renameRefArray = [];
 
 var defaultTemplateConfigObj = {
 	configName: 'NOME DA CONFIGURAÇÃO',

@@ -71,15 +71,87 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
+	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
+	function mockMachine() {
+		return JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+	}
+
+	function mockPrefs() {
+		return JSON.parse(localStorage.getItem('pad.mock.prefs') || 'null') || { appearance: null, bar: null };
+	}
+
+	function mockBar() {
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'], hidden: [] };
+	}
+
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta4', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta6', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
 			if (!window.PAD_MOCK_LIST) {
 				window.PAD_MOCK_LIST = {
 					stamp: 1000,
+					log: { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' },
+					drives: {
+						drives: [{ letter: 'L', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l' }, { letter: 'T', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign' }, { letter: 'V', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE' }],
+						shares: [{ share: 'VFX', server: 'vfx-ml-sp.servicos.corp.tvglobo.com.br' }, { share: 'promo_ber', server: '10.193.48.13' }],
+						defaultServer: 'vfx-ml-sp.servicos.corp.tvglobo.com.br'
+					},
+					rename: {
+						types: [
+							{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+							{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+							{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+							{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+							{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] }
+						],
+						fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }]
+					},
+					organize: {
+						folders: [
+							{ name: '01 COMPS', parent: '', content: 'render' },
+							{ name: '02 PRECOMPS', parent: '', content: 'precomps' },
+							{ name: '03 ARQUIVOS', parent: '', content: '' },
+							{ name: 'VIDEOS', parent: '03 ARQUIVOS', content: 'videos' },
+							{ name: 'IMAGENS', parent: '03 ARQUIVOS', content: 'imagens' },
+							{ name: 'AUDIO', parent: '03 ARQUIVOS', content: 'audio' },
+							{ name: 'SOLIDOS', parent: '03 ARQUIVOS', content: 'solidos' },
+							{ name: 'DADOS', parent: '03 ARQUIVOS', content: 'dados' },
+							{ name: 'MISSING', parent: '', content: 'missing' }
+						],
+						renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
+						autoComment: 'EXPORTAR',
+						dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
+						commentSubfolders: true
+					},
+					links: [
+						{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' },
+						{ name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }
+					],
+					search: {
+						webhook: 'https://workflows.jmbillard.com/webhook/path-search',
+						labels: [{ key: 'atracoes_teams', label: 'TEAMS' }, { key: 'atracoes_trello', label: 'TRELLO' }, { key: 'filmes', label: 'FILMES' }, { key: 'servidor', label: 'SERVIDOR' }]
+					},
+					project: {
+						root: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO',
+						folder: true,
+						fileName: '{id} {projeto}',
+						retrancas: [{ code: 'EMP', path: 'JORNAIS/em ponto' }, { code: 'JDE', path: 'JORNAIS/jornal das dez' }, { code: 'INS', path: 'CANAL/institucional' }]
+					},
+					collect: {
+						folders: [
+							{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
+							{ name: '02 ARQUIVOS', parent: '', contents: [] },
+							{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
+							{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
+							{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
+							{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
+							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
+							{ name: '03 SAIDA', parent: '', contents: [] }
+						]
+					},
 					items: [
 						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
@@ -98,9 +170,107 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				shared: true,
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
+				log: Object.assign({}, window.PAD_MOCK_LIST.log),
+				drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)),
+				rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)),
+				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
+				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
+				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
+				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
+				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
+				bar: mockBar(),
+				personal: mockPrefs(),
+				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p);
 				})
+			};
+		},
+
+		appearance: function () {
+			var stored = JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null');
+			var mine = mockPrefs().appearance;
+
+			return { stamp: (localStorage.getItem('pad.mock.appearance') || 'padrão') + '|' + localStorage.getItem('pad.mock.prefs'), appearance: mine || stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
+		},
+
+		personalPrefs: function () {
+			return mockPrefs();
+		},
+
+		savePersonalPrefs: function (a) {
+			localStorage.setItem('pad.mock.prefs', JSON.stringify({ appearance: a.appearance || null, bar: a.bar || null }));
+
+			return mockPrefs();
+		},
+
+		machinePrefs: function () {
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false };
+
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {} }, m);
+		},
+
+		saveMachinePrefs: function (a) {
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode }));
+
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+		},
+
+		syncTemplates: function (a) {
+			if (!a.to) throw new Error('#PAD_097 - ' + a.name + ': escolha a pasta deste computador antes de copiar.');
+
+			return { copied: 12, same: 3, failed: [], to: a.to };
+		},
+
+		barLinks: function () {
+			var list = window.PAD_MOCK_LIST;
+
+			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
+
+			var bar = mockPrefs().bar || mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
+
+			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal, localMode: !!(mockMachine().localMode || localStorage.getItem('pad.mock.offline')), localForced: !!mockMachine().localMode };
+		},
+
+		personalLinks: function () {
+			return { links: JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]') };
+		},
+
+		savePersonalLinks: function (a) {
+			var bad = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
+
+			if (bad) throw new Error('#PAD_087 - meus links: "' + (bad.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
+			localStorage.setItem('pad.mock.personalLinks', JSON.stringify(a.links));
+
+			return { links: a.links };
+		},
+
+		requestConfigTab: function (a) {
+			localStorage.setItem('pad.mock.configTab', JSON.stringify({ tab: a.tab, stamp: Date.now() }));
+
+			return { tab: a.tab };
+		},
+
+		requestedConfigTab: function () {
+			var req = JSON.parse(localStorage.getItem('pad.mock.configTab') || '{"tab":null,"stamp":0}');
+
+			req.now = Date.now();
+
+			return req;
+		},
+
+		searchCategories: async function (a) {
+			await wait(a.force ? 900 : 300);
+
+			return {
+				downloaded: !!a.force,
+				categories: [
+					{ key: 'atracoes_teams', auto: 'TEAMS', count: 412 },
+					{ key: 'atracoes_trello', auto: 'TRELLO', count: 128 },
+					{ key: 'filmes', auto: 'FILMES', count: 57 },
+					{ key: 'esportes_ao_vivo', auto: 'ESPORTES AO VIVO', count: 9 },
+					{ key: 'servidor', auto: 'SERVIDOR', count: 2 }
+				]
 			};
 		},
 
@@ -109,12 +279,66 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (mode === 'conflict') throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 
-			window.PAD_MOCK_LIST.items = a.productions.slice().sort(function (x, y) {
-				return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
-			});
+			window.PAD_MOCK_LIST.items = a.productions.slice();
 			window.PAD_MOCK_LIST.stamp += 1000;
+			if (a.log) window.PAD_MOCK_LIST.log = Object.assign({}, a.log);
+			if (a.drives) {
+				var bad = a.drives.drives.filter(function (d) { return !/^[A-Z]$/.test(d.letter) || !/^\/\/[^/]+\/.+/.test(d.path.replace(/\\/g, '/')); })[0];
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+				if (bad) throw new Error('#PAD_080 - drives: o caminho de ' + (bad.letter || '?') + ': precisa ser de rede (//servidor/share/...).');
+				window.PAD_MOCK_LIST.drives = JSON.parse(JSON.stringify(a.drives));
+			}
+			if (a.rename) {
+				var noTerms = a.rename.types.filter(function (t) { return !t.prefix || !t.comment || !t.terms.length; })[0];
+
+				if (noTerms) throw new Error('#PAD_082 - renomear: "' + (noTerms.prefix || '?') + '" precisa de prefixo, comentário e ao menos um termo.');
+				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
+			}
+			if (a.organize) window.PAD_MOCK_LIST.organize = JSON.parse(JSON.stringify(a.organize));
+			if (a.appearance) {
+				if (!['accent', 'gradientStart', 'gradientEnd'].every(function (k) { return /^#[0-9a-f]{6}$/i.test(a.appearance[k]); })) throw new Error('#PAD_088 - aparência: cor inválida (use #rrggbb).');
+				localStorage.setItem('pad.mock.appearance', JSON.stringify(a.appearance));
+			}
+			if (a.links) {
+				var badLink = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
+
+				if (badLink) throw new Error('#PAD_087 - links: "' + (badLink.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
+				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
+			}
+			if (a.project) {
+				var badTok = /\{(?!(id|projeto|usuario|retranca|data)\})[^}]*\}/.exec(a.project.fileName);
+
+				if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é uma variável.');
+				window.PAD_MOCK_LIST.project = JSON.parse(JSON.stringify(a.project));
+			}
+			if (a.bar) {
+				// como o host: sem separador no começo, no fim ou dois seguidos
+				var items = a.bar.items.filter(function (k, i, all) {
+					return k !== 'divider' || (i > 0 && all[i - 1] !== 'divider');
+				});
+
+				while (items[items.length - 1] === 'divider') items.pop();
+				localStorage.setItem('pad.mock.bar', JSON.stringify({ items: items, hidden: a.bar.hidden }));
+			}
+			if (a.collect) {
+				var seenType = {};
+
+				a.collect.folders.forEach(function (f) {
+					if (!f.name) throw new Error('#PAD_094 - coletar: toda pasta precisa de um nome.');
+					f.contents.forEach(function (t) {
+						if (seenType[t]) throw new Error('#PAD_094 - coletar: duas pastas recebem o mesmo tipo.');
+						seenType[t] = true;
+					});
+				});
+				window.PAD_MOCK_LIST.collect = JSON.parse(JSON.stringify(a.collect));
+			}
+			if (a.search) {
+				if (a.search.source !== 'file' && !/^https?:\/\/\S+$/.test(a.search.webhook)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				if (a.search.source === 'file' && !a.search.file) throw new Error('#PAD_086 - busca: escolha o arquivo de índice.');
+				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
+			}
+
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -232,6 +456,60 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var req = window.PAD_MOCK_TAB || (/tab=texts/.test(location.search) ? { tab: 'texts', stamp: Date.now() } : { tab: null, stamp: 0 });
 
 			return { tab: req.tab, stamp: req.stamp, now: Date.now() };
+		},
+
+		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar (o painel volta para o índice antigo)
+		searchInfo: function () {
+			return {
+				url: 'https://workflows.jmbillard.com/webhook/buscar',
+				cache: '/tmp/busca_v2.json',
+				local: false,
+				platform: 'Mac',
+				servidor: [
+					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST', server: 'cpp-ml-sp', share: 'PROMO_REDE' },
+					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO', server: 'cpp-ml-sp', share: 'PROMO_REDE' }
+				],
+				labels: { atracoes_teams: 'TEAMS', atracoes_trello: 'TRELLO', atracoes: 'ATRAÇÕES', filmes: 'FILMES', servidor: 'SERVIDOR' }
+			};
+		},
+
+		searchDownload: async function () {
+			await new Promise(function (r) { setTimeout(r, 300); });
+
+			if (/mock=v1/.test(location.search)) throw new Error('#PAD_058 - não foi possível carregar o índice.');
+
+			var H = 3600000;
+			var iso = function (h) { return new Date(Date.now() - h * H).toISOString().replace(/\.\d+Z$/, 'Z'); };
+			var srv = '//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER';
+
+			return {
+				downloaded: true,
+				text: JSON.stringify({
+					v: 2,
+					stamp: 'mock01',
+					generated: iso(0),
+					teams: [
+						{ at: iso(1), msg: '1793719190975', chat: '19:71c26c3266a7442394fac2e6fd73e284@thread.v2', from: 'Jean Billard', role: 'DESIGNER III', path: srv + '/ARTE SP/FAVELA POTENCIA/DUPLAS' },
+						{ at: iso(2), msg: '1793719049291', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Marcelo Nathan', role: 'DESIGNER I', path: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026/LETTERINGS/G REPORTER 6 11' },
+						{ at: iso(3), msg: '1793718145025', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Thiago Fornari', role: 'EDITOR MIDIAS AUDIOVISUAIS III', path: '//cpp-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/edit_output/_C# ABERTA & INTER/PARA_CDESIGN/EDIT_RJ/G REPORTER 6-11 N' },
+						{ at: iso(30), msg: '1793670338780', chat: '19:48b78d8f31f64d99a1ea36ae91d84840@thread.v2', from: 'Victor Mendes', role: 'DESIGNER III', path: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/SHOWS/POR DENTRO_NEY MATOGROSSO' }
+					],
+					trello: [
+						{ claq: 'G REPORTER 6 11', red: 'Felipe Salgado Souza', ed: 'Manuel Victor', card: '6a234fa81e187570432a5c12' },
+						{ claq: 'G REPORTER ESP 13 11', red: 'Renata Alves', ed: 'Bruno Teixeira', card: '693365db28fe6d3ed097f363' },
+						{ claq: 'G REPORTER 30 10', red: 'Felipe Salgado Souza', card: '692791339e921ddf5ca3dc4d' },
+						{ claq: 'Encontro 8/6', red: 'Juliana Amorim', ed: 'Bruno Regis', card: '6927932650d09a079178dcff' }
+					],
+					atracoes: [
+						{ name: 'Globo Repórter', pattern: ['G REPORTER', 'GLOBO REPORTER'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/JORNALISMO/GLOBO REPORTER/2021-2026/01 PROJETOS', out: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026' },
+						{ name: 'Festival de Inverno', pattern: ['FESTIVAL'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/FESTIVAL DE INVERNO/2026/01PROJETOS', out: srv + '/ARTE RJ/SHOWS/FESTIVAL DE INVERNO RIO/2026' }
+					],
+					filmes: [
+						{ name: '90 DECIBÉIS', out: srv + '/ARTE RJ/FILMES/TITULOS/_#_/90 DECIBEIS' },
+						{ name: 'O REPÓRTER DA MEIA-NOITE', out: srv + '/ARTE RJ/FILMES/TITULOS/_R_/O REPORTER DA MEIA NOITE' }
+					]
+				})
+			};
 		},
 
 		pathsIndex: async function (a) {
@@ -536,6 +814,216 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (mode === 'nooutput') return { opened: 0, missing: a.paths.map(function (p) { return p.replace(/^\/\/[^\/]+/, '/Volumes'); }) };
 
 			return { opened: 1, missing: [] };
+		},
+
+		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
+		projectInfo: function () {
+			if (!window.PAD_MOCK_LIST) api.productions();
+
+			var p = window.PAD_MOCK_PROJECT || (window.PAD_MOCK_PROJECT = mode === 'noproj' ? { id: '', name: '', user: '' } : { id: 'EMP123456', name: 'História ao Vivo', user: '' });
+			var s = window.PAD_MOCK_LIST.project;
+			var retrancas = mode === 'nort' ? [] : s.retrancas;
+			var user = p.user || 'JMBILLARD';
+			var found = null;
+
+			retrancas.forEach(function (r) {
+				if (p.id.indexOf(r.code) === 0 && (!found || r.code.length > found.code.length)) found = r;
+			});
+
+			var name = p.name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+			var values = { id: p.id, projeto: name, usuario: user, retranca: found ? found.path.split('/').pop() : '', data: '2026-10-31' };
+			var fill = function (pattern) {
+				return pattern.replace(/\{(\w+)\}/g, function (all, t) {
+					return values[t] != null ? values[t] : '';
+				}).replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
+			};
+			var fileBase = fill(s.fileName);
+			var base = found ? s.root + '/' + found.path : s.root;
+			var target = base ? (s.folder && fileBase ? base + '/' + fileBase : base) : '';
+			var toMac = function (x) {
+				return x.replace(/^\/\/[^\/]+/, '/Volumes');
+			};
+
+			return {
+				id: p.id,
+				name: p.name,
+				user: p.user || 'JMBILLARD',
+				defaultUser: 'JMBILLARD',
+				hasItems: true,
+				file: window.PAD_MOCK_SAVED || '',
+				retranca: found ? { code: found.code, name: found.path.split('/').pop() } : null,
+				hasRetrancas: retrancas.length > 0,
+				target: target ? toMac(target) : '',
+				fileName: fileBase ? fileBase + '.aep' : '',
+				saved: !!window.PAD_MOCK_SAVED
+			};
+		},
+
+		projectSet: function (a) {
+			var p = window.PAD_MOCK_PROJECT || {};
+
+			window.PAD_MOCK_PROJECT = { id: (a.id || '').toUpperCase().replace(/\s+/g, ''), name: (a.name || '').trim(), user: a.user === 'JMBILLARD' ? '' : a.user || '' };
+			if (p.id !== window.PAD_MOCK_PROJECT.id) window.PAD_MOCK_SAVED = '';
+
+			return api.projectInfo();
+		},
+
+		projectSave: function (a) {
+			var info = api.projectInfo();
+
+			if (!a.overwrite && !info.file && window.PAD_MOCK_EXISTS) throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: salve de novo para substituir.');
+
+			window.PAD_MOCK_EXISTS = true;
+			window.PAD_MOCK_SAVED = (a.path || info.target) + '/' + info.fileName;
+
+			return { file: window.PAD_MOCK_SAVED, folder: a.path || info.target };
+		},
+
+		// janela PROJETO em etapas (?mock=created: projeto já criado)
+		projectCurrent: function () {
+			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
+
+			if (!c) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
+
+			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
+		},
+
+		projectLookup: function (a) {
+			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
+			var list = [
+				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
+				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS' },
+				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
+				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
+				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
+				{ name: 'Sessão da Tarde', pat: ['S TARDE', 'STARDE'], path: V + '/INSTITUCIONAL/ON AIR 2021/01PROJETOS' }
+			];
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var words = key(a.claquete).split(' ');
+			var pre = {};
+			var acc = '';
+
+			words.forEach(function (w) {
+				acc += w;
+				pre[acc] = true;
+			});
+
+			var out = [];
+
+			list.forEach(function (m) {
+				var score = 0;
+
+				m.pat.concat([m.name]).forEach(function (p) {
+					var k = key(p).replace(/ /g, '');
+
+					if (pre[k] && k.length > score) score = k.length;
+				});
+				if (score) out.push({ name: m.name, path: m.path, display: m.path, film: !!m.film, score: score });
+			});
+			out.sort(function (x, y) {
+				return y.score - x.score;
+			});
+
+			return { claquete: key(a.claquete), matches: a.claquete ? out : [] };
+		},
+
+		projectFilms: function (a) {
+			var all = ['NAO OLHE PARA CIMA', 'NAO NAO OLHE', 'NOITE DOS MORTOS VIVOS', 'NAO ME ABANDONE JAMAIS'];
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var t = key(a.title);
+			var films = all.map(function (f) {
+				var like = t.split(' ').filter(function (w) {
+					return w && f.split(' ').indexOf(w) >= 0;
+				}).length * 2 + (f.indexOf(t) === 0 ? 3 : 0);
+
+				return { name: f, path: a.path + '/_N_/' + f, raw: a.path + '/_N_/' + f, like: like };
+			}).filter(function (f) {
+				return f.like > 0;
+			}).sort(function (x, y) {
+				return y.like - x.like;
+			});
+
+			return { letter: '_N_', letterPath: a.path + '/_N_', films: films, newName: t, newPath: a.path + '/_N_/' + t };
+		},
+
+		projectBases: function () {
+			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
+
+			return { bases: [{ label: 'FILMES', path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', display: '…/FILMES/TITULOS', film: true }, { label: 'NOVELAS', path: V + '/NOVELAS', display: '…/Fileserver_3/NOVELAS', film: false }, { label: 'PROGRAMAS', path: V + '/PROGRAMAS', display: '…/Fileserver_3/PROGRAMAS', film: false }, { label: 'SHOWS', path: V + '/SHOWS', display: '…/Fileserver_3/SHOWS', film: false }] };
+		},
+
+		projectPlan: function (a) {
+			var key = function (t) {
+				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var film = a.kind === 'film';
+			var base = film ? key(a.title) : key(a.atracao + ' ' + (a.what || ''));
+			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
+			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
+			var H = 3600000;
+			var now = Date.now();
+			var existing = !film && /MAIS VOCE/.test(root) ? [
+				{ name: 'MAIS VOCE CREDITOS', modified: now - 2 * H },
+				{ name: 'MAIS VOCE CHROMA', modified: now - 26 * H },
+				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
+				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
+				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
+			] : [];
+			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
+
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD' };
+		},
+
+		projectCreate: function (a) {
+			var plan = api.projectPlan(a);
+
+			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
+
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+
+			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
+		},
+
+		projectUpdate: function (a) {
+			var c = window.PAD_MOCK_CUR;
+
+			if (c) {
+				c.claquete = String(a.claquete || '').toUpperCase();
+				c.designer = String(a.designer || 'JMBILLARD').toUpperCase();
+			}
+
+			return api.projectCurrent();
+		},
+
+		projectMove: function (a) {
+			if (window.PAD_MOCK_CUR) window.PAD_MOCK_CUR.root = a.path;
+
+			return api.projectCurrent();
+		},
+
+		// ?mock=unsaved: projeto ainda não salvo
+		collectProject: function (a) {
+			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
+
+			return { messages: mode === 'fail' ? ['#PAD_093 - arquivos ausentes (não coletados):\n\nsumiu.mov'] : [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true } };
+		},
+
+		projectOpenFolder: function () {
+			return { path: '/Volumes/cdesign' };
+		},
+
+		projectRetrancasFromIndex: function () {
+			return {
+				retrancas: [
+					{ code: 'INS', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/CANAL/institucional' },
+					{ code: 'EMP', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/JORNAIS/em ponto' },
+					{ code: 'MAC', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/MARCA E COMUNICACAO' }
+				]
+			};
 		},
 
 		openFolder: function (a) {

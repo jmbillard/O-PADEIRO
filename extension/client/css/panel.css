@@ -54,7 +54,7 @@ body {
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px 14px;
+  padding: 16px 14px calc(var(--footer-center) - 34px); /* 34 = borda + respiro + meio botão do rodapé do cartão */
 }
 
 .upload-side-content,
@@ -110,7 +110,7 @@ body {
   }
 
   .app-shell.is-expanded .upload-side {
-    padding-bottom: 18px;
+    padding-bottom: calc(var(--footer-center) - 34px);
   }
 
   .app-shell.is-expanded .picker-list {
@@ -130,7 +130,7 @@ body {
 @media (max-width: 480px) {
   .upload-side,
   .app-shell:not(.is-expanded) .upload-side {
-    padding: 16px 14px;
+    padding: 16px 14px calc(var(--footer-center) - 34px);
   }
 
   .queue-side,
@@ -158,8 +158,8 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   appearance: none;
-  background: white;
-  color: #505c72;
+  background: var(--surface);
+  color: var(--text-control);
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 650;
@@ -184,7 +184,7 @@ body {
 }
 
 .select select:hover:not(:disabled) {
-  border-color: #ccd5e3;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
@@ -211,7 +211,9 @@ body {
   flex: 1;
   flex-direction: column;
   border: 1px solid rgb(255 255 255 / 40%);
-  border-radius: var(--radius-large);
+  /* cantos concêntricos: em cima com a busca (pílula de raio 27 a 15 px da borda), embaixo com os botões
+     redondos do rodapé (raio 19, também a 15 px) */
+  border-radius: 42px 42px 34px 34px;
   background: rgb(255 255 255 / 13%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 16%),
@@ -232,7 +234,7 @@ body {
   left: 18px;
   fill: none;
   pointer-events: none;
-  stroke: rgb(255 255 255 / 72%);
+  stroke: rgb(var(--on-brand) / 72%);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
@@ -245,7 +247,7 @@ body {
   border: 1px solid rgb(255 255 255 / 30%);
   border-radius: var(--radius-pill);
   background: rgb(255 255 255 / 12%);
-  color: white;
+  color: rgb(var(--on-brand));
   font-size: 1rem;
   font-weight: 560;
   outline: none;
@@ -261,7 +263,7 @@ body {
 }
 
 .picker-search input::placeholder {
-  color: rgb(255 255 255 / 62%);
+  color: rgb(var(--on-brand) / 62%);
 }
 
 .picker-search input:focus {
@@ -280,9 +282,19 @@ body {
   border: 0;
   border-radius: 50%;
   background: rgb(255 255 255 / 18%);
-  color: white;
+  color: rgb(var(--on-brand));
   font-size: 0.8rem;
   line-height: 1;
+}
+
+/* o mesmo × desenhado dos botões de remover */
+.picker-clear svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
 }
 
 .picker-clear:hover {
@@ -295,7 +307,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 4px 8px 8px;
-  scrollbar-color: rgb(255 255 255 / 40%) transparent;
+  scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
 }
 
@@ -319,7 +331,7 @@ body {
   border: 1px solid transparent;
   border-radius: var(--radius-small);
   background: transparent;
-  color: white;
+  color: rgb(var(--on-brand));
   font-size: 0.88rem;
   text-align: left;
   transition:
@@ -357,7 +369,7 @@ body {
 }
 
 .tree-folder>.tree-row {
-  color: rgb(255 255 255 / 82%);
+  color: rgb(var(--on-brand) / 82%);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.1em;
@@ -402,7 +414,7 @@ body {
   padding: 1px 6px;
   border: 1px solid rgb(255 255 255 / 25%);
   border-radius: 6px;
-  color: rgb(255 255 255 / 76%);
+  color: rgb(var(--on-brand) / 76%);
   font-size: 0.56rem;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -410,9 +422,9 @@ body {
 
 .tree-item.is-selected>.tree-row {
   border-color: white;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
-  color: var(--blue-600);
+  color: var(--blue-ink, var(--blue-600));
 }
 
 .tree-item.is-selected>.tree-row .tree-ext {
@@ -427,13 +439,13 @@ body {
   align-content: center;
   gap: 6px;
   padding: 24px 18px;
-  color: rgb(255 255 255 / 76%);
+  color: rgb(var(--on-brand) / 76%);
   font-size: 0.78rem;
   text-align: center;
 }
 
 .picker-state strong {
-  color: white;
+  color: rgb(var(--on-brand));
   font-size: 0.9rem;
 }
 
@@ -441,9 +453,9 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 14px;
   border-top: 1px solid rgb(255 255 255 / 20%);
-  color: rgb(255 255 255 / 70%);
+  color: rgb(var(--on-brand) / 70%);
   font-size: 0.68rem;
   font-weight: 650;
 }
@@ -457,7 +469,7 @@ body {
   border: 1px solid rgb(255 255 255 / 30%);
   border-radius: 50%;
   background: rgb(255 255 255 / 12%);
-  color: white;
+  color: rgb(var(--on-brand));
   cursor: pointer;
   list-style: none;
   transition:
@@ -549,11 +561,11 @@ body {
   z-index: 5;
   bottom: 0;
   margin: auto calc(var(--queue-pad) * -1) 0;
-  padding: 16px var(--queue-pad) 18px;
+  padding: 16px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
   background:
     linear-gradient(to top,
-      white 72%,
-      rgb(255 255 255 / 0%));
+      var(--surface) 72%,
+      transparent);
 }
 
 .run-footer.is-anchored {
@@ -664,7 +676,7 @@ body {
 
 .field-textarea:focus {
   border-color: var(--blue-500);
-  background: white;
+  background: var(--surface);
   box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
 }
 
@@ -715,7 +727,7 @@ body {
       var(--blue-400),
       var(--blue-600));
   box-shadow: 0 10px 24px rgb(79 100 255 / 30%);
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 /* nas barras de ação, todos os botões têm a altura do principal */
@@ -859,20 +871,12 @@ body {
 }
 
 .render-outputs li {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.render-outputs li::before {
-  margin-right: 6px;
-  color: var(--blue-500);
-  content: "→";
+  min-width: 0;
 }
 
 .file-item.is-error {
   border-color: var(--danger-border);
-  background: #fff8f8;
+  background: var(--danger-surface);
 }
 
 .file-item.is-success .file-type {
@@ -1071,7 +1075,7 @@ body {
 .tip-list li {
   position: relative;
   padding-left: 16px;
-  color: #4e5a6f;
+  color: var(--text-label);
   font-size: 0.76rem;
   line-height: 1.55;
 }
@@ -1108,7 +1112,7 @@ body {
   width: 32px;
   height: 32px;
   border-color: var(--border);
-  background: white;
+  background: var(--surface);
   color: var(--text-secondary);
 }
 
@@ -1216,7 +1220,7 @@ body {
 }
 
 .cfg-label {
-  color: #4e5a6f;
+  color: var(--text-label);
   font-size: 0.72rem;
   font-weight: 680;
 }
@@ -1229,7 +1233,7 @@ body {
   padding: 9px 13px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-small);
-  background: white;
+  background: var(--surface);
   color: var(--text-primary);
   font: inherit;
   font-size: 0.84rem;
@@ -1298,10 +1302,10 @@ body {
 
 .cfg-row {
   flex-wrap: wrap;
-  padding: 8px 10px;
+  padding: 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-  background: white;
+  border-radius: calc(var(--radius-small) + 9px); /* concêntrico: raio dos campos + respiro (8) + borda (1) */
+  background: var(--surface);
 }
 
 .cfg-row .select {
@@ -1345,7 +1349,7 @@ body {
   place-items: center;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -1447,47 +1451,8 @@ body {
   transform: translateY(2.5px);
 }
 
-/* botão redondo de ícone sobre fundo claro (rodapés) */
-.round-button {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: white;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.round-button:hover:not(:disabled) {
-  border-color: var(--blue-200);
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.round-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 2px;
-}
-
-.round-button svg {
-  width: 18px;
-  height: 18px;
-  overflow: visible;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.round-button:hover .anim-refresh {
+/* botão redondo de ícone dos rodapés: é o .io-button (fim do arquivo); o de recomeçar gira no hover */
+.io-button:hover .anim-refresh {
   animation: icon-spin 650ms var(--ease-soft);
 }
 
@@ -1508,6 +1473,7 @@ body {
 
 .cfg-switch-track {
   position: relative;
+  flex: 0 0 auto; /* com texto longo ao lado, o interruptor não encolhe */
   width: 38px;
   height: 22px;
   border-radius: var(--radius-pill);
@@ -1522,7 +1488,7 @@ body {
   top: 3px;
   left: 3px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 2px 5px rgb(32 45 82 / 22%);
   content: "";
   transition: transform 260ms var(--ease-soft);
@@ -1544,7 +1510,7 @@ body {
 }
 
 .cfg-switch-label {
-  color: #4e5a6f;
+  color: var(--text-label);
   font-size: 0.78rem;
   font-weight: 650;
 }
@@ -1570,8 +1536,8 @@ body {
   padding: 4px 30px 4px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  background: white;
-  color: #505c72;
+  background: var(--surface);
+  color: var(--text-control);
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 650;
@@ -1588,6 +1554,43 @@ body {
   white-space: nowrap;
 }
 
+/* ícone antes de cada opção (no rótulo e na lista): desenho de traço ou letras (AB, Aa…) */
+.dropdown-icon {
+  display: inline-flex;
+  width: 22px;
+  flex: 0 0 22px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.dropdown-svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.dropdown-svg .is-fill {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.dropdown-letters {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.dropdown-item.has-icon {
+  display: flex;
+  align-items: center;
+}
+
 .select-large .dropdown-trigger {
   min-height: 44px;
   padding-inline: 16px 36px;
@@ -1597,7 +1600,7 @@ body {
 }
 
 .dropdown-trigger:hover:not(:disabled) {
-  border-color: #ccd5e3;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
@@ -1630,8 +1633,8 @@ body {
   overflow-y: auto;
   padding: 7px;
   border: 1px solid var(--border);
-  border-radius: 13px;
-  background: white;
+  border-radius: 16px; /* concêntrico: raio dos itens (8) + respiro (7) + borda (1) */
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 16%),
     0 4px 12px rgb(30 42 80 / 7%);
@@ -1780,7 +1783,9 @@ body.motion-ready .eyebrow {
   position: relative;
 }
 
-.tree-item>.tree-row {
+/* a coluna da estrela (favorito) é reservada também nas pastas: contadores e selos AEP alinhados */
+.tree-item>.tree-row,
+.tree-folder>.tree-row {
   padding-right: 38px;
 }
 
@@ -1789,7 +1794,7 @@ body.motion-ready .eyebrow {
   max-width: 45%;
   flex: 0 1 auto;
   overflow: hidden;
-  color: rgb(255 255 255 / 58%);
+  color: rgb(var(--on-brand) / 58%);
   font-size: 0.62rem;
   font-weight: 650;
   letter-spacing: 0.04em;
@@ -1814,7 +1819,7 @@ body.motion-ready .eyebrow {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: rgb(255 255 255 / 80%);
+  color: rgb(var(--on-brand) / 80%);
   cursor: pointer;
   opacity: 0;
   transform: translateY(-50%);
@@ -1920,7 +1925,7 @@ body.motion-ready .eyebrow {
   margin: -7px -7px 4px;
   padding: 6px 14px;
   border-bottom: 1px solid var(--border);
-  background: white;
+  background: var(--surface);
   color: var(--blue-500);
   font-size: 0.72rem;
   font-weight: 700;
@@ -2080,8 +2085,35 @@ body.motion-ready .eyebrow {
 }
 
 /* "⋯" no canto direito do rodapé da lista; o menu abre para cima, alinhado à direita */
-.picker-footer .picker-menu {
+/* produção: no rodapé, à esquerda do ⋯ */
+.picker-footer .picker-prod {
+  min-width: 0;
+  max-width: 190px;
+  flex: 0 1 auto;
   margin-left: auto;
+}
+
+.picker-prod .dropdown-trigger {
+  min-height: 34px;
+  border-color: rgb(255 255 255 / 34%);
+  background: rgb(255 255 255 / 14%);
+  color: rgb(var(--on-brand));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+}
+
+.picker-prod .dropdown-trigger:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 70%);
+  background: rgb(255 255 255 / 24%);
+}
+
+.picker-prod .dropdown-trigger:focus-visible,
+.picker-prod .dropdown-trigger[aria-expanded="true"] {
+  border-color: white;
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 16%);
+}
+
+.picker-prod.select::after {
+  border-color: rgb(255 255 255 / 80%);
 }
 
 .picker-footer .picker-menu .menu-popover {
@@ -2191,9 +2223,7 @@ body.motion-ready .eyebrow {
   color: var(--border-strong);
   cursor: grab;
   touch-action: none;
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .drag-handle svg {
@@ -2203,14 +2233,15 @@ body.motion-ready .eyebrow {
   stroke: none;
 }
 
-.drag-handle:hover,
-.drag-handle:focus-visible {
-  background: var(--surface-soft);
+/* sem fundo nem contorno: só os pontinhos mudam de cor (azuis quando o puxador está em uso) */
+.drag-handle:hover {
   color: var(--text-secondary);
 }
 
-.drag-handle:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+.drag-handle:focus-visible,
+.is-dragging .drag-handle {
+  outline: none;
+  color: var(--blue-500);
 }
 
 .is-sorting,
@@ -2221,6 +2252,31 @@ body.motion-ready .eyebrow {
 
 .is-sorting>.cfg-row {
   transition: transform 180ms var(--ease-soft);
+}
+
+/* a linha sendo arrastada (todas as listas): um cartão 5 px além dos campos, nos quatro lados, com os cantos
+   concêntricos aos dos campos. desenhado por baixo (::before), sem mexer no lugar do conteúdo; cada lista
+   ajusta --drag-inset pelo respiro que a linha já tem */
+.is-sorting>.is-dragging {
+  position: relative;
+  z-index: 2;
+  transition: none;
+}
+
+.is-sorting>.is-dragging::before {
+  position: absolute;
+  z-index: -1;
+  inset: var(--drag-inset, -5px);
+  border-radius: calc(var(--radius-small) + 5px);
+  background: var(--drag-bg, var(--surface));
+  box-shadow: var(--drag-shadow, 0 12px 28px rgb(30 42 80 / 16%));
+  content: '';
+  pointer-events: none;
+}
+
+/* os cartões de camada (já têm borda e respiro): só a sombra */
+.is-sorting>.cfg-row.is-dragging::before {
+  content: none;
 }
 
 .is-sorting>.cfg-row.is-dragging {
@@ -2253,4 +2309,343 @@ body.motion-ready .eyebrow {
   background: var(--danger-bg);
   color: var(--danger);
   transform: none;
+}
+
+/* ícone no início do campo (o rótulo, quando há, continua em cima). Sem animação: só fica azul com o foco */
+.has-field-icon {
+  position: relative;
+}
+
+.has-field-icon[hidden] {
+  display: none;
+}
+
+.has-field-icon>.field-icon {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: stroke 160ms ease;
+}
+
+/* pastinhas: o conteúdo e a frente cobrem o que fica atrás deles */
+.has-field-icon>.field-icon .folder-content,
+.has-field-icon>.field-icon .folder-front {
+  fill: var(--surface);
+}
+
+.has-field-icon:focus-within>.field-icon {
+  stroke: var(--blue-500);
+}
+
+.has-field-icon>.cfg-input,
+.has-field-icon .dropdown-trigger,
+.has-field-icon>select {
+  padding-left: 40px;
+}
+
+/* termos em chips (js: tagField): o campo cresce em linhas se não couber */
+.tag-field {
+  align-items: stretch;
+}
+
+.tag-field>.field-icon {
+  top: 21px;
+}
+
+.cfg-path .tag-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 40px 6px 40px;
+  cursor: text;
+}
+
+.tag-box:focus-within {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+}
+
+.tag-field>.mini-button:last-child {
+  top: 7px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 3px 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-50);
+  color: var(--blue-500);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.tag-chip>span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-chip-x {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.tag-chip-x:hover:not(:disabled) {
+  background: rgb(79 130 255 / 16%);
+  opacity: 1;
+}
+
+.tag-chip-x svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.4;
+}
+
+/* parado, o campo de digitar quase não ocupa espaço (os chips ficam numa linha só); digitando, ganha espaço */
+.tag-box:focus-within .tag-input {
+  min-width: 90px;
+}
+
+.tag-input {
+  width: 0;
+  min-width: 2px;
+  flex: 1 1 2px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.84rem;
+  outline: none;
+}
+
+/* importar / exportar (botão redondo de ícone, rodapés): a seta desce / sobe no hover e volta ao sair */
+.io-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.io-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.io-button:focus-visible {
+  outline: 3px solid rgb(79 130 255 / 22%);
+  outline-offset: 2px;
+}
+
+.io-button svg {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.io-arrow {
+  transition: transform 280ms var(--ease-soft);
+}
+
+#btn-import:hover .io-arrow {
+  transform: translateY(2.5px);
+}
+
+#btn-export:hover .io-arrow {
+  transform: translateY(-2.5px);
+}
+
+/* janela estreita: o botão principal encolhe em vez de cair para outra linha */
+@media (max-width: 400px) {
+  .action-bar .button-primary {
+    min-width: max-content; /* encolhe até o tamanho do texto, sem quebrar em duas linhas */
+    flex: 1;
+  }
+}
+
+/* abrir output: a pastinha de output da busca de caminhos; no hover a frente abre e o quadro sobe */
+.io-output .folder-content,
+.io-output .folder-front {
+  fill: var(--surface);
+  transition:
+    fill 180ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.io-output svg * {
+  transform-box: fill-box;
+}
+
+.io-output .folder-front {
+  transform-origin: 50% 100%;
+}
+
+.io-output:hover:not(:disabled) .folder-content,
+.io-output:hover:not(:disabled) .folder-front {
+  fill: var(--blue-50);
+}
+
+.io-output:hover:not(:disabled) .folder-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+.io-output:hover:not(:disabled) .folder-content {
+  transform: translateY(-2px);
+}
+
+/* "+" de adicionar (layers, outputs, mídias): largura toda, tracejado, a 10 px da lista acima */
+.add-button {
+  width: 100%;
+  margin-top: 4px;
+  border-style: dashed;
+}
+
+/* direto no cartão, o gap é o do cartão (14): desconta para ficar a 10 px da lista, como os outros "+" */
+.cfg-card>.add-button {
+  margin-top: -4px;
+}
+
+.add-button:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  box-shadow: none;
+  color: var(--blue-500);
+  transform: none;
+}
+
+/* caminho só para ler: ícone estático de pasta na frente (como a comp e o tempo no criador) */
+.path-line {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+}
+
+.path-line>svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  opacity: 0.8;
+}
+
+.path-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-message .path-line+.path-line {
+  margin-top: 2px;
+}
+
+/* abas: só texto, como o "buscar · selecionar · preencher" dos templates; a aba ativa fica opaca, com um ponto */
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding-left: 5px;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--on-brand) / 52%);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  transition: color 220ms ease;
+}
+
+.tab::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentcolor;
+  content: "";
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    opacity 200ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.tab:hover {
+  color: rgb(var(--on-brand) / 80%);
+}
+
+.tab[aria-selected="true"] {
+  color: rgb(var(--on-brand));
+}
+
+.tab[aria-selected="true"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tab:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid rgb(255 255 255 / 80%);
+  outline-offset: 2px;
+}
+
+/* as letras (AB, Aa) sentam na mesma linha do rótulo */
+.dropdown-trigger .dropdown-letters {
+  transform: translateY(1px);
 }
