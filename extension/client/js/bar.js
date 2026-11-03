@@ -549,7 +549,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			offline: 'modo local: a rede não está respondendo. o padeiro usa as cópias deste computador e volta sozinho quando a rede voltar'
 		}[key];
 
-		btn.title = text + '\n' + L_CLICK + 'configuração > meu usuário';
+		btn.title = text + '\n' + L_CLICK + (key === 'forced' ? 'configuração > meu usuário' : 'configuração > rede');
 		btn.setAttribute('aria-label', text);
 	}
 
@@ -626,8 +626,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		window.addEventListener('focus', loadLinks);
 
+		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
 		$('net-status').addEventListener('click', function () {
-			actions.config('machine');
+			actions.config(netState === 'forced' ? 'machine' : 'network');
 		});
 
 		$('logo').addEventListener('click', function () {

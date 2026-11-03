@@ -267,7 +267,7 @@ a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
   - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
   - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
-  - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique abre esta aba. a aba meu usuário também avisa quando a rede caiu.
+  - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique no servidor abre a aba **rede**; no notebook, esta aba. a aba meu usuário também avisa quando a rede caiu.
 
 > 🚩 *obs:* a cópia da configuração é guardada na primeira vez que o padeiro abre com a rede: sem ela, o modo local não liga (`#PAD_096`). a configuração da equipe só volta a ser editável com a rede.
 <br>
