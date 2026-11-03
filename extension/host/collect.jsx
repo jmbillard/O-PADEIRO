@@ -185,12 +185,49 @@ function padCollectResolve(root, relPath, isProjects) {
 
 // Cria a estrutura inteira na raiz (as pastas sem tipo também, como a de saída), sem duplicar as que
 // já existem com outra grafia.
-function padCollectStructure(root, settings) {
-	for (var i = 0; i < settings.folders.length; i++) {
-		var f = settings.folders[i];
+// kinds (opcional): só as pastas desses tipos (e as sem tipo, como a de saída); as outras o coletar cria
+// quando precisar.
+function padCollectStructure(root, settings, kinds) {
+	var list = padStructureFolders(settings, kinds);
 
-		padCollectResolve(root, padCollectPathOf(settings, f), f.contents.indexOf('projeto') >= 0);
+	for (var i = 0; i < list.length; i++) padCollectResolve(root, list[i].path, list[i].projects);
+}
+
+// As pastas da estrutura, pai antes dos filhos: [{ path, name, depth, projects }].
+function padStructureFolders(settings, kinds) {
+	var keep = {};
+	var out = [];
+	var i, j;
+
+	for (i = 0; i < settings.folders.length; i++) {
+		var f = settings.folders[i];
+		var ok = !kinds || f.contents.length == 0;
+
+		for (j = 0; kinds && !ok && j < f.contents.length; j++) if (padIndexOf(kinds, f.contents[j]) >= 0) ok = true;
+		if (!ok) continue;
+
+		var parts = padCollectPathOf(settings, f).split('/');
+
+		for (j = 1; j <= parts.length; j++) {
+			var path = parts.slice(0, j).join('/');
+
+			if (!keep[path]) {
+				keep[path] = true;
+				out.push({ path: path, name: parts[j - 1], depth: j - 1, projects: j == parts.length && f.contents.join(',').indexOf('projeto') >= 0 });
+			}
+		}
 	}
+
+	return out.sort(function (a, b) {
+		if (a.path < b.path) return -1;
+		if (a.path > b.path) return 1;
+		return 0;
+	});
+}
+
+function padIndexOf(list, value) {
+	for (var i = 0; i < list.length; i++) if (list[i] == value) return i;
+	return -1;
 }
 
 // A raiz da estrutura de um .aep: a pasta de cima, se ele está na pasta do tipo 'projeto' (01 PROJETOS,

@@ -910,9 +910,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var base = film ? key(a.title) : key(a.atracao + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
 			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
-			var existing = !film && /MAIS VOCE/.test(root) ? ['MAIS VOCE CHROMA', 'MAIS VOCE CREDITOS'] : [];
+			var H = 3600000;
+			var now = Date.now();
+			var existing = !film && /MAIS VOCE/.test(root) ? [
+				{ name: 'MAIS VOCE CREDITOS', modified: now - 2 * H },
+				{ name: 'MAIS VOCE CHROMA', modified: now - 26 * H },
+				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
+				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
+				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
+			] : [];
+			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.indexOf(base) >= 0, user: 'JBI' };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JBI' };
 		},
 
 		projectCreate: function (a) {

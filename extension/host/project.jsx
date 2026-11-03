@@ -551,6 +551,7 @@ function padNewProjectPlan(a) {
 	return { settings: settings, root: root, projectsSub: sub, projects: projects, fileBase: fileBase };
 }
 
+// Os .aep da pasta, o último alterado primeiro: [{ name, modified (ms) }]
 function padAepList(folderPath) {
 	var folder = new Folder(folderPath);
 	var out = [];
@@ -562,17 +563,29 @@ function padAepList(folderPath) {
 	for (var i = 0; i < items.length; i++) {
 		var name = decodeURI(items[i].name);
 
-		if (items[i] instanceof File && /\.aep$/i.test(name)) out.push(name.replace(/\.aep$/i, ''));
+		if (items[i] instanceof File && /\.aep$/i.test(name)) out.push({ name: name.replace(/\.aep$/i, ''), modified: items[i].modified ? items[i].modified.getTime() : 0 });
 	}
 
-	return out.sort();
+	return out.sort(function (a, b) {
+		return b.modified - a.modified;
+	});
 }
+
+// As pastas criadas junto com o projeto novo: o .aep, as fontes, as imagens e os vídeos (e as sem tipo);
+// áudio e dados o coletar cria quando aparecerem.
+var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 
 // O que vai ser criado (para a etapa CRIAR e o aviso de arquivo existente). Não cria nada.
 PADX.projectPlan = function (a) {
 	var plan = padNewProjectPlan(a);
 	var existing = padAepList(plan.projects);
 	var rootFolder = new Folder(plan.root);
+	var exists = false;
+	var folders = [];
+	var list = padStructureFolders(plan.settings, PAD_PROJECT_KINDS);
+
+	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase) exists = true;
+	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
 	return {
 		root: padDisplayPath(plan.root),
@@ -584,7 +597,8 @@ PADX.projectPlan = function (a) {
 		fileBase: plan.fileBase,
 		fileName: plan.fileBase + '.aep',
 		existing: existing,
-		exists: existing.indexOf(plan.fileBase) >= 0,
+		exists: exists,
+		folders: folders,
 		user: padMachineUser()
 	};
 };
@@ -594,7 +608,7 @@ PADX.projectCreate = function (a) {
 	var plan = padNewProjectPlan(a);
 	var claquete = padAepName(a.claquete);
 
-	padCollectStructure(plan.root, plan.settings);
+	padCollectStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
 
 	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : plan.projects;
 	var base = plan.fileBase;
@@ -663,7 +677,7 @@ PADX.projectMove = function (a) {
 	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
 	var root = padIsProjectsFolderName(decodeURI(new Folder(target).name)) ? new Folder(target).parent.fsName : target;
 
-	padCollectStructure(root, settings);
+	padCollectStructure(root, settings, PAD_PROJECT_KINDS);
 
 	var projects = padIsProjectsFolderName(decodeURI(new Folder(target).name)) ? target : padCollectResolve(root, sub, true);
 	var dest = new File(projects + '/' + decodeURI(file.name));

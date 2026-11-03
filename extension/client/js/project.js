@@ -435,11 +435,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var plan = await call('projectPlan', planArgs());
 
 			state.plan = plan;
-			$('arq-exist').textContent = '';
-			if (plan.existing.length) {
-				$('arq-exist').appendChild(document.createTextNode('já em ' + plan.projectsName + ': '));
-				$('arq-exist').appendChild(el('b', null, plan.existing.slice(0, 4).join(' · ') + (plan.existing.length > 4 ? ' …' : '')));
-			}
+			renderExisting(plan);
 
 			file.classList.toggle('is-dup', plan.exists);
 			$('arq-dup').hidden = !plan.exists;
@@ -453,6 +449,45 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		} catch (err) {
 			status(err.message, 'error');
 		}
+	}
+
+	// os .aep que já estão na pasta: o último alterado primeiro, com a data
+	var EXIST_MAX = 4;
+
+	function renderExisting(plan) {
+		var box = $('arq-exist');
+		var list = plan.existing || [];
+
+		box.textContent = '';
+		if (!list.length) return;
+
+		box.appendChild(el('p', 'wz-exist-head', 'já em ' + plan.projectsName));
+		list.slice(0, EXIST_MAX).forEach(function (f) {
+			var row = el('div', 'wz-exist-row' + (f.name === plan.fileBase ? ' is-dup' : ''));
+
+			row.appendChild(el('span', null, f.name));
+			row.appendChild(el('time', null, when(f.modified)));
+			box.appendChild(row);
+		});
+		if (list.length > EXIST_MAX) box.appendChild(el('p', 'wz-exist-more', '+ ' + (list.length - EXIST_MAX) + (list.length - EXIST_MAX === 1 ? ' outro' : ' outros')));
+	}
+
+	// hoje 14:32 · ontem 09:10 · 28/10 · 28/10/2025
+	function when(ms) {
+		if (!ms) return '';
+
+		var d = new Date(ms);
+		var now = new Date();
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
+		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+		if (ms >= day) return 'hoje ' + time;
+		if (ms >= day - 86400000) return 'ontem ' + time;
+
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
 
 	async function arquivoNext() {
@@ -490,8 +525,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var file = treeLine(2, FILE_SVG, state.createArgs.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName, 'is-file');
 
 			tree.appendChild(file);
-			tree.appendChild(treeLine(1, FOLDER_SVG, '02 ARQUIVOS'));
-			tree.appendChild(treeLine(1, FOLDER_SVG, '03 SAIDA'));
+			(plan.folders || []).forEach(function (f) {
+				tree.appendChild(treeLine(f.depth + 1, FOLDER_SVG, f.name));
+			});
 
 			meta.textContent = '';
 			meta.appendChild(el('span', null, aepName(flow.claquete)));

@@ -265,19 +265,56 @@ body.project-page {
 }
 
 .wz-exist {
+  display: grid;
+  gap: 2px;
   margin: -4px 2px 0;
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  line-height: 1.6;
 }
 
 .wz-exist:empty {
   display: none;
 }
 
-.wz-exist b {
-  color: var(--text-secondary);
+.wz-exist-head,
+.wz-exist-more {
+  margin: 0 0 2px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
   font-weight: 700;
+}
+
+.wz-exist-more {
+  margin: 2px 0 0;
+}
+
+/* um .aep que já existe: o nome e, à direita, quando foi alterado */
+.wz-exist-row {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.wz-exist-row span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-exist-row time {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.wz-exist-row.is-dup span {
+  color: var(--waiting);
 }
 
 .wz-chips {

@@ -23,9 +23,9 @@ uma tela por vez; **‹ voltar** volta uma etapa.
    - a letra é a primeira do título, depois do artigo (*Os Três Patetas* → `_T_`); títulos com número vão para `_#_` (*101 Dálmatas*).
    - o `.aep` tem o nome do filme (ex: `NAO NAO OLHE.aep`).
 4. **ARQUIVO** (programas, novelas…) → **o que é** (ex: `SERVIÇO`, `CRÉDITOS`, `CHROMA`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). uma atração pode ter vários projetos.
-   - a linha abaixo mostra os `.aep` que já estão na `01 PROJETOS` da atração.
+   - embaixo aparecem os `.aep` que já estão na `01 PROJETOS` da atração, o último alterado primeiro, com a data (`hoje 14:32`, `ontem 09:10`, `28/10`).
    - já existe um com o mesmo nome → **abrir o existente** ou **salvar como … 2**.
-5. **CRIAR** → o cartão azul mostra a estrutura (o que já existe aparece mais claro) e o arquivo. **Criar projeto** cria as pastas que faltam e salva o `.aep`.
+5. **CRIAR** → o cartão azul mostra a estrutura e o arquivo: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara). **Criar projeto** cria as pastas que faltam e salva o `.aep`. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
