@@ -190,22 +190,16 @@ body.prods-page {
   animation: ti-led 560ms steps(1) 2;
 }
 
-/* meu usuário: o braço sai do ombro em curva, para fora e para cima (cresce do ombro), e acena ("estou aqui") */
-.prods-nav .tab svg .ti-arm {
-  transform-box: view-box;
-  transform-origin: 16.6px 15.3px;
-  stroke-dasharray: 1 2;
-  stroke-dashoffset: 1;
-  opacity: 0; /* parado, nem a ponta arredondada aparece */
-  transition:
-    stroke-dashoffset 300ms var(--ease-soft),
-    opacity 80ms ease;
+/* meu usuário: o contorno do corpo, do lado direito, sobe do ombro e vira o braço levantado (uma linha só);
+   embaixo do braço fica o lado do corpo (ti-side, que parado coincide com o contorno). depois, acena */
+.prods-nav .tab svg .ti-body {
+  d: path('M5 19.5C5.8 16.1 8.6 14 12 14C15.4 14 18.2 16.1 19 19.5');
+  transition: d 320ms var(--ease-soft);
 }
 
-.prods-nav .tab:hover svg .ti-arm {
-  stroke-dashoffset: 0;
-  opacity: 1;
-  animation: ti-wave 380ms ease-in-out 300ms 4 alternate;
+.prods-nav .tab:hover svg .ti-body {
+  d: path('M5 19.5C5.8 16.1 8.6 14 12 14C15.6 14 19.8 13.2 20.4 7.6');
+  animation: ti-wave 380ms ease-in-out 320ms 4 alternate;
 }
 
 @keyframes ti-rack {
@@ -232,11 +226,11 @@ body.prods-page {
 
 @keyframes ti-wave {
   from {
-    transform: rotate(0);
+    d: path('M5 19.5C5.8 16.1 8.6 14 12 14C15.6 14 19.8 13.2 20.4 7.6');
   }
 
   to {
-    transform: rotate(12deg);
+    d: path('M5 19.5C5.8 16.1 8.6 14 12 14C15.6 14 20.4 13.6 22.2 8.6');
   }
 }
 
