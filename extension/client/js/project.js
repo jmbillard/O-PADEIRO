@@ -503,9 +503,12 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	function treeLine(depth, html, text, cls) {
 		var line = el('div', 'wz-tree-line' + (cls ? ' ' + cls : ''));
 
+		// o arquivo: ícone e nome juntos no destaque (a pílula branca)
+		var holder = cls === 'is-file' ? line.appendChild(el('span', 'wz-tree-pill')) : line;
+
 		line.style.setProperty('--depth', depth);
-		line.insertAdjacentHTML('afterbegin', html);
-		line.appendChild(el('span', null, text));
+		holder.insertAdjacentHTML('afterbegin', html);
+		holder.appendChild(el('span', null, text));
 
 		return line;
 	}
