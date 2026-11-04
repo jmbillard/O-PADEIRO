@@ -521,10 +521,11 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			}));
 		});
 
+		// o mesmo cartão das outras opções (com a bolinha à direita)
 		list.appendChild(option(PLUS_SVG, 'criar nova', 'filme inédito, novela nova…', flow.choice === 'new', function () {
 			flow.choice = 'new';
 			renderPasta();
-		}, 'is-new' + (flow.choice === 'new' ? ' is-selected' : '')));
+		}));
 
 		list.appendChild(option(SEARCH_SVG, 'escolher uma pasta…', 'abre o navegador de pastas', flow.choice === 'folder', function () {
 			flow.choice = 'folder';
