@@ -170,10 +170,8 @@ function padChildFolder(parent, name, isProjects) {
 
 // Caminho da árvore ('02 ARQUIVOS/VÍDEOS') dentro da raiz, usando as pastas que já existem.
 function padCollectResolve(root, relPath, isProjects) {
-	var folder = new Folder(root);
+	var folder = padEnsureFolder(root);
 	var parts = String(relPath || '').split('/');
-
-	if (!folder.exists) folder.create();
 
 	for (var p = 0; p < parts.length; p++) {
 		if (parts[p] == '') continue;
@@ -355,6 +353,8 @@ function padFreeFile(folderPath, fileName, src) {
 function padEnsureFolder(path) {
 	var folder = new Folder(path);
 
+	// as pastas de cima primeiro (o Folder.create não cria as intermediárias em todo sistema)
+	if (!folder.exists && folder.parent && !folder.parent.exists) padEnsureFolder(folder.parent.fsName);
 	if (!folder.exists) folder.create();
 
 	return folder;

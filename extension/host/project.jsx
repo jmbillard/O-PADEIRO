@@ -362,6 +362,22 @@ PADX.projectPlan = function (a) {
 };
 
 // Cria a estrutura e salva o .aep. a: plano + { claquete, mode: '' | 'open' | 'increment' }
+// A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
+function padCheckWritable(path) {
+	var folder = new Folder(path);
+
+	if (!folder.exists) throw new Error('#PAD_091 - não foi possível criar a pasta ' + padDisplayPath(path) + ' (sem permissão ou rede fora?).');
+
+	var probe = new File(folder.fsName + '/.padeiro_teste_' + new Date().getTime());
+	var ok = probe.open('w');
+
+	if (ok) {
+		probe.close();
+		probe.remove();
+	}
+	if (!ok) throw new Error('#PAD_091 - sem permissão para gravar em ' + padDisplayPath(path) + '.');
+}
+
 PADX.projectCreate = function (a) {
 	var plan = padNewProjectPlan(a);
 	var claquete = padAepName(a.claquete);
@@ -371,6 +387,8 @@ PADX.projectCreate = function (a) {
 	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : plan.projects;
 	var base = plan.fileBase;
 	var file = new File(projects + '/' + base + '.aep');
+
+	padCheckWritable(projects);
 
 	if (file.exists && a.mode == 'open') {
 		app.open(file);
@@ -387,7 +405,7 @@ PADX.projectCreate = function (a) {
 	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
 	var output = a.output ? new Folder(padPath(a.output)) : null;
 
-	if (output && !output.exists && a.outputCreate) output.create();
+	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
 
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
@@ -396,7 +414,12 @@ PADX.projectCreate = function (a) {
 	setXMPData('coverage', String(a.atracao || ''));
 	setXMPData('relation', padDisplayPath(plan.root));
 	setXMPData('date', padToday());
-	app.project.save(file);
+
+	try {
+		app.project.save(file);
+	} catch (err) {
+		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?).');
+	}
 
 	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };
 };
