@@ -56,6 +56,23 @@ PAD_LOCAL_INDEX.building(file)                 → já tem uma indexação em an
 		}
 	}
 
+	// /Volumes/VFX/... → o volume (VFX, VFX-1 … VFX-5) onde a pasta existe; sem nenhum, o caminho como está
+	function mountedDir(api, dir) {
+		var m = /^\/Volumes\/([^\/]+)(\/.*)?$/.exec(dir);
+
+		if (!m) return dir;
+
+		for (var i = 0; i <= 5; i++) {
+			var candidate = '/Volumes/' + m[1] + (i ? '-' + i : '') + (m[2] || '');
+
+			try {
+				if (api.fs.statSync(candidate).isDirectory()) return candidate;
+			} catch (err) { }
+		}
+
+		return dir;
+	}
+
 	function build(file, folders, opts) {
 		var api = node();
 
@@ -75,8 +92,10 @@ PAD_LOCAL_INDEX.building(file)                 → já tem uma indexação em an
 
 			if (!clean) return;
 
+			// gravado sem o sufixo do volume (/Volumes/VFX-1 → VFX); lido no volume onde a pasta existe
+			clean = clean.replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
 			nodes.push([-1, clean, 0]);
-			queue.push({ dir: clean, index: nodes.length - 1 });
+			queue.push({ dir: mountedDir(api, clean), index: nodes.length - 1 });
 		});
 
 		return new Promise(function (resolve, reject) {

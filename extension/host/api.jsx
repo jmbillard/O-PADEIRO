@@ -111,12 +111,21 @@ function padDisplayPath(pathStr) {
 	if (!pathStr) return pathStr || '';
 
 	var path = padPath(pathStr) || String(pathStr);
+	var shown;
 
 	try {
-		return Folder.decode(new Folder(path).fsName);
+		shown = Folder.decode(new Folder(path).fsName);
 	} catch (err) {
-		return path;
+		shown = path;
 	}
+
+	return padNoVolumeSuffix(shown);
+}
+
+// Sem o sufixo que o macOS põe ao montar o mesmo share de novo (/Volumes/VFX-1 → /Volumes/VFX): os caminhos são
+// gravados e mostrados assim; o volume certo (resolveMacVolumePath, via padPath) só entra ao abrir, criar ou montar.
+function padNoVolumeSuffix(path) {
+	return String(path || '').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
 }
 
 function padDisplayPaths(list) {
@@ -189,7 +198,7 @@ function padLocalMode() {
 
 // Caminho de pasta digitado: barras normais, sem barra no fim.
 function padMachinePath(path) {
-	return String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
+	return padNoVolumeSuffix(String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1'));
 }
 
 // o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas
@@ -971,7 +980,7 @@ PADX.templateInfo = function (a) {
 
 // Caminho no formato do sistema atual (rede Windows / macOS), como o criador de templates grava.
 PADX.normalizePath = function (a) {
-	return { path: padPath(a.path) };
+	return { path: padNoVolumeSuffix(padPath(a.path)) };
 };
 
 // Grava o '_config.json' do template (cria o arquivo se ele ainda não existir).
@@ -1635,7 +1644,7 @@ PADX.collectFonts = function (a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
-		var fontsPath = fontCollect(decodeURI(a.path) + '/FONTS');
+		var fontsPath = fontCollect(padPath(decodeURI(a.path)) + '/FONTS');
 
 		if (fontsPath != '') openFolder(fontsPath);
 

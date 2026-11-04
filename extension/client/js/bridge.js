@@ -92,13 +92,19 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
 	}
 
-	// Seletor de pasta do CEP. Retorna o caminho ou null.
+	// Seletor de pasta do CEP. Retorna o caminho ou null. o volume vem sem o sufixo que o macOS põe ao montar o
+	// mesmo share de novo (/Volumes/VFX-1 → /Volumes/VFX): os caminhos são gravados e mostrados sem ele; o host
+	// acha o volume certo na hora de abrir, criar ou montar.
 	function pickFolder(title, startPath) {
 		if (!cep || !window.cep || !window.cep.fs) return null;
 
 		var res = window.cep.fs.showOpenDialogEx(false, true, title, startPath || '');
 
-		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
+		return res && res.err === 0 && res.data && res.data.length ? noVolumeSuffix(res.data[0]) : null;
+	}
+
+	function noVolumeSuffix(path) {
+		return String(path || '').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
 	}
 
 	// Janela de salvar arquivo. Retorna o caminho escolhido ou null.
