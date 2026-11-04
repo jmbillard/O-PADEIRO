@@ -356,9 +356,14 @@ var padLastMkdir = '';
 function padEnsureFolder(path) {
 	var folder = new Folder(path);
 
-	// as pastas de cima primeiro (o Folder.create não cria as intermediárias em todo sistema)
-	if (!folder.exists && folder.parent && !folder.parent.exists) padEnsureFolder(folder.parent.fsName);
-	if (!folder.exists) folder.create();
+	// cria direto, sem perguntar antes se existe (na rede do macOS, perguntar por uma pasta que ainda não existe
+	// atrasa ela aparecer depois de criada). falhou: as pastas de cima primeiro (o Folder.create não cria as
+	// intermediárias em todo sistema) e de novo
+	if (!folder.create()) {
+		if (folder.parent && !folder.parent.exists) padEnsureFolder(folder.parent.fsName);
+		folder.create();
+	}
+	if (!folder.exists) folder = padWaitFolder(folder.fsName, 2000);
 
 	// plano B: o mkdir do sistema (o Folder.create falha calado em alguns compartilhamentos de rede)
 	if (!folder.exists) {
@@ -369,7 +374,21 @@ function padEnsureFolder(path) {
 		} catch (err) {
 			padLastMkdir = err.message;
 		}
-		folder = new Folder(folder.fsName);
+		folder = padWaitFolder(folder.fsName, 4000);
+	}
+
+	return folder;
+}
+
+// Espera a pasta aparecer: no compartilhamento de rede do macOS, uma pasta recém-criada pode demorar uns segundos
+// para existir para o After Effects (o sistema guarda que ela "não existia"). listar a pasta de cima ajuda.
+function padWaitFolder(path, ms) {
+	var folder = new Folder(path);
+
+	for (var waited = 0; !folder.exists && waited < ms; waited += 250) {
+		if (folder.parent) folder.parent.getFiles();
+		$.sleep(250);
+		folder = new Folder(path);
 	}
 
 	return folder;

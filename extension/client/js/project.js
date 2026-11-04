@@ -171,7 +171,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var source = { info: null, list: null, stamp: '' };
+	var source = { info: null, list: null, stamp: '', refreshing: null };
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
 	function nodeFs() {
@@ -180,6 +180,55 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		} catch (err) {
 			return null;
 		}
+	}
+
+	// baixa o índice do webhook pelo Node do painel (sem travar o After Effects) e troca a cópia. um download por vez.
+	function refreshIndex(fs) {
+		if (source.refreshing) return source.refreshing;
+
+		var url = source.info.url;
+		var file = source.info.cache;
+
+		source.refreshing = new Promise(function (resolve, reject) {
+			var https = require(/^https:/i.test(url) ? 'https' : 'http');
+			var zlib = require('zlib');
+			var req = https.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: 25000 }, function (res) {
+				if (res.statusCode !== 200) {
+					res.resume();
+					reject(new Error('HTTP ' + res.statusCode));
+					return;
+				}
+
+				var stream = /gzip/i.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
+				var chunks = [];
+
+				stream.on('data', function (c) {
+					chunks.push(c);
+				});
+				stream.on('error', reject);
+				stream.on('end', function () {
+					try {
+						var text = Buffer.concat(chunks).toString('utf8');
+
+						JSON.parse(text); // confere antes de trocar a cópia
+						fs.writeFileSync(file + '.part', text, 'utf8');
+						fs.renameSync(file + '.part', file);
+						resolve();
+					} catch (err) {
+						reject(err);
+					}
+				});
+			});
+
+			req.on('timeout', function () {
+				req.destroy(new Error('tempo esgotado'));
+			});
+			req.on('error', reject);
+		}).finally(function () {
+			source.refreshing = null;
+		});
+
+		return source.refreshing;
 	}
 
 	function keyOf(text) {
@@ -270,7 +319,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		return source.list;
 	}
 
-	// as atrações do índice do webhook (a cópia do acessorista; velha ou sem cópia, baixa pelo host)
+	// as atrações do índice do webhook (a cópia do acessorista). a cópia que existir vale na hora; velha, uma nova
+	// é baixada em segundo plano pelo Node do painel (o curl do host trava o After Effects e a digitação). só sem
+	// cópia nenhuma o host baixa (plano B).
 	async function webhookCandidates(fs) {
 		var file = source.info.cache;
 		var stat = null;
@@ -281,11 +332,18 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		var text = '';
 
-		if (!stat || Date.now() - stat.mtimeMs > INDEX_MAX_AGE) {
+		if (!stat) {
 			try {
-				text = (await call('searchDownload', {})).text;
+				await refreshIndex(fs);
 				stat = fs.statSync(file);
-			} catch (err) { }
+			} catch (err) {
+				try {
+					text = (await call('searchDownload', {})).text;
+					stat = fs.statSync(file);
+				} catch (err2) { }
+			}
+		} else if (Date.now() - stat.mtimeMs > INDEX_MAX_AGE) {
+			refreshIndex(fs).catch(function () { });
 		}
 
 		var stamp = 'webhook|' + (stat ? stat.mtimeMs : 0);
@@ -996,6 +1054,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('claq-hint').textContent = '';
 		$('claq-next').disabled = true;
 		show('claquete', false);
+		// o índice já carrega ao abrir a etapa: a primeira tecla não espera por ele
+		candidates().catch(function () { });
 	}
 
 	/* ---------------------------------------------------------------

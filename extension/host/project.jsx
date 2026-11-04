@@ -302,6 +302,25 @@ function padVolumeHas(path, first) {
 	return !!volume && new Folder(volume[0] + '/' + first).exists;
 }
 
+// A pasta existe? pela lista da pasta de cima, sem perguntar pelo nome dela: no compartilhamento de rede do macOS,
+// perguntar por uma pasta que ainda não existe faz o sistema lembrar que "não existe" por uns segundos, e a pasta
+// criada logo depois não aparece para o After Effects (o .aep não salva).
+function padListedFolder(path) {
+	var folder = new Folder(path);
+	var parent = folder.parent;
+
+	if (!parent || !parent.exists) return false;
+
+	var items = parent.getFiles() || [];
+	var name = decodeURI(folder.name).toLowerCase();
+
+	for (var i = 0; i < items.length; i++) {
+		if (items[i] instanceof Folder && decodeURI(items[i].name).toLowerCase() == name) return true;
+	}
+
+	return false;
+}
+
 function padNewProjectPlan(a) {
 	var settings = padReadCollect();
 	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
@@ -316,21 +335,26 @@ function padNewProjectPlan(a) {
 
 	// a pasta da atração já é a de projetos (…/01PROJETOS): a estrutura fica na de cima
 	var rootFolder = new Folder(root);
+	var rootExists = padListedFolder(root);
 
-	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) return { settings: settings, root: rootFolder.parent.fsName, projectsSub: '', projects: rootFolder.fsName, fileBase: fileBase };
+	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) return { settings: settings, root: rootFolder.parent.fsName, rootExists: true, projectsSub: '', projects: rootFolder.fsName, projectsExists: rootExists, fileBase: fileBase };
 
 	// a de projetos que já existir dentro dela (com outra grafia), sem criar nada aqui
 	var projects = root + '/' + sub;
+	var found = false;
 
-	if (rootFolder.exists) {
-		var items = rootFolder.getFiles();
+	if (rootExists) {
+		var items = rootFolder.getFiles() || [];
 
 		for (var i = 0; i < items.length; i++) {
-			if (items[i] instanceof Folder && padIsProjectsFolderName(decodeURI(items[i].name))) projects = items[i].fsName;
+			if (items[i] instanceof Folder && padIsProjectsFolderName(decodeURI(items[i].name))) {
+				projects = items[i].fsName;
+				found = true;
+			}
 		}
 	}
 
-	return { settings: settings, root: root, projectsSub: sub, projects: projects, fileBase: fileBase };
+	return { settings: settings, root: root, rootExists: rootExists, projectsSub: sub, projects: projects, projectsExists: found, fileBase: fileBase };
 }
 
 // Os .aep da pasta, o último alterado primeiro: [{ name, modified (ms) }]
@@ -360,7 +384,7 @@ var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 // O que vai ser criado (para a etapa CRIAR e o aviso de arquivo existente). Não cria nada.
 PADX.projectPlan = function (a) {
 	var plan = padNewProjectPlan(a);
-	var existing = padAepList(plan.projects);
+	var existing = plan.projectsExists ? padAepList(plan.projects) : [];
 	var rootFolder = new Folder(plan.root);
 	var exists = false;
 	var folders = [];
@@ -374,10 +398,10 @@ PADX.projectPlan = function (a) {
 	return {
 		root: padDisplayPath(plan.root),
 		rootName: decodeURI(rootFolder.name),
-		rootExists: rootFolder.exists,
+		rootExists: plan.rootExists,
 		projects: padDisplayPath(plan.projects),
 		projectsName: decodeURI(new Folder(plan.projects).name),
-		projectsExists: new Folder(plan.projects).exists,
+		projectsExists: plan.projectsExists,
 		fileBase: plan.fileBase,
 		fileName: plan.fileBase + '.aep',
 		existing: existing,
@@ -393,7 +417,7 @@ PADX.projectPlan = function (a) {
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
 // a mensagem diz qual pasta falta (a primeira que não existe no caminho) e o que o sistema respondeu
 function padCheckWritable(path) {
-	var folder = new Folder(path);
+	var folder = padWaitFolder(path, 3000);
 
 	if (folder.exists) return;
 
@@ -444,7 +468,14 @@ PADX.projectCreate = function (a) {
 	setXMPData('date', padToday());
 
 	try {
-		app.project.save(file);
+		try {
+			app.project.save(file);
+		} catch (first) {
+			// a pasta recém-criada na rede pode demorar a aceitar arquivos: espera e tenta de novo
+			padWaitFolder(projects, 2000);
+			$.sleep(1000);
+			app.project.save(file);
+		}
 	} catch (err) {
 		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?).');
 	}
