@@ -3276,8 +3276,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function catPreview(row, key) {
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
-		// o exemplo de atração nova (o mesmo do campo da janela PROJETO)
-		var sample = { atracao: 'DOMINGAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'D' };
+		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);

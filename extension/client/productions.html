@@ -254,7 +254,7 @@
 			<!-- aba PROJETO (janela PROJETO: as categorias da atração nova; embaixo, a pasta dos projetos deste computador) -->
 			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">categorias · atração nova</p>
-				<p class="cfg-hint">a lista <b>dentro de</b> da janela PROJETO (etapa NOVA): cada categoria com o caminho da pasta da atração nova (<b>projeto</b>) e o da pasta de <b>output</b> dela (opcional: a etapa CRIAR propõe criá-la), com tokens. clique no ícone para escolher outro; arraste pelos pontinhos para reordenar.</p>
+				<p class="cfg-hint">as opções do <b>dentro de</b> da janela PROJETO: a pasta do <b>projeto</b> e a de <b>output</b> (opcional) da atração nova, com tokens. o ícone troca no clique; a ordem, arrastando pelos pontinhos.</p>
 				<div class="tok-bar" id="cat-tokens">
 					<span class="tok-label">tokens</span>
 					<button type="button" class="tok" data-token="atracao" title="o nome da atração nova (obrigatório)">{atracao}</button>
@@ -264,9 +264,9 @@
 					<button type="button" class="tok" data-token="letra" title="a primeira letra do nome, sem o artigo (# para números)">{letra}</button>
 					<span class="tok-hint">clique para pôr no caminho em foco</span>
 				</div>
-				<p class="cfg-hint"><b>{letra}</b>: a primeira letra do nome sem o artigo (<b>Os Três Patetas</b> → T; # para números), como a pasta da letra dos filmes (<b>…/TITULOS/_{letra}_/{atracao}</b>). todas as categorias seguem o mesmo fluxo.</p>
+				<p class="cfg-hint"><b>{letra}</b>: a primeira letra da atração, sem o artigo (# para números).</p>
 				<div class="drive-rows" id="cat-list"></div>
-				<p class="scope-note cat-empty" id="cat-empty" hidden>sem categorias: o <b>dentro de</b> vem das atrações do webhook (cada categoria na pasta onde está a maioria delas).</p>
+				<p class="scope-note cat-empty" id="cat-empty" hidden>sem categorias: a janela PROJETO pede a pasta da atração nova (livre).</p>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-cat">+ nova categoria</button>
 
 				<!-- reservado: o cadastro das atrações e dos filmes novos no banco (ainda desligado) -->
