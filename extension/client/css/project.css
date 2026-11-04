@@ -129,8 +129,8 @@ body.project-page {
   min-height: 0;
   gap: 8px;
   overflow-y: auto;
-  margin: 0 -4px;
-  padding: 0 4px 4px;
+  margin: -4px; /* folga em volta: o brilho do cartão escolhido (3 px) não é cortado pela rolagem */
+  padding: 4px;
 }
 
 .wz-opt {
