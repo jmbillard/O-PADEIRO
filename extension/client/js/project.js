@@ -628,7 +628,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		select.appendChild(other);
 		PAD_DROPDOWN.enhance(select, function (value) {
 			var base = state.bases[+value];
-			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.label, base.icon)) || FOLDER_SVG; // o ícone da categoria (SHOWS: microfone…)
+			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.icon)) || FOLDER_SVG; // o ícone escolhido para a categoria (aba PROJETO)
 
 			return icon.replace('<svg', '<svg class="dropdown-svg"');
 		});
@@ -657,12 +657,12 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var head = displayPath(fillPattern(base.pattern.slice(0, base.pattern.indexOf('{atracao}')), name || '…', base.label));
 			var cut = full.indexOf(head) === 0 ? head.length - 1 : full.lastIndexOf('/');
 
-			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.label, base.icon) || FOLDER_SVG);
+			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.icon) || FOLDER_SVG);
 			$('nova-preview').appendChild(el('span', null, full.slice(0, cut + 1)));
 			$('nova-preview').appendChild(el('b', null, full.slice(cut + 1)));
 			if (base.offline) $('nova-preview').appendChild(el('em', 'nova-offline', 'pasta deste computador: a da categoria não está acessível'));
 		} else if (base) {
-			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.label) || FOLDER_SVG);
+			$('nova-preview').insertAdjacentHTML('afterbegin', FOLDER_SVG);
 			$('nova-preview').appendChild(el('span', null, base.display + (base.film ? '/_' + (name ? letterOf(name) : '?') + '_/' : '/')));
 			$('nova-preview').appendChild(el('b', null, name || '…'));
 		}

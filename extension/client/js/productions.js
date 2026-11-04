@@ -3143,7 +3143,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function catIcon(row) {
-		return PAD_UTIL.categoryIcon(row.name, row.icon) || CAT_FOLDER_SVG;
+		return PAD_UTIL.categoryIcon(row.icon) || CAT_FOLDER_SVG;
 	}
 
 	// a prévia do caminho: os tokens trocados por um exemplo, em destaque (o começo fica de fora)
@@ -3180,7 +3180,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		cats.forEach(function (row, i) {
 			var box = el('div', 'drive-row srv-row cat-row');
-			var iconBtn = el('button', 'cat-icon' + (row.icon ? '' : ' is-auto'));
+			var iconBtn = el('button', 'cat-icon');
 			var nameField = el('div', 'cat-name');
 			var name = el('input', 'cfg-input');
 			var preview = el('p', 'cat-preview');
@@ -3188,7 +3188,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			box.appendChild(PAD_SORT.handle());
 
 			iconBtn.type = 'button';
-			iconBtn.title = row.icon ? 'trocar o ícone' : 'trocar o ícone (agora: automático, pelo nome)';
+			iconBtn.title = 'trocar o ícone';
 			iconBtn.disabled = !state.available;
 			iconBtn.innerHTML = catIcon(row);
 			iconBtn.addEventListener('click', function (e) {
@@ -3205,7 +3205,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			name.setAttribute('aria-label', 'nome da categoria ' + (i + 1));
 			name.addEventListener('input', function () {
 				row.name = name.value;
-				if (!row.icon) iconBtn.innerHTML = catIcon(row);
 				preview.innerHTML = catPreview(row);
 				updateDirty();
 			});
@@ -3276,13 +3275,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		updateDirty();
 	}
 
-	// o seletor de ícones: os desenhos do padeiro (estáticos) e o automático, pelo nome da categoria
+	// o seletor de ícones: os desenhos do padeiro (estáticos)
 	function openIconPicker(anchor, row) {
 		closeIconPicker();
 
 		var pop = el('div', 'icon-pop');
 		var grid = el('div', 'icon-grid');
-		var auto = el('button', 'icon-auto' + (row.icon ? '' : ' is-on'), 'automático (pelo nome)');
 		var choose = function (key) {
 			row.icon = key;
 			closeIconPicker();
@@ -3304,11 +3302,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			grid.appendChild(b);
 		});
 		pop.appendChild(grid);
-		auto.type = 'button';
-		auto.addEventListener('click', function () {
-			choose('');
-		});
-		pop.appendChild(auto);
 		pop.addEventListener('click', function (e) {
 			e.stopPropagation();
 		});
@@ -3336,7 +3329,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindProject() {
 		$('btn-new-cat').addEventListener('click', function () {
-			state.project.categories.push({ name: '', path: '', icon: '' });
+			state.project.categories.push({ name: '', path: '', icon: 'pasta' });
 			renderProject();
 			updateDirty();
 			$('cat-list').querySelector('.cat-row:last-of-type .cat-name input').focus();
@@ -3382,7 +3375,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				res.categories.forEach(function (c) {
 					if (have[c.name]) return;
 
-					state.project.categories.push({ name: c.name, path: c.path, icon: '' });
+					// já com um ícone sugerido pelo nome (gravado nela: o seletor troca)
+					state.project.categories.push({ name: c.name, path: c.path, icon: PAD_UTIL.categoryIconKey(c.name) || 'pasta' });
 					added++;
 				});
 				renderProject();

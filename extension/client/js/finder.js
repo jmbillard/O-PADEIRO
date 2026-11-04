@@ -852,7 +852,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		if (c.cat) {
 			var cat = el('span', 'tr-row tr-cat');
 
-			cat.appendChild(svgNode(PAD_UTIL.categoryIcon(c.cat, chosenIcon(c.cat)) || V2_ICONS.pasta));
+			cat.appendChild(svgNode(PAD_UTIL.categoryIcon(chosenIcon(c.cat)) || V2_ICONS.pasta));
 			cat.appendChild(el('em', null, c.cat));
 			card.appendChild(cat);
 		}

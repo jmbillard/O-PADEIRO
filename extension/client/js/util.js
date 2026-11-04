@@ -272,8 +272,9 @@
 		['pasta', 'pasta', '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />']
 	];
 
-	// o ícone que o nome da categoria escolhe sozinho (as do DB: PROGRAMAS, ON-AIR, ESPORTES, SHOWS, NOVELAS,
-	// SERIES, JORNALISMO, FILMES, INSTITUCIONAL, MARKETING)
+	// a sugestão de ícone para uma categoria nova (preencher pelas atrações), gravada nela: depois, é o escolhido
+	// no seletor que vale (as do DB: PROGRAMAS, ON-AIR, ESPORTES, SHOWS, NOVELAS, SERIES, JORNALISMO, FILMES,
+	// INSTITUCIONAL, MARKETING)
 	var CATEGORY_AUTO = [[/^SHOW/, 'microfone'], [/^JORNAL/, 'jornal'], [/^NOVELA/, 'mascaras'], [/^PROGRAMA/, 'tv'], [/^FILME/, 'pelicula'], [/^INSTITUC/, 'estrela'], [/^ON ?-? ?AIR/, 'sinal'], [/^SERIE/, 'episodios'], [/^MARKETING/, 'megafone'], [/^ESPORTE/, 'bola']];
 
 	function iconMarkup(key) {
@@ -284,7 +285,7 @@
 		return '';
 	}
 
-	// a chave do ícone automático da categoria ('' = sem ícone próprio: a pasta)
+	// a chave sugerida para o nome da categoria ('' = sem sugestão: a pasta)
 	function categoryIconKey(cat) {
 		var key = String(cat || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/^.*[\\/]/, '').trim();
 
@@ -295,10 +296,10 @@
 		return '';
 	}
 
-	// PAD_UTIL.categoryIcon('NOVELAS') → '<svg …>' (ou '' sem ícone próprio). icon: o escolhido no seletor
-	// (aba PROJETO), que vale no lugar do automático
-	function categoryIcon(cat, icon) {
-		return (icon && iconMarkup(icon)) || iconMarkup(categoryIconKey(cat));
+	// PAD_UTIL.categoryIcon(icon) → '<svg …>' do ícone escolhido para a categoria na aba PROJETO ('' = sem
+	// ícone: quem chama usa a pasta). nada pelo nome: vale só o escolhido
+	function categoryIcon(icon) {
+		return icon ? iconMarkup(icon) : '';
 	}
 
 	// a lista do seletor: [{ key, label, svg }]

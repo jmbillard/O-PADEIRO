@@ -2336,26 +2336,6 @@ body.is-org-dragging * {
   color: var(--blue-500);
 }
 
-.icon-auto {
-  width: 100%;
-  margin-top: 8px;
-  padding: 7px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 9px;
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 650;
-}
-
-.icon-auto.is-on {
-  border-style: solid;
-  border-color: var(--blue-500);
-  color: var(--blue-500);
-}
-
 /* meu usuário: índice local da busca */
 .machine-index-opts {
   display: grid;
