@@ -459,8 +459,23 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
 		dot.className = 'bar-dot is-' + projectState;
+		placeProjectDot(btn, dot);
 		btn.setAttribute('data-project', projectState);
 		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (claquete, atração, pastas): abra a janela PROJETO';
+	}
+
+	// a bolinha fica no canto de cima, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
+	// com o rótulo ao lado)
+	function placeProjectDot(btn, dot) {
+		var icon = btn.querySelector('svg');
+
+		if (!icon || !icon.getBoundingClientRect().width) return;
+
+		var b = btn.getBoundingClientRect();
+		var r = icon.getBoundingClientRect();
+
+		dot.style.left = Math.round(r.right - b.left - 5) + 'px';
+		dot.style.top = Math.round(r.top - b.top - 4) + 'px';
 	}
 
 	async function watchProject() {
@@ -667,6 +682,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
 		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela claquete
+		window.addEventListener('resize', paintProjectDot); // a bolinha acompanha o ícone ao virar a barra
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
 

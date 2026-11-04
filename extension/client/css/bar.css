@@ -651,7 +651,7 @@ body.bar-page {
 .bar-dot {
   position: absolute;
   top: 5px;
-  left: calc(50% + 7px);
+  left: calc(50% + 7px); /* o bar.js põe no canto do ícone */
   width: 9px;
   height: 9px;
   border-radius: 50%;
