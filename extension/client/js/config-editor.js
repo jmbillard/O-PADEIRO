@@ -68,7 +68,7 @@ são preservadas ao salvar.
 	// ícones no início dos campos (os mesmos do criador)
 	var FIELD_ICONS = {
 		tag: '<path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" />',
-		comp: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><g class="comp-shapes"><circle cx="9" cy="10" r="2" /><rect x="13" y="8" width="4" height="4" rx="0.8" /><path d="m11 14 2.2 3.5h-4.4z" /></g>', // a comp (as formas, como no After Effects); a película é dos filmes
+		comp: '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" />',
 		prefix: '<path d="M5 5v14" /><path d="M9 9h10M9 15h7" />',
 		time: '<circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" />',
 		textCase: '<path d="M3 18 7.5 6 12 18M4.7 13.5h5.6" /><path d="M20.5 12v6M20.5 14.6c0 1.9-1.3 3.4-3 3.4s-2.8-1.4-2.8-3.1 1.2-3.1 2.9-3.1 2.9 1.2 2.9 2.8" />',
