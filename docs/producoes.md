@@ -8,8 +8,8 @@ as abas ficam em três grupos, separados por uma linha:
 
 | grupo | abas |
 | --- | --- |
+| **links** | links (o primeiro, como na barra) |
 | **ferramentas** | templates, coletar, renomear, organizar, buscar |
-| **links** | links |
 | **o resto** | rede, aparência, layout, meu usuário |
 
 **onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).

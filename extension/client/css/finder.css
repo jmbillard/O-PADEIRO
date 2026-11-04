@@ -387,15 +387,13 @@ body.finder-page {
   stroke: currentcolor;
 }
 
-/* película: as perfurações correm um quadro e param (voltam ao sair) */
-.comp-icon .film-holes {
-  stroke-dasharray: 1.6 2.4;
-  stroke-linecap: butt;
-  transition: stroke-dashoffset 420ms var(--ease-soft);
+/* a comp: as formas sobem um pouco e voltam */
+.comp-icon .comp-shapes {
+  transition: transform 320ms var(--ease-soft);
 }
 
-.comp-title:hover .comp-icon .film-holes {
-  stroke-dashoffset: -8;
+.comp-title:hover .comp-icon .comp-shapes {
+  transform: translateY(-1px);
 }
 
 .comp-title .comp-name {
@@ -450,8 +448,8 @@ body.finder-page {
 .tm-who mark,
 .tr-card mark,
 .at-head mark {
-  padding: 0 2px;
-  border-radius: 4px;
+  padding: 0; /* sem folga dos lados: o destaque no meio da palavra não afasta as letras ("Jo ã o") */
+  border-radius: 3px;
   background: #ffe9a8;
   color: #4a3500;
 }

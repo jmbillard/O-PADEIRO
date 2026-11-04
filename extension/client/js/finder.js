@@ -955,7 +955,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		results.textContent = '';
 
 		if (typed.q.length < MIN_QUERY) {
-			showState(results, 'O ACESSORISTA', 'pesquise por atração, claquete, quem mandou, output ou caminho', true);
+			showState(results, 'busca de caminhos', 'digite uma atração, claquete, pessoa, output ou caminho', true);
 			return;
 		}
 
@@ -995,7 +995,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + cat.label + ' — refine a busca'));
 		});
 
-		if (!any) showState(results, 'nenhum resultado', 'tente outro termo ou ligue mais categorias');
+		if (!any) showState(results, 'nenhum resultado', 'nada tem “' + $('q-paths').value.trim() + '”: tente outro termo');
 	}
 
 
@@ -1115,7 +1115,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	// película antes do nome da comp: no hover, as perfurações correm um quadro (CSS em finder.css)
-	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>';
+	// a comp (como no painel de projeto do After Effects: o quadro com as formas); a película fica para os filmes
+	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><g class="comp-shapes"><circle cx="9" cy="10" r="2" /><rect x="13" y="8" width="4" height="4" rx="0.8" /><path d="m11 14 2.2 3.5h-4.4z" /></g></svg>';
 
 	function searchTexts() {
 		var t = state.texts;
@@ -1134,12 +1135,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (raw === '') {
-			showState(results, 'busca nos textos', 'digite um termo para filtrar os layers de texto', true);
+			showState(results, 'busca nos textos', 'digite um termo para achar os layers de texto do projeto', true);
 			return;
 		}
 
 		if (t.comps === 0) {
-			showState(results, 'projeto sem comps', 'abra um projeto com layers de texto');
+			showState(results, 'projeto sem comps', 'abra um projeto com layers de texto', true);
 			return;
 		}
 
@@ -1150,7 +1151,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		});
 
 		if (!found.length) {
-			showState(results, 'sem matches', 'nenhum texto casa com “' + raw.trim() + '”');
+			showState(results, 'nenhum resultado', (opts.invert ? 'todos os textos têm “' : 'nenhum texto tem “') + raw.trim() + '”: tente outro termo');
 			return;
 		}
 
