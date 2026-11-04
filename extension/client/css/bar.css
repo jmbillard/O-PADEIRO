@@ -651,11 +651,11 @@ body.bar-page {
 .bar-dot {
   position: absolute;
   top: 5px;
-  left: calc(50% + 7px); /* o bar.js põe no canto do ícone */
-  width: 9px;
-  height: 9px;
+  left: calc(50% + 7px); /* o bar.js põe no canto de baixo do ícone, como os selos dos links e da rede */
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 85%);
+  box-shadow: 0 0 0 1.5px white, 0 1px 3px rgb(30 42 80 / 30%);
   pointer-events: none;
 }
 

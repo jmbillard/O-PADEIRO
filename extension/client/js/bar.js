@@ -464,7 +464,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (claquete, atração, pastas): abra a janela PROJETO';
 	}
 
-	// a bolinha fica no canto de cima, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
+	// a bolinha fica no canto de baixo, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
 	// com o rótulo ao lado)
 	function placeProjectDot(btn, dot) {
 		var icon = btn.querySelector('svg');
@@ -475,7 +475,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var r = icon.getBoundingClientRect();
 
 		dot.style.left = Math.round(r.right - b.left - 5) + 'px';
-		dot.style.top = Math.round(r.top - b.top - 4) + 'px';
+		dot.style.top = Math.round(r.bottom - b.top - 5) + 'px';
 	}
 
 	async function watchProject() {
