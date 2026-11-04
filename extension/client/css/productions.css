@@ -2169,8 +2169,8 @@ body.is-org-dragging * {
   padding-right: 72px; /* a pasta e o × dentro do campo */
 }
 
-/* aba PROJETO: cada categoria num cartão (CATEGORIA com o ícone e o × dentro do campo, PROJETO e OUTPUT com
-   a prévia embaixo); os rótulos alinham os campos */
+/* aba PROJETO: cada categoria num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
+   OUTPUT com a prévia embaixo); os rótulos alinham os campos */
 #cat-list {
   display: grid;
   gap: 10px;
@@ -2198,7 +2198,7 @@ body.is-org-dragging * {
 
 .cat-line {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 76px minmax(0, 1fr) 30px;
   align-items: center;
   gap: 8px;
 }
@@ -2222,37 +2222,44 @@ body.is-org-dragging * {
 
 .cat-name .cfg-input {
   width: 100%;
-  padding-right: 44px;
   padding-left: 46px;
 }
 
-/* o ícone (abre o seletor) e o × (tira a categoria): só o desenho, dentro do campo */
-.cat-icon,
-.cat-x {
+/* o ícone (abre o seletor): só o desenho, dentro do campo */
+.cat-icon {
   position: absolute;
   top: 50%;
+  left: 10px;
   display: grid;
   place-items: center;
   padding: 4px;
   border: 0;
   background: none;
+  color: var(--blue-500);
   cursor: pointer;
   transform: translateY(-50%);
 }
 
-.cat-icon {
-  left: 10px;
-  color: var(--blue-500);
-}
-
-.cat-x {
-  right: 10px;
+/* a lixeira: exclui a categoria (fora do campo, para não parecer que só apaga o texto) */
+.cat-del {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
   color: var(--text-tertiary);
-  transition: color 160ms ease;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
-.cat-x:hover,
-.cat-x:focus-visible {
+.cat-del:hover,
+.cat-del:focus-visible {
+  background: rgb(214 69 69 / 8%);
   color: #d64545;
 }
 
@@ -2267,18 +2274,19 @@ body.is-org-dragging * {
   stroke-width: 1.7;
 }
 
-.cat-x svg {
-  width: 16px;
-  height: 16px;
+.cat-del svg {
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;
-  stroke-width: 1.8;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 .cat-preview {
   min-height: 1em;
-  margin: -2px 0 2px 84px;
+  margin: -2px 38px 2px 84px;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.72rem;
@@ -2298,12 +2306,6 @@ body.is-org-dragging * {
 .cat-preview i {
   color: #d64545;
   font-style: normal;
-}
-
-.cat-btns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
 }
 
 .cat-empty {

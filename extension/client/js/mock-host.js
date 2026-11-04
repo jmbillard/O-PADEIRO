@@ -908,21 +908,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
-		projectCategoriesFromIndex: async function () {
-			await wait(delay);
-
-			var vfx = '/Volumes/VFX/imagem/drive_l/Fileserver_1/';
-			var out = '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/';
-
-			return { categories: [
-				{ name: 'FILMES', path: vfx + 'FILMES/TITULOS/_{letra}_/{atracao}', output: out + 'FILMES/TITULOS/_{letra}_/{atracao}' },
-				{ name: 'JORNALISMO', path: vfx + 'JORNALISMO/{atracao}', output: out + 'JORNALISMO/{atracao}' },
-				{ name: 'NOVELAS', path: vfx + 'NOVELAS/{atracao}', output: '' },
-				{ name: 'PROGRAMAS', path: vfx + 'PROGRAMAS/{atracao}', output: out + 'PROGRAMAS/{atracao}' },
-				{ name: 'SHOWS', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/{atracao}', output: out + 'SHOWS/{atracao}' }
-			] };
-		},
-
 		projectCategories: function () {
 			return {
 				categories: mockProject().categories.map(function (c) {

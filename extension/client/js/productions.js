@@ -3167,10 +3167,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	var CAT_X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+	var CAT_TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15M10 7V5h4v2M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" /></svg>';
 
-	// cada categoria num cartão: CATEGORIA (o ícone e o × dentro do campo do nome), PROJETO e OUTPUT, os dois
-	// com a prévia embaixo
+	// cada categoria num cartão: NOME (com o ícone dentro do campo; a lixeira, que exclui a categoria, fica fora
+	// dele), PROJETO e OUTPUT, os dois com a prévia embaixo
 	function renderProject() {
 		var list = $('cat-list');
 		var cats = state.project.categories;
@@ -3179,9 +3179,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		list.textContent = '';
 		$('cat-empty').hidden = cats.length > 0;
-		['btn-new-cat', 'btn-cat-index'].forEach(function (id) {
-			$(id).disabled = !state.available;
-		});
+		$('btn-new-cat').disabled = !state.available;
 
 		cats.forEach(function (row, i) {
 			var card = el('div', 'cat-card');
@@ -3190,7 +3188,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var nameBox = el('div', 'cat-name');
 			var iconBtn = el('button', 'cat-icon');
 			var name = el('input', 'cfg-input');
-			var remove = el('button', 'cat-x');
+			var remove = el('button', 'cat-del');
 			var previews = {};
 
 			card.appendChild(PAD_SORT.handle());
@@ -3219,10 +3217,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 
 			remove.type = 'button';
-			remove.title = 'tirar a categoria';
-			remove.setAttribute('aria-label', 'tirar a categoria ' + (row.name || i + 1));
+			remove.title = 'excluir a categoria';
+			remove.setAttribute('aria-label', 'excluir a categoria ' + (row.name || i + 1));
 			remove.disabled = !state.available;
-			remove.innerHTML = CAT_X_SVG;
+			remove.innerHTML = CAT_TRASH_SVG;
 			remove.addEventListener('click', function () {
 				state.project.categories.splice(i, 1);
 				renderProject();
@@ -3231,9 +3229,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			nameBox.appendChild(iconBtn);
 			nameBox.appendChild(name);
-			nameBox.appendChild(remove);
-			nameLine.appendChild(el('span', 'cat-label', 'CATEGORIA'));
+			nameLine.appendChild(el('span', 'cat-label', 'NOME'));
 			nameLine.appendChild(nameBox);
+			nameLine.appendChild(remove);
 			body.appendChild(nameLine);
 
 			[['path', 'PROJETO', '//servidor/share/PROGRAMAS/{atracao}'], ['output', 'OUTPUT', 'opcional: a pasta de output da atração nova']].forEach(function (k) {
@@ -3263,6 +3261,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 				line.appendChild(el('span', 'cat-label', k[1]));
 				line.appendChild(field);
+				line.appendChild(el('span')); // a coluna da lixeira (os campos alinham com o do nome)
 				body.appendChild(line);
 				preview.innerHTML = catPreview(row, k[0]);
 				previews[k[0]] = preview;
@@ -3273,11 +3272,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			list.appendChild(card);
 		});
 
-		// o fim de cada caminho (a parte que muda de uma categoria para outra)
-		requestAnimationFrame(function () {
-			Array.prototype.forEach.call(list.querySelectorAll('.cfg-path input'), function (input) {
-				if (document.activeElement !== input) input.scrollLeft = input.scrollWidth;
-			});
+		requestAnimationFrame(catPathsToEnd);
+	}
+
+	// o fim de cada caminho (a parte que muda de uma categoria para outra). também ao abrir a aba: montada
+	// escondida, o campo ainda não tem largura e fica no começo
+	function catPathsToEnd() {
+		Array.prototype.forEach.call($('cat-list').querySelectorAll('.cfg-path input'), function (input) {
+			if (document.activeElement !== input) input.scrollLeft = input.scrollWidth;
 		});
 	}
 
@@ -3392,36 +3394,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			updateDirty();
 		});
 
-		// as categorias das atrações do webhook (cada uma na pasta onde está a maioria delas): entram as que faltam
-		$('btn-cat-index').addEventListener('click', async function () {
-			var btn = this;
-
-			btn.disabled = true;
-
-			try {
-				var res = await call('projectCategoriesFromIndex');
-				var have = {};
-				var added = 0;
-
-				state.project.categories.forEach(function (c) {
-					have[c.name.trim().toUpperCase()] = true;
-				});
-				res.categories.forEach(function (c) {
-					if (have[c.name]) return;
-
-					// já com um ícone sugerido pelo nome (gravado nela: o seletor troca)
-					state.project.categories.push({ name: c.name, path: c.path, output: c.output || '', icon: PAD_UTIL.categoryIconKey(c.name) || 'pasta' });
-					added++;
-				});
-				renderProject();
-				updateDirty();
-				toast(added ? 'success' : null, added ? added + (added === 1 ? ' categoria' : ' categorias') + ' das atrações. confira os caminhos e clique no disquete para salvar.' : 'nenhuma categoria nova nas atrações.');
-			} catch (err) {
-				toast('error', err.message);
-			} finally {
-				btn.disabled = !state.available;
-			}
-		});
 	}
 
 	/* =========================================================
@@ -3591,6 +3563,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		TAB_NAMES.forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
+		if (name === 'project') requestAnimationFrame(catPathsToEnd);
 
 		// as categorias da busca são lidas do índice na primeira vez que a aba abre
 

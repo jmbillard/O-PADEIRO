@@ -272,25 +272,9 @@
 		['pasta', 'pasta', '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />']
 	];
 
-	// a sugestão de ícone para uma categoria nova (preencher pelas atrações), gravada nela: depois, é o escolhido
-	// no seletor que vale (as do DB: PROGRAMAS, ON-AIR, ESPORTES, SHOWS, NOVELAS, SERIES, JORNALISMO, FILMES,
-	// INSTITUCIONAL, MARKETING)
-	var CATEGORY_AUTO = [[/^SHOW/, 'microfone'], [/^JORNAL/, 'jornal'], [/^NOVELA/, 'mascaras'], [/^PROGRAMA/, 'tv'], [/^FILME/, 'pelicula'], [/^INSTITUC/, 'estrela'], [/^ON ?-? ?AIR/, 'sinal'], [/^SERIE/, 'episodios'], [/^MARKETING/, 'megafone'], [/^ESPORTE/, 'bola']];
-
 	function iconMarkup(key) {
 		for (var i = 0; i < ICONS.length; i++) {
 			if (ICONS[i][0] === key) return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[i][2] + '</svg>';
-		}
-
-		return '';
-	}
-
-	// a chave sugerida para o nome da categoria ('' = sem sugestão: a pasta)
-	function categoryIconKey(cat) {
-		var key = String(cat || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/^.*[\\/]/, '').trim();
-
-		for (var i = 0; i < CATEGORY_AUTO.length; i++) {
-			if (CATEGORY_AUTO[i][0].test(key)) return CATEGORY_AUTO[i][1];
 		}
 
 		return '';
@@ -309,5 +293,5 @@
 		});
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, categoryIconKey: categoryIconKey, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
+	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
 })();
