@@ -1115,8 +1115,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	// película antes do nome da comp: no hover, as perfurações correm um quadro (CSS em finder.css)
-	// a comp (como no painel de projeto do After Effects: o quadro com as formas); a película fica para os filmes
-	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><g class="comp-shapes"><circle cx="9" cy="10" r="2" /><rect x="13" y="8" width="4" height="4" rx="0.8" /><path d="m11 14 2.2 3.5h-4.4z" /></g></svg>';
+	var COMP_ICON = '<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>';
 
 	function searchTexts() {
 		var t = state.texts;

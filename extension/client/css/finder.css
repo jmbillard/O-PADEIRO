@@ -387,13 +387,15 @@ body.finder-page {
   stroke: currentcolor;
 }
 
-/* a comp: as formas sobem um pouco e voltam */
-.comp-icon .comp-shapes {
-  transition: transform 320ms var(--ease-soft);
+/* película: as perfurações correm um quadro e param (voltam ao sair) */
+.comp-icon .film-holes {
+  stroke-dasharray: 1.6 2.4;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
 }
 
-.comp-title:hover .comp-icon .comp-shapes {
-  transform: translateY(-1px);
+.comp-title:hover .comp-icon .film-holes {
+  stroke-dashoffset: -8;
 }
 
 .comp-title .comp-name {
