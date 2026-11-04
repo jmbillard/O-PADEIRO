@@ -378,7 +378,43 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	// "dentro de" (atração nova): no webhook, as categorias das atrações (FILMES, NOVELAS, PROGRAMAS…), cada uma
 	// na pasta onde está a maioria das atrações dela (a pasta do caminho cujo nome começa com a categoria; os
 	// filmes, em FILMES/TITULOS, com a pasta da letra); no índice local, as pastas indexadas e as de dentro delas.
+	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
+	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
+	function categoryBase(c, fallback) {
+		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
+		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
+
+		return { label: c.name, icon: c.icon, pattern: pattern, path: fixed, display: displayPath(fixed), letter: pattern.indexOf('{letra}') >= 0, offline: !c.reachable };
+	}
+
+	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {categoria} {letra}
+	function fillPattern(pattern, name, category) {
+		var d = new Date();
+		var values = { atracao: aepName(name), ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: aepName(category), letra: letterOf(name) };
+
+		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
+			return values[key] != null ? values[key] : all;
+		});
+	}
+
 	async function newBases() {
+		if (!source.info) source.info = await call('searchInfo');
+
+		// com as categorias configuradas (aba PROJETO), elas mesmas; no índice local, as pastas indexadas
+		if (source.info.mode !== 'local') {
+			var cfg = null;
+
+			try {
+				cfg = await call('projectCategories');
+			} catch (err) { }
+
+			if (cfg && cfg.categories && cfg.categories.length) {
+				return cfg.categories.map(function (c) {
+					return categoryBase(c, cfg.fallback);
+				});
+			}
+		}
+
 		var list = await candidates();
 
 		if (!list) return (await call('projectBases')).bases;
@@ -592,7 +628,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		select.appendChild(other);
 		PAD_DROPDOWN.enhance(select, function (value) {
 			var base = state.bases[+value];
-			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.label)) || FOLDER_SVG; // o ícone da categoria (SHOWS: microfone…)
+			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.label, base.icon)) || FOLDER_SVG; // o ícone da categoria (SHOWS: microfone…)
 
 			return icon.replace('<svg', '<svg class="dropdown-svg"');
 		});
@@ -615,7 +651,17 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		$('nova-preview').innerHTML = '';
 
-		if (base) {
+		if (base && base.pattern) {
+			// o caminho com os tokens trocados; da pasta da atração em diante, em destaque
+			var full = displayPath(fillPattern(base.pattern, name || '…', base.label));
+			var head = displayPath(fillPattern(base.pattern.slice(0, base.pattern.indexOf('{atracao}')), name || '…', base.label));
+			var cut = full.indexOf(head) === 0 ? head.length - 1 : full.lastIndexOf('/');
+
+			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.label, base.icon) || FOLDER_SVG);
+			$('nova-preview').appendChild(el('span', null, full.slice(0, cut + 1)));
+			$('nova-preview').appendChild(el('b', null, full.slice(cut + 1)));
+			if (base.offline) $('nova-preview').appendChild(el('em', 'nova-offline', 'pasta deste computador: a da categoria não está acessível'));
+		} else if (base) {
 			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.label) || FOLDER_SVG);
 			$('nova-preview').appendChild(el('span', null, base.display + (base.film ? '/_' + (name ? letterOf(name) : '?') + '_/' : '/')));
 			$('nova-preview').appendChild(el('b', null, name || '…'));
@@ -640,6 +686,34 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		var name = $('nova-name').value.trim();
 
 		if (!base || !aepName(name)) return;
+
+		// categoria com {letra}: a etapa dos parecidos (os que já existem na pasta da letra), como os filmes
+		if (base.pattern && base.letter) {
+			var head = base.pattern.slice(0, base.pattern.indexOf('{letra}'));
+			var parent = fillPattern(head.slice(0, head.lastIndexOf('/')), name, base.label);
+
+			flow.pick = { name: base.label, path: parent, display: displayPath(parent), film: true, pattern: base.pattern, category: base.label };
+			flow.film = null;
+			flow.filmTouched = false;
+			$('filme-hint').textContent = base.label + ' · ' + displayPath(parent);
+			$('filme-title').value = name;
+			renderFilms([], '');
+			show('filme');
+			filmSearch();
+			return;
+		}
+
+		// categoria configurada: o caminho dela com os tokens trocados
+		if (base.pattern) {
+			var path = fillPattern(base.pattern, name, base.label);
+
+			flow.pick = { name: name, path: path, display: displayPath(path), film: false };
+			$('arq-what').value = '';
+			flow.what = '';
+			planFile();
+			show('arquivo');
+			return;
+		}
 
 		if (base.film) {
 			flow.pick = { name: 'Filmes', path: base.path, display: base.display, film: true };
@@ -702,7 +776,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		});
 
 		if (title) {
-			list.appendChild(option(PLUS_SVG, 'filme novo: ' + aepName(title), (info.letterPath || 'TITULOS') + '/' + aepName(title), !flow.film, function () {
+			var newPath = flow.pick && flow.pick.pattern ? displayPath(fillPattern(flow.pick.pattern, title, flow.pick.category)) : (info.letterPath || 'TITULOS') + '/' + aepName(title);
+
+			list.appendChild(option(PLUS_SVG, (flow.pick && flow.pick.pattern ? 'novo: ' : 'filme novo: ') + aepName(title), newPath, !flow.film, function () {
 				flow.film = null;
 				flow.filmTouched = true;
 				renderFilms(films, title);
@@ -717,7 +793,12 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (!title) return;
 
-		goCreate({ kind: 'film', title: flow.film ? flow.film.name : title, filmPath: flow.film ? flow.film.raw : '' });
+		var filmPath = flow.film ? flow.film.raw : '';
+
+		// novo, numa categoria com tokens: a pasta é o caminho dela (com {ano}, {mes}… trocados)
+		if (!flow.film && flow.pick && flow.pick.pattern) filmPath = fillPattern(flow.pick.pattern, title, flow.pick.category);
+
+		goCreate({ kind: 'film', title: flow.film ? flow.film.name : title, filmPath: filmPath });
 	}
 
 	/* ---------------------------------------------------------------

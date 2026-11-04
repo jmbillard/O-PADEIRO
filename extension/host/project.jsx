@@ -5,77 +5,55 @@
 > projeto (janela PROJETO e aba PROJETO da configuração)
 ---------------------------------------------------------------
 
-Os dados do projeto (ID e nome) ficam no XMP do .aep: dc:identifier e dc:title, os mesmos campos da
-barra antiga da PROMO GNEWS (um projeto feito nela abre aqui com os dados). A sigla do usuário fica só
-neste computador (pasta de dados do usuário). O collect dos arquivos é do botão COLETAR (collect.jsx).
+A janela PROJETO cria o projeto pela claquete (abaixo) e edita a claquete e o designer dele. O collect dos
+arquivos é do botão COLETAR (collect.jsx).
 
-'PROJECT' no O_PADEIRO_config.json:
-  root         → pasta raiz dos projetos (na rede); vazio = escolher a pasta ao salvar
-  folder       → cria uma pasta para cada projeto (com o nome do arquivo) dentro da pasta da retranca
-  fileName     → nome do arquivo .aep, com as variáveis {id} {projeto} {usuario} {retranca} {data}
-  retrancas    → [{ code, path }]: o começo do ID do projeto → a pasta da retranca (dentro da raiz, ou um
-                 caminho completo); vale o código mais longo que combinar
-Sem 'PROJECT' no arquivo: PAD_DEFAULT_PROJECT.
+'PROJECT' no O_PADEIRO_config.json (aba PROJETO da configuração):
+  categories → [{ name, path, icon }]: a lista "dentro de" da atração nova. o caminho leva tokens:
+               {atracao} (obrigatório) {ano} {mes} {categoria} {letra}; uma categoria com {letra} ganha a
+               etapa dos parecidos (os que já existem na pasta da letra), como os filmes. icon: um ícone do
+               seletor (js/util.js), ou '' = pelo nome da categoria
+Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
+atrações do índice.
 
 */
 
-var PAD_DEFAULT_PROJECT = {
-	root: '',
-	folder: true,
-	fileName: '{id} {projeto}',
-	retrancas: []
-};
+var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PROJECT_TOKENS = ['id', 'projeto', 'usuario', 'retranca', 'data'];
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'categoria', 'letra'];
 
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
 	return padTrim(path).replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
 }
 
-function padProjectIsAbsolute(path) {
-	return /^(\/|~|[A-Za-z]:)/.test(path);
-}
-
-// Confere as variáveis de um padrão de nome. Lança Error com a mensagem.
-function padCheckProjectPattern(pattern, label) {
-	var re = /\{([^}]*)\}/g;
-	var m;
-
-	if (pattern == '') throw new Error('#PAD_089 - projeto: preencha o ' + label + '.');
-
-	while ((m = re.exec(pattern)) != null) {
-		var token = m[1];
-
-		if (PAD_PROJECT_TOKENS.indexOf(token) < 0) throw new Error('#PAD_089 - projeto: {' + token + '} não é uma variável do ' + label + '.');
-	}
-
-	if (/[\\\/:*?"<>|]/.test(pattern.replace(re, ''))) throw new Error('#PAD_089 - projeto: o ' + label + ' não pode ter \\ / : * ? " < > |.');
-}
-
 // Valida e normaliza a seção vinda do painel. Lança Error com a mensagem.
 function padCleanProject(o) {
-	var clean = {
-		root: padProjectPath(o.root),
-		folder: o.folder !== false,
-		fileName: padTrim(o.fileName).replace(/\s+/g, ' '),
-		retrancas: []
-	};
+	var clean = { categories: [] };
+	var list = o && o.categories instanceof Array ? o.categories : [];
 	var seen = {};
 
-	padCheckProjectPattern(clean.fileName, 'nome do arquivo');
+	for (var i = 0; i < list.length; i++) {
+		var c = list[i] || {};
+		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
+		var path = padProjectPath(c.path);
+		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
+		var key = padAepName(name);
+		var re = /\{([^}]*)\}/g;
+		var m;
 
-	for (var i = 0; i < (o.retrancas || []).length; i++) {
-		var code = padTrim(o.retrancas[i].code).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, '');
-		var path = padProjectPath(o.retrancas[i].path);
+		if (!key) throw new Error('#PAD_089 - projeto: preencha o nome da categoria ' + (i + 1) + '.');
+		if (seen[key]) throw new Error('#PAD_089 - projeto: a categoria ' + name + ' aparece mais de uma vez.');
+		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
 
-		if (!/^[A-Z0-9]{1,12}$/.test(code)) throw new Error('#PAD_089 - projeto: o código da retranca ' + (i + 1) + ' precisa ter de 1 a 12 letras ou números.');
-		if (seen[code]) throw new Error('#PAD_089 - projeto: a retranca ' + code + ' aparece mais de uma vez.');
-		if (path == '') throw new Error('#PAD_089 - projeto: a retranca ' + code + ' precisa de uma pasta.');
-		if (!padProjectIsAbsolute(path) && clean.root == '') throw new Error('#PAD_089 - projeto: a pasta de ' + code + ' fica dentro da raiz: preencha a pasta raiz (ou use o caminho completo).');
+		while ((m = re.exec(path)) != null) {
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {categoria} ou {letra}).');
+		}
 
-		seen[code] = true;
-		clean.retrancas.push({ code: code, path: path });
+		if (path.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + name + ' precisa do {atracao} (a pasta da atração nova).');
+
+		seen[key] = true;
+		clean.categories.push({ name: name, path: path, icon: icon });
 	}
 
 	return clean;
@@ -91,6 +69,26 @@ function padReadProject() {
 	}
 }
 
+// As categorias da atração nova, cada uma dizendo se a pasta dela está acessível (o começo fixo do caminho,
+// antes do primeiro token), e a pasta dos projetos deste computador, para quando não estiver (rede fora ou
+// modo local; sem ela, a Área de Trabalho). → { categories: [{ name, path, icon, reachable }], fallback }
+PADX.projectCategories = function () {
+	var list = padReadProject().categories;
+	var local = padLocalMode();
+	var checked = {};
+	var out = [];
+
+	for (var i = 0; i < list.length; i++) {
+		var fixed = list[i].path.split('{')[0].replace(/\/[^\/]*$/, '');
+
+		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(padPath(fixed)).exists;
+
+		out.push({ name: list[i].name, path: list[i].path, icon: list[i].icon, reachable: checked[fixed] });
+	}
+
+	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
+};
+
 /*
 
 ---------------------------------------------------------------
@@ -98,11 +96,6 @@ function padReadProject() {
 ---------------------------------------------------------------
 
 */
-
-// Sigla do usuário: a deste computador (configuração > meu usuário; padMachineUser, em api.jsx).
-function padProjectUser() {
-	return padMachineUser();
-}
 
 function padXmpGet(field) {
 	try {
@@ -122,14 +115,6 @@ function padXmpGet(field) {
 	return '';
 }
 
-function padCleanProjectId(id) {
-	return String(id == null ? '' : id).replaceSpecialCharacters().replace(/\s+/g, '').toUpperCase();
-}
-
-function padCleanProjectName(name) {
-	return String(name == null ? '' : name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-}
-
 function padToday() {
 	var d = new Date();
 	var m = d.getMonth() + 1;
@@ -138,195 +123,89 @@ function padToday() {
 	return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
 }
 
-// A retranca do ID: o código mais longo que começa o ID.
-function padProjectRetranca(settings, id) {
-	var found = null;
+// As categorias das atrações do webhook (aba PROJETO > preencher pelas atrações): cada categoria na pasta
+// onde está a maioria das atrações dela, com {atracao} no fim (FILMES: a pasta TITULOS e _{letra}_).
+// → { categories: [{ name, path }] }
+PADX.projectCategoriesFromIndex = function () {
+	var file = new File(tempFolder.fsName + '/busca_v2.json');
+	var data = null;
 
-	for (var i = 0; i < settings.retrancas.length; i++) {
-		var r = settings.retrancas[i];
-
-		if (id.indexOf(r.code) == 0 && (!found || r.code.length > found.code.length)) found = r;
+	if (!file.exists) {
+		try {
+			PADX.searchDownload({});
+		} catch (err) { }
 	}
 
-	if (!found) return null;
+	try {
+		data = psReadJSON(file);
+	} catch (err) { }
 
-	var absolute = padProjectIsAbsolute(found.path);
-	var path = absolute ? found.path : settings.root + '/' + found.path;
-	var parts = path.split('/');
+	if (!data || !(data.atracoes instanceof Array)) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 
-	return { code: found.code, path: path, name: parts[parts.length - 1], absolute: absolute };
-}
+	var roots = data.roots || {};
+	var byCat = {};
+	var names = [];
 
-function padFillPattern(pattern, values) {
-	return pattern
-		.replace(/\{(\w+)\}/g, function (all, token) {
-			return values[token] != null ? values[token] : '';
-		})
-		.replace(/\s+/g, ' ')
-		.replace(/^[\s\-_]+|[\s\-_]+$/g, '');
-}
+	for (var i = 0; i < data.atracoes.length; i++) {
+		var a = data.atracoes[i] || {};
+		var m = /^([a-z]+):(.*)$/.exec(String(a.proj || ''));
+		var path = (m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : String(a.proj || '')).replace(/([^\/])\/{2,}/g, '$1/'); // sem // no meio (o // do começo fica)
+		var key = padAepName(a.cat);
 
-// Tudo o que a janela mostra: dados do XMP, retranca, destino e os nomes que serão usados.
-function padProjectState() {
-	var team = padReadProject();
-	var home = padLocalMode();
-	var localRoot = padMachinePath(padMachineData().projects);
-	// a raiz: a deste computador (se houver) ou a da equipe; no modo local, sempre a daqui (ou a Área de Trabalho)
-	var settings = { root: home ? localRoot || '~/Desktop' : localRoot || team.root, folder: team.folder, fileName: team.fileName, retrancas: team.retrancas };
-	var id = padCleanProjectId(padXmpGet('identifier'));
-	var name = padCleanProjectName(padXmpGet('title'));
-	var user = padProjectUser();
-	var retranca = padProjectRetranca(settings, id);
+		if (!key || !path) continue;
 
-	// modo local: a pasta de uma retranca com caminho completo fica na rede; o projeto vai para a raiz local
-	if (home && retranca && retranca.absolute) retranca = { code: retranca.code, path: settings.root, name: retranca.name, absolute: true, local: true };
-	var values = {
-		id: id,
-		projeto: name ? padRenameFormat(name) : '',
-		usuario: user,
-		retranca: retranca ? retranca.name : '',
-		data: padToday()
-	};
-	var fileBase = sanitizeFileName(padFillPattern(settings.fileName, values));
-	var base = retranca ? retranca.path : settings.root;
-	var target = base ? (settings.folder && fileBase ? base + '/' + fileBase : base) : '';
-	var file = app.project.file;
-	// com uma pasta para cada projeto, ela recebe a estrutura do coletar e o .aep vai na pasta do tipo
-	// 'projeto' (ex: 01 PROJETOS)
-	var aepSub = settings.folder ? padCollectFolderPath(padReadCollect(), 'projeto') || '' : '';
+		var parts = path.replace(/\\/g, '/').split('/');
+		var at = -1;
 
-	return { settings: settings, id: id, name: name, user: user, retranca: retranca, values: values, fileBase: fileBase, target: target, aepSub: aepSub, file: file };
-}
+		for (var j = parts.length - 1; j >= 0; j--) {
+			if (padAepName(parts[j]).indexOf(key) == 0) {
+				at = j;
+				break;
+			}
+		}
 
-PADX.projectInfo = function () {
-	var s = padProjectState();
+		if (at < 0) continue;
 
-	return {
-		id: s.id,
-		name: s.name,
-		user: s.user,
-		defaultUser: padDefaultUser(),
-		hasItems: app.project.numItems > 0,
-		file: s.file ? padDisplayPath(s.file.fsName) : '',
-		retranca: s.retranca ? { code: s.retranca.code, name: s.retranca.name } : null,
-		hasRetrancas: s.settings.retrancas.length > 0,
-		target: s.target ? padDisplayPath(s.target) : '',
-		fileName: s.fileBase ? (s.aepSub ? s.aepSub + '/' : '') + s.fileBase + '.aep' : '',
-		saved: !!s.file,
-		localMode: padLocalMode()
-	};
-};
+		var film = key == 'FILMES';
+		var end = film && parts[at + 1] && padAepName(parts[at + 1]) == 'TITULOS' ? at + 1 : at;
+		var base = parts.slice(0, end + 1).join('/');
 
-// Grava ID e nome no XMP do projeto e a sigla neste computador. a: { id, name, user }
-PADX.projectSet = function (a) {
-	if (a.id != null && padCleanProjectId(a.id) != padCleanProjectId(padXmpGet('identifier'))) setXMPData('identifier', padCleanProjectId(a.id));
-	if (a.name != null && padCleanProjectName(a.name) != padCleanProjectName(padXmpGet('title'))) setXMPData('title', padCleanProjectName(a.name));
+		if (!byCat[key]) {
+			byCat[key] = { name: String(a.cat).toUpperCase(), film: film, count: {} };
+			names.push(key);
+		}
 
-	if (a.user != null && padCleanUser(a.user) != padMachineUser()) PADX.saveMachinePrefs({ user: a.user });
-
-	return PADX.projectInfo();
-};
-
-function padRequireProjectData(s) {
-	if (s.id == '' && s.name == '') throw new Error('#PAD_090 - preencha o ID ou o nome do projeto.');
-}
-
-// Salva o projeto na pasta da retranca (ou na escolhida). a: { path, overwrite, open }
-PADX.projectSave = function (a) {
-	var s = padProjectState();
-
-	padRequireProjectData(s);
-
-	var target = s.target;
-
-	if (a.path) target = padProjectPath(a.path) + (s.settings.folder && s.fileBase ? '/' + s.fileBase : '');
-	if (!target) throw new Error('#PAD_091 - sem pasta de destino: defina a pasta raiz dos projetos (configuração > projeto) ou escolha a pasta.');
-	if (!s.fileBase) throw new Error('#PAD_091 - o nome do arquivo ficou vazio: confira o ID, o nome do projeto e o padrão do nome.');
-
-	var root = new Folder(padPath(target));
-
-	if (!root.exists) root.create();
-	if (!root.exists) throw new Error('#PAD_091 - não foi possível criar a pasta: ' + padDisplayPath(target));
-
-	// uma pasta para cada projeto: a estrutura do coletar (01, 02, 03...) e o .aep na pasta dele
-	if (s.settings.folder) padCollectStructure(root.fsName, padReadCollect());
-
-	var folder = new Folder(root.fsName + (s.aepSub ? '/' + s.aepSub : ''));
-
-	if (!folder.exists) folder.create();
-
-	var file = new File(folder.fsName + '/' + s.fileBase + '.aep');
-	var current = app.project.file;
-
-	if (file.exists && !a.overwrite && !(current && current.fsName == file.fsName)) {
-		throw new Error('#PAD_092 - já existe um projeto com esse nome na pasta: salve de novo para substituir.');
+		byCat[key].count[base] = (byCat[key].count[base] || 0) + 1;
 	}
 
-	setXMPData('creator', system.userName);
-	setXMPData('date', padToday());
-	app.project.save(file);
+	names.sort();
 
-	if (a.open) openFolder(root.fsName);
+	var out = [];
 
-	return { file: padDisplayPath(file.fsName), folder: padDisplayPath(root.fsName) };
+	for (var n = 0; n < names.length; n++) {
+		var cat = byCat[names[n]];
+		var best = '';
+
+		for (var b in cat.count) {
+			if (!best || cat.count[b] > cat.count[best]) best = b;
+		}
+
+		out.push({ name: cat.name, path: best + (cat.film ? '/_{letra}_/{atracao}' : '/{atracao}') });
+	}
+
+	return { categories: out };
 };
 
-// Abre a pasta do projeto salvo ou, sem ele, a do destino.
+// Abre a pasta do projeto aberto: a da estrutura (gravada ao criar) ou a de cima da de projetos.
 PADX.projectOpenFolder = function () {
-	var s = padProjectState();
-	var path = s.file ? padCollectRoot(s.file, padReadCollect()) : '';
+	var file = app.project.file;
+	var path = padPath(padXmpGet('relation')) || (file ? padCollectRoot(file, padReadCollect()) : '');
 
-	if (!path && s.target) {
-		var target = new Folder(padPath(s.target));
-
-		var near = target.exists ? target : nearestExistingFolder(target.fsName);
-
-		path = near ? near.fsName : '';
-	}
-
-	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo e não há pasta de destino.');
+	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
 	openFolder(path);
 
 	return { path: padDisplayPath(path) };
-};
-
-// Retrancas tiradas do índice da busca: entradas "COD - nome" com um caminho → { code, path }.
-PADX.projectRetrancasFromIndex = function () {
-	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
-
-	if (!cacheFile.exists) psDownloadIndex(cacheFile);
-
-	var data = null;
-
-	try {
-		data = psReadJSON(cacheFile);
-	} catch (err) { }
-
-	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
-	if (!data) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
-
-	var out = [];
-	var seen = {};
-
-	for (var key in data) {
-		if (!(data[key] instanceof Array)) continue;
-
-		for (var i = 0; i < data[key].length; i++) {
-			var rec = data[key][i] || {};
-			var m = /^\s*([A-Za-z0-9]{2,12})\s+-\s+\S/.exec(String(rec.atracao || ''));
-			var win = rec.win || {};
-			var mac = rec.mac || {};
-			var path = psCleanPath(win.caminho || rec.caminho || mac.caminho || '');
-
-			if (!m || path == '' || seen[m[1].toUpperCase()]) continue;
-
-			seen[m[1].toUpperCase()] = true;
-			out.push({ code: m[1].toUpperCase(), path: padProjectPath(path) });
-		}
-	}
-
-	return { retrancas: out };
 };
 
 /*

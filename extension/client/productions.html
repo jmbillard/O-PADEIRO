@@ -24,6 +24,7 @@
 							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
 							<p class="tab-sep" aria-hidden="true"></p>
 							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">TEMPLATES</button>
+							<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
 							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
 							<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 							<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
@@ -250,6 +251,34 @@
 			</div>
 
 			<!-- aba COLETAR (botão COLETAR da barra): a árvore dentro da pasta do projeto -->
+			<!-- aba PROJETO (janela PROJETO: as categorias da atração nova; embaixo, a pasta dos projetos deste computador) -->
+			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">categorias · atração nova</p>
+				<p class="cfg-hint">a lista <b>dentro de</b> da janela PROJETO (etapa NOVA): o nome e o caminho da pasta da atração nova, com tokens. o ícone vem do nome (clique nele para escolher outro). arraste pelos pontinhos para reordenar.</p>
+				<div class="tok-bar" id="cat-tokens">
+					<span class="tok-label">tokens</span>
+					<button type="button" class="tok" data-token="atracao" title="o nome da atração nova (obrigatório)">{atracao}</button>
+					<button type="button" class="tok" data-token="ano" title="o ano atual">{ano}</button>
+					<button type="button" class="tok" data-token="mes" title="o mês atual (01 a 12)">{mes}</button>
+					<button type="button" class="tok" data-token="categoria" title="o nome da categoria">{categoria}</button>
+					<button type="button" class="tok" data-token="letra" title="a primeira letra do nome, sem o artigo (# para números)">{letra}</button>
+					<span class="tok-hint">clique para pôr no caminho em foco</span>
+				</div>
+				<p class="cfg-hint"><b>{letra}</b>: a primeira letra do nome sem o artigo (<b>Os Três Patetas</b> → T; # para números). uma categoria com {letra} ganha a etapa dos <b>parecidos</b> (os que já existem na pasta da letra), como os filmes.</p>
+				<div class="drive-rows" id="cat-list"></div>
+				<p class="scope-note cat-empty" id="cat-empty" hidden>sem categorias: o <b>dentro de</b> vem das atrações do webhook (cada categoria na pasta onde está a maioria delas).</p>
+				<div class="cat-btns">
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-cat">+ nova categoria</button>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-cat-index" title="as categorias das atrações do webhook que ainda não estão na lista">preencher pelas atrações</button>
+				</div>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">pasta dos projetos</p>
+				<p class="cfg-hint">para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura <b>{categoria}/{atracao}</b>. vazia: a Área de Trabalho.</p>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" placeholder="~/Desktop" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+			</div>
+
 			<div class="cfg-pane organize-pane" id="pane-collect" role="tabpanel" hidden>
 				<div class="org-card">
 					<div class="org-tree" id="col-tree"></div>
@@ -265,11 +294,6 @@
 					<p class="cfg-title prods-section-title">sequências de imagens</p>
 					<p class="cfg-hint">copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela (render_0001.png → render). a interpretação do item (fps, alpha) é mantida.</p>
 
-					<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
-					<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
-					<p class="cfg-title prods-section-title">pasta dos projetos</p>
-					<p class="cfg-hint">a pasta padrão dos projetos neste computador (usada no modo local). vazia: a da equipe.</p>
-					<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 				</div>
 			</div>
 

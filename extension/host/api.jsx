@@ -135,8 +135,8 @@ function padDisplayPaths(list) {
 
 'machine_config.json' na pasta de dados do usuário:
   user       → a sigla do designer ({usuario} no nome do projeto); vazia: o usuário do computador
-  projects   → a pasta padrão dos projetos neste computador (no lugar da raiz da equipe; as retrancas
-               relativas ficam dentro dela)
+  projects   → a pasta dos projetos neste computador: a atração nova vai para ela ({categoria}/{atracao})
+               quando a pasta da categoria não pode ser acessada (rede fora ou modo local)
   outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
   templates  → { 'produção': pasta } a pasta de templates de cada produção neste computador
   localMode  → modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem

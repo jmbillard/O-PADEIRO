@@ -395,6 +395,18 @@ body.project-page {
   color: var(--text-primary);
 }
 
+/* a pasta da categoria fora do alcance: vai para a pasta dos projetos deste computador (linha de baixo) */
+.wz-preview:has(.nova-offline) {
+  flex-wrap: wrap;
+}
+
+.nova-offline {
+  flex: 1 0 100%;
+  padding-left: 22px;
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
 /* CRIAR: a estrutura, no cartão azul */
 .wz-tree {
   display: grid;

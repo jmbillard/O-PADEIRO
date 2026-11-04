@@ -115,6 +115,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	var run = null;
 
 	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
+	// as categorias da atração nova (aba PROJETO), guardadas no navegador: a janela PROJETO lê as mesmas
+	function mockProject() {
+		var saved = null;
+
+		try {
+			saved = JSON.parse(localStorage.getItem('pad.mock.project') || 'null');
+		} catch (err) { }
+
+		return { categories: saved && saved.categories ? saved.categories : [] };
+	}
+
 	function mockMachine() {
 		return JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
 	}
@@ -180,12 +191,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
 						]
 					},
-					project: {
-						root: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO',
-						folder: true,
-						fileName: '{id} {projeto}',
-						retrancas: [{ code: 'EMP', path: 'JORNAIS/em ponto' }, { code: 'JDE', path: 'JORNAIS/jornal das dez' }, { code: 'INS', path: 'CANAL/institucional' }]
-					},
+					project: mockProject(), // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
 					collect: {
 						folders: [
 							{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
@@ -351,10 +357,24 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
 			}
 			if (a.project) {
-				var badTok = /\{(?!(id|projeto|usuario|retranca|data)\})[^}]*\}/.exec(a.project.fileName);
+				// como o host (padCleanProject)
+				var seenCat = {};
 
-				if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é uma variável.');
-				window.PAD_MOCK_LIST.project = JSON.parse(JSON.stringify(a.project));
+				(a.project.categories || []).forEach(function (c, i) {
+					var key = String(c.name || '').trim().toUpperCase();
+					var badTok = /\{(?!(atracao|ano|mes|categoria|letra)\})[^}]*\}/.exec(c.path || '');
+
+					if (!key) throw new Error('#PAD_089 - projeto: preencha o nome da categoria ' + (i + 1) + '.');
+					if (seenCat[key]) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' aparece mais de uma vez.');
+					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' precisa de um caminho.');
+					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {categoria} ou {letra}).');
+					if (String(c.path).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + key + ' precisa do {atracao} (a pasta da atração nova).');
+					seenCat[key] = true;
+				});
+				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
+					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), icon: c.icon || '' };
+				}) };
+				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}
 			if (a.bar) {
 				// como o host: sem separador no começo, no fim ou dois seguidos
@@ -516,6 +536,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				foldersOnly: ms.foldersOnly,
 				daily: ms.daily,
 				localIndex: '/mock/indice_local.json',
+				categories: mockProject().categories,
 				url: 'https://workflows.jmbillard.com/webhook/buscar',
 				cache: '/tmp/busca_v2.json',
 				local: false,
@@ -886,6 +907,29 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
+		projectCategoriesFromIndex: async function () {
+			await wait(delay);
+
+			var vfx = '/Volumes/VFX/imagem/drive_l/Fileserver_1/';
+
+			return { categories: [
+				{ name: 'FILMES', path: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}' },
+				{ name: 'JORNALISMO', path: vfx + 'JORNALISMO/{atracao}' },
+				{ name: 'NOVELAS', path: vfx + 'NOVELAS/{atracao}' },
+				{ name: 'PROGRAMAS', path: vfx + 'PROGRAMAS/{atracao}' },
+				{ name: 'SHOWS', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/{atracao}' }
+			] };
+		},
+
+		projectCategories: function () {
+			return {
+				categories: mockProject().categories.map(function (c) {
+					return Object.assign({ reachable: !/^~|^\/Users\//.test(c.path) && !/OFFLINE/i.test(c.path) }, c);
+				}),
+				fallback: (JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).projects || '~/Desktop'
+			};
+		},
+
 		projectInfo: function () {
 			if (!window.PAD_MOCK_LIST) api.productions();
 

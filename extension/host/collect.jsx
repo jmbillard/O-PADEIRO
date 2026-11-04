@@ -498,7 +498,7 @@ PADX.collectProject = function (a) {
 		var sub = padCollectFolderPath(settings, 'projeto');
 
 		if (file) app.project.save();
-		else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padProjectState().fileBase || 'projeto') + '.aep'));
+		else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
 
 		if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
 		if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));

@@ -2169,6 +2169,193 @@ body.is-org-dragging * {
   padding-right: 72px; /* a pasta e o × dentro do campo */
 }
 
+/* aba PROJETO: as categorias da atração nova (ícone, nome e o caminho com tokens; a prévia embaixo) */
+.srv-row.cat-row {
+  grid-template-columns: 22px 46px minmax(120px, 190px) minmax(0, 1fr);
+}
+
+.cat-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.cat-icon:hover,
+.cat-icon:focus-visible {
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+}
+
+.cat-icon svg,
+.icon-grid svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.cat-name .cfg-input {
+  width: 100%;
+}
+
+.cat-preview {
+  min-height: 1em;
+  margin: -2px 0 6px 84px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-preview:empty {
+  display: none;
+}
+
+.cat-preview b {
+  color: var(--blue-500);
+}
+
+.cat-preview i {
+  color: #d64545;
+  font-style: normal;
+}
+
+.cat-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.cat-empty {
+  border: 0;
+  border-radius: 10px;
+}
+
+.tok-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tok-label {
+  margin-right: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tok {
+  padding: 3px 9px;
+  border: 1px solid var(--blue-200);
+  border-radius: 999px;
+  background: var(--blue-50);
+  color: var(--blue-500);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.tok:hover {
+  border-color: var(--blue-500);
+}
+
+.tok-hint {
+  margin-left: 4px;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+/* o seletor de ícones (abre embaixo do ícone da categoria) */
+#pane-project {
+  position: relative;
+}
+
+.icon-pop {
+  position: absolute;
+  z-index: 20;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 14px 40px rgb(30 40 90 / 18%);
+}
+
+.icon-pop p {
+  margin: 0 0 8px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 36px);
+  gap: 6px;
+}
+
+.icon-grid button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.icon-grid button:hover {
+  color: var(--blue-500);
+}
+
+.icon-grid button.is-on {
+  background: var(--blue-50);
+  box-shadow: inset 0 0 0 1.5px var(--blue-500);
+  color: var(--blue-500);
+}
+
+.icon-auto {
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 9px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.icon-auto.is-on {
+  border-style: solid;
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+}
+
 /* meu usuário: índice local da busca */
 .machine-index-opts {
   display: grid;

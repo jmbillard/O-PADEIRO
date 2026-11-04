@@ -31,7 +31,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
-		project: { root: '', folder: true, fileName: '', retrancas: [] }, // aba PROJETO
+		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path (com tokens), icon ('' = pelo nome) }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
@@ -308,14 +308,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function projectForSave() {
-		var p = state.project;
-
 		return {
-			root: p.root.trim(),
-			folder: p.folder,
-			fileName: p.fileName.trim(),
-			retrancas: p.retrancas.map(function (r) {
-				return { code: r.code.trim().toUpperCase(), path: r.path.trim() };
+			categories: state.project.categories.map(function (c) {
+				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), icon: c.icon || '' };
 			})
 		};
 	}
@@ -2400,7 +2395,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
 		});
 		$('machine-user').placeholder = state.defaultUser;
-		$('machine-projects').placeholder = state.project && state.project.root ? state.project.root : 'a pasta da equipe';
+		$('machine-projects').placeholder = '~/Desktop';
 		$('machine-local').checked = m.localMode;
 		$('machine-log').checked = m.log;
 		$('machine-offline').hidden = !state.offline;
@@ -3128,192 +3123,271 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Projeto (janela PROJETO): pasta, nomes e retrancas
+	   Projeto (janela PROJETO): as categorias da atração nova
 	   ========================================================= */
 
-	var PROJECT_TOKENS = ['id', 'projeto', 'usuario', 'retranca', 'data'];
-	var CODE_ICON = ['M9.5 4 7.5 20M16.5 4l-2 16M4.5 9h15M3.5 15h15'];
-	var FOLDER_ICON = ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'];
+	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
+	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'categoria', 'letra'];
+	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
 	function setProject(p) {
 		var data = JSON.parse(JSON.stringify(p || {}));
 
 		state.project = {
-			root: data.root || '',
-			folder: data.folder !== false,
-			fileName: data.fileName || '{id} {projeto}',
-			retrancas: (data.retrancas || []).map(function (r) {
-				return { code: r.code || '', path: r.path || '' };
+			categories: (data.categories || []).map(function (c) {
+				return { name: c.name || '', path: c.path || '', icon: c.icon || '' };
 			})
 		};
 		renderProject();
 	}
 
-	// variável desconhecida no padrão (a janela só aceita as da lista)
-	function badToken(pattern) {
-		var re = /\{([^}]*)\}/g;
-		var m;
-
-		while ((m = re.exec(pattern)) !== null) {
-			if (PROJECT_TOKENS.indexOf(m[1]) < 0) return m[0];
-		}
-
-		return null;
+	function catIcon(row) {
+		return PAD_UTIL.categoryIcon(row.name, row.icon) || CAT_FOLDER_SVG;
 	}
 
-	// exemplo com um projeto de mentira: EMP123456, "história ao vivo", sigla JBI
-	function projectPreview() {
-		var p = state.project;
-		var first = p.retrancas[0];
-		var id = first && first.code ? first.code.toUpperCase() + '123456' : 'EMP123456';
-		var values = {
-			id: id,
-			projeto: renameFormat('história ao vivo', state.rename),
-			usuario: 'JBI',
-			retranca: first && first.path ? first.path.replace(/[\\/]+$/, '').split(/[\\/]/).pop() : 'em ponto',
-			data: new Date().toISOString().slice(0, 10)
-		};
-		var fill = function (pattern) {
-			return pattern.replace(/\{(\w+)\}/g, function (all, t) {
-				return values[t] != null ? values[t] : '';
-			}).replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
-		};
-		var node = $('proj-pattern-preview');
-		var bad = badToken(p.fileName);
+	// a prévia do caminho: os tokens trocados por um exemplo, em destaque (o começo fica de fora)
+	function catPreview(row) {
+		var d = new Date();
+		var film = row.path.indexOf('{letra}') >= 0;
+		var sample = { atracao: film ? 'OS TRES PATETAS' : 'NOVA ATRAÇÃO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: film ? 'T' : 'A' };
+		var path = row.path.trim().replace(/\\/g, '/');
+		var at = path.indexOf('{');
+		var head = at < 0 ? path : path.slice(0, at);
+		var cut = head.lastIndexOf('/', head.length - 2);
+		var shown = (cut > 0 ? '…' + path.slice(cut) : path).replace(/[&<>]/g, function (c) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+		});
 
-		node.textContent = '';
+		if (!path) return '';
 
-		if (bad) {
-			node.appendChild(el('span', 'is-error', bad + ' não é uma variável.'));
-			return;
-		}
-
-		node.appendChild(document.createTextNode('ex. (' + id + ', “história ao vivo”): '));
-		node.appendChild(el('b', null, fill(p.fileName) + '.aep'));
+		return '→ ' + (film ? '<b>Os Três Patetas</b>: ' : '') + shown.replace(/\{(\w+)\}/g, function (all, key) {
+			return PATH_TOKENS.indexOf(key) >= 0 ? '<b>' + sample[key] + '</b>' : '<i>' + all + '</i>';
+		});
 	}
 
 	function renderProject() {
-		if (!state.project || !$('pane-project')) return;
+		var list = $('cat-list');
+		var cats = state.project.categories;
 
-		var p = state.project;
-		var list = $('retranca-list');
-		var disabled = !state.available;
-
-		[['proj-root', 'root'], ['proj-file-pattern', 'fileName']].forEach(function (pair) {
-			var input = $(pair[0]);
-
-			if (input.value !== p[pair[1]]) input.value = p[pair[1]];
-			input.disabled = disabled;
-		});
-		$('proj-folder').checked = p.folder;
-		['proj-folder', 'proj-root-pick', 'btn-new-retranca', 'btn-retrancas-index'].forEach(function (id) {
-			$(id).disabled = disabled;
-		});
+		if (!list) return;
 
 		list.textContent = '';
+		$('cat-empty').hidden = cats.length > 0;
+		['btn-new-cat', 'btn-cat-index'].forEach(function (id) {
+			$(id).disabled = !state.available;
+		});
 
-		p.retrancas.forEach(function (row, i) {
-			var box = el('div', 'drive-row is-retranca');
-			var code = el('div', 'has-field-icon');
-			var input = el('input', 'cfg-input retranca-code');
-			var ico = svg(CODE_ICON);
+		cats.forEach(function (row, i) {
+			var box = el('div', 'drive-row srv-row cat-row');
+			var iconBtn = el('button', 'cat-icon' + (row.icon ? '' : ' is-auto'));
+			var nameField = el('div', 'cat-name');
+			var name = el('input', 'cfg-input');
+			var preview = el('p', 'cat-preview');
 
-			ico.setAttribute('class', 'field-icon');
-			input.type = 'text';
-			input.value = row.code;
-			input.placeholder = 'COD';
-			input.maxLength = 12;
-			input.spellcheck = false;
-			input.title = 'o começo do ID do projeto';
-			input.setAttribute('aria-label', 'código da retranca ' + (i + 1));
-			input.disabled = disabled;
-			input.addEventListener('input', function () {
-				input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-				row.code = input.value;
-				box.classList.remove('has-error');
-				projectPreview();
+			box.appendChild(PAD_SORT.handle());
+
+			iconBtn.type = 'button';
+			iconBtn.title = row.icon ? 'trocar o ícone' : 'trocar o ícone (agora: automático, pelo nome)';
+			iconBtn.disabled = !state.available;
+			iconBtn.innerHTML = catIcon(row);
+			iconBtn.addEventListener('click', function (e) {
+				e.stopPropagation();
+				openIconPicker(iconBtn, row);
+			});
+			box.appendChild(iconBtn);
+
+			name.type = 'text';
+			name.value = row.name;
+			name.placeholder = 'nome (ex: PROGRAMAS)';
+			name.spellcheck = false;
+			name.disabled = !state.available;
+			name.setAttribute('aria-label', 'nome da categoria ' + (i + 1));
+			name.addEventListener('input', function () {
+				row.name = name.value;
+				if (!row.icon) iconBtn.innerHTML = catIcon(row);
+				preview.innerHTML = catPreview(row);
 				updateDirty();
 			});
-			code.appendChild(ico);
-			code.appendChild(input);
-			box.appendChild(code);
-			box.appendChild(driveField(row.path, 'JORNAIS/em ponto', 'pasta da retranca ' + (row.code || i + 1), FOLDER_ICON, function (v) {
+			nameField.appendChild(name);
+			box.appendChild(nameField);
+
+			var path = pathField(row.path, '//servidor/share/PROGRAMAS/{atracao}', 'caminho de ' + (row.name || 'categoria ' + (i + 1)), function (v) {
 				row.path = v;
-				projectPreview();
-			}, function () {
-				p.retrancas.splice(i, 1);
+				preview.innerHTML = catPreview(row);
+			}, function (picked) {
+				// a pasta escolhida é a da categoria: a atração nova fica dentro dela
+				row.path = picked.replace(/[\\/]+$/, '') + '/{atracao}';
+				if (!row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
 				renderProject();
 				updateDirty();
-			}));
+			}, function () {
+				state.project.categories.splice(i, 1);
+				renderProject();
+				updateDirty();
+			});
+			var input = path.querySelector('input');
+
+			// os tokens entram no último caminho em foco; fora dele, o campo mostra o fim do caminho
+			input.addEventListener('focus', function () {
+				state.catInput = { input: input, row: row, preview: preview };
+			});
+			input.addEventListener('blur', function () {
+				input.scrollLeft = input.scrollWidth;
+			});
+			box.appendChild(path);
 			list.appendChild(box);
+
+			preview.innerHTML = catPreview(row);
+			list.appendChild(preview);
 		});
 
-		projectPreview();
+		// o fim de cada caminho (a parte que muda de uma categoria para outra)
+		requestAnimationFrame(function () {
+			Array.prototype.forEach.call(list.querySelectorAll('.cfg-path input'), function (input) {
+				if (document.activeElement !== input) input.scrollLeft = input.scrollWidth;
+			});
+		});
 	}
 
-	// a aba PROJETO saiu da janela: a configuração continua guardada como está (projectForSave)
+	// põe o token no caminho em foco (ou no último), onde está o cursor
+	function insertToken(token) {
+		var target = state.catInput;
+
+		if (!target || !document.body.contains(target.input)) {
+			var inputs = $('cat-list').querySelectorAll('.cfg-path input');
+			var rows = state.project.categories;
+
+			if (!inputs.length) return toast(null, 'crie uma categoria antes (+ nova categoria).');
+
+			target = { input: inputs[inputs.length - 1], row: rows[rows.length - 1], preview: $('cat-list').lastChild };
+		}
+
+		var input = target.input;
+		var start = input.selectionStart == null ? input.value.length : input.selectionStart;
+		var end = input.selectionEnd == null ? start : input.selectionEnd;
+		var text = '{' + token + '}';
+
+		input.value = input.value.slice(0, start) + text + input.value.slice(end);
+		target.row.path = input.value;
+		target.preview.innerHTML = catPreview(target.row);
+		input.focus();
+		input.setSelectionRange(start + text.length, start + text.length);
+		updateDirty();
+	}
+
+	// o seletor de ícones: os desenhos do padeiro (estáticos) e o automático, pelo nome da categoria
+	function openIconPicker(anchor, row) {
+		closeIconPicker();
+
+		var pop = el('div', 'icon-pop');
+		var grid = el('div', 'icon-grid');
+		var auto = el('button', 'icon-auto' + (row.icon ? '' : ' is-on'), 'automático (pelo nome)');
+		var choose = function (key) {
+			row.icon = key;
+			closeIconPicker();
+			renderProject();
+			updateDirty();
+		};
+
+		pop.appendChild(el('p', null, 'ícone da categoria'));
+		PAD_UTIL.iconLibrary().forEach(function (it) {
+			var b = el('button', it.key === row.icon ? 'is-on' : '');
+
+			b.type = 'button';
+			b.title = it.label;
+			b.setAttribute('aria-label', it.label);
+			b.innerHTML = it.svg;
+			b.addEventListener('click', function () {
+				choose(it.key);
+			});
+			grid.appendChild(b);
+		});
+		pop.appendChild(grid);
+		auto.type = 'button';
+		auto.addEventListener('click', function () {
+			choose('');
+		});
+		pop.appendChild(auto);
+		pop.addEventListener('click', function (e) {
+			e.stopPropagation();
+		});
+
+		// abaixo do botão (ou acima, sem espaço embaixo), dentro da folha
+		var pane = $('pane-project');
+		var a = anchor.getBoundingClientRect();
+		var box = pane.getBoundingClientRect();
+
+		pane.appendChild(pop);
+
+		var top = a.bottom - box.top + pane.scrollTop + 6;
+
+		if (a.bottom + pop.offsetHeight + 12 > window.innerHeight) top = a.top - box.top + pane.scrollTop - pop.offsetHeight - 6;
+
+		pop.style.top = top + 'px';
+		pop.style.left = Math.max(8, a.left - box.left) + 'px';
+		state.iconPop = pop;
+	}
+
+	function closeIconPicker() {
+		if (state.iconPop) state.iconPop.remove();
+		state.iconPop = null;
+	}
+
 	function bindProject() {
-		if (!$('pane-project')) return;
+		$('btn-new-cat').addEventListener('click', function () {
+			state.project.categories.push({ name: '', path: '', icon: '' });
+			renderProject();
+			updateDirty();
+			$('cat-list').querySelector('.cat-row:last-of-type .cat-name input').focus();
+		});
 
-		[['proj-root', 'root'], ['proj-file-pattern', 'fileName']].forEach(function (pair) {
-			$(pair[0]).addEventListener('input', function () {
-				state.project[pair[1]] = this.value;
-				projectPreview();
-				updateDirty();
+		Array.prototype.forEach.call($('cat-tokens').querySelectorAll('[data-token]'), function (btn) {
+			// sem roubar o foco do caminho (o token entra onde está o cursor)
+			btn.addEventListener('mousedown', function (e) {
+				e.preventDefault();
+			});
+			btn.addEventListener('click', function () {
+				insertToken(btn.dataset.token);
 			});
 		});
 
-		[['proj-folder', 'folder']].forEach(function (pair) {
-			$(pair[0]).addEventListener('change', function () {
-				state.project[pair[1]] = this.checked;
-				updateDirty();
-			});
+		document.addEventListener('click', closeIconPicker);
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape') closeIconPicker();
 		});
 
-		$('proj-root-pick').addEventListener('click', async function () {
-			var picked = PAD_BRIDGE.pickFolder('Pasta dos projetos', state.project.root);
+		PAD_SORT.enable($('cat-list'), '.cat-row', function (from, to) {
+			var moved = state.project.categories.splice(from, 1)[0];
 
-			if (!picked) return;
-
-			try {
-				picked = (await call('canonicalPath', { path: picked })).path || picked;
-			} catch (err) { }
-
-			state.project.root = picked;
+			state.project.categories.splice(to, 0, moved);
 			renderProject();
 			updateDirty();
 		});
 
-		$('btn-new-retranca').addEventListener('click', function () {
-			state.project.retrancas.push({ code: '', path: '' });
-			renderProject();
-			updateDirty();
-			$('retranca-list').lastChild.querySelector('input').focus();
-		});
-
-		// as entradas "COD - nome" do índice da busca viram retrancas (as que já existem ficam como estão)
-		$('btn-retrancas-index').addEventListener('click', async function () {
+		// as categorias das atrações do webhook (cada uma na pasta onde está a maioria delas): entram as que faltam
+		$('btn-cat-index').addEventListener('click', async function () {
 			var btn = this;
 
 			btn.disabled = true;
 
 			try {
-				var res = await call('projectRetrancasFromIndex');
+				var res = await call('projectCategoriesFromIndex');
 				var have = {};
 				var added = 0;
 
-				state.project.retrancas.forEach(function (r) {
-					have[r.code.toUpperCase()] = true;
+				state.project.categories.forEach(function (c) {
+					have[c.name.trim().toUpperCase()] = true;
 				});
-				res.retrancas.forEach(function (r) {
-					if (have[r.code]) return;
+				res.categories.forEach(function (c) {
+					if (have[c.name]) return;
 
-					state.project.retrancas.push({ code: r.code, path: r.path });
+					state.project.categories.push({ name: c.name, path: c.path, icon: '' });
 					added++;
 				});
 				renderProject();
 				updateDirty();
-				toast(added ? 'success' : null, added ? added + (added === 1 ? ' retranca importada' : ' retrancas importadas') + ' do índice. clique no disquete para salvar.' : 'nenhuma retranca nova no índice (entradas no formato “COD - nome”).');
+				toast(added ? 'success' : null, added ? added + (added === 1 ? ' categoria' : ' categorias') + ' das atrações. confira os caminhos e clique no disquete para salvar.' : 'nenhuma categoria nova nas atrações.');
 			} catch (err) {
 				toast('error', err.message);
 			} finally {
@@ -3327,12 +3401,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
+	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
-	// a aba PROJETO saiu (a janela PROJETO cria pela claquete): o duplo clique em projeto abre a estrutura (COLETAR)
-	var TAB_ALIASES = { project: ['collect', ''], logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
+	var TAB_ALIASES = { logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
 	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
-	var SPLIT_TABS = ['prods', 'collect', 'search', 'links']; // da equipe, com a parte 'neste computador' embaixo
+	var SPLIT_TABS = ['prods', 'project', 'search', 'links']; // da equipe, com a parte 'neste computador' embaixo
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -3505,7 +3578,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_086/.test(message)) return 'search';
 		if (/#PAD_087/.test(message)) return 'links';
 		if (/#PAD_088/.test(message)) return 'appearance';
-		if (/#PAD_089/.test(message)) return 'collect';
+		if (/#PAD_089/.test(message)) return 'project';
 		if (/#PAD_094/.test(message)) return 'collect';
 		if (/#PAD_098/.test(message)) return 'localprods'; // produção local (aba templates, embaixo)
 

@@ -309,7 +309,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração: projeto com variável desconhecida no nome do arquivo, nome vazio ou retranca sem código / pasta |
+| `#PAD_089` | configuração > projeto: categoria sem nome ou sem caminho, repetida, com token desconhecido ou sem `{atracao}` |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
 | `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |

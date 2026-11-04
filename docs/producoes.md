@@ -9,7 +9,7 @@ as abas ficam em três grupos, separados por uma linha:
 | grupo | abas |
 | --- | --- |
 | **links** | links (o primeiro, como na barra) |
-| **ferramentas** | templates, coletar, renomear, organizar, buscar |
+| **ferramentas** | templates, projeto, coletar, renomear, organizar, buscar |
 | **o resto** | rede, aparência, layout, meu usuário |
 
 **onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).
@@ -19,7 +19,7 @@ as abas ficam em três grupos, separados por uma linha:
 | aba | neste computador |
 | --- | --- |
 | templates | produções locais · pasta de saída |
-| coletar | pasta dos projetos |
+| projeto | pasta dos projetos |
 | buscar | de onde vêm os caminhos (webhook ou índice local) |
 | links | meus links |
 
@@ -27,7 +27,7 @@ uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na
 
 **padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar e projeto → coletar, buscar, links → links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, projeto → projeto, coletar → coletar, buscar, links → links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
 ## 📍 templates
 
@@ -67,6 +67,38 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 <br>
 
+## 📍 projeto
+
+a aba **projeto** define as **categorias** da atração nova: a lista **dentro de** da [janela PROJETO](projeto.md) (etapa NOVA).
+
+- **categorias** → cada linha tem o **ícone**, o **nome** e o **caminho** da pasta da atração nova, com tokens. os pontinhos reordenam (a ordem é a do dentro de); a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim); o **×** tira a linha. embaixo de cada linha, a prévia do caminho.
+- **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
+
+  | token | vira |
+  | --- | --- |
+  | `{atracao}` | o nome da atração nova (obrigatório), sem acentos, em maiúsculas |
+  | `{ano}` | o ano atual (`2026`) |
+  | `{mes}` | o mês atual (`01` a `12`) |
+  | `{categoria}` | o nome da categoria |
+  | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
+
+  ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/ROCK IN RIO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
+- **{letra}** → uma categoria com `{letra}` ganha a etapa dos **parecidos** na janela PROJETO (os que já existem na pasta da letra), como os filmes, e o `.aep` tem o nome digitado.
+- **ícone** → vem do nome (SHOWS → microfone, JORNALISMO → jornal, NOVELAS → máscaras, PROGRAMAS → TV, FILMES → película, SERIES → episódios, ESPORTES → bola, ON-AIR → sinal, INSTITUCIONAL → estrela, MARKETING → megafone; os outros, a pasta). clique nele para escolher outro no seletor (todos os desenhos do padeiro) ou voltar ao **automático (pelo nome)**. o ícone vale no dentro de e nos cards do Trello do [acessorista](acessorista.md).
+- **preencher pelas atrações** → acrescenta as categorias das atrações do webhook que ainda não estão na lista, cada uma na pasta onde está a maioria delas (FILMES com `TITULOS/_{letra}_`). confira os caminhos antes de salvar.
+- sem categorias, o dentro de vem das atrações do webhook, como antes. no índice local, o dentro de mostra as pastas indexadas.
+
+**👤 neste computador** (embaixo):
+
+- **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.
+
+> 🚩 *obs:* uma atração que já existe (achada pela claquete) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.
+<br>
+
+---
+
+<br>
+
 ## 📍 coletar
 
 a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela **projeto** salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
@@ -88,7 +120,6 @@ a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto*
 - **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
 - **sempre salva** → depois de copiar, os itens apontam para as cópias e o projeto é salvo.
-- **👤 pasta dos projetos** (neste computador, embaixo) → a pasta padrão dos projetos neste computador (usada pelo modo local). vazia, a da equipe.
 <br>
 
 ---
@@ -254,7 +285,7 @@ a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma fer
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
-  - os projetos vão para a [pasta dos projetos](#-coletar) daqui (sem ela, a Área de Trabalho).
+  - as atrações novas vão para a [pasta dos projetos](#-projeto) daqui (sem ela, a Área de Trabalho).
   - **todos** os renders da fila vão para a [pasta de saída](#-templates) daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
   - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique no servidor abre a aba **rede**; no notebook, esta aba. a aba meu usuário também avisa quando a rede caiu.
