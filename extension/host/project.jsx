@@ -83,7 +83,7 @@ PADX.projectCategories = function () {
 	for (var i = 0; i < list.length; i++) {
 		var fixed = list[i].path.split('{')[0].replace(/\/[^\/]*$/, '');
 
-		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(padPath(fixed)).exists;
+		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(resolveMacVolumePath(padPath(fixed))).exists; // VFX-1… também vale
 
 		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, icon: list[i].icon, reachable: checked[fixed] });
 	}
@@ -128,7 +128,7 @@ function padToday() {
 // Abre a pasta do projeto aberto: a da estrutura (gravada ao criar) ou a de cima da de projetos.
 PADX.projectOpenFolder = function () {
 	var file = app.project.file;
-	var path = padPath(padXmpGet('relation')) || (file ? padCollectRoot(file, padReadCollect()) : '');
+	var path = padMountedPath(padPath(padXmpGet('relation'))) || (file ? padCollectRoot(file, padReadCollect()) : '');
 
 	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
@@ -276,18 +276,30 @@ PADX.projectLookup = function (a) {
 
 // Onde fica cada coisa: a raiz da estrutura, a pasta dos .aep e o nome do arquivo.
 // a: { atracao, path, what } → { root, projects, fileBase }
-// No macOS, monta o volume da rede do caminho (/Volumes/VFX/...) se ele não estiver montado, como o acessorista
-// faz ao abrir uma pasta (lib/acessorista.js), e devolve o caminho no volume montado (VFX-1, se for o caso).
+// No macOS, o caminho no volume certo: o mesmo share montado de novo vira VFX-1 … VFX-5 (e a pasta /Volumes/VFX
+// pode sobrar vazia), então vale o volume onde existe o maior trecho do caminho (resolveMacVolumePath). se nenhum
+// volume tem nem a primeira pasta, monta o share como o acessorista faz ao abrir uma pasta (lib/acessorista.js).
 function padMountedPath(path) {
 	if (appOs != 'Mac' || !path) return path;
 
-	var match = String(path).match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+	var match = String(path).match(/^\/Volumes\/[^\/]+\/([^\/]+)/);
 
 	if (!match) return path;
 
-	var volume = psResolveOnMac('/Volumes/' + match[1], '', '');
+	var resolved = resolveMacVolumePath(path);
 
-	return new Folder(volume).exists ? volume + (match[2] || '') : path;
+	if (padVolumeHas(resolved, match[1])) return resolved;
+
+	psResolveOnMac(path, '', '');
+
+	return resolveMacVolumePath(path);
+}
+
+// O volume do caminho (/Volumes/X) tem a primeira pasta dele? (um volume desmontado não tem)
+function padVolumeHas(path, first) {
+	var volume = String(path).match(/^\/Volumes\/[^\/]+/);
+
+	return !!volume && new Folder(volume[0] + '/' + first).exists;
 }
 
 function padNewProjectPlan(a) {
@@ -491,7 +503,7 @@ PADX.projectMove = function (a) {
 	if (!file) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
 	var settings = padReadCollect();
-	var target = padPath(a.path);
+	var target = padMountedPath(padPath(a.path));
 	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
 	var root = padIsProjectsFolderName(decodeURI(new Folder(target).name)) ? new Folder(target).parent.fsName : target;
 
