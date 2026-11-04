@@ -119,7 +119,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (path) text.appendChild(el('small', /[\\\/]/.test(path) ? 'is-path' : null, /[\\\/]/.test(path) ? '\u200E' + path + '\u200E' : path));
 		item.appendChild(text);
 		if (!extraClass) item.appendChild(el('i', 'wz-radio'));
-		item.title = path || title;
+		// dica só para o caminho (que aparece cortado): um texto que já está inteiro no cartão não ganha balão
+		if (path && /[\\\/]/.test(path)) item.title = path;
 		item.addEventListener('click', onPick);
 		item.addEventListener('dblclick', function () {
 			onPick();

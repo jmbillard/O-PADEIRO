@@ -2217,6 +2217,7 @@ body.motion-ready .eyebrow {
 .pad-tooltip {
   position: fixed;
   z-index: 10000;
+  visibility: hidden; /* escondido de verdade: nada invisível por cima dos botões */
   padding: 6px 9px;
   border-radius: 8px;
   background: rgb(20 26 48 / 94%);
@@ -2230,7 +2231,8 @@ body.motion-ready .eyebrow {
   transform: translateY(2px);
   transition:
     opacity 140ms ease,
-    transform 140ms ease;
+    transform 140ms ease,
+    visibility 0s linear 140ms;
   white-space: pre-line;
 }
 
@@ -2242,8 +2244,10 @@ body.motion-ready .eyebrow {
 }
 
 .pad-tooltip.is-visible {
+  visibility: visible;
   opacity: 1;
   transform: translateY(0);
+  transition-delay: 0s;
 }
 
 /* linhas reordenáveis (js/sortable.js): puxador à esquerda, × dentro do campo do método */

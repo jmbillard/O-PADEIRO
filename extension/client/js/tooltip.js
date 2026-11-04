@@ -25,6 +25,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		if (!tip) {
 			tip = document.createElement('div');
 			tip.className = 'pad-tooltip';
+			tip.style.pointerEvents = 'none'; // o balão nunca pega o mouse (nem antes do css carregar)
 			tip.setAttribute('role', 'tooltip');
 			document.body.appendChild(tip);
 		}
