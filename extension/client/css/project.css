@@ -443,10 +443,6 @@ body.project-page {
   stroke: var(--blue-500);
 }
 
-.wz-tree-line.is-file svg path:nth-child(2) {
-  stroke: rgb(255 255 255 / 70%);
-}
-
 .wz-meta {
   display: flex;
   flex-wrap: wrap;
