@@ -158,14 +158,38 @@ function padChildFolder(parent, name, isProjects) {
 	var items = new Folder(parent).exists ? new Folder(parent).getFiles() || [] : [];
 
 	for (var i = 0; i < items.length; i++) {
-		if (!(items[i] instanceof Folder)) continue;
-
 		var other = decodeURI(items[i].name);
 
-		if (padFolderKey(other) == key || (isProjects && padIsProjectsFolderName(other))) return items[i];
+		// pela lista (na rede, uma pasta pode vir como File: confere pelo caminho)
+		if (padFolderKey(other) != key && !(isProjects && padIsProjectsFolderName(other))) continue;
+		if (items[i] instanceof Folder || new Folder(items[i].fsName).exists) return new Folder(items[i].fsName);
+	}
+
+	// a lista não achou: as grafias comuns da pasta de projetos, direto pelo caminho
+	if (isProjects) {
+		var found = padProjectsVariant(parent, name);
+
+		if (found) return found;
 	}
 
 	return padEnsureFolder(new Folder(parent).fsName + '/' + name);
+}
+
+// A pasta de projetos dentro de 'parent' com outra grafia (01PROJETOS, PROJETOS…), procurada pelo caminho de cada
+// uma (o nome da árvore fica de fora: se não existir, é ele que vai ser criado). → Folder ou null
+function padProjectsVariant(parent, name) {
+	var names = ['01PROJETOS', '01 PROJETOS', 'PROJETOS', '01 PROJETO', '01PROJETO', '1 PROJETOS', '01_PROJETOS', '01-PROJETOS'];
+	var base = new Folder(parent).fsName;
+
+	for (var i = 0; i < names.length; i++) {
+		if (names[i] == name) continue;
+
+		var f = new Folder(base + '/' + names[i]);
+
+		if (f.exists) return f;
+	}
+
+	return null;
 }
 
 // Caminho da árvore ('02 ARQUIVOS/VÍDEOS') dentro da raiz, usando as pastas que já existem.

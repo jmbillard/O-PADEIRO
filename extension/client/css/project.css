@@ -695,6 +695,33 @@ body.project-page {
   color: var(--blue-500);
 }
 
+/* o caminho com a pastinha à direita (o mesmo botão dos campos de caminho) */
+.opt-path-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin: -4px -6px -2px 0;
+}
+
+.opt-path-row .opt-path {
+  min-width: 0;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.opt-path i {
+  font-style: italic;
+}
+
+.opt-pick {
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
 .opt-radios {
   display: flex;
   flex-wrap: wrap;

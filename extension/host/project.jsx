@@ -314,8 +314,11 @@ function padListedFolder(path) {
 	var items = parent.getFiles() || [];
 	var name = decodeURI(folder.name).toLowerCase();
 
+	// a lista vazia (ou que não veio) não prova nada: pergunta direto
+	if (!items.length) return folder.exists;
+
 	for (var i = 0; i < items.length; i++) {
-		if (items[i] instanceof Folder && decodeURI(items[i].name).toLowerCase() == name) return true;
+		if (decodeURI(items[i].name).toLowerCase() == name) return items[i] instanceof Folder || new Folder(items[i].fsName).exists;
 	}
 
 	return false;
@@ -347,10 +350,18 @@ function padNewProjectPlan(a) {
 		var items = rootFolder.getFiles() || [];
 
 		for (var i = 0; i < items.length; i++) {
-			if (items[i] instanceof Folder && padIsProjectsFolderName(decodeURI(items[i].name))) {
+			if (padIsProjectsFolderName(decodeURI(items[i].name)) && (items[i] instanceof Folder || new Folder(items[i].fsName).exists)) {
 				projects = items[i].fsName;
 				found = true;
 			}
+		}
+
+		// a lista não achou: as grafias comuns, direto pelo caminho
+		var variant = found ? null : padProjectsVariant(root, sub);
+
+		if (variant) {
+			projects = variant.fsName;
+			found = true;
 		}
 	}
 
@@ -415,6 +426,11 @@ PADX.projectPlan = function (a) {
 
 // Cria a estrutura e salva o .aep. a: plano + { claquete, mode: '' | 'open' | 'increment' }
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
+// No macOS, o After Effects precisa da permissão para os volumes de rede (sem ela, não lista nem cria pastas lá)
+function padMacPrivacyHint() {
+	return appOs == 'Mac' ? '. confira também Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas > After Effects > Volumes de Rede' : '';
+}
+
 // a mensagem diz qual pasta falta (a primeira que não existe no caminho) e o que o sistema respondeu
 function padCheckWritable(path) {
 	var folder = padWaitFolder(path, 3000);
@@ -425,7 +441,7 @@ function padCheckWritable(path) {
 
 	while (missing.parent && !missing.parent.exists) missing = missing.parent;
 
-	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + '.');
+	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.');
 }
 
 PADX.projectCreate = function (a) {
@@ -477,7 +493,7 @@ PADX.projectCreate = function (a) {
 			app.project.save(file);
 		}
 	} catch (err) {
-		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?).');
+		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?)' + padMacPrivacyHint() + '.');
 	}
 
 	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };

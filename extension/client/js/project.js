@@ -889,10 +889,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	function renderCreateOptions(plan) {
 		var box = $('criar-opts');
 
+		// sempre à vista: sem output na categoria, dá para escolher uma pasta pela pastinha
 		box.textContent = '';
-		box.hidden = !plan.output;
-
-		if (!plan.output) return;
+		box.hidden = false;
 
 		var item = el('div', 'opt-item');
 		var head = el('div', 'opt-head');
@@ -901,8 +900,32 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		head.appendChild(el('b', null, 'pasta de output'));
 		item.appendChild(head);
 
-		// da pasta da atração em diante, em destaque (antes dela, só a pasta de cima)
+		// da pasta da atração em diante, em destaque (antes dela, só a pasta de cima); a pastinha troca a pasta
+		var row = el('div', 'opt-path-row');
 		var path = el('p', 'opt-path');
+		var pick = el('button', 'mini-button opt-pick');
+
+		pick.type = 'button';
+		pick.title = 'escolher outra pasta de output';
+		pick.setAttribute('aria-label', pick.title);
+		pick.innerHTML = FOLDER_SVG;
+		pick.addEventListener('click', function () {
+			var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto');
+
+			if (!picked) return;
+			flow.output = picked;
+			goCreate(Object.assign({}, state.createArgs, { output: picked, outputCreate: true }));
+		});
+		row.appendChild(path);
+		row.appendChild(pick);
+		item.appendChild(row);
+
+		if (!plan.output) {
+			path.appendChild(el('i', null, 'sem pasta de output'));
+			box.appendChild(item);
+			return;
+		}
+
 		var full = plan.output.replace(/\\/g, '/');
 		var at = full.toUpperCase().indexOf('/' + aepName(state.createArgs.title || state.createArgs.atracao) + '/');
 		var split = at < 0 ? full.lastIndexOf('/') : at;
@@ -911,7 +934,6 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		path.title = plan.output;
 		path.appendChild(document.createTextNode((from > 0 ? '…' : '') + full.slice(Math.max(from, 0), split + 1)));
 		path.appendChild(el('b', null, full.slice(split + 1)));
-		item.appendChild(path);
 
 		if (plan.outputExists) {
 			item.appendChild(el('p', 'opt-note', 'já existe: vai para os dados do projeto.'));
