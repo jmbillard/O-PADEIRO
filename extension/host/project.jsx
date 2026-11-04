@@ -276,6 +276,20 @@ PADX.projectLookup = function (a) {
 
 // Onde fica cada coisa: a raiz da estrutura, a pasta dos .aep e o nome do arquivo.
 // a: { atracao, path, what } → { root, projects, fileBase }
+// No macOS, monta o volume da rede do caminho (/Volumes/VFX/...) se ele não estiver montado, como o acessorista
+// faz ao abrir uma pasta (lib/acessorista.js), e devolve o caminho no volume montado (VFX-1, se for o caso).
+function padMountedPath(path) {
+	if (appOs != 'Mac' || !path) return path;
+
+	var match = String(path).match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+
+	if (!match) return path;
+
+	var volume = psResolveOnMac('/Volumes/' + match[1], '', '');
+
+	return new Folder(volume).exists ? volume + (match[2] || '') : path;
+}
+
 function padNewProjectPlan(a) {
 	var settings = padReadCollect();
 	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
@@ -284,7 +298,7 @@ function padNewProjectPlan(a) {
 
 	fileBase = padAepName(a.atracao + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
-	root = padPath(a.path);
+	root = padMountedPath(padPath(a.path));
 
 	if (!root) throw new Error('#PAD_091 - sem pasta de destino: escolha a pasta.');
 
@@ -343,6 +357,8 @@ PADX.projectPlan = function (a) {
 	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase) exists = true;
 	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
+	var outputPath = a.output ? padMountedPath(padPath(a.output)) : '';
+
 	return {
 		root: padDisplayPath(plan.root),
 		rootName: decodeURI(rootFolder.name),
@@ -356,8 +372,8 @@ PADX.projectPlan = function (a) {
 		exists: exists,
 		folders: folders,
 		user: padMachineUser(),
-		output: a.output ? padDisplayPath(padPath(a.output)) : '',
-		outputExists: a.output ? new Folder(padPath(a.output)).exists : false
+		output: outputPath ? padDisplayPath(outputPath) : '',
+		outputExists: outputPath ? new Folder(outputPath).exists : false
 	};
 };
 
@@ -403,7 +419,7 @@ PADX.projectCreate = function (a) {
 	}
 
 	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
-	var output = a.output ? new Folder(padPath(a.output)) : null;
+	var output = a.output ? new Folder(padMountedPath(padPath(a.output))) : null;
 
 	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
 

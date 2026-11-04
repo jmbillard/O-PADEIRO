@@ -699,7 +699,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   --------------------------------------------------------------- */
 
 	function planArgs(extra) {
-		return Object.assign({ kind: 'program', atracao: flow.pick.name, path: flow.pick.path, what: flow.what, claquete: flow.claquete }, extra || {});
+		return Object.assign({ kind: 'program', atracao: flow.pick.name, path: flow.pick.path, what: flow.what, claquete: flow.pick.name }, extra || {});
 	}
 
 	async function planFile() {
@@ -790,8 +790,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		return line;
 	}
 
+	// a claquete gravada é a atração escolhida (a achada, a da lista ou a nova), não o que foi digitado na busca
 	async function goCreate(args) {
-		state.createArgs = Object.assign({ atracao: flow.pick.name, path: flow.pick.path, claquete: flow.claquete, output: flow.output || '', outputCreate: true }, args);
+		state.createArgs = Object.assign({ atracao: flow.pick.name, path: flow.pick.path, claquete: flow.pick.name, output: flow.output || '', outputCreate: true }, args);
 
 		try {
 			var plan = await call('projectPlan', state.createArgs);
@@ -810,7 +811,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			});
 
 			meta.textContent = '';
-			meta.appendChild(el('span', null, aepName(flow.claquete)));
+			meta.appendChild(el('span', null, aepName(flow.pick.name)));
 			var user = el('span');
 
 			user.innerHTML = USER_SVG;
