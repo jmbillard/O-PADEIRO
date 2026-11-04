@@ -24,6 +24,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 
 - **como a busca compara** → sem acentos, maiúsculas e pontuação, sempre a partir do começo de uma palavra: '*não*' acha '*NAO APAGAR*', mas não '*an**NA - O***'; '*3/11*' acha '*3/11*' e '*3 11*', mas não '*31/10*'.
 - **apelidos das atrações** → quando o que você digita é o começo do nome ou de um *pattern* de uma atração (com 3 letras ou mais), a busca também procura os outros nomes dela: '*GREP*' ou '*G REP*' trazem também o que tem **GLOBO REPORTER** e **G REPORTER** (mensagens, cards, pastas). em cima dos resultados aparece '*também: Globo Repórter*'.
+- **interruptores** (ao lado do atualizar) → **TEAMS**, **TRELLO**, **ATRAÇÕES**, **FILMES** e **SERVIDOR**: desligado, a categoria sai da busca (só aparecem as que têm itens). a escolha fica ao atualizar. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 - **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
 - **atualizar** (o botão redondo, abaixo da busca) → baixa os caminhos de novo (no índice local, indexa as pastas de novo). ao lado dele aparece de onde vêm os caminhos no índice local ('*índice local · 18.430 itens · hoje 09:12*') ou o andamento da indexação.

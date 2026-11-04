@@ -242,7 +242,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var state = {
 		tab: null,
-		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', error: '' },
+		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' }, // hidden: as categorias desligadas nos interruptores (webhook)
 		texts: { entries: [], comps: 0, ready: false, loading: false, loaded: false, loadId: 0, hint: '' },
 		lastTabStamp: 0
 	};
@@ -439,7 +439,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		p.ready = true;
 		p.loaded = true;
 		p.cats = V2_CATS;
-		setSourceNote('');
+		buildCategoryFilters();
 	}
 
 	// → true quando a busca nova carregou (da cópia ou do webhook)
@@ -531,7 +531,37 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	// No lugar dos antigos interruptores: de onde vêm os caminhos (índice local) ou o andamento da indexação.
 	function setSourceNote(text) {
+		$('opts-paths').classList.add('finder-source');
 		$('opts-paths').textContent = text || '';
+	}
+
+	// Webhook: um interruptor por categoria que tem itens (TEAMS, TRELLO, ATRAÇÕES, FILMES, SERVIDOR). a escolha
+	// fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
+	function buildCategoryFilters() {
+		var box = $('opts-paths');
+		var p = state.paths;
+
+		box.classList.remove('finder-source');
+		box.textContent = '';
+
+		V2_CATS.forEach(function (cat) {
+			if (!p.v2.cats[cat.key] || !p.v2.cats[cat.key].length) return;
+
+			var chip = el('button', 'chip' + (p.hidden[cat.key] ? '' : ' is-on'));
+
+			chip.type = 'button';
+			chip.title = 'incluir ' + cat.label + ' na busca';
+			chip.setAttribute('aria-pressed', String(!p.hidden[cat.key]));
+			chip.appendChild(el('span', 'chip-check'));
+			chip.appendChild(document.createTextNode(cat.label));
+			chip.addEventListener('click', function () {
+				p.hidden[cat.key] = !p.hidden[cat.key];
+				chip.classList.toggle('is-on', !p.hidden[cat.key]);
+				chip.setAttribute('aria-pressed', String(!p.hidden[cat.key]));
+				searchPaths();
+			});
+			box.appendChild(chip);
+		});
 	}
 
 	/* ---------------------------------------------------------------
@@ -923,6 +953,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		if (expanded.also.length) results.appendChild(el('p', 'finder-also', 'também: ' + expanded.also.slice(0, 3).join(' · ')));
 
 		(p.cats || V2_CATS).forEach(function (cat) {
+			if (p.mode === 'v2' && p.hidden[cat.key]) return; // desligada no interruptor
+
 			var matches = p.v2.cats[cat.key].filter(function (item) {
 				return hits(item.hay, query);
 			});
@@ -951,7 +983,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + cat.label + ' — refine a busca'));
 		});
 
-		if (!any) showState(results, 'nenhum resultado', 'nada tem “' + $('q-paths').value.trim() + '”: tente outro termo');
+		var off = p.mode === 'v2' && Object.keys(p.hidden).some(function (k) {
+			return p.hidden[k];
+		});
+
+		if (!any) showState(results, 'nenhum resultado', 'nada tem “' + $('q-paths').value.trim() + '”: tente outro termo' + (off ? ' ou ligue mais categorias' : ''));
 	}
 
 
