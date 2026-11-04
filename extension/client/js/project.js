@@ -995,6 +995,10 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		state.adopt = !!adopt;
 		$('ed-hint').hidden = !adopt;
+		// com os dados, mas salvo fora da pasta dele (ex: "salvar como" na Área de Trabalho): Salvar leva o .aep de volta
+		$('ed-hint').textContent = cur.outside
+			? 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.'
+			: 'projeto salvo sem os dados do padeiro: confira a claquete, a atração e as pastas e salve.';
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
 
 		// os campos de texto só são preenchidos quando o projeto muda: a atualização a cada 1,5 s não apaga o que
@@ -1045,6 +1049,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var args = { claquete: $('ed-claq').value, designer: $('ed-user').value, atracao: $('ed-atracao').value.trim() };
 
 			if (state.adopt) args.root = $('ed-root').value;
+			if (state.adopt && state.current && state.current.outside) await call('projectMove', { path: args.root });
 			renderEditor(await call('projectUpdate', args));
 			PAD_BRIDGE.closePanel();
 		} catch (err) {
@@ -1105,7 +1110,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			if (state.screen !== 'editor') show('editor', false);
 			renderEditor(cur);
 		} else if (cur.file && (changed || !state.screen || state.screen === 'editor')) {
-			// salvo, mas sem os dados do padeiro: pula as etapas (a atração é o nome do arquivo, a pasta é a dele)
+			// salvo, mas sem os dados do padeiro (ou fora da pasta dele): pula as etapas (a atração é o nome do
+			// arquivo, a pasta é a dele)
 			if (state.screen !== 'editor') show('editor', false);
 			renderEditor(cur, true);
 		} else if (changed || !state.screen || state.screen === 'editor') {

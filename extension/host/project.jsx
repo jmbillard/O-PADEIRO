@@ -496,6 +496,9 @@ PADX.projectCreate = function (a) {
 
 	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
 
+	// os dados só ficam no projeto se ele for salvo na pasta: se salvar falhar, voltam os de antes
+	var packet = app.project.xmpPacket;
+
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
 	if (output && output.exists) setXMPData('source', padDisplayPath(output.fsName));
@@ -514,18 +517,33 @@ PADX.projectCreate = function (a) {
 			app.project.save(file);
 		}
 	} catch (err) {
+		app.project.xmpPacket = packet;
 		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?)' + padMacPrivacyHint() + '.');
 	}
 
 	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };
 };
 
+// O .aep está dentro da pasta gravada no projeto (dc:relation)? sem pasta gravada, vale. o volume com sufixo
+// (VFX-1) conta como o mesmo.
+function padInRoot(file) {
+	var root = padXmpGet('relation');
+
+	if (!root) return true;
+
+	var key = function (path) {
+		return padDisplayPath(path).replace(/\\/g, '/').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').replace(/\/+$/, '').toLowerCase() + '/';
+	};
+
+	return key(file.fsName).indexOf(key(padPath(root))) == 0;
+}
+
 // O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro),
 // 'missing' (sem eles: salvo sem claquete, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
 PADX.projectStatus = function () {
 	var file = app.project.file;
 
-	if (file && padXmpGet('identifier')) return { state: 'ok' };
+	if (file && padXmpGet('identifier') && padInRoot(file)) return { state: 'ok' };
 
 	return { state: file || app.project.numItems > 0 ? 'missing' : '' };
 };
@@ -536,8 +554,11 @@ PADX.projectCurrent = function () {
 	var claquete = padXmpGet('identifier');
 	var settings = padReadCollect();
 
+	var inRoot = !!(file && claquete && padInRoot(file));
+
 	return {
-		created: !!(file && claquete),
+		created: inRoot,
+		outside: !!(file && claquete && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
 		claquete: claquete,
 		designer: padXmpGet('creator') || padMachineUser(),
 		defaultUser: padDefaultUser(),
@@ -582,8 +603,16 @@ PADX.projectMove = function (a) {
 
 	if (dest.exists && dest.fsName != file.fsName) throw new Error('#PAD_092 - já existe ' + decodeURI(file.name) + ' nessa pasta.');
 
+	var packet = app.project.xmpPacket;
+
 	setXMPData('relation', padDisplayPath(root));
-	app.project.save(dest);
+
+	try {
+		app.project.save(dest);
+	} catch (err) {
+		app.project.xmpPacket = packet;
+		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + padMacPrivacyHint() + '.');
+	}
 
 	return PADX.projectCurrent();
 };

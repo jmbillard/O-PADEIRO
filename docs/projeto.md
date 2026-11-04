@@ -52,8 +52,8 @@ abrir outro projeto troca os dados da janela.
 
 o botão **projeto** da barra mostra uma bolinha:
 
-- 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro.
-- 🟠 **laranja** → o projeto aberto não tem os dados (ainda não foi salvo, ou foi salvo sem a janela projeto).
+- 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro, dentro da pasta dele.
+- 🟠 **laranja** → o projeto aberto não tem os dados (ainda não foi salvo, ou foi salvo sem a janela projeto) ou está salvo fora da pasta dele (ex: um "salvar como" na Área de Trabalho). nesse caso, o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta.
 - sem bolinha → projeto vazio (sem arquivo e sem itens).
 
 ## 📍 coletar os arquivos
