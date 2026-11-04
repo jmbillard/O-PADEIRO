@@ -238,8 +238,8 @@ estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que j�
   - filmes (atração em FILMES/TITULOS): cada filme numa pasta, dentro da pasta da letra do título sem o
     artigo (_T_ para OS TRES PATETAS, _#_ para 101 DALMATAS); o .aep é o título
 No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage), a pasta
-da estrutura (relation) e a pasta de output (source; a da categoria, criada na etapa CRIAR, ou a da
-atração no índice).
+da estrutura (relation) e a pasta de output (source; a da categoria ou a da atração no índice, sempre
+gravada, mesmo quando a etapa CRIAR não cria a pasta).
 
 */
 
@@ -558,14 +558,14 @@ PADX.projectCreate = function (a) {
 		throw new Error('#PAD_092 - já existe ' + base + '.aep em ' + decodeURI(new Folder(projects).name) + '.');
 	}
 
-	// a pasta de output: criada se pedido (etapa CRIAR); a que existir vai para os metadados
+	// a pasta de output: criada se pedido (etapa CRIAR); vai sempre para os metadados, criada ou não
 	var output = a.output ? new Folder(padPath(a.output)) : null;
 
 	if (output && !output.exists && a.outputCreate) output.create();
 
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
-	if (output && output.exists) setXMPData('source', padDisplayPath(output.fsName));
+	if (output) setXMPData('source', padDisplayPath(output.fsName));
 	setXMPData('creator', padMachineUser());
 	setXMPData('coverage', String(a.atracao || ''));
 	setXMPData('relation', padDisplayPath(plan.root));

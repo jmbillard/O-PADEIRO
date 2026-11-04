@@ -901,8 +901,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		}
 	}
 
-	// as propostas da etapa CRIAR, em menus radiais. a pasta de output: a que já existe só vai para o projeto
-	// (metadados); a que não existe, criar (o padrão) ou pular
+	// as propostas da etapa CRIAR, em menus radiais. a pasta de output vai sempre para os dados do projeto
+	// (metadados); a que não existe, criar agora (o padrão) ou não
 	function renderCreateOptions(plan) {
 		var box = $('criar-opts');
 
@@ -931,11 +931,13 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		item.appendChild(path);
 
 		if (plan.outputExists) {
-			item.appendChild(el('p', 'opt-note', 'já existe: vai para os dados do projeto.'));
+			item.appendChild(el('p', 'opt-note', 'já existe. vai para os dados do projeto.'));
 		} else {
 			var radios = el('div', 'opt-radios');
 
-			[['', 'pular'], ['1', 'criar a pasta']].forEach(function (o) {
+			item.appendChild(el('p', 'opt-note', 'vai para os dados do projeto, criada ou não.'));
+
+			[['', 'não criar agora'], ['1', 'criar a pasta']].forEach(function (o) {
 				var label = el('label', 'log-radio');
 				var input = el('input');
 

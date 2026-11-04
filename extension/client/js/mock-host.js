@@ -1098,7 +1098,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '', root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output || '', root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
