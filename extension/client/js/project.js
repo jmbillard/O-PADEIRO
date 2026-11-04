@@ -171,8 +171,60 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		return /(^|\/)FILMES\/TITULOS$/i.test(String(path || '').replace(/\\/g, '/').replace(/\/+$/, ''));
 	}
 
+	// o texto em palavras (sem acentos, maiúsculas): 'f' tudo junto e 's' marcando onde começa cada palavra
+	function wordKey(text) {
+		var f = '';
+		var st = '';
+
+		aepName(text).split(' ').filter(Boolean).forEach(function (w) {
+			f += w;
+			st += '1' + new Array(w.length).join('0');
+		});
+
+		return { f: f, s: st };
+	}
+
+	// A claquete (palavras) começa com este nome? → pontos (0: não)
+	//   completa (o nome inteiro abre a claquete): 1000 + tamanho ('MAIS VOCE 30 10' → MAIS VOCE)
+	//   parcial (o começo do nome), palavra a palavra: cada palavra digitada é uma palavra do nome, na ordem;
+	//   só a última pode estar pela metade (ainda digitando) ou a que vem antes de um número ('GREP 6 11' →
+	//   G REPORTER). 'a nobre dama' não acha 'A NOBREZA DO AMOR'. uma letra sozinha no nome (o G de G REPORTER)
+	//   pode emendar com a palavra seguinte.
+	function scoreKey(key, words) {
+		var isNum = function (w) {
+			return /^[0-9]/.test(w || '');
+		};
+
+		for (var kk = words.length; kk >= 1; kk--) {
+			var seg = words.slice(0, kk);
+			var q = seg.join('');
+
+			if (key.f.indexOf(q) !== 0) continue;
+
+			var bounds = {};
+			var off = 0;
+			var ok = true;
+
+			for (var j = 0; j < kk - 1; j++) {
+				off += seg[j].length;
+				bounds[off] = true;
+				if (key.s.charAt(off) !== '1') ok = false;
+			}
+
+			for (var p = 1; ok && p < q.length; p++) {
+				if (key.s.charAt(p) === '1' && !bounds[p] && key.s.charAt(p - 1) !== '1') ok = false;
+			}
+
+			if (!ok) continue;
+			if (q.length === key.f.length) return 1000 + q.length;
+			if (q.length >= 3 && (kk === words.length || isNum(words[kk]))) return q.length;
+		}
+
+		return 0;
+	}
+
 	// as pastas do índice local
-	function localCandidates(fs) {
+	function localCandidates() {
 		var L = window.PAD_LOCAL_INDEX;
 		var info = L.info(source.info.localIndex);
 
@@ -185,9 +237,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		source.list = (data ? data.items : []).filter(function (it) {
 			return !it.file;
 		}).map(function (it) {
-			return { name: it.name, path: it.path, depth: it.depth, keys: [keyOf(it.name)] };
+			return { name: it.name, path: it.path, depth: it.depth, keys: [wordKey(it.name)] };
 		}).filter(function (it) {
-			return it.keys[0].length >= 3;
+			return it.keys[0].f.length >= 2;
 		});
 
 		return source.list;
@@ -233,62 +285,56 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
 		}).map(function (a) {
-			return { name: a.name, path: full(a.proj) || full(a.out), depth: 0, keys: [keyOf(a.name)].concat((a.pattern || []).map(keyOf)).filter(Boolean) };
+			return {
+				name: a.name,
+				cat: a.cat || '',
+				path: full(a.proj) || full(a.out),
+				depth: 0,
+				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey)).filter(function (k) {
+					return k.f;
+				})
+			};
 		});
 
 		return source.list;
 	}
 
-	// → { claquete, matches: [{ name, category, path, display, film, score }] } (o mesmo formato do host)
-	async function findAttractions(claq) {
+	async function candidates() {
 		if (!source.info) source.info = await call('searchInfo');
 
 		var fs = nodeFs();
 		var local = source.info.mode === 'local';
-
 		var canLocal = local && window.PAD_LOCAL_INDEX && PAD_LOCAL_INDEX.available();
 
-		if (local ? !canLocal : !fs) return call('projectLookup', { claquete: claq });
+		if (local ? !canLocal : !fs) return null; // navegador de teste: o host responde
 
-		var list = local ? localCandidates(fs) : await webhookCandidates(fs);
+		return local ? localCandidates() : await webhookCandidates(fs);
+	}
+
+	// → { claquete, matches: [{ name, category, path, display, film, score }] } (o mesmo formato do host)
+	async function findAttractions(claq) {
+		var list = await candidates();
+
+		if (!list) return call('projectLookup', { claquete: claq });
+
+		var local = source.info.mode === 'local';
 		var words = aepName(claq).split(' ').filter(Boolean);
-		var prefixes = {};
-		var starts = []; // o começo da claquete, palavra a palavra ('grep', 'grep6', 'grep611')
-		var acc = '';
-
-		words.forEach(function (w) {
-			acc += w;
-			prefixes[acc] = true;
-			starts.push(acc);
-		});
-
 		var found = [];
 
 		list.forEach(function (it) {
 			var score = 0;
 
 			it.keys.forEach(function (k) {
-				if (prefixes[k] && k.length >= 2) score = Math.max(score, 1000 + k.length); // completa: o nome começa a claquete
-				else {
-					// parcial: o começo da claquete começa o nome ('la na minha' → Lá na Minha Terra; 'GREP 6 11' → G REPORTER)
-					for (var i = starts.length - 1; i >= 0; i--) {
-						if (starts[i].length >= 3 && k.indexOf(starts[i]) === 0) {
-							score = Math.max(score, starts[i].length);
-							break;
-						}
-					}
-				}
+				score = Math.max(score, scoreKey(k, words));
 			});
 
 			if (score) found.push({ it: it, score: score });
 		});
 
 		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA)
-		var hasFull = found.some(function (f) {
+		if (found.some(function (f) {
 			return f.score >= 1000;
-		});
-
-		if (hasFull) {
+		})) {
 			found = found.filter(function (f) {
 				return f.score >= 1000;
 			});
@@ -298,17 +344,68 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		var matches = found.sort(function (a, b) {
 			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
 		}).filter(function (f) {
-			var key = local ? f.it.path : keyOf(f.it.name);
+			var key = local ? f.it.path : aepName(f.it.name);
 
 			if (seen[key]) return false;
 
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : 'ATRAÇÕES', path: f.it.path, display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
+	}
+
+	// "dentro de" (atração nova): no webhook, as categorias das atrações (FILMES, NOVELAS, PROGRAMAS…), cada uma
+	// na pasta onde está a maioria das atrações dela (a pasta do caminho cujo nome começa com a categoria; os
+	// filmes, em FILMES/TITULOS, com a pasta da letra); no índice local, as pastas indexadas e as de dentro delas.
+	async function newBases() {
+		var list = await candidates();
+
+		if (!list) return (await call('projectBases')).bases;
+
+		if (source.info.mode === 'local') {
+			return list.filter(function (it) {
+				return it.depth <= 1;
+			}).map(function (it) {
+				return { label: it.name, path: it.path, display: displayPath(it.path), film: isFilmPath(it.path) };
+			});
+		}
+
+		var byCat = {};
+
+		list.forEach(function (it) {
+			if (!it.cat) return;
+
+			var parts = String(it.path).replace(/\\/g, '/').split('/');
+			var catKey = aepName(it.cat);
+			var at = -1;
+
+			for (var i = parts.length - 1; i >= 0; i--) {
+				if (aepName(parts[i]).indexOf(catKey) === 0) {
+					at = i;
+					break;
+				}
+			}
+
+			if (at < 0) return;
+
+			var film = catKey === 'FILMES';
+			var end = film && parts[at + 1] && aepName(parts[at + 1]) === 'TITULOS' ? at + 1 : at;
+			var base = parts.slice(0, end + 1).join('/');
+			var bucket = byCat[it.cat] || (byCat[it.cat] = {});
+
+			bucket[base] = (bucket[base] || 0) + 1;
+		});
+
+		return Object.keys(byCat).sort().map(function (cat) {
+			var best = Object.keys(byCat[cat]).sort(function (a, b) {
+				return byCat[cat][b] - byCat[cat][a];
+			})[0];
+
+			return { label: cat, path: best, display: displayPath(best), film: aepName(cat) === 'FILMES' || isFilmPath(best) };
+		});
 	}
 
 	function lookup() {
@@ -351,6 +448,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (m.length) card(box, m[0].name, m[0].display); // preenche antes de mostrar: a animação mede a altura final
 		box.hidden = !m.length;
+		$('claq-other').hidden = !m.length;
 		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (source.info && source.info.mode === 'local' ? 'nenhuma pasta do índice local começa com essa claquete' : 'nenhuma atração começa com essa claquete') : '';
 	}
 
@@ -371,6 +469,11 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (flow.matches.length === 1) return pickAttraction(flow.matches[0]);
 
+		openPasta();
+	}
+
+	// PASTA: as atrações encontradas, criar nova ou escolher uma pasta (também pelo "não é essa?")
+	function openPasta() {
 		flow.choice = flow.matches.length ? '0' : 'new';
 		renderPasta();
 		show('pasta');
@@ -402,7 +505,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		var m = flow.matches;
 
 		list.textContent = '';
-		$('pasta-hint').textContent = m.length ? 'mais de uma atração para ' + aepName(flow.claquete) : 'nada encontrado para ' + aepName(flow.claquete);
+		$('pasta-hint').textContent = (m.length > 1 ? 'mais de uma atração para ' : m.length ? 'escolha a atração (ou crie uma nova) para ' : 'nada encontrado para ') + aepName(flow.claquete);
 
 		m.forEach(function (match, i) {
 			list.appendChild(option(FOLDER_SVG, match.name, match.display, flow.choice === String(i), function () {
@@ -449,7 +552,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (!state.bases.length) {
 			try {
-				state.bases = (await call('projectBases')).bases;
+				state.bases = await newBases();
 			} catch (err) {
 				state.bases = [];
 			}
@@ -846,6 +949,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('pasta-next').addEventListener('click', pastaNext);
 
 		$('nova-name').addEventListener('input', renderNova);
+		$('claq-other').addEventListener('click', openPasta);
 		$('nova-base').addEventListener('change', function () {
 			if (this.value === 'pick') {
 				var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');

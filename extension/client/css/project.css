@@ -577,3 +577,25 @@ body.project-page {
   left: 0;
   right: auto;
 }
+
+/* "não é essa? escolher outra ou criar nova": um link discreto embaixo da atração encontrada */
+.wz-link {
+  align-self: flex-start;
+  margin: -6px 2px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-500);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.wz-link:hover {
+  text-decoration: underline;
+}
+
+.wz-link[hidden] {
+  display: none;
+}
