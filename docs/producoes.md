@@ -88,6 +88,8 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 - **preencher pelas atrações** → acrescenta as categorias das atrações do webhook que ainda não estão na lista, cada uma na pasta onde está a maioria delas (FILMES com `TITULOS/_{letra}_`). confira os caminhos antes de salvar.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pela claquete, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
 
+- **cadastro no banco** *(em breve, desligado)* → reservado: ao criar o projeto de uma atração ou de um filme novo, mandar o nome, a categoria e a pasta para um webhook que atualiza o banco das atrações (e a busca).
+
 **👤 neste computador** (embaixo):
 
 - **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.

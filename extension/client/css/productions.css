@@ -2284,6 +2284,26 @@ body.is-org-dragging * {
   font-size: 0.68rem;
 }
 
+/* reservado para depois (cadastro no banco): à mostra, mas desligado */
+.soon {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.soon-tag {
+  margin-left: 6px;
+  padding: 2px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
 /* o seletor de ícones (abre embaixo do ícone da categoria) */
 #pane-project {
   position: relative;
