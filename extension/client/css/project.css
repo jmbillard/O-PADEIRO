@@ -722,6 +722,11 @@ body.project-page {
   color: var(--text-tertiary);
 }
 
+.opt-pick:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
+}
+
 .opt-radios {
   display: flex;
   flex-wrap: wrap;
