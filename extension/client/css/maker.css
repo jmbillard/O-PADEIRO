@@ -258,14 +258,12 @@ body.maker-page {
   stroke-width: 1.7;
 }
 
-.maker-comp .comp-icon .film-holes {
-  stroke-dasharray: 1.6 2.4;
-  stroke-linecap: butt;
-  transition: stroke-dashoffset 420ms var(--ease-soft);
+.maker-comp .comp-icon .comp-shapes {
+  transition: transform 320ms var(--ease-soft);
 }
 
-.maker-comp:hover .comp-icon .film-holes {
-  stroke-dashoffset: -8;
+.maker-comp:hover .comp-icon .comp-shapes {
+  transform: translateY(-1px);
 }
 
 .maker-comp-label {
