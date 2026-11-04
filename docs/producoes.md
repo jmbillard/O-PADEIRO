@@ -12,6 +12,8 @@ as abas ficam em três grupos, separados por uma linha:
 | **ferramentas** | templates, projeto, coletar, renomear, organizar, buscar |
 | **o resto** | rede, aparência, layout, meu usuário |
 
+**nas listas** → os pontinhos à esquerda reordenam; a **lixeira**, à direita da linha e fora dos campos, exclui a linha (a tampa levanta ao passar o mouse). os campos de caminho mostram o fim do caminho.
+
 **onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).
 
 **👤 neste computador** → numa aba da equipe, as opções que são só suas ficam embaixo de uma linha com o bonequinho e **NESTE COMPUTADOR**:
@@ -40,7 +42,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > ![editor de produções](images/producoes.webp)
 
 1. clique em '*+ nova produção*'.
-2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). o **×** no mesmo campo exclui a produção.
+2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). a **lixeira**, à direita da linha (fora do campo), exclui a produção.
 3. clique no **disquete** (ou `Ctrl/Cmd+S`).
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
@@ -58,7 +60,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 **👤 neste computador** (embaixo, só suas):
 
-- **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, o **×** tira; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
+- **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, a **lixeira** à direita exclui; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
   > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 <br>
@@ -181,11 +183,11 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações da janela [PROJETO](projeto.md).
 
 - **webhook** → o endereço do workflow **PROMO - BUSCAR**, que devolve o índice pronto (Teams, Trello, atrações e filmes). vazio, vale o padrão (`…/webhook/buscar`).
-- **servidor · caminhos fixos** → pastas que aparecem sempre na busca, com o ícone de servidor, para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, o **×** tira a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
+- **servidor · caminhos fixos** → pastas que aparecem sempre na busca, com o ícone de servidor, para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, a **lixeira** à direita exclui a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
 
 **👤 de onde vêm os caminhos** (neste computador, embaixo) → o que o [acessorista](acessorista.md) e a janela [PROJETO](projeto.md) usam aqui:
   - **webhook da equipe** → o índice do webhook acima.
-  - **índice local** → as pastas da lista (a pastinha escolhe, o **×** tira), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
+  - **índice local** → as pastas da lista (a pastinha escolhe, a **lixeira** à direita exclui), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
   - uma janela do acessorista ou do projeto já aberta passa a usar a escolha nova quando você volta para ela.
 
 > 🚩 *obs:* o índice antigo (com categorias e arquivo de índice) ficou só para o padeiro legacy.
@@ -199,7 +201,7 @@ a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações 
 
 a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). os seus (**👤 meus links**, embaixo, neste computador) ficam só nesta máquina e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
 
-cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
+cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; a **lixeira**, à direita da linha, exclui o link.
 
 > 🚩 *obs:*\
 > • sem favicon (site sem o arquivo ou rede fora), aparece o desenho de um link.\

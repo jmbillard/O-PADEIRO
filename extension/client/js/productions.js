@@ -109,6 +109,38 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return btn;
 	}
 
+	// A lixeira de uma linha (excluir a linha inteira): fica fora do campo, à direita da linha, para não parecer
+	// que só apaga o texto. a tampa levanta um pouco ao passar o mouse.
+	var TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" /></svg>';
+	var DEL_ROWS = '.prod-row, .drive-row, .link-row, .rename-row, .index-row';
+
+	function rowDelete(title, onClick) {
+		var btn = el('button', 'row-del');
+
+		btn.type = 'button';
+		btn.title = title;
+		btn.setAttribute('aria-label', title);
+		btn.innerHTML = TRASH_SVG;
+		btn.addEventListener('click', onClick);
+
+		return btn;
+	}
+
+	// os campos criam a lixeira junto (a ordem dos argumentos não muda); quando a linha entra na página, ela vai
+	// para o fim da linha, fora do campo
+	function liftDeletes(root) {
+		if (!root.querySelectorAll) return;
+
+		Array.prototype.forEach.call(root.querySelectorAll('.row-del'), function (btn) {
+			var row = btn.closest(DEL_ROWS);
+
+			if (!row || btn.parentElement === row) return;
+
+			row.classList.add('has-del');
+			row.appendChild(btn);
+		});
+	}
+
 	function toast(kind, text) {
 		PAD_UTIL.toast($('toast'), 'finder-toast', kind, text);
 	}
@@ -506,7 +538,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			path.dispatchEvent(new Event('input'));
 		});
 
-		var remove = miniButton('remove', 'deletar produção', function () {
+		var remove = rowDelete('excluir a produção', function () {
 			state.rows = state.rows.filter(function (r) {
 				return r !== row;
 			});
@@ -518,7 +550,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var actions = el('div', 'prod-path-actions');
 
 		actions.appendChild(pick);
-		actions.appendChild(remove);
 		pathWrap.appendChild(dot);
 		pathWrap.appendChild(path);
 		pathWrap.appendChild(actions);
@@ -527,6 +558,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(iconBtn);
 		box.appendChild(name);
 		box.appendChild(pathWrap);
+		box.appendChild(remove);
+		box.classList.add('has-del');
 
 		row.nodes = { box: box, dot: dot, name: name, path: path };
 		box.classList.toggle('is-ignored', isLocalPath(row.path));
@@ -761,9 +794,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// um campo com ícone e o × de remover dentro (como os caminhos das produções)
 	function driveField(value, placeholder, label, icon, onInput, onRemove) {
-		var line = el('div', 'cfg-path has-field-icon');
+		var line = el('div', 'cfg-path has-field-icon no-btn');
 		var input = el('input', 'cfg-input');
-		var remove = miniButton('remove', 'remover', onRemove);
+		var remove = rowDelete('excluir', onRemove);
 		var ico = svg(icon);
 
 		ico.setAttribute('class', 'field-icon');
@@ -792,10 +825,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// campo de termos em chips: a vírgula (ou Enter) fecha o termo; backspace no campo vazio apaga o último.
 	// o valor continua o texto "A, B, C" (o mesmo que a configuração guarda)
 	function tagField(value, placeholder, label, icon, onInput, onRemove) {
-		var line = el('div', 'cfg-path has-field-icon tag-field');
+		var line = el('div', 'cfg-path has-field-icon tag-field no-btn');
 		var box = el('div', 'cfg-input tag-box');
 		var input = el('input', 'tag-input');
-		var remove = miniButton('remove', 'remover', onRemove);
+		var remove = rowDelete('excluir', onRemove);
 		var ico = svg(icon);
 		var tags = split(value);
 
@@ -894,7 +927,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// Campo de caminho com o botão de escolher a pasta e o × à direita (sem ícone de pasta à esquerda: o botão
 	// já diz o que é). onPick recebe o caminho escolhido.
 	function pathField(value, placeholder, label, onInput, onPick, onRemove) {
-		var line = el('div', 'cfg-path');
+		var line = el('div', 'cfg-path one-btn');
 		var input = el('input', 'cfg-input');
 		var pick = miniButton('folder', 'escolher a pasta', async function () {
 			var picked = PAD_BRIDGE.pickFolder(label, input.value);
@@ -908,7 +941,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			input.value = picked;
 			onPick(picked);
 		});
-		var remove = miniButton('remove', 'remover', onRemove);
+		var remove = rowDelete('excluir', onRemove);
 
 		input.type = 'text';
 		input.value = value;
@@ -2333,7 +2366,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			if (personal) {
 				url.querySelector('input').disabled = false;
-				url.querySelector('.mini-button').disabled = false;
+				url.querySelector('.row-del').disabled = false; // os meus links: editáveis mesmo sem a lista da rede
 			}
 
 			row.appendChild(PAD_SORT.handle());
@@ -3167,8 +3200,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	var CAT_TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h15M10 7V5h4v2M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" /></svg>';
-
 	// cada categoria num cartão: NOME (com o ícone dentro do campo; a lixeira, que exclui a categoria, fica fora
 	// dele), PROJETO e OUTPUT, os dois com a prévia embaixo
 	function renderProject() {
@@ -3220,7 +3251,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			remove.title = 'excluir a categoria';
 			remove.setAttribute('aria-label', 'excluir a categoria ' + (row.name || i + 1));
 			remove.disabled = !state.available;
-			remove.innerHTML = CAT_TRASH_SVG;
+			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
 				state.project.categories.splice(i, 1);
 				renderProject();
@@ -3278,8 +3309,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// o fim de cada caminho (a parte que muda de uma categoria para outra). também ao abrir a aba: montada
 	// escondida, o campo ainda não tem largura e fica no começo
 	function catPathsToEnd() {
-		Array.prototype.forEach.call($('cat-list').querySelectorAll('.cfg-path input'), function (input) {
-			if (document.activeElement !== input) input.scrollLeft = input.scrollWidth;
+		pathsToEnd($('cat-list'));
+	}
+
+	// o fim de cada caminho (campos com a pasta: os de caminho e os de rede), menos o que está sendo editado
+	function pathsToEnd(root) {
+		if (!root) return;
+
+		Array.prototype.forEach.call(root.querySelectorAll('.cfg-path input.cfg-input, .prod-path input.cfg-input'), function (input) {
+			if (document.activeElement !== input && /[\\\/]/.test(input.value)) input.scrollLeft = input.scrollWidth;
 		});
 	}
 
@@ -3563,7 +3601,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		TAB_NAMES.forEach(function (key) {
 			$('pane-' + key).hidden = key !== name;
 		});
-		if (name === 'project') requestAnimationFrame(catPathsToEnd);
+		// os caminhos da aba mostram o fim (a parte que muda): montados com a aba escondida, ficavam no começo
+		requestAnimationFrame(function () {
+			pathsToEnd($('pane-' + name));
+		});
 
 		// as categorias da busca são lidas do índice na primeira vez que a aba abre
 
@@ -3824,6 +3865,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function init() {
 		state.newIcon = defaultIcon();
+
+		// a lixeira das linhas sai do campo assim que a linha entra na página (ver liftDeletes)
+		new MutationObserver(function (records) {
+			records.forEach(function (r) {
+				Array.prototype.forEach.call(r.addedNodes, function (n) {
+					if (n.nodeType === 1) liftDeletes(n.parentElement || n);
+				});
+			});
+		}).observe(document.body, { childList: true, subtree: true });
 
 		// a janela não tem mais layout compacto (manifest: 940 × 800, mínimo 940 × 600): quem já tinha a
 		// janela menor ganha o tamanho novo uma vez

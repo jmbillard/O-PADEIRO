@@ -455,7 +455,7 @@ body.prods-page {
 /* status à esquerda e botões à direita, dentro do campo */
 .prod-path .cfg-input {
   width: 100%;
-  padding-right: 72px;
+  padding-right: 44px;
   padding-left: 34px;
 }
 
@@ -2166,7 +2166,7 @@ body.is-org-dragging * {
 }
 
 .srv-row .cfg-path .cfg-input {
-  padding-right: 72px; /* a pasta e o × dentro do campo */
+  padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
 /* aba PROJETO: cada categoria num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
@@ -2453,7 +2453,7 @@ body.is-org-dragging * {
 }
 
 .index-row .cfg-input {
-  padding-right: 72px; /* a pasta e o × dentro do campo */
+  padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
 /* meu usuário: produções locais (pontinhos | ícone com o bonequinho | nome | pasta) */
@@ -2465,7 +2465,7 @@ body.is-org-dragging * {
 }
 
 .local-prod-row .cfg-path .cfg-input {
-  padding-right: 72px; /* a pasta e o × dentro do campo */
+  padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
 .local-prod-icon {
@@ -2514,3 +2514,83 @@ body.is-org-dragging * {
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--text-tertiary);
 }
+
+/* a lixeira de cada linha (excluir a linha): fora do campo, à direita; a tampa levanta um pouco no hover */
+.has-del {
+  position: relative;
+  padding-right: 40px;
+}
+
+.has-del > .row-del {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.row-del {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.row-del:hover:not(:disabled),
+.row-del:focus-visible {
+  background: rgb(214 69 69 / 8%);
+  color: #d64545;
+}
+
+.row-del:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.row-del svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  overflow: visible;
+}
+
+.trash-lid {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  transition: transform 220ms var(--ease-soft);
+}
+
+.row-del:hover:not(:disabled) .trash-lid,
+.cat-del:hover .trash-lid {
+  transform: translateY(-1.5px) rotate(-14deg);
+}
+
+.cat-del svg {
+  overflow: visible;
+}
+
+/* os campos sem a lixeira dentro: só a pasta (um botão) ou nenhum */
+.cfg-path.one-btn .cfg-input {
+  padding-right: 44px;
+}
+
+.cfg-path.no-btn .cfg-input {
+  padding-right: 16px;
+}
+
+.cfg-path.no-btn .tag-box {
+  padding-right: 12px;
+}
+
