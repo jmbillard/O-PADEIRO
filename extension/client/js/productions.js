@@ -111,7 +111,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// A lixeira de uma linha (excluir a linha inteira): fica fora do campo, à direita da linha, para não parecer
 	// que só apaga o texto. a tampa levanta um pouco ao passar o mouse.
-	var TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" /></svg>';
+	var TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7h11l-1 12.5h-9z" /><path d="M10 11v5M14 11v5" /></svg>';
 	var DEL_ROWS = '.prod-row, .drive-row, .link-row, .rename-row, .index-row';
 
 	function rowDelete(title, onClick) {
