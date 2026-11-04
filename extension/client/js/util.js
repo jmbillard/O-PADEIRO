@@ -233,7 +233,8 @@
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
 	}
 
-	// ícone de cada categoria de atração (SHOWS, JORNALISMO…): o desenho do svg, ou '' (sem ícone próprio: a pasta)
+	// ícone de cada categoria de atração (as do DB: PROGRAMAS, ON-AIR, ESPORTES, SHOWS, NOVELAS, SERIES, JORNALISMO,
+	// FILMES, INSTITUCIONAL, MARKETING): o desenho do svg, ou '' (sem ícone próprio: a pasta)
 	var CATEGORY_ICONS = [
 		[/^SHOW/, '<rect x="9" y="3" width="6" height="11" rx="3" /><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" />'],
 		[/^JORNAL/, '<path d="M5 5.5h11v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 18.5z" /><path d="M16 9h2.5v9.5a1.5 1.5 0 0 1-3 0" /><path d="M8 9h5M8 12h5M8 15h3" />'],
@@ -241,6 +242,9 @@
 		[/^PROGRAMA/, '<path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" />'],
 		[/^FILME/, '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /><path d="M5.5 6v12M18.5 6v12" stroke-dasharray="1.2 2" />'],
 		[/^INSTITUC/, '<path d="m12 3.8 2.5 5.1 5.6.8-4 4 .9 5.6-5-2.7-5 2.7.9-5.6-4-4 5.6-.8z" />'],
+		[/^ON ?-? ?AIR/, '<circle cx="12" cy="12" r="2" /><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2" />'],
+		[/^SERIE/, '<rect x="3" y="8" width="14" height="11" rx="2" /><path d="M6 5h12a2 2 0 0 1 2 2v9" /><path d="m8.5 11 4 2.5-4 2.5z" />'],
+		[/^MARKETING/, '<path d="M4 10v4h3l7 4V6L7 10z" /><path d="M17 9.5a3.5 3.5 0 0 1 0 5M7 14l1 5h2.5l-1-4.4" />'],
 		[/^ESPORTE/, '<circle cx="12" cy="12" r="8.5" /><path d="m12 7.5 3.5 2.5-1.3 4h-4.4L8.5 10z" /><path d="M12 3.5v4M15.5 10l4.3-1.2M14.2 14l2.7 3.7M9.8 14l-2.7 3.7M8.5 10 4.2 8.8" />']
 	];
 
