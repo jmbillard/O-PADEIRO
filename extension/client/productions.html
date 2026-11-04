@@ -275,11 +275,11 @@
 				<!-- reservado: o cadastro das atrações e dos filmes novos no banco (ainda desligado) -->
 				<div class="soon" aria-disabled="true">
 					<p class="cfg-title prods-section-title">cadastro no banco <span class="soon-tag">em breve</span></p>
-					<p class="cfg-hint">ao criar o projeto de uma atração ou de um filme <b>novo</b>, a janela PROJETO manda o nome, a categoria e a pasta para o webhook, e o banco das atrações (e a busca) já ficam sabendo dela.</p>
+					<p class="cfg-hint">ao criar o projeto de uma atração ou de um filme <b>novo</b>, a etapa CRIAR da janela PROJETO <b>propõe</b> o cadastro (o nome, a categoria e a pasta vão para o webhook, e a busca passa a achar). cada um escolhe na hora: <b>pular</b> (o padrão, para testes) ou <b>cadastrar</b>.</p>
 					<label class="cfg-switch">
 						<input type="checkbox" id="db-update" disabled>
 						<span class="cfg-switch-track"></span>
-						<span class="cfg-switch-label">cadastrar as atrações e os filmes novos</span>
+						<span class="cfg-switch-label">propor o cadastro das atrações e dos filmes novos</span>
 					</label>
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="db-webhook" placeholder="https://workflows.jmbillard.com/webhook/…" disabled aria-label="Endereço do webhook do cadastro"></div>
 				</div>
