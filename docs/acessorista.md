@@ -17,7 +17,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 | ícone | de onde | o que mostra | o clique |
 | --- | --- | --- | --- |
 | balão | **Teams** (últimos 30 dias) | quem mandou - cargo, quando (hoje, ontem, o dia da semana até 6 dias atrás ou a data, com a hora) e, embaixo, o caminho da mensagem | o balão abre a mensagem no Teams |
-| quadro do Trello | **Trello** (últimos 15 dias) | cards em grade: a claquete, o redator e o editor | o card abre no Trello |
+| quadro do Trello | **Trello** (últimos 15 dias) | cards em grade: a claquete, a categoria da atração (achada pelo nome ou *pattern* que abre a claquete), o redator e o editor | o card abre no Trello |
 | TV de tubo | **atrações** | o nome e as linhas **PROJETO** e **OUTPUT** | — |
 | película | **filmes** | o título, o ano de produção entre parênteses e a linha **OUTPUT** | — |
 | servidor | **servidor** (caminhos fixos) | o nome e a linha **CAMINHO** | — |

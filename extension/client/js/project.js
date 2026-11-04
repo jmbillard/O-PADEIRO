@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 ---------------------------------------------------------------
 > PROJETO — um projeto novo pela claquete, em etapas, e o editor
@@ -573,7 +573,10 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		other.value = 'pick';
 		select.appendChild(other);
 		PAD_DROPDOWN.enhance(select, function (value) {
-			return value === 'pick' ? SEARCH_SVG.replace('<svg', '<svg class="dropdown-svg"') : FOLDER_SVG.replace('<svg', '<svg class="dropdown-svg"');
+			var base = state.bases[+value];
+			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.label)) || FOLDER_SVG; // o ícone da categoria (SHOWS: microfone…)
+
+			return icon.replace('<svg', '<svg class="dropdown-svg"');
 		});
 		PAD_DROPDOWN.refresh(select);
 		renderNova();
@@ -595,7 +598,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('nova-preview').innerHTML = '';
 
 		if (base) {
-			$('nova-preview').insertAdjacentHTML('afterbegin', FOLDER_SVG);
+			$('nova-preview').insertAdjacentHTML('afterbegin', PAD_UTIL.categoryIcon(base.label) || FOLDER_SVG);
 			$('nova-preview').appendChild(el('span', null, base.display + (base.film ? '/_' + (name ? letterOf(name) : '?') + '_/' : '/')));
 			$('nova-preview').appendChild(el('b', null, name || '…'));
 		}

@@ -1,4 +1,4 @@
-/*
+﻿/*
 
 ---------------------------------------------------------------
 > host de mentira (só para desenvolver o painel no navegador)
@@ -567,8 +567,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						{ claq: 'G REPORTER 27/10', red: 'Mila Teixeira', ed: 'Elisa Varajão', card: '6927932650d09a079178dd05' }
 					],
 					atracoes: [
-						{ name: 'Globo Repórter', pattern: ['G REPORTER', 'GLOBO REPORTER'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/JORNALISMO/GLOBO REPORTER/2021-2026/01 PROJETOS', out: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026' },
-						{ name: 'Festival de Inverno', pattern: ['FESTIVAL'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/FESTIVAL DE INVERNO/2026/01PROJETOS', out: srv + '/ARTE RJ/SHOWS/FESTIVAL DE INVERNO RIO/2026' }
+						{ name: 'Globo Repórter', cat: 'JORNALISMO', pattern: ['G REPORTER', 'GLOBO REPORTER'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/JORNALISMO/GLOBO REPORTER/2021-2026/01 PROJETOS', out: srv + '/ARTE RJ/JORNALISMO/GLOBO REPORTER/2026' },
+						{ name: 'Festival de Inverno', cat: 'SHOWS', pattern: ['FESTIVAL'], proj: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/FESTIVAL DE INVERNO/2026/01PROJETOS', out: srv + '/ARTE RJ/SHOWS/FESTIVAL DE INVERNO RIO/2026' }
 					],
 					filmes: [
 						{ name: 'ANNA - O PERIGO TEM NOME', year: '2019', out: srv + '/ARTE RJ/FILMES/TITULOS/_A_/ANNA - O PERIGO TEM NOME' },

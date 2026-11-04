@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    O ACESSORISTA — painel de buscas (caminhos e textos)
    ========================================================= */
 
@@ -765,6 +765,13 @@ button.tr-card:focus-visible {
   font-weight: 800;
   letter-spacing: 0.08em;
   line-height: 1;
+}
+
+/* a categoria: só o nome, sem a coluna do rótulo */
+.tr-cat em {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tr-card svg {
