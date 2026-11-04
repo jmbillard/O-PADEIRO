@@ -767,13 +767,6 @@ button.tr-card:focus-visible {
   line-height: 1;
 }
 
-/* a categoria: só o nome, sem a coluna do rótulo */
-.tr-cat em {
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .tr-card svg {
   width: 17px;
   height: 15px;

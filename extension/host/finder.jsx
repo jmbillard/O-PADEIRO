@@ -89,8 +89,7 @@ PADX.searchInfo = function () {
 		folders: search.folders,
 		foldersOnly: search.foldersOnly,
 		daily: search.daily,
-		localIndex: scriptPreferencesPath + '/indice_local.json',
-		categories: padReadProject().categories // o ícone escolhido de cada categoria (aba PROJETO), para o Trello
+		localIndex: scriptPreferencesPath + '/indice_local.json'
 	};
 };
 

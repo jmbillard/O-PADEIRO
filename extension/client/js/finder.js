@@ -392,39 +392,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		} catch (err) { }
 	}
 
-	// a categoria de cada card do Trello: a atração cujo nome (ou pattern) abre a claquete, palavra inteira
-	// ('MAIS VOCE 30 10' → MAIS VOCE → PROGRAMAS); o nome mais comprido ganha
-	function trelloCategories(cards, atracoes) {
-		var words = function (text) {
-			return ' ' + String(text || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim() + ' ';
-		};
-		var names = [];
-
-		atracoes.forEach(function (a) {
-			if (!a.cat) return;
-
-			[a.name].concat(a.pattern).forEach(function (n) {
-				var w = words(n);
-
-				if (w.length > 2) names.push({ w: w, cat: a.cat });
-			});
-		});
-		names.sort(function (a, b) {
-			return b.w.length - a.w.length;
-		});
-
-		cards.forEach(function (c) {
-			var claq = words(c.claq);
-
-			for (var i = 0; i < names.length; i++) {
-				if (claq.indexOf(names[i].w) === 0) {
-					c.cat = names[i].cat;
-					return;
-				}
-			}
-		});
-	}
-
 	// texto do webhook → { stamp, cats: { teams: [...], ... } } com o texto de busca de cada item
 	function parseV2(text, info) {
 		var data = JSON.parse(text);
@@ -459,8 +426,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				return { name: s.name, path: s.path, server: s.server, share: s.share, hay: hay([s.name, s.path]) };
 			})
 		};
-
-		trelloCategories(cats.trello, cats.atracoes);
 
 		return { stamp: data.stamp || '', cats: cats };
 	}
@@ -819,18 +784,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return card;
 	}
 
-	// o ícone escolhido para a categoria na aba PROJETO (configuração), se houver
-	function chosenIcon(cat) {
-		var key = String(cat || '').toUpperCase();
-		var list = (state.paths.info && state.paths.info.categories) || [];
-
-		for (var i = 0; i < list.length; i++) {
-			if (list[i].name === key) return list[i].icon;
-		}
-
-		return '';
-	}
-
 	// Trello: o card (abre no Trello) com a claquete, o redator e o editor
 	function trelloItem(c, query) {
 		var card = el(c.card ? 'button' : 'div', 'tr-card');
@@ -847,15 +800,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		head.appendChild(svgNode(V2_ICONS.trello));
 		head.appendChild(highlightNode('i', null, c.claq, query));
 		card.appendChild(head);
-
-		// a categoria da atração (antes do redator), com o ícone dela
-		if (c.cat) {
-			var cat = el('span', 'tr-row tr-cat');
-
-			cat.appendChild(svgNode(PAD_UTIL.categoryIcon(chosenIcon(c.cat)) || V2_ICONS.pasta));
-			cat.appendChild(el('em', null, c.cat));
-			card.appendChild(cat);
-		}
 
 		[['redator', 'REDATOR', c.red], ['editor', 'EDITOR', c.ed]].forEach(function (row) {
 			if (!row[2]) return;

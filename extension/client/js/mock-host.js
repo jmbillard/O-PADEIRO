@@ -536,7 +536,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				foldersOnly: ms.foldersOnly,
 				daily: ms.daily,
 				localIndex: '/mock/indice_local.json',
-				categories: mockProject().categories,
 				url: 'https://workflows.jmbillard.com/webhook/buscar',
 				cache: '/tmp/busca_v2.json',
 				local: false,

@@ -84,7 +84,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/ROCK IN RIO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **{letra}** → uma categoria com `{letra}` ganha a etapa dos **parecidos** na janela PROJETO (os que já existem na pasta da letra), como os filmes, e o `.aep` tem o nome digitado.
-- **ícone** → o escolhido no seletor (clique no ícone da linha): todos os desenhos do padeiro, estáticos. vale no dentro de e nos cards do Trello do [acessorista](acessorista.md). a categoria nova começa com a pasta; o **preencher pelas atrações** já põe uma sugestão pelo nome (SHOWS → microfone, FILMES → película…), que o seletor troca.
+- **ícone** → o escolhido no seletor (clique no ícone da linha): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta; o **preencher pelas atrações** já põe uma sugestão pelo nome (SHOWS → microfone, FILMES → película…), que o seletor troca.
 - **preencher pelas atrações** → acrescenta as categorias das atrações do webhook que ainda não estão na lista, cada uma na pasta onde está a maioria delas (FILMES com `TITULOS/_{letra}_`). confira os caminhos antes de salvar.
 - sem categorias, o dentro de vem das atrações do webhook, como antes. no índice local, o dentro de mostra as pastas indexadas.
 
