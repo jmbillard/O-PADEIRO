@@ -19,7 +19,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO projeto** | projeto novo pela claquete: acha a atração, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
+| **O PADEIRO projeto** | projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
 | **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
@@ -106,8 +106,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
 - **projeto**\
-  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela claquete, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
-  `◗` → salva o projeto (sem projeto criado pela claquete, abre a janela).
+  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela atração, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
+  `◗` → salva o projeto (sem projeto criado pela janela, abre a janela).
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
   `◗` → coleta numa pasta escolhida.
@@ -225,7 +225,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🎬 projeto](docs/projeto.md) | projeto novo pela claquete, estrutura de pastas e editor |
+| [🎬 projeto](docs/projeto.md) | projeto novo pela atração, estrutura de pastas e editor |
 | [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |

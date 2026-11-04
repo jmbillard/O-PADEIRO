@@ -214,7 +214,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'project',
 			label: 'Projeto',
 			icon: 'project',
-			tips: [L_CLICK + 'abrir o PROJETO: novo pela claquete, ou o editor', R_CLICK + 'salvar o projeto'],
+			tips: [L_CLICK + 'abrir o PROJETO: novo pela atração, ou o editor', R_CLICK + 'salvar o projeto'],
 			left: actions.project,
 			right: actions.saveProject
 		},

@@ -474,7 +474,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (m.length) card(box, m[0].name, m[0].display); // preenche antes de mostrar: a animação mede a altura final
 		box.hidden = !m.length;
 		$('claq-other').hidden = !m.length;
-		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (source.info && source.info.mode === 'local' ? 'nenhuma pasta do índice local começa com essa claquete' : 'nenhuma atração começa com essa claquete') : '';
+		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (source.info && source.info.mode === 'local' ? 'nenhuma pasta do índice local começa com esse nome' : 'nenhuma atração começa com esse nome') : '';
 	}
 
 	async function claqueteNext() {

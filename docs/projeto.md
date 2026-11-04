@@ -2,11 +2,11 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO projeto** cria um projeto novo a partir da **claquete**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da claquete, do designer e da pasta.
+a janela **O PADEIRO projeto** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da claquete, do designer e da pasta.
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
-abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela claquete, abre a janela).
+abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
 > 📟 *janela projeto*:
 >
@@ -16,12 +16,12 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 uma tela por vez; **‹ voltar** volta uma etapa.
 
-1. **CLAQUETE** → digite a claquete (ex: `DOMINGÃO 9 11`, `MAIS VOCE 30 10`). enquanto você digita, o padeiro procura a atração no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e mostra a atração e o caminho dela:
-   - pela claquete completa: o nome ou um *pattern* da atração é o começo da claquete (*MAIS VOCE* para `MAIS VOCE 30 10`);
+1. **ATRAÇÃO** → digite a atração (ex: `DOMINGÃO`). o que você digita aqui também fica gravado como a **claquete** do projeto (dá para trocar no editor). enquanto você digita, o padeiro procura a atração no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e mostra a atração e o caminho dela:
+   - pelo nome completo: o nome ou um *pattern* da atração é o começo do que foi digitado (*MAIS VOCE* para `MAIS VOCE 30 10`);
    - pelo nome em parte, palavra a palavra: cada palavra digitada é uma palavra do nome, na ordem, e só a última (ou a que vem antes de um número) pode estar pela metade (`la na minha` → *Lá na Minha Terra*; `GREP 6 11` → *G REPORTER*; `a nobre dama` não acha *A Nobreza do Amor*), a partir de 3 letras. quando a completa acha, as parciais ficam de fora.
    - **não é essa? escolher outra ou criar nova** (embaixo da atração encontrada) → abre a etapa PASTA mesmo com a atração achada.
-2. **PASTA** → só aparece quando a claquete combina com mais de uma atração, ou com nenhuma. escolha a atração, **criar nova** (filme inédito, novela nova…) ou **escolher uma pasta…** (o navegador de pastas).
-   - **NOVA** → o nome (já vem com a claquete digitada, sem os números) e **dentro de** qual categoria: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`); embaixo, a prévia do caminho. a pasta da atração nova é criada ao criar o projeto.
+2. **PASTA** → só aparece quando o nome digitado combina com mais de uma atração, ou com nenhuma. escolha a atração, **criar nova** (filme inédito, novela nova…) ou **escolher uma pasta…** (o navegador de pastas).
+   - **NOVA** → o nome (já vem com o que foi digitado na primeira etapa, sem números no fim) e **dentro de** qual categoria: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`); embaixo, a prévia do caminho. a pasta da atração nova é criada ao criar o projeto.
    - **nenhuma destas: escolher a pasta…** (sempre no fim da lista) → a saída livre, quando nenhuma categoria serve para a atração. sem categorias na configuração, o **escolher a pasta…** fica no lugar da lista.
    - **filmes** seguem o mesmo fluxo das outras categorias: a pasta da letra é só o token `{letra}` do caminho (`…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`).
    - se a pasta da categoria não pode ser acessada (rede fora ou modo local), o projeto vai para a **pasta dos projetos** deste computador (`{categoria}/{atracao}`), com o aviso na prévia.
@@ -36,7 +36,7 @@ a **claquete**, o **designer**, a **atração**, a **pasta** e a **pasta de outp
 
 ## 📍 editor
 
-ao abrir a janela com um projeto criado pela claquete:
+ao abrir a janela com um projeto criado por ela:
 
 - **claquete** e **designer** (bonequinho) → o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
 - **atração** → o nome da atração.
@@ -62,7 +62,7 @@ o botão **coletar** da barra varre o projeto, copia as mídias usadas (vídeos,
 
 ## 📍 menu ⋯
 
-- **novo projeto pela claquete** → começa as etapas de novo.
+- **novo projeto** → começa as etapas de novo.
 - **abrir a pasta** → no Explorer / Finder.
 - **ajuda / documentação** → esta página.
 - **recarregar painel**

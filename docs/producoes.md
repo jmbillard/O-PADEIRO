@@ -92,7 +92,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
-- a ordem na janela PROJETO: primeiro a atração que já existe (achada pela claquete, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
+- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
 
 - **cadastro no banco** *(em breve, desligado)* → reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR **propõe** o cadastro (o nome, a categoria e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
 
@@ -100,7 +100,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
 - **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.
 
-> 🚩 *obs:* uma atração que já existe (achada pela claquete) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.
+> 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.
 <br>
 
 ---
