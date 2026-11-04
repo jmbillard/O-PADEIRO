@@ -424,7 +424,7 @@ body.project-page {
   opacity: 0.68;
 }
 
-/* o arquivo: o destaque do cartão (pílula branca com o ícone e o nome, em azul) */
+/* o arquivo: o destaque do cartão (pílula branca com o ícone e o nome na cor do tema) */
 .wz-tree-pill {
   display: inline-flex;
   min-width: 0;
@@ -434,7 +434,7 @@ body.project-page {
   border-radius: var(--radius-pill);
   background: rgb(255 255 255 / 94%);
   box-shadow: 0 4px 12px rgb(24 35 85 / 18%);
-  color: var(--blue-ink, var(--blue-600));
+  color: var(--blue-500); /* o nome na cor do ícone */
   font-weight: 800;
 }
 

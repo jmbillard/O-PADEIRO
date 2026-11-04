@@ -441,7 +441,28 @@ function padCheckWritable(path) {
 
 	while (missing.parent && !missing.parent.exists) missing = missing.parent;
 
-	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.');
+	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.' + padFolderPeek(missing.parent));
+}
+
+// Para o diagnóstico: o que o After Effects e o sistema veem dentro da pasta (até 8 nomes de cada)
+function padFolderPeek(folder) {
+	if (!folder) return '';
+
+	var names = [];
+	var items = folder.getFiles() || [];
+	var shell = '';
+
+	for (var i = 0; i < items.length && i < 8; i++) names.push(decodeURI(items[i].name) + (items[i] instanceof Folder ? '/' : ''));
+
+	try {
+		shell = String(system.callSystem(appOs == 'Win'
+			? 'cmd.exe /c dir /b "' + folder.fsName.replace(/"/g, '') + '" 2>&1'
+			: 'ls -1 ' + psShellQuote(folder.fsName) + ' 2>&1 | head -8')).replace(/^\s+|\s+$/g, '').replace(/[\r\n]+/g, ', ');
+	} catch (err) {
+		shell = err.message;
+	}
+
+	return ' [o After Effects vê: ' + (names.join(', ') || 'nada') + ' | o sistema vê: ' + (shell || 'nada') + ']';
 }
 
 PADX.projectCreate = function (a) {
