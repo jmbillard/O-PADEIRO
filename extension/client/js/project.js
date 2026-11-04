@@ -256,7 +256,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		var text = '';
 
-		if (!stat || (Date.now() - stat.mtimeMs > INDEX_MAX_AGE && !source.info.local)) {
+		if (!stat || Date.now() - stat.mtimeMs > INDEX_MAX_AGE) {
 			try {
 				text = (await call('searchDownload', {})).text;
 				stat = fs.statSync(file);
@@ -298,6 +298,24 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		return source.list;
 	}
+
+	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
+	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
+	async function watchSearchSource() {
+		if (document.hidden || !source.info) return;
+
+		try {
+			var info = await call('searchInfo');
+
+			if (info.mode === source.info.mode && info.url === source.info.url && String(info.folders) === String(source.info.folders)) return;
+
+			source.info = info;
+			source.list = null;
+			source.stamp = '';
+		} catch (err) { }
+	}
+
+	window.addEventListener('focus', watchSearchSource);
 
 	async function candidates() {
 		if (!source.info) source.info = await call('searchInfo');

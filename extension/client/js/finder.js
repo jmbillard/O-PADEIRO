@@ -500,8 +500,6 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			} catch (err) { }
 		}
 
-		if (info.local) return shown; // modo local: só a cópia
-
 		// 2. o webhook (pelo painel; se não der, pelo curl do After Effects)
 		var text = '';
 
@@ -1197,6 +1195,29 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   Pedido de aba (barra principal)
 	   ========================================================= */
 
+	// a busca de caminhos mudou na configuração (webhook ↔ índice local, outro endereço, outras pastas) com esta
+	// janela aberta? ao voltar para ela, recarrega da fonte nova (antes ficava na antiga até clicar em atualizar)
+	function searchSignature(info) {
+		return info ? [info.mode, info.url, (info.folders || []).join('|'), info.foldersOnly, JSON.stringify(info.servidor || [])].join('\n') : '';
+	}
+
+	async function watchSearchSource() {
+		var p = state.paths;
+
+		if (document.hidden || !p.info || p.loading) return;
+
+		try {
+			var info = await call('searchInfo');
+
+			if (searchSignature(info) === searchSignature(p.info)) return;
+
+			p.info = info;
+			p.ready = false;
+			await loadPaths(false);
+			if (p.ready) searchPaths();
+		} catch (err) { }
+	}
+
 	async function watchRequestedTab() {
 		if (document.hidden) return;
 
@@ -1322,6 +1343,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			});
 		});
 		window.addEventListener('focus', watchRequestedTab);
+		window.addEventListener('focus', watchSearchSource);
 	}
 
 	/* =========================================================
