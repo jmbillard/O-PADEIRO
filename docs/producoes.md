@@ -71,7 +71,12 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 
 a aba **projeto** define as **categorias** da atração nova: a lista **dentro de** da [janela PROJETO](projeto.md) (etapa NOVA).
 
-- **categorias** → cada linha tem o **ícone**, o **nome** e o **caminho** da pasta da atração nova, com tokens. os pontinhos reordenam (a ordem é a do dentro de); a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim); o **×** tira a linha. embaixo de cada linha, a prévia do caminho.
+- **categorias** → cada categoria num cartão:
+  - **CATEGORIA** → o nome, com o **ícone** (clique para trocar) e o **×** (tira a categoria) dentro do campo;
+  - **PROJETO** → o caminho da pasta da atração nova, com tokens;
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a etapa CRIAR não propõe a pasta de output).
+
+  embaixo de cada caminho, a prévia; a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a do dentro de).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
 
   | token | vira |
@@ -85,7 +90,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/ROCK IN RIO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **{letra}** → uma categoria com `{letra}` ganha a etapa dos **parecidos** na janela PROJETO (os que já existem na pasta da letra), como os filmes, e o `.aep` tem o nome digitado.
 - **ícone** → o escolhido no seletor (clique no ícone da linha): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta; o **preencher pelas atrações** já põe uma sugestão pelo nome (SHOWS → microfone, FILMES → película…), que o seletor troca.
-- **preencher pelas atrações** → acrescenta as categorias das atrações do webhook que ainda não estão na lista, cada uma na pasta onde está a maioria delas (FILMES com `TITULOS/_{letra}_`). confira os caminhos antes de salvar.
+- **preencher pelas atrações** → acrescenta as categorias das atrações do webhook que ainda não estão na lista, cada uma na pasta onde está a maioria delas, o projeto e o output (FILMES com `TITULOS/_{letra}_`). confira os caminhos antes de salvar.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pela claquete, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
 
 - **cadastro no banco** *(em breve, desligado)* → reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR **propõe** o cadastro (o nome, a categoria e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.

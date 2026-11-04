@@ -27,6 +27,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
 	var SEARCH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg>';
+	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
 	// o que foi escolhido até aqui
@@ -36,6 +37,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		pick: null, // { name, path, display, film } a atração
 		choice: '', // na tela PASTA: o índice da atração, 'new' ou 'folder'
 		film: null, // { raw, name } o filme existente, ou null = filme novo
+		output: '', // a pasta de output (a da atração no índice, ou o caminho de output da categoria): proposta na etapa CRIAR
 		what: '',
 		mode: '', // '', 'open', 'increment' (arquivo existente)
 		history: []
@@ -289,6 +291,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 				name: a.name,
 				cat: a.cat || '',
 				path: full(a.proj) || full(a.out),
+				out: full(a.out),
 				depth: 0,
 				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey)).filter(function (k) {
 					return k.f;
@@ -369,7 +372,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
@@ -384,7 +387,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
-		return { label: c.name, icon: c.icon, pattern: pattern, path: fixed, display: displayPath(fixed), letter: pattern.indexOf('{letra}') >= 0, offline: !c.reachable };
+		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', path: fixed, display: displayPath(fixed), letter: pattern.indexOf('{letra}') >= 0, offline: !c.reachable };
 	}
 
 	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {categoria} {letra}
@@ -484,6 +487,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	function pickAttraction(m) {
 		flow.pick = m;
 		flow.film = null;
+		flow.output = m.out || ''; // a pasta de output da atração (o índice), se houver
 
 		if (m.film) {
 			$('filme-hint').textContent = m.name + ' · ' + m.display;
@@ -651,7 +655,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var head = base.pattern.slice(0, base.pattern.indexOf('{letra}'));
 			var parent = fillPattern(head.slice(0, head.lastIndexOf('/')), name, base.label);
 
-			flow.pick = { name: base.label, path: parent, display: displayPath(parent), film: true, pattern: base.pattern, category: base.label };
+			flow.pick = { name: base.label, path: parent, display: displayPath(parent), film: true, pattern: base.pattern, outPattern: base.outPattern, category: base.label };
 			flow.film = null;
 			flow.filmTouched = false;
 			$('filme-hint').textContent = base.label + ' · ' + displayPath(parent);
@@ -667,12 +671,15 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			var path = fillPattern(base.pattern, name, base.label);
 
 			flow.pick = { name: name, path: path, display: displayPath(path), film: false };
+			flow.output = base.outPattern ? fillPattern(base.outPattern, name, base.label) : '';
 			$('arq-what').value = '';
 			flow.what = '';
 			planFile();
 			show('arquivo');
 			return;
 		}
+
+		flow.output = ''; // pasta livre: sem output proposto
 
 		if (base.film) {
 			flow.pick = { name: 'Filmes', path: base.path, display: base.display, film: true };
@@ -756,6 +763,9 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		// novo, numa categoria com tokens: a pasta é o caminho dela (com {ano}, {mes}… trocados)
 		if (!flow.film && flow.pick && flow.pick.pattern) filmPath = fillPattern(flow.pick.pattern, title, flow.pick.category);
+
+		// o output da categoria, com o nome do filme (o existente ou o novo)
+		if (flow.pick && flow.pick.outPattern) flow.output = fillPattern(flow.pick.outPattern, flow.film ? flow.film.name : title, flow.pick.category);
 
 		goCreate({ kind: 'film', title: flow.film ? flow.film.name : title, filmPath: filmPath });
 	}
@@ -857,7 +867,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	}
 
 	async function goCreate(args) {
-		state.createArgs = Object.assign({ atracao: flow.pick.name, path: flow.pick.path, claquete: flow.claquete }, args);
+		state.createArgs = Object.assign({ atracao: flow.pick.name, path: flow.pick.path, claquete: flow.claquete, output: flow.output || '', outputCreate: true }, args);
 
 		try {
 			var plan = await call('projectPlan', state.createArgs);
@@ -883,11 +893,67 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			user.appendChild(document.createTextNode(plan.user));
 			meta.appendChild(user);
 			meta.title = plan.root;
+			renderCreateOptions(plan);
 
 			show('criar');
 		} catch (err) {
 			status(err.message, 'error');
 		}
+	}
+
+	// as propostas da etapa CRIAR, em menus radiais. a pasta de output: a que já existe só vai para o projeto
+	// (metadados); a que não existe, criar (o padrão) ou pular
+	function renderCreateOptions(plan) {
+		var box = $('criar-opts');
+
+		box.textContent = '';
+		box.hidden = !plan.output;
+
+		if (!plan.output) return;
+
+		var item = el('div', 'opt-item');
+		var head = el('div', 'opt-head');
+
+		head.innerHTML = OUTPUT_SVG;
+		head.appendChild(el('b', null, 'pasta de output'));
+		item.appendChild(head);
+
+		// da pasta da atração em diante, em destaque (antes dela, só a pasta de cima)
+		var path = el('p', 'opt-path');
+		var full = plan.output.replace(/\\/g, '/');
+		var at = full.toUpperCase().indexOf('/' + aepName(state.createArgs.title || state.createArgs.atracao) + '/');
+		var split = at < 0 ? full.lastIndexOf('/') : at;
+		var from = full.lastIndexOf('/', split - 1);
+
+		path.title = plan.output;
+		path.appendChild(document.createTextNode((from > 0 ? '…' : '') + full.slice(Math.max(from, 0), split + 1)));
+		path.appendChild(el('b', null, full.slice(split + 1)));
+		item.appendChild(path);
+
+		if (plan.outputExists) {
+			item.appendChild(el('p', 'opt-note', 'já existe: vai para os dados do projeto.'));
+		} else {
+			var radios = el('div', 'opt-radios');
+
+			[['', 'pular'], ['1', 'criar a pasta']].forEach(function (o) {
+				var label = el('label', 'log-radio');
+				var input = el('input');
+
+				input.type = 'radio';
+				input.name = 'criar-output';
+				input.checked = !!o[0] === !!state.createArgs.outputCreate;
+				input.addEventListener('change', function () {
+					state.createArgs.outputCreate = !!o[0];
+				});
+				label.appendChild(input);
+				label.appendChild(el('span', 'log-radio-dot'));
+				label.appendChild(el('span', 'log-radio-text', o[1]));
+				radios.appendChild(label);
+			});
+			item.appendChild(radios);
+		}
+
+		box.appendChild(item);
 	}
 
 	async function create(args) {
@@ -922,6 +988,23 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
 		card($('ed-card'), cur.atracao || cur.fileName, cur.root || cur.file);
 		$('ed-card').title = cur.file;
+
+		// a pasta de output (metadados do projeto): o mesmo cartão da pasta
+		card($('ed-output'), cur.output ? cur.atracao || cur.output.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop() : 'sem pasta de output', cur.output || 'trocar output… escolhe a pasta');
+		$('ed-output').classList.toggle('is-empty', !cur.output);
+	}
+
+	async function editorOutput() {
+		var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto');
+
+		if (!picked) return;
+
+		try {
+			renderEditor(await call('projectUpdate', { output: picked }));
+			status('pasta de output gravada no projeto.', 'success');
+		} catch (err) {
+			status(err.message, 'error');
+		}
 	}
 
 	async function editorSave() {
@@ -952,6 +1035,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		flow.history = [];
 		flow.matches = [];
 		flow.pick = null;
+		flow.output = '';
 		flow.filmTouched = false;
 		$('claq').value = '';
 		$('claq-found').hidden = true;
@@ -1064,6 +1148,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		$('ed-save').addEventListener('click', editorSave);
 		$('ed-move').addEventListener('click', editorMove);
+		$('ed-output-pick').addEventListener('click', editorOutput);
 		['ed-claq', 'ed-user'].forEach(function (id) {
 			onEnter(id, editorSave);
 		});

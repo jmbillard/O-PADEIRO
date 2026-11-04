@@ -9,7 +9,8 @@ A janela PROJETO cria o projeto pela claquete (abaixo) e edita a claquete e o de
 arquivos é do botão COLETAR (collect.jsx).
 
 'PROJECT' no O_PADEIRO_config.json (aba PROJETO da configuração):
-  categories → [{ name, path, icon }]: a lista "dentro de" da atração nova. o caminho leva tokens:
+  categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
+               projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
                {atracao} (obrigatório) {ano} {mes} {categoria} {letra}; uma categoria com {letra} ganha a
                etapa dos parecidos (os que já existem na pasta da letra), como os filmes. icon: um ícone do
                seletor (js/util.js), ou '' = pelo nome da categoria
@@ -37,6 +38,7 @@ function padCleanProject(o) {
 		var c = list[i] || {};
 		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
 		var path = padProjectPath(c.path);
+		var output = padProjectPath(c.output);
 		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
 		var key = padAepName(name);
 		var re = /\{([^}]*)\}/g;
@@ -46,14 +48,15 @@ function padCleanProject(o) {
 		if (seen[key]) throw new Error('#PAD_089 - projeto: a categoria ' + name + ' aparece mais de uma vez.');
 		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
 
-		while ((m = re.exec(path)) != null) {
+		while ((m = re.exec(path + ' ' + output)) != null) {
 			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {categoria} ou {letra}).');
 		}
 
 		if (path.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + name + ' precisa do {atracao} (a pasta da atração nova).');
+		if (output != '' && output.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o output de ' + name + ' precisa do {atracao} (a pasta de output da atração nova).');
 
 		seen[key] = true;
-		clean.categories.push({ name: name, path: path, icon: icon });
+		clean.categories.push({ name: name, path: path, output: output, icon: icon });
 	}
 
 	return clean;
@@ -83,7 +86,7 @@ PADX.projectCategories = function () {
 
 		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(padPath(fixed)).exists;
 
-		out.push({ name: list[i].name, path: list[i].path, icon: list[i].icon, reachable: checked[fixed] });
+		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, icon: list[i].icon, reachable: checked[fixed] });
 	}
 
 	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
@@ -124,8 +127,8 @@ function padToday() {
 }
 
 // As categorias das atrações do webhook (aba PROJETO > preencher pelas atrações): cada categoria na pasta
-// onde está a maioria das atrações dela, com {atracao} no fim (FILMES: a pasta TITULOS e _{letra}_).
-// → { categories: [{ name, path }] }
+// onde está a maioria das atrações dela, com {atracao} no fim (FILMES: a pasta TITULOS e _{letra}_); o
+// output do mesmo jeito, pela pasta de output das atrações. → { categories: [{ name, path, output }] }
 PADX.projectCategoriesFromIndex = function () {
 	var file = new File(tempFolder.fsName + '/busca_v2.json');
 	var data = null;
@@ -146,51 +149,65 @@ PADX.projectCategoriesFromIndex = function () {
 	var byCat = {};
 	var names = [];
 
-	for (var i = 0; i < data.atracoes.length; i++) {
-		var a = data.atracoes[i] || {};
-		var m = /^([a-z]+):(.*)$/.exec(String(a.proj || ''));
-		var path = (m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : String(a.proj || '')).replace(/([^\/])\/{2,}/g, '$1/'); // sem // no meio (o // do começo fica)
-		var key = padAepName(a.cat);
+	// a pasta da categoria no caminho (a última que começa com o nome dela; FILMES: com a TITULOS) ou ''
+	var baseOf = function (raw, key) {
+		var m = /^([a-z]+):(.*)$/.exec(String(raw || ''));
+		var path = (m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : String(raw || '')).replace(/([^\/])\/{2,}/g, '$1/'); // sem // no meio (o // do começo fica)
 
-		if (!key || !path) continue;
+		if (!path) return '';
 
 		var parts = path.replace(/\\/g, '/').split('/');
-		var at = -1;
 
 		for (var j = parts.length - 1; j >= 0; j--) {
 			if (padAepName(parts[j]).indexOf(key) == 0) {
-				at = j;
-				break;
+				var end = key == 'FILMES' && parts[j + 1] && padAepName(parts[j + 1]) == 'TITULOS' ? j + 1 : j;
+
+				return parts.slice(0, end + 1).join('/');
 			}
 		}
 
-		if (at < 0) continue;
+		return '';
+	};
 
-		var film = key == 'FILMES';
-		var end = film && parts[at + 1] && padAepName(parts[at + 1]) == 'TITULOS' ? at + 1 : at;
-		var base = parts.slice(0, end + 1).join('/');
+	for (var i = 0; i < data.atracoes.length; i++) {
+		var a = data.atracoes[i] || {};
+		var key = padAepName(a.cat);
+
+		if (!key) continue;
+
+		var proj = baseOf(a.proj, key);
+		var outBase = baseOf(a.out, key);
+
+		if (!proj) continue;
 
 		if (!byCat[key]) {
-			byCat[key] = { name: String(a.cat).toUpperCase(), film: film, count: {} };
+			byCat[key] = { name: String(a.cat).toUpperCase(), film: key == 'FILMES', count: {}, outCount: {} };
 			names.push(key);
 		}
 
-		byCat[key].count[base] = (byCat[key].count[base] || 0) + 1;
+		byCat[key].count[proj] = (byCat[key].count[proj] || 0) + 1;
+		if (outBase) byCat[key].outCount[outBase] = (byCat[key].outCount[outBase] || 0) + 1;
 	}
 
 	names.sort();
 
+	var most = function (count) {
+		var best = '';
+
+		for (var k in count) {
+			if (!best || count[k] > count[best]) best = k;
+		}
+
+		return best;
+	};
 	var out = [];
 
 	for (var n = 0; n < names.length; n++) {
 		var cat = byCat[names[n]];
-		var best = '';
+		var tail = cat.film ? '/_{letra}_/{atracao}' : '/{atracao}';
+		var outBest = most(cat.outCount);
 
-		for (var b in cat.count) {
-			if (!best || cat.count[b] > cat.count[best]) best = b;
-		}
-
-		out.push({ name: cat.name, path: best + (cat.film ? '/_{letra}_/{atracao}' : '/{atracao}') });
+		out.push({ name: cat.name, path: most(cat.count) + tail, output: outBest ? outBest + tail : '' });
 	}
 
 	return { categories: out };
@@ -220,8 +237,9 @@ estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que j�
   - programas, novelas...: o .aep é o nome da atração + o que é (MAIS VOCE SERVICO)
   - filmes (atração em FILMES/TITULOS): cada filme numa pasta, dentro da pasta da letra do título sem o
     artigo (_T_ para OS TRES PATETAS, _#_ para 101 DALMATAS); o .aep é o título
-No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage) e a pasta
-da estrutura (relation).
+No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage), a pasta
+da estrutura (relation) e a pasta de output (source; a da categoria, criada na etapa CRIAR, ou a da
+atração no índice).
 
 */
 
@@ -511,7 +529,9 @@ PADX.projectPlan = function (a) {
 		existing: existing,
 		exists: exists,
 		folders: folders,
-		user: padMachineUser()
+		user: padMachineUser(),
+		output: a.output ? padDisplayPath(padPath(a.output)) : '',
+		outputExists: a.output ? new Folder(padPath(a.output)).exists : false
 	};
 };
 
@@ -538,8 +558,14 @@ PADX.projectCreate = function (a) {
 		throw new Error('#PAD_092 - já existe ' + base + '.aep em ' + decodeURI(new Folder(projects).name) + '.');
 	}
 
+	// a pasta de output: criada se pedido (etapa CRIAR); a que existir vai para os metadados
+	var output = a.output ? new Folder(padPath(a.output)) : null;
+
+	if (output && !output.exists && a.outputCreate) output.create();
+
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
+	if (output && output.exists) setXMPData('source', padDisplayPath(output.fsName));
 	setXMPData('creator', padMachineUser());
 	setXMPData('coverage', String(a.atracao || ''));
 	setXMPData('relation', padDisplayPath(plan.root));
@@ -561,6 +587,7 @@ PADX.projectCurrent = function () {
 		designer: padXmpGet('creator') || padMachineUser(),
 		defaultUser: padDefaultUser(),
 		atracao: padXmpGet('coverage'),
+		output: padXmpGet('source'),
 		root: padXmpGet('relation') || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
@@ -573,6 +600,7 @@ PADX.projectCurrent = function () {
 PADX.projectUpdate = function (a) {
 	if (a.claquete != null) setXMPData('identifier', padAepName(a.claquete));
 	if (a.designer != null) setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
+	if (a.output != null) setXMPData('source', a.output ? padDisplayPath(padPath(a.output)) : '');
 	if (app.project.file) app.project.save();
 
 	return PADX.projectCurrent();

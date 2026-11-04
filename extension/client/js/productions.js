@@ -31,7 +31,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
-		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path (com tokens), icon ('' = pelo nome) }]
+		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
@@ -310,7 +310,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function projectForSave() {
 		return {
 			categories: state.project.categories.map(function (c) {
-				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), icon: c.icon || '' };
+				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), icon: c.icon || '' };
 			})
 		};
 	}
@@ -3136,7 +3136,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.project = {
 			categories: (data.categories || []).map(function (c) {
-				return { name: c.name || '', path: c.path || '', icon: c.icon || '' };
+				return { name: c.name || '', path: c.path || '', output: c.output || '', icon: c.icon || '' };
 			})
 		};
 		renderProject();
@@ -3146,12 +3146,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return PAD_UTIL.categoryIcon(row.icon) || CAT_FOLDER_SVG;
 	}
 
-	// a prévia do caminho: os tokens trocados por um exemplo, em destaque (o começo fica de fora)
-	function catPreview(row) {
+	// a prévia de um caminho (key: 'path', o do projeto, ou 'output'): os tokens trocados por um exemplo, em
+	// destaque (o começo fica de fora)
+	function catPreview(row, key) {
 		var d = new Date();
-		var film = row.path.indexOf('{letra}') >= 0;
+		var path = String(row[key] || '').trim().replace(/\\/g, '/');
+		var film = path.indexOf('{letra}') >= 0;
 		var sample = { atracao: film ? 'OS TRES PATETAS' : 'NOVA ATRAÇÃO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: film ? 'T' : 'A' };
-		var path = row.path.trim().replace(/\\/g, '/');
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3161,11 +3162,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!path) return '';
 
-		return '→ ' + (film ? '<b>Os Três Patetas</b>: ' : '') + shown.replace(/\{(\w+)\}/g, function (all, key) {
-			return PATH_TOKENS.indexOf(key) >= 0 ? '<b>' + sample[key] + '</b>' : '<i>' + all + '</i>';
+		return '→ ' + (film ? '<b>Os Três Patetas</b>: ' : '') + shown.replace(/\{(\w+)\}/g, function (all, k) {
+			return PATH_TOKENS.indexOf(k) >= 0 ? '<b>' + sample[k] + '</b>' : '<i>' + all + '</i>';
 		});
 	}
 
+	var CAT_X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
+
+	// cada categoria num cartão: CATEGORIA (o ícone e o × dentro do campo do nome), PROJETO e OUTPUT, os dois
+	// com a prévia embaixo
 	function renderProject() {
 		var list = $('cat-list');
 		var cats = state.project.categories;
@@ -3179,13 +3184,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		cats.forEach(function (row, i) {
-			var box = el('div', 'drive-row srv-row cat-row');
+			var card = el('div', 'cat-card');
+			var body = el('div', 'cat-body');
+			var nameLine = el('div', 'cat-line');
+			var nameBox = el('div', 'cat-name');
 			var iconBtn = el('button', 'cat-icon');
-			var nameField = el('div', 'cat-name');
 			var name = el('input', 'cfg-input');
-			var preview = el('p', 'cat-preview');
+			var remove = el('button', 'cat-x');
+			var previews = {};
 
-			box.appendChild(PAD_SORT.handle());
+			card.appendChild(PAD_SORT.handle());
 
 			iconBtn.type = 'button';
 			iconBtn.title = 'trocar o ícone';
@@ -3195,7 +3203,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				e.stopPropagation();
 				openIconPicker(iconBtn, row);
 			});
-			box.appendChild(iconBtn);
 
 			name.type = 'text';
 			name.value = row.name;
@@ -3205,40 +3212,65 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			name.setAttribute('aria-label', 'nome da categoria ' + (i + 1));
 			name.addEventListener('input', function () {
 				row.name = name.value;
-				preview.innerHTML = catPreview(row);
+				// {categoria} nas prévias
+				previews.path.innerHTML = catPreview(row, 'path');
+				previews.output.innerHTML = catPreview(row, 'output');
 				updateDirty();
 			});
-			nameField.appendChild(name);
-			box.appendChild(nameField);
 
-			var path = pathField(row.path, '//servidor/share/PROGRAMAS/{atracao}', 'caminho de ' + (row.name || 'categoria ' + (i + 1)), function (v) {
-				row.path = v;
-				preview.innerHTML = catPreview(row);
-			}, function (picked) {
-				// a pasta escolhida é a da categoria: a atração nova fica dentro dela
-				row.path = picked.replace(/[\\/]+$/, '') + '/{atracao}';
-				if (!row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
-				renderProject();
-				updateDirty();
-			}, function () {
+			remove.type = 'button';
+			remove.title = 'tirar a categoria';
+			remove.setAttribute('aria-label', 'tirar a categoria ' + (row.name || i + 1));
+			remove.disabled = !state.available;
+			remove.innerHTML = CAT_X_SVG;
+			remove.addEventListener('click', function () {
 				state.project.categories.splice(i, 1);
 				renderProject();
 				updateDirty();
 			});
-			var input = path.querySelector('input');
 
-			// os tokens entram no último caminho em foco; fora dele, o campo mostra o fim do caminho
-			input.addEventListener('focus', function () {
-				state.catInput = { input: input, row: row, preview: preview };
-			});
-			input.addEventListener('blur', function () {
-				input.scrollLeft = input.scrollWidth;
-			});
-			box.appendChild(path);
-			list.appendChild(box);
+			nameBox.appendChild(iconBtn);
+			nameBox.appendChild(name);
+			nameBox.appendChild(remove);
+			nameLine.appendChild(el('span', 'cat-label', 'CATEGORIA'));
+			nameLine.appendChild(nameBox);
+			body.appendChild(nameLine);
 
-			preview.innerHTML = catPreview(row);
-			list.appendChild(preview);
+			[['path', 'PROJETO', '//servidor/share/PROGRAMAS/{atracao}'], ['output', 'OUTPUT', 'opcional: a pasta de output da atração nova']].forEach(function (k) {
+				var line = el('div', 'cat-line');
+				var preview = el('p', 'cat-preview');
+				var field = pathField(row[k[0]], k[2], (k[0] === 'path' ? 'pasta da atração nova em ' : 'pasta de output em ') + (row.name || 'categoria ' + (i + 1)), function (v) {
+					row[k[0]] = v;
+					preview.innerHTML = catPreview(row, k[0]);
+				}, function (picked) {
+					// a pasta escolhida é a da categoria: a atração nova fica dentro dela
+					row[k[0]] = picked.replace(/[\\/]+$/, '') + '/{atracao}';
+					if (k[0] === 'path' && !row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
+					renderProject();
+					updateDirty();
+				}, function () { });
+				var input = field.querySelector('input');
+
+				field.removeChild(field.lastChild); // sem o × do campo: o da categoria fica no nome
+
+				// os tokens entram no último caminho em foco; fora dele, o campo mostra o fim do caminho
+				input.addEventListener('focus', function () {
+					state.catInput = { input: input, row: row, key: k[0], preview: preview };
+				});
+				input.addEventListener('blur', function () {
+					input.scrollLeft = input.scrollWidth;
+				});
+
+				line.appendChild(el('span', 'cat-label', k[1]));
+				line.appendChild(field);
+				body.appendChild(line);
+				preview.innerHTML = catPreview(row, k[0]);
+				previews[k[0]] = preview;
+				body.appendChild(preview);
+			});
+
+			card.appendChild(body);
+			list.appendChild(card);
 		});
 
 		// o fim de cada caminho (a parte que muda de uma categoria para outra)
@@ -3249,17 +3281,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// põe o token no caminho em foco (ou no último), onde está o cursor
+	// põe o token no caminho em foco (ou no do projeto da última categoria), onde está o cursor
 	function insertToken(token) {
 		var target = state.catInput;
 
 		if (!target || !document.body.contains(target.input)) {
-			var inputs = $('cat-list').querySelectorAll('.cfg-path input');
+			var cards = $('cat-list').querySelectorAll('.cat-card');
 			var rows = state.project.categories;
 
-			if (!inputs.length) return toast(null, 'crie uma categoria antes (+ nova categoria).');
+			if (!cards.length) return toast(null, 'crie uma categoria antes (+ nova categoria).');
 
-			target = { input: inputs[inputs.length - 1], row: rows[rows.length - 1], preview: $('cat-list').lastChild };
+			var last = cards[cards.length - 1];
+
+			target = { input: last.querySelector('.cfg-path input'), row: rows[rows.length - 1], key: 'path', preview: last.querySelector('.cat-preview') };
 		}
 
 		var input = target.input;
@@ -3268,8 +3302,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var text = '{' + token + '}';
 
 		input.value = input.value.slice(0, start) + text + input.value.slice(end);
-		target.row.path = input.value;
-		target.preview.innerHTML = catPreview(target.row);
+		target.row[target.key] = input.value;
+		target.preview.innerHTML = catPreview(target.row, target.key);
 		input.focus();
 		input.setSelectionRange(start + text.length, start + text.length);
 		updateDirty();
@@ -3329,10 +3363,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindProject() {
 		$('btn-new-cat').addEventListener('click', function () {
-			state.project.categories.push({ name: '', path: '', icon: 'pasta' });
+			state.project.categories.push({ name: '', path: '', output: '', icon: 'pasta' });
 			renderProject();
 			updateDirty();
-			$('cat-list').querySelector('.cat-row:last-of-type .cat-name input').focus();
+			$('cat-list').lastChild.querySelector('.cat-name input').focus();
 		});
 
 		Array.prototype.forEach.call($('cat-tokens').querySelectorAll('[data-token]'), function (btn) {
@@ -3350,7 +3384,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (e.key === 'Escape') closeIconPicker();
 		});
 
-		PAD_SORT.enable($('cat-list'), '.cat-row', function (from, to) {
+		PAD_SORT.enable($('cat-list'), '.cat-card', function (from, to) {
 			var moved = state.project.categories.splice(from, 1)[0];
 
 			state.project.categories.splice(to, 0, moved);
@@ -3376,7 +3410,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					if (have[c.name]) return;
 
 					// já com um ícone sugerido pelo nome (gravado nela: o seletor troca)
-					state.project.categories.push({ name: c.name, path: c.path, icon: PAD_UTIL.categoryIconKey(c.name) || 'pasta' });
+					state.project.categories.push({ name: c.name, path: c.path, output: c.output || '', icon: PAD_UTIL.categoryIconKey(c.name) || 'pasta' });
 					added++;
 				});
 				renderProject();

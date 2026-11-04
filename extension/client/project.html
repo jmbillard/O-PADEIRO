@@ -103,6 +103,8 @@
 			<p class="wz-title">CRIAR</p>
 			<div class="wz-tree" id="criar-tree"></div>
 			<div class="wz-meta" id="criar-meta"></div>
+			<!-- as propostas (menus radiais): a pasta de output; depois, o cadastro no banco -->
+			<div class="opt-box" id="criar-opts" hidden></div>
 			<footer class="wz-foot">
 				<button type="button" class="wz-back" data-back>‹ voltar</button>
 				<button type="button" class="button button-primary" id="criar-go">Criar projeto</button>
@@ -124,6 +126,8 @@
 			</div>
 			<p class="wz-title">PASTA</p>
 			<section class="proj-card is-found" id="ed-card"></section>
+			<p class="wz-title">OUTPUT</p>
+			<section class="proj-card is-found" id="ed-output"></section>
 			<footer class="wz-foot">
 				<span class="ed-left">
 					<details class="actions-menu proj-menu" id="app-menu">
@@ -136,6 +140,7 @@
 						</div>
 					</details>
 					<button type="button" class="wz-pill" id="ed-move">trocar pasta…</button>
+					<button type="button" class="wz-pill" id="ed-output-pick">trocar output…</button>
 				</span>
 				<button type="button" class="button button-primary" id="ed-save">Salvar</button>
 			</footer>

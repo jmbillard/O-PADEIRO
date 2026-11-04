@@ -658,3 +658,129 @@ body.project-page {
 .wz-link[hidden] {
   display: none;
 }
+
+/* CRIAR: as propostas (a pasta de output; depois, o cadastro no banco), cada uma com um menu radial */
+.opt-box {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.opt-box[hidden] {
+  display: none;
+}
+
+.opt-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.opt-item + .opt-item {
+  border-top: 1px solid var(--border);
+}
+
+.opt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.74rem;
+}
+
+.opt-head svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.opt-path,
+.opt-note {
+  margin: 0 0 2px 25px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opt-path b {
+  color: var(--blue-500);
+}
+
+.opt-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-left: 25px;
+}
+
+/* o menu radial (o mesmo da configuração) */
+.log-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 620;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* o círculo nativo fica escondido: o desenho é o do .log-radio-dot */
+.log-radio input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.log-radio-dot {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.log-radio-dot::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  content: '';
+  transform: scale(0);
+  transition: transform 180ms var(--ease-soft);
+}
+
+.log-radio:hover .log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot::after {
+  transform: scale(1);
+}
+
+/* editor: sem pasta de output, o cartão fica apagado */
+#ed-output.is-empty {
+  opacity: 0.6;
+}
+

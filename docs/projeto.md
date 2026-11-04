@@ -31,11 +31,11 @@ uma tela por vez; **‹ voltar** volta uma etapa.
 4. **ARQUIVO** (programas, novelas…) → **o que é** (ex: `SERVIÇO`, `CRÉDITOS`, `CHROMA`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). uma atração pode ter vários projetos.
    - embaixo aparecem os `.aep` que já estão na `01 PROJETOS` da atração, o último alterado primeiro, com a data (`hoje 14:32`, `ontem 09:10`, `28/10`).
    - já existe um com o mesmo nome → **abrir o existente** ou **salvar como … 2**.
-5. **CRIAR** → o cartão azul mostra a estrutura e o arquivo: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara). **Criar projeto** cria as pastas que faltam e salva o `.aep`. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
+5. **CRIAR** → embaixo da estrutura, a **pasta de output** (a do caminho de output da categoria, ou a da atração no índice): se ainda não existe, um menu radial **pular** / **criar a pasta** (o padrão); a que existir vai para os dados do projeto. depois: o cartão azul mostra a estrutura e o arquivo: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara). **Criar projeto** cria as pastas que faltam e salva o `.aep`. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
-a **claquete**, o **designer**, a **atração** e a **pasta** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage` e `dc:relation`).
+a **claquete**, o **designer**, a **atração**, a **pasta** e a **pasta de output** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage`, `dc:relation` e `dc:source`).
 
 ## 📍 editor
 
@@ -43,7 +43,9 @@ ao abrir a janela com um projeto criado pela claquete:
 
 - **claquete** e **designer** (bonequinho) → o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
 - **pasta** → a atração e o caminho do projeto.
+- **output** → a pasta de output do projeto.
 - **trocar pasta…** → move o `.aep` para outra pasta.
+- **trocar output…** → grava outra pasta de output no projeto.
 - **Salvar** → grava os campos e salva o projeto.
 
 abrir outro projeto troca os dados da janela.

@@ -369,10 +369,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' precisa de um caminho.');
 					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {categoria} ou {letra}).');
 					if (String(c.path).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + key + ' precisa do {atracao} (a pasta da atração nova).');
+					if (String(c.output || '').trim() && String(c.output).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o output de ' + key + ' precisa do {atracao} (a pasta de output da atração nova).');
+					if (/\{(?!(atracao|ano|mes|categoria|letra)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
 					seenCat[key] = true;
 				});
 				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
-					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), icon: c.icon || '' };
+					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), icon: c.icon || '' };
 				}) };
 				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}
@@ -910,13 +912,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			await wait(delay);
 
 			var vfx = '/Volumes/VFX/imagem/drive_l/Fileserver_1/';
+			var out = '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/';
 
 			return { categories: [
-				{ name: 'FILMES', path: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}' },
-				{ name: 'JORNALISMO', path: vfx + 'JORNALISMO/{atracao}' },
-				{ name: 'NOVELAS', path: vfx + 'NOVELAS/{atracao}' },
-				{ name: 'PROGRAMAS', path: vfx + 'PROGRAMAS/{atracao}' },
-				{ name: 'SHOWS', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/{atracao}' }
+				{ name: 'FILMES', path: vfx + 'FILMES/TITULOS/_{letra}_/{atracao}', output: out + 'FILMES/TITULOS/_{letra}_/{atracao}' },
+				{ name: 'JORNALISMO', path: vfx + 'JORNALISMO/{atracao}', output: out + 'JORNALISMO/{atracao}' },
+				{ name: 'NOVELAS', path: vfx + 'NOVELAS/{atracao}', output: '' },
+				{ name: 'PROGRAMAS', path: vfx + 'PROGRAMAS/{atracao}', output: out + 'PROGRAMAS/{atracao}' },
+				{ name: 'SHOWS', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/{atracao}', output: out + 'SHOWS/{atracao}' }
 			] };
 		},
 
@@ -1087,7 +1090,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			] : [];
 			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD' };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output) };
 		},
 
 		projectCreate: function (a) {
@@ -1095,7 +1098,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '', root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
@@ -1106,6 +1109,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (c) {
 				c.claquete = String(a.claquete || '').toUpperCase();
 				c.designer = String(a.designer || 'JMBILLARD').toUpperCase();
+				if (a.output != null) c.output = a.output;
 			}
 
 			return api.projectCurrent();

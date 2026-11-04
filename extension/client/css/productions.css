@@ -2169,30 +2169,91 @@ body.is-org-dragging * {
   padding-right: 72px; /* a pasta e o × dentro do campo */
 }
 
-/* aba PROJETO: as categorias da atração nova (ícone, nome e o caminho com tokens; a prévia embaixo) */
-.srv-row.cat-row {
-  grid-template-columns: 22px 46px minmax(120px, 190px) minmax(0, 1fr);
+/* aba PROJETO: cada categoria num cartão (CATEGORIA com o ícone e o × dentro do campo, PROJETO e OUTPUT com
+   a prévia embaixo); os rótulos alinham os campos */
+#cat-list {
+  display: grid;
+  gap: 10px;
+}
+
+.cat-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+}
+
+.cat-card > .drag-handle {
+  margin-top: 14px;
+}
+
+.cat-body {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+.cat-line {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-label {
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
+.cat-line .cfg-path .cfg-input {
+  padding-right: 44px; /* a pasta dentro do campo */
+}
+
+.cat-name {
+  position: relative;
+  min-width: 0;
+}
+
+.cat-name .cfg-input {
+  width: 100%;
+  padding-right: 44px;
+  padding-left: 46px;
+}
+
+/* o ícone (abre o seletor) e o × (tira a categoria): só o desenho, dentro do campo */
+.cat-icon,
+.cat-x {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: translateY(-50%);
 }
 
 .cat-icon {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  place-items: center;
-  border: 1px dashed var(--border-strong);
-  border-radius: 12px;
-  background: var(--surface-soft);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    color 160ms ease;
+  left: 10px;
+  color: var(--blue-500);
 }
 
-.cat-icon:hover,
-.cat-icon:focus-visible {
-  border-color: var(--blue-500);
-  color: var(--blue-500);
+.cat-x {
+  right: 10px;
+  color: var(--text-tertiary);
+  transition: color 160ms ease;
+}
+
+.cat-x:hover,
+.cat-x:focus-visible {
+  color: #d64545;
 }
 
 .cat-icon svg,
@@ -2206,13 +2267,18 @@ body.is-org-dragging * {
   stroke-width: 1.7;
 }
 
-.cat-name .cfg-input {
-  width: 100%;
+.cat-x svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 .cat-preview {
   min-height: 1em;
-  margin: -2px 0 6px 84px;
+  margin: -2px 0 2px 84px;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.72rem;
