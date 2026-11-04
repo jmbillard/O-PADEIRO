@@ -155,7 +155,7 @@ function padIsProjectsFolderName(name) {
 // variações de PROJETOS). Cria com o nome da árvore se não houver.
 function padChildFolder(parent, name, isProjects) {
 	var key = padFolderKey(name);
-	var items = new Folder(parent).getFiles();
+	var items = new Folder(parent).exists ? new Folder(parent).getFiles() || [] : [];
 
 	for (var i = 0; i < items.length; i++) {
 		if (!(items[i] instanceof Folder)) continue;
@@ -350,12 +350,27 @@ function padFreeFile(folderPath, fileName, src) {
 	return dest;
 }
 
+// o que o mkdir do sistema respondeu na última vez que o plano B rodou (para a mensagem de erro)
+var padLastMkdir = '';
+
 function padEnsureFolder(path) {
 	var folder = new Folder(path);
 
 	// as pastas de cima primeiro (o Folder.create não cria as intermediárias em todo sistema)
 	if (!folder.exists && folder.parent && !folder.parent.exists) padEnsureFolder(folder.parent.fsName);
 	if (!folder.exists) folder.create();
+
+	// plano B: o mkdir do sistema (o Folder.create falha calado em alguns compartilhamentos de rede)
+	if (!folder.exists) {
+		try {
+			padLastMkdir = String(system.callSystem(appOs == 'Win'
+				? 'cmd.exe /c mkdir "' + folder.fsName.replace(/"/g, '') + '" 2>&1'
+				: 'mkdir -p ' + psShellQuote(folder.fsName) + ' 2>&1')).replace(/^\s+|\s+$/g, '');
+		} catch (err) {
+			padLastMkdir = err.message;
+		}
+		folder = new Folder(folder.fsName);
+	}
 
 	return folder;
 }

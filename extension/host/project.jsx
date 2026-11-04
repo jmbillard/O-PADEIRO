@@ -391,22 +391,22 @@ PADX.projectPlan = function (a) {
 
 // Cria a estrutura e salva o .aep. a: plano + { claquete, mode: '' | 'open' | 'increment' }
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
+// a mensagem diz qual pasta falta (a primeira que não existe no caminho) e o que o sistema respondeu
 function padCheckWritable(path) {
 	var folder = new Folder(path);
 
-	if (!folder.exists) throw new Error('#PAD_091 - não foi possível criar a pasta ' + padDisplayPath(path) + ' (sem permissão ou rede fora?).');
+	if (folder.exists) return;
 
-	var probe = new File(folder.fsName + '/.padeiro_teste_' + new Date().getTime());
-	var ok = probe.open('w');
+	var missing = folder;
 
-	if (ok) {
-		probe.close();
-		probe.remove();
-	}
-	if (!ok) throw new Error('#PAD_091 - sem permissão para gravar em ' + padDisplayPath(path) + '.');
+	while (missing.parent && !missing.parent.exists) missing = missing.parent;
+
+	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + '.');
 }
 
 PADX.projectCreate = function (a) {
+	padLastMkdir = '';
+
 	var plan = padNewProjectPlan(a);
 	var claquete = padAepName(a.claquete);
 
