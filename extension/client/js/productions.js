@@ -121,9 +121,101 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		btn.title = title;
 		btn.setAttribute('aria-label', title);
 		btn.innerHTML = TRASH_SVG;
-		btn.addEventListener('click', onClick);
+		btn.addEventListener('click', function () {
+			collapseThen(btn.closest(DEL_ROWS), onClick);
+		});
 
 		return btn;
+	}
+
+	// Excluir uma linha: ela esmaece e, montada a lista de novo (já sem ela), tudo o que estava embaixo (as
+	// linhas seguintes, o '+ novo', as outras seções) desliza da posição antiga para a nova, sem pular. a lista
+	// montada de novo não repete a animação de entrada das linhas.
+	var FADE_MS = 110;
+	var SLIDE_MS = 220;
+	var EASE_SLIDE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+	function collapseThen(row, done) {
+		var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (!row || !row.animate || reduce || state.collapsing) return finish();
+
+		var list = row.parentElement;
+		var pane = row.closest('.cfg-pane') || document.body;
+		var kind = row.classList[0];
+		var rows = siblingsOf(list, kind);
+		var index = rows.indexOf(row);
+		var top0 = row.getBoundingClientRect().top;
+		// as linhas de baixo (pela posição na lista) e o que vem depois da lista na folha (os mesmos elementos)
+		var rowTops = rows.slice(index + 1).map(function (r) {
+			return r.getBoundingClientRect().top;
+		});
+		var after = belowIn(pane, top0, list).concat(Array.prototype.filter.call(list.children, function (c) {
+			// o que fica na lista mas não é linha (o '+ nova produção', o arquivo da lista): volta igual
+			return !c.classList.contains(kind) && c.getBoundingClientRect().top > top0 + 1;
+		})).map(function (node) {
+			return { node: node, top: node.getBoundingClientRect().top };
+		});
+
+		state.collapsing = true;
+		row.style.pointerEvents = 'none';
+		row.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease-out', fill: 'forwards' }).onfinish = function () {
+			state.collapsing = false;
+			finish();
+
+			// FLIP: da posição antiga para a nova
+			siblingsOf(list, kind).slice(index).forEach(function (r, j) {
+				slide(r, rowTops[j]);
+			});
+			after.forEach(function (it) {
+				if (document.body.contains(it.node)) slide(it.node, it.top);
+			});
+		};
+
+		function finish() {
+			done();
+			// as linhas novas desta lista entram já paradas (sem a animação de entrada)
+			if (list) {
+				Array.prototype.forEach.call(list.children, function (c) {
+					c.style.animation = 'none';
+				});
+			}
+		}
+	}
+
+	function siblingsOf(list, kind) {
+		if (!list) return [];
+
+		return Array.prototype.filter.call(list.children, function (c) {
+			return c.classList.contains(kind);
+		});
+	}
+
+	// os elementos da folha que estão abaixo da linha e fora da lista (filhos diretos da folha e das seções)
+	function belowIn(pane, top, list) {
+		var out = [];
+
+		Array.prototype.forEach.call(pane.querySelectorAll(':scope > *, :scope > * > *'), function (node) {
+			if (node === list || node.contains(list) || list.contains(node)) return;
+			if (node.getBoundingClientRect().top > top + 1 && node.offsetParent) out.push(node);
+		});
+
+		// sem repetir: o filho de um elemento que já desliza vai junto com ele
+		return out.filter(function (node) {
+			return !out.some(function (o) {
+				return o !== node && o.contains(node);
+			});
+		});
+	}
+
+	function slide(node, oldTop) {
+		if (oldTop == null || !node.animate) return;
+
+		var dy = oldTop - node.getBoundingClientRect().top;
+
+		if (Math.abs(dy) < 1) return;
+
+		node.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'translateY(0)' }], { duration: SLIDE_MS, easing: EASE_SLIDE });
 	}
 
 	// os campos criam a lixeira junto (a ordem dos argumentos não muda); quando a linha entra na página, ela vai
@@ -3253,9 +3345,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			remove.disabled = !state.available;
 			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
-				state.project.categories.splice(i, 1);
-				renderProject();
-				updateDirty();
+				collapseThen(card, function () {
+					state.project.categories.splice(i, 1);
+					renderProject();
+					updateDirty();
+				});
 			});
 
 			nameBox.appendChild(iconBtn);
