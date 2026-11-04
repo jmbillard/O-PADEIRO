@@ -76,7 +76,21 @@ PADX.searchInfo = function () {
 		servidor.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
 	}
 
-	return { url: PS_V2_URL, cache: tempFolder.fsName + '/busca_v2.json', local: padLocalMode(), platform: appOs, servidor: servidor };
+	// o índice local (configuração > meu usuário): as pastas deste computador, lidas pelo painel
+	var search = padMachineSearch(padMachineData().search);
+
+	return {
+		url: PS_V2_URL,
+		cache: tempFolder.fsName + '/busca_v2.json',
+		local: padLocalMode(),
+		platform: appOs,
+		servidor: servidor,
+		mode: search.mode,
+		folders: search.folders,
+		foldersOnly: search.foldersOnly,
+		daily: search.daily,
+		localIndex: scriptPreferencesPath + '/indice_local.json'
+	};
 };
 
 // Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.

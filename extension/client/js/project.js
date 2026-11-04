@@ -132,6 +132,70 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   CLAQUETE
 	   --------------------------------------------------------------- */
 
+	/* ---------------------------------------------------------------
+	   índice local (configuração > meu usuário): a claquete é procurada pelo nome das pastas, aqui mesmo
+	   (o índice pode ter dezenas de milhares de pastas: ler no After Effects seria lento). vale a pasta cujo
+	   nome é o começo da claquete ('MAIS VOCE' para 'MAIS VOCE 30 10'), a mais específica primeiro.
+	   --------------------------------------------------------------- */
+
+	var local = { info: null, index: null, stamp: '' };
+
+	async function localIndex() {
+		if (!local.info) local.info = await call('searchInfo');
+		if (local.info.mode !== 'local' || !window.PAD_LOCAL_INDEX || !PAD_LOCAL_INDEX.available()) return null;
+
+		var info = PAD_LOCAL_INDEX.info(local.info.localIndex);
+
+		if (!info.exists) return null;
+
+		if (!local.index || local.stamp !== info.generated) {
+			var data = PAD_LOCAL_INDEX.load(local.info.localIndex);
+
+			local.stamp = info.generated;
+			local.index = data ? data.items.filter(function (it) {
+				return !it.file;
+			}).map(function (it) {
+				return { name: it.name, path: it.path, depth: it.depth, key: aepName(it.name).replace(/\s+/g, '') };
+			}).filter(function (it) {
+				return it.key.length >= 3;
+			}) : [];
+		}
+
+		return local.index;
+	}
+
+	// → { claquete, matches: [{ name, category, path, display, film, score }] } (o mesmo formato do host)
+	async function findAttractions(claq) {
+		var index = await localIndex();
+
+		if (!index) return call('projectLookup', { claquete: claq });
+
+		var words = aepName(claq).split(' ').filter(Boolean);
+		var prefixes = {};
+		var acc = '';
+
+		words.forEach(function (w) {
+			acc += w;
+			prefixes[acc] = true;
+		});
+
+		var seen = {};
+		var found = index.filter(function (it) {
+			return prefixes[it.key];
+		}).sort(function (a, b) {
+			return b.key.length - a.key.length || a.depth - b.depth;
+		}).filter(function (it) {
+			if (seen[it.path]) return false;
+
+			seen[it.path] = true;
+			return true;
+		}).slice(0, 6).map(function (it) {
+			return { name: it.name, category: 'PASTAS', path: it.path, display: it.path, film: /(^|\/)FILMES\/TITULOS$/i.test(it.path), score: it.key.length };
+		});
+
+		return { claquete: aepName(claq), matches: found };
+	}
+
 	function lookup() {
 		clearTimeout(state.lookupTimer);
 
@@ -150,7 +214,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		state.lookupTimer = setTimeout(async function () {
 			try {
-				var res = await call('projectLookup', { claquete: claq });
+				var res = await findAttractions(claq);
 
 				if (seq !== state.lookupSeq) return;
 
@@ -172,7 +236,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (m.length) card(box, m[0].name, m[0].display); // preenche antes de mostrar: a animação mede a altura final
 		box.hidden = !m.length;
-		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? 'nenhuma atração começa com essa claquete' : '';
+		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (local.info && local.info.mode === 'local' ? 'nenhuma pasta do índice local começa com essa claquete' : 'nenhuma atração começa com essa claquete') : '';
 	}
 
 	async function claqueteNext() {
@@ -184,7 +248,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			state.lookupTimer = null;
 
 			try {
-				flow.matches = (await call('projectLookup', { claquete: flow.claquete })).matches;
+				flow.matches = (await findAttractions(flow.claquete)).matches;
 			} catch (err) {
 				flow.matches = [];
 			}

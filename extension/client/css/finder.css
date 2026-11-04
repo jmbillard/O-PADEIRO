@@ -68,6 +68,17 @@ body.finder-page {
   gap: 4px 12px;
 }
 
+/* de onde vêm os caminhos (índice local) ou o andamento da indexação, entre atualizar e o "⋯" */
+.finder-source {
+  overflow: hidden;
+  padding-left: 4px;
+  color: rgb(var(--on-brand) / 82%);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .finder-menu {
   flex: 0 0 auto;
   align-self: flex-start;

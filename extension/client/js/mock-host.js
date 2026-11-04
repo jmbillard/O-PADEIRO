@@ -16,6 +16,49 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	if (window.__adobe_cep__) return;
 
 	var mode = (location.search.match(/mock=(\w+)/) || [])[1] || '';
+
+	// índice local de mentira (o de verdade lê as pastas pelo Node): guardado no localStorage
+	{
+		window.PAD_LOCAL_INDEX = {
+			available: function () { return true; },
+			building: function () { return false; },
+			load: function () {
+				var d = JSON.parse(localStorage.getItem('pad.mock.lidx') || 'null');
+
+				return d ? { generated: d.generated, count: d.items.length, roots: d.roots, items: d.items } : null;
+			},
+			info: function () {
+				var d = JSON.parse(localStorage.getItem('pad.mock.lidx') || 'null');
+
+				return d ? { exists: true, generated: d.generated, count: d.items.length, bytes: d.items.length * 38 } : { exists: false };
+			},
+			build: function (file, folders, opts) {
+				var names = ['JORNALISMO', 'GLOBO REPORTER', 'G REPORTER', 'REPORTER RECORD', 'REPORTER ESPECIAL', 'NOVELAS', 'A NOBREZA DO AMOR', 'SHOWS', 'FESTIVAL DE INVERNO', 'FILMES', 'TITULOS', '_N_', 'NAO NAO OLHE', 'PROGRAMAS', 'MAIS VOCE', '2026', '01 PROJETOS', 'LETTERINGS'];
+				var items = [];
+
+				folders.forEach(function (root) {
+					items.push({ name: root.split('/').pop(), path: root, depth: 0, file: false });
+					names.forEach(function (n, i) {
+						var parent = i % 3 === 0 ? root : root + '/' + names[Math.max(0, i - 1)];
+
+						items.push({ name: n, path: parent + '/' + n, depth: parent === root ? 1 : 2, file: false });
+					});
+				});
+
+				return new Promise(function (resolve) {
+					var n = 0;
+					var t = setInterval(function () {
+						n += 6;
+						if (opts && opts.onProgress) opts.onProgress(Math.min(n, items.length), '');
+						if (n < items.length) return;
+						clearInterval(t);
+						localStorage.setItem('pad.mock.lidx', JSON.stringify({ generated: new Date().toISOString(), roots: folders, items: items }));
+						resolve({ count: items.length });
+					}, 120);
+				});
+			}
+		};
+	}
 	var delay = mode === 'slow' ? 900 : 260;
 
 	function wait(ms) {
@@ -210,13 +253,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		machinePrefs: function () {
 			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false };
 
-			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {} }, m);
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {}, localIndex: '/mock/indice_local.json' }, m);
 		},
 
 		saveMachinePrefs: function (a) {
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
-			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
 
 		syncTemplates: function (a) {
@@ -463,9 +506,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { tab: req.tab, stamp: req.stamp, now: Date.now() };
 		},
 
-		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar (o painel volta para o índice antigo)
+		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar; ?mock=lidx, o índice local (meu usuário)
 		searchInfo: function () {
+			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+			var ms = machine.search || (/mock=lidx/.test(location.search) ? { mode: 'local', folders: ['/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ', '/Volumes/VFX/imagem/drive_l/Fileserver_3'], foldersOnly: true, daily: true } : { mode: 'webhook', folders: [], foldersOnly: true, daily: true });
+
 			return {
+				mode: ms.mode,
+				folders: ms.folders,
+				foldersOnly: ms.foldersOnly,
+				daily: ms.daily,
+				localIndex: '/mock/indice_local.json',
 				url: 'https://workflows.jmbillard.com/webhook/buscar',
 				cache: '/tmp/busca_v2.json',
 				local: false,

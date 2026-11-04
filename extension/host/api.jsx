@@ -219,6 +219,26 @@ function padMachineUser() {
 	return user || padDefaultUser();
 }
 
+// Busca de caminhos neste computador: { mode: 'webhook' | 'local', folders: [], foldersOnly, daily }.
+//   mode        → de onde vêm os caminhos: o webhook da equipe ou o índice local (as pastas abaixo, indexadas aqui)
+//   folders     → as pastas lidas com todas as subpastas
+//   foldersOnly → só pastas (sem arquivos)
+//   daily       → refaz o índice uma vez por dia, ao abrir a busca
+function padMachineSearch(o) {
+	o = o && typeof o == 'object' ? o : {};
+
+	var folders = [];
+	var list = o.folders && typeof o.folders.length == 'number' ? o.folders : [];
+
+	for (var i = 0; i < list.length; i++) {
+		var path = padMachinePath(list[i]);
+
+		if (path) folders.push(path);
+	}
+
+	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
+}
+
 PADX.machinePrefs = function () {
 	var d = padMachineData();
 
@@ -229,21 +249,24 @@ PADX.machinePrefs = function () {
 		outputs: padMachinePath(d.outputs),
 		templates: padMachineTemplates(d.templates),
 		localMode: padLocalForced(),
+		search: padMachineSearch(d.search),
+		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, templates, localMode } (só os campos enviados mudam)
+// a: { user, projects, outputs, templates, localMode, search } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), localMode: padLocalForced() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), localMode: padLocalForced(), search: padMachineSearch(d.search) };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
 	if (a.templates != null) data.templates = padMachineTemplates(a.templates);
 	if (a.localMode != null) data.localMode = a.localMode === true;
+	if (a.search != null) data.search = padMachineSearch(a.search);
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí

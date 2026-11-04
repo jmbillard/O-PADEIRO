@@ -119,6 +119,34 @@
 				<p class="cfg-hint">uma pasta deste computador para cada produção. se a pasta da equipe já é local (<b>~/...</b>), a daqui vale sempre. se é da rede, a daqui é a <b>cópia</b>: vale no modo local (ligado ou com a rede fora); <b>copiar</b> traz da rede só o que é novo ou mudou.</p>
 				<div class="drive-rows" id="machine-templates"></div>
 
+				<p class="cfg-title prods-section-title">busca de caminhos</p>
+				<p class="cfg-hint">de onde vêm os caminhos do acessorista e as atrações da janela PROJETO, neste computador.</p>
+				<div class="log-modes" id="machine-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
+					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="machine-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
+					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="machine-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
+				</div>
+				<div class="machine-index" id="machine-index" hidden>
+					<p class="cfg-hint">o padeiro lê as pastas abaixo e todas as subpastas, e guarda o índice <b>neste computador</b>. a busca procura pelo nome de cada pasta; sem rede, continua funcionando. a janela PROJETO procura a claquete pelo nome das pastas.</p>
+					<div class="drive-rows" id="machine-index-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-index-folder">+ nova pasta para indexar</button>
+					<div class="machine-index-opts">
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-folders-only">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">só pastas (sem arquivos): mais rápido e mais leve</span>
+						</label>
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-daily">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">atualizar sozinho uma vez por dia (ao abrir a busca)</span>
+						</label>
+					</div>
+					<div class="machine-index-status">
+						<button type="button" class="button button-primary button-compact" id="btn-index-now">indexar agora</button>
+						<span id="machine-index-status"></span>
+					</div>
+				</div>
+
 				<p class="cfg-title prods-section-title">modo local</p>
 				<label class="cfg-switch">
 					<input type="checkbox" id="machine-local">
@@ -371,6 +399,7 @@
 	<script src="js/sortable.js"></script>
 	<script src="js/dropdown.js"></script>
 	<script src="js/icons.js"></script>
+	<script src="js/local-index.js"></script>
 	<script src="js/productions.js"></script>
 </body>
 

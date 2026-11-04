@@ -242,7 +242,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var state = {
 		tab: null,
-		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' },
+		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', error: '' },
 		texts: { entries: [], comps: 0, ready: false, loading: false, loaded: false, loadId: 0, hint: '' },
 		lastTabStamp: 0
 	};
@@ -322,6 +322,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		{ key: 'trello', label: 'TRELLO', max: 24 },
 		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
 		{ key: 'filmes', label: 'FILMES', max: 20 },
+		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
+	];
+	// índice local (configuração > meu usuário): as pastas deste computador e o servidor
+	var LOCAL_CATS = [
+		{ key: 'pastas', label: 'PASTAS', max: 30 },
 		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
 	];
 	var V2_TIMEOUT = 25000;
@@ -433,7 +438,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		p.stamp = parsed.stamp;
 		p.ready = true;
 		p.loaded = true;
-		buildCategoryFilters();
+		p.cats = V2_CATS;
+		setSourceNote('');
 	}
 
 	// → true quando a busca nova carregou (da cópia ou do webhook)
@@ -510,7 +516,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var ok = false;
 
 		try {
-			ok = await loadPathsV2(force);
+			if (!p.info || force) p.info = await call('searchInfo');
+			ok = p.info.mode === 'local' ? await loadPathsLocal(force) : await loadPathsV2(force);
 		} catch (err) {
 			p.error = err.message;
 		}
@@ -524,36 +531,99 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 	}
 
-	// Um chip por categoria do índice. A escolha é mantida ao atualizar o índice.
-	function buildCategoryFilters() {
-		var box = $('opts-paths');
+	// No lugar dos antigos interruptores: de onde vêm os caminhos (índice local) ou o andamento da indexação.
+	function setSourceNote(text) {
+		$('opts-paths').textContent = text || '';
+	}
+
+	/* ---------------------------------------------------------------
+	   índice local: as pastas escolhidas em configuração > meu usuário, lidas aqui (js/local-index.js).
+	   aparece na hora a última indexação; refeita quando as pastas mudam, uma vez por dia (se ligado) ou no
+	   botão atualizar.
+	   --------------------------------------------------------------- */
+
+	var LOCAL_MAX_AGE = 24 * 60 * 60 * 1000;
+
+	function localNote(data) {
+		return 'índice local · ' + data.count.toLocaleString('pt-BR') + (data.count === 1 ? ' item' : ' itens') + ' · ' + when(data.generated);
+	}
+
+	function applyLocal(data, info) {
 		var p = state.paths;
-		var sections = V2_CATS.filter(function (c) {
-			return p.v2.cats[c.key].length > 0;
-		}).map(function (c) {
-			return { category: { key: c.key, label: c.label } };
-		});
 
-		box.textContent = '';
+		p.mode = 'local';
+		p.cats = LOCAL_CATS;
+		p.v2 = {
+			cats: {
+				pastas: data.items.map(function (it) {
+					return { name: it.name, path: it.path, file: it.file, hay: wordIndex(it.name) };
+				}),
+				servidor: (info.servidor || []).map(function (s) {
+					return { name: s.name, path: s.path, server: s.server, share: s.share, hay: wordIndex(s.name + ' | ' + s.path) };
+				}),
+				atracoes: []
+			}
+		};
+		p.ready = true;
+		p.loaded = true;
+		setSourceNote(localNote(data));
+	}
 
-		sections.forEach(function (section) {
-			var cat = section.category;
-			var chip = el('button', 'chip' + (state.paths.hidden[cat.key] ? '' : ' is-on'));
+	async function loadPathsLocal(force) {
+		var p = state.paths;
+		var info = p.info;
+		var L = window.PAD_LOCAL_INDEX;
 
-			chip.type = 'button';
-			chip.title = 'incluir ' + cat.label + ' na busca';
-			chip.setAttribute('aria-pressed', String(!state.paths.hidden[cat.key]));
-			chip.appendChild(el('span', 'chip-check'));
-			chip.appendChild(document.createTextNode(cat.label));
-			chip.addEventListener('click', function () {
-				state.paths.hidden[cat.key] = !state.paths.hidden[cat.key];
-				chip.classList.toggle('is-on', !state.paths.hidden[cat.key]);
-				chip.setAttribute('aria-pressed', String(!state.paths.hidden[cat.key]));
-				searchPaths();
+		p.platform = info.platform;
+
+		if (!L || !L.available()) throw new Error('o índice local precisa do painel aberto no After Effects.');
+		if (!info.folders.length) throw new Error('índice local sem pastas: escolha as pastas em configuração > meu usuário.');
+
+		var data = L.load(info.localIndex);
+		var sameRoots = data && JSON.stringify(data.roots || []) === JSON.stringify(info.folders);
+		var old = data && (Date.now() - Date.parse(data.generated) > LOCAL_MAX_AGE);
+
+		if (data) {
+			applyLocal(data, info);
+			p.loading = false;
+			searchPaths();
+		}
+
+		if (data && sameRoots && !force && !(info.daily && old)) return true;
+		if (L.building(info.localIndex)) {
+			setSourceNote('indexando em outra janela…');
+			return !!data;
+		}
+
+		// indexa (em segundo plano: a busca continua com o índice anterior, se houver)
+		if (!data) showLoader($('results-paths'), 'indexando as pastas…', 'a primeira vez pode levar alguns minutos');
+
+		try {
+			await L.build(info.localIndex, info.folders, {
+				foldersOnly: info.foldersOnly,
+				onProgress: function (count) {
+					var text = 'indexando… ' + count.toLocaleString('pt-BR') + ' itens';
+
+					setSourceNote(text);
+					if (!state.paths.ready) showLoader($('results-paths'), 'indexando as pastas…', count.toLocaleString('pt-BR') + ' itens lidos');
+				}
 			});
+		} catch (err) {
+			if (!data) throw err;
+			toast('error', 'não foi possível atualizar o índice local: ' + err.message);
+			setSourceNote(localNote(data));
+			return true;
+		}
 
-			box.appendChild(chip);
-		});
+		var fresh = L.load(info.localIndex);
+
+		if (!fresh) return !!data;
+
+		applyLocal(fresh, info);
+		p.loading = false;
+		searchPaths();
+
+		return true;
 	}
 
 	// Primeira pasta do caminho cujo nome contém o termo buscado.
@@ -663,7 +733,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		editor: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5H7.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2M14.5 6.5h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2" /><path d="M12 4.5v15" /></svg>',
 		atracoes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>',
 		filmes: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>',
-		servidor: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>'
+		servidor: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>',
+		pasta: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>',
+		arquivo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>'
 	};
 	var NO_GROUP = { server: '', share: '' };
 
@@ -675,31 +747,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return box.firstChild;
 	}
 
-	// hoje 14:32 · ontem 09:10 · terça 16:20 (até 6 dias atrás) · 28/10 14:32 · 28/10/2025 14:32
-	var WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
-
-	function when(iso) {
-		var t = Date.parse(iso || '');
-
-		if (isNaN(t)) return '';
-
-		var d = new Date(t);
-		var now = new Date();
-		var pad = function (n) {
-			return (n < 10 ? '0' : '') + n;
-		};
-		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
-
-		// dias de calendário até hoje (meia-noite a meia-noite: a mudança de horário de verão não atrapalha)
-		var days = Math.round((day - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
-
-		if (days <= 0) return 'hoje ' + time;
-		if (days === 1) return 'ontem ' + time;
-		if (days <= 6) return WEEKDAYS[d.getDay()] + ' ' + time;
-
-		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
-	}
+	var when = PAD_UTIL.when; // hoje 14:32 · ontem 09:10 · terça 16:20 · 28/10 14:32 (js/util.js)
 
 	// o mesmo formato do "copiar link" do Teams: o id do chat como vem (19:…@thread.v2), o da mensagem e o contexto
 	function teamsLink(m) {
@@ -802,7 +850,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (typed.q.length < EXPAND_MIN) return { list: list, also: also };
 
-		state.paths.v2.cats.atracoes.forEach(function (a) {
+		(state.paths.v2.cats.atracoes || []).forEach(function (a) {
 			var terms = [a.name].concat(a.pattern).map(makeQuery).filter(function (t) {
 				return t.q.length >= EXPAND_MIN;
 			});
@@ -876,9 +924,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		// buscando também pelos nomes da atração: avisa em cima (para não parecer resultado errado)
 		if (expanded.also.length) results.appendChild(el('p', 'finder-also', 'também: ' + expanded.also.slice(0, 3).join(' · ')));
 
-		V2_CATS.forEach(function (cat) {
-			if (p.hidden[cat.key]) return;
-
+		(p.cats || V2_CATS).forEach(function (cat) {
 			var matches = p.v2.cats[cat.key].filter(function (item) {
 				return hits(item.hay, query);
 			});
@@ -897,6 +943,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				else if (cat.key === 'trello') list._cards.push(trelloItem(item, query));
 				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PROJETO', item.proj], ['OUTPUT', item.out]], query));
 				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
+				else if (cat.key === 'pastas') list.appendChild(placeItem(item.file ? V2_ICONS.arquivo : V2_ICONS.pasta, item.name, [['CAMINHO', item.file ? item.path.replace(/\/[^\/]+$/, '') : item.path]], query));
 				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
 			});
 

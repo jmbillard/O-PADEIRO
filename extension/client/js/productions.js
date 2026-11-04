@@ -375,7 +375,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (m.templates[name].trim()) templates[name] = m.templates[name].trim();
 		});
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, localMode: !!m.localMode };
+		var search = {
+			mode: m.search.mode,
+			folders: m.search.folders.map(function (f) {
+				return f.trim();
+			}).filter(Boolean),
+			foldersOnly: m.search.foldersOnly,
+			daily: m.search.daily
+		};
+
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, localMode: !!m.localMode, search: search };
 	}
 
 	function personalDirty() {
@@ -863,6 +872,42 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		draw();
 		line.appendChild(ico);
 		line.appendChild(box);
+		line.appendChild(remove);
+
+		return line;
+	}
+
+	// Campo de caminho com o botão de escolher a pasta e o × à direita (sem ícone de pasta à esquerda: o botão
+	// já diz o que é). onPick recebe o caminho escolhido.
+	function pathField(value, placeholder, label, onInput, onPick, onRemove) {
+		var line = el('div', 'cfg-path');
+		var input = el('input', 'cfg-input');
+		var pick = miniButton('folder', 'escolher a pasta', async function () {
+			var picked = PAD_BRIDGE.pickFolder(label, input.value);
+
+			if (!picked) return;
+
+			try {
+				picked = (await call('canonicalPath', { path: picked })).path || picked;
+			} catch (err) { }
+
+			input.value = picked;
+			onPick(picked);
+		});
+		var remove = miniButton('remove', 'remover', onRemove);
+
+		input.type = 'text';
+		input.value = value;
+		input.placeholder = placeholder;
+		input.spellcheck = false;
+		input.setAttribute('aria-label', label);
+		input.disabled = pick.disabled = remove.disabled = !state.available;
+		input.addEventListener('input', function () {
+			onInput(input.value);
+			updateDirty();
+		});
+		line.appendChild(input);
+		line.appendChild(pick);
 		line.appendChild(remove);
 
 		return line;
@@ -2111,30 +2156,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			nameField.appendChild(name);
 			box.appendChild(nameField);
 
-			var path = driveField(row.path, '//servidor/share/pasta ou /Volumes/SHARE/pasta', 'caminho de ' + (row.name || 'caminho fixo ' + (i + 1)), FOLDER_ICON, function (v) {
+			var path = pathField(row.path, '//servidor/share/pasta ou /Volumes/SHARE/pasta', 'caminho de ' + (row.name || 'caminho fixo ' + (i + 1)), function (v) {
 				row.path = v;
+			}, function (picked) {
+				row.path = picked;
+				if (!row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+				renderSearch();
+				updateDirty();
 			}, function () {
 				state.search.servidor.splice(i, 1);
 				renderSearch();
 				updateDirty();
 			});
-			var pick = miniButton('folder', 'escolher a pasta', async function () {
-				var picked = PAD_BRIDGE.pickFolder('Caminho fixo da busca', row.path);
 
-				if (!picked) return;
-
-				try {
-					picked = (await call('canonicalPath', { path: picked })).path || picked;
-				} catch (err) { }
-
-				row.path = picked;
-				if (!row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
-				renderSearch();
-				updateDirty();
-			});
-
-			pick.disabled = !state.available;
-			path.insertBefore(pick, path.lastChild);
 			box.appendChild(path);
 			list.appendChild(box);
 		});
@@ -2320,7 +2354,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	function setMachine(m) {
-		state.machine = { user: m.user || '', projects: m.projects || '', outputs: m.outputs || '', templates: Object.assign({}, m.templates || {}), localMode: !!m.localMode };
+		var ms = m.search || {};
+
+		state.machine = {
+			user: m.user || '',
+			projects: m.projects || '',
+			outputs: m.outputs || '',
+			templates: Object.assign({}, m.templates || {}),
+			localMode: !!m.localMode,
+			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
+		};
+		state.localIndexFile = m.localIndex || '';
 		state.offline = !!m.offline;
 		state.defaultUser = m.defaultUser || '';
 		state.machineSnapshot = JSON.stringify(machineForSave());
@@ -2338,6 +2382,104 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('machine-local').checked = m.localMode;
 		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
+		renderMachineIndex();
+	}
+
+	// busca de caminhos neste computador: webhook ou índice local (as pastas, as opções e o "indexar agora")
+	function renderMachineIndex() {
+		var ms = state.machine.search;
+		var list = $('machine-index-list');
+
+		Array.prototype.forEach.call(document.querySelectorAll('input[name="machine-search-mode"]'), function (radio) {
+			radio.checked = radio.value === ms.mode;
+		});
+		$('machine-index').hidden = ms.mode !== 'local';
+		$('machine-index-folders-only').checked = ms.foldersOnly;
+		$('machine-index-daily').checked = ms.daily;
+		list.textContent = '';
+
+		ms.folders.forEach(function (folder, i) {
+			var row = pathField(folder, '/Volumes/SHARE/pasta ou \\\\servidor\\share\\pasta', 'pasta para indexar ' + (i + 1), function (v) {
+				ms.folders[i] = v;
+			}, function (picked) {
+				ms.folders[i] = picked;
+				updateDirty();
+			}, function () {
+				ms.folders.splice(i, 1);
+				renderMachineIndex();
+				updateDirty();
+			});
+
+			row.classList.add('index-row');
+			list.appendChild(row);
+		});
+
+		renderIndexStatus();
+	}
+
+	function renderIndexStatus(progress) {
+		var box = $('machine-index-status');
+		var L = window.PAD_LOCAL_INDEX;
+
+		box.textContent = '';
+
+		if (progress != null) {
+			box.appendChild(el('b', null, 'indexando… '));
+			box.appendChild(document.createTextNode(progress.toLocaleString('pt-BR') + ' itens lidos'));
+			return;
+		}
+
+		var info = L && state.localIndexFile ? L.info(state.localIndexFile) : { exists: false };
+
+		if (!info.exists) {
+			box.appendChild(document.createTextNode(state.machine.search.folders.length ? 'ainda não indexado: clique em indexar agora (ou abra a busca).' : 'escolha as pastas para indexar.'));
+			return;
+		}
+
+		var kb = info.bytes / 1024;
+
+		box.appendChild(el('b', null, 'última indexação: '));
+		box.appendChild(document.createTextNode(PAD_UTIL.when ? PAD_UTIL.when(info.generated) : new Date(info.generated).toLocaleString('pt-BR')));
+		box.appendChild(document.createTextNode(' · ' + (info.count || 0).toLocaleString('pt-BR') + ' itens · ' + (kb > 1024 ? (kb / 1024).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(kb)) + ' KB') + ' neste computador'));
+	}
+
+	async function indexNow() {
+		var L = window.PAD_LOCAL_INDEX;
+		var btn = $('btn-index-now');
+		var folders = state.machine.search.folders.map(function (f) {
+			return f.trim();
+		}).filter(Boolean);
+
+		if (!L || !L.available()) {
+			toast('error', 'o índice local precisa da configuração aberta no After Effects.');
+			return;
+		}
+
+		if (!folders.length) {
+			toast('error', 'escolha pelo menos uma pasta para indexar.');
+			return;
+		}
+
+		btn.disabled = true;
+		renderIndexStatus(0);
+
+		try {
+			var res = await L.build(state.localIndexFile, folders, {
+				foldersOnly: state.machine.search.foldersOnly,
+				onProgress: function (count) {
+					renderIndexStatus(count);
+				}
+			});
+
+			var unsaved = JSON.stringify(machineForSave()) !== state.machineSnapshot;
+
+			toast('success', res.count.toLocaleString('pt-BR') + ' itens indexados.' + (unsaved ? ' clique no disquete para a busca usar o índice local.' : ' a busca já usa o índice novo.'));
+		} catch (err) {
+			toast('error', 'não foi possível indexar: ' + err.message);
+		} finally {
+			btn.disabled = false;
+			renderIndexStatus();
+		}
 	}
 
 	// uma linha por produção da equipe: o nome, a pasta deste computador e, para as da rede, o "copiar"
@@ -2452,6 +2594,27 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			state.machine.localMode = this.checked;
 			updateDirty();
 		});
+
+		$('machine-search-mode').addEventListener('change', function (e) {
+			if (e.target.name !== 'machine-search-mode') return;
+
+			state.machine.search.mode = e.target.value;
+			renderMachineIndex();
+			updateDirty();
+		});
+		[['machine-index-folders-only', 'foldersOnly'], ['machine-index-daily', 'daily']].forEach(function (k) {
+			$(k[0]).addEventListener('change', function () {
+				state.machine.search[k[1]] = this.checked;
+				updateDirty();
+			});
+		});
+		$('btn-new-index-folder').addEventListener('click', function () {
+			state.machine.search.folders.push('');
+			renderMachineIndex();
+			updateDirty();
+			$('machine-index-list').lastChild.querySelector('input').focus();
+		});
+		$('btn-index-now').addEventListener('click', indexNow);
 
 		[['machine-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['machine-outputs-pick', 'outputs', 'Pasta de saída neste computador']].forEach(function (k) {
 			$(k[0]).addEventListener('click', async function () {

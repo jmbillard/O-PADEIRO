@@ -233,6 +233,9 @@ a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
   - produção com a pasta da equipe **local** (`~/...`, como a `Ω PASTA LOCAL`): a daqui vale **sempre** (cada um escolhe onde fica a sua).
   - produção com a pasta da equipe **na rede**: a daqui é a **cópia**, usada no modo local (ligado ou com a rede fora). **copiar** traz da rede só os arquivos novos ou que mudaram (nada é apagado na cópia).
   - sem pasta aqui, vale a da equipe.
+- **busca de caminhos** → de onde vêm os caminhos do [acessorista](acessorista.md) e as atrações da janela [PROJETO](projeto.md) neste computador:
+  - **webhook** → o índice da equipe ([configuração > buscar](#-buscar)).
+  - **índice local** → as pastas da lista (a pastinha escolhe, o **×** tira), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - os templates vêm das pastas deste computador (**templates neste computador**) e a busca de caminhos usa o **último índice baixado**.

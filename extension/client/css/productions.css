@@ -2165,3 +2165,35 @@ body.is-org-dragging * {
 .srv-row .cfg-path .cfg-input {
   padding-right: 72px; /* a pasta e o × dentro do campo */
 }
+
+/* meu usuário: índice local da busca */
+.machine-index-opts {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.machine-index-status {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+}
+
+.machine-index-status b {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.machine-index-status .button {
+  flex: 0 0 auto;
+}
+
+.index-row .cfg-input {
+  padding-right: 72px; /* a pasta e o × dentro do campo */
+}
