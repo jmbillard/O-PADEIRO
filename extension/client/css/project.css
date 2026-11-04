@@ -765,3 +765,13 @@ body.project-page {
   opacity: 0.6;
 }
 
+/* editor: a pasta e o output no campo, com a pastinha (o mesmo padrão da configuração) */
+.ed-path .cfg-input {
+  padding-right: 44px;
+  cursor: default;
+}
+
+.ed-path .cfg-input::placeholder {
+  font-style: italic;
+}
+

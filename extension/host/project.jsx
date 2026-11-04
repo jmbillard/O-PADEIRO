@@ -149,8 +149,8 @@ estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que j�
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
 No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage), a pasta
-da estrutura (relation) e a pasta de output (source; a da categoria ou a da atração no índice, sempre
-gravada, mesmo quando a etapa CRIAR não cria a pasta).
+da estrutura (relation) e a pasta de output (source; a da categoria ou a da atração no índice, quando ela
+existe ou é criada na etapa CRIAR: pular não grava).
 
 */
 
@@ -384,14 +384,14 @@ PADX.projectCreate = function (a) {
 		throw new Error('#PAD_092 - já existe ' + base + '.aep em ' + decodeURI(new Folder(projects).name) + '.');
 	}
 
-	// a pasta de output: criada se pedido (etapa CRIAR); vai sempre para os metadados, criada ou não
+	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
 	var output = a.output ? new Folder(padPath(a.output)) : null;
 
 	if (output && !output.exists && a.outputCreate) output.create();
 
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
-	if (output) setXMPData('source', padDisplayPath(output.fsName));
+	if (output && output.exists) setXMPData('source', padDisplayPath(output.fsName));
 	setXMPData('creator', padMachineUser());
 	setXMPData('coverage', String(a.atracao || ''));
 	setXMPData('relation', padDisplayPath(plan.root));
@@ -399,6 +399,16 @@ PADX.projectCreate = function (a) {
 	app.project.save(file);
 
 	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };
+};
+
+// O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro),
+// 'missing' (sem eles: salvo sem claquete, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+PADX.projectStatus = function () {
+	var file = app.project.file;
+
+	if (file && padXmpGet('identifier')) return { state: 'ok' };
+
+	return { state: file || app.project.numItems > 0 ? 'missing' : '' };
 };
 
 // O projeto aberto: criado por este fluxo (com claquete) ou não. → { created, claquete, designer, atracao, root, file }
@@ -422,10 +432,13 @@ PADX.projectCurrent = function () {
 	};
 };
 
-// Editor: muda a claquete e o designer (no projeto) e salva. a: { claquete, designer }
+// Editor: muda a claquete, o designer, a atração e as pastas (no projeto) e salva.
+// a: { claquete, designer, atracao, root, output }. um projeto salvo sem os dados do padeiro ganha os dados aqui.
 PADX.projectUpdate = function (a) {
 	if (a.claquete != null) setXMPData('identifier', padAepName(a.claquete));
 	if (a.designer != null) setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
+	if (a.atracao != null) setXMPData('coverage', String(a.atracao));
+	if (a.root != null && a.root != '') setXMPData('relation', padDisplayPath(padPath(a.root)));
 	if (a.output != null) setXMPData('source', a.output ? padDisplayPath(padPath(a.output)) : '');
 	if (app.project.file) app.project.save();
 

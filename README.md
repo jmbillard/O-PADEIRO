@@ -106,7 +106,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → instala as fontes do template que preencheu o projeto.\
   `◗` → faz o collect das fontes usadas no projeto.
 - **projeto**\
-  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela claquete, ou o editor).\
+  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela claquete, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
   `◗` → salva o projeto (sem projeto criado pela claquete, abre a janela).
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\

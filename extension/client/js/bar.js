@@ -421,7 +421,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.concat(['2 cliques  →  configuração']).join('\n');
+				btn.title = def.tips.join('\n'); // os 2 cliques (configuração) ficam sem dica: é um atalho
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
@@ -433,6 +433,47 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			tools.appendChild(group);
 		});
+
+		paintProjectDot(); // a barra montada de novo: a bolinha volta
+	}
+
+	/* ---------------------------------------------------------------
+	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (claquete…);
+	   laranja = sem eles (salvo sem a claquete, ou com itens e sem arquivo); sem bolinha = projeto vazio
+	   --------------------------------------------------------------- */
+
+	var projectState = '';
+
+	function paintProjectDot() {
+		var btn = $('btn-projeto');
+
+		if (!btn) return;
+
+		var dot = btn.querySelector('.bar-dot');
+
+		if (!projectState) {
+			if (dot) dot.remove();
+			btn.removeAttribute('data-project');
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + projectState;
+		btn.setAttribute('data-project', projectState);
+		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (claquete, atração, pastas): abra a janela PROJETO';
+	}
+
+	async function watchProject() {
+		if (document.hidden) return;
+
+		try {
+			var res = await call('projectStatus');
+
+			if (res.state !== projectState) {
+				projectState = res.state;
+				paintProjectDot();
+			}
+		} catch (err) { }
 	}
 
 	/* =========================================================
@@ -467,7 +508,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var custom = PAD_UTIL.decodeIcon(link.icon);
 
 			btn.type = 'button';
-			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : '') + '\n' + L_CLICK + 'abrir ' + link.url.replace(/^https?:\/\//, '').slice(0, 60) + '\n2 cliques  →  editar ' + (link.personal ? 'os meus links' : 'os links');
+			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
 			btn.setAttribute('aria-label', link.name);
 			img.alt = '';
 			img.src = custom || faviconUrl(link.url);
@@ -624,6 +665,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (!toolsLayout) buildTools(DEFAULT_ITEMS, []);
 		});
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
+		watchProject();
+		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela claquete
+		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO

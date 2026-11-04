@@ -74,6 +74,33 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   telas
 	   --------------------------------------------------------------- */
 
+	// A altura da janela: a de padrão (410) ou a que a etapa precisa para caber tudo (a estrutura da etapa CRIAR,
+	// o editor), até 90% da tela. a largura fica a que a pessoa deixou.
+	var BASE_HEIGHT = 410;
+
+	function fitHeight() {
+		requestAnimationFrame(function () {
+			var screen = document.querySelector('.wz-screen:not([hidden])');
+
+			if (!screen) return;
+
+			var cs = getComputedStyle(screen);
+			var kids = Array.prototype.filter.call(screen.children, function (k) {
+				return !k.hidden && getComputedStyle(k).display !== 'none';
+			});
+			var natural = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + (kids.length - 1) * (parseFloat(cs.rowGap) || 0);
+
+			kids.forEach(function (k) {
+				natural += k.getBoundingClientRect().height;
+			});
+
+			var need = Math.ceil(window.innerHeight - screen.clientHeight + natural + 4);
+			var target = Math.max(BASE_HEIGHT, Math.min(need, Math.round((window.screen.availHeight || 900) * 0.9)));
+
+			if (Math.abs(target - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, target);
+		});
+	}
+
 	function show(name, push) {
 		if (push !== false && state.screen && state.screen !== name && state.screen !== 'editor') flow.history.push(state.screen);
 
@@ -82,6 +109,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			sc.hidden = sc.id !== 'sc-' + name;
 		});
 		status('');
+
+		fitHeight();
 
 		var focus = { claquete: 'claq', nova: 'nova-name', arquivo: 'arq-what' }[name];
 
@@ -539,7 +568,12 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   --------------------------------------------------------------- */
 
 	async function openNova() {
-		$('nova-name').value = '';
+		// o nome já vem da claquete digitada no começo, sem os números do fim (DOMINGÃO 9 11 → DOMINGÃO)
+		$('nova-name').value = String($('claq').value || '').trim().split(/\s+/).filter(function (w, i, all) {
+			return !all.slice(i).every(function (x) {
+				return /^[\d\/\-.]+$/.test(x);
+			});
+		}).join(' ');
 
 		if (!state.bases.length) {
 			try {
@@ -791,8 +825,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		}
 	}
 
-	// as propostas da etapa CRIAR, em menus radiais. a pasta de output vai sempre para os dados do projeto
-	// (metadados); a que não existe, criar agora (o padrão) ou não
+	// as propostas da etapa CRIAR, em menus radiais. a pasta de output que já existe vai para os dados do projeto
+	// (metadados); a que não existe: criar (o padrão, e vai para os dados) ou pular (não cria nem grava)
 	function renderCreateOptions(plan) {
 		var box = $('criar-opts');
 
@@ -821,13 +855,11 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		item.appendChild(path);
 
 		if (plan.outputExists) {
-			item.appendChild(el('p', 'opt-note', 'já existe. vai para os dados do projeto.'));
+			item.appendChild(el('p', 'opt-note', 'já existe: vai para os dados do projeto.'));
 		} else {
 			var radios = el('div', 'opt-radios');
 
-			item.appendChild(el('p', 'opt-note', 'vai para os dados do projeto, criada ou não.'));
-
-			[['', 'não criar agora'], ['1', 'criar a pasta']].forEach(function (o) {
+			[['', 'pular'], ['1', 'criar a pasta']].forEach(function (o) {
 				var label = el('label', 'log-radio');
 				var input = el('input');
 
@@ -874,16 +906,37 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   editor (projeto criado)
 	   --------------------------------------------------------------- */
 
-	function renderEditor(cur) {
-		if (document.activeElement !== $('ed-claq')) $('ed-claq').value = cur.claquete;
-		if (document.activeElement !== $('ed-user')) $('ed-user').value = cur.designer;
-		$('ed-user').placeholder = cur.defaultUser || 'designer';
-		card($('ed-card'), cur.atracao || cur.fileName, cur.root || cur.file);
-		$('ed-card').title = cur.file;
+	// o editor: a claquete e o designer, a atração e as pastas (o caminho no campo, a pastinha troca). um projeto
+	// salvo sem os dados do padeiro (adopt) entra direto aqui, já com a atração (o nome do arquivo) e a pasta
+	// dele: é só digitar a claquete e salvar.
+	function renderEditor(cur, adopt) {
+		var key = (adopt ? 'a|' : 'c|') + cur.file;
 
-		// a pasta de output (metadados do projeto): o mesmo cartão da pasta
-		card($('ed-output'), cur.output ? cur.atracao || cur.output.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop() : 'sem pasta de output', cur.output || 'trocar output… escolhe a pasta');
-		$('ed-output').classList.toggle('is-empty', !cur.output);
+		state.adopt = !!adopt;
+		$('ed-hint').hidden = !adopt;
+		$('ed-user').placeholder = cur.defaultUser || 'designer';
+
+		// os campos de texto só são preenchidos quando o projeto muda: a atualização a cada 1,5 s não apaga o que
+		// está sendo digitado
+		if (state.editorKey !== key) {
+			state.editorKey = key;
+			$('ed-claq').value = cur.claquete || '';
+			$('ed-user').value = cur.designer;
+			$('ed-atracao').value = cur.atracao || (adopt ? String(cur.fileName || '').replace(/\.aep$/i, '') : '');
+		}
+		pathValue($('ed-root'), cur.root || cur.file || '');
+		pathValue($('ed-output'), cur.output || '');
+		$('ed-root').title = cur.file || '';
+		fitHeight();
+	}
+
+	// o caminho no campo, mostrando o fim (a parte que muda)
+	function pathValue(input, value) {
+		input.value = value;
+		input.title = value;
+		requestAnimationFrame(function () {
+			input.scrollLeft = input.scrollWidth;
+		});
 	}
 
 	async function editorOutput() {
@@ -892,19 +945,27 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (!picked) return;
 
 		try {
-			renderEditor(await call('projectUpdate', { output: picked }));
+			renderEditor(await call('projectUpdate', { output: picked }), state.adopt);
 			status('pasta de output gravada no projeto.', 'success');
 		} catch (err) {
 			status(err.message, 'error');
 		}
 	}
 
+	// salvar: grava os dados no projeto e fecha a janela
 	async function editorSave() {
-		try {
-			var cur = await call('projectUpdate', { claquete: $('ed-claq').value, designer: $('ed-user').value });
+		if (state.adopt && !aepName($('ed-claq').value)) {
+			status('digite a claquete do projeto.', 'error');
+			$('ed-claq').focus();
+			return;
+		}
 
-			renderEditor(cur);
-			status('projeto salvo.', 'success');
+		try {
+			var args = { claquete: $('ed-claq').value, designer: $('ed-user').value, atracao: $('ed-atracao').value.trim() };
+
+			if (state.adopt) args.root = $('ed-root').value;
+			renderEditor(await call('projectUpdate', args));
+			PAD_BRIDGE.closePanel();
 		} catch (err) {
 			status(err.message, 'error');
 		}
@@ -916,7 +977,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (!picked) return;
 
 		try {
-			renderEditor(await call('projectMove', { path: picked }));
+			renderEditor(await call('projectMove', { path: picked }), state.adopt);
 			status('projeto salvo na pasta nova.', 'success');
 		} catch (err) {
 			status(err.message, 'error');
@@ -928,6 +989,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		flow.matches = [];
 		flow.pick = null;
 		flow.output = '';
+		state.editorKey = null;
 		$('claq').value = '';
 		$('claq-found').hidden = true;
 		$('claq-hint').textContent = '';
@@ -959,6 +1021,10 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (cur.created) {
 			if (state.screen !== 'editor') show('editor', false);
 			renderEditor(cur);
+		} else if (cur.file && (changed || !state.screen || state.screen === 'editor')) {
+			// salvo, mas sem os dados do padeiro: pula as etapas (a atração é o nome do arquivo, a pasta é a dele)
+			if (state.screen !== 'editor') show('editor', false);
+			renderEditor(cur, true);
 		} else if (changed || !state.screen || state.screen === 'editor') {
 			startWizard();
 		}

@@ -980,9 +980,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// janela PROJETO em etapas (?mock=created: projeto já criado)
+		// ?mock=saved: projeto salvo sem os dados do padeiro
+		projectStatus: function () {
+			if (window.PAD_MOCK_CUR || mode === 'created') return { state: 'ok' };
+
+			return { state: mode === 'saved' || mode === 'items' ? 'missing' : '' };
+		},
+
 		projectCurrent: function () {
 			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
 
+			if (!c && mode === 'saved' && window.PAD_MOCK_SAVED === undefined) window.PAD_MOCK_SAVED = '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA/01 PROJETOS/A CLINICA TESTE.aep';
+			if (!c && window.PAD_MOCK_SAVED) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA', file: window.PAD_MOCK_SAVED, fileName: 'A CLINICA TESTE.aep', hasItems: true, user: 'JMBILLARD' };
 			if (!c) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
 
 			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
@@ -1062,7 +1071,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output || '', root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
@@ -1074,6 +1083,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				c.claquete = String(a.claquete || '').toUpperCase();
 				c.designer = String(a.designer || 'JMBILLARD').toUpperCase();
 				if (a.output != null) c.output = a.output;
+				if (a.atracao != null) c.atracao = a.atracao;
+				if (a.root) c.root = a.root;
+			} else if (window.PAD_MOCK_SAVED && a.claquete) {
+				// salvo sem os dados do padeiro: ganha os dados agora
+				window.PAD_MOCK_CUR = { claquete: String(a.claquete).toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao || '', root: a.root || '', output: a.output || '', file: window.PAD_MOCK_SAVED };
+				window.PAD_MOCK_SAVED = null;
 			}
 
 			return api.projectCurrent();
