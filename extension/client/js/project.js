@@ -21,7 +21,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	var call = PAD_BRIDGE.call;
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/projeto.md';
-	var LOOKUP_MS = 280; // espera depois da última tecla para procurar a atração
+	var LOOKUP_MS = 90; // espera depois da última tecla para procurar a atração (a busca é na memória)
+	var FILMS_MS = 280; // e para procurar o filme (lista as pastas no After Effects)
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
@@ -133,67 +134,181 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   --------------------------------------------------------------- */
 
 	/* ---------------------------------------------------------------
-	   índice local (configuração > meu usuário): a claquete é procurada pelo nome das pastas, aqui mesmo
-	   (o índice pode ter dezenas de milhares de pastas: ler no After Effects seria lento). vale a pasta cujo
-	   nome é o começo da claquete ('MAIS VOCE' para 'MAIS VOCE 30 10'), a mais específica primeiro.
+	   a claquete → a atração, procurada aqui mesmo, na memória (rápido a cada tecla): as atrações do índice da
+	   busca (webhook, a mesma cópia do acessorista) ou, no índice local (configuração > meu usuário), as pastas.
+	   - completa: o nome (ou um pattern) é o começo da claquete ('MAIS VOCE' para 'MAIS VOCE 30 10');
+	   - parcial: o começo da claquete é o começo do nome ('la na minha' → 'Lá na Minha Terra', 'GREP 6 11' →
+	     'G REPORTER'), a partir de 3 letras.
+	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var local = { info: null, index: null, stamp: '' };
+	var source = { info: null, list: null, stamp: '' };
+	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
-	async function localIndex() {
-		if (!local.info) local.info = await call('searchInfo');
-		if (local.info.mode !== 'local' || !window.PAD_LOCAL_INDEX || !PAD_LOCAL_INDEX.available()) return null;
+	function nodeFs() {
+		try {
+			return typeof require === 'function' ? require('fs') : null;
+		} catch (err) {
+			return null;
+		}
+	}
 
-		var info = PAD_LOCAL_INDEX.info(local.info.localIndex);
+	function keyOf(text) {
+		return aepName(text).replace(/\s+/g, '');
+	}
 
-		if (!info.exists) return null;
+	// caminho para mostrar: no Mac, o de rede (//servidor/share/...) vira /Volumes/share/...
+	function displayPath(path) {
+		var p = String(path || '').replace(/\\/g, '/');
 
-		if (!local.index || local.stamp !== info.generated) {
-			var data = PAD_LOCAL_INDEX.load(local.info.localIndex);
+		if (source.info && source.info.platform === 'Mac' && /^\/\/[^\/]+\/./.test(p)) return '/Volumes/' + p.replace(/^\/\/[^\/]+\//, '');
+		if (source.info && source.info.platform !== 'Mac') return p.replace(/\//g, '\\');
 
-			local.stamp = info.generated;
-			local.index = data ? data.items.filter(function (it) {
-				return !it.file;
-			}).map(function (it) {
-				return { name: it.name, path: it.path, depth: it.depth, key: aepName(it.name).replace(/\s+/g, '') };
-			}).filter(function (it) {
-				return it.key.length >= 3;
-			}) : [];
+		return p;
+	}
+
+	function isFilmPath(path) {
+		return /(^|\/)FILMES\/TITULOS$/i.test(String(path || '').replace(/\\/g, '/').replace(/\/+$/, ''));
+	}
+
+	// as pastas do índice local
+	function localCandidates(fs) {
+		var L = window.PAD_LOCAL_INDEX;
+		var info = L.info(source.info.localIndex);
+
+		if (!info.exists) return [];
+		if (source.list && source.stamp === 'local|' + info.generated) return source.list;
+
+		var data = L.load(source.info.localIndex);
+
+		source.stamp = 'local|' + info.generated;
+		source.list = (data ? data.items : []).filter(function (it) {
+			return !it.file;
+		}).map(function (it) {
+			return { name: it.name, path: it.path, depth: it.depth, keys: [keyOf(it.name)] };
+		}).filter(function (it) {
+			return it.keys[0].length >= 3;
+		});
+
+		return source.list;
+	}
+
+	// as atrações do índice do webhook (a cópia do acessorista; velha ou sem cópia, baixa pelo host)
+	async function webhookCandidates(fs) {
+		var file = source.info.cache;
+		var stat = null;
+
+		try {
+			stat = fs.statSync(file);
+		} catch (err) { }
+
+		var text = '';
+
+		if (!stat || (Date.now() - stat.mtimeMs > INDEX_MAX_AGE && !source.info.local)) {
+			try {
+				text = (await call('searchDownload', {})).text;
+				stat = fs.statSync(file);
+			} catch (err) { }
 		}
 
-		return local.index;
+		var stamp = 'webhook|' + (stat ? stat.mtimeMs : 0);
+
+		if (source.list && source.stamp === stamp) return source.list;
+
+		try {
+			if (!text) text = fs.readFileSync(file, 'utf8');
+		} catch (err) {
+			throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
+		}
+
+		var data = JSON.parse(text);
+		var roots = data.roots || {};
+		var full = function (p) {
+			var m = /^([a-z]+):(.*)$/.exec(p || '');
+
+			return m && roots[m[1]] ? roots[m[1]] + '/' + m[2] : p || '';
+		};
+
+		source.stamp = stamp;
+		source.list = (data.atracoes || []).filter(function (a) {
+			return a && a.name && (a.proj || a.out);
+		}).map(function (a) {
+			return { name: a.name, path: full(a.proj) || full(a.out), depth: 0, keys: [keyOf(a.name)].concat((a.pattern || []).map(keyOf)).filter(Boolean) };
+		});
+
+		return source.list;
 	}
 
 	// → { claquete, matches: [{ name, category, path, display, film, score }] } (o mesmo formato do host)
 	async function findAttractions(claq) {
-		var index = await localIndex();
+		if (!source.info) source.info = await call('searchInfo');
 
-		if (!index) return call('projectLookup', { claquete: claq });
+		var fs = nodeFs();
+		var local = source.info.mode === 'local';
 
+		var canLocal = local && window.PAD_LOCAL_INDEX && PAD_LOCAL_INDEX.available();
+
+		if (local ? !canLocal : !fs) return call('projectLookup', { claquete: claq });
+
+		var list = local ? localCandidates(fs) : await webhookCandidates(fs);
 		var words = aepName(claq).split(' ').filter(Boolean);
 		var prefixes = {};
+		var starts = []; // o começo da claquete, palavra a palavra ('grep', 'grep6', 'grep611')
 		var acc = '';
 
 		words.forEach(function (w) {
 			acc += w;
 			prefixes[acc] = true;
+			starts.push(acc);
 		});
+
+		var found = [];
+
+		list.forEach(function (it) {
+			var score = 0;
+
+			it.keys.forEach(function (k) {
+				if (prefixes[k] && k.length >= 2) score = Math.max(score, 1000 + k.length); // completa: o nome começa a claquete
+				else {
+					// parcial: o começo da claquete começa o nome ('la na minha' → Lá na Minha Terra; 'GREP 6 11' → G REPORTER)
+					for (var i = starts.length - 1; i >= 0; i--) {
+						if (starts[i].length >= 3 && k.indexOf(starts[i]) === 0) {
+							score = Math.max(score, starts[i].length);
+							break;
+						}
+					}
+				}
+			});
+
+			if (score) found.push({ it: it, score: score });
+		});
+
+		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA)
+		var hasFull = found.some(function (f) {
+			return f.score >= 1000;
+		});
+
+		if (hasFull) {
+			found = found.filter(function (f) {
+				return f.score >= 1000;
+			});
+		}
 
 		var seen = {};
-		var found = index.filter(function (it) {
-			return prefixes[it.key];
-		}).sort(function (a, b) {
-			return b.key.length - a.key.length || a.depth - b.depth;
-		}).filter(function (it) {
-			if (seen[it.path]) return false;
+		var matches = found.sort(function (a, b) {
+			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
+		}).filter(function (f) {
+			var key = local ? f.it.path : keyOf(f.it.name);
 
-			seen[it.path] = true;
+			if (seen[key]) return false;
+
+			seen[key] = true;
 			return true;
-		}).slice(0, 6).map(function (it) {
-			return { name: it.name, category: 'PASTAS', path: it.path, display: it.path, film: /(^|\/)FILMES\/TITULOS$/i.test(it.path), score: it.key.length };
+		}).slice(0, 6).map(function (f) {
+			return { name: f.it.name, category: local ? 'PASTAS' : 'ATRAÇÕES', path: f.it.path, display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
 		});
 
-		return { claquete: aepName(claq), matches: found };
+		return { claquete: aepName(claq), matches: matches };
 	}
 
 	function lookup() {
@@ -236,7 +351,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (m.length) card(box, m[0].name, m[0].display); // preenche antes de mostrar: a animação mede a altura final
 		box.hidden = !m.length;
-		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (local.info && local.info.mode === 'local' ? 'nenhuma pasta do índice local começa com essa claquete' : 'nenhuma atração começa com essa claquete') : '';
+		$('claq-hint').textContent = m.length > 1 ? '+ ' + (m.length - 1) + (m.length === 2 ? ' outra atração possível' : ' outras atrações possíveis') : !m.length && flow.claquete ? (source.info && source.info.mode === 'local' ? 'nenhuma pasta do índice local começa com essa claquete' : 'nenhuma atração começa com essa claquete') : '';
 	}
 
 	async function claqueteNext() {
@@ -442,7 +557,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			} catch (err) {
 				status(err.message, 'error');
 			}
-		}, LOOKUP_MS);
+		}, FILMS_MS);
 	}
 
 	function renderFilms(films, title) {

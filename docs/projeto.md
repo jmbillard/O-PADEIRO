@@ -16,7 +16,9 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 uma tela por vez; **‹ voltar** volta uma etapa.
 
-1. **CLAQUETE** → digite a claquete (ex: `TELA 9 11`, `MAIS VOCE 30 10`). em segundo plano, o padeiro procura a atração no índice do [buscar](acessorista.md) (pelo começo da claquete: o padrão da atração ou o nome) e mostra a atração e o caminho dela.
+1. **CLAQUETE** → digite a claquete (ex: `TELA 9 11`, `MAIS VOCE 30 10`). enquanto você digita, o padeiro procura a atração no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e mostra a atração e o caminho dela:
+   - pela claquete completa: o nome ou um *pattern* da atração é o começo da claquete (*MAIS VOCE* para `MAIS VOCE 30 10`);
+   - pelo nome em parte: o começo da claquete é o começo do nome (`la na minha` → *Lá na Minha Terra*; `GREP 6 11` → *G REPORTER*), a partir de 3 letras. quando a completa acha, as parciais ficam de fora.
 2. **PASTA** → só aparece quando a claquete combina com mais de uma atração, ou com nenhuma. escolha a atração, **criar nova** (filme inédito, novela nova…) ou **escolher uma pasta…** (o navegador de pastas).
    - **NOVA** → o nome e **dentro de** qual pasta (as pastas das atrações). a pasta da atração nova é criada ao criar o projeto.
 3. **FILME** (atrações de filmes) → o título do filme. a lista mostra os filmes parecidos que já existem na pasta da letra; escolha um ou **filme novo**.
