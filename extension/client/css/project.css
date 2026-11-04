@@ -214,18 +214,6 @@ body.project-page {
   border: 5px solid var(--blue-500);
 }
 
-/* criar nova / filme novo: o cartão tracejado */
-.wz-opt.is-new {
-  border-style: dashed;
-  border-width: 1.5px;
-  border-color: var(--blue-200);
-  color: var(--blue-500);
-}
-
-.wz-opt.is-new.is-selected {
-  border-color: var(--blue-300);
-}
-
 /* ARQUIVO: o nome que vai ficar */
 .wz-file {
   display: flex;
@@ -338,17 +326,17 @@ body.project-page {
   color: var(--waiting);
 }
 
-.wz-chips {
+.wz-radios {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 6px 20px;
+  padding: 2px 2px 0;
 }
 
-.wz-chips[hidden] {
+.wz-radios[hidden] {
   display: none;
 }
 
-.wz-chip,
 .wz-pill {
   padding: 7px 13px;
   border: 1px solid var(--border);
@@ -361,14 +349,7 @@ body.project-page {
   font-weight: 700;
 }
 
-.wz-chip.is-on {
-  border-color: var(--blue-300);
-  background: var(--blue-50);
-  color: var(--blue-500);
-}
-
-.wz-pill:hover,
-.wz-chip:hover {
+.wz-pill:hover {
   border-color: var(--border-hover);
 }
 

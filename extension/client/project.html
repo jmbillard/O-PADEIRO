@@ -88,9 +88,10 @@
 			</div>
 			<div class="wz-file" id="arq-file"></div>
 			<p class="wz-exist" id="arq-exist"></p>
-			<div class="wz-chips" id="arq-dup" hidden>
-				<button type="button" class="wz-chip is-on" data-mode="open">abrir o existente</button>
-				<button type="button" class="wz-chip" data-mode="increment" id="arq-increment"></button>
+			<!-- o .aep já existe: o mesmo menu radial da etapa CRIAR -->
+			<div class="wz-radios" id="arq-dup" role="radiogroup" aria-label="O arquivo já existe" hidden>
+				<label class="log-radio"><input type="radio" name="arq-dup" value="open" checked><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">abrir o existente</span></label>
+				<label class="log-radio"><input type="radio" name="arq-dup" value="increment"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text" id="arq-increment"></span></label>
 			</div>
 			<footer class="wz-foot">
 				<button type="button" class="wz-back" data-back>‹ voltar</button>

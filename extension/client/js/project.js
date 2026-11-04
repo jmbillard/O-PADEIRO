@@ -750,7 +750,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 				flow.film = null;
 				flow.filmTouched = true;
 				renderFilms(films, title);
-			}, 'is-new' + (!flow.film ? ' is-selected' : '')));
+			}));
 		}
 
 		$('filme-next').disabled = !title;
@@ -797,8 +797,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			$('arq-increment').textContent = 'salvar como ' + plan.fileBase + ' 2';
 			if (!plan.exists) flow.mode = '';
 			else if (!flow.mode) flow.mode = 'open';
-			Array.prototype.forEach.call($('arq-dup').children, function (chip) {
-				chip.classList.toggle('is-on', chip.dataset.mode === flow.mode);
+			Array.prototype.forEach.call($('arq-dup').querySelectorAll('input'), function (input) {
+				input.checked = input.value === flow.mode;
 			});
 			$('arq-next').textContent = plan.exists && flow.mode === 'open' ? 'Abrir' : 'Próximo';
 		} catch (err) {
@@ -1133,12 +1133,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		});
 		onEnter('arq-what', arquivoNext);
 		$('arq-next').addEventListener('click', arquivoNext);
-		$('arq-dup').addEventListener('click', function (e) {
-			var chip = e.target.closest('[data-mode]');
-
-			if (!chip) return;
-
-			flow.mode = chip.dataset.mode;
+		$('arq-dup').addEventListener('change', function (e) {
+			flow.mode = e.target.value;
 			planFile();
 		});
 
