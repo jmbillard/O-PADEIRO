@@ -1976,7 +1976,7 @@ body.is-org-dragging * {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #b57d10;
+  color: var(--blue-500);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -2066,12 +2066,8 @@ body.is-org-dragging * {
   color: var(--blue-500);
 }
 
-.scope-note.is-mine {
-  background: #fff9eb;
-}
-
 .scope-note.is-mine > svg {
-  color: #c98a12;
+  color: var(--blue-500);
 }
 
 /* editando o padrão da equipe: a faixa fica azul, para não esquecer */
