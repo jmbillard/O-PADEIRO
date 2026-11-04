@@ -229,17 +229,16 @@ a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
 - **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
 - **pasta dos projetos** → a pasta padrão dos projetos neste computador (usada pelo modo local).
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
-- **templates neste computador** → uma pasta deste computador para cada produção da lista:
-  - produção com a pasta da equipe **local** (`~/...`, como a `Ω PASTA LOCAL`): a daqui vale **sempre** (cada um escolhe onde fica a sua).
-  - produção com a pasta da equipe **na rede**: a daqui é a **cópia**, usada no modo local (ligado ou com a rede fora). **copiar** traz da rede só os arquivos novos ou que mudaram (nada é apagado na cópia).
-  - sem pasta aqui, vale a da equipe.
+- **templates neste computador** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, o **×** tira; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
+  > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (no editor da aba **templates**, ficam riscadas). quem tinha escolhido uma pasta para elas aqui ganhou uma produção local com essa pasta.
+- **registro de uso** → '*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu na aba **rede** (inclusive nas produções locais); desligado, nada sai daqui.
 - **busca de caminhos** → de onde vêm os caminhos do [acessorista](acessorista.md) e as atrações da janela [PROJETO](projeto.md) neste computador:
   - **webhook** → o índice da equipe ([configuração > buscar](#-buscar)).
   - **índice local** → as pastas da lista (a pastinha escolhe, o **×** tira), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
-  - os templates vêm das pastas deste computador (**templates neste computador**) e a busca de caminhos usa o **último índice baixado**.
-  - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho), e as retrancas com caminho completo (na rede) também.
+  - só as produções locais (**templates neste computador**) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
+  - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho).
   - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
   - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique no servidor abre a aba **rede**; no notebook, esta aba. a aba meu usuário também avisa quando a rede caiu.

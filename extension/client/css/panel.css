@@ -1659,6 +1659,44 @@ body {
   white-space: nowrap;
 }
 
+/* grupo dentro da lista (ex: as produções deste computador) e o selo no fim do item */
+.dropdown-item.has-badge {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-group {
+  margin: 8px 12px 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dropdown-group[hidden] {
+  display: none;
+}
+
+.dropdown-badge {
+  display: grid;
+  margin-left: auto;
+  padding-left: 12px;
+  place-items: center;
+  color: var(--text-tertiary);
+}
+
+.dropdown-badge svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
 .dropdown-item.is-active {
   background: var(--surface-soft);
   color: var(--text-primary);

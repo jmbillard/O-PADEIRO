@@ -98,6 +98,10 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		}
 	};
 
+	var BADGES = {
+		person: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>'
+	};
+
 	function iconFor(select, option) {
 		var fn = select._dropdownIcons;
 
@@ -145,7 +149,16 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 
 		popover.setAttribute('role', 'listbox');
 
+		var groups = []; // títulos de grupo (data-group na primeira opção do grupo): somem enquanto filtra
+
 		Array.prototype.forEach.call(select.options, function (option, i) {
+			if (option.dataset.group) {
+				var head = el('p', 'dropdown-group', option.dataset.group);
+
+				groups.push(head);
+				popover.appendChild(head);
+			}
+
 			var item = el('button', 'dropdown-item' + (i === select.selectedIndex ? ' is-selected' : ''), option.textContent);
 			var mark = iconFor(select, option);
 
@@ -156,6 +169,15 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 				icon.innerHTML = mark;
 				item.insertBefore(icon, item.firstChild);
 				item.classList.add('has-icon');
+			}
+
+			// selo no fim do item (ex: data-badge="person": a produção é só deste computador)
+			if (option.dataset.badge && BADGES[option.dataset.badge]) {
+				var badge = el('span', 'dropdown-badge');
+
+				badge.innerHTML = BADGES[option.dataset.badge];
+				item.appendChild(badge);
+				item.classList.add('has-badge');
 			}
 
 			item.type = 'button';
@@ -240,6 +262,9 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 
 			items.forEach(function (item) {
 				item.hidden = key !== '' && fold(item._text).indexOf(key) < 0;
+			});
+			groups.forEach(function (head) {
+				head.hidden = key !== '';
 			});
 
 			var list = visible();

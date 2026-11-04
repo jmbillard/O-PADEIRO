@@ -108,7 +108,7 @@
 				<div class="has-field-icon machine-user"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="machine-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
 
 				<p class="cfg-title prods-section-title">pasta dos projetos</p>
-				<p class="cfg-hint">onde a janela PROJETO salva neste computador, no lugar da pasta da equipe (as retrancas ficam dentro dela). vazia: a da equipe.</p>
+				<p class="cfg-hint">a pasta padrão dos projetos neste computador (usada no modo local). vazia: a da equipe.</p>
 				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 
 				<p class="cfg-title prods-section-title">pasta de saída</p>
@@ -116,8 +116,17 @@
 				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 
 				<p class="cfg-title prods-section-title">templates neste computador</p>
-				<p class="cfg-hint">uma pasta deste computador para cada produção. se a pasta da equipe já é local (<b>~/...</b>), a daqui vale sempre. se é da rede, a daqui é a <b>cópia</b>: vale no modo local (ligado ou com a rede fora); <b>copiar</b> traz da rede só o que é novo ou mudou.</p>
+				<p class="cfg-hint">produções <b>só suas</b>, com pastas deste computador: independentes das da equipe (nada é copiado da rede). aparecem no seletor de produção do painel de templates, depois das da equipe, com o bonequinho. no modo local, só elas aparecem.</p>
 				<div class="drive-rows" id="machine-templates"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-local-prod">+ nova produção local</button>
+
+				<p class="cfg-title prods-section-title">registro de uso</p>
+				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido na aba <b>rede</b>. desligado, nada sai deste computador.</p>
+				<label class="cfg-switch">
+					<input type="checkbox" id="machine-log">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">enviar o meu registro de uso</span>
+				</label>
 
 				<p class="cfg-title prods-section-title">busca de caminhos</p>
 				<p class="cfg-hint">de onde vêm os caminhos do acessorista e as atrações da janela PROJETO, neste computador.</p>
@@ -154,7 +163,7 @@
 					<span class="cfg-switch-label">modo local: trabalhar sem a rede</span>
 				</label>
 				<p class="scope-note machine-offline" id="machine-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
-				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm das pastas acima, a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
+				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções locais (acima), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
 			<!-- aba REDE: registro de uso e drives (configurados uma vez) -->

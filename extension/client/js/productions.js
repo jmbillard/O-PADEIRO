@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', templates: {}, localMode: false }, // aba MEU USUÁRIO (só neste computador)
+		machine: { user: '', projects: '', outputs: '', productions: [], log: true, localMode: false, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
 		machineSnapshot: '',
 		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -369,10 +369,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function machineForSave() {
 		var m = state.machine;
 
-		var templates = {};
-
-		Object.keys(m.templates).sort().forEach(function (name) {
-			if (m.templates[name].trim()) templates[name] = m.templates[name].trim();
+		var productions = m.productions.map(function (p) {
+			return { name: p.name.trim(), path: p.path.trim() };
+		}).filter(function (p) {
+			return p.name || p.path;
 		});
 
 		var search = {
@@ -384,7 +384,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), templates: templates, localMode: !!m.localMode, search: search };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), productions: productions, log: !!m.log, localMode: !!m.localMode, search: search };
 	}
 
 	function personalDirty() {
@@ -410,11 +410,28 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return PAD_UTIL.decodeIcon(row.icon) || PAD_UTIL.decodeIcon(state.newIcon) || ''; // sem ícone: mostra o padrão (não é gravado)
 	}
 
+	// caminho deste computador (~, /Users, /home, o disco do Mac ou uma letra do Windows fora do mapa da rede):
+	// a produção da equipe é ignorada (cada um cria as suas em meu usuário). a mesma regra do host.
+	function isLocalPath(path) {
+		var p = String(path || '').trim().replace(/\\/g, '/');
+		var drive = /^([A-Za-z]):(\/|$)/.exec(p);
+
+		if (/^~(\/|$)/.test(p) || /^\/(Users|home)\//i.test(p) || /^\/Volumes\/Macintosh HD(\/|$)/i.test(p)) return true;
+
+		return !!drive && !(state.drives.drives || []).some(function (d) {
+			return String(d.letter || '').replace(/:$/, '').toUpperCase() === drive[1].toUpperCase();
+		});
+	}
+
 	function dotClass(row) {
+		if (isLocalPath(row.path)) return 'prod-dot is-ignored';
+
 		return 'prod-dot' + (row.exists === true ? ' is-ok' : row.exists === false ? ' is-missing' : '');
 	}
 
 	function dotTitle(row) {
+		if (isLocalPath(row.path)) return 'caminho deste computador: a produção é ignorada (cada um cria as suas em meu usuário > templates neste computador)';
+
 		return row.exists === true ? 'pasta de templates encontrada' : row.exists === false ? 'pasta de templates não localizada' : 'verificando a pasta…';
 	}
 
@@ -470,6 +487,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			row.exists = null;
 			dot.className = dotClass(row);
 			dot.title = dotTitle(row);
+			box.classList.toggle('is-ignored', isLocalPath(row.path));
 			box.classList.remove('has-error');
 			updateDirty();
 
@@ -516,6 +534,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.appendChild(pathWrap);
 
 		row.nodes = { box: box, dot: dot, name: name, path: path };
+		box.classList.toggle('is-ignored', isLocalPath(row.path));
 
 		if (row.error) box.classList.add('has-error');
 
@@ -2360,7 +2379,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			user: m.user || '',
 			projects: m.projects || '',
 			outputs: m.outputs || '',
-			templates: Object.assign({}, m.templates || {}),
+			productions: (m.productions || []).map(function (p) {
+				return { name: p.name || '', path: p.path || '' };
+			}),
+			log: m.log !== false,
 			localMode: !!m.localMode,
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
@@ -2380,6 +2402,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('machine-user').placeholder = state.defaultUser;
 		$('machine-projects').placeholder = state.project && state.project.root ? state.project.root : 'a pasta da equipe';
 		$('machine-local').checked = m.localMode;
+		$('machine-log').checked = m.log;
 		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
 		renderMachineIndex();
@@ -2482,95 +2505,58 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		}
 	}
 
-	// uma linha por produção da equipe: o nome, a pasta deste computador e, para as da rede, o "copiar"
+	// produções locais (só deste computador, independentes das da equipe): pontinhos, ícone com o bonequinho,
+	// nome e pasta. aparecem no seletor do painel de templates depois das da equipe.
 	function renderMachineTemplates() {
 		var list = $('machine-templates');
 
-		if (!list || document.activeElement && list.contains(document.activeElement)) return;
+		if (!list) return;
 
 		list.textContent = '';
 
-		state.rows.forEach(function (row) {
-			var name = row.name.trim();
+		state.machine.productions.forEach(function (row, i) {
+			var box = el('div', 'drive-row local-prod-row');
+			var badge = el('span', 'local-prod-icon');
+			var name = el('input', 'cfg-input');
 
-			if (!name) return;
+			box.appendChild(PAD_SORT.handle());
+			badge.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5h14v13H5z" /><path d="M5 9.5h14M9 9.5v9" /></svg>';
+			badge.title = 'produção só deste computador';
+			box.appendChild(badge);
 
-			var teamPath = row.path.trim();
-			var home = /^~(\/|$)/.test(teamPath);
-			var box = el('div', 'drive-row machine-tpl');
-			var label = el('div', 'machine-tpl-name');
-			var field = el('div', 'cfg-path');
-			var input = el('input', 'cfg-input');
-			var pick = el('button', 'mini-button');
+			name.type = 'text';
+			name.value = row.name;
+			name.placeholder = 'nome (ex: MEUS TEMPLATES)';
+			name.spellcheck = false;
+			name.setAttribute('aria-label', 'nome da produção local ' + (i + 1));
+			name.addEventListener('input', function () {
+				row.name = name.value;
+				updateDirty();
+			});
+			box.appendChild(name);
 
-			label.appendChild(el('b', null, name));
-			label.appendChild(el('span', null, home ? 'local · a daqui vale sempre' : 'rede · a daqui é a cópia'));
-			label.title = teamPath;
-
-			input.type = 'text';
-			input.value = state.machine.templates[name] || '';
-			input.placeholder = home ? teamPath : 'sem cópia';
-			input.spellcheck = false;
-			input.setAttribute('aria-label', 'pasta de ' + name + ' neste computador');
-			input.addEventListener('input', function () {
-				state.machine.templates[name] = input.value;
+			var path = pathField(row.path, 'a pasta de templates neste computador', 'pasta da produção ' + (row.name || i + 1), function (v) {
+				row.path = v;
+			}, function (picked) {
+				row.path = picked;
+				if (!row.name.trim()) {
+					row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
+					renderMachineTemplates();
+				}
+				updateDirty();
+			}, function () {
+				state.machine.productions.splice(i, 1);
+				renderMachineTemplates();
 				updateDirty();
 			});
 
-			pick.type = 'button';
-			pick.title = 'escolher a pasta';
-			pick.setAttribute('aria-label', 'escolher a pasta de ' + name);
-			pick.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg>';
-			pick.addEventListener('click', async function () {
-				var picked = PAD_BRIDGE.pickFolder('Pasta de ' + name + ' neste computador', input.value || teamPath);
-
-				if (!picked) return;
-
-				try {
-					picked = (await call('canonicalPath', { path: picked })).path || picked;
-				} catch (err) { }
-
-				state.machine.templates[name] = picked;
-				input.value = picked;
-				updateDirty();
+			// é deste computador: vale mesmo sem a rede (os campos não dependem da configuração da equipe)
+			Array.prototype.forEach.call(path.querySelectorAll('input, button'), function (n) {
+				n.disabled = false;
 			});
-
-			field.appendChild(input);
-			field.appendChild(pick);
-			box.appendChild(label);
-			box.appendChild(field);
-
-			{
-				var sync = el('button', 'button button-secondary button-compact machine-sync' + (home ? ' is-placeholder' : ''), 'copiar');
-
-				sync.type = 'button';
-				sync.title = 'copiar da rede o que é novo ou mudou';
-				sync.disabled = home || state.machine.localMode;
-				if (home) sync.setAttribute('aria-hidden', 'true');
-				sync.addEventListener('click', async function () {
-					var to = (state.machine.templates[name] || '').trim();
-
-					sync.disabled = true;
-					sync.classList.add('is-busy');
-
-					try {
-						var res = await call('syncTemplates', { name: name, from: teamPath, to: to });
-
-						toast(res.failed.length ? 'error' : 'success', name + ': ' + res.copied + (res.copied === 1 ? ' arquivo copiado' : ' arquivos copiados') + (res.same ? ', ' + res.same + ' já em dia' : '') + (res.failed.length ? '. não copiados: ' + res.failed.join(', ') : '.'));
-					} catch (err) {
-						toast('error', err.message);
-					}
-
-					sync.disabled = state.machine.localMode;
-					sync.classList.remove('is-busy');
-				});
-				box.appendChild(sync);
-			}
-
+			box.appendChild(path);
 			list.appendChild(box);
 		});
-
-		if (!list.children.length) list.appendChild(el('p', 'cfg-hint', 'nenhuma produção na lista da equipe.'));
 	}
 
 	async function loadMachine() {
@@ -2592,6 +2578,26 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('machine-local').addEventListener('change', function () {
 			state.machine.localMode = this.checked;
+			updateDirty();
+		});
+
+		$('machine-log').addEventListener('change', function () {
+			state.machine.log = this.checked;
+			updateDirty();
+		});
+
+		$('btn-new-local-prod').addEventListener('click', function () {
+			state.machine.productions.push({ name: '', path: '' });
+			renderMachineTemplates();
+			updateDirty();
+			$('machine-templates').lastChild.querySelector('input').focus();
+		});
+
+		PAD_SORT.enable($('machine-templates'), '.local-prod-row', function (from, to) {
+			var moved = state.machine.productions.splice(from, 1)[0];
+
+			state.machine.productions.splice(to, 0, moved);
+			renderMachineTemplates();
 			updateDirty();
 		});
 

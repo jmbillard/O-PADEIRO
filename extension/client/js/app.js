@@ -202,9 +202,23 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// A produção é escolhida no rodapé deste painel: a escolha fica num arquivo compartilhado
 	// (host: PADX.setProduction / selectedProduction), que o log e os outros painéis também leem.
+	// A lista do painel: as da equipe (menos as com caminho deste computador; no modo local, nenhuma) e as
+	// produções locais de cada um (configuração > meu usuário), com o bonequinho.
+	function productionList(res) {
+		var team = res.localMode ? [] : (res.productions || []).filter(function (p) {
+			return !p.ignored;
+		});
+		var personal = (res.localProductions || []).map(function (p) {
+			return { name: p.name, templatesPath: p.path, path: p.path, personal: true, icon: null };
+		});
+
+		return team.concat(personal);
+	}
+
 	function renderProductionSelect() {
 		var select = $('production');
 		var current = state.productions[state.production];
+		var groupDone = false;
 
 		select.textContent = '';
 
@@ -212,6 +226,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var option = el('option', null, prod.name);
 
 			option.value = prod.name;
+
+			if (prod.personal) {
+				option.dataset.badge = 'person';
+				if (!groupDone && state.productions[0] !== prod) option.dataset.group = 'neste computador';
+				groupDone = true;
+			}
+
 			select.appendChild(option);
 		});
 
@@ -223,7 +244,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var trigger = select._dropdownTrigger;
 
-		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.local ? '\nusando a pasta deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
+		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.personal ? '\nsó deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
 	}
 
 	// Troca a produção mostrada (escolhida aqui ou em outro painel).
@@ -267,7 +288,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		try {
 			var res = await call('productions', {});
 
-			state.productions = res.productions;
+			state.productions = productionList(res);
 			state.listStamp = res.stamp;
 			state.listError = res.shared ? '' : res.error;
 
@@ -313,7 +334,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var res = await call('productions', {});
 
 			state.listStamp = res.stamp;
-			state.productions = res.productions;
+			state.productions = productionList(res);
 			state.listError = res.shared ? '' : res.error;
 		} catch (err) {
 			return;

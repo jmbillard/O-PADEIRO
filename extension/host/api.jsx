@@ -1,4 +1,4 @@
-﻿/* eslint-disable no-undef */
+/* eslint-disable no-undef */
 /*
 
 ---------------------------------------------------------------
@@ -247,7 +247,8 @@ PADX.machinePrefs = function () {
 		defaultUser: padDefaultUser(),
 		projects: padMachinePath(d.projects),
 		outputs: padMachinePath(d.outputs),
-		templates: padMachineTemplates(d.templates),
+		productions: padMachineProductions(d),
+		log: padMachineLog(),
 		localMode: padLocalForced(),
 		search: padMachineSearch(d.search),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
@@ -256,15 +257,40 @@ PADX.machinePrefs = function () {
 	};
 };
 
-// a: { user, projects, outputs, templates, localMode, search } (só os campos enviados mudam)
+// a: { user, projects, outputs, productions, log, localMode, search } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), templates: padMachineTemplates(d.templates), localMode: padLocalForced(), search: padMachineSearch(d.search) };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search) };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
-	if (a.templates != null) data.templates = padMachineTemplates(a.templates);
+	if (a.log != null) data.log = a.log !== false;
+
+	if (a.productions != null) {
+		var team = [];
+		var names = {};
+		var p;
+
+		try {
+			team = padConfigData().PRODUCTIONS || [];
+		} catch (err) { }
+
+		for (p = 0; p < team.length; p++) if (!padIsLocalPath(team[p].templatesPath)) names[team[p].name.toUpperCase()] = true;
+
+		for (p = 0; p < a.productions.length; p++) {
+			var pname = String(a.productions[p].name || '').replace(/^\s+|\s+$/g, '');
+			var ppath = String(a.productions[p].path || '').replace(/^\s+|\s+$/g, '');
+
+			if (!pname && !ppath) continue;
+			if (!pname || !ppath) throw new Error('#PAD_098 - produção local ' + (p + 1) + ': precisa de um nome e de uma pasta.');
+			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção local "' + pname + '": já existe uma produção da equipe com esse nome.');
+
+			names[pname.toUpperCase()] = true;
+		}
+
+		data.productions = padMachineProductions({ productions: a.productions });
+	}
 	if (a.localMode != null) data.localMode = a.localMode === true;
 	if (a.search != null) data.search = padMachineSearch(a.search);
 
@@ -293,45 +319,62 @@ PADX.saveMachinePrefs = function (a) {
 	return PADX.machinePrefs();
 };
 
-// Pastas de templates neste computador: { 'nome da produção': caminho }.
-function padMachineTemplates(o) {
-	var out = {};
 
-	if (!o || typeof o != 'object') return out;
+// Caminho deste computador (não da rede): a pasta do usuário (~, /Users, /home), o disco do Mac
+// (/Volumes/Macintosh HD) ou uma letra do Windows que não está no mapa de drives da rede (C:\...).
+// Produções da equipe com caminho assim são ignoradas: cada um cria as suas em configuração > meu usuário.
+function padIsLocalPath(path) {
+	var p = String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/');
 
-	for (var name in o) {
-		if (!o.hasOwnProperty(name)) continue;
+	if (/^~(\/|$)/.test(p) || /^\/(Users|home)\//i.test(p) || /^\/Volumes\/Macintosh HD(\/|$)/i.test(p)) return true;
 
-		var path = padMachinePath(o[name]);
+	var drive = /^([A-Za-z]):(\/|$)/.exec(p);
 
-		if (path) out[name] = path;
+	return !!drive && !(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
+}
+
+// Produções locais (configuração > meu usuário): [{ name, path }], só deste computador, independentes das da
+// equipe. Sem a lista ainda (versão anterior): as pastas deste computador escolhidas para as produções da
+// equipe com caminho local (ex: Ω PASTA LOCAL) viram produções locais.
+function padMachineProductions(d) {
+	var out = [];
+	var seen = {};
+	var i;
+
+	if (d.productions && typeof d.productions.length == 'number') {
+		for (i = 0; i < d.productions.length; i++) {
+			var row = d.productions[i] || {};
+			var name = String(row.name == null ? '' : row.name).replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+			var path = padMachinePath(row.path);
+
+			if (!name || !path || seen[name.toUpperCase()]) continue;
+
+			seen[name.toUpperCase()] = true;
+			out.push({ name: name, path: path });
+		}
+
+		return out;
+	}
+
+	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
+	var team = [];
+
+	try {
+		team = padConfigData().PRODUCTIONS || [];
+	} catch (err) { }
+
+	for (i = 0; i < team.length; i++) {
+		var local = padMachinePath(old[team[i].name]);
+
+		if (local && padIsLocalPath(team[i].templatesPath)) out.push({ name: team[i].name, path: local });
 	}
 
 	return out;
 }
 
-// Caminho da equipe que já é deste computador (a pasta do usuário): a deste computador vale sempre.
-function padIsHomePath(path) {
-	return /^~(\/|$)/.test(String(path));
-}
-
-// A pasta de templates de uma produção que vale agora:
-//   - com uma pasta neste computador e o caminho da equipe local (~/...): a deste computador, sempre;
-//   - com uma pasta neste computador e o caminho da equipe na rede: ela é a cópia, usada no modo local
-//     (ligado ou com a rede fora) ou quando a pasta da rede não responde;
-//   - sem pasta neste computador: a da equipe.
-// → { path, local } (local: está usando a pasta deste computador)
-function padProductionPath(name, teamPath) {
-	var local = padMachineTemplates(padMachineData().templates)[name];
-
-	if (!local) return { path: teamPath, local: false };
-	if (padIsHomePath(teamPath) || padLocalMode()) return { path: local, local: true };
-
-	var team = new Folder(padPath(teamPath));
-
-	if (team.exists) return { path: teamPath, local: false };
-
-	return { path: local, local: true };
+// O registro de uso deste computador (configuração > meu usuário): ligado, segue o da equipe (aba rede).
+function padMachineLog() {
+	return padMachineData().log !== false;
 }
 
 // Cópia da configuração da equipe guardada neste computador (para o modo local).
@@ -539,13 +582,11 @@ PADX.productions = function () {
 	var productions = [];
 
 	for (var i = 0; i < list.length; i++) {
-		var effective = padProductionPath(list[i].name, list[i].templatesPath);
-
 		productions.push({
 			name: list[i].name,
 			templatesPath: list[i].templatesPath, // o da equipe (o editor da configuração edita este)
-			path: effective.path, // o que vale neste computador agora (o painel de templates lê este)
-			local: effective.local,
+			path: list[i].templatesPath,
+			ignored: padIsLocalPath(list[i].templatesPath), // caminho deste computador: fora do painel (cada um cria a sua)
 			icon: list[i].icon || null // literal de string binária (PNG); decodificado no painel
 		});
 	}
@@ -555,6 +596,8 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
+		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > meu usuário)
+		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
 		rename: padReadRename(),
@@ -627,12 +670,23 @@ function padCsvValue(value) {
 function padProductionFolder(name) {
 	var config = padConfigFile();
 
-	if (!name || !config || !config.exists) return null;
+	if (!name) return null;
 
-	var list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
+	var list = [];
+
+	try {
+		if (config && config.exists) list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
+	} catch (err) { }
 
 	for (var i = 0; i < list.length; i++) {
-		if (list[i].name == name) return new Folder(padPath(list[i].templatesPath));
+		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
+	}
+
+	// as produções locais (configuração > meu usuário)
+	var personal = padMachineProductions(padMachineData());
+
+	for (var p = 0; p < personal.length; p++) {
+		if (personal[p].name == name) return new Folder(padPath(personal[p].path));
 	}
 
 	return null;
@@ -670,7 +724,7 @@ function padPendingLogFile() {
 function padWriteLog(record) {
 	var settings = padReadLogSettings();
 
-	if (settings.mode == 'off') return;
+	if (settings.mode == 'off' || !padMachineLog()) return; // desligado pela equipe ou neste computador
 	var local = padLocalMode();
 
 	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);

@@ -2088,30 +2088,6 @@ body.is-org-dragging * {
 }
 
 /* aba COMPUTADOR: templates por produção (nome | pasta daqui | copiar) */
-.machine-tpl {
-  grid-template-columns: minmax(110px, 180px) minmax(0, 1fr) auto;
-}
-
-.machine-tpl-name {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.machine-tpl-name b {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 0.78rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.machine-tpl-name span {
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  font-weight: 600;
-}
-
 .machine-sync.is-busy {
   opacity: 0.6;
   pointer-events: none;
@@ -2196,4 +2172,63 @@ body.is-org-dragging * {
 
 .index-row .cfg-input {
   padding-right: 72px; /* a pasta e o × dentro do campo */
+}
+
+/* meu usuário: produções locais (pontinhos | ícone com o bonequinho | nome | pasta) */
+.local-prod-row {
+  display: grid;
+  grid-template-columns: 22px 40px minmax(140px, 200px) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.local-prod-row .cfg-path .cfg-input {
+  padding-right: 72px; /* a pasta e o × dentro do campo */
+}
+
+.local-prod-icon {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  color: var(--text-tertiary);
+}
+
+.local-prod-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+}
+
+.local-prod-icon::after {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--surface);
+  border-radius: 50%;
+  background: var(--blue-500) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='9' r='3.5' fill='white'/%3E%3Cpath d='M5 20c1-4 4-6 7-6s6 2 7 6' fill='white'/%3E%3C/svg%3E") center / 9px no-repeat;
+  content: '';
+}
+
+/* produção da equipe com caminho deste computador: ignorada (fica no arquivo, mas não aparece para ninguém) */
+.prod-row.is-ignored .prod-icon,
+.prod-row.is-ignored > .cfg-input,
+.prod-row.is-ignored .prod-path .cfg-input {
+  opacity: 0.5;
+}
+
+.prod-row.is-ignored .prod-path .cfg-input {
+  text-decoration: line-through;
+}
+
+.prod-dot.is-ignored {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--text-tertiary);
 }

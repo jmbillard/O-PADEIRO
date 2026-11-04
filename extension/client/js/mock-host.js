@@ -228,8 +228,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				personal: mockPrefs(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
-					return Object.assign({}, p);
-				})
+					return Object.assign({}, p, { ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
+				}),
+				localProductions: ((JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).productions || []).slice(),
+				localMode: !!(JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).localMode
 			};
 		},
 
@@ -251,21 +253,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		machinePrefs: function () {
-			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false };
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false, productions: [], log: true };
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {}, localIndex: '/mock/indice_local.json' }, m);
 		},
 
 		saveMachinePrefs: function (a) {
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', templates: a.templates || {}, localMode: !!a.localMode, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
+			(a.productions || []).forEach(function (p, i) {
+				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
+			});
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
-		},
-
-		syncTemplates: function (a) {
-			if (!a.to) throw new Error('#PAD_097 - ' + a.name + ': escolha a pasta deste computador antes de copiar.');
-
-			return { copied: 12, same: 3, failed: [], to: a.to };
 		},
 
 		barLinks: function () {
