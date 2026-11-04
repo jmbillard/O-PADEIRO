@@ -411,7 +411,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// caminho deste computador (~, /Users, /home, o disco do Mac ou uma letra do Windows fora do mapa da rede):
-	// a produção da equipe é ignorada (cada um cria as suas em meu usuário). a mesma regra do host.
+	// a produção da equipe é ignorada (cada um cria as suas em templates, neste computador). a mesma regra do host.
 	function isLocalPath(path) {
 		var p = String(path || '').trim().replace(/\\/g, '/');
 		var drive = /^([A-Za-z]):(\/|$)/.exec(p);
@@ -430,7 +430,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function dotTitle(row) {
-		if (isLocalPath(row.path)) return 'caminho deste computador: a produção é ignorada (cada um cria as suas em meu usuário > templates neste computador)';
+		if (isLocalPath(row.path)) return 'caminho deste computador: a produção é ignorada (cada um cria as suas em produções locais, embaixo)';
 
 		return row.exists === true ? 'pasta de templates encontrada' : row.exists === false ? 'pasta de templates não localizada' : 'verificando a pasta…';
 	}
@@ -3330,8 +3330,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TAB_NAMES = ['prods', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
 	// a aba PROJETO saiu (a janela PROJETO cria pela claquete): o duplo clique em projeto abre a estrutura (COLETAR)
-	var TAB_ALIASES = { project: ['collect', ''], logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['tools', 'mylinks-section'] };
+	var TAB_ALIASES = { project: ['collect', ''], logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
 	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
+	var SPLIT_TABS = ['prods', 'collect', 'search', 'links']; // da equipe, com a parte 'neste computador' embaixo
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -3386,10 +3387,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
 		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
 
+		var split = SPLIT_TABS.indexOf(tab) >= 0 ? ' · embaixo, <b>neste computador</b>' : '';
+
 		if (!mine && (state.machine.localMode || state.fromCopy)) {
-			text.innerHTML = '<b>equipe</b> · modo local' + (state.machine.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler';
+			text.innerHTML = '<b>equipe</b> · modo local' + (state.machine.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler' + split;
 		} else if (!mine) {
-			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo';
+			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo' + split;
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
 		} else if (tab === 'machine') {
@@ -3420,7 +3423,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// "editar o padrão da equipe" (menu ⋯): aparência e layout passam a editar o da rede
 	function setEditTeam(on) {
 		state.editTeam = on;
-		$('mylinks-section').hidden = on; // os meus links são sempre deste computador: fora do padrão da equipe
 		$('menu-team').textContent = on ? 'Voltar às minhas preferências' : 'Editar o padrão da equipe';
 		activatePrefs();
 		if (on && MINE_TABS.indexOf(state.tab) < 0) showTab('appearance');
@@ -3505,6 +3507,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_088/.test(message)) return 'appearance';
 		if (/#PAD_089/.test(message)) return 'collect';
 		if (/#PAD_094/.test(message)) return 'collect';
+		if (/#PAD_098/.test(message)) return 'localprods'; // produção local (aba templates, embaixo)
 
 		return null;
 	}
@@ -3607,7 +3610,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					updateDirty();
 					toast('success', 'salvo: local (neste computador).');
 				} catch (err) {
-					if (/#PAD_087/.test(err.message)) showTab('mylinks');
+					if (tabForError(err.message)) showTab(/#PAD_087/.test(err.message) ? 'mylinks' : tabForError(err.message));
 					toast('error', err.message);
 				}
 
@@ -3657,7 +3660,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			try {
 				mine = await savePersonal();
 			} catch (err) {
-				if (/#PAD_087/.test(err.message)) showTab('mylinks');
+				if (tabForError(err.message)) showTab(/#PAD_087/.test(err.message) ? 'mylinks' : tabForError(err.message));
 				toast('error', err.message);
 				return;
 			}

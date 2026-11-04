@@ -324,7 +324,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		{ key: 'filmes', label: 'FILMES', max: 20 },
 		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
 	];
-	// índice local (configuração > meu usuário): as pastas deste computador e o servidor
+	// índice local (configuração > buscar, neste computador): as pastas deste computador e o servidor
 	var LOCAL_CATS = [
 		{ key: 'pastas', label: 'PASTAS', max: 30 },
 		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
@@ -570,7 +570,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	/* ---------------------------------------------------------------
-	   índice local: as pastas escolhidas em configuração > meu usuário, lidas aqui (js/local-index.js).
+	   índice local: as pastas escolhidas em configuração > buscar (neste computador), lidas aqui (js/local-index.js).
 	   aparece na hora a última indexação; refeita quando as pastas mudam, uma vez por dia (se ligado) ou no
 	   botão atualizar.
 	   --------------------------------------------------------------- */
@@ -610,7 +610,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		p.platform = info.platform;
 
 		if (!L || !L.available()) throw new Error('o índice local precisa do painel aberto no After Effects.');
-		if (!info.folders.length) throw new Error('índice local sem pastas: escolha as pastas em configuração > meu usuário.');
+		if (!info.folders.length) throw new Error('índice local sem pastas: escolha as pastas em configuração > buscar.');
 
 		var data = L.load(info.localIndex);
 		var sameRoots = data && JSON.stringify(data.roots || []) === JSON.stringify(info.folders);

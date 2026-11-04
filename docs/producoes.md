@@ -4,18 +4,30 @@
 
 a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
 
-as abas ficam em dois grupos, conforme **onde** cada uma é salva:
+as abas ficam em três grupos, separados por uma linha:
 
-| grupo | abas | onde fica |
-| --- | --- | --- |
-| 🌐 **equipe** | templates, coletar, renomear, organizar, buscar, links, rede | no `O_PADEIRO_config.json` da rede: vale para todo mundo |
-| 👤 **local** | aparência, layout (com os seus links), meu usuário | na pasta de dados do usuário, neste computador: não muda nada para os outros |
+| grupo | abas |
+| --- | --- |
+| **ferramentas** | templates, coletar, renomear, organizar, buscar |
+| **links** | links |
+| **o resto** | rede, aparência, layout, meu usuário |
 
-uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede* ou 👤 *local · salvo neste computador*).
+**onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).
+
+**👤 neste computador** → numa aba da equipe, as opções que são só suas ficam embaixo de uma linha com o bonequinho e **NESTE COMPUTADOR**:
+
+| aba | neste computador |
+| --- | --- |
+| templates | produções locais · pasta de saída |
+| coletar | pasta dos projetos |
+| buscar | de onde vêm os caminhos (webhook ou índice local) |
+| links | meus links |
+
+uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na rede · embaixo, neste computador* ou 👤 *local · salvo neste computador*).
 
 **padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar e projeto → coletar, buscar, links da equipe → links, os seus → layout). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates e fontes → templates, pastas → rede, renomear, organizar, coletar e projeto → coletar, buscar, links → links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
 ## 📍 templates
 
@@ -43,6 +55,12 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
+
+**👤 neste computador** (embaixo, só suas):
+
+- **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, o **×** tira; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
+  > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
+- **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 <br>
 
 ---
@@ -70,6 +88,7 @@ a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto*
 - **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
 - **sempre salva** → depois de copiar, os itens apontam para as cópias e o projeto é salvo.
+- **👤 pasta dos projetos** (neste computador, embaixo) → a pasta padrão dos projetos neste computador (usada pelo modo local). vazia, a da equipe.
 <br>
 
 ---
@@ -127,6 +146,11 @@ a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações 
 - **webhook** → o endereço do workflow **PROMO - BUSCAR**, que devolve o índice pronto (Teams, Trello, atrações e filmes). vazio, vale o padrão (`…/webhook/buscar`).
 - **servidor · caminhos fixos** → pastas que aparecem sempre na busca, com o ícone de servidor, para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, o **×** tira a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
 
+**👤 de onde vêm os caminhos** (neste computador, embaixo) → o que o [acessorista](acessorista.md) e a janela [PROJETO](projeto.md) usam aqui:
+  - **webhook da equipe** → o índice do webhook acima.
+  - **índice local** → as pastas da lista (a pastinha escolhe, o **×** tira), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
+  - uma janela do acessorista ou do projeto já aberta passa a usar a escolha nova quando você volta para ela.
+
 > 🚩 *obs:* o índice antigo (com categorias e arquivo de índice) ficou só para o padeiro legacy.
 <br>
 
@@ -136,7 +160,7 @@ a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações 
 
 ## 📍 links
 
-a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). os seus (👤 local) ficam na aba **layout**, abaixo das ferramentas: ficam só neste computador e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
+a aba **links** (🌐 equipe) define os links que aparecem no começo da barra de todo mundo (ex: a planilha de apontamento de projetos). os seus (**👤 meus links**, embaixo, neste computador) ficam só nesta máquina e aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone.
 
 cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por padrão, o do próprio site (favicon). clique no ícone para escolher outra imagem (24 x 24 pixels, como o das produções); o **↺** no canto volta para o favicon. arraste pelos pontinhos para mudar a ordem; o **×** no campo do endereço exclui o link.
 
@@ -215,7 +239,6 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 
 > 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.
 
-**meus links** → abaixo, na coluna branca, os seus links: só neste computador, aparecem na barra depois dos da equipe, com um **bonequinho** no canto do ícone (detalhes em [links](#-links)). eles não entram no padrão da equipe: em **⋯ > editar o padrão da equipe**, a seção some.
 <br>
 
 ---
@@ -224,22 +247,15 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 
 ## 📍 meu usuário
 
-a aba **meu usuário** (👤 local) guarda o que é seu, só nesta máquina:
+a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma ferramenta, só nesta máquina (as opções locais de cada ferramenta ficam na aba dela, embaixo, em **neste computador**):
 
 - **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
-- **pasta dos projetos** → a pasta padrão dos projetos neste computador (usada pelo modo local).
-- **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
-- **templates neste computador** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, o **×** tira; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
-  > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (no editor da aba **templates**, ficam riscadas). quem tinha escolhido uma pasta para elas aqui ganhou uma produção local com essa pasta.
 - **registro de uso** → '*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu na aba **rede** (inclusive nas produções locais); desligado, nada sai daqui.
-- **busca de caminhos** → de onde vêm os caminhos do [acessorista](acessorista.md) e as atrações da janela [PROJETO](projeto.md) neste computador:
-  - **webhook** → o índice da equipe ([configuração > buscar](#-buscar)).
-  - **índice local** → as pastas da lista (a pastinha escolhe, o **×** tira), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
-  - só as produções locais (**templates neste computador**) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
-  - os projetos vão para a **pasta dos projetos** daqui (sem ela, a Área de Trabalho).
-  - **todos** os renders da fila vão para a **pasta de saída** daqui (sem ela, a Área de Trabalho).
+  - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
+  - os projetos vão para a [pasta dos projetos](#-coletar) daqui (sem ela, a Área de Trabalho).
+  - **todos** os renders da fila vão para a [pasta de saída](#-templates) daqui (sem ela, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
   - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique no servidor abre a aba **rede**; no notebook, esta aba. a aba meu usuário também avisa quando a rede caiu.
 

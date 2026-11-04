@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> índice local da busca de caminhos (configuração > meu usuário)
+> índice local da busca de caminhos (configuração > buscar, neste computador)
 ---------------------------------------------------------------
 
 Lê as pastas escolhidas e todas as subpastas pelo Node do painel (sem travar o After Effects) e guarda o

@@ -76,7 +76,7 @@ PADX.searchInfo = function () {
 		servidor.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
 	}
 
-	// o índice local (configuração > meu usuário): as pastas deste computador, lidas pelo painel
+	// o índice local (configuração > buscar, neste computador): as pastas deste computador, lidas pelo painel
 	var search = padMachineSearch(padMachineData().search);
 
 	return {

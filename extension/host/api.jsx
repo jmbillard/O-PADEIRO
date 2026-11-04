@@ -322,7 +322,7 @@ PADX.saveMachinePrefs = function (a) {
 
 // Caminho deste computador (não da rede): a pasta do usuário (~, /Users, /home), o disco do Mac
 // (/Volumes/Macintosh HD) ou uma letra do Windows que não está no mapa de drives da rede (C:\...).
-// Produções da equipe com caminho assim são ignoradas: cada um cria as suas em configuração > meu usuário.
+// Produções da equipe com caminho assim são ignoradas: cada um cria as suas em configuração > templates (neste computador).
 function padIsLocalPath(path) {
 	var p = String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/');
 
@@ -333,7 +333,7 @@ function padIsLocalPath(path) {
 	return !!drive && !(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
 }
 
-// Produções locais (configuração > meu usuário): [{ name, path }], só deste computador, independentes das da
+// Produções locais (configuração > templates, neste computador): [{ name, path }], só deste computador, independentes das da
 // equipe. Sem a lista ainda (versão anterior): as pastas deste computador escolhidas para as produções da
 // equipe com caminho local (ex: Ω PASTA LOCAL) viram produções locais.
 function padMachineProductions(d) {
@@ -596,7 +596,7 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
-		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > meu usuário)
+		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
 		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
@@ -682,7 +682,7 @@ function padProductionFolder(name) {
 		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
 	}
 
-	// as produções locais (configuração > meu usuário)
+	// as produções locais (configuração > templates, neste computador)
 	var personal = padMachineProductions(padMachineData());
 
 	for (var p = 0; p < personal.length; p++) {

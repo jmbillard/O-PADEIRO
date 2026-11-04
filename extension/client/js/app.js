@@ -203,7 +203,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// A produção é escolhida no rodapé deste painel: a escolha fica num arquivo compartilhado
 	// (host: PADX.setProduction / selectedProduction), que o log e os outros painéis também leem.
 	// A lista do painel: as da equipe (menos as com caminho deste computador; no modo local, nenhuma) e as
-	// produções locais de cada um (configuração > meu usuário), com o bonequinho.
+	// produções locais de cada um (configuração > templates, neste computador), com o bonequinho.
 	function productionList(res) {
 		var team = res.localMode ? [] : (res.productions || []).filter(function (p) {
 			return !p.ignored;

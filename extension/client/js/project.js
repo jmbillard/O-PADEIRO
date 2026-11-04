@@ -135,7 +135,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 	/* ---------------------------------------------------------------
 	   a claquete → a atração, procurada aqui mesmo, na memória (rápido a cada tecla): as atrações do índice da
-	   busca (webhook, a mesma cópia do acessorista) ou, no índice local (configuração > meu usuário), as pastas.
+	   busca (webhook, a mesma cópia do acessorista) ou, no índice local (configuração > buscar), as pastas.
 	   - completa: o nome (ou um pattern) é o começo da claquete ('MAIS VOCE' para 'MAIS VOCE 30 10');
 	   - parcial: o começo da claquete é o começo do nome ('la na minha' → 'Lá na Minha Terra', 'GREP 6 11' →
 	     'G REPORTER'), a partir de 3 letras.

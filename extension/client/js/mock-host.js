@@ -505,7 +505,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { tab: req.tab, stamp: req.stamp, now: Date.now() };
 		},
 
-		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar; ?mock=lidx, o índice local (meu usuário)
+		// busca nova (v2): ?mock=v1 simula o webhook novo fora do ar; ?mock=lidx, o índice local (buscar)
 		searchInfo: function () {
 			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
 			var ms = machine.search || (/mock=lidx/.test(location.search) ? { mode: 'local', folders: ['/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ', '/Volumes/VFX/imagem/drive_l/Fileserver_3'], foldersOnly: true, daily: true } : { mode: 'webhook', folders: [], foldersOnly: true, daily: true });

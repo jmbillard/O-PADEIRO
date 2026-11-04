@@ -21,15 +21,15 @@
 				<div class="prods-card-body">
 					<nav class="prods-nav">
 						<div class="tabs" id="tabs" role="tablist" aria-label="Configuração" aria-orientation="vertical">
-							<p class="tab-group" data-scope="team" title="salvo na rede: vale para todo mundo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><span>equipe</span></p>
 							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">TEMPLATES</button>
 							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
 							<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 							<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
 							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCAR</button>
+							<p class="tab-sep" aria-hidden="true"></p>
 							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
+							<p class="tab-sep" aria-hidden="true"></p>
 							<button type="button" class="tab" role="tab" data-tab="network" aria-selected="false">REDE</button>
-							<p class="tab-group" data-scope="mine" title="salvo só neste computador: não muda nada para os outros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg><span>local</span></p>
 							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">LAYOUT</button>
 							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">MEU USUÁRIO</button>
@@ -91,6 +91,18 @@
 				</div>
 			</div>
 
+			<div class="prods-local" id="prods-local">
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">produções locais</p>
+				<p class="cfg-hint">produções <b>só suas</b>, com pastas deste computador: independentes das da equipe (nada é copiado da rede). aparecem no seletor de produção do painel de templates, depois das da equipe, com o bonequinho. no modo local, só elas aparecem.</p>
+				<div class="drive-rows" id="machine-templates"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-local-prod">+ nova produção local</button>
+
+				<p class="cfg-title prods-section-title">pasta de saída</p>
+				<p class="cfg-hint">para onde vão os renders da fila quando a pasta do template não pode ser acessada. vazia: a Área de Trabalho.</p>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+			</div>
 			</div>
 
 			<!-- aba LINKS (os da barra) -->
@@ -99,26 +111,22 @@
 				<p class="cfg-hint">aparecem no começo da barra de todo mundo, nesta ordem (arraste pelos pontinhos para reordenar). o ícone é o do próprio site (favicon); clique nele para escolher outra imagem.</p>
 				<div class="drive-rows" id="link-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link da equipe</button>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="mylinks-section" id="mylinks-section">
+					<p class="cfg-title prods-section-title">meus links</p>
+					<p class="cfg-hint">aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
+					<div class="drive-rows" id="personal-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
+				</div>
 			</div>
 
-			<!-- aba MEU USUÁRIO (só neste computador: sigla, pastas padrão e modo local) -->
+			<!-- aba MEU USUÁRIO (só neste computador: designer, registro de uso e modo local; o resto de cada ferramenta fica na aba dela) -->
 			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">designer</p>
 				<p class="cfg-hint">o seu nome nos projetos (<b>{usuario}</b>), ou uma sigla, se preferir. vazio: o usuário do computador.</p>
 				<div class="has-field-icon machine-user"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="machine-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
-
-				<p class="cfg-title prods-section-title">pasta dos projetos</p>
-				<p class="cfg-hint">a pasta padrão dos projetos neste computador (usada no modo local). vazia: a da equipe.</p>
-				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
-
-				<p class="cfg-title prods-section-title">pasta de saída</p>
-				<p class="cfg-hint">para onde vão os renders da fila quando a pasta do template não pode ser acessada. vazia: a Área de Trabalho.</p>
-				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
-
-				<p class="cfg-title prods-section-title">templates neste computador</p>
-				<p class="cfg-hint">produções <b>só suas</b>, com pastas deste computador: independentes das da equipe (nada é copiado da rede). aparecem no seletor de produção do painel de templates, depois das da equipe, com o bonequinho. no modo local, só elas aparecem.</p>
-				<div class="drive-rows" id="machine-templates"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-local-prod">+ nova produção local</button>
 
 				<p class="cfg-title prods-section-title">registro de uso</p>
 				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido na aba <b>rede</b>. desligado, nada sai deste computador.</p>
@@ -128,34 +136,6 @@
 					<span class="cfg-switch-label">enviar o meu registro de uso</span>
 				</label>
 
-				<p class="cfg-title prods-section-title">busca de caminhos</p>
-				<p class="cfg-hint">de onde vêm os caminhos do acessorista e as atrações da janela PROJETO, neste computador.</p>
-				<div class="log-modes" id="machine-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
-					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="machine-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
-					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="machine-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
-				</div>
-				<div class="machine-index" id="machine-index" hidden>
-					<p class="cfg-hint">o padeiro lê as pastas abaixo e todas as subpastas, e guarda o índice <b>neste computador</b>. a busca procura pelo nome de cada pasta; sem rede, continua funcionando. a janela PROJETO procura a claquete pelo nome das pastas.</p>
-					<div class="drive-rows" id="machine-index-list"></div>
-					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-index-folder">+ nova pasta para indexar</button>
-					<div class="machine-index-opts">
-						<label class="cfg-switch">
-							<input type="checkbox" id="machine-index-folders-only">
-							<span class="cfg-switch-track"></span>
-							<span class="cfg-switch-label">só pastas (sem arquivos): mais rápido e mais leve</span>
-						</label>
-						<label class="cfg-switch">
-							<input type="checkbox" id="machine-index-daily">
-							<span class="cfg-switch-track"></span>
-							<span class="cfg-switch-label">atualizar sozinho uma vez por dia (ao abrir a busca)</span>
-						</label>
-					</div>
-					<div class="machine-index-status">
-						<button type="button" class="button button-primary button-compact" id="btn-index-now">indexar agora</button>
-						<span id="machine-index-status"></span>
-					</div>
-				</div>
-
 				<p class="cfg-title prods-section-title">modo local</p>
 				<label class="cfg-switch">
 					<input type="checkbox" id="machine-local">
@@ -163,7 +143,7 @@
 					<span class="cfg-switch-label">modo local: trabalhar sem a rede</span>
 				</label>
 				<p class="scope-note machine-offline" id="machine-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
-				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções locais (acima), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
+				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções locais (aba templates), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
 			<!-- aba REDE: registro de uso e drives (configurados uma vez) -->
@@ -285,6 +265,11 @@
 					<p class="cfg-title prods-section-title">sequências de imagens</p>
 					<p class="cfg-hint">copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela (render_0001.png → render). a interpretação do item (fps, alpha) é mantida.</p>
 
+					<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+					<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+					<p class="cfg-title prods-section-title">pasta dos projetos</p>
+					<p class="cfg-hint">a pasta padrão dos projetos neste computador (usada no modo local). vazia: a da equipe.</p>
+					<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 				</div>
 			</div>
 
@@ -298,6 +283,36 @@
 				<p class="cfg-hint">pastas que aparecem sempre na busca de caminhos (com o ícone de servidor), para todo mundo. o caminho pode ser do Mac (/Volumes/...) ou da rede do Windows (\\servidor\share\...): o padeiro converte e monta o volume ao abrir. arraste pelos pontinhos para reordenar.</p>
 				<div class="drive-rows" id="servidor-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-servidor">+ novo caminho fixo</button>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">de onde vêm os caminhos</p>
+				<p class="cfg-hint">o acessorista e a janela PROJETO usam o webhook da equipe (acima) ou um índice das pastas deste computador.</p>
+				<div class="log-modes" id="machine-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
+					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="machine-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook da equipe</span></label>
+					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="machine-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
+				</div>
+				<div class="machine-index" id="machine-index" hidden>
+					<p class="cfg-hint">o padeiro lê as pastas abaixo e todas as subpastas, e guarda o índice <b>neste computador</b>. a busca procura pelo nome de cada pasta; sem rede, continua funcionando. a janela PROJETO procura a claquete pelo nome das pastas.</p>
+					<div class="drive-rows" id="machine-index-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-index-folder">+ nova pasta para indexar</button>
+					<div class="machine-index-opts">
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-folders-only">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">só pastas (sem arquivos): mais rápido e mais leve</span>
+						</label>
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-daily">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">atualizar sozinho uma vez por dia (ao abrir a busca)</span>
+						</label>
+					</div>
+					<div class="machine-index-status">
+						<button type="button" class="button button-primary button-compact" id="btn-index-now">indexar agora</button>
+						<span id="machine-index-status"></span>
+					</div>
+				</div>
 			</div>
 
 			<!-- aba APARÊNCIA (o tema de todas as janelas) -->
@@ -383,12 +398,6 @@
 					<div class="org-types tool-cards" id="tool-cards"></div>
 					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-divider">+ separador</button>
 
-					<div class="mylinks-section" id="mylinks-section">
-				<p class="cfg-title prods-section-title">meus links</p>
-				<p class="cfg-hint">só neste computador: aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
-				<div class="drive-rows" id="personal-list"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
-					</div>
 				</div>
 			</div>
 
