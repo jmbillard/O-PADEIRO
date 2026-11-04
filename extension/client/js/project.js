@@ -397,68 +397,16 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		});
 	}
 
+	// as categorias da equipe (configuração > PROJETO); sem nenhuma, a pasta é livre (escolher a pasta…)
 	async function newBases() {
-		if (!source.info) source.info = await call('searchInfo');
+		var cfg = null;
 
-		// com as categorias configuradas (aba PROJETO), elas mesmas; no índice local, as pastas indexadas
-		if (source.info.mode !== 'local') {
-			var cfg = null;
+		try {
+			cfg = await call('projectCategories');
+		} catch (err) { }
 
-			try {
-				cfg = await call('projectCategories');
-			} catch (err) { }
-
-			if (cfg && cfg.categories && cfg.categories.length) {
-				return cfg.categories.map(function (c) {
-					return categoryBase(c, cfg.fallback);
-				});
-			}
-		}
-
-		var list = await candidates();
-
-		if (!list) return (await call('projectBases')).bases;
-
-		if (source.info.mode === 'local') {
-			return list.filter(function (it) {
-				return it.depth <= 1;
-			}).map(function (it) {
-				return { label: it.name, path: it.path, display: displayPath(it.path), film: isFilmPath(it.path) };
-			});
-		}
-
-		var byCat = {};
-
-		list.forEach(function (it) {
-			if (!it.cat) return;
-
-			var parts = String(it.path).replace(/\\/g, '/').split('/');
-			var catKey = aepName(it.cat);
-			var at = -1;
-
-			for (var i = parts.length - 1; i >= 0; i--) {
-				if (aepName(parts[i]).indexOf(catKey) === 0) {
-					at = i;
-					break;
-				}
-			}
-
-			if (at < 0) return;
-
-			var film = catKey === 'FILMES';
-			var end = film && parts[at + 1] && aepName(parts[at + 1]) === 'TITULOS' ? at + 1 : at;
-			var base = parts.slice(0, end + 1).join('/');
-			var bucket = byCat[it.cat] || (byCat[it.cat] = {});
-
-			bucket[base] = (bucket[base] || 0) + 1;
-		});
-
-		return Object.keys(byCat).sort().map(function (cat) {
-			var best = Object.keys(byCat[cat]).sort(function (a, b) {
-				return byCat[cat][b] - byCat[cat][a];
-			})[0];
-
-			return { label: cat, path: best, display: displayPath(best), film: aepName(cat) === 'FILMES' || isFilmPath(best) };
+		return (cfg && cfg.categories || []).map(function (c) {
+			return categoryBase(c, cfg.fallback);
 		});
 	}
 
@@ -613,7 +561,16 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		}
 
 		var select = $('nova-base');
+		var free = !state.bases.length;
 
+		// sem categorias na configuração: a pasta é livre (o botão no lugar da lista)
+		select.closest('.select').hidden = free;
+		$('nova-pick').hidden = !free;
+		$('nova-free').hidden = !free;
+		if (free) {
+			state.pickedBase = null;
+			$('nova-pick').querySelector('span').textContent = 'escolher a pasta…';
+		}
 		select.textContent = '';
 		state.bases.forEach(function (b, i) {
 			var opt = el('option', null, b.label);
@@ -622,7 +579,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			select.appendChild(opt);
 		});
 
-		var other = el('option', null, 'outra pasta…');
+		var other = el('option', null, 'nenhuma destas: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
 
 		other.value = 'pick';
 		select.appendChild(other);
@@ -639,6 +596,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 	function novaBase() {
 		var v = $('nova-base').value;
+
+		if (!state.bases.length) return state.pickedBase || null;
 
 		if (v === 'pick') return state.pickedBase || null;
 
@@ -1052,6 +1011,13 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		$('nova-name').addEventListener('input', renderNova);
 		$('claq-other').addEventListener('click', openPasta);
+		$('nova-pick').addEventListener('click', function () {
+			var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
+
+			if (picked) state.pickedBase = { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked, film: /(^|[\\\/])FILMES[\\\/]TITULOS$/i.test(picked) };
+			$('nova-pick').querySelector('span').textContent = state.pickedBase ? state.pickedBase.display : 'escolher a pasta…';
+			renderNova();
+		});
 		$('nova-base').addEventListener('change', function () {
 			if (this.value === 'pick') {
 				var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
