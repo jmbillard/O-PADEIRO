@@ -4,7 +4,7 @@ Uma configuração do O PADEIRO montada a partir do **PROMO-GNEWS-script** (a ba
 
 | arquivo | o que é |
 | --- | --- |
-| `O_PADEIRO_config.json` | a configuração completa (PRODUCTIONS, DRIVES, RENAME, ORGANIZE, COLLECT, SEARCH, PROJECT, LINKS, APPEARANCE) |
+| `O_PADEIRO_GLOBAL_config.json` | a configuração completa (PRODUCTIONS, DRIVES, RENAME, ORGANIZE, COLLECT, SEARCH, PROJECT, LINKS, APPEARANCE) |
 | `gnews_path_index.json` | o índice de caminhos usado pela aba BUSCAR (no lugar do webhook) |
 
 ## Como usar
@@ -12,7 +12,7 @@ Uma configuração do O PADEIRO montada a partir do **PROMO-GNEWS-script** (a ba
 1. Copie `gnews_path_index.json` para a rede, no caminho de `SEARCH.file`:
    `//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/O PADEIRO/gnews_path_index.json`
    (ou outro caminho, e ajuste `SEARCH.file` / a aba BUSCAR).
-2. Use `O_PADEIRO_config.json` como a configuração compartilhada (ou importe as seções pela janela de configuração).
+2. Use `O_PADEIRO_GLOBAL_config.json` como a configuração compartilhada (ou importe as seções pela janela de configuração).
 3. Os templates da pasta `PROMO/TEMPLATES` são os da barra antiga: passe-os pelo [conversor](../../conversor.md) antes de usar a produção **PROMO GNEWS**.
 
 Todas as seções foram conferidas com as próprias funções de validação do host (`padClean*`): nenhuma é rejeitada nem alterada.

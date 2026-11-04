@@ -8,12 +8,11 @@
 A janela PROJETO cria o projeto pela claquete (abaixo) e edita a claquete e o designer dele. O collect dos
 arquivos é do botão COLETAR (collect.jsx).
 
-'PROJECT' no O_PADEIRO_config.json (aba PROJETO da configuração):
+'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
-               {atracao} (obrigatório) {ano} {mes} {categoria} {letra}; uma categoria com {letra} ganha a
-               etapa dos parecidos (os que já existem na pasta da letra), como os filmes. icon: um ícone do
-               seletor (js/util.js), ou '' = pelo nome da categoria
+               {atracao} (obrigatório) {ano} {mes} {categoria} {letra} (a primeira letra do nome sem o
+               artigo: a pasta da letra dos filmes). icon: um ícone do seletor (js/util.js)
 Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
 atrações do índice.
 
@@ -147,9 +146,8 @@ PADX.projectOpenFolder = function () {
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
 comparado com os padrões da atração ('pattern' no índice) e com o nome. A pasta da atração recebe a
 estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que já existir.
-  - programas, novelas...: o .aep é o nome da atração + o que é (MAIS VOCE SERVICO)
-  - filmes (atração em FILMES/TITULOS): cada filme numa pasta, dentro da pasta da letra do título sem o
-    artigo (_T_ para OS TRES PATETAS, _#_ para 101 DALMATAS); o .aep é o título
+  - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
+    pasta da letra é só o token {letra} do caminho da categoria)
 No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage), a pasta
 da estrutura (relation) e a pasta de output (source; a da categoria ou a da atração no índice, sempre
 gravada, mesmo quando a etapa CRIAR não cria a pasta).
@@ -226,12 +224,9 @@ function padIndexGroups() {
 	return [{ category: { key: 'atracoes', label: 'ATRAÇÕES' }, groups: groups }];
 }
 
-function padIsFilmPath(path) {
-	return /(^|\/)FILMES\/TITULOS$/i.test(String(path || '').replace(/\\/g, '/').replace(/\/+$/, ''));
-}
 
 // Atrações cuja claquete começa com um dos padrões (ou com o nome), a mais específica primeiro.
-// a: { claquete } → { claquete, matches: [{ name, category, path, display, film }] }
+// a: { claquete } → { claquete, matches: [{ name, category, path, display }] }
 PADX.projectLookup = function (a) {
 	var words = padClaqueteWords(a.claquete);
 	var prefixes = {};
@@ -268,7 +263,7 @@ PADX.projectLookup = function (a) {
 			if (!score || seen[padCompact(group.name)]) continue;
 
 			seen[padCompact(group.name)] = true;
-			found.push({ name: group.name, category: index[c].category.label || '', path: path, display: padDisplayPath(padPath(path)), film: padIsFilmPath(path), score: score });
+			found.push({ name: group.name, category: index[c].category.label || '', path: path, display: padDisplayPath(padPath(path)), score: score });
 		}
 	}
 
@@ -279,99 +274,17 @@ PADX.projectLookup = function (a) {
 	return { claquete: padAepName(a.claquete), matches: found.slice(0, 6) };
 };
 
-// A pasta da letra de um filme: a primeira letra do título sem o artigo (_T_), ou _#_ para números.
-var PAD_ARTICLES = ['O', 'A', 'OS', 'AS', 'UM', 'UMA', 'UNS', 'UMAS', 'THE', 'AN'];
-
-function padFilmLetter(title) {
-	var words = padClaqueteWords(title);
-
-	if (words.length > 1 && PAD_ARTICLES.indexOf(words[0]) >= 0) words.shift();
-
-	var first = words.length ? words[0].charAt(0) : '';
-
-	return /[A-Z]/.test(first) ? first : '#';
-}
-
-// Quanto um nome de pasta parece com o título (palavras em comum; o começo igual pesa mais).
-function padLikeness(name, title) {
-	var a = padClaqueteWords(name);
-	var b = padClaqueteWords(title);
-	var score = 0;
-
-	for (var i = 0; i < b.length; i++) {
-		if (a.indexOf(b[i]) >= 0) score += 2;
-	}
-
-	if (padCompact(name).indexOf(padCompact(title)) == 0 || padCompact(title).indexOf(padCompact(name)) == 0) score += 3;
-
-	return score;
-}
-
-// Os filmes parecidos com o título, na pasta da letra. a: { path (a pasta TITULOS), title }
-PADX.projectFilms = function (a) {
-	var letter = padFilmLetter(a.title);
-	var base = new Folder(padPath(a.path));
-	var letterFolder = null;
-	var films = [];
-
-	if (base.exists) {
-		var items = base.getFiles();
-
-		for (var i = 0; i < items.length; i++) {
-			if (!(items[i] instanceof Folder)) continue;
-
-			var name = decodeURI(items[i].name);
-
-			if (name.toUpperCase() == '_' + letter + '_' || name.toUpperCase() == letter) letterFolder = items[i];
-		}
-	}
-
-	if (letterFolder) {
-		var list = letterFolder.getFiles();
-
-		for (var f = 0; f < list.length; f++) {
-			if (!(list[f] instanceof Folder)) continue;
-
-			var film = decodeURI(list[f].name);
-			var like = a.title ? padLikeness(film, a.title) : 1;
-
-			if (like > 0) films.push({ name: film, path: padDisplayPath(list[f].fsName), raw: list[f].fsName, like: like });
-		}
-	}
-
-	films.sort(function (x, y) {
-		return y.like - x.like;
-	});
-
-	var letterPath = letterFolder ? letterFolder.fsName : base.fsName + '/_' + letter + '_';
-
-	return { letter: '_' + letter + '_', letterPath: padDisplayPath(letterPath), films: films.slice(0, 8), newName: padAepName(a.title), newPath: padDisplayPath(letterPath + '/' + padAepName(a.title)) };
-};
-
 // Onde fica cada coisa: a raiz da estrutura, a pasta dos .aep e o nome do arquivo.
-// a: { kind: 'film' | 'program', atracao, path, what, title, filmPath } → { root, projects, fileBase }
+// a: { atracao, path, what } → { root, projects, fileBase }
 function padNewProjectPlan(a) {
 	var settings = padReadCollect();
 	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
 	var root;
 	var fileBase;
 
-	if (a.kind == 'film') {
-		fileBase = padAepName(a.title);
-		if (!fileBase) throw new Error('#PAD_090 - digite o título do filme.');
-
-		if (a.filmPath) {
-			root = padPath(a.filmPath);
-		} else {
-			var films = PADX.projectFilms({ path: a.path, title: a.title });
-
-			root = padPath(films.newPath);
-		}
-	} else {
-		fileBase = padAepName(a.atracao + ' ' + (a.what || ''));
-		if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
-		root = padPath(a.path);
-	}
+	fileBase = padAepName(a.atracao + ' ' + (a.what || ''));
+	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
+	root = padPath(a.path);
 
 	if (!root) throw new Error('#PAD_091 - sem pasta de destino: escolha a pasta.');
 

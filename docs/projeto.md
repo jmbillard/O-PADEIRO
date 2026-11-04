@@ -23,15 +23,12 @@ uma tela por vez; **‹ voltar** volta uma etapa.
 2. **PASTA** → só aparece quando a claquete combina com mais de uma atração, ou com nenhuma. escolha a atração, **criar nova** (filme inédito, novela nova…) ou **escolher uma pasta…** (o navegador de pastas).
    - **NOVA** → o nome e **dentro de** qual categoria: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`); embaixo, a prévia do caminho. a pasta da atração nova é criada ao criar o projeto.
    - **nenhuma destas: escolher a pasta…** (sempre no fim da lista) → a saída livre, quando nenhuma categoria serve para a atração. sem categorias na configuração, o **escolher a pasta…** fica no lugar da lista.
-   - numa categoria com `{letra}` (FILMES), o próximo passo é a etapa **FILME**, com os parecidos da pasta da letra.
+   - **filmes** seguem o mesmo fluxo das outras categorias: a pasta da letra é só o token `{letra}` do caminho (`…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`).
    - se a pasta da categoria não pode ser acessada (rede fora ou modo local), o projeto vai para a **pasta dos projetos** deste computador (`{categoria}/{atracao}`), com o aviso na prévia.
-3. **FILME** (atrações de filmes) → o título do filme. a lista mostra os filmes parecidos que já existem na pasta da letra; escolha um ou **filme novo**.
-   - a letra é a primeira do título, depois do artigo (*Os Três Patetas* → `_T_`); títulos com número vão para `_#_` (*101 Dálmatas*).
-   - o `.aep` tem o nome do filme (ex: `NAO NAO OLHE.aep`).
-4. **ARQUIVO** (programas, novelas…) → **o que é** (ex: `SERVIÇO`, `CRÉDITOS`, `CHROMA`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). uma atração pode ter vários projetos.
+3. **ARQUIVO** (todas as atrações, filmes também) → **o que é** (ex: `SERVIÇO`, `CRÉDITOS`, `CHROMA`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). uma atração pode ter vários projetos.
    - embaixo aparecem os `.aep` que já estão na `01 PROJETOS` da atração, o último alterado primeiro, com a data (`hoje 14:32`, `ontem 09:10`, `28/10`).
    - já existe um com o mesmo nome → **abrir o existente** ou **salvar como … 2**.
-5. **CRIAR** → embaixo da estrutura, a **pasta de output** (a do caminho de output da categoria, ou a da atração no índice): vai sempre para os dados do projeto; se ainda não existe, um menu radial **não criar agora** / **criar a pasta** (o padrão). depois: o cartão azul mostra a estrutura e o arquivo: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara). **Criar projeto** cria as pastas que faltam e salva o `.aep`. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
+4. **CRIAR** → embaixo da estrutura, a **pasta de output** (a do caminho de output da categoria, ou a da atração no índice): vai sempre para os dados do projeto; se ainda não existe, um menu radial **não criar agora** / **criar a pasta** (o padrão). depois: o cartão azul mostra a estrutura e o arquivo: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara). **Criar projeto** cria as pastas que faltam e salva o `.aep`. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 

@@ -27,7 +27,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 ```text
 O-PADEIRO/
 ├─ INSTALAR O PADEIRO.jsx        → instalador do carregador (File > Scripts > Run Script File... no After Effects)
-├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
+├─ O_PADEIRO_GLOBAL_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
    ├─ CSXS/manifest.xml          → os 7 painéis
@@ -117,7 +117,7 @@ cada painel é uma página separada. eles combinam o que fazer por arquivos pequ
 | `shared_config.txt` | instaladores | host (onde está a lista compartilhada) |
 | `temp/template_lists.json` | templates | templates (fixados e recentes, por produção) |
 
-a **lista de produções** é sempre o `O_PADEIRO_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
+a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
 
 <br>
 
@@ -140,7 +140,7 @@ powershell -ExecutionPolicy Bypass -File extension\scripts\install-win.ps1
 no Windows o instalador sempre copia (`-Uninstall` remove).
 
 > 🚩 *obs:*\
-> • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_config.json` da raiz do repo: salvar no editor de produções grava nele.\
+> • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_GLOBAL_config.json` da raiz do repo: salvar no editor de produções grava nele.\
 > • os instaladores ligam o `PlayerDebugMode` (CSXS 9 a 13), sem o qual o CEP não carrega extensões sem assinatura.\
 > • os instaladores também removem o `O PADEIRO.jsx` da versão antiga (script ScriptUI) das pastas `Scripts/ScriptUI Panels`.\
 > • mudanças no `manifest.xml` só valem depois de reiniciar o After Effects.

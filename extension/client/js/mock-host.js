@@ -214,11 +214,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			// ?mock=local: a lista compartilhada não está acessível (rede fora)
 			if (mode === 'local' && !window.PAD_MOCK_NETBACK) {
-				return { configPath: '//servidor/padeiro/O_PADEIRO_config.json', shared: false, stamp: 0, productions: [], error: '#PAD_064 - lista de produções compartilhada não encontrada: //servidor/padeiro/O_PADEIRO_config.json. verifique a conexão com a rede (o arquivo fica junto do padeiro).' };
+				return { configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json', shared: false, stamp: 0, productions: [], error: '#PAD_064 - lista de produções compartilhada não encontrada: //servidor/padeiro/O_PADEIRO_GLOBAL_config.json. verifique a conexão com a rede (o arquivo fica junto do padeiro).' };
 			}
 
 			return {
-				configPath: '//servidor/padeiro/O_PADEIRO_config.json',
+				configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json',
 				shared: true,
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
@@ -407,7 +407,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -1027,27 +1027,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return { claquete: key(a.claquete), matches: a.claquete ? out : [] };
-		},
-
-		projectFilms: function (a) {
-			var all = ['NAO OLHE PARA CIMA', 'NAO NAO OLHE', 'NOITE DOS MORTOS VIVOS', 'NAO ME ABANDONE JAMAIS'];
-			var key = function (t) {
-				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
-			};
-			var t = key(a.title);
-			var films = all.map(function (f) {
-				var like = t.split(' ').filter(function (w) {
-					return w && f.split(' ').indexOf(w) >= 0;
-				}).length * 2 + (f.indexOf(t) === 0 ? 3 : 0);
-
-				return { name: f, path: a.path + '/_N_/' + f, raw: a.path + '/_N_/' + f, like: like };
-			}).filter(function (f) {
-				return f.like > 0;
-			}).sort(function (x, y) {
-				return y.like - x.like;
-			});
-
-			return { letter: '_N_', letterPath: a.path + '/_N_', films: films, newName: t, newPath: a.path + '/_N_/' + t };
 		},
 
 		projectBases: function () {

@@ -14,7 +14,7 @@ as abas ficam em três grupos, separados por uma linha:
 
 **nas listas** → os pontinhos à esquerda reordenam; a **lixeira**, à direita da linha e fora dos campos, exclui a linha (a tampa levanta ao passar o mouse). os campos de caminho mostram o fim do caminho.
 
-**onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).
+**onde cada coisa é salva** → as ferramentas, os links e a rede são da 🌐 **equipe** (no `O_PADEIRO_GLOBAL_config.json` da rede: vale para todo mundo). aparência, layout e meu usuário são 👤 **locais** (na pasta de dados do usuário, neste computador: não muda nada para os outros).
 
 **👤 neste computador** → numa aba da equipe, as opções que são só suas ficam embaixo de uma linha com o bonequinho e **NESTE COMPUTADOR**:
 
@@ -35,7 +35,7 @@ uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na
 
 a aba **templates** é a lista de produções. uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
 
-a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config.json`, na pasta do padeiro na rede. quando alguém muda a lista, os painéis de todo mundo atualizam sozinhos.
+a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL_config.json`, na pasta do padeiro na rede. (as versões antigas usavam `O_PADEIRO_config.json`: na primeira vez, o padeiro copia esse arquivo com o nome novo, e daí em diante cada versão grava o seu, sem uma estragar a configuração da outra.) quando alguém muda a lista, os painéis de todo mundo atualizam sozinhos.
 
 > 📟 *aba templates*:
 >
@@ -55,7 +55,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_config
 > • a ordem da lista é a do seletor de produção (no rodapé do painel de templates): arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
 > • o caminho do arquivo da lista aparece no fim da lista de produções.\
 > • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
-> • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_config.bak.json`.\
+> • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_GLOBAL_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
 
 **👤 neste computador** (embaixo, só suas):
@@ -89,8 +89,8 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   | `{categoria}` | o nome da categoria |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
 
-  ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/ROCK IN RIO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
-- **{letra}** → uma categoria com `{letra}` ganha a etapa dos **parecidos** na janela PROJETO (os que já existem na pasta da letra), como os filmes, e o `.aep` tem o nome digitado.
+  ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026`; `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
+- **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pela claquete, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
 
@@ -224,7 +224,7 @@ define onde o padeiro registra cada preenchimento: data, produção, template, q
 | --- | --- |
 | **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
 | **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
-| **CSV global** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
+| **CSV global** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_GLOBAL_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
 | **desligado** | não registra nada |
 
 > 🚩 *obs:*\

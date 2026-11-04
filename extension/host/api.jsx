@@ -382,39 +382,60 @@ function padConfigCopyFile() {
 	return new File(scriptPreferencesPath + '/config_copy.json');
 }
 
-// Lista de produções COMPARTILHADA ('O_PADEIRO_config.json'): fica na pasta do padeiro na rede,
-// ao lado da pasta da extensão. Procura, nesta ordem:
-//   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
+// Configuração da equipe COMPARTILHADA ('O_PADEIRO_GLOBAL_config.json'): fica na pasta do padeiro na rede,
+// ao lado da pasta da extensão. o nome GLOBAL separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
+// que continuam lendo e gravando o seu sem estragar este. Procura, nesta ordem:
+//   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário; um caminho com o
+//      nome antigo vale como a mesma pasta com o nome novo);
 //   2. o arquivo na pasta que contém a pasta da extensão.
-// Caminho esperado da lista compartilhada: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
-function padSharedConfigPath() {
+// Na primeira vez, só com o arquivo antigo na pasta: ele é copiado com o nome novo (o antigo fica).
+var PAD_CONFIG_NAME = 'O_PADEIRO_GLOBAL_config.json';
+var PAD_CONFIG_OLD_NAME = 'O_PADEIRO_config.json';
+
+// a pasta do instalador (shared_config.txt) ou, sem ele, a de cima da extensão → o caminho com o nome novo
+function padSharedConfigCandidates() {
+	var out = [];
 	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
 
 	if (pointer.exists) {
 		try {
 			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
 
-			if (path != '') return path;
+			if (path != '') out.push(new File(path).parent.fsName + '/' + PAD_CONFIG_NAME);
 		} catch (err) { }
 	}
 
-	return new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json';
+	out.push(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/' + PAD_CONFIG_NAME);
+
+	return out;
+}
+
+// Caminho esperado da configuração da equipe: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
+function padSharedConfigPath() {
+	return padSharedConfigCandidates()[0];
 }
 
 function padSharedConfigFile() {
-	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
+	var list = padSharedConfigCandidates();
 
-	if (pointer.exists) {
-		try {
-			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
+	for (var i = 0; i < list.length; i++) {
+		var file = new File(list[i]);
 
-			if (path != '' && new File(path).exists) return new File(path);
-		} catch (err) { }
+		if (file.exists) return file;
+
+		// migração: só o arquivo antigo nesta pasta → a cópia com o nome novo
+		var old = new File(file.parent.fsName + '/' + PAD_CONFIG_OLD_NAME);
+
+		if (old.exists) {
+			try {
+				old.copy(file.fsName);
+			} catch (err) { }
+
+			return file.exists ? file : old;
+		}
 	}
 
-	var sibling = new File(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json');
-
-	return sibling.exists ? sibling : null;
+	return null;
 }
 
 // Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No modo local
@@ -622,7 +643,7 @@ PADX.productions = function () {
 > log dos preenchimentos
 ---------------------------------------------------------------
 
-Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_config.json), editável no painel de
+Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel de
 produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
 templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo: o webhook de sempre.
 

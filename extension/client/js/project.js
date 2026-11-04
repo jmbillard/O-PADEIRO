@@ -7,8 +7,7 @@
 Projeto sem claquete: as etapas.
   CLAQUETE → a atração (índice da busca, pelo começo da claquete)
   PASTA    → só se houver mais de uma atração, ou nenhuma (criar nova / escolher uma pasta)
-  NOVA     → uma atração nova (nome + dentro de)
-  FILME    → atração em FILMES/TITULOS: o título (a pasta do filme, na pasta da letra)
+  NOVA     → uma atração nova (nome + dentro de: a categoria, com o caminho de tokens)
   ARQUIVO  → o que é (o .aep é a atração + isso, sem acentos)
   CRIAR    → a estrutura (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA, aproveitando a que existir) e o .aep
 Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
@@ -22,7 +21,6 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/projeto.md';
 	var LOOKUP_MS = 90; // espera depois da última tecla para procurar a atração (a busca é na memória)
-	var FILMS_MS = 280; // e para procurar o filme (lista as pastas no After Effects)
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
@@ -34,15 +32,14 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	var flow = {
 		claquete: '',
 		matches: [],
-		pick: null, // { name, path, display, film } a atração
+		pick: null, // { name, path, display } a atração
 		choice: '', // na tela PASTA: o índice da atração, 'new' ou 'folder'
-		film: null, // { raw, name } o filme existente, ou null = filme novo
 		output: '', // a pasta de output (a da atração no índice, ou o caminho de output da categoria): proposta na etapa CRIAR
 		what: '',
 		mode: '', // '', 'open', 'increment' (arquivo existente)
 		history: []
 	};
-	var state = { screen: '', current: null, lookupTimer: null, lookupSeq: 0, filmTimer: null, busy: false, bases: [] };
+	var state = { screen: '', current: null, lookupTimer: null, lookupSeq: 0, busy: false, bases: [] };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -86,7 +83,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		});
 		status('');
 
-		var focus = { claquete: 'claq', nova: 'nova-name', filme: 'filme-title', arquivo: 'arq-what' }[name];
+		var focus = { claquete: 'claq', nova: 'nova-name', arquivo: 'arq-what' }[name];
 
 		if (focus) setTimeout(function () {
 			$(focus).focus();
@@ -168,10 +165,6 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		if (source.info && source.info.platform !== 'Mac') return p.replace(/\//g, '\\');
 
 		return p;
-	}
-
-	function isFilmPath(path) {
-		return /(^|\/)FILMES\/TITULOS$/i.test(String(path || '').replace(/\\/g, '/').replace(/\/+$/, ''));
 	}
 
 	// o texto em palavras (sem acentos, maiúsculas): 'f' tudo junto e 's' marcando onde começa cada palavra
@@ -333,7 +326,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		return local ? localCandidates() : await webhookCandidates(fs);
 	}
 
-	// → { claquete, matches: [{ name, category, path, display, film, score }] } (o mesmo formato do host)
+	// → { claquete, matches: [{ name, category, path, out, display, score }] } (o mesmo formato do host)
 	async function findAttractions(claq) {
 		var list = await candidates();
 
@@ -373,22 +366,19 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), film: isFilmPath(f.it.path), score: f.score };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
 	}
 
-	// "dentro de" (atração nova): no webhook, as categorias das atrações (FILMES, NOVELAS, PROGRAMAS…), cada uma
-	// na pasta onde está a maioria das atrações dela (a pasta do caminho cujo nome começa com a categoria; os
-	// filmes, em FILMES/TITULOS, com a pasta da letra); no índice local, as pastas indexadas e as de dentro delas.
 	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
 	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
 	function categoryBase(c, fallback) {
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
-		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', path: fixed, display: displayPath(fixed), letter: pattern.indexOf('{letra}') >= 0, offline: !c.reachable };
+		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
 	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {categoria} {letra}
@@ -485,22 +475,15 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		show('pasta');
 	}
 
+	// a atração escolhida (a achada pela claquete ou a pasta escolhida): o que é (ARQUIVO). a mesma etapa para
+	// todas, filmes também
 	function pickAttraction(m) {
 		flow.pick = m;
-		flow.film = null;
 		flow.output = m.out || ''; // a pasta de output da atração (o índice), se houver
-
-		if (m.film) {
-			$('filme-hint').textContent = m.name + ' · ' + m.display;
-			$('filme-title').value = '';
-			renderFilms([], '');
-			show('filme');
-		} else {
-			$('arq-what').value = '';
-			flow.what = '';
-			planFile();
-			show('arquivo');
-		}
+		$('arq-what').value = '';
+		flow.what = '';
+		planFile();
+		show('arquivo');
 	}
 
 	/* ---------------------------------------------------------------
@@ -545,7 +528,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 			var name = picked.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
 
-			return pickAttraction({ name: name, path: picked, display: picked, film: /(^|[\\\/])FILMES[\\\/]TITULOS$/i.test(picked.replace(/[\\\/]+$/, '')) });
+			return pickAttraction({ name: name, path: picked, display: picked });
 		}
 
 		pickAttraction(flow.matches[+flow.choice]);
@@ -628,7 +611,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			if (base.offline) $('nova-preview').appendChild(el('em', 'nova-offline', 'pasta deste computador: a da categoria não está acessível'));
 		} else if (base) {
 			$('nova-preview').insertAdjacentHTML('afterbegin', FOLDER_SVG);
-			$('nova-preview').appendChild(el('span', null, base.display + (base.film ? '/_' + (name ? letterOf(name) : '?') + '_/' : '/')));
+			$('nova-preview').appendChild(el('span', null, base.display + '/'));
 			$('nova-preview').appendChild(el('b', null, name || '…'));
 		}
 
@@ -652,27 +635,11 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		if (!base || !aepName(name)) return;
 
-		// categoria com {letra}: a etapa dos parecidos (os que já existem na pasta da letra), como os filmes
-		if (base.pattern && base.letter) {
-			var head = base.pattern.slice(0, base.pattern.indexOf('{letra}'));
-			var parent = fillPattern(head.slice(0, head.lastIndexOf('/')), name, base.label);
-
-			flow.pick = { name: base.label, path: parent, display: displayPath(parent), film: true, pattern: base.pattern, outPattern: base.outPattern, category: base.label };
-			flow.film = null;
-			flow.filmTouched = false;
-			$('filme-hint').textContent = base.label + ' · ' + displayPath(parent);
-			$('filme-title').value = name;
-			renderFilms([], '');
-			show('filme');
-			filmSearch();
-			return;
-		}
-
 		// categoria configurada: o caminho dela com os tokens trocados
 		if (base.pattern) {
 			var path = fillPattern(base.pattern, name, base.label);
 
-			flow.pick = { name: name, path: path, display: displayPath(path), film: false };
+			flow.pick = { name: name, path: path, display: displayPath(path) };
 			flow.output = base.outPattern ? fillPattern(base.outPattern, name, base.label) : '';
 			$('arq-what').value = '';
 			flow.what = '';
@@ -683,93 +650,14 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 		flow.output = ''; // pasta livre: sem output proposto
 
-		if (base.film) {
-			flow.pick = { name: 'Filmes', path: base.path, display: base.display, film: true };
-			flow.film = null;
-			$('filme-title').value = name;
-			flow.newFilmOnly = true;
-			return goCreate({ kind: 'film', title: name, filmPath: '' });
-		}
-
 		// atração nova: uma pasta com o nome dela dentro da escolhida
 		var sep = /\\/.test(base.path) ? '\\' : '/';
 
-		flow.pick = { name: name, path: base.path.replace(/[\\\/]+$/, '') + sep + aepName(name), display: base.display + '/' + aepName(name), film: false };
+		flow.pick = { name: name, path: base.path.replace(/[\\\/]+$/, '') + sep + aepName(name), display: base.display + '/' + aepName(name) };
 		$('arq-what').value = '';
 		flow.what = '';
 		planFile();
 		show('arquivo');
-	}
-
-	/* ---------------------------------------------------------------
-	   FILME
-	   --------------------------------------------------------------- */
-
-	function filmSearch() {
-		clearTimeout(state.filmTimer);
-
-		var title = $('filme-title').value.trim();
-
-		state.filmTimer = setTimeout(async function () {
-			if (!title) return renderFilms([], '');
-
-			try {
-				var res = await call('projectFilms', { path: flow.pick.path, title: title });
-
-				if ($('filme-title').value.trim() === title) {
-					state.filmInfo = res;
-					renderFilms(res.films, title);
-				}
-			} catch (err) {
-				status(err.message, 'error');
-			}
-		}, FILMS_MS);
-	}
-
-	function renderFilms(films, title) {
-		var list = $('filme-list');
-		var info = state.filmInfo || {};
-
-		list.textContent = '';
-
-		// o primeiro parecido já vem marcado; sem nenhum, o filme novo
-		if (!flow.filmTouched) flow.film = films.length && films[0].like >= 4 ? films[0] : null;
-
-		films.slice(0, 4).forEach(function (f) {
-			list.appendChild(option(FOLDER_SVG, f.name, f.path, flow.film && flow.film.raw === f.raw, function () {
-				flow.film = f;
-				flow.filmTouched = true;
-				renderFilms(films, title);
-			}));
-		});
-
-		if (title) {
-			var newPath = flow.pick && flow.pick.pattern ? displayPath(fillPattern(flow.pick.pattern, title, flow.pick.category)) : (info.letterPath || 'TITULOS') + '/' + aepName(title);
-
-			list.appendChild(option(PLUS_SVG, (flow.pick && flow.pick.pattern ? 'novo: ' : 'filme novo: ') + aepName(title), newPath, !flow.film, function () {
-				flow.film = null;
-				flow.filmTouched = true;
-				renderFilms(films, title);
-			}));
-		}
-
-		$('filme-next').disabled = !title;
-	}
-
-	function filmeNext() {
-		var title = $('filme-title').value.trim();
-
-		if (!title) return;
-
-		var filmPath = flow.film ? flow.film.raw : '';
-
-		// novo, numa categoria com tokens: a pasta é o caminho dela (com {ano}, {mes}… trocados)
-		if (!flow.film && flow.pick && flow.pick.pattern) filmPath = fillPattern(flow.pick.pattern, title, flow.pick.category);
-
-		// o output da categoria, com o nome do filme (o existente ou o novo)
-		if (flow.pick && flow.pick.outPattern) flow.output = fillPattern(flow.pick.outPattern, flow.film ? flow.film.name : title, flow.pick.category);
-
-		goCreate({ kind: 'film', title: flow.film ? flow.film.name : title, filmPath: filmPath });
 	}
 
 	/* ---------------------------------------------------------------
@@ -1040,7 +928,6 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		flow.matches = [];
 		flow.pick = null;
 		flow.output = '';
-		flow.filmTouched = false;
 		$('claq').value = '';
 		$('claq-found').hidden = true;
 		$('claq-hint').textContent = '';
@@ -1102,7 +989,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('nova-pick').addEventListener('click', function () {
 			var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
 
-			if (picked) state.pickedBase = { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked, film: /(^|[\\\/])FILMES[\\\/]TITULOS$/i.test(picked) };
+			if (picked) state.pickedBase = { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked };
 			$('nova-pick').querySelector('span').textContent = state.pickedBase ? state.pickedBase.display : 'escolher a pasta…';
 			renderNova();
 		});
@@ -1110,7 +997,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 			if (this.value === 'pick') {
 				var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
 
-				state.pickedBase = picked ? { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked, film: /(^|[\\\/])FILMES[\\\/]TITULOS$/i.test(picked) } : null;
+				state.pickedBase = picked ? { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked } : null;
 			}
 
 			renderNova();
@@ -1118,13 +1005,6 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		onEnter('nova-name', novaNext);
 		$('nova-next').addEventListener('click', novaNext);
 
-		$('filme-title').addEventListener('input', function () {
-			flow.filmTouched = false;
-			filmSearch();
-			$('filme-next').disabled = !this.value.trim();
-		});
-		onEnter('filme-title', filmeNext);
-		$('filme-next').addEventListener('click', filmeNext);
 
 		$('arq-what').addEventListener('input', function () {
 			flow.what = this.value;

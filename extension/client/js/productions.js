@@ -4,7 +4,7 @@
 > LISTA DE PRODUÇÕES — editor
 ---------------------------------------------------------------
 
-Edita o 'O_PADEIRO_config.json' compartilhado pela equipe:
+Edita o 'O_PADEIRO_GLOBAL_config.json' compartilhado pela equipe:
 nome do menu, ícone (24 x 24 px, opcional) e pasta de templates de cada produção.
 Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado).
 
@@ -3276,8 +3276,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function catPreview(row, key) {
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
-		var film = path.indexOf('{letra}') >= 0;
-		var sample = { atracao: film ? 'OS TRES PATETAS' : 'NOVA ATRAÇÃO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: film ? 'T' : 'A' };
+		// o exemplo de atração nova (o mesmo do campo da janela PROJETO)
+		var sample = { atracao: 'DOMINGAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'D' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3287,7 +3287,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!path) return '';
 
-		return '→ ' + (film ? '<b>Os Três Patetas</b>: ' : '') + shown.replace(/\{(\w+)\}/g, function (all, k) {
+		return '→ ' + shown.replace(/\{(\w+)\}/g, function (all, k) {
 			return PATH_TOKENS.indexOf(k) >= 0 ? '<b>' + sample[k] + '</b>' : '<i>' + all + '</i>';
 		});
 	}
@@ -3923,7 +3923,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (problems.length) return toast('error', problems[0]);
 
-		var file = PAD_BRIDGE.pickSaveFile('Salvar a lista de produções', 'O_PADEIRO_config.json', ['json']);
+		var file = PAD_BRIDGE.pickSaveFile('Salvar a lista de produções', 'O_PADEIRO_GLOBAL_config.json', ['json']);
 
 		if (!file) return;
 

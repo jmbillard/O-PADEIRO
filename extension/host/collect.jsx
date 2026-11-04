@@ -9,7 +9,7 @@ Copia os arquivos usados no projeto para a pasta do projeto (a do .aep), numa á
 tipo, e troca os caminhos dos itens para as cópias. Sequências de imagens são copiadas inteiras (os
 quadros do trecho usado), cada uma na própria subpasta.
 
-'COLLECT' no O_PADEIRO_config.json:
+'COLLECT' no O_PADEIRO_GLOBAL_config.json:
   folders        → a árvore, dentro da pasta do projeto: [{ name, parent, contents: [...] }]
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
                    'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de

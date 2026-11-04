@@ -5,7 +5,7 @@
 > editor da lista de produções (host)
 ---------------------------------------------------------------
 
-A lista é o 'O_PADEIRO_config.json' compartilhado pela equipe.
+A lista é o 'O_PADEIRO_GLOBAL_config.json' compartilhado pela equipe.
 Como mais de uma pessoa pode editar, salvar confere se o arquivo mudou desde que o editor o leu.
 
 */
@@ -149,7 +149,7 @@ PADX.checkFolders = function (a) {
 > drives da rede (aba REDE da configuração)
 ---------------------------------------------------------------
 
-'DRIVES' no O_PADEIRO_config.json: { drives: [{ letter, path }], shares: [{ share, server }], defaultServer }.
+'DRIVES' no O_PADEIRO_GLOBAL_config.json: { drives: [{ letter, path }], shares: [{ share, server }], defaultServer }.
   drives        → letra do Windows ↔ caminho de rede (//servidor/share/...): converte L:\... em //... e /Volumes/...
   shares        → volumes sem letra (share → servidor), para converter /Volumes/SHARE em //servidor/SHARE
   defaultServer → servidor usado quando o share não está em nenhum dos dois
@@ -288,7 +288,7 @@ function padApplyConfig() {
 > renomear (aba RENOMEAR da configuração)
 ---------------------------------------------------------------
 
-'RENAME' no O_PADEIRO_config.json: { types: [{ prefix, comment, terms: [...] }], fixed: [{ match, name }] }.
+'RENAME' no O_PADEIRO_GLOBAL_config.json: { types: [{ prefix, comment, terms: [...] }], fixed: [{ match, name }] }.
   types → tipos de peça, na ordem em que são procurados (vale o primeiro encontrado)
   fixed → nomes fixos: a comp que contém 'match' (no nome ou no comentário) passa a se chamar 'name'
 Sem 'RENAME' no arquivo: os valores de lib/globals.js (os de sempre).
@@ -375,7 +375,7 @@ function padReadRename() {
 > organizar (aba ORGANIZAR da configuração)
 ---------------------------------------------------------------
 
-'ORGANIZE' no O_PADEIRO_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
+'ORGANIZE' no O_PADEIRO_GLOBAL_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
 { folders: [{ name, parent, contents: [...] }], renderComments: [...], editComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
 Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
 
@@ -504,7 +504,7 @@ function padReadOrganize() {
 > busca de caminhos (aba BUSCAR da configuração)
 ---------------------------------------------------------------
 
-'SEARCH' no O_PADEIRO_config.json: { url, servidor: [{ name, path }] }.
+'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, servidor: [{ name, path }] }.
   url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
   servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
 Sem 'SEARCH' (ou no formato antigo, do índice que ficou só para o legacy): o webhook e os caminhos padrão.
@@ -609,7 +609,7 @@ PADX.searchCategories = function (a) {
 > links da barra (aba LINKS da configuração)
 ---------------------------------------------------------------
 
-'LINKS' no O_PADEIRO_config.json: [{ name, url, icon }], na ordem da barra. 'icon' é um PNG 24 x 24 (literal de
+'LINKS' no O_PADEIRO_GLOBAL_config.json: [{ name, url, icon }], na ordem da barra. 'icon' é um PNG 24 x 24 (literal de
 string binária, como o das produções); vazio = o favicon do site.
 
 */
@@ -687,7 +687,7 @@ PADX.savePersonalLinks = function (a) {
 > ferramentas da barra (aba LAYOUT da configuração)
 ---------------------------------------------------------------
 
-'BAR' no O_PADEIRO_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
+'BAR' no O_PADEIRO_GLOBAL_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
   items  → a ordem das ferramentas na barra; 'divider' separa os grupos. ferramentas: templates, fontes,
            projeto, coletar, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
   hidden → as escondidas da barra (as mesmas chaves, e 'links' para o bloco de links)
@@ -802,7 +802,7 @@ PADX.requestedConfigTab = function () {
 > aparência (aba APARÊNCIA da configuração)
 ---------------------------------------------------------------
 
-'APPEARANCE' no O_PADEIRO_config.json: o tema de todas as janelas (aplicado por client/js/theme.js).
+'APPEARANCE' no O_PADEIRO_GLOBAL_config.json: o tema de todas as janelas (aplicado por client/js/theme.js).
   mode          → light, dark ou auto (segue o sistema)
   background    → gradient (degradê) ou solid (a cor de destaque)
   accent        → cor de destaque (#rrggbb); gradientStart / gradientEnd → as pontas do degradê
@@ -886,7 +886,7 @@ PADX.appearance = function () {
 ---------------------------------------------------------------
 
 'personal_config.json' na pasta de dados do usuário: { APPEARANCE, BAR }, só as que a pessoa personalizou.
-Sem elas, vale o padrão da equipe (APPEARANCE e BAR do O_PADEIRO_config.json, na rede).
+Sem elas, vale o padrão da equipe (APPEARANCE e BAR do O_PADEIRO_GLOBAL_config.json, na rede).
 
 */
 
