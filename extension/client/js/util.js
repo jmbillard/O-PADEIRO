@@ -293,5 +293,64 @@
 		});
 	}
 
-	window.PAD_UTIL = { decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
+	// A lixeira de uma linha (fora do campo, à direita): o mesmo botão da configuração
+	var TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7h11l-1 12.5h-9z" /><path d="M10 11v5M14 11v5" /></svg>';
+
+	function trashButton(title, onClick) {
+		var btn = document.createElement('button');
+
+		btn.type = 'button';
+		btn.className = 'row-del';
+		btn.title = title;
+		btn.setAttribute('aria-label', title);
+		btn.innerHTML = TRASH_SVG;
+		btn.addEventListener('click', onClick);
+
+		return btn;
+	}
+
+	// Excluir uma linha: ela esmaece, 'done' monta a lista de novo (já sem ela) e o que estava embaixo (as linhas
+	// seguintes, o '+ novo' e o resto da seção) desliza da posição antiga para a nova
+	function removeRow(row, done) {
+		var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (!row || !row.animate || reduce) return done();
+
+		var list = row.parentElement;
+		var index = Array.prototype.indexOf.call(list.children, row);
+		var tops = Array.prototype.slice.call(list.children, index + 1).map(function (c) {
+			return c.getBoundingClientRect().top;
+		});
+		var after = [];
+
+		for (var node = list; node && node !== document.body; node = node.parentElement) {
+			for (var sib = node.nextElementSibling; sib; sib = sib.nextElementSibling) after.push({ node: sib, top: sib.getBoundingClientRect().top });
+			if (node.classList && (node.classList.contains('cfg-card') || node.classList.contains('cfg-pane'))) break;
+		}
+
+		var slide = function (n, oldTop) {
+			var dy = oldTop - n.getBoundingClientRect().top;
+
+			if (Math.abs(dy) >= 1) n.animate([{ transform: 'translateY(' + dy + 'px)' }, { transform: 'none' }], { duration: 220, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+		};
+
+		row.style.pointerEvents = 'none';
+		var fade = row.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 110, easing: 'ease-out', fill: 'forwards' });
+
+		fade.onfinish = function () {
+			done();
+			// a linha que só se esconde (não sai da página) volta ao normal para quando aparecer de novo (só o
+			// esmaecimento daqui: as outras animações da linha seguem)
+			fade.cancel();
+			row.style.pointerEvents = '';
+			Array.prototype.slice.call(list.children, index).forEach(function (c, j) {
+				if (tops[j] != null) slide(c, tops[j]);
+			});
+			after.forEach(function (it) {
+				if (document.body.contains(it.node)) slide(it.node, it.top);
+			});
+		};
+	}
+
+	window.PAD_UTIL = { trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
 })();

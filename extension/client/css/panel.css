@@ -2329,30 +2329,6 @@ body.motion-ready .eyebrow {
   transition: none;
 }
 
-.select.has-remove .dropdown-trigger,
-.select.has-remove select {
-  padding-right: 66px;
-}
-
-.select.has-remove>.row-remove {
-  position: absolute;
-  z-index: 1;
-  top: calc(50% - 14px);
-  right: 30px;
-  width: 28px;
-  height: 28px;
-  border-color: transparent;
-  background: transparent;
-  color: var(--text-tertiary);
-}
-
-.select.has-remove>.row-remove:hover:not(:disabled) {
-  border-color: transparent;
-  background: var(--danger-bg);
-  color: var(--danger);
-  transform: none;
-}
-
 /* ícone no início do campo (o rótulo, quando há, continua em cima). Sem animação: só fica azul com o foco */
 .has-field-icon {
   position: relative;
@@ -2690,4 +2666,79 @@ body.motion-ready .eyebrow {
 /* as letras (AB, Aa) sentam na mesma linha do rótulo */
 .dropdown-trigger .dropdown-letters {
   transform: translateY(1px);
+}
+
+/* =========================================================
+   Lixeira de uma linha (excluir a linha inteira): fora do campo, à direita
+   (configuração, criador, editor de config). só o contorno fica vermelho;
+   a tampa abre para a esquerda no hover
+   ========================================================= */
+
+.row-del {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.row-del:hover:not(:disabled),
+.row-del:focus-visible {
+  color: #d64545; /* só o contorno fica vermelho, sem fundo */
+}
+
+.row-del:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.row-del svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  overflow: visible;
+}
+
+.trash-lid {
+  transform-box: fill-box;
+  transform-origin: 100% 100%; /* a dobradiça à direita: a tampa abre para a esquerda */
+  transition: transform 220ms var(--ease-soft);
+}
+
+.row-del:hover:not(:disabled) .trash-lid {
+  transform: translateY(-1.5px) rotate(14deg);
+}
+
+/* a linha com o campo e a lixeira ao lado */
+.path-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.path-row[hidden] {
+  display: none !important; /* escondida de verdade, mesmo com o display das linhas do criador */
+}
+
+.path-row>.cfg-path {
+  min-width: 0;
+  flex: 1;
+}
+
+/* os campos com um botão só dentro (a pastinha) */
+.cfg-path.one-btn .cfg-input {
+  padding-right: 44px;
 }

@@ -304,22 +304,21 @@ são preservadas ao salvar.
 					changed();
 				});
 
-				// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
-				var remove = miniButton('remove', 'remover layer', function () {
-					layers.splice(i, 1);
-					renderLayers();
-					changed();
+				// puxador à esquerda (arrastar muda a ordem) e a lixeira no fim da linha, fora do campo
+				var remove = PAD_UTIL.trashButton('remover layer', function () {
+					PAD_UTIL.removeRow(row, function () {
+						layers.splice(i, 1);
+						renderLayers();
+						changed();
+					});
 				});
-
-				remove.classList.add('row-remove');
-				methodSel.classList.add('has-remove');
-				methodSel.appendChild(remove);
 
 				row.appendChild(PAD_SORT.handle());
 				row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 				row.appendChild(el('span', 'cfg-row-prefix', 'layer'));
 				row.appendChild(num);
 				row.appendChild(methodSel);
+				row.appendChild(remove);
 				layersList.appendChild(row);
 			});
 
@@ -416,7 +415,8 @@ são preservadas ao salvar.
 			outputsList.textContent = '';
 
 			outputs.forEach(function (path, i) {
-				var line = el('div', 'cfg-path');
+				var row = el('div', 'path-row'); // o campo com a pastinha e a lixeira fora dele
+				var line = el('div', 'cfg-path one-btn');
 				var node = input(path);
 
 				node.setAttribute('aria-label', 'pasta de output ' + (i + 1));
@@ -439,17 +439,20 @@ são preservadas ao salvar.
 					outputs[i] = node.value;
 					changed();
 				});
-				var remove = miniButton('remove', 'remover output', function () {
-					outputs.splice(i, 1);
-					renderOutputs();
-					changed();
+				var remove = PAD_UTIL.trashButton('remover output', function () {
+					PAD_UTIL.removeRow(row, function () {
+						outputs.splice(i, 1);
+						renderOutputs();
+						changed();
+					});
 				});
 
 				remove.disabled = outputs.length === 1;
 				line.appendChild(node);
 				line.appendChild(pick);
-				line.appendChild(remove);
-				outputsList.appendChild(line);
+				row.appendChild(line);
+				row.appendChild(remove);
+				outputsList.appendChild(row);
 			});
 		}
 

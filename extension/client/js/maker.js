@@ -215,20 +215,19 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layer.method = select.value;
 			});
 
-			// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
-			var remove = miniButton('remove', 'remover layer', function () {
-				state.layers.splice(i, 1);
-				renderLayers();
+			// puxador à esquerda (arrastar muda a ordem) e a lixeira no fim da linha, fora do campo
+			var remove = PAD_UTIL.trashButton('remover layer', function () {
+				PAD_UTIL.removeRow(row, function () {
+					state.layers.splice(i, 1);
+					renderLayers();
+				});
 			});
-
-			remove.classList.add('row-remove');
-			selWrap.classList.add('has-remove');
-			selWrap.appendChild(remove);
 
 			row.appendChild(PAD_SORT.handle());
 			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 			row.appendChild(name);
 			row.appendChild(selWrap);
+			row.appendChild(remove);
 			list.appendChild(row);
 
 			PAD_DROPDOWN.enhance(select, 'layerMethod');
@@ -547,7 +546,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		list.textContent = '';
 
 		state.outputs.forEach(function (path, i) {
-			var line = el('div', 'cfg-path'); // campo com botões: sem ícone antes
+			var row = el('div', 'path-row'); // o campo com a pastinha e a lixeira fora dele
+			var line = el('div', 'cfg-path one-btn');
 			var input = el('input', 'cfg-input');
 			var pick = miniButton('folder', 'escolher pasta', async function () {
 				if (await pickPathInto(input, 'Selecione a pasta de output')) {
@@ -555,10 +555,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 					updateChecklist();
 				}
 			});
-			var remove = miniButton('remove', 'remover output', function () {
-				state.outputs.splice(i, 1);
-				renderOutputs();
-				updateChecklist();
+			var remove = PAD_UTIL.trashButton('remover output', function () {
+				PAD_UTIL.removeRow(row, function () {
+					state.outputs.splice(i, 1);
+					renderOutputs();
+					updateChecklist();
+				});
 			});
 
 			input.type = 'text';
@@ -574,8 +576,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			remove.disabled = state.outputs.length === 1; // mantém ao menos uma pasta
 			line.appendChild(input);
 			line.appendChild(pick);
-			line.appendChild(remove);
-			list.appendChild(line);
+			row.appendChild(line);
+			row.appendChild(remove);
+			list.appendChild(row);
 		});
 	}
 
@@ -797,7 +800,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		}
 	}
 
-	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; o × esvazia e esconde.
+	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; a lixeira esvazia e esconde.
 	function showImportRow(on) {
 		$('import-row').hidden = !on;
 		$('btn-import-add').hidden = on;
@@ -872,8 +875,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			$('f-import').focus();
 		});
 		$('remove-import').addEventListener('click', function () {
-			$('f-import').value = '';
-			showImportRow(false);
+			PAD_UTIL.removeRow($('import-row'), function () {
+				$('f-import').value = '';
+				showImportRow(false);
+			});
 		});
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de mídias');

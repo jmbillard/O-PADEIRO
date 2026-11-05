@@ -59,7 +59,7 @@ ao salvar, o padeiro:
 - **+ layers** → adiciona os layers selecionados na comp principal.
 - **método** → '*conteúdo do texto*' preenche um layer de texto; '*nome do layer*' renomeia o layer.
 - **⠿ puxador** (à esquerda) → arraste para mudar a ordem dos layers (com o puxador em foco, `↑` `↓` também movem).
-- **×** (dentro do campo do método) → remove o layer.
+- **lixeira** (no fim da linha, fora do campo) → remove o layer.
 - clique no nome do layer → seleciona o layer na comp.
 - **fontes usadas** (abaixo do preview) → cada fonte do projeto com uma prévia: o nome e um texto fixo ("Pão Quentinho ÁÉÇÕ 0123 %&@#", com acentos, números e símbolos) desenhado com ela, a partir do arquivo da fonte ou das fontes instaladas. sem nenhum dos dois, aparece '*prévia indisponível*'. as fontes vêm em ordem alfabética, com um selo à esquerda: **Tt** para as instaladas no computador, **CC** para as do Adobe Fonts (Creative Cloud) e **?** (amarelo) para as que não existem no computador.
 - **testar agora** (rodapé, ao lado de começar de novo) → preenche os layers com o primeiro bloco do exemplo e captura um novo preview (o texto do exemplo não muda).

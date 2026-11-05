@@ -36,7 +36,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **ícone antes OU botões dentro, nunca os dois.** campo com botão (pastinha, ×) não tem ícone antes; campo com ícone antes não tem botão dentro.
 - **botões dentro do campo** (`.cfg-path > .mini-button`) → transparentes, sem contorno, nem no hover; à direita.
 - **campo de caminho** → só leitura quando o caminho vem do navegador de pastas; mostra o **fim** do caminho (a parte que muda); a pastinha à direita troca a pasta.
-- **excluir** → a **lixeira fica fora do campo**, à direita da linha (`rowDelete`): só o contorno vermelho, a tampa abre para a esquerda no hover. nunca um × dentro do campo para excluir uma linha.
+- **excluir** → a **lixeira fica fora do campo**, à direita da linha (`PAD_UTIL.trashButton` + `PAD_UTIL.removeRow`; na configuração, `rowDelete`): só o contorno vermelho, a tampa abre para a esquerda no hover. nunca um × dentro do campo para excluir uma linha.
 - **placeholder** → `ex:` com um exemplo de verdade (`ex: DOMINGÃO`), em minúsculas fora o exemplo.
 
 ## 📍 escolhas

@@ -2528,50 +2528,6 @@ body.is-org-dragging * {
   transform: translateY(-50%);
 }
 
-.row-del {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition:
-    color 160ms ease,
-    background-color 160ms ease;
-}
-
-.row-del:hover:not(:disabled),
-.row-del:focus-visible {
-  color: #d64545; /* só o contorno fica vermelho, sem fundo */
-}
-
-.row-del:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.row-del svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
-  overflow: visible;
-}
-
-.trash-lid {
-  transform-box: fill-box;
-  transform-origin: 100% 100%; /* a dobradiça à direita: a tampa abre para a esquerda */
-  transition: transform 220ms var(--ease-soft);
-}
-
-.row-del:hover:not(:disabled) .trash-lid,
 .cat-del:hover .trash-lid {
   transform: translateY(-1.5px) rotate(14deg);
 }
@@ -2581,9 +2537,6 @@ body.is-org-dragging * {
 }
 
 /* os campos sem a lixeira dentro: só a pasta (um botão) ou nenhum */
-.cfg-path.one-btn .cfg-input {
-  padding-right: 44px;
-}
 
 .cfg-path.no-btn .cfg-input {
   padding-right: 16px;
