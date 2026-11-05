@@ -238,6 +238,7 @@
 	// vêm depois, pelo nome). No After Effects a pasta é lida direto; no navegador (modo de teste), o retrato
 	// icons/_snapshot.js (node extension/scripts/build-icons.js).
 	var iconCache = null;
+	var iconAliases = {}; // nome antigo → o ícone que ficou no lugar ({ "key", "same" } no icons.json)
 
 	function iconDir() {
 		var dir = decodeURI(location.pathname).replace(/\/[^\/]*$/, '') + '/icons';
@@ -256,10 +257,18 @@
 			manifest = JSON.parse(fs.readFileSync(dir + '/icons.json', 'utf8'));
 		} catch (err) { }
 
+		manifest.forEach(function (m) {
+			if (m.same) iconAliases[m.key] = m.same;
+		});
+
 		var byKey = {};
 
+		// um nome.json (Lottie) passa à frente do nome.svg: dá para trocar um desenho por uma animação sem apagar o svg
 		fs.readdirSync(dir).forEach(function (f) {
-			if (/\.(svg|json)$/i.test(f) && f !== 'icons.json') byKey[f.replace(/\.(svg|json)$/i, '')] = f;
+			var k = f.replace(/\.(svg|json)$/i, '');
+
+			if (!/\.(svg|json)$/i.test(f) || f === 'icons.json' || /^_/.test(f)) return;
+			if (!byKey[k] || /\.json$/i.test(f)) byKey[k] = f;
 		});
 
 		var order = manifest.filter(function (m) {
@@ -290,6 +299,7 @@
 			iconCache = readIconFolder();
 		} catch (err) {
 			iconCache = window.PAD_ICON_SNAPSHOT || [];
+			iconAliases = window.PAD_ICON_ALIASES || {};
 		}
 
 		return iconCache;
@@ -297,6 +307,8 @@
 
 	function findIcon(key) {
 		var list = iconList();
+
+		key = iconAliases[key] || key;
 
 		for (var i = 0; i < list.length; i++) {
 			if (list[i].key === key) return list[i];
@@ -307,14 +319,20 @@
 
 	// o desenho do ícone: o svg do arquivo (sem tamanho fixo: quem o mostra decide) ou, num Lottie, o lugar onde a
 	// animação entra (montada sozinha quando aparece na página; toca ao passar o mouse)
+	var iconCopies = 0;
+
 	function iconMarkup(key) {
 		var it = findIcon(key);
 
 		if (!it) return '';
-		if (it.type === 'lottie') return '<span class="pad-lottie' + (it.tint ? ' is-tint' : '') + '" data-lottie="' + it.key + '" aria-hidden="true"></span>';
+		// Lottie: um <svg> de verdade (as regras de tamanho dos ícones valem para ele), com a animação dentro
+		if (it.type === 'lottie') return '<svg viewBox="0 0 24 24" class="pad-lottie' + (it.tint ? ' is-tint' : '') + '" data-lottie="' + it.key + '" aria-hidden="true"></svg>';
 
-		// só a tag do svg perde o tamanho fixo (os retângulos de dentro mantêm o deles)
-		return it.svg.replace(/<svg\b[^>]*>/, function (tag) {
+		// só a tag do svg perde o tamanho fixo (os retângulos de dentro mantêm o deles); '{u}' (ids de máscaras e
+		// recortes) ganha um sufixo próprio de cada cópia
+		var copy = '-i' + ++iconCopies;
+
+		return it.svg.replace(/\{u\}/g, copy).replace(/<svg\b[^>]*>/, function (tag) {
 			return tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg\b/, '<svg aria-hidden="true"');
 		});
 	}
@@ -348,8 +366,17 @@
 		if (!it || it.type !== 'lottie') return;
 		node._lottie = true;
 		withLottie(function () {
-			var anim = window.lottie.loadAnimation({ container: node, renderer: 'svg', loop: false, autoplay: false, animationData: JSON.parse(JSON.stringify(it.data)) });
+			// a animação monta num lugar à parte e o desenho dela passa para o nosso <svg> (a biblioteca segue
+			// animando os mesmos elementos)
+			var box = document.createElement('div');
+			var anim = window.lottie.loadAnimation({ container: box, renderer: 'svg', loop: false, autoplay: false, animationData: JSON.parse(JSON.stringify(it.data)) });
+			var drawn = box.querySelector('svg');
 			var host = node.closest('button, .dropdown-item, .dropdown-trigger, .wz-opt, .tab, .cat-line') || node;
+
+			if (drawn) {
+				node.setAttribute('viewBox', drawn.getAttribute('viewBox') || '0 0 24 24');
+				while (drawn.firstChild) node.appendChild(drawn.firstChild);
+			}
 
 			anim.goToAndStop(0, true);
 			host.addEventListener('mouseenter', function () {
@@ -442,5 +469,5 @@
 		};
 	}
 
-	window.PAD_UTIL = { trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
+	window.PAD_UTIL = { iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
 })();

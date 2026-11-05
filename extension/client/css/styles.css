@@ -1167,16 +1167,12 @@ body {
     transition: none;
   }
 }
-/* ícone Lottie da biblioteca (icons/nome.json): o svg da animação ocupa o lugar do ícone (os tamanhos de quem o
-   mostra valem para ele); com tint, as cores seguem a do texto, como os ícones em svg */
-.pad-lottie {
-  display: contents;
-}
-
-.pad-lottie.is-tint svg [stroke]:not([stroke="none"]) {
+/* ícone Lottie da biblioteca (icons/nome.json): um <svg> como os outros ícones (os tamanhos de quem o mostra valem
+   para ele), com o desenho da animação dentro; com tint, as cores seguem a do texto, como os ícones em svg */
+.pad-lottie.is-tint [stroke]:not([stroke="none"]) {
   stroke: currentcolor;
 }
 
-.pad-lottie.is-tint svg [fill]:not([fill="none"]) {
+.pad-lottie.is-tint [fill]:not([fill="none"]) {
   fill: currentcolor;
 }

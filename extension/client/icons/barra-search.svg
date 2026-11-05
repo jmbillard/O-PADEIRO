@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+	<g class="anim-search">
+	<defs>
+	<clipPath id="lens-clip{u}">
+	<circle cx="10" cy="10" r="5.2" /></clipPath></defs>
+	<circle cx="10" cy="10" r="7.2" />
+	<path d="m15.300 15.300 5.200 5.200" />
+	<g clip-path="url(#lens-clip{u})">
+	<text class="lens-letter" x="10" y="18.300" text-anchor="middle">A</text></g></g>
+</svg>

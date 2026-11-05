@@ -60,7 +60,7 @@
 		"label": "câmera"
 	},
 	{
-		"key": "claquete",
+		"key": "barra-project",
 		"label": "claquete"
 	},
 	{
@@ -84,27 +84,27 @@
 		"label": "edição"
 	},
 	{
-		"key": "templates",
+		"key": "barra-templates",
 		"label": "templates"
 	},
 	{
-		"key": "fonte",
+		"key": "barra-fonts",
 		"label": "fonte"
 	},
 	{
-		"key": "camadas",
+		"key": "barra-organize",
 		"label": "camadas"
 	},
 	{
-		"key": "renomear",
+		"key": "barra-rename",
 		"label": "renomear"
 	},
 	{
-		"key": "lupa",
+		"key": "barra-search",
 		"label": "lupa"
 	},
 	{
-		"key": "link",
+		"key": "barra-link",
 		"label": "link"
 	},
 	{
@@ -134,5 +134,41 @@
 	{
 		"key": "pasta",
 		"label": "pasta"
+	},
+	{
+		"key": "barra-folders",
+		"label": "pastas"
+	},
+	{
+		"key": "barra-collect",
+		"label": "coletar"
+	},
+	{
+		"key": "templates",
+		"same": "barra-templates"
+	},
+	{
+		"key": "fonte",
+		"same": "barra-fonts"
+	},
+	{
+		"key": "camadas",
+		"same": "barra-organize"
+	},
+	{
+		"key": "renomear",
+		"same": "barra-rename"
+	},
+	{
+		"key": "lupa",
+		"same": "barra-search"
+	},
+	{
+		"key": "link",
+		"same": "barra-link"
+	},
+	{
+		"key": "claquete",
+		"same": "barra-project"
 	}
 ]

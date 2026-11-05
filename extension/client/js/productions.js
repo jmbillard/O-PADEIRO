@@ -3525,7 +3525,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			grid.appendChild(none);
 		}
 		PAD_UTIL.iconLibrary().forEach(function (it) {
-			var b = el('button', it.key === row.icon ? 'is-on' : '');
+			var current = row.icon && PAD_UTIL.iconEntry(row.icon); // um nome antigo aponta para o ícone de agora
+			var b = el('button', current && current.key === it.key ? 'is-on' : '');
 
 			b.type = 'button';
 			b.title = it.label;
@@ -3717,7 +3718,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function decorateTabs() {
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
 			var key = tab.getAttribute('data-tab');
-			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.markup(TAB_TOOL_ICONS[key]) : TAB_ICONS[key];
+			var icon = TAB_TOOL_ICONS[key] ? PAD_ICONS.has(TAB_TOOL_ICONS[key]) : TAB_ICONS[key];
 
 			if (!icon || tab.querySelector('svg')) return;
 
@@ -3727,6 +3728,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			node.setAttribute('viewBox', '0 0 24 24');
 			node.setAttribute('aria-hidden', 'true');
 			node.innerHTML = icon;
+			if (TAB_TOOL_ICONS[key]) node = PAD_ICONS.svg(TAB_TOOL_ICONS[key]); // o da biblioteca (svg ou Lottie)
 			tab.textContent = '';
 			tab.appendChild(node);
 			tab.appendChild(label);
