@@ -121,7 +121,7 @@ body.finder-page {
 }
 
 .chip:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 2px solid rgb(var(--on-brand) / 80%);
   outline-offset: 1px;
 }
 
@@ -132,8 +132,8 @@ body.finder-page {
   height: 16px;
   flex: 0 0 auto;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 24%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+  background: rgb(var(--on-brand) / 24%);
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 22%);
   transition: background-color 220ms ease;
 }
 
@@ -582,12 +582,12 @@ body.finder-page {
 }
 
 .finder-pane.is-idle .oven-loader.is-light {
-  --oven-line: rgb(255 255 255 / 88%);
-  --oven-fill: rgb(255 255 255 / 14%);
-  --oven-belt: rgb(255 255 255 / 40%);
-  --oven-steam: rgb(255 255 255 / 70%);
+  --oven-line: rgb(var(--on-brand) / 88%);
+  --oven-fill: rgb(var(--on-brand) / 14%);
+  --oven-belt: rgb(var(--on-brand) / 40%);
+  --oven-steam: rgb(var(--on-brand) / 70%);
   --oven-text: white;
-  --oven-hint: rgb(255 255 255 / 72%);
+  --oven-hint: rgb(var(--on-brand) / 72%);
 
   padding-top: 2px;
 }

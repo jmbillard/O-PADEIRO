@@ -432,7 +432,7 @@ body.project-page {
   gap: 7px;
   padding: 3px 12px 3px 9px;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 94%);
+  background: rgb(var(--on-brand) / 94%);
   box-shadow: 0 4px 12px rgb(24 35 85 / 18%);
   color: var(--blue-500); /* o nome na cor do ícone */
   font-weight: 800;

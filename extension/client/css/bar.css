@@ -85,7 +85,7 @@ body.bar-page {
   width: 1px;
   height: 30px;
   flex: 0 0 auto;
-  background: rgb(255 255 255 / 26%);
+  background: rgb(var(--on-brand) / 26%);
 }
 
 /* logo + versão */
@@ -212,7 +212,7 @@ body.bar-page {
 }
 
 .bar-link-badge .badge-bg {
-  fill: white;
+  fill: rgb(var(--on-brand));
 }
 
 .bar-link:hover img {
@@ -312,7 +312,7 @@ body.bar-page {
 .bar-btn:focus-visible,
 .bar-icon:focus-visible,
 .bar-logo:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 2px solid rgb(var(--on-brand) / 80%);
   outline-offset: 2px;
 }
 
@@ -338,7 +338,7 @@ body.bar-page {
 
 @keyframes bar-busy {
   to {
-    background: rgb(255 255 255 / 30%);
+    background: rgb(var(--on-brand) / 30%);
   }
 }
 
@@ -655,7 +655,7 @@ body.bar-page {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  box-shadow: 0 0 0 1.5px white, 0 1px 3px rgb(30 42 80 / 30%);
+  box-shadow: 0 0 0 1.5px rgb(var(--on-brand)), 0 1px 3px rgb(30 42 80 / 30%);
   pointer-events: none;
 }
 

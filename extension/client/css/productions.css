@@ -83,12 +83,12 @@ body.prods-page {
 }
 
 .prods-nav .tab:hover {
-  background: rgb(255 255 255 / 10%);
+  background: rgb(var(--on-brand) / 10%);
   color: rgb(var(--on-brand));
 }
 
 .prods-nav .tab[aria-selected="true"] {
-  border-color: white;
+  border-color: rgb(var(--on-brand));
   background: var(--surface);
   box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
   color: var(--blue-ink, var(--blue-600));
@@ -938,7 +938,7 @@ body.prods-page {
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid rgb(var(--on-brand) / 40%);
   border-radius: 22px 22px 32px 32px; /* embaixo, concêntrico com o '+ nova pasta' (raio 17 + 14 de respiro + borda) */
   background:
     radial-gradient(circle at 85% 8%, rgb(var(--glow-rgb) / 44%), transparent 34%),
@@ -975,12 +975,12 @@ body.prods-page {
 }
 
 .org-folder:hover {
-  background: rgb(255 255 255 / 9%);
+  background: rgb(var(--on-brand) / 9%);
 }
 
 .org-folder.is-root {
   margin-bottom: 4px;
-  border-color: rgb(255 255 255 / 18%);
+  border-color: rgb(var(--on-brand) / 18%);
 }
 
 .org-folder>svg {
@@ -1021,8 +1021,8 @@ body.prods-page {
 }
 
 .org-name:focus {
-  border-color: rgb(255 255 255 / 60%);
-  background: rgb(255 255 255 / 12%);
+  border-color: rgb(var(--on-brand) / 60%);
+  background: rgb(var(--on-brand) / 12%);
 }
 
 .org-root-label {
@@ -1054,7 +1054,7 @@ body.prods-page {
 }
 
 .org-remove:hover {
-  background: rgb(255 255 255 / 16%);
+  background: rgb(var(--on-brand) / 16%);
   color: rgb(var(--on-brand));
 }
 
@@ -1076,8 +1076,8 @@ body.prods-page {
   left: -11px;
   width: 8px;
   height: 25px;
-  border-bottom: 1.5px solid rgb(255 255 255 / 30%);
-  border-left: 1.5px solid rgb(255 255 255 / 30%);
+  border-bottom: 1.5px solid rgb(var(--on-brand) / 30%);
+  border-left: 1.5px solid rgb(var(--on-brand) / 30%);
   border-bottom-left-radius: 5px;
   content: "";
 }
@@ -1101,7 +1101,7 @@ body.prods-page {
   gap: 5px;
   padding: 3px 4px 3px 8px;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 20%);
+  background: rgb(var(--on-brand) / 20%);
   color: rgb(var(--on-brand));
   cursor: grab;
   font-size: 0.66rem;
@@ -1123,7 +1123,7 @@ body.prods-page {
 }
 
 .org-chip button:hover {
-  background: rgb(255 255 255 / 22%);
+  background: rgb(var(--on-brand) / 22%);
   color: rgb(var(--on-brand));
 }
 
@@ -1138,8 +1138,8 @@ body.prods-page {
 
 /* destino do arrasto */
 .org-folder.is-drop-inside {
-  border-color: white;
-  background: rgb(255 255 255 / 18%);
+  border-color: rgb(var(--on-brand));
+  background: rgb(var(--on-brand) / 18%);
 }
 
 .org-line {
@@ -1148,7 +1148,7 @@ body.prods-page {
   height: 2px;
   border-radius: 2px;
   background: var(--surface);
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 25%);
+  box-shadow: 0 0 0 2px rgb(var(--on-brand) / 25%);
   pointer-events: none;
 }
 
@@ -1816,7 +1816,7 @@ body.is-org-dragging * {
 }
 
 .bar-row:hover {
-  background: rgb(255 255 255 / 8%);
+  background: rgb(var(--on-brand) / 8%);
 }
 
 .bar-row > svg {
@@ -1858,7 +1858,7 @@ body.is-org-dragging * {
 .bar-row-rule {
   height: 1px;
   margin: 2px 12px;
-  background: rgb(255 255 255 / 26%);
+  background: rgb(var(--on-brand) / 26%);
 }
 
 /* separador: a divisória da barra */
@@ -1869,13 +1869,13 @@ body.is-org-dragging * {
 .bar-row-line {
   height: 1px;
   flex: 1;
-  background: rgb(255 255 255 / 45%);
+  background: rgb(var(--on-brand) / 45%);
 }
 
 .bar-row .mini-button {
   margin-left: auto;
-  border-color: rgb(255 255 255 / 30%);
-  background: rgb(255 255 255 / 12%);
+  border-color: rgb(var(--on-brand) / 30%);
+  background: rgb(var(--on-brand) / 12%);
   color: rgb(var(--on-brand));
   opacity: 0;
   transition: opacity 160ms ease;
@@ -1888,8 +1888,8 @@ body.is-org-dragging * {
 }
 
 .bar-row.is-divider .mini-button {
-  border-color: rgb(255 255 255 / 30%);
-  background: rgb(255 255 255 / 12%);
+  border-color: rgb(var(--on-brand) / 30%);
+  background: rgb(var(--on-brand) / 12%);
   color: rgb(var(--on-brand));
 }
 
@@ -1899,7 +1899,7 @@ body.is-org-dragging * {
 
 .is-sorting>.bar-row.is-dragging {
   --drag-inset: -1px 5px -1px -3px; /* a linha já tem 4 px em cima e embaixo, 2 à esquerda e 10 à direita */
-  --drag-bg: rgb(255 255 255 / 18%);
+  --drag-bg: rgb(var(--on-brand) / 18%);
   --drag-shadow: 0 12px 28px rgb(20 30 90 / 25%);
 }
 

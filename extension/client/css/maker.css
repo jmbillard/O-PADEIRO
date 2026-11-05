@@ -68,11 +68,11 @@ body.maker-page {
 }
 
 .maker-tools .check-dot {
-  border-color: rgb(255 255 255 / 45%);
+  border-color: rgb(var(--on-brand) / 45%);
 }
 
 .maker-tools .check-chip.is-ok .check-dot {
-  border-color: white;
+  border-color: rgb(var(--on-brand));
   background: var(--surface);
 }
 

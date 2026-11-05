@@ -30,6 +30,7 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 	};
 	var SURFACE = { light: '#ffffff', dark: '#1c2130' };
 	var BRAND_INK = '#18213a'; // o texto escuro sobre degradês claros
+	var DARK_INK = '#10121a'; // modo escuro: texto, ícones e vidros sobre o degradê (o inverso do branco do claro)
 	var current = null;
 	var stamp = null;
 
@@ -129,7 +130,9 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		};
 		var white = average('#ffffff');
 
-		set('--on-brand', white >= 3 || white >= average(BRAND_INK) ? '255 255 255' : rgb(BRAND_INK).join(' '));
+		// modo escuro: o inverso do claro (texto, ícones e vidros pretos sobre o degradê)
+		if (dark) set('--on-brand', rgb(DARK_INK).join(' '));
+		else set('--on-brand', white >= 3 || white >= average(BRAND_INK) ? '255 255 255' : rgb(BRAND_INK).join(' '));
 
 		set('--font-ui', FONTS[t.font] || FONTS.inter);
 

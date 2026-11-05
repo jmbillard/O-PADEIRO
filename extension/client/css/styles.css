@@ -100,7 +100,7 @@ body {
   padding: 24px;
   background:
     radial-gradient(circle at 14% 6%,
-      rgb(255 255 255 / 20%),
+      rgb(var(--on-brand) / 20%),
       transparent 25%),
     radial-gradient(circle at 88% 82%,
       rgb(var(--glow-rgb) / 20%),

@@ -210,13 +210,13 @@ body {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid rgb(var(--on-brand) / 40%);
   /* cantos concêntricos: em cima com a busca (pílula de raio 27 a 15 px da borda), embaixo com os botões
      redondos do rodapé (raio 19, também a 15 px) */
   border-radius: 42px 42px 34px 34px;
-  background: rgb(255 255 255 / 13%);
+  background: rgb(var(--on-brand) / 13%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 16%),
+    inset 0 1px 0 rgb(var(--on-brand) / 16%),
     0 18px 40px rgb(24 43 113 / 10%);
 }
 
@@ -244,9 +244,9 @@ body {
   width: 100%;
   min-height: 54px;
   padding: 10px 46px 10px 48px;
-  border: 1px solid rgb(255 255 255 / 30%);
+  border: 1px solid rgb(var(--on-brand) / 30%);
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 12%);
+  background: rgb(var(--on-brand) / 12%);
   color: rgb(var(--on-brand));
   font-size: 1rem;
   font-weight: 560;
@@ -267,9 +267,9 @@ body {
 }
 
 .picker-search input:focus {
-  border-color: rgb(255 255 255 / 88%);
-  background: rgb(255 255 255 / 20%);
-  box-shadow: 0 0 0 4px rgb(255 255 255 / 12%);
+  border-color: rgb(var(--on-brand) / 88%);
+  background: rgb(var(--on-brand) / 20%);
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 12%);
 }
 
 .picker-clear {
@@ -281,7 +281,7 @@ body {
   place-items: center;
   border: 0;
   border-radius: 50%;
-  background: rgb(255 255 255 / 18%);
+  background: rgb(var(--on-brand) / 18%);
   color: rgb(var(--on-brand));
   font-size: 0.8rem;
   line-height: 1;
@@ -298,7 +298,7 @@ body {
 }
 
 .picker-clear:hover {
-  background: rgb(255 255 255 / 30%);
+  background: rgb(var(--on-brand) / 30%);
 }
 
 .picker-list {
@@ -317,7 +317,7 @@ body {
 
 .picker-list::-webkit-scrollbar-thumb {
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 34%);
+  background: rgb(var(--on-brand) / 34%);
 }
 
 .tree-row {
@@ -341,11 +341,11 @@ body {
 }
 
 .tree-row:hover {
-  background: rgb(255 255 255 / 14%);
+  background: rgb(var(--on-brand) / 14%);
 }
 
 .tree-row:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 70%);
+  outline: 2px solid rgb(var(--on-brand) / 70%);
   outline-offset: -2px;
 }
 
@@ -390,7 +390,7 @@ body {
   flex: 0 0 auto;
   padding: 1px 7px;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 16%);
+  background: rgb(var(--on-brand) / 16%);
   font-size: 0.62rem;
   letter-spacing: 0.04em;
 }
@@ -398,7 +398,7 @@ body {
 .tree-children {
   margin-left: 14px;
   padding-left: 6px;
-  border-left: 1px solid rgb(255 255 255 / 20%);
+  border-left: 1px solid rgb(var(--on-brand) / 20%);
 }
 
 .tree-folder:not(.is-open)>.tree-children {
@@ -412,7 +412,7 @@ body {
 .tree-item>.tree-row .tree-ext {
   flex: 0 0 auto;
   padding: 1px 6px;
-  border: 1px solid rgb(255 255 255 / 25%);
+  border: 1px solid rgb(var(--on-brand) / 25%);
   border-radius: 6px;
   color: rgb(var(--on-brand) / 76%);
   font-size: 0.56rem;
@@ -421,7 +421,7 @@ body {
 }
 
 .tree-item.is-selected>.tree-row {
-  border-color: white;
+  border-color: rgb(var(--on-brand));
   background: var(--surface);
   box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
   color: var(--blue-ink, var(--blue-600));
@@ -454,7 +454,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 14px;
-  border-top: 1px solid rgb(255 255 255 / 20%);
+  border-top: 1px solid rgb(var(--on-brand) / 20%);
   color: rgb(var(--on-brand) / 70%);
   font-size: 0.68rem;
   font-weight: 650;
@@ -466,9 +466,9 @@ body {
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 30%);
+  border: 1px solid rgb(var(--on-brand) / 30%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 12%);
+  background: rgb(var(--on-brand) / 12%);
   color: rgb(var(--on-brand));
   cursor: pointer;
   list-style: none;
@@ -494,13 +494,13 @@ body {
 
 .icon-button:hover,
 .actions-menu[open]>.icon-button {
-  border-color: rgb(255 255 255 / 70%);
-  background: rgb(255 255 255 / 22%);
+  border-color: rgb(var(--on-brand) / 70%);
+  background: rgb(var(--on-brand) / 22%);
   transform: translateY(-1px);
 }
 
 .icon-button:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 70%);
+  outline: 2px solid rgb(var(--on-brand) / 70%);
   outline-offset: 2px;
 }
 
@@ -744,7 +744,7 @@ body {
   background:
     linear-gradient(90deg,
       transparent,
-      rgb(255 255 255 / 34%),
+      rgb(var(--on-brand) / 34%),
       transparent);
   content: "";
   pointer-events: none;
@@ -968,7 +968,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgb(255 255 255 / 30%);
+  background: rgb(var(--on-brand) / 30%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 180ms ease;
@@ -1783,7 +1783,7 @@ body.motion-ready .eyebrow {
 }
 
 .picker-clear:hover {
-  background: rgb(255 255 255 / 40%);
+  background: rgb(var(--on-brand) / 40%);
   transform: rotate(90deg) scale(1.12);
 }
 
@@ -1792,7 +1792,7 @@ body.motion-ready .eyebrow {
 }
 
 .picker-clear:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 2px solid rgb(var(--on-brand) / 80%);
   outline-offset: 2px;
 }
 
@@ -1884,12 +1884,12 @@ body.motion-ready .eyebrow {
 }
 
 .tree-star:hover {
-  background: rgb(255 255 255 / 18%);
+  background: rgb(var(--on-brand) / 18%);
   transform: translateY(-50%) rotate(-14deg) scale(1.12);
 }
 
 .tree-star:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 2px solid rgb(var(--on-brand) / 80%);
   outline-offset: 0;
 }
 
@@ -2114,7 +2114,7 @@ body.motion-ready .eyebrow {
 .actions-menu>summary.icon-button:hover,
 .actions-menu[open]>summary.icon-button {
   border-color: transparent;
-  background: rgb(255 255 255 / 12%);
+  background: rgb(var(--on-brand) / 12%);
 }
 
 /* total de templates no lugar do eyebrow (fica com a altura reservada enquanto a lista é lida) */
@@ -2133,25 +2133,25 @@ body.motion-ready .eyebrow {
 
 .picker-prod .dropdown-trigger {
   min-height: 34px;
-  border-color: rgb(255 255 255 / 34%);
-  background: rgb(255 255 255 / 14%);
+  border-color: rgb(var(--on-brand) / 34%);
+  background: rgb(var(--on-brand) / 14%);
   color: rgb(var(--on-brand));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%);
+  box-shadow: inset 0 1px 0 rgb(var(--on-brand) / 14%);
 }
 
 .picker-prod .dropdown-trigger:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 70%);
-  background: rgb(255 255 255 / 24%);
+  border-color: rgb(var(--on-brand) / 70%);
+  background: rgb(var(--on-brand) / 24%);
 }
 
 .picker-prod .dropdown-trigger:focus-visible,
 .picker-prod .dropdown-trigger[aria-expanded="true"] {
-  border-color: white;
-  box-shadow: 0 0 0 4px rgb(255 255 255 / 16%);
+  border-color: rgb(var(--on-brand));
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 16%);
 }
 
 .picker-prod.select::after {
-  border-color: rgb(255 255 255 / 80%);
+  border-color: rgb(var(--on-brand) / 80%);
 }
 
 .picker-footer .picker-menu .menu-popover {
@@ -2683,7 +2683,7 @@ body.motion-ready .eyebrow {
 
 .tab:focus-visible {
   border-radius: 6px;
-  outline: 2px solid rgb(255 255 255 / 80%);
+  outline: 2px solid rgb(var(--on-brand) / 80%);
   outline-offset: 2px;
 }
 
