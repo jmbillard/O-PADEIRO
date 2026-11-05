@@ -18,6 +18,7 @@
   /* os mesmos tons em r g b, para brilhos e anéis de foco com transparência (o tema troca: theme.js) */
   --accent-rgb: 79 130 255;
   --accent-deep-rgb: 79 100 255;
+  --button-glow-rgb: var(--accent-deep-rgb); /* o brilho dos botões de destaque (no escuro: o claro, theme.css) */
   --glow-rgb: 168 208 255;
   --shade-rgb: 38 66 173;
   /* a dobra do canto dos ícones de arquivo: um tom mais escuro da cor do próprio ícone (preto transparente, que

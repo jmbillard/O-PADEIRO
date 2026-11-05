@@ -726,7 +726,7 @@ body {
   background: linear-gradient(135deg,
       var(--blue-400),
       var(--blue-600));
-  box-shadow: 0 10px 24px rgb(var(--accent-deep-rgb) / 30%);
+  box-shadow: 0 10px 24px rgb(var(--button-glow-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 
@@ -757,7 +757,7 @@ body {
 }
 
 .button-primary:hover:not(:disabled) {
-  box-shadow: 0 14px 30px rgb(var(--accent-deep-rgb) / 38%);
+  box-shadow: 0 14px 30px rgb(var(--button-glow-rgb) / 38%);
   transform: translateY(-2px);
 }
 

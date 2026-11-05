@@ -1956,7 +1956,7 @@ body.is-org-dragging * {
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
-  box-shadow: 0 6px 14px rgb(var(--accent-deep-rgb) / 30%);
+  box-shadow: 0 6px 14px rgb(var(--button-glow-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 

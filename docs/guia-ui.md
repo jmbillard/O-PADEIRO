@@ -21,6 +21,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **sobre o degradê (e o vidro em cima dele)**, texto, ícones, vidros, contornos e brilhos usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
 - **o modo escuro é o inverso do claro sobre o degradê**: o vidro, o texto e os ícones ficam pretos, e o item escolhido vira uma pílula escura. nunca coloque uma superfície escura sobre o vidro claro.
 - **pílula do item escolhido** (aba, template, arquivo do CRIAR): fundo `--surface` (ou `--on-brand`), texto e ícone na cor de destaque (`--blue-500`), a mesma dos ícones dos cartões.
+- **o brilho dos botões de destaque é sempre claro**: a sombra colorida usa `--button-glow-rgb` (no claro, o fim do degradê; no escuro, a cor clara do brilho, `--glow-rgb`). nunca `--accent-deep-rgb` direto numa sombra de botão: no escuro, ela some no fundo.
 - **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, a bolinha do projeto (verde / laranja), o pãozinho da logo e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
 - **o tom de "em andamento"** (`--processing`) é o destaque do tema.
 
