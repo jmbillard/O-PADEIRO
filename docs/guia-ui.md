@@ -59,6 +59,22 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
 - **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
 
+### desenhar um ícone
+
+- **quadro** → `viewBox="0 0 24 24"`, sem `width` / `height` (quem mostra decide o tamanho: 24 px na barra, 20 px no seletor e nos campos, 16 px nos seletores e listas).
+- **margem** → o desenho fica entre 2.5 e 21.5 (2.5 de folga em volta), centrado; formas largas podem ir de 2 a 22.
+- **contorno** → `stroke="currentColor"`, `stroke-width="1.7"`, `stroke-linecap="round"`, `stroke-linejoin="round"`, `fill="none"`. a cor e a espessura de verdade vêm do CSS de cada lugar (o arquivo vale como referência, e para ver o desenho sozinho).
+- **detalhes** → nada menor que 2 de vão entre traços (em 16 px o traço fica com ~1.1 px e o vão some). pontos: `M x y h.01` (um traço de comprimento zero vira uma bolinha). cantos arredondados de 1.5 a 2.5.
+- **preenchido** só os arquivos (o `.aep`, os templates); o resto é contorno.
+- **animado no hover** (os da barra) → classes nos grupos que o `css/icons.css` anima; o desenho parado é o primeiro quadro (é o que aparece no seletor). ids com `{u}`.
+
+### animação Lottie
+
+- **composição** de 24 × 24 px, 30 fps, de 0.5 a 1 s; o **primeiro quadro é o ícone parado** (é o que aparece até passar o mouse) e o último volta para ele.
+- **só shape layers** (sem imagens, textos, efeitos nem expressions: a biblioteca usada é a `lottie_light`, que não roda expressions), contorno de **1.7** e cantos e pontas arredondados.
+- **cor** → qualquer uma: com `tint` (o padrão), traços e preenchimentos seguem a cor do texto; `"tint": false` no `icons.json` mantém as cores do arquivo.
+- **exportar** pelo Bodymovin (ou LottieFiles) como `.json` e salvar na pasta de ícones com o nome do ícone.
+
 ## 📍 animação: toda mudança anima
 
 - **entradas** → o que aparece entra suave (opacidade + um leve deslocamento).
