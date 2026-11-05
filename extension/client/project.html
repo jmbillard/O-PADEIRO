@@ -79,23 +79,27 @@
 
 		<!-- depois de criado: o editor -->
 		<section class="wz-screen" id="sc-editor" hidden>
-			<p class="wz-title">CLAQUETE</p>
+			<!-- a atração (buscada como na etapa ATRAÇÃO) e o designer; o que é; embaixo, o nome do .aep (a atração + o que é) -->
+			<p class="wz-title">ATRAÇÃO</p>
 			<div class="ed-row">
-				<div class="has-field-icon ed-claq">
-					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="10" width="17" height="9.5" rx="1.5" /><g transform="rotate(-15 3.5 10)"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g></svg>
-					<input type="text" class="cfg-input" id="ed-claq" spellcheck="false" autocomplete="off" aria-label="Claquete">
+				<div class="has-field-icon ed-atr">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>
+					<input type="text" class="cfg-input" id="ed-atracao" placeholder="ex: DOMINGÃO" spellcheck="false" autocomplete="off" aria-label="Atração">
 				</div>
 				<div class="has-field-icon ed-user" title="designer">
 					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>
 					<input type="text" class="cfg-input" id="ed-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer">
 				</div>
 			</div>
-			<p class="wz-hint" id="ed-hint" hidden>projeto salvo sem os dados do padeiro: confira a claquete, a atração e as pastas e salve.</p>
-			<p class="wz-title">ATRAÇÃO</p>
+			<div class="wz-list ed-atr-list" id="ed-atr-list" role="radiogroup" aria-label="Atração" hidden></div>
+			<p class="wz-hint" id="ed-atr-hint" hidden></p>
+			<p class="wz-hint" id="ed-hint" hidden></p>
+			<p class="wz-title">O QUE É</p>
 			<div class="has-field-icon">
-				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>
-				<input type="text" class="cfg-input" id="ed-atracao" spellcheck="false" autocomplete="off" aria-label="Atração">
+				<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
+				<input type="text" class="cfg-input" id="ed-what" placeholder="ex: SERVIÇO, ELENCO, AESP" spellcheck="false" autocomplete="off" aria-label="O que é">
 			</div>
+			<p class="wz-preview" id="ed-file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><span></span></p>
 			<!-- as pastas: o caminho e a pastinha no campo (o nosso padrão), como na configuração -->
 			<p class="wz-title">PASTA</p>
 			<div class="cfg-path ed-path"><input type="text" class="cfg-input" id="ed-root" readonly aria-label="Pasta do projeto"><button type="button" class="mini-button" id="ed-move" title="trocar a pasta (leva o .aep e a estrutura para outra pasta)" aria-label="trocar a pasta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>

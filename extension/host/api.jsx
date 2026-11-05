@@ -1152,6 +1152,7 @@ PADX.importTemplate = function (a) {
 		deleteEmptyProjectFolders();
 
 		setXMPData('source', decodeURI(projectFile.path).toString());
+		padRegisterTemplateUse('');
 	});
 
 	return { name: projectFile.displayName };
@@ -1415,6 +1416,7 @@ PADX.fillFinish = function () {
 		// Metadados XMP indicando o caminho do template
 		try {
 			setXMPData('source', decodeURI(run.projectFile.path).toString());
+			padRegisterTemplateUse((run.templateData.outputPath || [])[0]);
 		} catch (err) {
 			warnings.push('metadados: ' + err.message);
 		}

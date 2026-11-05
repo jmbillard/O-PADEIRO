@@ -1063,9 +1063,10 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	   editor (projeto criado)
 	   --------------------------------------------------------------- */
 
-	// o editor: a claquete e o designer, a atração e as pastas (o caminho no campo, a pastinha troca). um projeto
-	// salvo sem os dados do padeiro (adopt) entra direto aqui, já com a atração (o nome do arquivo) e a pasta
-	// dele: é só digitar a claquete e salvar.
+	// o editor: a atração (buscada como na etapa ATRAÇÃO) e o designer, o que é, e as pastas (o caminho no campo,
+	// a pastinha troca). Salvar grava os dados e leva o .aep para a pasta de projetos da estrutura, com o nome da
+	// atração + o que é. um projeto salvo sem os dados do padeiro (adopt) entra direto aqui: a busca roda sozinha
+	// com o nome do arquivo e a primeira atração achada já vem marcada (o resto do nome vai para o o que é).
 	function renderEditor(cur, adopt) {
 		var key = (adopt ? 'a|' : 'c|') + cur.file;
 
@@ -1074,21 +1075,131 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		// com os dados, mas salvo fora da pasta dele (ex: "salvar como" na Área de Trabalho): Salvar leva o .aep de volta
 		$('ed-hint').textContent = cur.outside
 			? 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.'
-			: 'projeto salvo sem os dados do padeiro: confira a claquete, a atração e as pastas e salve.';
+			: 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
 
-		// os campos de texto só são preenchidos quando o projeto muda: a atualização a cada 1,5 s não apaga o que
-		// está sendo digitado
+		// os campos só são preenchidos quando o projeto muda: a atualização a cada 1,5 s não apaga o que está
+		// sendo digitado (nem a pasta escolhida e ainda não salva)
 		if (state.editorKey !== key) {
 			state.editorKey = key;
-			$('ed-claq').value = cur.claquete || '';
+			state.edMatches = [];
+			state.edPicked = '';
+			state.edRoot = cur.root || '';
+			state.edOutput = cur.output || '';
 			$('ed-user').value = cur.designer;
-			$('ed-atracao').value = cur.atracao || (adopt ? String(cur.fileName || '').replace(/\.aep$/i, '') : '');
+			$('ed-atr-list').hidden = true;
+			$('ed-atr-hint').hidden = true;
+
+			state.edKeep = '';
+			if (cur.atracao) {
+				// o que é: o que vem depois da atração no nome do arquivo (ou na claquete). um nome fora desse padrão
+				// (projeto antigo) fica como está até a atração ou o que é mudarem
+				var atr = aepName(cur.atracao);
+				var what = null;
+
+				[aepName(String(cur.fileName || '').replace(/\.aep$/i, '')), aepName(cur.claquete)].forEach(function (n) {
+					if (what === null && n === atr) what = '';
+					if (what === null && n.indexOf(atr + ' ') === 0) what = n.slice(atr.length + 1);
+				});
+				$('ed-atracao').value = cur.atracao.toUpperCase();
+				$('ed-what').value = what || '';
+				if (what === null && cur.fileName) state.edKeep = String(cur.fileName).replace(/\.aep$/i, '');
+			} else {
+				var base = String(cur.fileName || '').replace(/\.aep$/i, '');
+
+				$('ed-atracao').value = base.toUpperCase();
+				$('ed-what').value = '';
+				if (base) edLookup(base, true);
+			}
 		}
-		pathValue($('ed-root'), cur.root || cur.file || '');
-		pathValue($('ed-output'), cur.output || '');
+		pathValue($('ed-root'), state.edRoot || cur.file || '');
+		pathValue($('ed-output'), state.edOutput);
 		$('ed-root').title = cur.file || '';
+		edFile();
 		fitHeight();
+	}
+
+	// o nome do .aep: a atração + o que é (e o de hoje, quando muda)
+	function edFile() {
+		var name = state.edKeep || aepName($('ed-atracao').value + ' ' + $('ed-what').value);
+		var now = state.current ? String(state.current.fileName || '').replace(/\.aep$/i, '') : '';
+		var span = $('ed-file').querySelector('span');
+
+		span.textContent = '';
+		span.appendChild(el('b', null, name || '…'));
+		span.appendChild(document.createTextNode('.aep' + (now && name && aepName(now) !== aepName(name) ? ' · hoje: ' + now + '.aep' : '')));
+	}
+
+	// a busca da atração no editor: os cartões logo abaixo do campo; auto (o nome do arquivo) já marca a primeira
+	function edLookup(text, auto) {
+		clearTimeout(state.edTimer);
+
+		var seq = state.edSeq = (state.edSeq || 0) + 1;
+
+		if (!aepName(text)) {
+			state.edMatches = [];
+			edRenderList();
+			return;
+		}
+
+		state.edTimer = setTimeout(async function () {
+			var res;
+
+			try {
+				res = await findAttractions(text);
+			} catch (err) {
+				res = { matches: [] };
+			}
+
+			if (seq !== state.edSeq) return;
+
+			state.edMatches = res.matches;
+			if (auto && res.matches.length) edPick(0, text);
+			else edRenderList();
+		}, LOOKUP_MS);
+	}
+
+	function edRenderList() {
+		var list = $('ed-atr-list');
+		var m = state.edMatches.slice(0, LIST_MAX);
+		var typed = aepName($('ed-atracao').value);
+
+		list.textContent = '';
+		m.forEach(function (match, i) {
+			list.appendChild(option(matchIcon(match), match.name.toUpperCase(), match.display, state.edPicked === match.path, function () {
+				edPick(i);
+			}));
+		});
+		list.hidden = !m.length || !!state.edPicked;
+		$('ed-atr-hint').hidden = !typed || !!m.length || !!state.edPicked;
+		$('ed-atr-hint').textContent = 'atração não encontrada: confira o nome (fica como está digitado).';
+		setTimeout(fitHeight, 300);
+	}
+
+	// escolheu: o nome oficial, a pasta da atração (o .aep vai para a de projetos dela ao salvar) e a de output
+	// dela, se o projeto ainda não tem. com o nome do arquivo (auto), o que sobra depois da atração é o o que é.
+	function edPick(i, typed) {
+		var match = state.edMatches[i];
+
+		if (!match) return;
+
+		var rest = aepName(typed || '');
+		var atr = aepName(match.name);
+
+		state.edPicked = match.path;
+		state.edKeep = '';
+		$('ed-atracao').value = match.name.toUpperCase();
+		if (typed && !$('ed-what').value && rest.indexOf(atr + ' ') === 0) $('ed-what').value = rest.slice(atr.length + 1);
+		if (match.path) {
+			state.edRoot = match.path;
+			pathValue($('ed-root'), displayPath(match.path));
+		}
+		if (!state.edOutput && match.out) {
+			state.edOutput = match.out;
+			pathValue($('ed-output'), displayPath(match.out));
+		}
+		edRenderList();
+		edFile();
 	}
 
 	// o caminho no campo, mostrando o fim (a parte que muda)
@@ -1100,47 +1211,46 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		});
 	}
 
-	async function editorOutput() {
+	// as pastas escolhidas só valem ao salvar
+	function editorOutput() {
 		var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto');
 
 		if (!picked) return;
 
-		try {
-			renderEditor(await call('projectUpdate', { output: picked }), state.adopt);
-			status('pasta de output gravada no projeto.', 'success');
-		} catch (err) {
-			status(err.message, 'error');
-		}
+		state.edOutput = picked;
+		pathValue($('ed-output'), picked);
+		status('Salvar grava a pasta de output no projeto.', '');
 	}
 
-	// salvar: grava os dados no projeto e fecha a janela
-	async function editorSave() {
-		if (state.adopt && !aepName($('ed-claq').value)) {
-			status('#PAD_090 - digite a claquete do projeto.', 'error');
-			$('ed-claq').focus();
-			return;
-		}
-
-		try {
-			var args = { claquete: $('ed-claq').value, designer: $('ed-user').value, atracao: $('ed-atracao').value.trim() };
-
-			if (state.adopt) args.root = $('ed-root').value;
-			if (state.adopt && state.current && state.current.outside) await call('projectMove', { path: args.root });
-			renderEditor(await call('projectUpdate', args));
-			PAD_BRIDGE.closePanel();
-		} catch (err) {
-			status(err.message, 'error');
-		}
-	}
-
-	async function editorMove() {
+	function editorMove() {
 		var picked = PAD_BRIDGE.pickFolder('Nova pasta do projeto');
 
 		if (!picked) return;
 
+		state.edRoot = picked;
+		pathValue($('ed-root'), picked);
+		status('Salvar leva o .aep para essa pasta.', '');
+	}
+
+	// salvar: grava os dados, leva o .aep para a pasta dele com o nome certo e fecha a janela
+	async function editorSave() {
+		var atracao = $('ed-atracao').value.trim();
+
+		if (!aepName(atracao)) {
+			status('#PAD_090 - escolha a atração do projeto.', 'error');
+			$('ed-atracao').focus();
+			return;
+		}
+
 		try {
-			renderEditor(await call('projectMove', { path: picked }), state.adopt);
-			status('projeto salvo na pasta nova.', 'success');
+			var cur = await call('projectSave', { atracao: atracao, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep });
+
+			state.editorKey = null;
+			state.current = cur;
+			renderEditor(cur);
+			// salvo com outro nome ou em outro lugar: o arquivo antigo continua lá (a janela fica aberta para avisar)
+			if (cur.moved) status('salvo como ' + cur.fileName + '. o arquivo antigo continua em ' + cur.moved + '.', 'success');
+			else PAD_BRIDGE.closePanel();
 		} catch (err) {
 			status(err.message, 'error');
 		}
@@ -1271,8 +1381,23 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		$('ed-save').addEventListener('click', editorSave);
 		$('ed-move').addEventListener('click', editorMove);
 		$('ed-output-pick').addEventListener('click', editorOutput);
-		['ed-claq', 'ed-user'].forEach(function (id) {
+		['ed-what', 'ed-user'].forEach(function (id) {
 			onEnter(id, editorSave);
+		});
+		// a atração: digitar busca (a escolhida sai); Enter escolhe a primeira da lista
+		$('ed-atracao').addEventListener('input', function () {
+			state.edPicked = '';
+			state.edKeep = '';
+			edLookup(this.value, false);
+			edFile();
+		});
+		onEnter('ed-atracao', function () {
+			if (!$('ed-atr-list').hidden && state.edMatches.length) edPick(0);
+			else editorSave();
+		});
+		$('ed-what').addEventListener('input', function () {
+			state.edKeep = '';
+			edFile();
 		});
 		$('ed-user').addEventListener('input', function () {
 			this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');

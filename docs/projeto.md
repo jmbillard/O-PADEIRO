@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO projeto** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da claquete, do designer e da pasta.
+a janela **O PADEIRO projeto** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas.
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
@@ -22,7 +22,7 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
    - **outra pasta…** → abre o navegador de pastas ao seguir.
    - **filmes** seguem o mesmo fluxo: a pasta da letra é só o token `{letra}` do caminho (`…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`).
    - se a pasta da categoria não pode ser acessada (rede fora ou modo local), o projeto vai para a **pasta dos projetos** deste computador (`{categoria}/{atracao}`), com o aviso na prévia.
-2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`), e a **claquete** gravada no projeto é a mesma coisa (`MAIS VOCE SERVICO`; dá para trocar no editor). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
+2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`), e a **claquete** gravada no projeto é a mesma coisa (`MAIS VOCE SERVICO`). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
    - **já na pasta** → uma linha com o último `.aep` alterado da pasta de projetos (`hoje 14:32 · +2`).
    - **nome repetido** → o aviso e as duas saídas ali mesmo: **abrir o existente** ou **salvar como … 2** (o padrão; a árvore já mostra o `… 2.aep`).
    - **a estrutura** (o cartão azul): `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara).
@@ -31,19 +31,21 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
-a **claquete**, o **designer**, a **atração**, a **pasta** e a **pasta de output** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage`, `dc:relation` e `dc:source`).
+a **claquete**, o **designer**, a **atração**, a **pasta** e a **pasta de output** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage`, `dc:relation` e `dc:publisher`). o `dc:source` é a pasta do template que preencheu o projeto (de onde saem as fontes).
+
+ao **preencher** ou **importar** um template, o padeiro também grava o que ainda faltar no projeto: o **designer** (o usuário do computador), a **data** e a **pasta de output** do template. o que já estiver gravado (pela janela projeto) não muda.
 
 ## 📍 editor
 
 ao abrir a janela com um projeto criado por ela:
 
-- **claquete** e **designer** (bonequinho) → o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
-- **atração** → o nome da atração.
-- **pasta** → o caminho do projeto. o botão de pasta dentro do campo move o `.aep` (e a estrutura) para outra pasta.
-- **output** → a pasta de output do projeto. o botão de pasta dentro do campo grava outra pasta de output.
-- **Salvar** → grava os campos, salva o projeto e fecha a janela.
+- **atração** e **designer** (bonequinho) → a atração é buscada como na etapa ATRAÇÃO: digitar mostra as atrações logo abaixo, e a escolhida fica com o nome oficial e a pasta dela. o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
+- **o que é** → embaixo, o nome do `.aep` (a atração + o que é) e, quando muda, o nome de hoje. um projeto antigo com o nome fora desse padrão fica com o nome dele até a atração ou o o que é mudarem.
+- **pasta** → o caminho do projeto. o botão de pasta dentro do campo escolhe outra pasta.
+- **output** → a pasta de output do projeto. o botão de pasta dentro do campo escolhe outra.
+- **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a estrutura se faltar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
-**projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela pula as etapas e abre direto no editor, com a **atração** preenchida pelo nome do arquivo e a **pasta** pelo caminho onde ele está. digite a claquete, confira e **Salvar**: os dados passam a ficar gravados no projeto.
+**projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela pula as etapas e abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
 
 abrir outro projeto troca os dados da janela.
 

@@ -148,9 +148,10 @@ comparado com os padrões da atração ('pattern' no índice) e com o nome. A pa
 estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que já existir.
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
-No projeto (XMP) ficam a claquete (identifier), o designer (creator), a atração (coverage), a pasta
-da estrutura (relation) e a pasta de output (source; a da categoria ou a da atração no índice, quando ela
-existe ou é criada na etapa CRIAR: pular não grava).
+No projeto (XMP) ficam a claquete (identifier: a atração + o que é, o mesmo nome do .aep), o designer
+(creator), a atração (coverage), a pasta da estrutura (relation) e a pasta de output (publisher; a da
+categoria ou a da atração no índice, quando ela existe ou é criada na etapa CRIAR: pular não grava).
+O 'source' é a pasta do template que preencheu o projeto (as fontes saem de lá: installFonts).
 
 */
 
@@ -506,7 +507,7 @@ PADX.projectCreate = function (a) {
 
 	setXMPData('identifier', claquete);
 	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
-	if (output && output.exists) setXMPData('source', padDisplayPath(output.fsName));
+	if (output && output.exists) setXMPData('publisher', padDisplayPath(output.fsName));
 	setXMPData('creator', padMachineUser());
 	setXMPData('coverage', String(a.atracao || ''));
 	setXMPData('relation', padDisplayPath(plan.root));
@@ -568,7 +569,7 @@ PADX.projectCurrent = function () {
 		designer: padXmpGet('creator') || padMachineUser(),
 		defaultUser: padDefaultUser(),
 		atracao: padXmpGet('coverage'),
-		output: padNoVolumeSuffix(padXmpGet('source')),
+		output: padNoVolumeSuffix(padXmpGet('publisher')),
 		root: padNoVolumeSuffix(padXmpGet('relation')) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
@@ -584,11 +585,70 @@ PADX.projectUpdate = function (a) {
 	if (a.designer != null) setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
 	if (a.atracao != null) setXMPData('coverage', String(a.atracao));
 	if (a.root != null && a.root != '') setXMPData('relation', padDisplayPath(padPath(a.root)));
-	if (a.output != null) setXMPData('source', a.output ? padDisplayPath(padPath(a.output)) : '');
+	if (a.output != null) setXMPData('publisher', a.output ? padDisplayPath(padPath(a.output)) : '');
 	if (app.project.file) app.project.save();
 
 	return PADX.projectCurrent();
 };
+
+// Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura, com o
+// nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
+// a: { atracao, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
+// fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
+PADX.projectSave = function (a) {
+	padLastMkdir = '';
+
+	var file = app.project.file;
+	var plan = padNewProjectPlan({ atracao: a.atracao, what: a.what, path: a.root });
+
+	if (a.fileBase) plan.fileBase = String(a.fileBase);
+
+	padCollectStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
+
+	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : plan.projects;
+	var dest = new File(projects + '/' + plan.fileBase + '.aep');
+	var key = function (f) {
+		return padDisplayPath(f.fsName).replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').toLowerCase();
+	};
+	var same = !!file && key(file) == key(dest);
+
+	padCheckWritable(projects);
+	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + '.');
+
+	var packet = app.project.xmpPacket;
+
+	setXMPData('identifier', plan.fileBase);
+	setXMPData('title', plan.fileBase);
+	setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
+	setXMPData('coverage', String(a.atracao || ''));
+	setXMPData('relation', padDisplayPath(plan.root));
+	if (a.output != null) setXMPData('publisher', a.output ? padDisplayPath(padPath(a.output)) : '');
+	if (!padXmpGet('date')) setXMPData('date', padToday());
+
+	try {
+		if (same) app.project.save();
+		else app.project.save(dest);
+	} catch (err) {
+		app.project.xmpPacket = packet;
+		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + padMacPrivacyHint() + '.');
+	}
+
+	var cur = PADX.projectCurrent();
+
+	if (file && !same) cur.moved = padDisplayPath(file.fsName);
+
+	return cur;
+};
+
+// Preenchimento e importação de templates: os dados do padeiro que ainda faltam no projeto (o designer, a data e
+// a pasta de output do template). o que já está gravado (ex: pela janela PROJETO) não muda.
+function padRegisterTemplateUse(outputPath) {
+	try {
+		if (!padXmpGet('creator')) setXMPData('creator', padMachineUser());
+		if (!padXmpGet('date')) setXMPData('date', padToday());
+		if (outputPath && !padXmpGet('publisher')) setXMPData('publisher', padDisplayPath(padPath(outputPath)));
+	} catch (err) { }
+}
 
 // Editor: leva o projeto para outra pasta (cria a estrutura nela e salva o .aep na de projetos). a: { path }
 PADX.projectMove = function (a) {
