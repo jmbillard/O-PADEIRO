@@ -144,6 +144,78 @@
 		"label": "coletar"
 	},
 	{
+		"key": "oscar",
+		"label": "oscar"
+	},
+	{
+		"key": "taca-copa",
+		"label": "taça da copa"
+	},
+	{
+		"key": "olimpiadas",
+		"label": "olimpíadas"
+	},
+	{
+		"key": "podio",
+		"label": "pódio"
+	},
+	{
+		"key": "fita",
+		"label": "fita de vídeo"
+	},
+	{
+		"key": "urna",
+		"label": "urna (cédula)"
+	},
+	{
+		"key": "urna-eletronica",
+		"label": "urna eletrônica"
+	},
+	{
+		"key": "projetor",
+		"label": "projetor"
+	},
+	{
+		"key": "aviao",
+		"label": "avião"
+	},
+	{
+		"key": "medalha",
+		"label": "medalha"
+	},
+	{
+		"key": "musica",
+		"label": "nota musical"
+	},
+	{
+		"key": "calendario",
+		"label": "calendário"
+	},
+	{
+		"key": "foguete",
+		"label": "foguete"
+	},
+	{
+		"key": "coroa",
+		"label": "coroa"
+	},
+	{
+		"key": "presente",
+		"label": "presente"
+	},
+	{
+		"key": "local",
+		"label": "local"
+	},
+	{
+		"key": "livro",
+		"label": "livro"
+	},
+	{
+		"key": "raio",
+		"label": "raio"
+	},
+	{
 		"key": "templates",
 		"same": "barra-templates"
 	},
