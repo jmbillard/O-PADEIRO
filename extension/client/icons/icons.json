@@ -1,0 +1,138 @@
+[
+	{
+		"key": "tv",
+		"label": "TV de tubo"
+	},
+	{
+		"key": "jornal",
+		"label": "jornal"
+	},
+	{
+		"key": "mascaras",
+		"label": "máscaras"
+	},
+	{
+		"key": "episodios",
+		"label": "episódios"
+	},
+	{
+		"key": "microfone",
+		"label": "microfone"
+	},
+	{
+		"key": "pelicula",
+		"label": "película"
+	},
+	{
+		"key": "bola",
+		"label": "bola"
+	},
+	{
+		"key": "sinal",
+		"label": "sinal ao vivo"
+	},
+	{
+		"key": "estrela",
+		"label": "estrela"
+	},
+	{
+		"key": "megafone",
+		"label": "megafone"
+	},
+	{
+		"key": "microfone-mao",
+		"label": "microfone de mão"
+	},
+	{
+		"key": "antena",
+		"label": "antena"
+	},
+	{
+		"key": "no-ar",
+		"label": "luz no ar"
+	},
+	{
+		"key": "coracao",
+		"label": "coração"
+	},
+	{
+		"key": "camera",
+		"label": "câmera"
+	},
+	{
+		"key": "claquete",
+		"label": "claquete"
+	},
+	{
+		"key": "trofeu",
+		"label": "troféu"
+	},
+	{
+		"key": "alvo",
+		"label": "alvo"
+	},
+	{
+		"key": "balao",
+		"label": "mensagem"
+	},
+	{
+		"key": "lapis",
+		"label": "lápis"
+	},
+	{
+		"key": "rolo",
+		"label": "edição"
+	},
+	{
+		"key": "templates",
+		"label": "templates"
+	},
+	{
+		"key": "fonte",
+		"label": "fonte"
+	},
+	{
+		"key": "camadas",
+		"label": "camadas"
+	},
+	{
+		"key": "renomear",
+		"label": "renomear"
+	},
+	{
+		"key": "lupa",
+		"label": "lupa"
+	},
+	{
+		"key": "link",
+		"label": "link"
+	},
+	{
+		"key": "globo",
+		"label": "globo"
+	},
+	{
+		"key": "pessoa",
+		"label": "pessoa"
+	},
+	{
+		"key": "servidor",
+		"label": "servidor"
+	},
+	{
+		"key": "relogio",
+		"label": "relógio"
+	},
+	{
+		"key": "etiqueta",
+		"label": "etiqueta"
+	},
+	{
+		"key": "arquivo",
+		"label": "arquivo"
+	},
+	{
+		"key": "pasta",
+		"label": "pasta"
+	}
+]

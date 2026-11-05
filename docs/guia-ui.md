@@ -51,7 +51,10 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **SVG em linha**, `stroke: currentcolor`, traço entre 1.7 e 1.8, cantos e pontas arredondados. a cor vem de quem o contém, nunca do ícone.
 - **pastas só no contorno**; **arquivos (o `.aep`, os templates) sólidos**, com a dobra do canto escura e suave.
 - **ícones das ferramentas** (`js/icons.js`) animam no hover (a claquete bate, a lupa mostra a letra, a pasta recebe os arquivos…). uma ferramenta nova ganha um ícone com animação.
-- **a biblioteca de ícones** (`PAD_UTIL.iconLibrary`) tem os mesmos desenhos, parados. mudou um ícone da barra → mude o da biblioteca e o dos campos também.
+- **a biblioteca de ícones** (o seletor das categorias e das produções) fica em **arquivos**, na pasta `extension/client/icons/`: um `nome.svg` por ícone (o desenho, 24 x 24, com `stroke="currentColor"`) ou um `nome.json` (animação **Lottie**, que toca ao passar o mouse). a ordem e os nomes que aparecem ficam em `icons/icons.json` (`{ "key", "label" }`; um arquivo fora dele vem depois, pelo nome). no After Effects a pasta é lida direto; para o modo de teste (navegador), rode `node extension/scripts/build-icons.js` depois de mexer nos arquivos.
+  - **Lottie com as cores do tema** → por padrão os traços e preenchimentos seguem a cor do texto (como os svg); para manter as cores do arquivo, ponha `"tint": false` no item do `icons.json`.
+  - a chave (o nome do arquivo) é o que fica gravado na configuração: trocar o desenho de um arquivo troca em todo lugar; renomear o arquivo desfaz a escolha de quem usava a chave antiga.
+  - mudou um ícone da barra → mude o da biblioteca (e o dos campos) também.
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
 - **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
 

@@ -40,12 +40,14 @@ O-PADEIRO/
    │  ├─ css/loader.css          → o forninho (loader)
    │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
+   │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
+   │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
-   │     ├─ util.js              → ícones das produções, forninho, URLs de arquivo
+   │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
    │     └─ <painel>.js          → lógica de cada painel
@@ -60,7 +62,7 @@ O-PADEIRO/
    │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1) e a checagem do brilho do foco (check-focus-crop.js)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), a checagem do brilho do foco (check-focus-crop.js) e o retrato da pasta de ícones para o modo de teste (build-icons.js)
 ```
 
 <br>

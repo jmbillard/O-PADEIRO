@@ -233,51 +233,141 @@
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
 	}
 
-	// Os ícones do seletor (aba PROJETO > categorias), estáticos: [chave, nome, desenho do svg]. os das
-	// categorias primeiro (os que o nome escolhe sozinho), depois os outros desenhos do padeiro.
-	var ICONS = [
-		['tv', 'TV de tubo', '<path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" />'],
-		['jornal', 'jornal', '<path d="M5 5.5h11v13a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 18.5z" /><path d="M16 9h2.5v9.5a1.5 1.5 0 0 1-3 0" /><path d="M8 9h5M8 12h5M8 15h3" />'],
-		['mascaras', 'máscaras', '<path d="M4 5.5c2.7 1 5.3 1 8 0v5.5a4 4 0 0 1-8 0z" /><path d="M6 9h.01M10 9h.01M6.5 12c.8.7 2.2.7 3 0" /><path d="M12 9.5c2.7 1 5.3 1 8 0V15a4 4 0 0 1-8 0" /><path d="M14 13h.01M18 13h.01M14.5 17.2c.8-.7 2.2-.7 3 0" />'],
-		['episodios', 'episódios', '<rect x="3" y="8" width="14" height="11" rx="2" /><path d="M6 5h12a2 2 0 0 1 2 2v9" /><path d="m8.5 11 4 2.5-4 2.5z" />'],
-		['microfone', 'microfone', '<rect x="9" y="3" width="6" height="11" rx="3" /><path d="M6 11a6 6 0 0 0 12 0M12 17v4M8.5 21h7" />'],
-		['pelicula', 'película', '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /><path d="M5.5 6v12M18.5 6v12" stroke-dasharray="1.2 2" />'],
-		['bola', 'bola', '<circle cx="12" cy="12" r="8.5" /><path d="m12 7.5 3.5 2.5-1.3 4h-4.4L8.5 10z" /><path d="M12 3.5v4M15.5 10l4.3-1.2M14.2 14l2.7 3.7M9.8 14l-2.7 3.7M8.5 10 4.2 8.8" />'],
-		['sinal', 'sinal ao vivo', '<circle cx="12" cy="12" r="2" /><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2" />'],
-		['estrela', 'estrela', '<path d="m12 3.8 2.5 5.1 5.6.8-4 4 .9 5.6-5-2.7-5 2.7.9-5.6-4-4 5.6-.8z" />'],
-		['megafone', 'megafone', '<path d="M4 10v4h3l7 4V6L7 10z" /><path d="M17 9.5a3.5 3.5 0 0 1 0 5M7 14l1 5h2.5l-1-4.4" />'],
-		['microfone-mao', 'microfone de mão', '<circle cx="15" cy="8" r="4" /><path d="m12.2 10.8-7.7 7.7a1.4 1.4 0 0 0 2 2l7.7-7.7" /><path d="M13.3 6.3l3.4 3.4" />'],
-		['antena', 'antena', '<circle cx="12" cy="11" r="1.6" /><path d="M8.5 7.5a5 5 0 0 0 0 7M15.5 7.5a5 5 0 0 1 0 7M5.7 4.7a9 9 0 0 0 0 12.6M18.3 4.7a9 9 0 0 1 0 12.6M12 12.6V20" />'],
-		['no-ar', 'luz no ar', '<rect x="3" y="7" width="18" height="10" rx="5" /><circle cx="8" cy="12" r="1.6" /><path d="M12 10.5h5M12 13.5h3" />'],
-		['coracao', 'coração', '<path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z" />'],
-		['camera', 'câmera', '<rect x="3.5" y="7" width="12" height="9" rx="1.8" /><path d="m15.5 10.5 5-2.5v8l-5-2.5" /><path d="M9.5 16v4M6.5 20h6" />'],
-		['claquete', 'claquete', '<rect x="3.5" y="10" width="17" height="9.5" rx="1.5" /><g transform="rotate(-15 3.5 10)"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g>'],
-		['trofeu', 'troféu', '<path d="M8 4h8v5a4 4 0 0 1-8 0z" /><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v3.5M8.5 20h7M10 16.5h4V20h-4z" />'],
-		['alvo', 'alvo', '<circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" />'],
-		['balao', 'mensagem', '<path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17h-1A2.5 2.5 0 0 1 3 14.5v-7A2.5 2.5 0 0 1 5.5 5z" />'],
-		['lapis', 'lápis', '<path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" />'],
-		['rolo', 'edição', '<path d="M9.5 6.5H7.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2M14.5 6.5h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2" /><path d="M12 4.5v15" />'],
-		['templates', 'templates', '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 9.5h17M9 9.5v10" />'],
-		['fonte', 'fonte', '<path d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" />'],
-		['camadas', 'camadas', '<path d="m12 3-8.5 4.25L12 11.5l8.5-4.25z" /><path d="m3.5 12 8.5 4.25L20.5 12" /><path d="m3.5 16.5 8.5 4.25 8.5-4.25" />'],
-		['renomear', 'renomear', '<rect x="2.5" y="6.5" width="19" height="11" rx="3" /><path d="M6 12h2.4M10.3 12h2.4M14.6 12h2.4M18.6 9.6v4.8" />'],
-		['lupa', 'lupa', '<circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" />'],
-		['link', 'link', '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />'],
-		['globo', 'globo', '<circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" />'],
-		['pessoa', 'pessoa', '<circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" />'],
-		['servidor', 'servidor', '<rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" />'],
-		['relogio', 'relógio', '<circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" />'],
-		['etiqueta', 'etiqueta', '<path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" />'],
-		['arquivo', 'arquivo', '<path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" />'],
-		['pasta', 'pasta', '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />']
-	];
+	// Os ícones da biblioteca (o seletor de ícones das categorias e das produções): um arquivo por ícone na pasta
+	// icons/ (nome.svg, ou nome.json para uma animação Lottie), na ordem de icons/icons.json (os que não estão nele
+	// vêm depois, pelo nome). No After Effects a pasta é lida direto; no navegador (modo de teste), o retrato
+	// icons/_snapshot.js (node extension/scripts/build-icons.js).
+	var iconCache = null;
 
-	function iconMarkup(key) {
-		for (var i = 0; i < ICONS.length; i++) {
-			if (ICONS[i][0] === key) return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[i][2] + '</svg>';
+	function iconDir() {
+		var dir = decodeURI(location.pathname).replace(/\/[^\/]*$/, '') + '/icons';
+
+		if (location.host) return '//' + location.host + dir; // na rede (file://servidor/share/…)
+
+		return /^\/[A-Za-z]:/.test(dir) ? dir.slice(1) : dir; // Windows: /C:/… → C:/…
+	}
+
+	function readIconFolder() {
+		var fs = require('fs');
+		var dir = iconDir();
+		var manifest = [];
+
+		try {
+			manifest = JSON.parse(fs.readFileSync(dir + '/icons.json', 'utf8'));
+		} catch (err) { }
+
+		var byKey = {};
+
+		fs.readdirSync(dir).forEach(function (f) {
+			if (/\.(svg|json)$/i.test(f) && f !== 'icons.json') byKey[f.replace(/\.(svg|json)$/i, '')] = f;
+		});
+
+		var order = manifest.filter(function (m) {
+			return byKey[m.key];
+		}).concat(Object.keys(byKey).sort().filter(function (k) {
+			return !manifest.some(function (m) {
+				return m.key === k;
+			});
+		}).map(function (k) {
+			return { key: k, label: k };
+		}));
+
+		return order.map(function (m) {
+			var file = byKey[m.key];
+			var text = fs.readFileSync(dir + '/' + file, 'utf8');
+
+			return /\.json$/i.test(file)
+				? { key: m.key, label: m.label || m.key, type: 'lottie', tint: m.tint !== false, data: JSON.parse(text) }
+				: { key: m.key, label: m.label || m.key, type: 'svg', svg: text.replace(/<\?xml[^>]*>/, '').trim() };
+		});
+	}
+
+	function iconList() {
+		if (iconCache) return iconCache;
+
+		try {
+			if (typeof require !== 'function') throw new Error('sem Node');
+			iconCache = readIconFolder();
+		} catch (err) {
+			iconCache = window.PAD_ICON_SNAPSHOT || [];
 		}
 
-		return '';
+		return iconCache;
+	}
+
+	function findIcon(key) {
+		var list = iconList();
+
+		for (var i = 0; i < list.length; i++) {
+			if (list[i].key === key) return list[i];
+		}
+
+		return null;
+	}
+
+	// o desenho do ícone: o svg do arquivo (sem tamanho fixo: quem o mostra decide) ou, num Lottie, o lugar onde a
+	// animação entra (montada sozinha quando aparece na página; toca ao passar o mouse)
+	function iconMarkup(key) {
+		var it = findIcon(key);
+
+		if (!it) return '';
+		if (it.type === 'lottie') return '<span class="pad-lottie' + (it.tint ? ' is-tint' : '') + '" data-lottie="' + it.key + '" aria-hidden="true"></span>';
+
+		// só a tag do svg perde o tamanho fixo (os retângulos de dentro mantêm o deles)
+		return it.svg.replace(/<svg\b[^>]*>/, function (tag) {
+			return tag.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg\b/, '<svg aria-hidden="true"');
+		});
+	}
+
+	// Lottie: carrega a biblioteca (lib/lottie_light.min.js) na primeira vez e monta cada lugar que aparecer
+	var lottieLoading = null;
+
+	function withLottie(fn) {
+		if (window.lottie) return fn();
+		if (!lottieLoading) {
+			lottieLoading = [];
+
+			var script = document.createElement('script');
+
+			script.src = 'lib/lottie_light.min.js';
+			script.onload = function () {
+				lottieLoading.forEach(function (f) {
+					f();
+				});
+			};
+			document.head.appendChild(script);
+		}
+		lottieLoading.push(fn);
+	}
+
+	function mountLottie(node) {
+		if (node._lottie) return;
+
+		var it = findIcon(node.getAttribute('data-lottie'));
+
+		if (!it || it.type !== 'lottie') return;
+		node._lottie = true;
+		withLottie(function () {
+			var anim = window.lottie.loadAnimation({ container: node, renderer: 'svg', loop: false, autoplay: false, animationData: JSON.parse(JSON.stringify(it.data)) });
+			var host = node.closest('button, .dropdown-item, .dropdown-trigger, .wz-opt, .tab, .cat-line') || node;
+
+			anim.goToAndStop(0, true);
+			host.addEventListener('mouseenter', function () {
+				anim.goToAndPlay(0, true);
+			});
+		});
+	}
+
+	if (window.MutationObserver) {
+		new MutationObserver(function (records) {
+			records.forEach(function (r) {
+				Array.prototype.forEach.call(r.addedNodes, function (n) {
+					if (n.nodeType !== 1) return;
+					if (n.matches && n.matches('.pad-lottie')) mountLottie(n);
+					if (n.querySelectorAll) Array.prototype.forEach.call(n.querySelectorAll('.pad-lottie'), mountLottie);
+				});
+			});
+		}).observe(document.documentElement, { childList: true, subtree: true });
 	}
 
 	// PAD_UTIL.categoryIcon(icon) → '<svg …>' do ícone escolhido para a categoria na aba PROJETO ('' = sem
@@ -288,8 +378,8 @@
 
 	// a lista do seletor: [{ key, label, svg }]
 	function iconLibrary() {
-		return ICONS.map(function (it) {
-			return { key: it[0], label: it[1], svg: iconMarkup(it[0]) };
+		return iconList().map(function (it) {
+			return { key: it.key, label: it.label, svg: iconMarkup(it.key) };
 		});
 	}
 

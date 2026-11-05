@@ -407,44 +407,23 @@ body.prods-page {
 /* uma produção */
 .prod-row {
   display: grid;
-  grid-template-columns: 22px 40px minmax(120px, 190px) minmax(0, 1fr);
+  grid-template-columns: 22px minmax(150px, 230px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   padding: 7px 0;
   animation: file-enter 320ms var(--ease-enter) both;
 }
 
-.prod-icon {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-small);
-  background: var(--surface-soft);
-  cursor: pointer;
-  transition:
-    border-color 200ms ease,
-    background-color 200ms ease,
-    transform 220ms var(--ease-soft);
-}
-
-.prod-icon:hover {
-  border-color: var(--blue-500);
-  background: var(--blue-50);
-  transform: translateY(-1px);
-}
-
-.prod-icon:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
-}
-
 .prod-icon img {
   display: block;
-  width: 24px;
-  height: 24px;
-  image-rendering: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+/* sem ícone: a pastinha, apagada */
+.prod-icon.is-empty {
+  color: var(--text-tertiary);
 }
 
 .prod-path {
@@ -2549,7 +2528,8 @@ body.is-org-dragging * {
 }
 
 /* o seletor de ícones (abre embaixo do ícone da categoria) */
-#pane-project {
+#pane-project,
+#pane-prods {
   position: relative;
 }
 
@@ -2576,6 +2556,13 @@ body.is-org-dragging * {
   display: grid;
   grid-template-columns: repeat(7, 36px);
   gap: 6px;
+}
+
+.icon-grid .icon-none {
+  grid-column: span 3;
+  width: auto;
+  font-size: 0.66rem;
+  font-weight: 700;
 }
 
 .icon-grid button {
@@ -2677,7 +2664,7 @@ body.is-org-dragging * {
 
 /* produção da equipe com caminho deste computador: ignorada (fica no arquivo, mas não aparece para ninguém) */
 .prod-row.is-ignored .prod-icon,
-.prod-row.is-ignored > .cfg-input,
+.prod-row.is-ignored .cat-name .cfg-input,
 .prod-row.is-ignored .prod-path .cfg-input {
   opacity: 0.5;
 }

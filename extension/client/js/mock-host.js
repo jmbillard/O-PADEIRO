@@ -205,9 +205,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						]
 					},
 					items: [
-						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: null },
+						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: 'tv' },
 						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
-						{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: null }
+						{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: 'alvo' }
 					]
 				};
 			}

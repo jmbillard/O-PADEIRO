@@ -42,7 +42,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 > ![editor de produções](images/producoes.webp)
 
 1. clique em '*+ nova produção*'.
-2. escolha um ícone (opcional), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). a **lixeira**, à direita da linha (fora do campo), exclui a produção.
+2. escolha um ícone (opcional: o ícone dentro do campo do nome abre a biblioteca de ícones; ele aparece no seletor de produção do painel de templates), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). a **lixeira**, à direita da linha (fora do campo), exclui a produção.
 3. clique no **disquete** (ou `Ctrl/Cmd+S`).
 
 - **reordenar** → arraste uma produção pelos pontinhos à esquerda (`↑` `↓` com o puxador em foco também movem).
@@ -54,7 +54,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 > 🚩 *obs:*\
 > • a ordem da lista é a do seletor de produção (no rodapé do painel de templates): arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
 > • o caminho do arquivo da lista aparece no fim da lista de produções.\
-> • o ícone tem **24 x 24 pixels**: imagens maiores são cortadas no centro e reduzidas.\
+> • os ícones vêm da **biblioteca de ícones** (a pasta `extension/client/icons/`, a mesma das categorias da aba PROJETO). uma produção com um ícone antigo (imagem) continua com ele até você escolher outro.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_GLOBAL_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
 

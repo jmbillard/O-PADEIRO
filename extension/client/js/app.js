@@ -2099,7 +2099,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		bindEvents();
 		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
-		PAD_DROPDOWN.enhance($('production'));
+		// o ícone de cada produção (o da biblioteca de ícones, escolhido na configuração) dentro do seletor
+		PAD_DROPDOWN.enhance($('production'), function (value) {
+			var prod = state.productions.filter(function (p) {
+				return p.name === value;
+			})[0];
+
+			return prod && prod.icon && !/^['"]/.test(prod.icon) ? PAD_UTIL.iconMarkup(prod.icon) : '';
+		});
 		$('production').addEventListener('change', onProductionChange);
 
 		setTimeout(function () {

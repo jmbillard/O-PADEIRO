@@ -557,30 +557,31 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function buildRow(row) {
 		var box = el('div', 'prod-row');
 		var grip = PAD_SORT.handle();
-		var iconBtn = el('button', 'prod-icon');
+		var iconBtn = el('button', 'cat-icon prod-icon'); // o ícone dentro do campo do nome, como nas categorias
 		var img = el('img');
+		var nameBox = el('div', 'cat-name');
 		var name = el('input', 'cfg-input');
 		var pathWrap = el('div', 'prod-path');
 		var path = el('input', 'cfg-input');
 		var dot = el('span', dotClass(row));
 
+		// o ícone no seletor de produção (painel de templates): um da biblioteca de ícones (pasta icons/). um ícone
+		// antigo (imagem PNG) continua aparecendo até ser trocado
 		iconBtn.type = 'button';
-		iconBtn.title = 'ícone, 24 x 24 px, que aparece no menu (opcional): clique para escolher uma imagem';
-		img.alt = '';
-		img.src = iconSrc(row);
-		iconBtn.appendChild(img);
-		iconBtn.addEventListener('click', async function () {
-			var file = PAD_BRIDGE.pickFile('Selecione o ícone', ['png', 'jpg', 'jpeg']);
-
-			if (!file) return;
-
-			try {
-				row.icon = await imageFileToIcon(file);
-				img.src = iconSrc(row);
-				updateDirty();
-			} catch (err) {
-				toast('error', err.message);
-			}
+		iconBtn.title = 'ícone que aparece no seletor de produção (opcional): clique para escolher';
+		if (row.icon && !/^['"]/.test(row.icon)) {
+			iconBtn.innerHTML = PAD_UTIL.iconMarkup(row.icon);
+		} else if (row.icon) {
+			img.alt = '';
+			img.src = iconSrc(row);
+			iconBtn.appendChild(img);
+		} else {
+			iconBtn.classList.add('is-empty');
+			iconBtn.innerHTML = PAD_UTIL.iconMarkup('pasta');
+		}
+		iconBtn.addEventListener('click', function (e) {
+			e.stopPropagation();
+			openIconPicker(iconBtn, row, { title: 'ícone da produção', pane: 'pane-prods', render: render, none: true });
 		});
 
 		name.type = path.type = 'text';
@@ -646,9 +647,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		pathWrap.appendChild(path);
 		pathWrap.appendChild(actions);
 
+		nameBox.appendChild(iconBtn);
+		nameBox.appendChild(name);
 		box.appendChild(grip);
-		box.appendChild(iconBtn);
-		box.appendChild(name);
+		box.appendChild(nameBox);
 		box.appendChild(pathWrap);
 		box.appendChild(remove);
 		box.classList.add('has-del');
@@ -3496,19 +3498,32 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// o seletor de ícones: os desenhos do padeiro (estáticos)
-	function openIconPicker(anchor, row) {
+	// o seletor de ícones (a biblioteca da pasta icons/): categorias (aba PROJETO) e produções (aba TEMPLATES).
+	// opts: { title, pane, render, none } (none: mostra o "sem ícone")
+	function openIconPicker(anchor, row, opts) {
 		closeIconPicker();
+
+		opts = opts || { title: 'ícone da categoria', pane: 'pane-project', render: renderProject };
 
 		var pop = el('div', 'icon-pop');
 		var grid = el('div', 'icon-grid');
 		var choose = function (key) {
 			row.icon = key;
 			closeIconPicker();
-			renderProject();
+			opts.render();
 			updateDirty();
 		};
 
-		pop.appendChild(el('p', null, 'ícone da categoria'));
+		pop.appendChild(el('p', null, opts.title));
+		if (opts.none) {
+			var none = el('button', 'icon-none' + (!row.icon ? ' is-on' : ''), 'sem ícone');
+
+			none.type = 'button';
+			none.addEventListener('click', function () {
+				choose('');
+			});
+			grid.appendChild(none);
+		}
 		PAD_UTIL.iconLibrary().forEach(function (it) {
 			var b = el('button', it.key === row.icon ? 'is-on' : '');
 
@@ -3527,7 +3542,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		// abaixo do botão (ou acima, sem espaço embaixo), dentro da folha
-		var pane = $('pane-project');
+		var pane = $(opts.pane);
 		var a = anchor.getBoundingClientRect();
 		var box = pane.getBoundingClientRect();
 
