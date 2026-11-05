@@ -994,7 +994,8 @@ PADX.saveTemplateConfig = function (a) {
 	var cases = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'];
 
 	if (!cfg || typeof cfg !== 'object') throw new Error('#PAD_044 - configuração inválida');
-	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o nome da configuração');
+	if (!cfg.atracao || String(cfg.atracao.name || '').trim() == '') throw new Error('#PAD_044 - escolha a atração do template');
+	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é (o nome do template)');
 	if (String(cfg.compName).trim() == '') throw new Error('#PAD_044 - preencha o nome da comp principal');
 	if (cases.indexOf(cfg.textCase) < 0) throw new Error('#PAD_044 - tipo de caixa de texto inválido: ' + cfg.textCase);
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');

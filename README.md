@@ -279,7 +279,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_021` | um layer editável da config não existe no template |
 | `#PAD_023` `#PAD_025` `#PAD_026` `#PAD_028` `#PAD_031` `#PAD_063` | criador de templates: comp principal ou layers editáveis faltando |
 | `#PAD_027` | criador de templates: o teste de preenchimento falhou |
-| `#PAD_029` | criador de templates: falta o nome da configuração |
+| `#PAD_029` | criador de templates: falta a atração ou o que é |
 | `#PAD_032` `#PAD_033` | renomear: nada selecionado / saídas que não puderam ser renomeadas |
 | `#PAD_034` | algumas fontes não puderam ser copiadas (ex: Adobe Fonts) |
 | `#PAD_036` | organizar: erro ao organizar o projeto |

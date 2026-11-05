@@ -1003,7 +1003,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
 			var list = [
 				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
-				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS' },
+				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/CHEF DE ALTO NIVEL' },
+				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026' },
 				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
@@ -1031,7 +1032,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, display: m.path, film: !!m.film, score: score });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, score: score });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;

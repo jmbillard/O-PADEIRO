@@ -30,6 +30,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		comp: null, // { id, name, time }
 		layers: [], // { id, index, name, isText, method, missing }
 		outputs: [''],
+		atr: null, // a atração do template: { name, path, out, display, isNew }
+		autoOut: '', // a pasta de output que veio da atração (troca junto com ela)
 		emptyConfirm: null,
 		saving: false,
 		busy: false
@@ -328,7 +330,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var hasPreview = !!state.comp && $('preview-card').classList.contains('has-image');
 
 		return [
-			{ key: 'name', label: 'nome', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'nome da configuração' },
+			{ key: 'atracao', label: 'atração', ok: !!state.atr, target: 'atr-picker', tip: state.atr ? state.atr.name : 'escolha a atração (ou crie uma nova)' },
+			{ key: 'name', label: 'o que é', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'o que é (ex: LETTERING, TARJA)' },
 			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{
 				key: 'layers',
@@ -647,8 +650,58 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 	}
 
+	/* =========================================================
+	   Atração e o que é
+	   ========================================================= */
+
+	// a atração escolhida: a pasta de output dela (a que já existe no índice) entra na lista de outputs, no lugar
+	// da que veio da atração anterior (ou de um campo vazio)
+	function onAttraction(atr) {
+		var out = atr && !atr.isNew && atr.out ? atr.out : '';
+		var prev = state.autoOut ? state.outputs.indexOf(state.autoOut) : -1;
+
+		state.atr = atr;
+
+		if (out !== state.autoOut) {
+			if (prev >= 0) {
+				if (out && state.outputs.indexOf(out) < 0) state.outputs[prev] = out;
+				else state.outputs.splice(prev, 1);
+			} else if (out && state.outputs.indexOf(out) < 0) {
+				var empty = state.outputs.indexOf('');
+
+				if (empty >= 0) state.outputs[empty] = out;
+				else state.outputs.push(out);
+			}
+			if (!state.outputs.length) state.outputs.push('');
+			state.autoOut = out;
+			renderOutputs();
+		}
+
+		updateNameFull();
+		updateChecklist();
+	}
+
+	// o template por inteiro: a atração · o que é
+	function updateNameFull() {
+		var box = $('name-full');
+		var what = $('f-config').value.trim();
+
+		box.hidden = !(state.atr && what);
+		box.textContent = '';
+		if (box.hidden) return;
+
+		box.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>');
+
+		var text = el('span', null, 'template: ');
+
+		text.appendChild(el('b', null, state.atr.name + ' · ' + what.toUpperCase()));
+		if (state.atr.isNew) text.appendChild(document.createTextNode(' (atração nova)'));
+		box.appendChild(text);
+	}
+
 	function buildConfig() {
 		return {
+			atracao: state.atr ? { name: state.atr.name, path: state.atr.path, out: state.atr.out || '' } : null,
 			configName: $('f-config').value.trim(),
 			exemple: normalizeBreaks($('f-example').value),
 			tip: normalizeBreaks($('f-tip').value),
@@ -724,9 +777,14 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		var cfg = buildConfig();
 
+		if (!cfg.atracao) {
+			state.picker.focus();
+			return toast('error', '#PAD_029 - escolha a atração do template (ou crie uma nova).');
+		}
+
 		if (cfg.configName === '' || cfg.configName === DEFAULT_CONFIG_NAME) {
 			$('f-config').focus();
-			return toast('error', '#PAD_029 - preencha o nome da configuração.');
+			return toast('error', '#PAD_029 - preencha o que é (ex: LETTERING, TARJA).');
 		}
 
 		// sem layers editáveis o template não terá inputs: pede um segundo clique
@@ -808,6 +866,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	function resetForm() {
 		$('f-config').value = '';
+		state.picker.set(null);
+		state.atr = null;
+		state.autoOut = '';
+		updateNameFull();
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
 		$('f-tip').value = DEFAULT_TIP;
 		$('f-prefix').value = 'TARJA';
@@ -835,6 +897,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		['f-config', 'f-example', 'f-separator'].forEach(function (id) {
 			$(id).addEventListener('input', updateChecklist);
 		});
+		state.picker = PAD_ATTRACTIONS.picker($('atr-picker'), { onChange: onAttraction });
+		$('f-config').addEventListener('input', updateNameFull);
 		$('f-case').addEventListener('change', updateNamePreview);
 		$('btn-example').addEventListener('click', exampleFromLayers);
 

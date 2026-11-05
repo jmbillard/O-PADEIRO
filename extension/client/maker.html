@@ -7,6 +7,7 @@
 	<title>CRIAR TEMPLATE</title>
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/attractions.css">
 	<link rel="stylesheet" href="css/maker.css">
 	<link rel="stylesheet" href="css/theme.css">
 </head>
@@ -48,12 +49,20 @@
 					</ol>
 				</details>
 
-				<!-- o nome vem primeiro: é a primeira coisa a preencher -->
-				<div class="cfg-field maker-name">
-					<div class="has-field-icon" title="nome da configuração: identifica o template no log">
-						<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" /></svg>
-						<input class="cfg-input" id="f-config" type="text" spellcheck="false" autocomplete="off" placeholder="nome da configuração (identifica o template no log)" aria-label="Nome da configuração">
+				<!-- primeiro, a atração (buscada no índice, ou nova) e o que é: o template é dessa atração -->
+				<div class="maker-name">
+					<div class="maker-name-col">
+						<p class="cfg-title maker-name-title">ATRAÇÃO</p>
+						<div class="atr-picker" id="atr-picker"></div>
 					</div>
+					<div class="maker-name-col">
+						<p class="cfg-title maker-name-title">O QUE É</p>
+						<div class="has-field-icon" title="o que é: identifica o template no log">
+							<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
+							<input class="cfg-input" id="f-config" type="text" spellcheck="false" autocomplete="off" placeholder="ex: LETTERING, TARJA, CRÉDITO" aria-label="O que é">
+						</div>
+					</div>
+					<p class="wz-preview maker-name-preview" id="name-full" hidden></p>
 				</div>
 
 				<div class="maker-grid">
@@ -193,6 +202,8 @@ use 1 linha vazia para criar mais de 1 versão do mesmo template.</textarea>
 	<script src="js/keys.js"></script>
 	<script src="js/dropdown.js"></script>
 	<script src="js/sortable.js"></script>
+	<script src="js/local-index.js"></script>
+	<script src="js/attractions.js"></script>
 	<script src="js/maker.js"></script>
 </body>
 

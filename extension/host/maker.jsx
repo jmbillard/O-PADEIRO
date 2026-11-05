@@ -237,8 +237,11 @@ PADX.makerSave = function (a) {
 	var cfg = a.config;
 
 	if (!cfg || String(cfg.configName).replace(/^\s+|\s+$/g, '') == '' || cfg.configName == defaultTemplateConfigObj.configName) {
-		throw new Error('#PAD_029 - preencha o nome da configuração.');
+		throw new Error('#PAD_029 - preencha o que é (o nome do template).');
 	}
+
+	// a atração do template (o seletor do criador: a do índice ou uma nova): { name, path, out }
+	if (!cfg.atracao || String(cfg.atracao.name || '').replace(/^\s+|\s+$/g, '') == '') throw new Error('#PAD_029 - escolha a atração do template.');
 
 	cfg.configName = String(cfg.configName).replace(/^\s+|\s+$/g, '');
 	cfg.compName = comp.name;

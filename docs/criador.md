@@ -17,7 +17,7 @@ um template do padeiro é um conjunto de arquivos:
 
 1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
 2. abra a comp principal e `◗ clique direito` em **templates**, na barra.
-3. preencha o '*nome da configuração*' (o primeiro campo, no topo), o '*exemplo de preenchimento*' e as '*dicas*'.
+3. escolha a '*atração*' e preencha o '*o que é*' (os primeiros campos, no topo), o '*exemplo de preenchimento*' e as '*dicas*'.
 4. posicione a agulha da timeline em um frame de referência e clique no preview ('*capturar preview*' aparece sobre ele no hover, ou direto quando ainda não há preview).
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
 6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
@@ -33,7 +33,7 @@ um template do padeiro é um conjunto de arquivos:
 >
 > ![checklist do criador](images/criador-checklist.webp)
 
-o topo do criador, antes do **⋯**, mostra o que falta: **nome**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+o topo do criador, antes do **⋯**, mostra o que falta: **atração**, **o que é**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
 
 ao salvar, o padeiro:
 
@@ -45,7 +45,8 @@ ao salvar, o padeiro:
 
 ### formulário e nomenclatura
 
-- **nome da configuração** → identifica o template no log.
+- **atração** (obrigatória) → o template é dessa atração. digitar busca as atrações (no índice do webhook ou no índice local, como a [janela projeto](projeto.md)) e mostra os cartões logo abaixo; a escolhida fica com o nome oficial e, se tiver pasta de output, ela entra nas '*pastas de output*' (trocar de atração troca essa pasta). não achou? **nova atração**: o nome e a categoria (aba PROJETO da configuração) abrem embaixo.
+- **o que é** → o nome do template (ex: `LETTERING`, `TARJA`, `CRÉDITO`); identifica o template no log. embaixo, o template por inteiro: `DOMINGÃO COM HUCK · LETTERING SOLTO`.
 - **exemplo de preenchimento** → idealmente, o texto usado no preview. o ícone de importar, no canto do campo, puxa dos layers: monta o exemplo com o texto atual dos layers editáveis.
 - **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.
 - **prefixo** (opcional) → começo do nome de todas as comps criadas. vazio, o nome da comp é só a informação do input (ex: `JOAO BOSCO REPORTER` em vez de `TARJA - JOAO BOSCO REPORTER`).
@@ -76,7 +77,8 @@ ao salvar, o padeiro:
 > ```jsonc
 > // "\n" representa uma quebra de linha.
 > {
->   "configName": "CONVERSA COM BIAL TARJA RODAPÉ CONVIDADO", // → nome da configuração.
+>   "atracao": { "name": "CONVERSA COM BIAL", "path": "…/PROGRAMAS/CONVERSA COM BIAL", "out": "…/CONVERSA COM BIAL" }, // → a atração (nome, pasta e pasta de output).
+>   "configName": "TARJA RODAPÉ CONVIDADO", // → o que é.
 >   "exemple": "CÁSSIO\nGABUS MENDES\n---\nATOR",             // → texto de exemplo do input.
 >   "tip": "digite o texto em 1, 2 ou 3 linhas para nome e informação.\n\nuse 1 linha com '---' para separar nome e informação.", // → dicas.
 >

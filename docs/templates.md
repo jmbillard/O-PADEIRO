@@ -113,7 +113,7 @@ o padeiro executa as seguintes tarefas, em ordem:
 
 > ![editor de config](images/templates-config.webp)
 
-o lápis ao lado do nome do template abre um formulário para o `_config.json`: nome, comp principal, prefixo, tempo de referência, caixa de texto, separador, exemplo, dicas, layers editáveis (com a ordem), variações de layout (`inputFx`) e pastas de import e output. em um template sem config, o mesmo botão cria o arquivo.
+o lápis ao lado do nome do template abre um formulário para o `_config.json`: atração (a mesma busca do [criador](criador.md), obrigatória), o que é, comp principal, prefixo, tempo de referência, caixa de texto, separador, exemplo, dicas, layers editáveis (com a ordem), variações de layout (`inputFx`) e pastas de import e output. em um template sem config, o mesmo botão cria o arquivo.
 
 > 🚩 *obs:*\
 > • o formulário mostra o nome final da comp com o exemplo e confere tudo antes de salvar.\

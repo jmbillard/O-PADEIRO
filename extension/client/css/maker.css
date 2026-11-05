@@ -132,9 +132,37 @@ body.maker-page {
   }
 }
 
-/* nome da configuração: o primeiro campo, na largura toda */
+/* a atração e o que é: os primeiros campos, lado a lado (a lista da atração abre embaixo do campo dela) */
 .maker-name {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 8px 12px;
   margin-bottom: 16px;
+}
+
+.maker-name-col {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.maker-name-title {
+  margin: 0 2px;
+}
+
+.maker-name-preview {
+  grid-column: 1 / -1;
+}
+
+.maker-name-preview[hidden] {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .maker-name {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* como criar */

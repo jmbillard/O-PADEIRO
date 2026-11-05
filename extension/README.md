@@ -39,6 +39,7 @@ O-PADEIRO/
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
    │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
+   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela PROJETO, criador e editor de config
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
    │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
    │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
@@ -47,6 +48,7 @@ O-PADEIRO/
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
+   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
    │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador

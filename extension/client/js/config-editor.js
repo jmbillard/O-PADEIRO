@@ -67,6 +67,7 @@ são preservadas ao salvar.
 
 	// ícones no início dos campos (os mesmos do criador)
 	var FIELD_ICONS = {
+		file: '<path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" />',
 		tag: '<path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" />',
 		comp: '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" />',
 		prefix: '<path d="M5 5v14" /><path d="M9 9h10M9 15h7" />',
@@ -232,7 +233,41 @@ são preservadas ao salvar.
 		var idGrid = el('div', 'cfg-grid');
 
 		idCard.appendChild(idGrid);
-		field(idGrid, 'configName', 'Nome da configuração', input(base.configName), 'identifica o template no log.', 'tag');
+		// a atração (o mesmo seletor do criador): a do índice ou uma nova; a pasta de output dela entra nos outputs
+		var atrWrap = el('div', 'cfg-field cfg-field-wide');
+		var atrBox = el('div', 'atr-picker');
+		var atrPicker;
+		var autoOut = '';
+
+		atrWrap.appendChild(el('label', 'cfg-label', 'Atração'));
+		atrWrap.appendChild(atrBox);
+		idGrid.appendChild(atrWrap);
+		atrPicker = PAD_ATTRACTIONS.picker(atrBox, {
+			onChange: function (atr) {
+				var out = atr && !atr.isNew && atr.out ? atr.out : '';
+				var prev = autoOut ? outputs.indexOf(autoOut) : -1;
+
+				if (out !== autoOut && typeof renderOutputs === 'function') {
+					if (prev >= 0) {
+						if (out && outputs.indexOf(out) < 0) outputs[prev] = out;
+						else outputs.splice(prev, 1);
+					} else if (out && outputs.indexOf(out) < 0) {
+						var empty = outputs.indexOf('');
+
+						if (empty >= 0) outputs[empty] = out;
+						else outputs.push(out);
+					}
+					if (!outputs.length) outputs.push('');
+					autoOut = out;
+					renderOutputs();
+				}
+				changed();
+			}
+		});
+		atrPicker.input.id = 'cfg-atracao';
+		atrPicker.set(base.atracao || null);
+		fields.atracao = { wrap: atrWrap, control: atrPicker.input };
+		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: LETTERING, TARJA, CRÉDITO. identifica o template no log.', 'file');
 		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */
@@ -491,6 +526,10 @@ são preservadas ao salvar.
 		function readForm() {
 			var cfg = JSON.parse(JSON.stringify(base)); // chaves desconhecidas continuam no arquivo
 
+			var atr = atrPicker.get();
+
+			if (atr) cfg.atracao = { name: atr.name, path: atr.path, out: atr.out || '' };
+			else delete cfg.atracao;
 			cfg.configName = text('configName').trim();
 			cfg.compName = text('compName').trim();
 			cfg.prefix = text('prefix').trim();
@@ -533,7 +572,8 @@ são preservadas ao salvar.
 				errors.push({ key: key, msg: msg });
 			}
 
-			if (cfg.configName === '') bad('configName', 'preencha o nome da configuração.');
+			if (!cfg.atracao) bad('atracao', 'escolha a atração do template (ou crie uma nova).');
+			if (cfg.configName === '') bad('configName', 'preencha o que é (o nome do template).');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 
