@@ -105,7 +105,7 @@ const CHECKS = [
 		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(800);
 	}]
-].concat(['templates', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'net', 'appearance', 'layout', 'user'].map(function (tab) {
+].concat(['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
 	return ['configuração: ' + tab, 'productions.html', async (p) => {
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 

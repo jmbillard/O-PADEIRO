@@ -160,6 +160,26 @@ body.prods-page {
   transform: rotate(180deg);
 }
 
+/* telemetria: o pulso corre (o traço se redesenha da esquerda para a direita) */
+.ti-pulse path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 0;
+}
+
+.tab:hover .ti-pulse path {
+  animation: ti-pulse 620ms var(--ease-soft);
+}
+
+@keyframes ti-pulse {
+  0% {
+    stroke-dashoffset: 30;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* layout: a linha com o puxador desce uma posição e a de baixo sobe (reordenar) */
 .tab:hover .ti-r1 {
   transform: translateY(6px);

@@ -214,11 +214,11 @@ cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por
 
 <br>
 
-## 📍 rede
+## 📍 telemetria
 
-a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca muda: onde fica o registro de uso e o mapa dos drives.
+a aba **telemetria** concentra o registro de uso: em cima, o da equipe (onde cada preenchimento é registrado); embaixo, **neste computador**, se este computador envia o dele.
 
-### registro de uso
+### registro de uso (equipe)
 
 define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
 
@@ -232,6 +232,14 @@ define onde o padeiro registra cada preenchimento: data, produção, template, q
 > 🚩 *obs:*\
 > • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
 > • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
+
+### neste computador
+
+'*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu acima (inclusive nas produções locais); desligado, nada sai daqui.
+
+## 📍 rede
+
+a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca muda: o mapa dos drives.
 
 ### drives
 
@@ -291,7 +299,6 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma ferramenta, só nesta máquina (as opções locais de cada ferramenta ficam na aba dela, embaixo, em **neste computador**):
 
 - **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
-- **registro de uso** → '*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu na aba **rede** (inclusive nas produções locais); desligado, nada sai daqui.
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).

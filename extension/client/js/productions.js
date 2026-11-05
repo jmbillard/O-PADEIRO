@@ -3602,11 +3602,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'appearance', 'tools', 'machine'];
+	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
-	var TAB_ALIASES = { logs: ['network', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
+	var TAB_ALIASES = { logs: ['telemetry', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
 	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
-	var SPLIT_TABS = ['prods', 'project', 'search', 'links']; // da equipe, com a parte 'neste computador' embaixo
+	var SPLIT_TABS = ['prods', 'project', 'search', 'links', 'telemetry']; // da equipe, com a parte 'neste computador' embaixo
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -3712,6 +3712,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		network: '<g class="ti-server"><g class="ti-rack ti-k1"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 7.5h.01" /></g><g class="ti-rack ti-k2"><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 16.5h.01" /></g></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
+		telemetry: '<g class="ti-pulse"><path d="M3 12h4l2.5-6 5 12 2.5-6H21" /></g>',
 		appearance: '<g class="ti-theme"><circle cx="12" cy="12" r="8" /><path class="ti-half" d="M12 4a8 8 0 0 1 0 16z" /></g>',
 		tools: '<g class="ti-list"><g class="ti-row ti-r1"><path d="M9 6h11" /><path d="M4 5.5h.01M4 6.5h.01M5 5.5h.01M5 6.5h.01" /></g><g class="ti-row ti-r2"><path d="M9 12h11" /><path d="M4.5 11v2" /></g><g class="ti-row ti-r3"><path d="M9 18h11" /><path d="M4.5 17v2" /></g></g>'
 	};
@@ -3777,7 +3778,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// erro do host numa seção: abre a aba dela
 	function tabForError(message) {
-		if (/#PAD_078/.test(message)) return 'network';
+		if (/#PAD_078/.test(message)) return 'telemetry'; // o registro de uso
 		if (/#PAD_0(79|80|81)/.test(message)) return 'drives'; // aba rede, na seção dos drives
 		if (/#PAD_08[23]/.test(message)) return 'rename';
 		if (/#PAD_08[45]/.test(message)) return 'organize';
@@ -3906,7 +3907,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var logProblem = validateLog();
 
 		if (logProblem) {
-			showTab('network');
+			showTab('telemetry');
 			$('log-webhook').focus();
 			return toast('error', logProblem);
 		}

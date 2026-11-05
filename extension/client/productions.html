@@ -31,6 +31,7 @@
 							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCAR</button>
 							<p class="tab-sep" aria-hidden="true"></p>
 							<button type="button" class="tab" role="tab" data-tab="network" aria-selected="false">REDE</button>
+							<button type="button" class="tab" role="tab" data-tab="telemetry" aria-selected="false">TELEMETRIA</button>
 							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">LAYOUT</button>
 							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">MEU USUÁRIO</button>
@@ -123,19 +124,12 @@
 				</div>
 			</div>
 
-			<!-- aba MEU USUÁRIO (só neste computador: designer, registro de uso e modo local; o resto de cada ferramenta fica na aba dela) -->
+			<!-- aba MEU USUÁRIO (só neste computador: designer e modo local; o resto de cada ferramenta fica na aba dela) -->
 			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">designer</p>
 				<p class="cfg-hint">o seu nome nos projetos (<b>{usuario}</b>), ou uma sigla, se preferir. vazio: o usuário do computador.</p>
 				<div class="has-field-icon machine-user"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="machine-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
 
-				<p class="cfg-title prods-section-title">registro de uso</p>
-				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido na aba <b>rede</b>. desligado, nada sai deste computador.</p>
-				<label class="cfg-switch">
-					<input type="checkbox" id="machine-log">
-					<span class="cfg-switch-track"></span>
-					<span class="cfg-switch-label">enviar o meu registro de uso</span>
-				</label>
 
 				<p class="cfg-title prods-section-title">modo local</p>
 				<label class="cfg-switch">
@@ -147,8 +141,8 @@
 				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções locais (aba templates), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
-			<!-- aba REDE: registro de uso e drives (configurados uma vez) -->
-			<div class="cfg-pane prods-log" id="pane-network" role="tabpanel" hidden>
+			<!-- aba TELEMETRIA: o registro de uso (da equipe) e, embaixo, se este computador envia o dele -->
+			<div class="cfg-pane prods-log" id="pane-telemetry" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">registro de uso</p>
 				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
 					<label class="log-radio" title="cada preenchimento é enviado para o webhook abaixo"><input type="radio" name="log-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
@@ -161,7 +155,18 @@
 					<input type="text" class="cfg-input log-webhook" id="log-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook" title="endereço do webhook (http:// ou https://)">
 				</div>
 				<p class="cfg-hint" id="log-hint"></p>
-			
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido acima. desligado, nada sai deste computador.</p>
+				<label class="cfg-switch">
+					<input type="checkbox" id="machine-log">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">enviar o meu registro de uso</span>
+				</label>
+			</div>
+
+			<!-- aba REDE: os drives (configurados uma vez) -->
+			<div class="cfg-pane prods-log" id="pane-network" role="tabpanel" hidden>
 				<div class="network-section" id="drives-section">
 				<p class="cfg-title prods-section-title">drives da rede</p>
 				<p class="cfg-hint">a letra do Windows e o caminho de rede que ela representa. o padeiro usa este mapa para converter caminhos entre Windows e Mac (conversor, busca e caminhos dos templates).</p>
