@@ -449,6 +449,28 @@ body.project-page {
   gap: 8px;
 }
 
+/* CRIAR: o título à esquerda e as pílulas (atração, designer) à direita, na mesma linha */
+.wz-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wz-title-row .wz-meta {
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.wz-title-row .wz-meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .wz-meta span {
   display: inline-flex;
   align-items: center;
