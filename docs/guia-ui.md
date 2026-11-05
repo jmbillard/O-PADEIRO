@@ -30,7 +30,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.
 - **cantos concêntricos** → um elemento arredondado dentro de outro tem o raio de fora = raio de dentro + respiro + borda. deixe a conta no comentário do CSS (ex: `/* concêntrico: raio dos campos + respiro (8) + borda (1) */`).
 - **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
-- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado).
+- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o vidro e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé é sempre um degradê**, nunca uma linha: na folha, o fundo do rodapé em degradê (`.action-bar.is-anchored`); no vidro, o conteúdo some numa máscara em degradê (`mask-image`).
 
 ## 📍 campos
 

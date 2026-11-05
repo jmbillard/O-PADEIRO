@@ -306,9 +306,12 @@ body {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 4px 8px 8px;
+  padding: 4px 8px 18px;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
+  /* a transição para o rodapé: a lista some num degradê (sem linha) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
 }
 
 .picker-list::-webkit-scrollbar {
@@ -453,8 +456,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px;
-  border-top: 1px solid rgb(var(--on-brand) / 20%);
+  padding: 6px 14px 14px;
   color: rgb(var(--on-brand) / 70%);
   font-size: 0.68rem;
   font-weight: 650;

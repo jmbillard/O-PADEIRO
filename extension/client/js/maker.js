@@ -18,7 +18,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/criador.md';
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
 	// dicas padrão (as do padeiro antigo, defaultTemplateConfigObj.tip no host)
-	var DEFAULT_TIP = 'instruções de preenchimento deste template. ex:\n\ndigite o texto em 1 ou 2 linhas.\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.';
+	var DEFAULT_TIP = 'digite o texto em 1 ou 2 linhas.\nuse 1 linha vazia para criar mais de 1 versão.';
 	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	var METHODS = [
@@ -163,7 +163,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var box = $('name-preview');
 
 		box.textContent = '';
-		box.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));
+		box.appendChild(el('span', 'cfg-preview-label', 'nome final'));
 		box.appendChild(el('strong', null, finalName()));
 		updateFxNames();
 	}
@@ -172,8 +172,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var many = state.layers.length > 1;
 
 		$('f-separator').disabled = !many;
-		$('sep-hint').textContent = many
-			? 'use \\n para uma informação por linha (cada informação vai para um layer).'
+		// a explicação do separador fica no balão do campo
+		$('sep-field').title = many
+			? 'use \\n para uma informação por linha (cada uma vai para um layer).'
 			: 'com 1 layer só, o texto inteiro vai para ele (o separador fica desligado).';
 	}
 
@@ -191,7 +192,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 
 		if (!state.layers.length) {
-			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
+			list.appendChild(el('p', 'cfg-empty', 'selecione os layers na comp principal e clique em “+ layers”.'));
 		}
 
 		updateChecklist();
@@ -720,7 +721,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('btn-fx').title = fx ? 'mais uma opção do menu (a próxima)' : 'usar o efeito de menu selecionado no Effect Controls da comp principal';
 
 		if (!fx) {
-			box.appendChild(el('p', 'cfg-empty', 'sem variações: selecione o efeito de menu no Effect Controls da comp principal e clique em “+ efeito”.'));
+			box.appendChild(el('p', 'cfg-empty', 'selecione o efeito de menu no Effect Controls e clique em “+ efeito”.'));
 			updateChecklist();
 			return;
 		}
@@ -798,7 +799,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var base = finalName();
 
 		names.textContent = '';
-		names.appendChild(el('span', 'cfg-preview-label', 'nomes finais com o exemplo'));
+		names.appendChild(el('span', 'cfg-preview-label', 'nomes finais'));
 		state.fx.options.forEach(function (suffix) {
 			names.appendChild(el('strong', null, (base + ' ' + (cleanSuffix(suffix) || '…')).trim()));
 		});

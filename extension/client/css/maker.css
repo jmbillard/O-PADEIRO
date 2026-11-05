@@ -1,6 +1,7 @@
 /* =========================================================
    CRIAR TEMPLATE — painel do criador
-   Degradê no topo e folha branca com o formulário.
+   Duas áreas lado a lado, numa tela só: o formulário no vidro, sobre o degradê (o que não depende do After
+   Effects), e a folha com o projeto, os layers e as variações. Sem versão compacta.
    ========================================================= */
 
 html,
@@ -17,75 +18,236 @@ body.maker-page {
 }
 
 .maker {
-  display: flex;
+  display: grid;
   height: 100%;
+  grid-template-columns: minmax(400px, 0.85fr) minmax(0, 1.15fr);
+}
+
+/* a coluna do degradê: o título, o que falta e o vidro (como a lista de templates) */
+.maker-side {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
   flex-direction: column;
-  padding: 14px 14px 0;
+  padding: 16px 14px calc(var(--footer-center) - 35px); /* 35 = 15 de respiro + meio botão do rodapé (19) + a borda do vidro */
 }
 
 .maker-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 2px 0 14px 5px;
+  display: grid;
+  gap: 8px;
+  padding: 2px 5px 12px;
 }
 
 .maker-top .eyebrow {
   margin: 0;
 }
 
-.maker-tools {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
-}
-
-/* o que falta para salvar: no topo, antes do "⋯", limpo sobre o degradê (só texto branco; a bolinha
-   esmaecida ou, pronta, branca preenchida) */
-.maker-tools .maker-check {
-  justify-content: flex-end;
+/* o que falta para salvar: limpo sobre o degradê (só o texto; a bolinha esmaecida ou, pronta, preenchida) */
+.maker-top .maker-check {
+  justify-content: flex-start;
   gap: 2px 12px;
 }
 
-.maker-tools .check-chip,
-.maker-tools .check-chip.is-ok {
+.maker-top .check-chip,
+.maker-top .check-chip.is-ok {
   padding: 3px 2px;
   border: 0;
   background: transparent;
   color: rgb(var(--on-brand) / 72%);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.maker-tools .check-chip:hover {
+.maker-top .check-chip:hover,
+.maker-top .check-chip.is-ok {
   color: rgb(var(--on-brand));
 }
 
-.maker-tools .check-chip.is-ok {
-  color: rgb(var(--on-brand));
-}
-
-.maker-tools .check-dot {
+.maker-top .check-dot {
   border-color: rgb(var(--on-brand) / 45%);
 }
 
-.maker-tools .check-chip.is-ok .check-dot {
+.maker-top .check-chip.is-ok .check-dot {
   border-color: rgb(var(--on-brand));
   background: var(--surface);
 }
 
-.maker-tools .check-chip.is-ok .check-dot::after {
+.maker-top .check-chip.is-ok .check-dot::after {
   border-color: var(--blue-500);
 }
 
-.maker-sheet {
+/* o vidro: cantos concêntricos com os campos em cima (12 + 16) e os botões redondos embaixo (19 + 15) */
+.maker-glass {
+  position: relative;
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  margin: 0 -14px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--on-brand) / 40%);
+  border-radius: 28px 28px 34px 34px;
+  background: rgb(var(--on-brand) / 13%);
+  box-shadow:
+    inset 0 1px 0 rgb(var(--on-brand) / 16%),
+    0 18px 40px rgb(24 43 113 / 10%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass-body {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  align-content: start;
+  gap: 18px;
+  padding: 16px 16px 28px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
+  scrollbar-width: thin;
+  /* a transição para o rodapé: o conteúdo some num degradê (sem linha) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+}
+
+/* o rodapé do vidro: os botões redondos e o "⋯", como o da lista de templates */
+.maker-glass-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 15px 15px;
+}
+
+.maker-glass-foot .actions-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+.maker-glass-foot .menu-popover {
+  top: auto;
+  right: 0;
+  bottom: calc(100% + 8px);
+  left: auto;
+  transform: none;
+}
+
+/* os cartões no vidro: sem a caixa, os títulos e textos na cor do vidro */
+.maker-glass .cfg-card {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.maker-glass .cfg-title,
+.maker-glass .cfg-label {
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .cfg-hint {
+  color: rgb(var(--on-brand) / 72%);
+}
+
+.maker-glass .cfg-input {
+  border-color: rgb(var(--on-brand) / 30%);
+  background: rgb(var(--on-brand) / 12%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .cfg-input::placeholder {
+  color: rgb(var(--on-brand) / 62%);
+}
+
+.maker-glass .cfg-input:hover:not(:disabled) {
+  border-color: rgb(var(--on-brand) / 55%);
+}
+
+.maker-glass .cfg-input:focus {
+  border-color: rgb(var(--on-brand) / 80%);
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 22%);
+}
+
+.maker-glass .cfg-input:disabled {
+  opacity: 0.55;
+}
+
+.maker-glass .has-field-icon>.field-icon,
+.maker-glass .has-field-icon:focus-within>.field-icon {
+  stroke: rgb(var(--on-brand) / 85%);
+}
+
+.maker-glass .maker-name {
+  margin: 0;
+}
+
+.maker-glass .cfg-textarea {
+  resize: none;
+}
+
+.maker-glass .cfg-preview {
+  border-color: rgb(var(--on-brand) / 40%);
+  background: rgb(var(--on-brand) / 8%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .cfg-preview-label {
+  color: rgb(var(--on-brand) / 72%);
+}
+
+.maker-glass .add-button {
+  border-color: rgb(var(--on-brand) / 40%);
+  background: none;
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .add-button:hover {
+  border-color: rgb(var(--on-brand) / 75%);
+  background: rgb(var(--on-brand) / 10%);
+}
+
+.maker-glass .mini-button {
+  border-color: transparent;
+  background: none;
+  color: rgb(var(--on-brand) / 85%);
+}
+
+.maker-glass .mini-button:hover:not(:disabled) {
+  border-color: transparent;
+  background: rgb(var(--on-brand) / 14%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .row-del {
+  color: rgb(var(--on-brand) / 80%);
+}
+
+.maker-glass .wz-preview,
+.maker-glass .wz-preview b,
+.maker-glass .wz-hint {
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .wz-preview svg {
+  stroke: rgb(var(--on-brand));
+}
+
+.maker-glass .cfg-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* exemplo e dicas lado a lado */
+.maker-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* a folha: o que vem do After Effects, em duas colunas */
+.maker-sheet {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
   background: var(--surface);
 }
 
@@ -126,11 +288,6 @@ body.maker-page {
   gap: 16px;
 }
 
-@media (max-width: 760px) {
-  .maker-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 
 /* a atração e o que é: os primeiros campos, lado a lado (a lista da atração abre embaixo do campo dela) */
 .maker-name {
@@ -159,11 +316,7 @@ body.maker-page {
   display: none;
 }
 
-@media (max-width: 620px) {
-  .maker-name {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
+
 
 /* como criar */
 .maker-help {
@@ -495,12 +648,13 @@ body.maker-page {
 }
 
 /* barra ancorada */
+/* o rodapé da folha: a transição é um degradê (como o dos templates), o centro dos botões alinhado com o do vidro */
 .maker-bar.is-anchored {
-  margin: 0;
-  padding: 14px 20px calc(var(--footer-center) - 23px); /* 23 = meio botão */
+  position: relative;
+  margin: -24px 0 0;
+  padding: 24px 20px calc(var(--footer-center) - 23px); /* 23 = meio botão */
   align-items: center;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  background: linear-gradient(to top, var(--surface) 72%, transparent);
 }
 
 .maker-bar .button-primary {
@@ -561,19 +715,6 @@ body.maker-page {
   display: none;
 }
 
-@media (max-width: 420px) {
-  .maker {
-    padding-inline: 10px;
-  }
-
-  .maker-sheet {
-    margin-inline: -10px;
-  }
-
-  .maker-scroll {
-    padding-inline: 14px;
-  }
-}
 
 /* o que falta para salvar */
 .maker-check {
