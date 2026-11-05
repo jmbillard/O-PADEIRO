@@ -2190,16 +2190,6 @@ body.is-org-dragging * {
   margin-top: 4px;
 }
 
-/* aba busca: a lupa procura */
-.prods-nav .anim-search {
-  transform-origin: 40% 40%;
-  transition: transform 320ms var(--ease-soft);
-}
-
-.prods-nav .tab:hover .anim-search {
-  transform: translate(-1.5px, -1.5px) rotate(-8deg);
-}
-
 /* =========================================================
    equipe (rede) × local (este computador)
    ========================================================= */

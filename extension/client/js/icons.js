@@ -7,7 +7,7 @@
 Os desenhos ficam na biblioteca de ícones (pasta icons/, os arquivos barra-<nome>.svg), como os outros: dá para
 editar cada um ou trocar por uma animação Lottie (barra-<nome>.json). Os svg da barra animam no hover pelo CSS
 (css/icons.css, pelas classes de dentro do desenho); parados, como na biblioteca, mostram o primeiro quadro.
-Ícones com máscara ou recorte (coletar, buscar) levam ids: no arquivo, '{u}' marca onde entra o sufixo de cada
+Ícones com máscara ou recorte (coletar) levam ids: no arquivo, '{u}' marca onde entra o sufixo de cada
 cópia (uid).
 
   PAD_ICONS.markup(nome, uid) → o conteúdo do <svg viewBox="0 0 24 24"> ('' num Lottie)

@@ -4,15 +4,53 @@
    (.bar-btn) e na aba da configuração (.tab).
    ========================================================= */
 
-/* buscar: a letra entra no vidro da lupa enquanto a lupa procura (animação em bar.js, que roda ao
-   contrário quando o mouse sai, como as transições dos outros ícones) */
-.lens-letter {
-  fill: currentcolor;
-  font-family: var(--font-ui, Inter), ui-sans-serif, system-ui, sans-serif;
-  font-size: 23px;
-  font-weight: 800;
-  opacity: 0;
-  stroke: none;
+/* buscar: a lupa procura (vai para o lado e para cima, inclinada) */
+.anim-search {
+  transform-origin: 40% 40%;
+  transition: transform 320ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-search,
+.tab:hover .anim-search {
+  transform: translate(-1.5px, -1.5px) rotate(-8deg);
+}
+
+/* templates: a coluna da lista abre e volta, e o título desce um pouco (a janela se arruma) */
+.anim-tpl .tpl-side,
+.anim-tpl .tpl-head {
+  transform-box: view-box;
+}
+
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
+.tab:hover .anim-tpl .tpl-side {
+  animation: tpl-side 640ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-head,
+.tab:hover .anim-tpl .tpl-head {
+  animation: tpl-head 640ms var(--ease-soft);
+}
+
+@keyframes tpl-side {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes tpl-head {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-1.5px);
+  }
 }
 
 /* pastas: a frente da pasta se abre */
