@@ -312,8 +312,8 @@ body.bar-page {
 .bar-btn:focus-visible,
 .bar-icon:focus-visible,
 .bar-logo:focus-visible {
-  outline: 2px solid rgb(var(--on-brand) / 80%);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
 }
 
 .bar-btn.is-busy,

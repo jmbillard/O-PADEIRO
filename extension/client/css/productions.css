@@ -436,8 +436,8 @@ body.prods-page {
 }
 
 .prod-icon:focus-visible {
-  outline: 3px solid rgb(var(--accent-rgb) / 22%);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
 }
 
 .prod-icon img {
