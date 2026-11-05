@@ -843,20 +843,22 @@ body.project-page {
 /* "outra pasta": o campo com a pastinha aparece embaixo do cartão, animado */
 .out-reveal {
   max-height: 0;
-  margin-top: -8px;
+  /* 4 px de folga em volta (compensados na margem) para o brilho do foco do campo não ser cortado */
+  margin: -12px -4px -4px;
+  padding: 4px;
   overflow: hidden;
   opacity: 0;
   transform: translateY(-6px);
   transition:
     max-height 280ms var(--ease-soft),
-    margin-top 280ms var(--ease-soft),
+    margin 280ms var(--ease-soft),
     opacity 220ms ease,
     transform 280ms var(--ease-soft);
 }
 
 .out-reveal.is-open {
-  max-height: 64px;
-  margin-top: 0;
+  max-height: 72px;
+  margin-top: -4px;
   opacity: 1;
   transform: none;
 }

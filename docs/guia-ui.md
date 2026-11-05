@@ -97,6 +97,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
+- [ ] **o brilho do foco aparece inteiro** em todos os campos, inclusive na primeira linha das listas e dentro do que rola ou recolhe (`overflow`): dê 4 px de folga com `padding` e compense na `margin`;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
 - [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).

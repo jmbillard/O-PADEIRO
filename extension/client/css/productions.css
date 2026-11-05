@@ -1157,6 +1157,9 @@ body.prods-page {
   min-height: 0;
   flex-direction: column;
   gap: 8px;
+  /* a coluna rola: 4 px de folga (compensados na margem) para o brilho do foco dos campos não ser cortado */
+  margin: -4px;
+  padding: 4px;
   overflow-y: auto;
 }
 
