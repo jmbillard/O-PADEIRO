@@ -866,3 +866,261 @@ body.project-page {
 .out-reveal .cfg-input {
   cursor: pointer;
 }
+
+/* =========================================================
+   Fluxo em duas telas (ATRAÇÃO → CRIAR)
+   ========================================================= */
+
+/* ATRAÇÃO: a nova atração (o nome e a categoria) abre embaixo do cartão, animada. 4 px de folga em volta
+   (compensados na margem) para o brilho do foco dos campos não ser cortado */
+.atr-nova {
+  max-height: 0;
+  margin: -12px -4px -4px;
+  padding: 0 4px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 300ms var(--ease-soft),
+    margin 300ms var(--ease-soft),
+    padding 300ms var(--ease-soft),
+    opacity 220ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.atr-nova.is-open {
+  max-height: 160px;
+  margin: -4px -4px -4px;
+  padding: 4px;
+  opacity: 1;
+  transform: none;
+}
+
+.atr-nova-box {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px; /* concêntrico com os campos (12) + respiro */
+  background: var(--surface-soft);
+}
+
+.atr-nova-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.atr-nova .wz-preview {
+  margin: 0 2px;
+}
+
+.atr-nova .wz-hint {
+  margin: 0 2px;
+}
+
+/* CRIAR: os .aep que já estão na pasta, numa linha */
+.wz-exist[hidden] {
+  display: none;
+}
+
+p.wz-exist {
+  display: block;
+  margin: -4px 2px 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+p.wz-exist b {
+  color: var(--text-secondary);
+}
+
+/* o .aep repetido: o aviso e as duas saídas ali mesmo */
+.arq-dup {
+  display: grid;
+  gap: 6px;
+  margin-top: -4px;
+}
+
+.arq-dup[hidden] {
+  display: none;
+}
+
+.arq-dup-note {
+  margin: 0 2px;
+  color: var(--waiting);
+  font-size: 0.68rem;
+}
+
+.arq-dup .wz-radios {
+  margin-left: 2px;
+}
+
+/* a pasta de output numa linha só (a escolhida); o clique abre as opções embaixo */
+.out-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.out-line:hover,
+.out-line.is-open {
+  border-color: var(--blue-500);
+}
+
+.out-line:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+}
+
+.out-line > svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.out-line .out-chevron {
+  stroke: var(--text-tertiary);
+  transition: transform 220ms var(--ease-soft);
+}
+
+.out-line.is-open .out-chevron {
+  transform: rotate(180deg);
+}
+
+.out-line-text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.out-line-text b {
+  overflow: hidden;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-line-text span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* o caminho longo corta pelo começo (o fim é o que importa) */
+  text-align: left;
+}
+
+/* as opções do output: abrem embaixo da linha, animadas */
+.out-opts {
+  max-height: 0;
+  margin: -8px -4px 0;
+  padding: 0 4px;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 280ms var(--ease-soft),
+    margin 280ms var(--ease-soft),
+    padding 280ms var(--ease-soft),
+    opacity 200ms ease;
+}
+
+.out-opts.is-open {
+  max-height: 240px;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
+  opacity: 1;
+}
+
+.out-opts-inner {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.out-opt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition: background-color 160ms ease;
+}
+
+.out-opt:hover {
+  background: var(--surface-soft);
+}
+
+.out-opt.is-on {
+  background: var(--blue-50);
+  color: var(--text-primary);
+}
+
+.out-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.out-dot {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  transition: border 180ms var(--ease-soft);
+}
+
+.out-opt.is-on .out-dot {
+  border: 4px solid var(--blue-500);
+}
+
+.out-opt input:focus-visible + .out-dot {
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%);
+}
+
+.out-opt-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-opt small {
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+}
+
+.out-opt .opt-pick {
+  width: 26px;
+  height: 26px;
+  margin: -4px -2px -4px 0;
+}

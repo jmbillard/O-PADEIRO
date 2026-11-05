@@ -65,27 +65,19 @@ function findCrops(ring) {
 const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }] };
 
 async function projectTo(page, screen) {
+	// 1 · ATRAÇÃO: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
 	await page.fill('#claq', 'TESTE NOVO');
 	await page.waitForTimeout(800);
-	await page.click('#claq-next');
+	await page.locator('#atr-list .wz-opt:has-text("nova atração")').click();
 	await page.waitForTimeout(500);
+	if (screen === 'nova') return;
 
-	if (await page.isVisible('#sc-pasta')) {
-		await page.locator('#pasta-list .wz-opt:has-text("criar nova")').click();
-		await page.click('#pasta-next');
-		await page.waitForTimeout(500);
-		if (screen === 'nova') return;
-		await page.locator('#sc-nova .dropdown-trigger').click();
-		await page.locator('.dropdown-popover .dropdown-item').first().click();
-		await page.click('#nova-next');
-		await page.waitForTimeout(500);
-	}
-
+	// 2 · CRIAR: o que é e as opções do output abertas
+	await page.click('#claq-next');
+	await page.waitForTimeout(600);
 	await page.fill('#arq-what', 'vt');
-	await page.waitForTimeout(300);
-	await page.click('#arq-next');
-	await page.waitForTimeout(800);
-	await page.locator('#criar-opts .wz-opt[data-key="other"]').click();
+	await page.waitForTimeout(600);
+	await page.click('.out-line');
 	await page.waitForTimeout(400);
 }
 
