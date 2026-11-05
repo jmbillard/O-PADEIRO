@@ -60,7 +60,7 @@ O-PADEIRO/
    │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1) e a checagem do brilho do foco (check-focus-crop.js)
 ```
 
 <br>
