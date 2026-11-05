@@ -251,7 +251,7 @@
 		['no-ar', 'luz no ar', '<rect x="3" y="7" width="18" height="10" rx="5" /><circle cx="8" cy="12" r="1.6" /><path d="M12 10.5h5M12 13.5h3" />'],
 		['coracao', 'coração', '<path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z" />'],
 		['camera', 'câmera', '<rect x="3.5" y="7" width="12" height="9" rx="1.8" /><path d="m15.5 10.5 5-2.5v8l-5-2.5" /><path d="M9.5 16v4M6.5 20h6" />'],
-		['claquete', 'claquete', '<path d="M4 10h16v8.5A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5z" /><path d="m4 10-.6-3 15-3.2.6 3z" /><path d="m8 6.3 2.2 2.9M12.6 5.3l2.2 2.9" />'],
+		['claquete', 'claquete', '<rect x="3.5" y="10" width="17" height="9.5" rx="1.5" /><g transform="rotate(-15 3.5 10)"><path d="M4.6 6h14.8a1.1 1.1 0 0 1 1.1 1.1V10h-17V7.1A1.1 1.1 0 0 1 4.6 6z" /><path d="m8.6 6-2 4M13.6 6l-2 4M18.6 6l-2 4" /></g>'],
 		['trofeu', 'troféu', '<path d="M8 4h8v5a4 4 0 0 1-8 0z" /><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v3.5M8.5 20h7M10 16.5h4V20h-4z" />'],
 		['alvo', 'alvo', '<circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" />'],
 		['balao', 'mensagem', '<path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17h-1A2.5 2.5 0 0 1 3 14.5v-7A2.5 2.5 0 0 1 5.5 5z" />'],
