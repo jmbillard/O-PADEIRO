@@ -70,7 +70,9 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 ### animação Lottie
 
-- **composição** de 24 × 24 px, 30 fps, de 0.5 a 1 s; o **primeiro quadro é o ícone parado** (é o que aparece até passar o mouse) e o último volta para ele.
+- **composição** de 24 × 24 px, 30 fps; o **primeiro quadro é o ícone parado** (é o que aparece até passar o mouse) e o último volta para ele.
+- **duração** (a mesma dos ícones da barra, animados pelo CSS): **0.3 a 0.8 s**, entre 10 e 24 quadros a 30 fps. gesto simples (inclinar, subir, abrir): ~0.3 s (10 quadros); gesto com ida e volta (a claquete bate e abre): 0.6 a 0.8 s (18 a 24 quadros); só uma sequência mais longa (as letras trocando na fonte) chega a ~1.1 s. nada em loop: toca uma vez a cada vez que o mouse entra.
+- **curva** → saída rápida e chegada suave (como a `--ease-soft`: `cubic-bezier(0.16, 1, 0.3, 1)`); no After Effects, um ease out forte na saída do primeiro keyframe e ease in no último.
 - **só shape layers** (sem imagens, textos, efeitos nem expressions: a biblioteca usada é a `lottie_light`, que não roda expressions), contorno de **1.7** e cantos e pontas arredondados.
 - **cor** → qualquer uma: com `tint` (o padrão), traços e preenchimentos seguem a cor do texto; `"tint": false` no `icons.json` mantém as cores do arquivo.
 - **exportar** pelo Bodymovin (ou LottieFiles) como `.json` e salvar na pasta de ícones com o nome do ícone.
