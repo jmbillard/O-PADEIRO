@@ -591,8 +591,8 @@ PADX.projectUpdate = function (a) {
 	return PADX.projectCurrent();
 };
 
-// Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura, com o
-// nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
+// Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura (criada se
+// faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
 // a: { atracao, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
 PADX.projectSave = function (a) {
@@ -603,9 +603,8 @@ PADX.projectSave = function (a) {
 
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 
-	padCollectStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
-
-	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : plan.projects;
+	// só a pasta de projetos (para o .aep): as outras da estrutura o coletar cria quando precisar
+	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : padEnsureFolder(plan.projects).fsName;
 	var dest = new File(projects + '/' + plan.fileBase + '.aep');
 	var key = function (f) {
 		return padDisplayPath(f.fsName).replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').toLowerCase();
