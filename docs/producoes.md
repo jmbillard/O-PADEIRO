@@ -96,7 +96,6 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
 
-- **cadastro no banco** *(em breve, desligado)* → reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR **propõe** o cadastro (o nome, a categoria e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
 
 **👤 neste computador** (embaixo):
 
@@ -216,7 +215,7 @@ cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por
 
 ## 📍 telemetria
 
-a aba **telemetria** concentra o registro de uso: em cima, o da equipe (onde cada preenchimento é registrado); embaixo, **neste computador**, se este computador envia o dele.
+a aba **telemetria** concentra o que sai do padeiro para fora: em cima, o da equipe (o registro de uso e o cadastro no banco, em breve); embaixo, **neste computador**, se este computador envia o registro dele.
 
 ### registro de uso (equipe)
 
@@ -232,6 +231,10 @@ define onde o padeiro registra cada preenchimento: data, produção, template, q
 > 🚩 *obs:*\
 > • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
 > • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
+
+### cadastro no banco *(em breve, desligado)*
+
+reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela PROJETO **propõe** o cadastro (o nome, a categoria e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
 
 ### neste computador
 
