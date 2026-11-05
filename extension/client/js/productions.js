@@ -1557,6 +1557,54 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return node;
 		}
 
+		// as posições das pastas (pela pasta) e dos tipos (pelo tipo) antes de redesenhar a árvore
+		function flipCapture(tree) {
+			var snap = { rows: new Map(), chips: {}, any: false };
+
+			Array.prototype.forEach.call(tree.querySelectorAll('.org-folder'), function (row) {
+				snap.rows.set(row._folder || 'root', row.getBoundingClientRect());
+				snap.any = true;
+			});
+			Array.prototype.forEach.call(tree.querySelectorAll('.org-chip'), function (c) {
+				snap.chips[c.getAttribute('data-type')] = c.getBoundingClientRect();
+			});
+
+			return snap;
+		}
+
+		// depois de redesenhar: o que mudou de lugar desliza do lugar antigo (como ao reordenar as listas) e o que
+		// é novo entra suave. na primeira vez (a aba abrindo) nada anima
+		function flipPlay(tree, snap) {
+			if (!snap.any || !tree.animate) return;
+
+			var shift = new Map(); // quanto cada pasta desliza (os tipos dentro dela já vão junto)
+			var move = function (node, old, parentShift) {
+				var now = node.getBoundingClientRect();
+				var dx = old.left - now.left - (parentShift ? parentShift[0] : 0);
+				var dy = old.top - now.top - (parentShift ? parentShift[1] : 0);
+
+				if (!parentShift) shift.set(node, [old.left - now.left, old.top - now.top]);
+				if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+				node.animate([{ transform: 'translate(' + dx + 'px, ' + dy + 'px)' }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+			};
+			var enter = function (node) {
+				node.animate([{ opacity: 0, transform: 'translateY(-6px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+			};
+
+			Array.prototype.forEach.call(tree.querySelectorAll('.org-folder'), function (row) {
+				var old = snap.rows.get(row._folder || 'root');
+
+				if (old) move(row, old);
+				else enter(row);
+			});
+			Array.prototype.forEach.call(tree.querySelectorAll('.org-chip'), function (c) {
+				var old = snap.chips[c.getAttribute('data-type')];
+
+				if (old) move(c, old, shift.get(c.closest('.org-folder')) || [0, 0]);
+				else enter(c);
+			});
+		}
+
 		function unassign(type) {
 			M().folders.forEach(function (f) {
 				var i = f.contents.indexOf(type);
@@ -1571,6 +1619,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var tree = $(cfg.treeId);
 			var o = M();
 			var scroll = tree.scrollTop;
+			var before = flipCapture(tree);
 
 			tree.textContent = '';
 
@@ -1599,6 +1648,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				var chips = el('div', 'org-chips');
 
 				row.setAttribute('data-index', o.folders.indexOf(f));
+				row._folder = f; // a chave da animação (a mesma pasta antes e depois)
 				row.style.setProperty('--depth', item.depth + 1);
 				row.appendChild(PAD_SORT.handle());
 				row.appendChild(svgIcon([FOLDER_PATH]));
@@ -1656,6 +1706,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 
 			tree.scrollTop = scroll;
+			flipPlay(tree, before);
 			renderTypes();
 
 		}
