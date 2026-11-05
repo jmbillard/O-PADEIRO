@@ -154,12 +154,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (path) await actions.collect(path);
 		},
 
-		// janela do projeto: um projeto novo pela claquete, ou o editor do atual
+		// janela do projeto: um projeto novo pela atração, ou o editor do atual
 		project: function () {
 			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
 		},
 
-		// salvar: projeto já criado pela claquete salva na hora; senão abre a janela PROJETO
+		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre a janela PROJETO
 		saveProject: async function () {
 			var cur = await call('projectCurrent');
 
@@ -168,7 +168,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				return;
 			}
 
-			await call('projectUpdate', { claquete: cur.claquete, designer: cur.designer });
+			await call('projectSaveNow');
 			toast('success', 'projeto salvo: ' + cur.fileName);
 		},
 
@@ -438,8 +438,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* ---------------------------------------------------------------
-	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (claquete…);
-	   laranja = sem eles (salvo sem a claquete, ou com itens e sem arquivo); sem bolinha = projeto vazio
+	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (atração…);
+	   laranja = sem eles (salvo sem a atração, ou com itens e sem arquivo); sem bolinha = projeto vazio
 	   --------------------------------------------------------------- */
 
 	var projectState = '';
@@ -461,7 +461,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		dot.className = 'bar-dot is-' + projectState;
 		placeProjectDot(btn, dot);
 		btn.setAttribute('data-project', projectState);
-		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (claquete, atração, pastas): abra a janela PROJETO';
+		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (atração, o que é, pastas): abra a janela PROJETO';
 	}
 
 	// a bolinha fica no canto de baixo, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
@@ -681,7 +681,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
-		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela claquete
+		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
 		window.addEventListener('resize', paintProjectDot); // a bolinha acompanha o ícone ao virar a barra
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);

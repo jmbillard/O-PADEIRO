@@ -1151,8 +1151,7 @@ PADX.importTemplate = function (a) {
 		populateProjectFolders();
 		deleteEmptyProjectFolders();
 
-		setXMPData('source', decodeURI(projectFile.path).toString());
-		padRegisterTemplateUse('');
+		padRegisterTemplateUse({ name: decodeURI(projectFile.parent.name), path: decodeURI(projectFile.path) });
 	});
 
 	return { name: projectFile.displayName };
@@ -1413,10 +1412,9 @@ PADX.fillFinish = function () {
 		populateProjectFolders();
 		deleteEmptyProjectFolders();
 
-		// Metadados XMP indicando o caminho do template
+		// os dados do padeiro: o template (as fontes saem da pasta dele), a produção e o que faltar
 		try {
-			setXMPData('source', decodeURI(run.projectFile.path).toString());
-			padRegisterTemplateUse((run.templateData.outputPath || [])[0]);
+			padRegisterTemplateUse({ name: run.templateData.configName || decodeURI(run.projectFile.parent.name), path: decodeURI(run.projectFile.path), producao: run.production || '', output: (run.templateData.outputPath || [])[0] });
 		} catch (err) {
 			warnings.push('metadados: ' + err.message);
 		}
@@ -1626,19 +1624,52 @@ PADX.openLastOutput = function () {
 	return { messages: [], data: { path: folder.fsName } };
 };
 
-// Instala as fontes da pasta FONTS do template que preencheu o projeto.
+// Instala as fontes do projeto: as da pasta de fontes dele (o coletar junta lá) ou, sem ela, as da pasta FONTS
+// de cada template que preencheu o projeto (padeiro:templates).
 PADX.installFonts = function () {
 	padRequireNetwork('PAD_004');
 
-	var folderPath = normalizeNetworkPath(getXMPData('source'), { silent: true });
+	var m = padMetaRead();
+	var settings = padReadCollect();
+	var file = app.project.file;
+	var folders = [];
+	var root = m.pasta ? padMountedPath(padPath(m.pasta)) : file ? padCollectRoot(file, settings) : '';
+	var sub = padCollectFolderPath(settings, 'fontes');
+	var list = padTemplatesList(m.templates);
 
-	if (folderPath == '') throw new Error('#PAD_005 - esse projeto não foi preenchido pelo padeiro...');
+	if (root && sub) {
+		var collected = new Folder(root + '/' + sub);
 
-	var fontsPath = folderPath + '/FONTS';
+		if (collected.exists && getFontFiles(collected, []).length) folders.push(collected.fsName);
+	}
 
-	if (!new Folder(fontsPath).exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+	var own = folders.length > 0;
 
-	return { messages: [installFontsMessage(installFonts(fontsPath))], data: null }; // Windows ou macOS, sem janelas
+	for (var i = 0; !own && i < list.length; i++) {
+		var tpl = new Folder(normalizeNetworkPath(list[i].path, { silent: true }) + '/FONTS');
+
+		if (tpl.exists) folders.push(tpl.fsName);
+	}
+
+	if (!folders.length && !list.length) throw new Error('#PAD_005 - esse projeto não tem fontes coletadas nem foi preenchido pelo padeiro...');
+	if (!folders.length) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+
+	var messages = [];
+
+	var failed = null;
+
+	// uma pasta sem fontes não impede as outras
+	for (var f = 0; f < folders.length; f++) {
+		try {
+			messages.push(installFontsMessage(installFonts(folders[f])));
+		} catch (err) {
+			failed = failed || err;
+		}
+	}
+
+	if (!messages.length && failed) throw failed;
+
+	return { messages: messages, data: null }; // Windows ou macOS, sem janelas
 };
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }

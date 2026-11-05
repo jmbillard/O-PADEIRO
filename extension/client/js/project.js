@@ -1,16 +1,15 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> PROJETO — um projeto novo pela claquete, em etapas, e o editor
+> PROJETO — um projeto novo pela atração, em etapas, e o editor
 ---------------------------------------------------------------
 
-Projeto sem claquete: as etapas.
-  CLAQUETE → a atração (índice da busca, pelo começo da claquete)
-  PASTA    → só se houver mais de uma atração, ou nenhuma (criar nova / escolher uma pasta)
-  NOVA     → uma atração nova (nome + dentro de: a categoria, com o caminho de tokens)
-  ARQUIVO  → o que é (o .aep é a atração + isso, sem acentos)
-  CRIAR    → a estrutura (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA, aproveitando a que existir) e o .aep
-Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
+Projeto nunca salvo: as etapas.
+  ATRAÇÃO → digita o começo (ou um padrão, ex: MAIS VOCE 30 10) e escolhe a atração do índice da busca, uma
+            nova (nome + categoria) ou outra pasta
+  CRIAR   → o que é (o .aep é a atração + isso, sem acentos), a estrutura e a pasta de output
+Projeto salvo: o editor (atração buscada, designer, o que é, as pastas e Salvar, que leva o .aep para a pasta de
+projetos com o nome certo).
 
 */
 
@@ -793,13 +792,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		planCriar();
 	}
 
-	// a claquete gravada no projeto: a atração + o que é (o mesmo nome do .aep)
-	function claqueteOf() {
-		return (flow.pick.name + ' ' + flow.what).trim();
-	}
-
 	function planArgs(extra) {
-		return Object.assign({ kind: 'program', atracao: flow.pick.name, path: flow.pick.path, what: flow.what, claquete: claqueteOf(), output: flow.output || '' }, extra || {});
+		return Object.assign({ kind: 'program', atracao: flow.pick.name, path: flow.pick.path, what: flow.what, output: flow.output || '' }, extra || {});
 	}
 
 	function planCriar() {
@@ -1092,18 +1086,15 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 
 			state.edKeep = '';
 			if (cur.atracao) {
-				// o que é: o que vem depois da atração no nome do arquivo (ou na claquete). um nome fora desse padrão
-				// (projeto antigo) fica como está até a atração ou o que é mudarem
+				// o que é: o gravado (padeiro:oQueE) ou, sem ele, o que vem depois da atração no nome do arquivo. um
+				// nome fora desse padrão (projeto antigo) fica como está até a atração ou o que é mudarem
 				var atr = aepName(cur.atracao);
-				var what = null;
+				var fname = aepName(String(cur.fileName || '').replace(/\.aep$/i, ''));
+				var what = cur.oQueE || (fname.indexOf(atr + ' ') === 0 ? fname.slice(atr.length + 1) : '');
 
-				[aepName(String(cur.fileName || '').replace(/\.aep$/i, '')), aepName(cur.claquete)].forEach(function (n) {
-					if (what === null && n === atr) what = '';
-					if (what === null && n.indexOf(atr + ' ') === 0) what = n.slice(atr.length + 1);
-				});
 				$('ed-atracao').value = cur.atracao.toUpperCase();
-				$('ed-what').value = what || '';
-				if (what === null && cur.fileName) state.edKeep = String(cur.fileName).replace(/\.aep$/i, '');
+				$('ed-what').value = what;
+				if (!cur.oQueE && fname && fname !== atr && fname.indexOf(atr + ' ') !== 0) state.edKeep = String(cur.fileName).replace(/\.aep$/i, '');
 			} else {
 				var base = String(cur.fileName || '').replace(/\.aep$/i, '');
 

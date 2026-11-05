@@ -22,7 +22,7 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
    - **outra pasta…** → abre o navegador de pastas ao seguir.
    - **filmes** seguem o mesmo fluxo: a pasta da letra é só o token `{letra}` do caminho (`…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`).
    - se a pasta da categoria não pode ser acessada (rede fora ou modo local), o projeto vai para a **pasta dos projetos** deste computador (`{categoria}/{atracao}`), com o aviso na prévia.
-2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`), e a **claquete** gravada no projeto é a mesma coisa (`MAIS VOCE SERVICO`). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
+2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
    - **já na pasta** → uma linha com o último `.aep` alterado da pasta de projetos (`hoje 14:32 · +2`).
    - **nome repetido** → o aviso e as duas saídas ali mesmo: **abrir o existente** ou **salvar como … 2** (o padrão; a árvore já mostra o `… 2.aep`).
    - **a estrutura** (o cartão azul): `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara).
@@ -31,9 +31,27 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
-a **claquete**, o **designer**, a **atração**, a **pasta** e a **pasta de output** ficam gravados **no próprio projeto** (metadados XMP: `dc:identifier`, `dc:creator`, `dc:coverage`, `dc:relation` e `dc:publisher`). o `dc:source` é a pasta do template que preencheu o projeto (de onde saem as fontes).
+## 📍 dados gravados no projeto
 
-ao **preencher** ou **importar** um template, o padeiro também grava o que ainda faltar no projeto: o **designer** (o usuário do computador), a **data** e a **pasta de output** do template. o que já estiver gravado (pela janela projeto) não muda.
+os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metadados (XMP `padeiro:`):
+
+| campo | exemplo | quem grava |
+|---|---|---|
+| `padeiro:atracao` | LÁ NA MINHA TERRA | janela projeto |
+| `padeiro:oQueE` | SERVIÇO | janela projeto |
+| `padeiro:designer` | JBILLARD | janela projeto; o template grava se faltar |
+| `padeiro:pasta` | a raiz da estrutura | janela projeto |
+| `padeiro:output` | a pasta de output | janela projeto; o template grava se faltar |
+| `padeiro:producao` | DIA-A-DIA | template (a do último preenchido) |
+| `padeiro:templates` | os templates usados (nome e pasta), um por linha | template (acumula) |
+| `padeiro:criado` | 2026-11-05 | o primeiro que gravar |
+| `padeiro:versao` | 1 | todos |
+
+o nome do `.aep` (`dc:title`), o designer (`dc:creator`) e a data (`dc:date`) também ficam nos campos comuns, que aparecem nas informações do arquivo. o projeto **com os dados do padeiro** (bolinha verde) é o que tem a atração e está salvo na pasta dele.
+
+ao **preencher** ou **importar** um template, o padeiro registra o template e a produção e grava o que ainda faltar (o designer, a data e a pasta de output do template). o que a janela projeto gravou não muda. as fontes: o [coletar](#-coletar-os-arquivos) junta as do projeto na pasta de fontes da estrutura, e o botão **fontes** da barra instala as de lá (ou, sem ela, as da pasta `FONTS` de cada template usado).
+
+projeto de antes desta versão: os campos antigos (`dc:coverage`, `dc:relation`, `dc:publisher`, `dc:source`, `dc:identifier`) são lidos e, na próxima gravação, passam para os novos.
 
 ## 📍 editor
 

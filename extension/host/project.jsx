@@ -5,7 +5,8 @@
 > projeto (janela PROJETO e aba PROJETO da configuração)
 ---------------------------------------------------------------
 
-A janela PROJETO cria o projeto pela claquete (abaixo) e edita a claquete e o designer dele. O collect dos
+A janela PROJETO cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
+pastas). O collect dos
 arquivos é do botão COLETAR (collect.jsx).
 
 'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
@@ -94,27 +95,181 @@ PADX.projectCategories = function () {
 /*
 
 ---------------------------------------------------------------
-> dados do projeto aberto
+> dados do projeto aberto (metadados XMP)
 ---------------------------------------------------------------
+
+Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos texto:
+  atracao    → a atração (LÁ NA MINHA TERRA)                       janela projeto
+  oQueE      → o que é (SERVIÇO): o .aep é a atração + o que é       janela projeto
+  designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
+  pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
+  output     → a pasta de output                                     projeto; o template grava se faltar
+  producao   → a produção do último template preenchido (DIA-A-DIA)  template
+  templates  → os templates usados, um por linha: nome <tab> pasta   template (acumula; as fontes saem de lá)
+  criado     → a data em que os dados foram gravados a primeira vez  o primeiro que gravar
+  versao     → a versão destes campos (para migrar no futuro)        todos
+Também ficam dc:title (o nome do .aep), dc:creator (o designer) e dc:date (criado), que aparecem nas
+informações do arquivo. Projeto de antes (sem padeiro:versao): os campos antigos (dc:coverage, dc:relation,
+dc:publisher, dc:source, dc:identifier) são lidos aqui e, na próxima gravação, passam para os novos.
 
 */
 
-function padXmpGet(field) {
-	try {
-		var meta = new XMPMeta(app.project.xmpPacket);
-		var ns = XMPConst.NS_DC;
+var PAD_NS = 'https://github.com/jmbillard/O-PADEIRO/ns/1.0/';
+var PAD_META_VERSION = '1';
+var PAD_META_FIELDS = ['atracao', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado'];
+var PAD_META_LEGACY = ['identifier', 'coverage', 'relation', 'publisher', 'source'];
+var padNsReady = false;
 
+function padXmpMeta() {
+	if (!padNsReady) {
+		try {
+			XMPMeta.registerNamespace(PAD_NS, 'padeiro');
+		} catch (err) { }
+		padNsReady = true;
+	}
+
+	return new XMPMeta(app.project.xmpPacket);
+}
+
+function padXmpProp(meta, ns, field) {
+	try {
 		if (meta.doesPropertyExist(ns, field)) {
 			var prop = meta.getProperty(ns, field);
 
 			if (prop && prop.value != null && String(prop.value) != '') return String(prop.value);
 		}
 
-		// dc:title gravado como lista de idiomas
+		// dc:title / dc:creator gravados como lista
 		if (meta.doesPropertyExist(ns, field + '[1]')) return String(meta.getProperty(ns, field + '[1]').value);
 	} catch (err) { }
 
 	return '';
+}
+
+// um campo do Dublin Core (dc:title…)
+function padXmpGet(field) {
+	try {
+		return padXmpProp(padXmpMeta(), XMPConst.NS_DC, field);
+	} catch (err) {
+		return '';
+	}
+}
+
+// Os dados do padeiro no projeto aberto → { atracao, oQueE, designer, pasta, output, producao, templates, criado, versao }
+function padMetaRead() {
+	var out = {};
+	var meta;
+
+	try {
+		meta = padXmpMeta();
+	} catch (err) {
+		return { atracao: '', oQueE: '', designer: '', pasta: '', output: '', producao: '', templates: '', criado: '', versao: '' };
+	}
+
+	for (var i = 0; i < PAD_META_FIELDS.length; i++) out[PAD_META_FIELDS[i]] = padXmpProp(meta, PAD_NS, PAD_META_FIELDS[i]);
+	out.versao = padXmpProp(meta, PAD_NS, 'versao');
+
+	if (!out.versao) {
+		var dc = function (f) {
+			return padXmpProp(meta, XMPConst.NS_DC, f);
+		};
+		var claq = padAepName(dc('identifier'));
+		var atr = padAepName(dc('coverage'));
+
+		out.atracao = dc('coverage');
+		out.designer = dc('creator');
+		out.pasta = dc('relation');
+		out.output = dc('publisher');
+		out.criado = dc('date');
+		out.oQueE = atr && claq.indexOf(atr + ' ') == 0 ? claq.slice(atr.length + 1) : '';
+		out.templates = dc('source') ? padTemplatesText([{ name: '', path: dc('source') }]) : '';
+	}
+
+	return out;
+}
+
+// Grava os campos passados ('' apaga), junto com os que já estavam (num projeto de antes, os antigos passam para os
+// novos e saem). title: o nome do .aep (dc:title), opcional.
+function padMetaWrite(fields, title) {
+	var cur = padMetaRead();
+	var meta = padXmpMeta();
+	var dc = XMPConst.NS_DC;
+	var i;
+
+	for (var k in fields) if (fields.hasOwnProperty(k) && fields[k] != null) cur[k] = String(fields[k]);
+
+	for (i = 0; i < PAD_META_FIELDS.length; i++) {
+		var f = PAD_META_FIELDS[i];
+
+		meta.deleteProperty(PAD_NS, f);
+		if (cur[f]) meta.setProperty(PAD_NS, f, cur[f]);
+	}
+	meta.deleteProperty(PAD_NS, 'versao');
+	meta.setProperty(PAD_NS, 'versao', PAD_META_VERSION);
+	for (i = 0; i < PAD_META_LEGACY.length; i++) meta.deleteProperty(dc, PAD_META_LEGACY[i]);
+
+	// as cópias que aparecem nas informações do arquivo
+	if (cur.designer) {
+		meta.deleteProperty(dc, 'creator');
+		meta.setProperty(dc, 'creator', cur.designer);
+	}
+	if (cur.criado) {
+		meta.deleteProperty(dc, 'date');
+		meta.setProperty(dc, 'date', cur.criado);
+	}
+	if (title) {
+		meta.deleteProperty(dc, 'title');
+		meta.setProperty(dc, 'title', String(title));
+	}
+
+	app.project.xmpPacket = meta.serialize();
+}
+
+// padeiro:templates: uma linha por template, nome <tab> pasta
+function padTemplatesList(text) {
+	var out = [];
+	var lines = String(text || '').split('\n');
+
+	for (var i = 0; i < lines.length; i++) {
+		var parts = lines[i].split('\t');
+		var path = parts.length > 1 ? parts[1] : parts[0];
+
+		if (path) out.push({ name: parts.length > 1 ? parts[0] : '', path: path });
+	}
+
+	return out;
+}
+
+function padTemplatesText(list) {
+	var lines = [];
+
+	for (var i = 0; i < list.length; i++) lines.push(String(list[i].name || '').replace(/[\t\n]/g, ' ') + '\t' + list[i].path);
+
+	return lines.join('\n');
+}
+
+// Preenchimento e importação de templates: registra o template (nome e pasta, sem repetir) e a produção, e
+// grava o que ainda faltar (o designer, a data e a pasta de output do template). o que a janela projeto gravou
+// não muda. info: { name, path, producao, output }
+function padRegisterTemplateUse(info) {
+	try {
+		var cur = padMetaRead();
+		var list = padTemplatesList(cur.templates);
+		var path = padDisplayPath(String(info.path || ''));
+		var kept = [];
+
+		for (var i = 0; i < list.length; i++) if (padDisplayPath(list[i].path).toLowerCase() != path.toLowerCase()) kept.push(list[i]);
+		if (path) kept.push({ name: info.name || '', path: path });
+
+		var fields = { templates: padTemplatesText(kept) };
+
+		if (info.producao) fields.producao = info.producao;
+		if (!cur.designer) fields.designer = padMachineUser();
+		if (!cur.criado) fields.criado = padToday();
+		if (info.output && !cur.output) fields.output = padDisplayPath(padPath(info.output));
+
+		padMetaWrite(fields);
+	} catch (err) { }
 }
 
 function padToday() {
@@ -128,7 +283,7 @@ function padToday() {
 // Abre a pasta do projeto aberto: a da estrutura (gravada ao criar) ou a de cima da de projetos.
 PADX.projectOpenFolder = function () {
 	var file = app.project.file;
-	var path = padMountedPath(padPath(padXmpGet('relation'))) || (file ? padCollectRoot(file, padReadCollect()) : '');
+	var path = padMountedPath(padPath(padMetaRead().pasta)) || (file ? padCollectRoot(file, padReadCollect()) : '');
 
 	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
@@ -148,10 +303,9 @@ comparado com os padrões da atração ('pattern' no índice) e com o nome. A pa
 estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que já existir.
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
-No projeto (XMP) ficam a claquete (identifier: a atração + o que é, o mesmo nome do .aep), o designer
-(creator), a atração (coverage), a pasta da estrutura (relation) e a pasta de output (publisher; a da
-categoria ou a da atração no índice, quando ela existe ou é criada na etapa CRIAR: pular não grava).
-O 'source' é a pasta do template que preencheu o projeto (as fontes saem de lá: installFonts).
+No projeto ficam os dados do padeiro (padeiro:, em 'dados do projeto aberto'): a atração, o que é, o designer,
+a pasta da estrutura e a de output (a da categoria ou a da atração no índice, quando ela existe ou é criada na
+etapa CRIAR: pular não grava).
 
 */
 
@@ -430,7 +584,6 @@ PADX.projectPlan = function (a) {
 	};
 };
 
-// Cria a estrutura e salva o .aep. a: plano + { claquete, mode: '' | 'open' | 'increment' }
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
 // No macOS, o After Effects precisa da permissão para os volumes de rede (sem ela, não lista nem cria pastas lá)
 function padMacPrivacyHint() {
@@ -471,11 +624,11 @@ function padFolderPeek(folder) {
 	return ' [o After Effects vê: ' + (names.join(', ') || 'nada') + ' | o sistema vê: ' + (shell || 'nada') + ']';
 }
 
+// Cria a estrutura e salva o .aep. a: plano + { output, outputCreate, mode: '' | 'open' | 'increment' }
 PADX.projectCreate = function (a) {
 	padLastMkdir = '';
 
 	var plan = padNewProjectPlan(a);
-	var claquete = padAepName(a.claquete);
 
 	padCollectStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
 
@@ -505,13 +658,14 @@ PADX.projectCreate = function (a) {
 	// os dados só ficam no projeto se ele for salvo na pasta: se salvar falhar, voltam os de antes
 	var packet = app.project.xmpPacket;
 
-	setXMPData('identifier', claquete);
-	setXMPData('title', decodeURI(file.name).replace(/\.aep$/i, ''));
-	if (output && output.exists) setXMPData('publisher', padDisplayPath(output.fsName));
-	setXMPData('creator', padMachineUser());
-	setXMPData('coverage', String(a.atracao || ''));
-	setXMPData('relation', padDisplayPath(plan.root));
-	setXMPData('date', padToday());
+	padMetaWrite({
+		atracao: String(a.atracao || ''),
+		oQueE: String(a.what || ''),
+		designer: padMachineUser(),
+		pasta: padDisplayPath(plan.root),
+		output: output && output.exists ? padDisplayPath(output.fsName) : '',
+		criado: padToday()
+	}, decodeURI(file.name).replace(/\.aep$/i, ''));
 
 	try {
 		try {
@@ -530,10 +684,10 @@ PADX.projectCreate = function (a) {
 	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };
 };
 
-// O .aep está dentro da pasta gravada no projeto (dc:relation)? sem pasta gravada, vale. o volume com sufixo
+// O .aep está dentro da pasta gravada no projeto (padeiro:pasta)? sem pasta gravada, vale. o volume com sufixo
 // (VFX-1) conta como o mesmo.
 function padInRoot(file) {
-	var root = padXmpGet('relation');
+	var root = padMetaRead().pasta;
 
 	if (!root) return true;
 
@@ -544,33 +698,33 @@ function padInRoot(file) {
 	return key(file.fsName).indexOf(key(padPath(root))) == 0;
 }
 
-// O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro),
-// 'missing' (sem eles: salvo sem claquete, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro, na
+// pasta dele), 'missing' (sem eles: salvo sem a atração, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
 PADX.projectStatus = function () {
 	var file = app.project.file;
 
-	if (file && padXmpGet('identifier') && padInRoot(file)) return { state: 'ok' };
+	if (file && padMetaRead().atracao && padInRoot(file)) return { state: 'ok' };
 
 	return { state: file || app.project.numItems > 0 ? 'missing' : '' };
 };
 
-// O projeto aberto: criado por este fluxo (com claquete) ou não. → { created, claquete, designer, atracao, root, file }
+// O projeto aberto: com os dados do padeiro (a atração) ou não.
+// → { created, outside, atracao, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
 PADX.projectCurrent = function () {
 	var file = app.project.file;
-	var claquete = padXmpGet('identifier');
+	var m = padMetaRead();
 	var settings = padReadCollect();
-
-	var inRoot = !!(file && claquete && padInRoot(file));
+	var inRoot = !!(file && m.atracao && padInRoot(file));
 
 	return {
 		created: inRoot,
-		outside: !!(file && claquete && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
-		claquete: claquete,
-		designer: padXmpGet('creator') || padMachineUser(),
+		outside: !!(file && m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
+		atracao: m.atracao,
+		oQueE: m.oQueE,
+		designer: m.designer || padMachineUser(),
 		defaultUser: padDefaultUser(),
-		atracao: padXmpGet('coverage'),
-		output: padNoVolumeSuffix(padXmpGet('publisher')),
-		root: padNoVolumeSuffix(padXmpGet('relation')) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
+		output: padNoVolumeSuffix(m.output),
+		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
 		hasItems: app.project.numItems > 0,
@@ -578,15 +732,11 @@ PADX.projectCurrent = function () {
 	};
 };
 
-// Editor: muda a claquete, o designer, a atração e as pastas (no projeto) e salva.
-// a: { claquete, designer, atracao, root, output }. um projeto salvo sem os dados do padeiro ganha os dados aqui.
-PADX.projectUpdate = function (a) {
-	if (a.claquete != null) setXMPData('identifier', padAepName(a.claquete));
-	if (a.designer != null) setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
-	if (a.atracao != null) setXMPData('coverage', String(a.atracao));
-	if (a.root != null && a.root != '') setXMPData('relation', padDisplayPath(padPath(a.root)));
-	if (a.output != null) setXMPData('publisher', a.output ? padDisplayPath(padPath(a.output)) : '');
-	if (app.project.file) app.project.save();
+// Barra (salvar): salva o projeto aberto onde ele está.
+PADX.projectSaveNow = function () {
+	if (!app.project.file) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
+
+	app.project.save();
 
 	return PADX.projectCurrent();
 };
@@ -616,13 +766,14 @@ PADX.projectSave = function (a) {
 
 	var packet = app.project.xmpPacket;
 
-	setXMPData('identifier', plan.fileBase);
-	setXMPData('title', plan.fileBase);
-	setXMPData('creator', padCleanUser(a.designer) || padMachineUser());
-	setXMPData('coverage', String(a.atracao || ''));
-	setXMPData('relation', padDisplayPath(plan.root));
-	if (a.output != null) setXMPData('publisher', a.output ? padDisplayPath(padPath(a.output)) : '');
-	if (!padXmpGet('date')) setXMPData('date', padToday());
+	padMetaWrite({
+		atracao: String(a.atracao || ''),
+		oQueE: String(a.what || ''),
+		designer: padCleanUser(a.designer) || padMachineUser(),
+		pasta: padDisplayPath(plan.root),
+		output: a.output != null ? (a.output ? padDisplayPath(padPath(a.output)) : '') : null,
+		criado: padMetaRead().criado || padToday()
+	}, plan.fileBase);
 
 	try {
 		if (same) app.project.save();
@@ -639,44 +790,3 @@ PADX.projectSave = function (a) {
 	return cur;
 };
 
-// Preenchimento e importação de templates: os dados do padeiro que ainda faltam no projeto (o designer, a data e
-// a pasta de output do template). o que já está gravado (ex: pela janela PROJETO) não muda.
-function padRegisterTemplateUse(outputPath) {
-	try {
-		if (!padXmpGet('creator')) setXMPData('creator', padMachineUser());
-		if (!padXmpGet('date')) setXMPData('date', padToday());
-		if (outputPath && !padXmpGet('publisher')) setXMPData('publisher', padDisplayPath(padPath(outputPath)));
-	} catch (err) { }
-}
-
-// Editor: leva o projeto para outra pasta (cria a estrutura nela e salva o .aep na de projetos). a: { path }
-PADX.projectMove = function (a) {
-	var file = app.project.file;
-
-	if (!file) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
-
-	var settings = padReadCollect();
-	var target = padMountedPath(padPath(a.path));
-	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
-	var root = padIsProjectsFolderName(decodeURI(new Folder(target).name)) ? new Folder(target).parent.fsName : target;
-
-	padCollectStructure(root, settings, PAD_PROJECT_KINDS);
-
-	var projects = padIsProjectsFolderName(decodeURI(new Folder(target).name)) ? target : padCollectResolve(root, sub, true);
-	var dest = new File(projects + '/' + decodeURI(file.name));
-
-	if (dest.exists && dest.fsName != file.fsName) throw new Error('#PAD_092 - já existe ' + decodeURI(file.name) + ' nessa pasta.');
-
-	var packet = app.project.xmpPacket;
-
-	setXMPData('relation', padDisplayPath(root));
-
-	try {
-		app.project.save(dest);
-	} catch (err) {
-		app.project.xmpPacket = packet;
-		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + padMacPrivacyHint() + '.');
-	}
-
-	return PADX.projectCurrent();
-};

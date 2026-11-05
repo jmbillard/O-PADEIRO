@@ -140,9 +140,9 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 ### fontes
 
-`◖ clique esquerdo` → instala as fontes da pasta `FONTS` do template que preencheu o projeto.
+`◖ clique esquerdo` → instala as fontes do projeto: as da pasta de fontes dele (`02 ARQUIVOS/FONTS`, que o [coletar](#coletar) junta) ou, sem ela, as da pasta `FONTS` de cada template que preencheu o projeto.
 
-*ao preencher um template, o padeiro grava no campo '**Source**' dos metadados do projeto o caminho do template (e, se ainda faltarem, o designer, a data e a pasta de output). por isso essa instalação funciona só em projetos preenchidos pelo padeiro.*
+*ao preencher ou importar um template, o padeiro grava nos [metadados do projeto](docs/projeto.md#-dados-gravados-no-projeto) o template usado (nome e pasta). por isso, sem fontes coletadas, essa instalação funciona só em projetos preenchidos pelo padeiro.*
 
 `◗ clique direito` → copia os arquivos das fontes usadas no projeto (incluindo as que aparecem só em keyframes de texto) para uma pasta escolhida.
 

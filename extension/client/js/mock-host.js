@@ -988,13 +988,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		projectCurrent: function () {
-			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { claquete: 'TELA 9 11', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
+			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { oQueE: '', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
 
 			// ?mock=outside: com os dados do padeiro, mas salvo na Área de Trabalho
-			if (!c && mode === 'outside') return { created: false, outside: true, claquete: 'DOMINGAO', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: 'Domingão com Huck', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026', file: '/Users/jmbillard/Desktop/teste.aep', fileName: 'teste.aep', hasItems: true, user: 'JMBILLARD' };
+			if (!c && mode === 'outside') return { created: false, outside: true, oQueE: 'CONVIDADOS', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: 'Domingão com Huck', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026', file: '/Users/jmbillard/Desktop/teste.aep', fileName: 'teste.aep', hasItems: true, user: 'JMBILLARD' };
 			if (!c && mode === 'saved' && window.PAD_MOCK_SAVED === undefined) window.PAD_MOCK_SAVED = '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA/01 PROJETOS/A CLINICA TESTE.aep';
-			if (!c && window.PAD_MOCK_SAVED) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA', file: window.PAD_MOCK_SAVED, fileName: 'A CLINICA TESTE.aep', hasItems: true, user: 'JMBILLARD' };
-			if (!c) return { created: false, claquete: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
+			if (!c && window.PAD_MOCK_SAVED) return { created: false, oQueE: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA', file: window.PAD_MOCK_SAVED, fileName: 'A CLINICA TESTE.aep', hasItems: true, user: 'JMBILLARD' };
+			if (!c) return { created: false, oQueE: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
 
 			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
 		},
@@ -1073,26 +1073,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { claquete: (a.claquete || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
 
-		projectUpdate: function (a) {
-			var c = window.PAD_MOCK_CUR;
-
-			if (c) {
-				c.claquete = String(a.claquete || '').toUpperCase();
-				c.designer = String(a.designer || 'JMBILLARD').toUpperCase();
-				if (a.output != null) c.output = a.output;
-				if (a.atracao != null) c.atracao = a.atracao;
-				if (a.root) c.root = a.root;
-			} else if (window.PAD_MOCK_SAVED && a.claquete) {
-				// salvo sem os dados do padeiro: ganha os dados agora
-				window.PAD_MOCK_CUR = { claquete: String(a.claquete).toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao || '', root: a.root || '', output: a.output || '', file: window.PAD_MOCK_SAVED };
-				window.PAD_MOCK_SAVED = null;
-			}
-
+		projectSaveNow: function () {
 			return api.projectCurrent();
 		},
 
@@ -1107,7 +1093,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var root = String(a.root || '').replace(/\/01 ?PROJETOS$/i, '');
 			var file = root + '/01 PROJETOS/' + base + '.aep';
 
-			window.PAD_MOCK_CUR = { claquete: base, designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, root: root, output: a.output || '', file: file };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, root: root, output: a.output || '', file: file };
 			window.PAD_MOCK_SAVED = null;
 
 			var cur = api.projectCurrent();
@@ -1115,13 +1101,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (old && old !== file) cur.moved = old;
 
 			return cur;
-		},
-
-		projectMove: function (a) {
-			window.PAD_MOCK_MOVED = a.path;
-			if (window.PAD_MOCK_CUR) window.PAD_MOCK_CUR.root = a.path;
-
-			return api.projectCurrent();
 		},
 
 		// ?mock=unsaved: projeto ainda não salvo
