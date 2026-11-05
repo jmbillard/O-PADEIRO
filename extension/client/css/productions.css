@@ -1847,7 +1847,11 @@ body.is-org-dragging * {
   color: var(--text-secondary);
 }
 
-/* interruptores (como o .cfg-switch), na linha das opções */
+/* interruptores (como o .cfg-switch), na linha das opções, com um respiro depois dos radiais */
+.pv-radio + .pv-switch {
+  margin-left: 12px;
+}
+
 .pv-switch {
   display: inline-flex;
   align-items: center;
