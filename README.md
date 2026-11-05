@@ -229,6 +229,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
+| [🧭 guia de UI](docs/guia-ui.md) | as regras para criar e mexer nas janelas: cores do tema, cantos, campos, ícones, animações, mensagens |
 
 <br>
 

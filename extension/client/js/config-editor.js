@@ -72,9 +72,7 @@ são preservadas ao salvar.
 		prefix: '<path d="M5 5v14" /><path d="M9 9h10M9 15h7" />',
 		time: '<circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" />',
 		textCase: '<path d="M3 18 7.5 6 12 18M4.7 13.5h5.6" /><path d="M20.5 12v6M20.5 14.6c0 1.9-1.3 3.4-3 3.4s-2.8-1.4-2.8-3.1 1.2-3.1 2.9-3.1 2.9 1.2 2.9 2.8" />',
-		separator: '<path d="M19 5v7a3 3 0 0 1-3 3H6" /><path d="m9.5 11.5-3.5 3.5 3.5 3.5" />',
-		media: '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="m7.5 11 2.8-2.8 2.2 2.2 1.5-1.5 2.5 2.5" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />',
-		output: '<path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" />'
+		separator: '<path d="M19 5v7a3 3 0 0 1-3 3H6" /><path d="m9.5 11.5-3.5 3.5 3.5 3.5" />'
 	};
 
 	// põe o ícone no início do campo: 'box' é o próprio contêiner (span.select, div.cfg-path) ou um novo
@@ -380,7 +378,7 @@ são preservadas ao salvar.
 		fields.importPath = { wrap: importRow, control: importInput };
 		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de mídias (opcional)'), { htmlFor: 'cfg-importPath' }));
 		importLine.appendChild(importInput);
-		withIcon(importInput, 'media', importLine);
+		// campo com botão (pastinha): sem ícone antes
 		importLine.appendChild(pickButton(importInput));
 		importRow.appendChild(importLine);
 		importRow.appendChild(el('p', 'cfg-hint', 'pasta padrão para importar novos footages no projeto.'));
@@ -451,7 +449,6 @@ são preservadas ao salvar.
 				line.appendChild(node);
 				line.appendChild(pick);
 				line.appendChild(remove);
-				withIcon(node, 'output', line);
 				outputsList.appendChild(line);
 			});
 		}

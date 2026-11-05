@@ -1,0 +1,102 @@
+# 🧭 guia de UI
+
+[← O PADEIRO](../README.md)
+
+as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo comportamento. vale para tudo o que for criado ou mexido: uma janela nova, um campo, um ícone, uma mensagem.
+
+> 🚩 *antes de implementar uma tela nova (ou uma mudança visível), monte o layout e mostre. se tiver dúvida, pergunte. seguir o mesmo estilo é mais importante que inventar um novo.*
+
+## 📍 princípios
+
+- **coerência acima de tudo** → o que já existe é o padrão. antes de criar um componente, procure um igual (cartão de opção, campo de caminho, lixeira, pílula, menu radial) e use o mesmo.
+- **simples** → uma ação por botão, o mínimo de texto, nada de opção que ninguém vai usar.
+- **o que é da equipe e o que é deste computador** ficam separados (globo = equipe, salvo na rede; bonequinho = neste computador).
+
+## 📍 cores: nada de cor fixa
+
+- **todas as cores vêm de variáveis** (`css/styles.css` e `js/theme.js`). o tema da configuração (aba APARÊNCIA) troca o destaque, o degradê e o modo claro / escuro: uma cor fixa no CSS não acompanha.
+  - destaque e tons: `--blue-50` … `--blue-700`, `--blue-ink`, `--blue-mid` (os nomes são históricos: o tema troca o azul por qualquer cor);
+  - com transparência: `rgb(var(--accent-rgb) / 20%)`, `--accent-deep-rgb`, `--glow-rgb`, `--shade-rgb`;
+  - superfícies, textos e linhas: `--surface`, `--surface-soft`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--border`…
+- **sobre o degradê (e o vidro em cima dele)**, texto, ícones, vidros, contornos e brilhos usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
+- **o modo escuro é o inverso do claro sobre o degradê**: o vidro, o texto e os ícones ficam pretos, e o item escolhido vira uma pílula escura. nunca coloque uma superfície escura sobre o vidro claro.
+- **pílula do item escolhido** (aba, template, arquivo do CRIAR): fundo `--surface` (ou `--on-brand`), texto e ícone na cor de destaque (`--blue-500`), a mesma dos ícones dos cartões.
+- **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, a bolinha do projeto (verde / laranja), o pãozinho da logo e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
+- **o tom de "em andamento"** (`--processing`) é o destaque do tema.
+
+## 📍 formas: cantos concêntricos e centros alinhados
+
+- **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.
+- **cantos concêntricos** → um elemento arredondado dentro de outro tem o raio de fora = raio de dentro + respiro + borda. deixe a conta no comentário do CSS (ex: `/* concêntrico: raio dos campos + respiro (8) + borda (1) */`).
+- **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
+- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado).
+
+## 📍 campos
+
+- **ícone antes OU botões dentro, nunca os dois.** campo com botão (pastinha, ×) não tem ícone antes; campo com ícone antes não tem botão dentro.
+- **botões dentro do campo** (`.cfg-path > .mini-button`) → transparentes, sem contorno, nem no hover; à direita.
+- **campo de caminho** → só leitura quando o caminho vem do navegador de pastas; mostra o **fim** do caminho (a parte que muda); a pastinha à direita troca a pasta.
+- **excluir** → a **lixeira fica fora do campo**, à direita da linha (`rowDelete`): só o contorno vermelho, a tampa abre para a esquerda no hover. nunca um × dentro do campo para excluir uma linha.
+- **placeholder** → `ex:` com um exemplo de verdade (`ex: DOMINGÃO`), em minúsculas fora o exemplo.
+
+## 📍 escolhas
+
+- **opções em cartões** (`wz-opt`) → ícone antes, título e caminho / explicação, **bolinha à direita**. o escolhido fica destacado. é o mesmo cartão em todas as etapas.
+- **menus radiais** (`log-radio`) para poucas opções curtas na mesma linha; **toggles** para ligar / desligar.
+- **o que depende de uma escolha aparece embaixo dela, animado** (ex: "outra pasta…" abre o campo com a pastinha) e some animado quando sai.
+- **nada fica pela metade na tela**: uma opção que ainda não existe fica desabilitada com "em breve", não escondida pela metade.
+
+## 📍 ícones
+
+- **SVG em linha**, `stroke: currentcolor`, traço entre 1.7 e 1.8, cantos e pontas arredondados. a cor vem de quem o contém, nunca do ícone.
+- **pastas só no contorno**; **arquivos (o `.aep`, os templates) sólidos**, com a dobra do canto escura e suave.
+- **ícones das ferramentas** (`js/icons.js`) animam no hover (a claquete bate, a lupa mostra a letra, a pasta recebe os arquivos…). uma ferramenta nova ganha um ícone com animação.
+- **a biblioteca de ícones** (`PAD_UTIL.iconLibrary`) tem os mesmos desenhos, parados. mudou um ícone da barra → mude o da biblioteca e o dos campos também.
+- **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
+- **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
+
+## 📍 animação: toda mudança anima
+
+- **entradas** → o que aparece entra suave (opacidade + um leve deslocamento).
+- **reordenar, mover, tirar** → o que fica desliza do lugar antigo para o novo (FLIP: mede antes, redesenha, anima a diferença). vale para as listas da configuração e as árvores do coletar e do organizar.
+- **excluir** → o item some (fade) e os de baixo sobem deslizando (`collapseThen`).
+- **mostrar / esconder** → expande e recolhe (altura + opacidade), nunca pula.
+- **curvas e tempos** → `--ease-enter` e `--ease-soft`; 180–320 ms nos detalhes, ~600 ms só para a janela inteira.
+- **na abertura** de uma janela ou aba nada anima de novo (só as mudanças).
+- **hover** → sem mudar o tamanho das coisas (nada pula); só cor, sombra, um leve `translateY(-1px)` ou a animação do ícone.
+
+## 📍 texto
+
+- **minúsculas** no corpo das dicas e mensagens; **títulos de seção e rótulos em maiúsculas**, com espaçamento (`cfg-title`, `wz-label`, `wz-title`).
+- **curto** → uma frase por dica. se precisou de um parágrafo, a tela está complicada.
+- **tooltips** → só o que não está escrito na tela (um caminho cortado, o que faz um botão). sem "2 cliques", sem endereços de links.
+- **nomes que a pessoa conhece** → atração, claquete, pasta de output (não "root", "relation").
+
+## 📍 mensagens e erros
+
+- **todo erro tem código**: `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
+- **validação** (campo vazio, escolha faltando) também tem código e aparece na linha de status da janela, sem alert.
+- **o que deu certo** aparece rápido e some sozinho.
+
+## 📍 caminhos
+
+- **gravados e mostrados sem o sufixo do volume** (`/Volumes/VFX`, nunca `/Volumes/VFX-1`). o volume certo (`-1` a `-5`) só entra ao abrir, criar ou montar uma pasta, no host (`padPath`, `padMountedPath`).
+- **mostrar** sempre pelo `padDisplayPath` (formato do sistema atual, sem sufixo); o caminho longo corta pelo começo (`…/PROGRAMAS/DOMINGAO`).
+- **antes de criar**, conferir de fato no disco (existe / nova), e dizer isso na tela.
+
+## 📍 janelas
+
+- **altura automática** → a janela cresce para caber a etapa (`fitHeight`) e volta ao tamanho padrão quando cabe.
+- **a ação final fecha a janela** (ex: **Salvar** no editor do projeto).
+- **pular é pular** → uma opção "pular" não cria nem grava nada.
+- **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
+
+## 📍 antes de enviar
+
+- [ ] modo **claro e escuro**, com um tema de cores bem diferentes do azul padrão (ex: laranja → roxo);
+- [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
+- [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
+- [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
+- [ ] **mensagens com código** `#PAD_`;
+- [ ] **o mesmo componente** que já existe em outra janela;
+- [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
