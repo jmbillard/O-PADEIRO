@@ -159,7 +159,7 @@ body.project-page {
 .wz-opt.is-selected {
   border-color: var(--blue-300);
   background: var(--blue-50);
-  box-shadow: 0 0 0 3px rgb(79 130 255 / 12%);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 12%);
 }
 
 .wz-opt svg {

@@ -302,7 +302,7 @@ body.prods-page {
   height: 8px;
   border-radius: 50%;
   background: #ffcf5c;
-  box-shadow: 0 0 0 2px rgb(60 80 200 / 35%);
+  box-shadow: 0 0 0 2px rgb(var(--accent-deep-rgb) / 35%);
   content: "";
   opacity: 0;
   transform: scale(0.4);
@@ -436,7 +436,7 @@ body.prods-page {
 }
 
 .prod-icon:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 
@@ -613,7 +613,7 @@ body.prods-page {
 .prods-filter input:focus {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .prods-filter>svg {
@@ -797,7 +797,7 @@ body.prods-page {
 }
 
 .log-radio input:focus-visible+.log-radio-dot {
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 18%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 18%);
 }
 
 .log-radio input:disabled~* {
@@ -941,7 +941,7 @@ body.prods-page {
   border: 1px solid rgb(255 255 255 / 40%);
   border-radius: 22px 22px 32px 32px; /* embaixo, concêntrico com o '+ nova pasta' (raio 17 + 14 de respiro + borda) */
   background:
-    radial-gradient(circle at 85% 8%, rgb(168 208 255 / 44%), transparent 34%),
+    radial-gradient(circle at 85% 8%, rgb(var(--glow-rgb) / 44%), transparent 34%),
     linear-gradient(155deg, var(--blue-400) 0%, var(--blue-mid, var(--blue-500)) 46%, var(--blue-600) 100%);
   color: rgb(var(--on-brand));
 }
@@ -1590,7 +1590,7 @@ body.is-org-dragging * {
 }
 
 .swatch-head:focus-visible {
-  box-shadow: 0 0 0 3px rgb(79 130 255 / 22%);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 22%);
 }
 
 .swatch-mini {

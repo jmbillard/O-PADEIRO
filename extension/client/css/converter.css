@@ -214,10 +214,10 @@ body.converter-page {
 @keyframes convert-flash {
   0% {
     border-color: var(--blue-500);
-    box-shadow: 0 0 0 6px rgb(79 130 255 / 24%);
+    box-shadow: 0 0 0 6px rgb(var(--accent-rgb) / 24%);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgb(79 130 255 / 0%);
+    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0%);
   }
 }

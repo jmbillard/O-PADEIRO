@@ -190,7 +190,7 @@ body {
 
 .select select:focus-visible {
   border-color: var(--blue-500);
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 
@@ -677,7 +677,7 @@ body {
 .field-textarea:focus {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .field-textarea:disabled {
@@ -726,7 +726,7 @@ body {
   background: linear-gradient(135deg,
       var(--blue-400),
       var(--blue-600));
-  box-shadow: 0 10px 24px rgb(79 100 255 / 30%);
+  box-shadow: 0 10px 24px rgb(var(--accent-deep-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 
@@ -757,7 +757,7 @@ body {
 }
 
 .button-primary:hover:not(:disabled) {
-  box-shadow: 0 14px 30px rgb(79 100 255 / 38%);
+  box-shadow: 0 14px 30px rgb(var(--accent-deep-rgb) / 38%);
   transform: translateY(-2px);
 }
 
@@ -1245,7 +1245,7 @@ body {
 
 .cfg-input:focus {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .cfg-textarea {
@@ -1377,7 +1377,7 @@ body {
 }
 
 .mini-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 
@@ -1505,7 +1505,7 @@ body {
 }
 
 .cfg-switch input:focus-visible+.cfg-switch-track {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 
@@ -1608,7 +1608,7 @@ body {
 .dropdown-trigger[aria-expanded="true"] {
   border-color: var(--blue-500);
   outline: none;
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .dropdown-trigger:disabled {
@@ -2415,7 +2415,7 @@ body.motion-ready .eyebrow {
 
 .tag-box:focus-within {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 4px rgb(79 130 255 / 14%);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .tag-field>.mini-button:last-child {
@@ -2458,7 +2458,7 @@ body.motion-ready .eyebrow {
 }
 
 .tag-chip-x:hover:not(:disabled) {
-  background: rgb(79 130 255 / 16%);
+  background: rgb(var(--accent-rgb) / 16%);
   opacity: 1;
 }
 
@@ -2514,7 +2514,7 @@ body.motion-ready .eyebrow {
 }
 
 .io-button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 

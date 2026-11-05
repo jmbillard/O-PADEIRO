@@ -23,8 +23,8 @@
 
   --waiting: #f0c060;
   --waiting-bg: #3b3120;
-  --processing: #8fb4ff;
-  --processing-bg: #1f2d4b;
+  --processing: var(--blue-500);
+  --processing-bg: var(--blue-50);
   --success: #5fd4a0;
   --success-bg: #1c3a2d;
   --success-surface: #1e3027;

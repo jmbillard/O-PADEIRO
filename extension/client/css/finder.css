@@ -259,7 +259,7 @@ body.finder-page {
 .crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 2px;
 }
 

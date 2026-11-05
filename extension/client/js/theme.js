@@ -107,6 +107,12 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		set('--blue-600', solid ? t.accent : t.gradientEnd);
 		set('--blue-700', mix(readable(t.accent, surface, dark), '#000000', 0.25));
 
+		// os mesmos tons em r g b (brilhos, anéis de foco e sombras coloridas com transparência)
+		set('--accent-rgb', rgb(readable(t.accent, surface, dark)).join(' '));
+		set('--accent-deep-rgb', rgb(solid ? t.accent : t.gradientEnd).join(' '));
+		set('--glow-rgb', rgb(mix(solid ? t.accent : t.gradientStart, '#ffffff', 0.45)).join(' '));
+		set('--shade-rgb', rgb(mix(solid ? t.accent : t.gradientEnd, '#000000', 0.35)).join(' '));
+
 		// tons claros (no escuro, misturados com a superfície escura)
 		set('--blue-50', mix(t.accent, surface, dark ? 0.86 : 0.95));
 		set('--blue-100', mix(t.accent, surface, dark ? 0.8 : 0.9));

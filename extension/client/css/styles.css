@@ -15,6 +15,11 @@
   --blue-500: #5184f8;
   --blue-600: #5649e9;
   --blue-700: #4038cc;
+  /* os mesmos tons em r g b, para brilhos e anéis de foco com transparência (o tema troca: theme.js) */
+  --accent-rgb: 79 130 255;
+  --accent-deep-rgb: 79 100 255;
+  --glow-rgb: 168 208 255;
+  --shade-rgb: 38 66 173;
 
   --white: #ffffff;
   --surface: #ffffff;
@@ -42,8 +47,9 @@
   --waiting: #9a6500;
   --waiting-bg: #fff4d7;
 
-  --processing: #3067d6;
-  --processing-bg: #e8f1ff;
+  /* em andamento: o destaque do tema */
+  --processing: var(--blue-500);
+  --processing-bg: var(--blue-50);
 
   --success: #168055;
   --success-bg: #e7f7ef;
@@ -97,7 +103,7 @@ body {
       rgb(255 255 255 / 20%),
       transparent 25%),
     radial-gradient(circle at 88% 82%,
-      rgb(160 192 255 / 20%),
+      rgb(var(--glow-rgb) / 20%),
       transparent 28%),
     linear-gradient(145deg,
       var(--blue-400) 0%,
@@ -225,7 +231,7 @@ svg {
   padding: clamp(38px, 4vw, 64px);
   background:
     radial-gradient(circle at 85% 12%,
-      rgb(168 208 255 / 44%),
+      rgb(var(--glow-rgb) / 44%),
       transparent 28%),
     linear-gradient(155deg,
       var(--blue-400) 0%,
@@ -244,8 +250,8 @@ svg {
   border-radius: 50%;
   background:
     radial-gradient(ellipse at center,
-      rgb(38 66 173 / 42%) 0%,
-      rgb(90 63 219 / 28%) 42%,
+      rgb(var(--shade-rgb) / 42%) 0%,
+      rgb(var(--accent-deep-rgb) / 28%) 42%,
       transparent 72%);
   content: "";
   pointer-events: none;
@@ -319,7 +325,7 @@ svg {
 }
 
 .button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
+  outline: 3px solid rgb(var(--accent-rgb) / 22%);
   outline-offset: 3px;
 }
 
@@ -534,7 +540,7 @@ svg {
       var(--blue-400),
       var(--blue-mid, var(--blue-500)),
       var(--blue-600));
-  box-shadow: 0 2px 8px rgb(79 130 255 / 28%);
+  box-shadow: 0 2px 8px rgb(var(--accent-rgb) / 28%);
   transition: width 600ms var(--ease-soft);
 }
 
@@ -685,7 +691,7 @@ svg {
 
 .file-item.is-processing:hover {
   border-color: var(--border-hover);
-  box-shadow: 0 8px 22px rgb(48 103 214 / 7%);
+  box-shadow: 0 8px 22px rgb(var(--accent-rgb) / 7%);
 }
 
 .file-item.is-processing::after {
@@ -697,7 +703,7 @@ svg {
   background:
     linear-gradient(90deg,
       transparent,
-      rgb(79 130 255 / 5%),
+      rgb(var(--accent-rgb) / 5%),
       transparent);
   content: "";
   pointer-events: none;

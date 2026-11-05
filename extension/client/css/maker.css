@@ -616,15 +616,15 @@ body.maker-page {
 
 @keyframes maker-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(79 130 255 / 0%);
+    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0%);
   }
 
   25% {
-    box-shadow: 0 0 0 5px rgb(79 130 255 / 22%);
+    box-shadow: 0 0 0 5px rgb(var(--accent-rgb) / 22%);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgb(79 130 255 / 0%);
+    box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0%);
   }
 }
 
