@@ -25,6 +25,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
 	var SEARCH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg>';
+	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
 	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
@@ -888,81 +889,103 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	// (metadados); a que não existe: criar (o padrão, e vai para os dados) ou pular (não cria nem grava)
 	function renderCreateOptions(plan) {
 		var box = $('criar-opts');
+		var base = plan.output || '';
+		var atracao = aepName(state.createArgs.title || state.createArgs.atracao);
+		var choices = [];
 
-		// sempre à vista: sem output na categoria, dá para escolher uma pasta pela pastinha
 		box.textContent = '';
 		box.hidden = false;
+		box.appendChild(el('p', 'wz-label', 'PASTA DE OUTPUT'));
 
-		var item = el('div', 'opt-item');
-		var head = el('div', 'opt-head');
+		// o caminho mostrado a partir da pasta de cima da atração (o começo fica no "…")
+		var shortPath = function (full) {
+			var path = String(full).replace(/\\/g, '/');
+			var at = path.toUpperCase().indexOf('/' + atracao + '/');
+			var from = path.lastIndexOf('/', (at < 0 ? path.lastIndexOf('/') : at) - 1);
 
-		head.innerHTML = OUTPUT_SVG;
-		head.appendChild(el('b', null, 'pasta de output'));
-		item.appendChild(head);
+			return (from > 0 ? '…' : '') + path.slice(Math.max(from, 0));
+		};
+		var tail = function (full) {
+			var path = String(full).replace(/\\/g, '/');
+			var at = path.toUpperCase().indexOf('/' + atracao + '/');
 
-		// da pasta da atração em diante, em destaque (antes dela, só a pasta de cima); a pastinha troca a pasta
-		var row = el('div', 'opt-path-row');
-		var path = el('p', 'opt-path');
-		var pick = el('button', 'mini-button opt-pick');
+			return at < 0 ? path.split('/').pop() : path.slice(at + 1);
+		};
 
+		// a pasta da atração e a subpasta do "o que é" (…/2026/SERVICO), cada uma com "já existe" ou "nova"
+		if (base) choices.push({ key: 'main', icon: OUTPUT_SVG, title: tail(base) + (plan.outputExists ? ' · já existe' : ' · nova'), path: shortPath(base), output: base });
+		if (plan.outputSub) choices.push({ key: 'sub', icon: OUTPUT_SVG, title: plan.outputSub.replace(/\\/g, '/').split('/').pop() + (plan.outputSubExists ? ' · já existe' : ' · nova'), path: shortPath(plan.outputSub), output: plan.outputSub });
+		choices.push({ key: 'skip', icon: SKIP_SVG, title: 'pular', path: 'sem pasta de output (dá para escolher depois, no editor)', output: '' });
+		choices.push({ key: 'other', icon: FOLDER_SVG, title: 'outra pasta…', path: 'escolha a pasta no campo abaixo', output: state.otherOutput || '' });
+
+		// a escolhida: a de antes (se ainda existir), senão a subpasta, a da atração ou pular
+		if (!choices.some(function (c) { return c.key === state.outChoice; })) state.outChoice = plan.outputSub ? 'sub' : base ? 'main' : 'skip';
+
+		// "outra pasta": o campo com a pastinha aparece embaixo, animado
+		var reveal = el('div', 'out-reveal');
+		var field = el('div', 'cfg-path ed-path');
+		var input = el('input', 'cfg-input');
+		var pick = el('button', 'mini-button');
+
+		input.type = 'text';
+		input.readOnly = true;
+		input.placeholder = 'escolha a pasta de output';
+		input.setAttribute('aria-label', 'Outra pasta de output');
 		pick.type = 'button';
-		pick.title = 'escolher outra pasta de output';
+		pick.title = 'escolher a pasta de output';
 		pick.setAttribute('aria-label', pick.title);
 		pick.innerHTML = FOLDER_SVG;
-		pick.addEventListener('click', function () {
-			var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto');
+		field.appendChild(input);
+		field.appendChild(pick);
+		reveal.appendChild(field);
+
+		var choose = function (key) {
+			var c = choices.filter(function (x) { return x.key === key; })[0];
+
+			state.outChoice = key;
+			status('');
+			state.createArgs.output = key === 'other' ? state.otherOutput || '' : c.output;
+			state.createArgs.outputCreate = key !== 'skip';
+			Array.prototype.forEach.call(box.querySelectorAll('.wz-opt'), function (item) {
+				var on = item.dataset.key === key;
+
+				item.classList.toggle('is-selected', on);
+				item.setAttribute('aria-checked', String(on));
+			});
+			reveal.classList.toggle('is-open', key === 'other');
+			setTimeout(fitHeight, 300);
+		};
+		var pickOther = function () {
+			var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto', state.otherOutput || base);
 
 			if (!picked) return;
-			flow.output = picked;
-			goCreate(Object.assign({}, state.createArgs, { output: picked, outputCreate: true }));
-		});
-		row.appendChild(path);
-		row.appendChild(pick);
-		item.appendChild(row);
+			state.otherOutput = picked;
+			pathValue(input, picked);
+			choose('other');
+		};
 
-		if (!plan.output) {
-			path.appendChild(el('i', null, 'sem pasta de output'));
-			box.appendChild(item);
-			return;
-		}
+		pick.addEventListener('click', pickOther);
+		input.addEventListener('click', pickOther);
+		if (state.otherOutput) pathValue(input, state.otherOutput);
 
-		var full = plan.output.replace(/\\/g, '/');
-		var at = full.toUpperCase().indexOf('/' + aepName(state.createArgs.title || state.createArgs.atracao) + '/');
-		var split = at < 0 ? full.lastIndexOf('/') : at;
-		var from = full.lastIndexOf('/', split - 1);
-
-		path.title = plan.output;
-		path.appendChild(document.createTextNode((from > 0 ? '…' : '') + full.slice(Math.max(from, 0), split + 1)));
-		path.appendChild(el('b', null, full.slice(split + 1)));
-
-		if (plan.outputExists) {
-			item.appendChild(el('p', 'opt-note', 'já existe: vai para os dados do projeto.'));
-		} else {
-			var radios = el('div', 'opt-radios');
-
-			[['', 'pular'], ['1', 'criar a pasta']].forEach(function (o) {
-				var label = el('label', 'log-radio');
-				var input = el('input');
-
-				input.type = 'radio';
-				input.name = 'criar-output';
-				input.checked = !!o[0] === !!state.createArgs.outputCreate;
-				input.addEventListener('change', function () {
-					state.createArgs.outputCreate = !!o[0];
-				});
-				label.appendChild(input);
-				label.appendChild(el('span', 'log-radio-dot'));
-				label.appendChild(el('span', 'log-radio-text', o[1]));
-				radios.appendChild(label);
+		choices.forEach(function (c) {
+			var item = option(c.icon, c.title, c.path, false, function () {
+				choose(c.key);
 			});
-			item.appendChild(radios);
-		}
 
-		box.appendChild(item);
+			item.dataset.key = c.key;
+			box.appendChild(item);
+			if (c.key === 'other') box.appendChild(reveal);
+		});
+		choose(state.outChoice);
 	}
 
 	async function create(args) {
 		if (state.busy) return;
+		if (!args && state.outChoice === 'other' && !state.otherOutput) {
+			status('#PAD_091 - escolha a outra pasta de output (ou pule).', 'error');
+			return;
+		}
 
 		state.busy = true;
 		$('criar-go').disabled = true;
@@ -1040,7 +1063,7 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 	// salvar: grava os dados no projeto e fecha a janela
 	async function editorSave() {
 		if (state.adopt && !aepName($('ed-claq').value)) {
-			status('digite a claquete do projeto.', 'error');
+			status('#PAD_090 - digite a claquete do projeto.', 'error');
 			$('ed-claq').focus();
 			return;
 		}
@@ -1075,6 +1098,8 @@ Projeto criado: o editor (claquete, designer, a pasta, trocar pasta e salvar).
 		flow.matches = [];
 		flow.pick = null;
 		flow.output = '';
+		state.outChoice = '';
+		state.otherOutput = '';
 		state.editorKey = null;
 		$('claq').value = '';
 		$('claq-found').hidden = true;

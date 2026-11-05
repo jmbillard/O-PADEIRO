@@ -405,6 +405,9 @@ PADX.projectPlan = function (a) {
 	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
 	var outputPath = a.output ? padMountedPath(padPath(a.output)) : '';
+	// a subpasta do "o que é" dentro da de output (…/2026/SERVICO): a outra opção da etapa CRIAR, conferida de fato
+	var subName = a.what ? padAepName(a.what) : '';
+	var subPath = outputPath && subName ? outputPath + '/' + subName : '';
 
 	return {
 		root: padDisplayPath(plan.root),
@@ -420,7 +423,9 @@ PADX.projectPlan = function (a) {
 		folders: folders,
 		user: padMachineUser(),
 		output: outputPath ? padDisplayPath(outputPath) : '',
-		outputExists: outputPath ? new Folder(outputPath).exists : false
+		outputExists: outputPath ? new Folder(outputPath).exists : false,
+		outputSub: subPath ? padDisplayPath(subPath) : '',
+		outputSubExists: subPath ? new Folder(subPath).exists : false
 	};
 };
 
