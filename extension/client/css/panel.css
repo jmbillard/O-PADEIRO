@@ -2132,26 +2132,31 @@ body.motion-ready .eyebrow {
 }
 
 .picker-prod .dropdown-trigger {
+  /* opaco, como a pílula da aba escolhida: fundo da superfície (branco no claro, escuro no escuro) e texto na
+     cor de destaque */
   min-height: 34px;
-  border-color: rgb(var(--on-brand) / 34%);
-  background: rgb(var(--on-brand) / 14%);
-  color: rgb(var(--on-brand));
-  box-shadow: inset 0 1px 0 rgb(var(--on-brand) / 14%);
+  border-color: transparent;
+  background: var(--surface);
+  color: var(--blue-500);
+  box-shadow: 0 6px 16px rgb(24 43 113 / 16%);
 }
 
 .picker-prod .dropdown-trigger:hover:not(:disabled) {
-  border-color: rgb(var(--on-brand) / 70%);
-  background: rgb(var(--on-brand) / 24%);
+  border-color: transparent;
+  background: var(--surface);
+  box-shadow: 0 8px 20px rgb(24 43 113 / 22%);
 }
 
 .picker-prod .dropdown-trigger:focus-visible,
 .picker-prod .dropdown-trigger[aria-expanded="true"] {
-  border-color: rgb(var(--on-brand));
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 16%);
+  border-color: transparent;
+  box-shadow:
+    0 6px 16px rgb(24 43 113 / 16%),
+    0 0 0 4px rgb(var(--on-brand) / 24%);
 }
 
 .picker-prod.select::after {
-  border-color: rgb(var(--on-brand) / 80%);
+  border-color: var(--blue-500);
 }
 
 .picker-footer .picker-menu .menu-popover {

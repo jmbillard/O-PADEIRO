@@ -474,8 +474,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var b = btn.getBoundingClientRect();
 		var r = icon.getBoundingClientRect();
 
-		dot.style.left = Math.round(r.right - b.left - 5) + 'px';
-		dot.style.top = Math.round(r.bottom - b.top - 5) + 'px';
+		dot.style.left = Math.round(r.right - b.left - 8) + 'px';
+		dot.style.top = Math.round(r.bottom - b.top - 8) + 'px';
 	}
 
 	async function watchProject() {
