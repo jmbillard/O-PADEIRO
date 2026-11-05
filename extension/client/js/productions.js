@@ -1430,6 +1430,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['precomps', 'outras comps', ['M3.5 6.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z', 'M7.5 4.5v15M16.5 4.5v15']],
 		['videos', 'vídeos', ['M4 6.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M16 10l4-2.5v9L16 14']],
 		['imagens', 'imagens', ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'm4.5 16 4.5-4.5 4 4 2.5-2.5 4 4', 'M15 9h.01']],
+		['sequencias', 'sequências de imagens', ['M8 4.5h10.5a1.5 1.5 0 0 1 1.5 1.5v10.5', 'M5.5 7h11a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19.5v-11A1.5 1.5 0 0 1 5.5 7z', 'm4.5 18 4-4 3.5 3.5 2-2 3.5 3.5']],
 		['audio', 'áudio', ['M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2']],
 		['solidos', 'sólidos', ['M5 5h14v14H5z']],
 		['dados', 'dados', ['M4 5.5h16v13H4z', 'M4 10h16M4 14.5h16M10 5.5v13']],
@@ -2029,7 +2030,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var COLLECT_TYPES = [
 		['projeto', 'projeto (.aep)', ['M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z', 'M13.5 3.5V8H18']],
 		['videos', 'vídeos', TYPES.filter(function (t) { return t[0] === 'videos'; })[0][2]],
-		['sequencias', 'sequências de imagens', ['M8 4.5h10.5a1.5 1.5 0 0 1 1.5 1.5v10.5', 'M5.5 7h11a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 19.5v-11A1.5 1.5 0 0 1 5.5 7z', 'm4.5 18 4-4 3.5 3.5 2-2 3.5 3.5']],
+		['sequencias', 'sequências de imagens', TYPES.filter(function (t) { return t[0] === 'sequencias'; })[0][2]],
 		['imagens', 'imagens', TYPES.filter(function (t) { return t[0] === 'imagens'; })[0][2]],
 		['audio', 'áudio', TYPES.filter(function (t) { return t[0] === 'audio'; })[0][2]],
 		['dados', 'dados', TYPES.filter(function (t) { return t[0] === 'dados'; })[0][2]],

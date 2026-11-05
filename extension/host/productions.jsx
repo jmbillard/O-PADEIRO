@@ -381,7 +381,7 @@ Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
 
 */
 
-var PAD_ORGANIZE_CONTENTS = ['render', 'editaveis', 'precomps', 'videos', 'imagens', 'audio', 'solidos', 'dados', 'missing'];
+var PAD_ORGANIZE_CONTENTS = ['render', 'editaveis', 'precomps', 'videos', 'imagens', 'sequencias', 'audio', 'solidos', 'dados', 'missing'];
 var PAD_DEFAULT_ORGANIZE = null;
 
 function padDefaultOrganize() {
@@ -405,7 +405,7 @@ function padCommaList(value) {
 
 // Valida e normaliza a organização vinda do painel. Lança Error com a mensagem.
 function padCleanOrganize(o) {
-	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false };
+	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false, version: 2 };
 	var names = {};
 	var contents = {};
 	var i;
@@ -488,11 +488,30 @@ function padCleanOrganize(o) {
 	return clean;
 }
 
+// Configurações de antes do tipo 'sequencias' (sem 'version'): as sequências de imagens iam com os vídeos; agora
+// vão para a pasta das imagens (como no padrão). depois de salva pela configuração, vale o que estiver lá.
+function padOrganizeUpgrade(clean, raw) {
+	if (raw.version >= 2) return clean;
+
+	for (var i = 0; i < clean.folders.length; i++) {
+		if (padIndexOf(clean.folders[i].contents, 'sequencias') >= 0) return clean;
+	}
+
+	for (i = 0; i < clean.folders.length; i++) {
+		if (padIndexOf(clean.folders[i].contents, 'imagens') >= 0) {
+			clean.folders[i].contents.push('sequencias');
+			break;
+		}
+	}
+
+	return clean;
+}
+
 function padReadOrganize() {
 	try {
 		var data = padConfigData();
 
-		return data.ORGANIZE ? padCleanOrganize(data.ORGANIZE) : padDefaultOrganize();
+		return data.ORGANIZE ? padOrganizeUpgrade(padCleanOrganize(data.ORGANIZE), data.ORGANIZE) : padDefaultOrganize();
 	} catch (err) {
 		return padDefaultOrganize();
 	}

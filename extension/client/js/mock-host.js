@@ -169,7 +169,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: '02 PRECOMPS', parent: '', content: 'precomps' },
 							{ name: '03 ARQUIVOS', parent: '', content: '' },
 							{ name: 'VIDEOS', parent: '03 ARQUIVOS', content: 'videos' },
-							{ name: 'IMAGENS', parent: '03 ARQUIVOS', content: 'imagens' },
+							{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens', 'sequencias'] },
 							{ name: 'AUDIO', parent: '03 ARQUIVOS', content: 'audio' },
 							{ name: 'SOLIDOS', parent: '03 ARQUIVOS', content: 'solidos' },
 							{ name: 'DADOS', parent: '03 ARQUIVOS', content: 'dados' },

@@ -12,7 +12,7 @@
 // Organização (a aba ORGANIZAR da configuração substitui):
 //   folders          → a árvore de pastas: nome, pasta pai ('' = raiz) e os tipos que ela recebe ('contents'):
 //                      render (comps de render), editaveis (comps editáveis), precomps (as outras comps),
-//                      videos, imagens, audio,
+//                      videos, imagens, sequencias (sequências de imagens), audio,
 //                      solidos, dados, missing (arquivos ausentes); sem tipos, só agrupa outras pastas
 //   renderComments   → comentários (ou parte deles) que mandam a comp para a pasta de render
 //   editComments     → comentários (ou parte deles) que mandam a comp para a pasta das editáveis
@@ -26,7 +26,7 @@ var PAD_ORGANIZE = {
 		{ name: '02 PRECOMPS', parent: '', contents: ['precomps'] },
 		{ name: '03 ARQUIVOS', parent: '', contents: [] },
 		{ name: 'VIDEOS', parent: '03 ARQUIVOS', contents: ['videos'] },
-		{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens'] },
+		{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens', 'sequencias'] },
 		{ name: 'AUDIO', parent: '03 ARQUIVOS', contents: ['audio'] },
 		{ name: 'SOLIDOS', parent: '03 ARQUIVOS', contents: ['solidos'] },
 		{ name: 'DADOS', parent: '03 ARQUIVOS', contents: ['dados'] },
@@ -163,6 +163,7 @@ function deleteProjectFolders() {
 function getFootage() {
 	var footage = {
 		stillArray: [],
+		sequenceArray: [],
 		videoArray: [],
 		audioArray: [],
 		solidArray: [],
@@ -200,6 +201,12 @@ function getFootage() {
 
 			if (aItem.mainSource.isStill) {
 				footage.stillArray.push(aItem);
+				continue;
+			}
+
+			// sequência de imagens (render_0001.png…): o tipo dela, não vídeo
+			if (padIsSequence(aItem)) {
+				footage.sequenceArray.push(aItem);
 				continue;
 			}
 
@@ -282,6 +289,7 @@ function populateProjectFolders() {
 
 	populateFootageItemFolders(footage.videoArray, folders.videos, cache);
 	populateFootageItemFolders(footage.stillArray, folders.imagens, cache);
+	populateFootageItemFolders(footage.sequenceArray, folders.sequencias, cache);
 	populateFootageItemFolders(footage.audioArray, folders.audio, cache);
 	populateFootageItemFolders(footage.solidArray, folders.solidos, cache);
 	populateFootageItemFolders(footage.dataArray, folders.dados, cache);
