@@ -1691,24 +1691,198 @@ body.is-org-dragging * {
 
 /* prévia: o fundo das janelas (degradê ou sólido) com um botão de destaque */
 .app-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
   margin-top: 4px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: linear-gradient(145deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 45%, var(--blue-600));
-  color: rgb(var(--on-brand));
-  font-size: 0.74rem;
-  font-weight: 650;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  font-size: 0.66rem;
+  font-weight: 700;
 }
 
-.app-preview-chip {
-  padding: 6px 14px;
+.app-preview svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+/* o degradê com o vidro (como a lista de templates) */
+.pv-glass {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 12px;
+  background: linear-gradient(145deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 45%, var(--blue-600));
+  color: rgb(var(--on-brand));
+}
+
+.pv-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  border: 1px solid rgb(var(--on-brand) / 30%);
+  border-radius: var(--radius-pill);
+  background: rgb(var(--on-brand) / 12%);
+  color: rgb(var(--on-brand) / 80%);
+}
+
+.pv-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border-radius: 9px;
+  letter-spacing: 0.06em;
+}
+
+.pv-row .pv-solid {
+  fill: currentcolor;
+}
+
+.pv-row .pv-solid path:nth-child(2) {
+  fill: none;
+  stroke: rgb(24 35 85 / 38%);
+}
+
+/* a pílula do escolhido: superfície e destaque, como as abas */
+.pv-row.is-on {
+  background: var(--surface);
+  box-shadow: 0 6px 14px rgb(24 43 113 / 18%);
+  color: var(--blue-500);
+}
+
+.pv-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pv-round {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid rgb(var(--on-brand) / 30%);
+  border-radius: 50%;
+  background: rgb(var(--on-brand) / 12%);
+}
+
+.pv-toggle {
+  position: relative;
+  width: 26px;
+  height: 15px;
+  border-radius: var(--radius-pill);
+  background: rgb(var(--on-brand));
+}
+
+.pv-toggle i {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--blue-500);
+}
+
+.pv-dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 8px 4px 10px;
   border-radius: var(--radius-pill);
   background: var(--surface);
+  box-shadow: 0 4px 12px rgb(24 43 113 / 16%);
   color: var(--blue-500);
-  font-weight: 750;
+  font-size: 0.6rem;
+}
+
+/* a superfície (como a área de conteúdo) */
+.pv-surface {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  padding: 12px 14px;
+  color: var(--text-primary);
+}
+
+.pv-title {
+  margin: 0;
+  color: var(--blue-500);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.pv-field {
+  padding: 7px 10px;
+  border: 1px solid var(--blue-500);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.pv-radios {
+  display: flex;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.pv-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pv-radio i {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+}
+
+.pv-radio.is-on i {
+  border: 3.5px solid var(--blue-500);
+}
+
+.pv-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pv-badge {
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--processing-bg);
+  color: var(--processing);
+  font-size: 0.6rem;
+}
+
+.pv-button {
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+  box-shadow: 0 6px 14px rgb(var(--accent-deep-rgb) / 30%);
+  color: rgb(var(--on-brand));
+}
+
+:root[data-bg="solid"] .pv-glass {
+  background: var(--blue-500);
 }
 
 .app-font {
