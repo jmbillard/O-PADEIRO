@@ -70,6 +70,15 @@ ao salvar, o padeiro:
 > • o separador só é usado com mais de um layer editável.\
 > • todo template pode ter várias pastas de output: o render é copiado em todas. sem nenhuma, vale o output padrão.
 
+### variações de layout
+
+opcional: um efeito de menu da comp principal (ex: um Dropdown Menu Control com esquerda e direita) gera **uma comp por opção** em cada preenchimento, com o sufixo da opção no fim do nome (`TARJA - JOAO BOSCO E` e `TARJA - JOAO BOSCO D`).
+
+- **+ efeito** → selecione no Effect Controls da comp principal o efeito (ou a propriedade do menu) e clique: a linha do efeito mostra o layer, o efeito e o total de opções do menu, e cada opção ganha o campo do **sufixo**.
+- **⟳** (dentro da linha do efeito) → troca pelo efeito selecionado agora (os sufixos ficam).
+- **+ opção** → quando o padeiro não consegue ler o total de opções do menu. só a última opção sai (a lixeira): a posição na lista é o número da opção no menu.
+- **nomes finais com o exemplo** → um por opção. cada opção precisa de um sufixo, sem repetir (o item **layout** do topo avisa).
+
 ### arquivo de configuração
 
 > 📋 *exemplo:* `RODAPE CONVIDADO_config.json`

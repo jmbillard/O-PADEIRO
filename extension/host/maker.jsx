@@ -202,6 +202,82 @@ PADX.makerLayers = function (a) {
 	return { layers: layers };
 };
 
+// O efeito de menu selecionado no Effect Controls (o efeito inteiro ou a propriedade do menu): as variações de layout.
+// → { layerId, layerIndex, layerName, fxName, optionIndex, count } (count: o total de opções do menu, 0 se não deu
+// para saber)
+PADX.makerPickEffect = function (a) {
+	var comp = padMakerComp(a.compId);
+	var props = comp.selectedProperties;
+	var menu = null;
+
+	for (var i = 0; i < props.length && !menu; i++) menu = padMenuProperty(props[i]);
+
+	if (!menu) throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito de menu do layout (ex: Dropdown Menu Control).');
+
+	var effect = menu.parentProperty;
+	var layer = effect.parentProperty.parentProperty;
+
+	return { layerId: layer.id, layerIndex: layer.index, layerName: layer.name, fxName: effect.name, optionIndex: menu.propertyIndex, count: padMenuCount(menu) };
+};
+
+// A propriedade de menu: a selecionada (direto dentro de um efeito) ou, num efeito selecionado, a primeira de menu dele
+function padMenuProperty(prop) {
+	var isEffect = function (p) {
+		return p && p.parentProperty && p.parentProperty.matchName == 'ADBE Effect Parade';
+	};
+	var isMenu = function (p) {
+		if (!(p instanceof Property) || p.propertyValueType != PropertyValueType.OneD) return false;
+
+		try {
+			if (p.isDropdownEffect) return true;
+		} catch (err) { }
+
+		return p.parentProperty.matchName == 'ADBE Dropdown Control';
+	};
+
+	if (prop instanceof Property) return isEffect(prop.parentProperty) && isMenu(prop) ? prop : null;
+	if (!isEffect(prop)) return null;
+
+	for (var i = 1; i <= prop.numProperties; i++) {
+		if (isMenu(prop.property(i))) return prop.property(i);
+	}
+
+	return null;
+}
+
+// Quantas opções o menu tem: o valor máximo dele ou, sem ele, o maior valor que o menu aceita (volta o valor de antes)
+function padMenuCount(menu) {
+	try {
+		if (menu.hasMax && menu.maxValue >= 1 && menu.maxValue <= 100) return Math.round(menu.maxValue);
+	} catch (err) { }
+
+	if (menu.numKeys > 0 || menu.expressionEnabled) return 0;
+
+	var before = menu.value;
+	var count = 0;
+
+	app.beginUndoGroup('PADEIRO - opções do menu');
+
+	try {
+		for (var n = 1; n <= 50; n++) {
+			try {
+				menu.setValue(n);
+				if (Math.round(menu.value) != n) break;
+				count = n;
+			} catch (err) {
+				break;
+			}
+		}
+	} finally {
+		try {
+			menu.setValue(before);
+		} catch (err) { }
+		app.endUndoGroup();
+	}
+
+	return count;
+}
+
 // Preenche os layers editáveis com o texto de teste, como no preenchimento real. a: { compId, layers: [{id, method}], inputs: [] }
 PADX.makerTest = function (a) {
 	var comp = padMakerComp(a.compId);
@@ -231,7 +307,8 @@ PADX.makerTest = function (a) {
 };
 
 // Marca a comp como template, salva o projeto (janela do After Effects) e grava o config, o preview e as fontes.
-// a: { compId, layers: [{id, method}], config } — 'config' sem 'compName' / 'inputLayers'.
+// a: { compId, layers: [{id, method}], fx: { layerId, fxName, optionIndex, options } | null, config } — 'config' sem
+// 'compName' / 'inputLayers' / 'inputFx'.
 PADX.makerSave = function (a) {
 	var comp = padMakerComp(a.compId);
 	var cfg = a.config;
@@ -253,6 +330,17 @@ PADX.makerSave = function (a) {
 		if (!layer || !PADX_MAKER_METHODS[a.layers[i].method]) continue;
 
 		cfg.inputLayers.push({ layerIndex: layer.index, method: a.layers[i].method });
+	}
+
+	// as variações de layout (o efeito de menu): o índice do layer de agora; uma comp por opção, com o sufixo
+	if (a.fx && a.fx.options && a.fx.options.length) {
+		var fxLayer = padLayerById(comp, a.fx.layerId);
+
+		if (!fxLayer) throw new Error('#PAD_097 - o layer do efeito de layout não existe mais na comp: troque o efeito.');
+
+		cfg.inputFx = { layerIndex: fxLayer.index, fxName: a.fx.fxName, optionIndex: a.fx.optionIndex, options: a.fx.options };
+	} else {
+		delete cfg.inputFx;
 	}
 
 	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) cfg.outputPath = defaultTemplateConfigObj.outputPath.slice();

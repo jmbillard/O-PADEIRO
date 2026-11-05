@@ -90,6 +90,8 @@ const CHECKS = [
 	['criador', 'maker.html', async (p) => {
 		await p.click('#btn-import-add');
 		await p.waitForTimeout(900); // o campo abre animado (motion.js): mede depois de aberto
+		await p.click('#btn-fx'); // as variações de layout (os sufixos)
+		await p.waitForTimeout(500);
 	}],
 	['projeto: editor', 'project.html?mock=created'],
 	['projeto: atração', 'project.html'],

@@ -711,6 +711,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { hasComp: true, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
+		// ?mock=nofx: nada selecionado no Effect Controls; ?mock=fxcount: o total de opções não pôde ser lido
+		makerPickEffect: function () {
+			if (mode === 'nofx') throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito de menu do layout (ex: Dropdown Menu Control).');
+
+			return { layerId: 104, layerIndex: 4, layerName: 'CTRL', fxName: 'layout', optionIndex: 1, count: mode === 'fxcount' ? 0 : 2 };
+		},
+
 		makerToggleLayer: function () {
 			return { selected: true };
 		},

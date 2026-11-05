@@ -30,6 +30,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		comp: null, // { id, name, time }
 		layers: [], // { id, index, name, isText, method, missing }
 		outputs: [''],
+		fx: null, // as variações de layout: { layerId, layerIndex, layerName, fxName, optionIndex, count, options: [sufixo] }
 		atr: null, // a atração do template: { name, path, out, display, isNew }
 		autoOut: '', // a pasta de output que veio da atração (troca junto com ela)
 		emptyConfirm: null,
@@ -150,15 +151,21 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		return applyTextCase(firstExampleBlock()).split(getSeparator());
 	}
 
-	function updateNamePreview() {
+	// o nome final da comp com o exemplo (sem o sufixo das variações)
+	function finalName() {
 		var info = exampleInputs().join(' ').replace(/[\s-]+/g, ' ').trim();
 		var prefix = $('f-prefix').value.trim();
-		var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+
+		return cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+	}
+
+	function updateNamePreview() {
 		var box = $('name-preview');
 
 		box.textContent = '';
 		box.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));
-		box.appendChild(el('strong', null, name));
+		box.appendChild(el('strong', null, finalName()));
+		updateFxNames();
 	}
 
 	function updateSeparatorState() {
@@ -347,6 +354,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				target: 'f-example',
 				tip: infos === 0 ? 'exemplo vazio' : state.layers.length > 1 && infos !== state.layers.length ? 'o exemplo tem ' + plural(infos, 'informação', 'informações') + ' e a lista tem ' + plural(state.layers.length, 'layer', 'layers') : 'o exemplo bate com os layers'
 			},
+			state.fx ? { key: 'layout', label: 'layout', ok: !fxProblem(), target: 'fx-card', tip: fxProblem() || plural(state.fx.options.length, 'variação', 'variações') } : null,
 			{ key: 'output', label: 'output', ok: outputs > 0, target: 'outputs', tip: outputs ? plural(outputs, 'pasta de output', 'pastas de output') : 'nenhuma pasta de output' }
 		];
 	}
@@ -362,7 +370,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		box.textContent = '';
 
-		checks().forEach(function (item) {
+		checks().filter(Boolean).forEach(function (item) {
 			var chip = el('button', 'check-chip' + (item.ok ? ' is-ok' : ''));
 
 			chip.type = 'button';
@@ -651,6 +659,152 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	/* =========================================================
+	   Variações de layout (inputFx)
+	   o efeito de menu da comp principal: uma comp por opção, com o sufixo no fim do nome. a posição na lista é
+	   o número da opção no menu (o formato do config), então só a última opção sai.
+	   ========================================================= */
+
+	var FX_SVG = '<svg class="fx-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h3M13 17h7" /><circle cx="16" cy="7" r="2.5" /><circle cx="10" cy="17" r="2.5" /></svg>';
+	var SWAP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 0 1-11.9 5" /><path d="M5 12a7 7 0 0 1 11.9-5" /><path d="M17.5 3.5v3.8h-3.8" /><path d="M6.5 20.5v-3.8h3.8" /></svg>';
+
+	function cleanSuffix(text) {
+		return cleanName(String(text || '').trim().toUpperCase());
+	}
+
+	// os sufixos: todos preenchidos e sem repetir → '' (ok) ou o que falta ("falta: …")
+	function fxProblem() {
+		if (!state.fx) return '';
+
+		var seen = {};
+		var problem = '';
+
+		state.fx.options.forEach(function (suffix, i) {
+			var key = cleanSuffix(suffix);
+
+			if (problem) return;
+			if (!key) problem = 'o sufixo da opção ' + (i + 1);
+			else if (seen[key]) problem = 'um sufixo diferente para cada opção (' + key + ' se repete)';
+			seen[key] = true;
+		});
+
+		return problem;
+	}
+
+	async function pickEffect() {
+		if (!state.comp) return toast('error', '#PAD_028 - comp principal não encontrada: abra a comp e capture o preview.');
+
+		try {
+			var fx = await call('makerPickEffect', { compId: state.comp.id });
+			var before = state.fx ? state.fx.options : [];
+			var total = fx.count || Math.max(before.length, 2); // sem o total do menu: as linhas de antes (ou 2)
+
+			fx.options = [];
+			for (var i = 0; i < total; i++) fx.options.push(before[i] || '');
+			state.fx = fx;
+			renderFx();
+
+			var first = $('fx-box').querySelector('.fx-opt .cfg-input');
+
+			if (first && !first.value) first.focus();
+		} catch (err) {
+			toast('error', err.message);
+		}
+	}
+
+	function renderFx() {
+		var box = $('fx-box');
+		var fx = state.fx;
+
+		box.textContent = '';
+		$('btn-fx').textContent = fx ? '+ opção' : '+ efeito';
+		$('btn-fx').title = fx ? 'mais uma opção do menu (a próxima)' : 'usar o efeito de menu selecionado no Effect Controls da comp principal';
+
+		if (!fx) {
+			box.appendChild(el('p', 'cfg-empty', 'sem variações: selecione o efeito de menu no Effect Controls da comp principal e clique em “+ efeito”.'));
+			updateChecklist();
+			return;
+		}
+
+		// o efeito: a caixa, com o trocar dentro e a lixeira fora
+		var line = el('div', 'fx-line');
+		var row = el('div', 'cfg-row fx-effect');
+		var swap = el('button', 'fx-swap');
+
+		row.insertAdjacentHTML('afterbegin', FX_SVG);
+		row.appendChild(el('span', 'maker-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName));
+		row.appendChild(el('span', 'fx-kind', 'menu · ' + fx.options.length + (fx.options.length === 1 ? ' opção' : ' opções')));
+		swap.type = 'button';
+		swap.title = 'trocar pelo efeito selecionado no Effect Controls';
+		swap.setAttribute('aria-label', 'trocar o efeito');
+		swap.innerHTML = SWAP_SVG;
+		swap.addEventListener('click', pickEffect);
+		row.appendChild(swap);
+		line.appendChild(row);
+		line.appendChild(PAD_UTIL.trashButton('remover as variações de layout', function () {
+			PAD_UTIL.removeRow(box, function () {
+				state.fx = null;
+				renderFx();
+			});
+		}));
+		box.appendChild(line);
+
+		// as opções: o número e o sufixo; a lixeira só na última
+		var opts = el('div', 'fx-opts');
+
+		fx.options.forEach(function (suffix, i) {
+			var optLine = el('div', 'fx-line');
+			var opt = el('div', 'cfg-row fx-opt');
+			var input = el('input', 'cfg-input');
+			var last = i === fx.options.length - 1 && fx.options.length > 1;
+
+			input.type = 'text';
+			input.value = suffix;
+			input.placeholder = 'sufixo';
+			input.spellcheck = false;
+			input.autocomplete = 'off';
+			input.setAttribute('aria-label', 'sufixo da opção ' + (i + 1));
+			input.addEventListener('input', function () {
+				fx.options[i] = input.value;
+				updateFxNames();
+				updateChecklist();
+			});
+			input.addEventListener('change', function () {
+				input.value = fx.options[i] = cleanSuffix(input.value);
+				updateFxNames();
+			});
+			opt.appendChild(el('span', 'cfg-row-label', 'opção ' + (i + 1)));
+			opt.appendChild(input);
+			optLine.appendChild(opt);
+			optLine.appendChild(last ? PAD_UTIL.trashButton('remover a opção ' + (i + 1), function () {
+				PAD_UTIL.removeRow(optLine, function () {
+					fx.options.pop();
+					renderFx();
+				});
+			}) : el('span', 'fx-gap'));
+			opts.appendChild(optLine);
+		});
+		box.appendChild(opts);
+		box.appendChild(el('p', 'cfg-preview fx-names'));
+		updateFxNames();
+		updateChecklist();
+	}
+
+	// os nomes finais com o exemplo, um por opção
+	function updateFxNames() {
+		var names = $('fx-box') && $('fx-box').querySelector('.fx-names');
+
+		if (!names || !state.fx) return;
+
+		var base = finalName();
+
+		names.textContent = '';
+		names.appendChild(el('span', 'cfg-preview-label', 'nomes finais com o exemplo'));
+		state.fx.options.forEach(function (suffix) {
+			names.appendChild(el('strong', null, (base + ' ' + (cleanSuffix(suffix) || '…')).trim()));
+		});
+	}
+
+	/* =========================================================
 	   Atração e o que é
 	   ========================================================= */
 
@@ -787,6 +941,11 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			return toast('error', '#PAD_029 - preencha o que é (ex: LETTERING, TARJA).');
 		}
 
+		if (fxProblem()) {
+			goTo('fx-card');
+			return toast('error', '#PAD_097 - variações de layout: falta ' + fxProblem() + '.');
+		}
+
 		// sem layers editáveis o template não terá inputs: pede um segundo clique
 		if (!state.layers.length && !state.emptyConfirm) {
 			setHint('nenhum layer editável: clique de novo para salvar mesmo assim');
@@ -812,6 +971,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layers: state.layers.map(function (l) {
 					return { id: l.id, method: l.method };
 				}),
+				fx: state.fx ? { layerId: state.fx.layerId, fxName: state.fx.fxName, optionIndex: state.fx.optionIndex, options: state.fx.options.map(cleanSuffix) } : null,
 				config: cfg
 			});
 
@@ -867,6 +1027,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	function resetForm() {
 		$('f-config').value = '';
 		state.picker.set(null);
+		state.fx = null;
+		renderFx();
 		state.atr = null;
 		state.autoOut = '';
 		updateNameFull();
@@ -899,6 +1061,17 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 		state.picker = PAD_ATTRACTIONS.picker($('atr-picker'), { onChange: onAttraction });
 		$('f-config').addEventListener('input', updateNameFull);
+		$('btn-fx').addEventListener('click', function () {
+			if (!state.fx) return pickEffect();
+
+			state.fx.options.push('');
+			renderFx();
+
+			var inputs = $('fx-box').querySelectorAll('.fx-opt .cfg-input');
+
+			inputs[inputs.length - 1].focus();
+		});
+		renderFx();
 		$('f-case').addEventListener('change', updateNamePreview);
 		$('btn-example').addEventListener('click', exampleFromLayers);
 

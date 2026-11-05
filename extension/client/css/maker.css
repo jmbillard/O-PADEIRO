@@ -696,3 +696,136 @@ body.maker-page {
   cursor: progress;
   opacity: 0.7;
 }
+
+/* variações de layout: o efeito em cima (a caixa, com a lixeira fora) e as opções embaixo, sem caixa */
+.fx-box {
+  display: grid;
+}
+
+.fx-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.fx-line > .cfg-row {
+  min-width: 0;
+  flex: 1;
+  flex-wrap: nowrap;
+}
+
+.fx-effect {
+  padding-left: 14px;
+}
+
+.fx-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.fx-effect .maker-layer-name {
+  cursor: default;
+}
+
+.fx-kind {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* trocar pelo efeito selecionado: só as setas, sem contorno */
+.fx-swap {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.fx-swap:hover {
+  color: var(--blue-500);
+  transform: rotate(180deg);
+}
+
+.fx-swap:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%);
+}
+
+.fx-swap svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.fx-opts {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.fx-opt {
+  padding: 2px 4px 2px 14px;
+  border-color: transparent;
+  background: var(--surface-soft);
+}
+
+.fx-opt .cfg-row-label {
+  min-width: 64px;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.fx-opt .cfg-input {
+  min-width: 0;
+  flex: 1;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.fx-gap {
+  width: 30px;
+  flex: 0 0 30px;
+}
+
+.fx-box .cfg-preview {
+  margin-top: 10px;
+}
+
+.fx-opt .cfg-input::placeholder {
+  text-transform: none;
+}
+
+/* um nome por linha */
+.fx-names {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
