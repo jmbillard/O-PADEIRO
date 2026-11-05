@@ -1729,7 +1729,11 @@ body.is-org-dragging * {
 
 .pv-row .pv-solid path:nth-child(2) {
   fill: none;
-  stroke: rgb(24 35 85 / 38%);
+  stroke: var(--fold-on-brand);
+}
+
+.pv-row.is-on .pv-solid path:nth-child(2) {
+  stroke: var(--fold);
 }
 
 /* a pílula do escolhido: superfície e destaque, como as abas */

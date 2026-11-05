@@ -261,7 +261,7 @@ body.project-page {
 .wz-file svg path:nth-child(2),
 .wz-tree-line.is-file svg path:nth-child(2) {
   fill: none;
-  stroke: rgb(24 35 85 / 38%);
+  stroke: var(--fold);
 }
 
 .wz-file.is-dup svg {

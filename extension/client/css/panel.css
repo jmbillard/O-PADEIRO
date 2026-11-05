@@ -1055,9 +1055,13 @@ body {
   fill: currentcolor;
 }
 
-.tree-item>.tree-row>svg path:nth-child(2) {
-  fill: none;
-  stroke: rgb(24 35 85 / 38%);
+.tree-item>.tree-row>svg {
+  --file-fold: var(--fold-on-brand); /* a dobra do ícone (o desenho vem do <symbol>: a cor passa pela variável) */
+}
+
+/* o escolhido (na pílula): o ícone na cor de destaque, a dobra um tom mais escuro dela */
+.tree-item.is-selected>.tree-row>svg {
+  --file-fold: var(--fold);
 }
 
 .upload-side .eyebrow {

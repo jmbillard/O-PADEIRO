@@ -20,6 +20,10 @@
   --accent-deep-rgb: 79 100 255;
   --glow-rgb: 168 208 255;
   --shade-rgb: 38 66 173;
+  /* a dobra do canto dos ícones de arquivo: um tom mais escuro da cor do próprio ícone (preto transparente, que
+     escurece qualquer cor do tema); sobre o degradê, o inverso do texto (no escuro, o ícone é preto: dobra clara) */
+  --fold: rgb(0 0 0 / 26%);
+  --fold-on-brand: rgb(0 0 0 / 26%);
   /* contorno dos indicadores sobre o degradê (no escuro, cinza escuro: theme.css) */
   --badge-ring: rgb(var(--on-brand));
 
