@@ -11,7 +11,7 @@ arquivos é do botão COLETAR (collect.jsx).
 'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
-               {atracao} (obrigatório) {ano} {mes} {categoria} {letra} (a primeira letra do nome sem o
+               {atracao} (obrigatório) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {categoria} {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes). icon: um ícone do seletor (js/util.js)
 Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
 atrações do índice.
@@ -20,7 +20,7 @@ atrações do índice.
 
 var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'categoria', 'letra'];
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'categoria', 'letra'];
 
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
@@ -48,7 +48,7 @@ function padCleanProject(o) {
 		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
 
 		while ((m = re.exec(path + ' ' + output)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {categoria} ou {letra}).');
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {categoria} ou {letra}).');
 		}
 
 		if (path.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + name + ' precisa do {atracao} (a pasta da atração nova).');

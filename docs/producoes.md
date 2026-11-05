@@ -86,6 +86,8 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   | `{atracao}` | o nome da atração nova (obrigatório), sem acentos, em maiúsculas |
   | `{ano}` | o ano atual (`2026`) |
   | `{mes}` | o mês atual (`01` a `12`) |
+  | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |
+  | `{proximo_mes}` | o próximo mês por extenso (`DEZEMBRO`; em dezembro, `JANEIRO`) |
   | `{categoria}` | o nome da categoria |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
 

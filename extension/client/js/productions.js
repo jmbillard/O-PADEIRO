@@ -3307,7 +3307,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'categoria', 'letra'];
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'categoria', 'letra'];
+	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
 	function setProject(p) {
@@ -3331,7 +3332,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
