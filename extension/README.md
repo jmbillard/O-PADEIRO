@@ -161,6 +161,8 @@ sem o After Effects, os painéis usam o `mock-host.js` (templates, produções e
 
 no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta das fontes).
 
+> 🧭 *antes de enviar uma mudança de tela, rode a checagem do brilho do foco (`node extension/scripts/check-focus-crop.js`) e confira o [guia de UI](../docs/guia-ui.md).*
+
 ### depurar no After Effects
 
 com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabela dos painéis) para ter o console, os elementos e a rede do painel. o ExtendScript pode ser depurado com a extensão *ExtendScript Debugger* do VS Code.

@@ -91,13 +91,38 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
 
+## 📍 brilho do foco: nada cortado
+
+o campo com foco ganha um brilho de **4 px em volta** (`.cfg-input:focus`, em `panel.css`). se o campo fica dentro de algo que **rola ou recolhe** (`overflow` diferente de `visible`: listas com rolagem, colunas, blocos que abrem animados), o brilho é cortado na borda desse bloco, mais visível na **primeira linha** das listas e nos campos de largura total.
+
+- **como resolver** → dê ao bloco que corta 4 px de folga por dentro e compense na margem, para nada sair do lugar:
+
+  ```css
+  .bloco-que-rola {
+    margin: -4px;  /* compensa a folga: o conteúdo fica onde estava */
+    padding: 4px;  /* o brilho cabe aqui dentro */
+    overflow-y: auto;
+  }
+  ```
+
+  num bloco que abre e fecha animado, a folga entra na margem dos dois estados (fechado e aberto). veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
+- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas etapas principais (o criador com a pasta de mídias, as etapas da janela projeto, o editor de config, as abas da configuração…), foca cada campo e lista os que têm o brilho cortado: o campo, o bloco que corta e de que lado.
+
+  ```bash
+  node extension/scripts/check-focus-crop.js
+  ```
+
+  precisa do Playwright. as transições ficam desligadas (o brilho é medido no tamanho final) e o script sai com erro quando acha algum corte.
+- **tela ou etapa nova** → acrescente o passo para chegar nela na lista `CHECKS` do script. ele não vê o que só aparece depois de uma ação que não está nos passos (ex: uma linha nova).
+- **corte só durante a animação** (o bloco abrindo, com `overflow: hidden` do `motion.js`) é aceitável: no fim da animação o brilho aparece inteiro.
+
 ## 📍 antes de enviar
 
 - [ ] modo **claro e escuro**, com um tema de cores bem diferentes do azul padrão (ex: laranja → roxo);
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
-- [ ] **o brilho do foco aparece inteiro** em todos os campos, inclusive na primeira linha das listas e dentro do que rola ou recolhe (`overflow`): dê 4 px de folga com `padding` e compense na `margin`;
+- [ ] **o brilho do foco aparece inteiro** em todos os campos ([acima](#-brilho-do-foco-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
 - [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
