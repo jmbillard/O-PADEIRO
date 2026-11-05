@@ -636,6 +636,11 @@ body.bar-page {
   color: #f5bf24;
 }
 
+/* os indicadores (alerta da rede, bolinha do projeto) com o mesmo contorno: branco no claro, cinza escuro no escuro */
+.bar-net-badge {
+  box-shadow: 0 0 0 1.5px var(--badge-ring), 0 1px 3px rgb(30 42 80 / 30%);
+}
+
 /* rede / local: na ponta oposta à do pãozinho (esquerda na horizontal, topo na vertical) */
 .bar-status {
   flex: 0 0 auto;
@@ -655,7 +660,7 @@ body.bar-page {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  box-shadow: 0 0 0 1.5px rgb(var(--on-brand)), 0 1px 3px rgb(30 42 80 / 30%);
+  box-shadow: 0 0 0 1.5px var(--badge-ring), 0 1px 3px rgb(30 42 80 / 30%);
   pointer-events: none;
 }
 

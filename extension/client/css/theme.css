@@ -33,6 +33,8 @@
   --danger-border: #6a3a40;
   --danger-surface: #32222a;
 
+  --badge-ring: #3b4254;
+
   --shadow-soft: 0 8px 24px rgb(0 0 0 / 28%);
   --shadow-hover: 0 12px 30px rgb(0 0 0 / 34%);
 }

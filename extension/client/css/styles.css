@@ -20,6 +20,8 @@
   --accent-deep-rgb: 79 100 255;
   --glow-rgb: 168 208 255;
   --shade-rgb: 38 66 173;
+  /* contorno dos indicadores sobre o degradê (no escuro, cinza escuro: theme.css) */
+  --badge-ring: rgb(var(--on-brand));
 
   --white: #ffffff;
   --surface: #ffffff;
