@@ -140,14 +140,11 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 ### fontes
 
-`◖ clique esquerdo` → instala as fontes do projeto: as da pasta de fontes dele (`02 ARQUIVOS/FONTS`, que o [coletar](#coletar) junta) ou, sem ela, as da pasta `FONTS` de cada template que preencheu o projeto.
+as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fontes.md) na rede e para a pasta de fontes do projeto. a bolinha no botão: 🟠 laranja quando falta algo, 🟢 verde quando está tudo certo.
 
-*ao preencher ou importar um template, o padeiro grava nos [metadados do projeto](docs/projeto.md#-dados-gravados-no-projeto) o template usado (nome e pasta). por isso, sem fontes coletadas, essa instalação funciona só em projetos preenchidos pelo padeiro.*
+`◖ clique esquerdo` → resolver: instala do banco as fontes que faltam neste computador (sem banco configurado, as da pasta de fontes do projeto ou dos templates).
 
-`◗ clique direito` → copia os arquivos das fontes usadas no projeto (incluindo as que aparecem só em keyframes de texto) para uma pasta escolhida.
-
-> 🚩 *obs:*\
-> • fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas: o padeiro avisa quais ficaram de fora.
+`◗ clique direito` → a janela de [fontes do projeto](docs/fontes.md#-fontes-do-projeto-janela): o estado de cada fonte, a troca por outra (com busca e prévia) e copiar as fontes para uma pasta.
 
 ### coletar
 
@@ -225,6 +222,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
+| [🔤 fontes](docs/fontes.md) | banco de fontes, o botão fontes e a janela de fontes do projeto |
 | [🎬 projeto](docs/projeto.md) | projeto novo pela atração, estrutura de pastas e editor |
 | [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
@@ -296,6 +294,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_065` | outra pessoa salvou a lista de produções depois que você abriu o editor |
 | `#PAD_066` `#PAD_067` `#PAD_068` | o painel não conseguiu carregar o padeiro da rede |
 | `#PAD_070` `#PAD_071` `#PAD_072` `#PAD_PATH_001` `#PAD_PATH_002` | caminho de rede inválido, volume não montado ou pasta inacessível |
+| `#PAD_073` `#PAD_074` | banco de fontes: trocar fontes sem o After Effects 2024 / nenhum arquivo para instalar ou banco sem pasta |
 | `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
 | `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
 | `#PAD_077` | criador: o preview .mp4 não foi gerado |

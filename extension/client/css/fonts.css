@@ -1,0 +1,211 @@
+/* =========================================================
+   FONTES DO PROJETO — uma linha por fonte, com o estado; a troca abre embaixo dela
+   ========================================================= */
+
+html,
+body.fonts-page {
+  height: 100%;
+}
+
+body.fonts-page {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  background: var(--surface);
+}
+
+.fonts {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 20px 0;
+  --queue-pad: 20px;
+}
+
+.fw-file {
+  margin: 0 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-list {
+  display: grid;
+  gap: 6px;
+}
+
+.fw-empty {
+  margin: 0 2px;
+  color: var(--text-tertiary);
+  font-size: 0.76rem;
+}
+
+.fw-empty[hidden] {
+  display: none;
+}
+
+/* a linha da fonte: o estado, o nome e o detalhe; clicar abre a troca */
+.fw-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color 160ms ease;
+}
+
+.fw-row:hover {
+  border-color: var(--border-hover);
+}
+
+.fw-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.fw-state {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.fw-state.is-ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.fw-state.is-up {
+  background: var(--processing-bg);
+  color: var(--processing);
+}
+
+.fw-state.is-install {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+.fw-state.is-nofile {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.fw-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-meta {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* a troca: → e a lista com busca */
+.fw-swap {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+  padding-left: 30px;
+}
+
+.fw-swap[hidden] {
+  display: none;
+}
+
+.fw-arrow {
+  flex: 0 0 auto;
+  padding-top: 9px;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+}
+
+.fw-swap .combo {
+  min-width: 0;
+  flex: 1;
+}
+
+/* a lista rola; a prévia da fonte marcada fica sempre embaixo dela */
+.fw-items {
+  display: grid;
+  max-height: 210px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* a prévia da fonte marcada, embaixo da lista */
+.fw-preview {
+  margin: 0;
+  padding: 10px 14px 4px;
+  min-height: 1.3em;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-preview.is-missing {
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  font-style: italic;
+}
+
+.fw-bar {
+  margin-top: auto;
+}
+
+.fw-bar .button-primary {
+  margin-left: auto;
+}
+
+.fw-status {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-status.is-error {
+  color: var(--danger);
+}
+
+.fw-menu .menu-popover {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  width: 240px;
+  transform: none;
+}

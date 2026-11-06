@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>FONTES DO PROJETO</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/attractions.css">
+	<link rel="stylesheet" href="css/fonts.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="fonts-page">
+	<!-- as fontes do projeto: uma linha por fonte, com o estado; clicar abre a troca (a lista com busca, com a
+	     prévia da fonte marcada). Resolver instala as que faltam (do banco) e aplica as trocas -->
+	<main class="fonts" id="fonts">
+		<p class="fw-file" id="fw-file"></p>
+		<div class="fw-list" id="fw-list"></div>
+		<p class="fw-empty" id="fw-empty" hidden></p>
+
+		<div class="action-bar is-anchored fw-bar">
+			<details class="actions-menu fw-menu" id="app-menu">
+				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="collect">Copiar as fontes para uma pasta…</button>
+					<button type="button" data-action="bank">Abrir o banco de fontes</button>
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
+				</div>
+			</details>
+			<span class="fw-status" id="fw-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="fw-go" disabled>Resolver</button>
+		</div>
+	</main>
+
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/local-index.js"></script>
+	<script src="js/attractions.js"></script>
+	<script src="js/fontbank.js"></script>
+	<script src="js/fonts.js"></script>
+</body>
+
+</html>

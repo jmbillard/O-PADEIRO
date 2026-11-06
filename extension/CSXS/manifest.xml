@@ -10,6 +10,7 @@
 		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.5" />
 		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.5" />
 		<Extension Id="com.jmbillard.opadeiro.project" Version="2.0.5" />
+		<Extension Id="com.jmbillard.opadeiro.fonts" Version="2.0.5" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -258,6 +259,41 @@
 						<MinSize>
 							<Width>320</Width>
 							<Height>300</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- fontes do projeto: o estado de cada uma (banco de fontes) e a troca -->
+		<Extension Id="com.jmbillard.opadeiro.fonts">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/fonts.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>O PADEIRO fontes</Menu>
+					<Geometry>
+						<Size>
+							<Width>440</Width>
+							<Height>420</Height>
+						</Size>
+						<MinSize>
+							<Width>340</Width>
+							<Height>260</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

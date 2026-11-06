@@ -19,6 +19,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O PADEIRO produções | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
 | O PADEIRO criar template | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
 | O PADEIRO projeto | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
+| O PADEIRO fontes | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
 
 <br>
 
@@ -48,6 +49,7 @@ O-PADEIRO/
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
+   │     ├─ fontbank.js          → banco de fontes pelo Node (conferir e copiar para o banco e a pasta do projeto)
    │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
    │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)
@@ -61,6 +63,7 @@ O-PADEIRO/
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
+   │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
    │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)

@@ -35,4 +35,9 @@
 			<Host Name="AEFT" Port="8094" />
 		</HostList>
 	</Extension>
+	<Extension Id="com.jmbillard.opadeiro.fonts">
+		<HostList>
+			<Host Name="AEFT" Port="8095" />
+		</HostList>
+	</Extension>
 </ExtensionList>
