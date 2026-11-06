@@ -2800,3 +2800,8 @@ body.is-org-dragging * {
   padding-right: 12px;
 }
 
+
+/* aba FONTES: o interruptor logo abaixo da pasta do banco */
+.fonts-switch {
+  margin-top: 14px;
+}

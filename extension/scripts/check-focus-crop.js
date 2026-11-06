@@ -107,7 +107,7 @@ const CHECKS = [
 		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(800);
 	}]
-].concat(['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
+].concat(['prods', 'project', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
 	return ['configuração: ' + tab, 'productions.html', async (p) => {
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 

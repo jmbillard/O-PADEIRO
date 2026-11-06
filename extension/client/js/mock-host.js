@@ -230,6 +230,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
+				fonts: JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/BANCO DE FONTES', upload: true },
 				bar: mockBar(),
 				personal: mockPrefs(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
@@ -268,7 +269,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
@@ -346,6 +347,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
 			}
 			if (a.organize) window.PAD_MOCK_LIST.organize = JSON.parse(JSON.stringify(a.organize));
+			if (a.fonts) localStorage.setItem('pad.mock.fonts', JSON.stringify(a.fonts));
 			if (a.appearance) {
 				if (!['accent', 'gradientStart', 'gradientEnd'].every(function (k) { return /^#[0-9a-f]{6}$/i.test(a.appearance[k]); })) throw new Error('#PAD_088 - aparência: cor inválida (use #rrggbb).');
 				localStorage.setItem('pad.mock.appearance', JSON.stringify(a.appearance));

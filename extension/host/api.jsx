@@ -260,16 +260,17 @@ PADX.machinePrefs = function () {
 		log: padMachineLog(),
 		localMode: padLocalForced(),
 		search: padMachineSearch(d.search),
+		fontsUpload: padMachineFontsUpload(),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, productions, log, localMode, search } (só os campos enviados mudam)
+// a: { user, projects, outputs, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search) };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
@@ -302,6 +303,7 @@ PADX.saveMachinePrefs = function (a) {
 	}
 	if (a.localMode != null) data.localMode = a.localMode === true;
 	if (a.search != null) data.search = padMachineSearch(a.search);
+	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
@@ -638,6 +640,7 @@ PADX.productions = function () {
 		project: padReadProject(),
 		collect: padReadCollect(),
 		bar: padReadTeamBar(),
+		fonts: padReadFonts(),
 		personal: PADX.personalPrefs(),
 		localMode: padLocalMode(),
 		localForced: padLocalForced(),

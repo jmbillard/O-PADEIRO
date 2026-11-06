@@ -45,7 +45,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', productions: [], log: true, localMode: false, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
+		machine: { user: '', projects: '', outputs: '', productions: [], log: true, localMode: false, fontsUpload: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
+		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
 		machineSnapshot: '',
 		defaultUser: '',
 		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
@@ -439,6 +440,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function fontsForSave() {
+		return { bank: state.fonts.bank.trim(), upload: !!state.fonts.upload };
+	}
+
 	function collectForSave() {
 		var c = state.collect;
 
@@ -460,7 +465,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -503,7 +508,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), productions: productions, log: !!m.log, localMode: !!m.localMode, search: search };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false };
 	}
 
 	function personalDirty() {
@@ -2558,6 +2563,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}),
 			log: m.log !== false,
 			localMode: !!m.localMode,
+			fontsUpload: m.fontsUpload !== false,
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
 		state.localIndexFile = m.localIndex || '';
@@ -2577,6 +2583,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('machine-projects').placeholder = '~/Desktop';
 		$('machine-local').checked = m.localMode;
 		$('machine-log').checked = m.log;
+		$('machine-fonts').checked = m.fontsUpload !== false;
 		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
 		renderMachineIndex();
@@ -2757,6 +2764,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('machine-log').addEventListener('change', function () {
 			state.machine.log = this.checked;
+			updateDirty();
+		});
+
+		$('machine-fonts').addEventListener('change', function () {
+			state.machine.fontsUpload = this.checked;
 			updateDirty();
 		});
 
@@ -3302,6 +3314,70 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
+	   Fontes: o banco de fontes (a pasta na rede e o envio)
+	   ========================================================= */
+
+	function setFonts(f) {
+		f = f || {};
+		state.fonts = { bank: f.bank || '', upload: f.upload !== false };
+		renderFonts();
+	}
+
+	function renderFonts() {
+		if (document.activeElement !== $('fonts-bank')) $('fonts-bank').value = state.fonts.bank;
+		$('fonts-bank').title = state.fonts.bank;
+		$('fonts-upload').checked = state.fonts.upload;
+		countBank();
+	}
+
+	// quantas fontes já estão no banco (os .json, um por fonte): lido pelo Node, sem o After Effects
+	function countBank() {
+		var box = $('fonts-count');
+		var fs = null;
+
+		try {
+			fs = typeof require === 'function' ? require('fs') : null;
+		} catch (err) { }
+
+		box.textContent = '';
+		if (!fs || !state.fonts.bank) return;
+
+		fs.readdir(state.fonts.bank.replace(/^~(?=\/)/, require('os').homedir()), function (err, names) {
+			if (err) {
+				box.textContent = 'a pasta do banco não está acessível agora.';
+				return;
+			}
+
+			var total = names.filter(function (n) {
+				return /\.json$/i.test(n) && n.charAt(0) !== '_';
+			}).length;
+
+			box.textContent = total ? total + (total === 1 ? ' fonte no banco.' : ' fontes no banco.') : 'o banco ainda está vazio.';
+		});
+	}
+
+	function bindFonts() {
+		$('fonts-bank').addEventListener('input', function () {
+			state.fonts.bank = this.value;
+			updateDirty();
+		});
+		$('fonts-bank').addEventListener('change', countBank);
+		$('fonts-bank-pick').addEventListener('click', function () {
+			var picked = PAD_BRIDGE.pickFolder('Pasta do banco de fontes', state.fonts.bank);
+
+			if (!picked) return;
+
+			state.fonts.bank = picked;
+			renderFonts();
+			updateDirty();
+		});
+		$('fonts-upload').addEventListener('change', function () {
+			state.fonts.upload = this.checked;
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
 	   Projeto (janela PROJETO): as categorias da atração nova
 	   ========================================================= */
 
@@ -3602,11 +3678,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'];
+	var TAB_NAMES = ['prods', 'project', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
 	var TAB_ALIASES = { logs: ['telemetry', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], localprods: ['prods', 'prods-local'] };
 	var MINE_TABS = ['appearance', 'tools', 'machine']; // local (este computador); as outras, da equipe (rede)
-	var SPLIT_TABS = ['prods', 'project', 'search', 'links', 'telemetry']; // da equipe, com a parte 'neste computador' embaixo
+	var SPLIT_TABS = ['prods', 'project', 'search', 'fonts', 'links', 'telemetry']; // da equipe, com a parte 'neste computador' embaixo
 
 	async function watchRequestedTab(initial) {
 		if (document.hidden && !initial) return;
@@ -3705,7 +3781,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
 	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
-	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project' };
+	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', project: 'project', fonts: 'fonts' };
 
 	var TAB_ICONS = {
 		machine: '<g class="ti-user"><circle class="ti-head" cx="12" cy="8.5" r="3.5" /><path class="ti-body" d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
@@ -3825,6 +3901,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setCollect(res.collect);
 			setBar(res.bar);
 			setAppearance(res.appearance);
+			setFonts(res.fonts);
 			setPersonal(res.personal);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
@@ -3917,7 +3994,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').classList.add('is-busy');
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), project: projectForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -4057,6 +4134,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindAppearance();
 		bindProject();
 		bindMachine();
+		bindFonts();
 		bindCollect();
 		bindTools();
 
