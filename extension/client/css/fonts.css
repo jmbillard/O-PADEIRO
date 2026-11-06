@@ -24,6 +24,9 @@ body.fonts-page {
 }
 
 .fw-file {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin: 0 2px;
   overflow: hidden;
   color: var(--text-tertiary);
@@ -143,6 +146,28 @@ body.fonts-page {
   line-height: 1.75;
 }
 
+/* o .aep na frente do projeto: o ícone sólido de arquivo, com a dobra um tom mais escuro */
+.fw-file svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: var(--blue-500);
+  stroke: var(--blue-500);
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.fw-file svg .fold {
+  fill: none;
+  stroke: var(--fold);
+}
+
+.fw-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* o estado: só o ícone, na cor (o texto fica no balão) */
 .fw-state {
   display: grid;
@@ -256,4 +281,63 @@ body.fonts-page {
   right: auto;
   width: 240px;
   transform: none;
+}
+
+/* o andamento: a seta sobe (copiando para o banco e a pasta do projeto) ou desce (instalando), em loop */
+.fw-state i {
+  display: block;
+  font-style: normal;
+}
+
+.fw-state.is-moving {
+  overflow: hidden;
+}
+
+.fw-state.is-moving i {
+  animation: fw-up 900ms ease-in-out infinite;
+}
+
+.fw-state.is-moving.is-down i {
+  animation-name: fw-down;
+}
+
+@keyframes fw-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  35%,
+  65% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fw-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  35%,
+  65% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* o collect das fontes: o botão redondo no canto esquerdo do rodapé */
+.fw-bar .io-button {
+  flex: 0 0 auto;
 }

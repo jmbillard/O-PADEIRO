@@ -256,6 +256,13 @@ Estado de cada fonte (check):
 		if (bank && checked.bankOk && !font.inBank) {
 			var file = entryFile(bank, font.name);
 			var entry = (await readJson(file)) || { name: font.name, family: font.family, style: font.style, versions: [] };
+			var has = function (e) {
+				return (e.versions || []).some(function (v) {
+					return v.md5 === font.md5;
+				});
+			};
+
+			if (has(entry)) return; // outra janela (ou outra pessoa) já mandou esta
 			var now = new Date();
 			var name = keyOf(font.name) + (entry.versions.length ? '@' + stamp(now) : '') + '.' + font.ext;
 
@@ -263,6 +270,10 @@ Estado de cada fonte (check):
 
 			// relê antes de gravar (outra pessoa pode ter enviado outra versão no meio)
 			entry = (await readJson(file)) || entry;
+			if (has(entry)) {
+				fs.unlink(nodePath.join(bank, name), function () { }); // a mesma chegou antes: a cópia sobra
+				return;
+			}
 			entry.family = font.family || entry.family;
 			entry.style = font.style || entry.style;
 			entry.versions = (entry.versions || []).concat([{ file: name, md5: font.md5, size: (md5Cache[font.location] || {}).size || 0, date: now.toISOString(), user: info.user, machine: info.machine, project: info.project }]);

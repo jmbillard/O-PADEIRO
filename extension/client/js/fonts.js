@@ -29,9 +29,10 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	};
 	var FONT_SVG = '<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12M12 5v14M9.5 19h5" /></svg>';
 	var ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12M12 5v14M9.5 19h5" /></svg>';
+	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path class="fold" d="M13.5 3.5V8H18" /></svg>';
 	var BANK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M5 19.5h14" /></svg>';
 
-	var state = { info: null, fonts: [], open: {}, choices: {}, installed: null, bank: [], swaps: {}, busy: false, key: '' };
+	var state = { info: null, fonts: [], open: {}, choices: {}, installed: null, bank: [], swaps: {}, busy: false, key: '', uploading: false };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -117,9 +118,53 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 			}
 
 			render();
+			uploadPending(checked);
 		} catch (err) {
 			status(err.message, 'error');
 		}
+	}
+
+	/* o andamento: a seta do estado anima enquanto o arquivo vai (para cima: copiando para o banco e a pasta do
+	   projeto) ou vem (para baixo: instalando do banco) */
+	function setMoving(names, dir) {
+		[].concat(names).forEach(function (name) {
+			Array.prototype.forEach.call(document.querySelectorAll('.fw-state'), function (dot) {
+				if (dot.dataset.font !== name) return;
+
+				dot.classList.toggle('is-moving', !!dir);
+				dot.classList.toggle('is-down', dir === 'down');
+				if (dir) dot.firstChild.textContent = dir === 'down' ? '↓' : '↑';
+			});
+		});
+	}
+
+	// com a janela aberta, ela mesma envia (e mostra o andamento); a barra faz o mesmo com ela fechada
+	async function uploadPending(checked) {
+		var info = state.info;
+
+		if (state.uploading || !FB.available() || !info.upload || !info.machineUpload) return;
+
+		var pending = checked.fonts.filter(function (f) {
+			return f.state === 'up';
+		});
+
+		if (!pending.length) return;
+
+		state.uploading = true;
+
+		for (var i = 0; i < pending.length; i++) {
+			setMoving(pending[i].name, 'up');
+			try {
+				await FB.upload(info, pending[i], checked);
+			} catch (err) {
+				status('#PAD_074 - não foi possível enviar ' + pending[i].name + ': ' + err.message, 'error');
+			}
+			setMoving(pending[i].name, null);
+		}
+
+		state.uploading = false;
+		state.key = '';
+		load();
 	}
 
 	// sem arquivo: a troca já abre, com a sugestão escolhida (dá para trocar ou apagar)
@@ -152,7 +197,8 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 			return n + (f.layers || 0);
 		}, 0);
 
-		$('fw-file').textContent = (info.project || 'projeto sem nome') + ' · ' + state.fonts.length + (state.fonts.length === 1 ? ' fonte' : ' fontes') + (layers ? ' em ' + layers + (layers === 1 ? ' layer' : ' layers') : '');
+		$('fw-file').innerHTML = FILE_SVG;
+		$('fw-file').appendChild(el('span', null, (info.project || 'projeto sem nome') + ' · ' + state.fonts.length + (state.fonts.length === 1 ? ' fonte' : ' fontes') + (layers ? ' em ' + layers + (layers === 1 ? ' layer' : ' layers') : '')));
 		$('fw-empty').hidden = !!state.fonts.length;
 		$('fw-empty').textContent = emptyText || 'o projeto não usa nenhuma fonte.';
 		updateGo();
@@ -180,7 +226,10 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 		var text = el('span', 'fw-text');
 		var title = el('span', 'fw-name');
 		var sample = el('span', 'fw-sample', SAMPLE);
-		var dot = el('span', 'fw-state is-' + font.state, st[0]);
+		var dot = el('span', 'fw-state is-' + font.state);
+
+		dot.appendChild(el('i', null, st[0]));
+		dot.dataset.font = font.name;
 
 		function line() {
 			var choice = state.choices[font.name];
@@ -512,7 +561,19 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 			var parts = [];
 
 			if (p.install.length) {
+				var going = state.fonts.filter(function (f) {
+					var c = state.choices[f.name];
+
+					return (c && c.file) || (!c && f.state === 'install');
+				}).map(function (f) {
+					return f.name;
+				});
+
+				setMoving(going, 'down');
+
 				var inst = await call('fontsInstall', { files: p.install });
+
+				setMoving(going, null);
 
 				parts.push((inst.installed + inst.already) + (p.install.length === 1 ? ' fonte instalada' : ' fontes instaladas'));
 				if (inst.errors.length) parts.push('não foi possível instalar: ' + inst.errors.join(', '));
@@ -556,6 +617,21 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	function init() {
 		$('fw-go').addEventListener('click', resolve);
 
+		// copiar todas as fontes do projeto para uma pasta qualquer (o collect das fontes)
+		$('fw-collect').addEventListener('click', async function () {
+			var path = PAD_BRIDGE.pickFolder('Pasta para copiar as fontes do projeto');
+
+			if (!path) return;
+
+			try {
+				var res = await call('collectFonts', { path: path });
+
+				status(res.data && res.data.path ? 'fontes copiadas para ' + res.data.path : 'nenhuma fonte pôde ser copiada.', '');
+			} catch (err) {
+				status(err.message, 'error');
+			}
+		});
+
 		var menu = $('app-menu');
 
 		menu.addEventListener('click', async function (e) {
@@ -574,15 +650,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 					if (!state.info || !state.info.bank) throw new Error('#PAD_074 - nenhuma pasta de banco de fontes na configuração (aba FONTES).');
 					await call('openFolder', { path: state.info.bank });
 				}
-				if (action === 'collect') {
-					var path = PAD_BRIDGE.pickFolder('Pasta para copiar as fontes');
 
-					if (!path) return;
-
-					var res = await call('collectFonts', { path: path });
-
-					status(res.data && res.data.path ? 'fontes copiadas para ' + res.data.path : 'nenhuma fonte pôde ser copiada.', '');
-				}
 			} catch (err) {
 				status(err.message, 'error');
 			}
