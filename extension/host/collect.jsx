@@ -444,7 +444,7 @@ function padCopySequence(item, folderPath) {
 // Coleta os arquivos do projeto para 'target'. Retorna os números para o aviso.
 function padCollectFiles(target, settings) {
 	var root = padEnsureFolder(target);
-	var rootKey = String(root.fsName).replace(/\\/g, '/').toLowerCase() + '/';
+	var rootKey = padPathKey(root.fsName); // L:\… e \\servidor\…, VFX e VFX-1: a mesma pasta
 	var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: [], fonts: '' };
 	var paths = {};
 	var i;
@@ -464,7 +464,7 @@ function padCollectFiles(target, settings) {
 		var kind = padCollectKind(item);
 
 		if (paths[kind] == null) continue; // tipo fora da árvore: não é coletado
-		if (String(item.file.fsName).replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) continue; // já está na pasta do projeto
+		if (padPathKey(item.file.fsName).indexOf(rootKey) == 0) continue; // já está na pasta do projeto
 
 		var folderPath = padCollectResolve(root.fsName, paths[kind], false);
 
@@ -575,15 +575,21 @@ function padIsNetworkPath(path) {
 	return !!drive && !!(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
 }
 
-// A chave de comparação de um caminho: no formato deste sistema (letra de drive → UNC pelo mapa de drives),
-// sem o sufixo de volume (VFX-1 → VFX), barras normais, minúsculas e com barra no fim.
+// A chave de comparação de um caminho, a mesma no Windows e no macOS: o que está na rede vira 'share/resto'
+// (sem o servidor, que muda de nome curto para completo), vindo de \\servidor\share\…, de uma letra do mapa de
+// drives (configuração > rede: L:\… → \\servidor\VFX\imagem\drive_l\…) ou de /Volumes/SHARE/… (sem o sufixo
+// -1 … -5). o resto fica como está. minúsculas, barras normais e com barra no fim. não vai ao disco.
 function padPathKey(path) {
-	var p = String(path || '');
+	var p = String(path || '').replace(/\\/g, '/').replace(/^\s+|\s+$/g, '');
+	var drive = /^([a-z]):(\/|$)/i.exec(p);
+	var m;
 
-	// só converte o que é de outro formato (UNC, letra de drive): /Volumes/… e caminhos locais não vão ao disco
-	if (/^(\\\\|\/\/|[a-z]:[\\\/])/i.test(p)) p = padPath(p) || p;
+	if (drive && DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]) p = String(DRIVE_MAP[drive[1].toUpperCase()]).replace(/\\/g, '/').replace(/\/+$/, '') + p.substring(2);
 
-	return padNoVolumeSuffix(p.replace(/\\/g, '/')).replace(/\/+$/, '').toLowerCase() + '/';
+	if ((m = /^\/\/[^\/]+\/(.*)$/.exec(p))) p = 'rede:' + m[1];
+	else if ((m = /^\/Volumes\/(?!Macintosh HD(\/|$))([^\/]+?)(-[1-5])?(\/.*)?$/i.exec(p))) p = 'rede:' + m[2] + (m[4] || '');
+
+	return p.replace(/\/+/g, '/').replace(/\/$/, '').toLowerCase() + '/';
 }
 
 // As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada categoria, antes do
@@ -670,7 +676,7 @@ PADX.collectList = function () {
 	var settings = padReadCollect();
 	var file = app.project.file;
 	var root = file ? padCollectRoot(file, settings) : '';
-	var rootKey = root ? String(new Folder(root).fsName).replace(/\\/g, '/').toLowerCase() + '/' : '';
+	var rootKey = root ? padPathKey(new Folder(root).fsName) : '';
 	var items = [];
 	var roots = padProjectsRoots();
 
@@ -688,7 +694,7 @@ PADX.collectList = function () {
 		var state;
 
 		if (missing) state = 'missing';
-		else if (rootKey && path.replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) state = 'ok';
+		else if (rootKey && padPathKey(path).indexOf(rootKey) == 0) state = 'ok';
 		else if (padCollectFolderPath(settings, kind) == null) state = 'skip';
 		else if (!padInProjects(path, roots)) state = 'local';
 		else state = 'net';
