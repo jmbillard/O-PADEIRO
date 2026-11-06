@@ -371,7 +371,7 @@
 			var box = document.createElement('div');
 			var anim = window.lottie.loadAnimation({ container: box, renderer: 'svg', loop: false, autoplay: false, animationData: JSON.parse(JSON.stringify(it.data)) });
 			var drawn = box.querySelector('svg');
-			var host = node.closest('button, .dropdown-item, .dropdown-trigger, .wz-opt, .tab, .cat-line') || node;
+			var host = node.closest('button, .dropdown-item, .dropdown-trigger, .wz-opt, .combo-item, .tab, .cat-line') || node;
 
 			if (drawn) {
 				node.setAttribute('viewBox', drawn.getAttribute('viewBox') || '0 0 24 24');
