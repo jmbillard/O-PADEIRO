@@ -148,7 +148,11 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 			return state.open[k];
 		}).join(',') + '|' + JSON.stringify(state.choices);
 
-		$('fw-file').textContent = (info.project || 'projeto sem nome') + ' · ' + state.fonts.length + (state.fonts.length === 1 ? ' fonte' : ' fontes');
+		var layers = state.fonts.reduce(function (n, f) {
+			return n + (f.layers || 0);
+		}, 0);
+
+		$('fw-file').textContent = (info.project || 'projeto sem nome') + ' · ' + state.fonts.length + (state.fonts.length === 1 ? ' fonte' : ' fontes') + (layers ? ' em ' + layers + (layers === 1 ? ' layer' : ' layers') : '');
 		$('fw-empty').hidden = !!state.fonts.length;
 		$('fw-empty').textContent = emptyText || 'o projeto não usa nenhuma fonte.';
 		updateGo();
@@ -163,22 +167,44 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 		});
 	}
 
+	// a linha da fonte: o selo, o nome e os layers, a amostra escrita na própria fonte e o estado (só o ícone,
+	// o texto no balão); clicar abre a troca embaixo
+	function layersText(n) {
+		return n ? n + (n === 1 ? ' layer' : ' layers') : '';
+	}
+
 	function row(font) {
 		var box = el('div', 'fw-row');
 		var head = el('button', 'fw-head');
 		var st = STATES[font.state] || STATES.ok;
-		var choice = state.choices[font.name];
-		var meta = choice && !state.open[font.name] ? '→ ' + choice.name : st[1] + (font.layers ? ' · ' + font.layers + (font.layers === 1 ? ' layer' : ' layers') : '');
+		var text = el('span', 'fw-text');
+		var title = el('span', 'fw-name');
+		var sample = el('span', 'fw-sample', SAMPLE);
+		var dot = el('span', 'fw-state is-' + font.state, st[0]);
+
+		function line() {
+			var choice = state.choices[font.name];
+
+			title.textContent = '';
+			title.appendChild(el('b', null, font.name));
+			if (font.layers) title.appendChild(document.createTextNode(' · ' + layersText(font.layers)));
+			if (choice && !state.open[font.name]) title.appendChild(el('em', 'fw-to', ' → ' + choice.name));
+		}
 
 		head.type = 'button';
-		head.title = font.family ? font.family + ' ' + font.style + (font.location ? '\n' + font.location : '') : font.name;
-		head.appendChild(el('span', 'fw-state is-' + font.state, st[0]));
-		head.appendChild(el('span', 'fw-name', font.name));
-		head.appendChild(el('span', 'fw-meta', meta));
+		head.title = (font.family ? font.family + ' ' + font.style + '\n' : '') + st[1] + (font.location ? '\n' + font.location : '');
+		head.appendChild(el('span', 'fw-badge' + (font.missing ? ' is-missing' : ''), font.missing ? '?' : 'Tt'));
+		text.appendChild(title);
+		text.appendChild(sample);
+		head.appendChild(text);
+		dot.title = st[1];
+		head.appendChild(dot);
+		line();
+		showPreview(sample, font.missing ? null : { name: font.name, file: font.location }, true);
 		head.addEventListener('click', function () {
 			state.open[font.name] = !state.open[font.name];
 			swap.hidden = !state.open[font.name];
-			head.querySelector('.fw-meta').textContent = choice && !state.open[font.name] ? '→ ' + choice.name : st[1] + (font.layers ? ' · ' + font.layers + (font.layers === 1 ? ' layer' : ' layers') : '');
+			line();
 			if (!swap.hidden) swap.querySelector('input').focus();
 		});
 		box.appendChild(head);
@@ -274,7 +300,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 		panel.hidden = true;
 		combo.appendChild(field);
 		combo.appendChild(panel);
-		wrap.appendChild(el('span', 'fw-arrow', '→'));
+		wrap.appendChild(el('span', 'fw-label', 'substituir por'));
 		wrap.appendChild(combo);
 
 		function mark(f) {
@@ -398,13 +424,20 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	// a prévia: a fonte marcada escrita nela mesma (instalada: pelo nome; do banco: pelo arquivo)
 	var faces = {};
 
-	function showPreview(node, f) {
-		node.className = 'fw-preview';
+	function showPreview(node, f, inRow) {
+		var base = inRow ? 'fw-sample' : 'fw-preview';
+
+		node.className = base;
 		node.style.fontFamily = '';
 		node.textContent = SAMPLE;
 
 		if (!f) {
-			node.textContent = '';
+			if (inRow) {
+				node.className = base + ' is-missing';
+				node.textContent = 'prévia indisponível'; // a fonte não está neste computador
+			} else {
+				node.textContent = '';
+			}
 			return;
 		}
 
@@ -413,9 +446,11 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 		var id = 'pad-fw-' + norm(f.name);
 
 		if (!faces[id]) {
-			var src = f.file && !isInstalled(f.name) ? 'url("' + PAD_UTIL.fileUrl(f.file) + '")' : 'local("' + f.name.replace(/"/g, '') + '")';
+			var sources = [];
 
-			faces[id] = new FontFace(id, src).load().then(function (face) {
+			if (f.file && (inRow || !isInstalled(f.name))) sources.push('url("' + PAD_UTIL.fileUrl(f.file) + '")');
+			sources.push('local("' + f.name.replace(/"/g, '') + '")');
+			faces[id] = new FontFace(id, sources.join(', ')).load().then(function (face) {
 				document.fonts.add(face);
 
 				return true;
@@ -428,7 +463,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 			if (ok) {
 				node.style.fontFamily = '"' + id + '", sans-serif';
 			} else {
-				node.className = 'fw-preview is-missing';
+				node.className = base + ' is-missing';
 				node.textContent = 'prévia indisponível';
 			}
 		});

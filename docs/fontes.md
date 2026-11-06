@@ -32,7 +32,7 @@ a bolinha no botão:
 
 ## 📍 fontes do projeto (janela)
 
-uma linha por fonte usada no projeto, com o estado:
+no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quantos layers usam, a amostra escrita na própria fonte e o estado (o ícone; o texto no balão):
 
 | | estado | o que acontece |
 |---|---|---|
