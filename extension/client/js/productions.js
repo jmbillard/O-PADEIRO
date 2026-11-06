@@ -3364,7 +3364,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		box.textContent = '';
 		if (!fs || !state.fonts.bank) return;
 
-		fs.readdir(state.fonts.bank.replace(/^~(?=\/)/, require('os').homedir()), function (err, names) {
+		// no volume realmente montado (o caminho é guardado sem o sufixo -1 … -5)
+		fs.readdir(PAD_BRIDGE.mountedPath(state.fonts.bank.replace(/^~(?=\/)/, require('os').homedir())), function (err, names) {
 			if (err) {
 				box.textContent = 'a pasta do banco não está acessível agora.';
 				return;

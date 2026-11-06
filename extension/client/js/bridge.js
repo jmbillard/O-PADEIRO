@@ -220,5 +220,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
 })();

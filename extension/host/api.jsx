@@ -898,7 +898,7 @@ PADX.saveTemplateTreeCache = function (a) {
 };
 
 PADX.openFolder = function (a) {
-	var folder = new Folder(padPath(a.path));
+	var folder = new Folder(padMountedPath(padPath(a.path))); // no volume montado (VFX-1…); monta o share se preciso
 
 	if (!folder.exists) throw new Error('#PAD_019 - pasta não encontrada: ' + folder.fsName);
 
@@ -1408,7 +1408,7 @@ PADX.fillFinish = function () {
 
 		// Define a pasta de importação padrão do projeto
 		try {
-			app.project.setDefaultImportFolder(new Folder(run.templateData.importPath));
+			app.project.setDefaultImportFolder(new Folder(padMountedPath(padPath(run.templateData.importPath)))); // no volume montado (VFX-1…)
 		} catch (err) { }
 
 		// Organização do projeto
