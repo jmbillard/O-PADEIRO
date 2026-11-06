@@ -2175,7 +2175,29 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		updateDirty();
 	}
 
+	// as abas das ferramentas seguem a ordem da barra (a do layout em uso: muda junto ao arrastar)
+	var BAR_TABS = { templates: 'prods', fontes: 'fonts', projeto: 'project', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
+
+	function orderToolTabs() {
+		var nav = $('tabs');
+		var seps = nav.querySelectorAll('.tab-sep');
+		var end = seps[1];
+
+		if (!end || !state.bar) return;
+
+		var keys = state.bar.items.concat(DEFAULT_BAR).filter(function (k, i, all) {
+			return BAR_TABS[k] && all.indexOf(k) === i;
+		});
+
+		keys.forEach(function (k) {
+			var tab = nav.querySelector('.tab[data-tab="' + BAR_TABS[k] + '"]');
+
+			if (tab) nav.insertBefore(tab, end);
+		});
+	}
+
 	function renderTools() {
+		orderToolTabs();
 		var list = $('tool-list');
 
 		if (!list || !state.bar) return;
