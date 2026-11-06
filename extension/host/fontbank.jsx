@@ -139,6 +139,21 @@ PADX.fontsInstalled = function (a) {
 	return { count: count, fonts: fonts };
 };
 
+// Instala as fontes da pasta de fontes do projeto (02 ARQUIVOS/FONTS): poucas e perto, a primeira tentativa do
+// resolver (as já instaladas ficam como estão). → { installed, already, errors, none } (none: sem a pasta ou
+// sem fontes nela; não é erro)
+PADX.fontsInstallProject = function () {
+	var path = padProjectFontsFolder();
+	var folder = path ? new Folder(path) : null;
+	var files = folder && folder.exists ? getFontFiles(folder, []) : [];
+
+	if (!files.length) return { installed: 0, already: 0, errors: [], none: true };
+
+	var res = appOs == 'Win' ? installWinFonts(files) : installMacFonts(files);
+
+	return { installed: res.installed, already: res.already, errors: res.errors, none: false };
+};
+
 // Instala arquivos de fonte (do banco). a: { files: [caminho] } → { installed, already, errors }
 PADX.fontsInstall = function (a) {
 	var files = [];

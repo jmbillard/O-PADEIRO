@@ -24,7 +24,7 @@ a bolinha no botão:
 - 🟠 **laranja** → falta algo: uma fonte que não está neste computador, ou que ainda não está no banco ou na pasta do projeto (o envio está a caminho). o balão diz quantas e o quê.
 - 🟢 **verde** → todas instaladas, no banco e na pasta do projeto.
 
-`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala do banco; o que sobrar, da pasta de fontes do projeto ou da pasta `FONTS` dos templates; e a que não for achada em lugar nenhum abre a janela de fontes, para trocar.
+`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar.
 
 `◗ clique direito` → a janela de **fontes do projeto**.
 
@@ -42,7 +42,7 @@ no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quant
 | ✕ | sem arquivo | não está neste computador nem no banco: escolha outra para trocar |
 
 - **trocar** → clique na linha: abre a busca (só os nomes, rápida) com as **sugestões** (a troca que a equipe já usou para essa fonte e a mesma família, o peso mais perto primeiro), as que estão **no banco** (instalam ao trocar) e as **instaladas**. embaixo, a prévia da fonte marcada. a fonte sem arquivo já abre assim, com a sugestão escolhida; apagar o campo desfaz a troca.
-- **Resolver** → instala as que faltam (e as escolhidas que estão só no banco) e troca as escolhidas no projeto inteiro, de uma vez (um `Ctrl/Cmd+Z` desfaz). a troca fica lembrada no banco: da próxima vez que a mesma fonte faltar, em qualquer computador, ela já vem como sugestão.
+- **Resolver** → instala as que faltam (primeiro da pasta de fontes do projeto, depois do banco, e as escolhidas que estão só no banco) e troca as escolhidas no projeto inteiro, de uma vez (um `Ctrl/Cmd+Z` desfaz). a troca fica lembrada no banco: da próxima vez que a mesma fonte faltar, em qualquer computador, ela já vem como sugestão.
 - **andamento** → com a janela aberta, a seta do estado anima: sobe enquanto a fonte é copiada para o banco e a pasta do projeto, desce enquanto é instalada.
 - **a pasta com o T (canto esquerdo do rodapé)** → copia todas as fontes do projeto para uma pasta qualquer (o collect das fontes).
 - **⋯** → abrir o banco, ajuda e recarregar.

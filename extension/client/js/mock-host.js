@@ -740,6 +740,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { count: out.length, fonts: out };
 		},
 
+		fontsInstallProject: function () {
+			return { installed: 0, already: 0, errors: [], none: true };
+		},
+
 		fontsInstall: function (a) {
 			return { installed: a.files.length, already: 0, errors: [] };
 		},

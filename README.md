@@ -142,7 +142,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fontes.md) na rede e para a pasta de fontes do projeto. a bolinha no botão: 🟠 laranja quando falta algo, 🟢 verde quando está tudo certo.
 
-`◖ clique esquerdo` → resolver: com tudo instalado, só avisa que está ok; faltando alguma, instala do banco (e o que sobrar, da pasta de fontes do projeto ou dos templates); a que não for achada abre a janela de fontes.
+`◖ clique esquerdo` → resolver: com tudo instalado, só avisa que está ok; faltando alguma, instala primeiro da pasta de fontes do projeto e depois do banco; a que não for achada abre a janela de fontes.
 
 `◗ clique direito` → a janela de [fontes do projeto](docs/fontes.md#-fontes-do-projeto-janela): o estado de cada fonte, a troca por outra (com busca e prévia) e copiar as fontes para uma pasta.
 

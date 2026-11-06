@@ -543,8 +543,12 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	function updateGo() {
 		var p = plan();
 		var n = p.install.length + p.swaps.length;
+		var missing = state.fonts.some(function (f) {
+			return f.missing;
+		});
 
-		$('fw-go').disabled = !n || state.busy;
+		// faltando alguma, Resolver tenta também a pasta de fontes do projeto (mesmo sem nada do banco)
+		$('fw-go').disabled = (!n && !missing) || state.busy;
 		$('fw-go').textContent = n ? 'Resolver: ' + n : 'Resolver';
 	}
 
@@ -559,6 +563,33 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 
 		try {
 			var parts = [];
+
+			// primeiro a pasta de fontes do projeto (poucas e perto); o banco só para o que ainda faltar
+			var fromProject = state.fonts.some(function (f) {
+				return f.missing;
+			}) ? await call('fontsInstallProject').catch(function () {
+				return { none: true, installed: 0 };
+			}) : { none: true, installed: 0 };
+
+			if (fromProject.installed) {
+				parts.push(fromProject.installed + (fromProject.installed === 1 ? ' fonte instalada da pasta do projeto' : ' fontes instaladas da pasta do projeto'));
+				await new Promise(function (r) {
+					setTimeout(r, 1200);
+				});
+
+				var after = await call('fontsProject');
+				var nowOk = {};
+
+				after.fonts.forEach(function (f) {
+					if (!f.missing) nowOk[f.name] = true;
+				});
+				// as que a pasta do projeto resolveu saem do que vem do banco
+				p.install = p.install.filter(function (file) {
+					return !state.fonts.some(function (f) {
+						return f.bankFile === file && nowOk[f.name];
+					});
+				});
+			}
 
 			if (p.install.length) {
 				var going = state.fonts.filter(function (f) {
