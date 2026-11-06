@@ -20,6 +20,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
 	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
+	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
 	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -80,19 +81,46 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(TEMPLATES_PANEL_ID);
 		},
 
-		installFonts: async function () {
-			await requireNetwork('PAD_004');
-			report(await call('installFonts'), 'fontes enviadas para instalação.');
+		// resolver: instala do banco as que faltam neste computador; sobrou alguma sem arquivo em lugar nenhum,
+		// abre a janela de fontes nela (para trocar). sem banco (ou sem Node), o jeito de antes: as da pasta de
+		// fontes do projeto ou dos templates
+		resolveFonts: async function () {
+			var info = await call('fontsProject');
+
+			if (!info.supported || !info.bank || !PAD_FONTBANK.available()) {
+				await requireNetwork('PAD_004');
+				report(await call('installFonts'), 'fontes enviadas para instalação.');
+				return;
+			}
+
+			var checked = await PAD_FONTBANK.check(info);
+			var toInstall = checked.fonts.filter(function (f) {
+				return f.state === 'install';
+			});
+			var noFile = checked.fonts.filter(function (f) {
+				return f.state === 'nofile';
+			});
+
+			if (toInstall.length) {
+				var res = await call('fontsInstall', { files: toInstall.map(function (f) {
+					return f.bankFile;
+				}) });
+
+				toast(res.errors.length ? 'error' : 'success', (res.installed + res.already) + (toInstall.length === 1 ? ' fonte instalada do banco' : ' fontes instaladas do banco') + (res.errors.length ? ' · não foi possível instalar: ' + res.errors.join(', ') : '.'));
+			}
+
+			if (noFile.length) {
+				PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
+				return;
+			}
+
+			if (!toInstall.length) toast('success', checked.fonts.length ? 'fontes ok: todas instaladas e no banco.' : 'o projeto não usa nenhuma fonte.');
+			setTimeout(syncFonts, 1500);
 		},
 
-		collectFonts: async function () {
-			var path = PAD_BRIDGE.pickFolder('Pasta para o collect das fontes');
-
-			if (!path) return;
-
-			var res = await call('collectFonts', { path: path });
-
-			report(res, res.data && res.data.path ? 'fontes coletadas em ' + res.data.path : 'nenhuma fonte pôde ser coletada.');
+		// a janela de fontes do projeto: o estado de cada uma e a troca
+		openFonts: function () {
+			PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
 		},
 
 		openLastOutput: async function () {
@@ -205,9 +233,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'prods',
 			label: 'Fontes',
 			icon: 'fonts',
-			tips: [L_CLICK + 'instalar as fontes usadas no template', R_CLICK + 'fazer o collect das fontes usadas no projeto'],
-			left: actions.installFonts,
-			right: actions.collectFonts
+			tips: [L_CLICK + 'resolver as fontes do projeto (instalar as que faltam)', R_CLICK + 'fontes do projeto (trocar, copiar para uma pasta)'],
+			left: actions.resolveFonts,
+			right: actions.openFonts
 		},
 		{
 			key: 'projeto',
@@ -418,6 +446,98 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		dot.style.top = Math.round(r.bottom - b.top - 8) + 'px';
 	}
 
+	/* =========================================================
+	   Banco de fontes: as fontes do projeto aberto vão sozinhas para o banco e para a pasta de fontes do
+	   projeto (js/fontbank.js, pelo Node, uma por vez). A bolinha no botão de fontes: laranja quando falta algo
+	   (neste computador, no banco ou na pasta do projeto), verde quando está tudo certo.
+	   ========================================================= */
+
+	var FONTS_EVERY = 10000; // ms entre as leituras do projeto
+	var fontsSync = { busy: false, timer: null, state: '', tip: '' };
+	var FONT_LABELS = { up: 'enviando', install: 'para instalar', nofile: 'sem arquivo' };
+
+	function paintFontsDot(state, tip) {
+		var btn = $('btn-fontes');
+
+		if (!btn) return;
+
+		var dot = btn.querySelector('.bar-dot');
+
+		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
+		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+
+		if (!state) {
+			if (dot) dot.remove();
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + state;
+		placeProjectDot(btn, dot);
+	}
+
+	function fontsSummary(checked, info) {
+		var count = {};
+		var parts = [];
+
+		checked.fonts.forEach(function (f) {
+			count[f.state] = (count[f.state] || 0) + 1;
+		});
+		Object.keys(FONT_LABELS).forEach(function (k) {
+			if (count[k]) parts.push(count[k] + ' ' + FONT_LABELS[k]);
+		});
+		if (info.bank && !checked.bankOk) parts.push('banco de fontes inacessível');
+		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado (configuração > fontes)');
+
+		return parts.length ? 'fontes: ' + parts.join(' · ') : 'fontes ok: ' + checked.fonts.length + (checked.fonts.length === 1 ? ' fonte instalada e no banco' : ' fontes instaladas e no banco');
+	}
+
+	async function syncFonts() {
+		if (fontsSync.busy || document.hidden || !window.PAD_FONTBANK || !PAD_FONTBANK.available()) return;
+
+		fontsSync.busy = true;
+		clearTimeout(fontsSync.timer);
+
+		try {
+			var info = await call('fontsProject');
+
+			if (!info.supported || !info.fonts.length) {
+				paintFontsDot('', '');
+			} else {
+				var checked = await PAD_FONTBANK.check(info);
+				var bad = checked.fonts.some(function (f) {
+					return f.state !== 'ok';
+				}) || (info.bank && !checked.bankOk);
+
+				paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
+
+				// o envio: uma fonte por vez, até não faltar nenhuma
+				if (info.upload && info.machineUpload) {
+					var pending = checked.fonts.filter(function (f) {
+						return f.state === 'up';
+					});
+
+					for (var i = 0; i < pending.length; i++) {
+						try {
+							await PAD_FONTBANK.upload(info, pending[i], checked);
+						} catch (err) { }
+					}
+
+					if (pending.length) {
+						checked = await PAD_FONTBANK.check(info);
+						bad = checked.fonts.some(function (f) {
+							return f.state !== 'ok';
+						}) || (info.bank && !checked.bankOk);
+						paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
+					}
+				}
+			}
+		} catch (err) { }
+
+		fontsSync.busy = false;
+		fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
+	}
+
 	async function watchProject() {
 		if (document.hidden) return;
 
@@ -625,6 +745,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		window.addEventListener('resize', paintProjectDot); // a bolinha acompanha o ícone ao virar a barra
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
+		syncFonts(); // o banco de fontes (a bolinha das fontes)
+		window.addEventListener('focus', syncFonts);
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
 		$('net-status').addEventListener('click', function () {

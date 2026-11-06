@@ -713,6 +713,39 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { hasComp: true, selected: [{ id: 101, index: 1, name: 'nome', isText: true, text: 'Cássio Gabus\rMendes' }, { id: 103, index: 3, name: 'fundo', isText: false, text: '' }] };
 		},
 
+		// banco de fontes: as fontes do projeto (o estado vem pronto: no navegador não há Node para conferir)
+		fontsProject: function () {
+			return window.PAD_MOCK_FONTS || {
+				supported: true, bank: '/Volumes/VFX/BANCO DE FONTES', upload: true, machineUpload: true, projectFonts: '/Volumes/VFX/PROGRAMAS/DOMINGAO/02 ARQUIVOS/FONTS', project: 'DOMINGAO COM HUCK SERVICO.aep', user: 'JMBILLARD', machine: 'MAC',
+				fonts: [
+					{ name: 'GloboSans-Bold', family: 'Globo Sans', style: 'Bold', location: '/Library/Fonts/GloboSans-Bold.otf', missing: false, layers: 4, state: 'ok' },
+					{ name: 'GothamBook', family: 'Gotham', style: 'Book', location: '', missing: true, layers: 2, state: 'install', bankFile: '/Volumes/VFX/BANCO DE FONTES/GothamBook.otf' },
+					{ name: 'GloboTipoCondensada-Black', family: 'GloboTipo Condensada', style: 'Black', location: '', missing: true, layers: 1, state: 'nofile' }
+				]
+			};
+		},
+
+		fontsInstalled: function () {
+			var fonts = [['Globo Sans', ['Regular', 'Bold', 'Black']], ['GloboTipo Condensada', ['Regular', 'Bold', 'Heavy']], ['GloboTipo Texto', ['Regular', 'Bold', 'Black']], ['Inter', ['Regular', 'Medium', 'Bold']], ['Montserrat', ['Regular', 'Black']], ['Georgia', ['Regular', 'Bold']]];
+			var out = [];
+
+			fonts.forEach(function (f) {
+				f[1].forEach(function (st) {
+					out.push({ name: f[0].replace(/\s+/g, '') + '-' + st, family: f[0], style: st });
+				});
+			});
+
+			return { count: out.length, fonts: out };
+		},
+
+		fontsInstall: function (a) {
+			return { installed: a.files.length, already: 0, errors: [] };
+		},
+
+		fontsReplace: function (a) {
+			return { done: a.swaps, failed: [] };
+		},
+
 		// ?mock=nofx: nada selecionado no Effect Controls; ?mock=fxcount: o total de opções não pôde ser lido
 		makerPickEffect: function () {
 			if (mode === 'nofx') throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito de menu do layout (ex: Dropdown Menu Control).');
