@@ -726,6 +726,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		fontsInstalled: function () {
+			if (window.PAD_MOCK_INSTALLED) return window.PAD_MOCK_INSTALLED;
+
 			var fonts = [['Globo Sans', ['Regular', 'Bold', 'Black']], ['GloboTipo Condensada', ['Regular', 'Bold', 'Heavy']], ['GloboTipo Texto', ['Regular', 'Bold', 'Black']], ['Inter', ['Regular', 'Medium', 'Bold']], ['Montserrat', ['Regular', 'Black']], ['Georgia', ['Regular', 'Bold']]];
 			var out = [];
 
