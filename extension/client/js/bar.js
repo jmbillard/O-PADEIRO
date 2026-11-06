@@ -87,35 +87,69 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		resolveFonts: async function () {
 			var info = await call('fontsProject');
 
-			if (!info.supported || !info.bank || !PAD_FONTBANK.available()) {
+			// After Effects anterior ao 2024: sem a lista das fontes, o jeito de antes
+			if (!info.supported) {
 				await requireNetwork('PAD_004');
 				report(await call('installFonts'), 'fontes enviadas para instalação.');
 				return;
 			}
 
-			var checked = await PAD_FONTBANK.check(info);
-			var toInstall = checked.fonts.filter(function (f) {
-				return f.state === 'install';
-			});
-			var noFile = checked.fonts.filter(function (f) {
-				return f.state === 'nofile';
+			var missing = info.fonts.filter(function (f) {
+				return f.missing;
 			});
 
-			if (toInstall.length) {
-				var res = await call('fontsInstall', { files: toInstall.map(function (f) {
-					return f.bankFile;
-				}) });
-
-				toast(res.errors.length ? 'error' : 'success', (res.installed + res.already) + (toInstall.length === 1 ? ' fonte instalada do banco' : ' fontes instaladas do banco') + (res.errors.length ? ' · não foi possível instalar: ' + res.errors.join(', ') : '.'));
-			}
-
-			if (noFile.length) {
-				PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
+			// nada faltando: só avisa (sem erro, mesmo sem banco ou sem pasta de fontes)
+			if (!missing.length) {
+				toast('success', info.fonts.length ? 'fontes ok: ' + (info.fonts.length === 1 ? 'a fonte do projeto está instalada.' : 'as ' + info.fonts.length + ' fontes do projeto estão instaladas.') : 'o projeto não usa nenhuma fonte.');
+				setTimeout(syncFonts, 300);
 				return;
 			}
 
-			if (!toInstall.length) toast('success', checked.fonts.length ? 'fontes ok: todas instaladas e no banco.' : 'o projeto não usa nenhuma fonte.');
-			setTimeout(syncFonts, 1500);
+			var installed = 0;
+
+			// 1. do banco (pelo nome PostScript)
+			if (info.bank && PAD_FONTBANK.available()) {
+				var checked = await PAD_FONTBANK.check(info);
+				var files = checked.fonts.filter(function (f) {
+					return f.state === 'install' && f.bankFile;
+				}).map(function (f) {
+					return f.bankFile;
+				});
+
+				if (files.length) {
+					try {
+						var res = await call('fontsInstall', { files: files });
+
+						installed += res.installed + res.already;
+					} catch (err) { }
+				}
+			}
+
+			// 2. o que sobrou: a pasta de fontes do projeto ou as dos templates (sem erro se não houver nenhuma)
+			if (installed < missing.length) {
+				try {
+					await call('installFonts');
+					installed = Math.max(installed, 1);
+				} catch (err) { }
+			}
+
+			// 3. confere de novo: o que ainda falta, só trocando por outra (a janela abre nelas)
+			await new Promise(function (r) {
+				setTimeout(r, 1500);
+			});
+
+			var still = (await call('fontsProject')).fonts.filter(function (f) {
+				return f.missing;
+			});
+
+			if (still.length) {
+				toast(installed ? 'success' : null, (installed ? 'fontes instaladas. ' : '') + (still.length === 1 ? '1 fonte não foi achada' : still.length + ' fontes não foram achadas') + ' (nem no banco nem nas pastas de fontes): escolha outra na janela de fontes.');
+				PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
+			} else {
+				toast('success', missing.length === 1 ? 'a fonte que faltava foi instalada.' : 'as ' + missing.length + ' fontes que faltavam foram instaladas.');
+			}
+
+			setTimeout(syncFonts, 300);
 		},
 
 		// a janela de fontes do projeto: o estado de cada uma e a troca

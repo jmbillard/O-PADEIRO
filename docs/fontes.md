@@ -24,7 +24,7 @@ a bolinha no botão:
 - 🟠 **laranja** → falta algo: uma fonte que não está neste computador, ou que ainda não está no banco ou na pasta do projeto (o envio está a caminho). o balão diz quantas e o quê.
 - 🟢 **verde** → todas instaladas, no banco e na pasta do projeto.
 
-`◖ clique esquerdo` → **resolver**: instala do banco as fontes que faltam neste computador. sobrou alguma que não está em lugar nenhum, abre a janela de fontes nela, para trocar. sem banco configurado, instala como antes: as da pasta de fontes do projeto ou, sem ela, as da pasta `FONTS` dos templates.
+`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala do banco; o que sobrar, da pasta de fontes do projeto ou da pasta `FONTS` dos templates; e a que não for achada em lugar nenhum abre a janela de fontes, para trocar.
 
 `◗ clique direito` → a janela de **fontes do projeto**.
 
