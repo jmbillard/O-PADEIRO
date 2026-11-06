@@ -408,6 +408,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (key === toolsLayout) return;
 
 		toolsLayout = key;
+		collectSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
 
 		var tools = $('tools');
 		var groups = [[]];
@@ -578,6 +579,55 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		fontsSync.busy = false;
 		fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
+	}
+
+	/* =========================================================
+	   Coletar: a mesma bolinha das fontes. laranja quando o projeto tem arquivo salvo neste computador
+	   (fora da rede), verde quando está tudo na rede; o balão diz quantos e quais
+	   ========================================================= */
+
+	var COLLECT_EVERY = 5000;
+	var collectSync = { state: null, timer: null };
+
+	function paintCollectDot(res) {
+		var btn = $('btn-coletar');
+
+		if (!btn) return;
+		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
+
+		var dot = btn.querySelector('.bar-dot');
+		var tip = '';
+
+		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está na rede' : 'os ' + res.total + ' arquivos do projeto estão na rede');
+		if (res && res.state === 'missing') tip = 'arquivos: ' + res.local + (res.local === 1 ? ' salvo neste computador' : ' salvos neste computador') + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a rede';
+		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+
+		if (!res || !res.state) {
+			if (dot) dot.remove();
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + res.state;
+		placeProjectDot(btn, dot);
+	}
+
+	async function watchCollect() {
+		clearTimeout(collectSync.timer);
+
+		if (!document.hidden) {
+			try {
+				var res = await call('collectStatus');
+				var key = JSON.stringify(res);
+
+				if (key !== collectSync.state) {
+					collectSync.state = key;
+					paintCollectDot(res);
+				}
+			} catch (err) { }
+		}
+
+		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
 	}
 
 	async function watchProject() {
@@ -784,11 +834,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
 		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
-		window.addEventListener('resize', paintProjectDot); // a bolinha acompanha o ícone ao virar a barra
+		// as bolinhas (projeto, fontes, coletar) acompanham o ícone ao virar a barra
+		window.addEventListener('resize', function () {
+			paintProjectDot();
+			Array.prototype.forEach.call(document.querySelectorAll('.bar-btn .bar-dot'), function (dot) {
+				placeProjectDot(dot.parentElement, dot);
+			});
+		});
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
 		syncFonts(); // o banco de fontes (a bolinha das fontes)
 		window.addEventListener('focus', syncFonts);
+		watchCollect(); // os arquivos fora da rede (a bolinha do coletar)
+		window.addEventListener('focus', watchCollect);
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
 		$('net-status').addEventListener('click', function () {

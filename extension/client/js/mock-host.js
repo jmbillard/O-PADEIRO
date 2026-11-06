@@ -740,6 +740,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { count: out.length, fonts: out };
 		},
 
+		// ?mock=localfiles: o projeto com arquivos neste computador (a bolinha do coletar fica laranja)
+		collectStatus: function () {
+			return mode === 'localfiles' ? { state: 'missing', total: 12, local: 2, names: ['logo.png', 'trilha.wav'] } : { state: 'ok', total: 12, local: 0, names: [] };
+		},
+
 		fontsInstallProject: function () {
 			return { installed: 0, already: 0, errors: [], none: true };
 		},

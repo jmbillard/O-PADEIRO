@@ -148,6 +148,8 @@ as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fon
 
 ### coletar
 
+a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo salvo neste computador (fora da rede: o disco do Mac ou do Windows), 🟢 verde quando está tudo na rede (um volume montado no Mac; um caminho de rede ou uma letra do mapa de drives no Windows). o balão diz quantos e quais.
+
 `◖ clique esquerdo` → copia os arquivos usados no projeto para a estrutura do projeto, na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar) (padrão: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com FONTS, IMAGENS, VÍDEOS, AUDIOS e DADOS, e `03 SAIDA`), e troca os caminhos no projeto para as cópias. a raiz é a pasta de cima da `01 PROJETOS` (ou a pasta do `.aep`, se ele não estiver nela). depois, salva o projeto, sempre.
 
 - cada tipo (vídeos, sequências de imagens, imagens, áudio, dados e fontes) vai para a sua pasta; tipos fora da árvore não são coletados.

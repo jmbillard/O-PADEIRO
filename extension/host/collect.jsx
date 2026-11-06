@@ -571,3 +571,53 @@ PADX.collectProject = function (a) {
 		};
 	});
 };
+
+/*
+
+---------------------------------------------------------------
+> estado do coletar (a bolinha da barra)
+---------------------------------------------------------------
+
+*/
+
+// O arquivo está na rede? macOS: num volume montado (/Volumes/SHARE, menos o disco do sistema); Windows: um
+// caminho de rede (\\servidor\share) ou uma letra do mapa de drives (configuração > rede).
+function padIsNetworkPath(path) {
+	var p = String(path || '').replace(/\\/g, '/');
+
+	if (/^\/Volumes\/(?!Macintosh HD(\/|$))[^\/]+\//i.test(p)) return true;
+	if (/^\/\/[^\/]+\/[^\/]+/.test(p)) return true;
+
+	var drive = /^([A-Za-z]):\//.exec(p);
+
+	return !!drive && !!(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
+}
+
+// Os arquivos do projeto fora da rede (salvos neste computador). leve: só os caminhos dos itens.
+// → { state: '' (sem arquivos) | 'ok' (tudo na rede) | 'missing' (algum local), total, local, names }
+PADX.collectStatus = function () {
+	var total = 0;
+	var local = 0;
+	var names = [];
+
+	// o mapa de drives (as letras de rede no Windows) já vem da configuração (padApplyConfig, a cada chamada)
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof FootageItem) || !item.mainSource || !(item.mainSource instanceof FileSource)) continue;
+
+		var file = item.mainSource.file;
+
+		if (!file) continue;
+
+		total++;
+
+		if (!padIsNetworkPath(file.fsName)) {
+			local++;
+			if (names.length < 3) names.push(decodeURI(file.name));
+		}
+	}
+
+	return { state: total ? (local ? 'missing' : 'ok') : '', total: total, local: local, names: names };
+};
