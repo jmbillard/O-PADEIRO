@@ -621,3 +621,67 @@ PADX.collectStatus = function () {
 
 	return { state: total ? (local ? 'missing' : 'ok') : '', total: total, local: local, names: names };
 };
+
+/*
+
+---------------------------------------------------------------
+> janela do coletar (o clique direito no coletar)
+---------------------------------------------------------------
+
+*/
+
+// As mídias do projeto e o estado de cada uma, para a janela do coletar:
+//   ok       já na pasta do projeto       local    neste computador (fora da rede)
+//   net      na rede, fora da pasta        missing  o arquivo não existe
+//   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
+// → { project, root, items: [{ id, name, file, kind, state, layers, frames }] }
+PADX.collectList = function () {
+	var settings = padReadCollect();
+	var file = app.project.file;
+	var root = file ? padCollectRoot(file, settings) : '';
+	var rootKey = root ? String(new Folder(root).fsName).replace(/\\/g, '/').toLowerCase() + '/' : '';
+	var items = [];
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof FootageItem) || !item.file) continue;
+
+		var path = String(item.file.fsName);
+		var kind = padCollectKind(item);
+		var state;
+
+		if (!item.file.exists) state = 'missing';
+		else if (rootKey && path.replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) state = 'ok';
+		else if (padCollectFolderPath(settings, kind) == null) state = 'skip';
+		else if (!padIsNetworkPath(path)) state = 'local';
+		else state = 'net';
+
+		var layers = 0;
+
+		try {
+			layers = item.usedIn.length;
+		} catch (err) { }
+
+		items.push({ id: item.id, name: item.name, file: path, kind: kind, state: state, layers: layers });
+	}
+
+	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items };
+};
+
+// Mostra o item no painel Project (seleciona só ele). a: { id }
+PADX.collectReveal = function (a) {
+	var item = app.project.itemByID(a.id);
+
+	if (!item) return false;
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		try {
+			if (app.project.item(i).selected) app.project.item(i).selected = false;
+		} catch (err) { }
+	}
+
+	item.selected = true;
+
+	return true;
+};

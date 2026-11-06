@@ -11,6 +11,7 @@
 		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.5" />
 		<Extension Id="com.jmbillard.opadeiro.project" Version="2.0.5" />
 		<Extension Id="com.jmbillard.opadeiro.fonts" Version="2.0.5" />
+		<Extension Id="com.jmbillard.opadeiro.collect" Version="2.0.5" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -290,6 +291,41 @@
 						<Size>
 							<Width>440</Width>
 							<Height>420</Height>
+						</Size>
+						<MinSize>
+							<Width>340</Width>
+							<Height>260</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- coletar: as mídias do projeto e o estado de cada uma -->
+		<Extension Id="com.jmbillard.opadeiro.collect">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/collect.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>O PADEIRO coletar</Menu>
+					<Geometry>
+						<Size>
+							<Width>440</Width>
+							<Height>480</Height>
 						</Size>
 						<MinSize>
 							<Width>340</Width>

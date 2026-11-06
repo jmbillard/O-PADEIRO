@@ -20,6 +20,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O PADEIRO criar template | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
 | O PADEIRO projeto | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
 | O PADEIRO fontes | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
+| O PADEIRO coletar | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
 
 <br>
 

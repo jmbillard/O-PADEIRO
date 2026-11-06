@@ -100,6 +100,7 @@ const CHECKS = [
 	['busca', 'finder.html'],
 	['conversor', 'converter.html'],
 	['fontes do projeto', 'fonts.html'],
+	['coletar', 'collect.html'],
 	['templates', 'index.html', openTemplate],
 	['editor de config', 'index.html', async (p) => {
 		await openTemplate(p);

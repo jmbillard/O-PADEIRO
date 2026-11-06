@@ -1158,6 +1158,30 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// ?mock=unsaved: projeto ainda não salvo
+		// a janela do coletar: as mídias do projeto (as imagens da documentação servem de miniatura)
+		collectList: function () {
+			var D = location.pathname.replace(/\/extension\/client\/[^\/]*$/, '') + '/docs/images/';
+			var R = '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/02 ARQUIVOS';
+
+			return {
+				project: 'DOMINGAO COM HUCK SERVICO.aep',
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026',
+				items: [
+					{ id: 11, name: 'logo_convidado.png', file: D + 'ae-estrutura-projeto.png', kind: 'imagens', state: 'local', layers: 2 },
+					{ id: 12, name: 'trilha_abertura.wav', file: '/Users/jmbillard/Desktop/trilha_abertura.wav', kind: 'audio', state: 'local', layers: 1 },
+					{ id: 13, name: 'fundo_estudio.mov', file: '/Volumes/EDIT_IN_PLACE/PROMO/BRUTOS/fundo_estudio.mov', kind: 'videos', state: 'net', layers: 3 },
+					{ id: 14, name: 'textura_[0000-0120].png', file: D + 'ae-menu-output-module.png', kind: 'sequencias', state: 'net', layers: 1 },
+					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: 'missing', layers: 1 },
+					{ id: 16, name: 'placar.csv', file: R + '/DADOS/placar.csv', kind: 'dados', state: 'ok', layers: 1 },
+					{ id: 17, name: 'barra.webp', file: D + 'barra.webp', kind: 'imagens', state: 'ok', layers: 0 }
+				]
+			};
+		},
+
+		collectReveal: function () {
+			return true;
+		},
+
 		collectProject: function (a) {
 			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 

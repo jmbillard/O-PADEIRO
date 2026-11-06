@@ -21,6 +21,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
+	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
 	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -218,10 +219,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 		},
 
-		collectTo: async function () {
-			var path = PAD_BRIDGE.pickFolder('Pasta para coletar os arquivos do projeto');
-
-			if (path) await actions.collect(path);
+		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
+		openCollect: function () {
+			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
 		},
 
 		// janela do projeto: um projeto novo pela atração, ou o editor do atual
@@ -293,11 +293,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'collect',
 			label: 'Coletar',
 			icon: 'collect',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'coletar em outra pasta…'],
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'os arquivos do projeto (coletar em outra pasta…)'],
 			left: function () {
 				return actions.collect('');
 			},
-			right: actions.collectTo
+			right: actions.openCollect
 		},
 		{
 			key: 'pastas',
