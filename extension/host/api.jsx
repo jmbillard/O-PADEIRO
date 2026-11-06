@@ -1568,13 +1568,17 @@ PADX.openOutputs = function (a) {
 	var missing = [];
 
 	for (var o = 0; o < paths.length; o++) {
-		var folder = new Folder(padPath(paths[o]));
+		// no volume realmente montado (EDIT_IN_PLACE-1 … -5; monta o share se não estiver): o caminho gravado
+		// fica sem o sufixo
+		var folder = new Folder(padMountedPath(padPath(paths[o])));
+		var near = folder.exists ? folder : nearestExistingFolder(folder.fsName);
 
-		if (folder.exists) {
-			openFolder(folder.fsName);
+		// a pasta ainda não existe (o render cria): abre a mais perto que existir, dentro do volume
+		if (near && /^\/Volumes\/[^\/]+\/.+|^\\\\[^\\]+\\[^\\]+\\.+|^[A-Za-z]:\\.+/.test(near.fsName)) {
+			openFolder(near.fsName);
 			opened++;
 		} else {
-			missing.push(folder.fsName);
+			missing.push(padDisplayPath(folder.fsName));
 		}
 	}
 
@@ -1618,7 +1622,9 @@ PADX.openLastOutput = function () {
 
 	if (outputFile == null) throw new Error('#PAD_008 - a fila de render está vazia...');
 
-	var outputPath = normalizeNetworkPath(decodeURI(outputFile.path), { silent: true });
+	// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA & INTER);
+	// padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
+	var outputPath = padPath(outputFile.parent.fsName);
 	var folder = nearestExistingFolder(outputPath);
 
 	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));

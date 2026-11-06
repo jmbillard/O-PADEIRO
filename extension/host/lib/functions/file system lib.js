@@ -129,7 +129,8 @@ function openFolder(folderPath) {
 		system.callSystem('explorer ' + Folder.decode(folder.fsName));
 	} else if (appOs == 'Mac') {
 		// Comando para abrir a pasta no Finder (macOS)
-		system.callSystem('open "' + Folder.decode(folder.fsName) + '"');
+		// fsName já vem decodificado; aspas simples no shell (um '%', '$' ou '`' no nome não atrapalha)
+		system.callSystem('open \'' + String(folder.fsName).replace(/'/g, "'\\''") + '\'');
 	}
 }
 
