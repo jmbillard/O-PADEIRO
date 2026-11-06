@@ -272,7 +272,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'fontes',
-			config: 'prods',
+			config: 'fonts',
 			label: 'Fontes',
 			icon: 'fonts',
 			tips: [L_CLICK + 'resolver as fontes do projeto (instalar as que faltam)', R_CLICK + 'fontes do projeto (trocar, copiar para uma pasta)'],
@@ -337,7 +337,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	var DEFAULT_ITEMS = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
+	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {

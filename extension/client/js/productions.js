@@ -2124,7 +2124,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   e separadores entre os grupos
 	   ========================================================= */
 
-	var DEFAULT_BAR = ['templates', 'fontes', 'divider', 'projeto', 'coletar', 'pastas', 'divider', 'renomear', 'organizar', 'divider', 'buscar'];
+	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
