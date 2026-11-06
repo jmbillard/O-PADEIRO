@@ -1171,7 +1171,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ id: 12, name: 'trilha_abertura.wav', file: '/Users/jmbillard/Desktop/trilha_abertura.wav', kind: 'audio', state: 'local', layers: 1 },
 					{ id: 13, name: 'fundo_estudio.mov', file: '/Volumes/EDIT_IN_PLACE/PROMO/BRUTOS/fundo_estudio.mov', kind: 'videos', state: 'net', layers: 3 },
 					{ id: 14, name: 'textura_[0000-0120].png', file: D + 'ae-menu-output-module.png', kind: 'sequencias', state: 'net', layers: 1 },
-					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: 'missing', layers: 1 },
+					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'net' : 'missing', layers: 1 },
 					{ id: 16, name: 'placar.csv', file: R + '/DADOS/placar.csv', kind: 'dados', state: 'ok', layers: 1 },
 					{ id: 17, name: 'barra.webp', file: D + 'barra.webp', kind: 'imagens', state: 'ok', layers: 0 }
 				]
@@ -1180,6 +1180,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		collectReveal: function () {
 			return true;
+		},
+
+		// resolver faltando: acha o arte_antiga.psd no VFX-1 (?mock=fail: não acha)
+		collectRelink: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 1400);
+			});
+
+			if (mode === 'fail') return { relinked: 0, still: ['arte_antiga.psd'] };
+
+			window.PAD_MOCK_RELINKED = true;
+
+			return { relinked: 1, still: [] };
 		},
 
 		collectProject: function (a) {

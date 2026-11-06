@@ -8,7 +8,8 @@ O clique direito no coletar (barra). Uma linha por arquivo do projeto: a miniatu
 do vídeo ou da sequência; áudio e dados com o ícone do tipo), o nome, o tipo e os layers e, à direita, o
 estado: ✓ na pasta do projeto · ↑ na rede, fora da pasta · ↑ neste computador · ✕ faltando · – fora da árvore
 do coletar. clicar mostra o item no painel Project. Coletar copia para a estrutura do projeto (a seta sobe
-enquanto copia); a pasta do rodapé coleta em outra pasta.
+enquanto copia); a pasta do rodapé coleta em outra pasta; o triângulo resolve os arquivos faltando que estão
+num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e relinka.
 
 */
 
@@ -57,6 +58,7 @@ enquanto copia); a pasta do rodapé coleta em outra pasta.
 
 		node.textContent = kind === 'error' ? PAD_UTIL.errorText(text) : text || '';
 		node.className = 'fw-status' + (kind ? ' is-' + kind : '');
+		node.title = '';
 	}
 
 	function plural(n, one, many) {
@@ -105,6 +107,7 @@ enquanto copia); a pasta do rodapé coleta em outra pasta.
 
 		$('cw-go').disabled = !n || state.busy;
 		$('cw-go').textContent = n ? 'Coletar: ' + n : 'Coletar';
+		$('cw-relink').disabled = !count.missing || state.busy;
 
 		if (key === state.key) return; // nada mudou: as miniaturas não recarregam
 
@@ -214,7 +217,45 @@ enquanto copia); a pasta do rodapé coleta em outra pasta.
 		await load();
 	}
 
+	// resolver arquivos faltando: o host procura cada um no volume certo (montando o share, se precisar) e relinka
+	async function relink() {
+		if (state.busy) return;
+
+		state.busy = true;
+		render();
+
+		var button = $('cw-relink');
+		var searching = Array.prototype.slice.call(document.querySelectorAll('.fw-state.is-nofile'));
+
+		button.classList.add('is-working');
+		searching.forEach(function (dot) {
+			dot.classList.add('is-searching');
+		});
+		status('procurando os arquivos faltando…');
+
+		try {
+			var res = await call('collectRelink', {});
+			var parts = [];
+
+			if (res.relinked) parts.push(plural(res.relinked, 'arquivo relinkado', 'arquivos relinkados'));
+			if (res.still && res.still.length) parts.push(plural(res.still.length, 'ainda faltando', 'ainda faltando'));
+			status((parts.join(' · ') || 'nada para relinkar') + '.', '');
+			if (res.still && res.still.length) $('fw-status').title = res.still.join('\n');
+		} catch (err) {
+			status(err.message, 'error');
+		}
+
+		button.classList.remove('is-working');
+		searching.forEach(function (dot) {
+			dot.classList.remove('is-searching');
+		});
+		state.busy = false;
+		state.key = '';
+		await load();
+	}
+
 	function init() {
+		$('cw-relink').addEventListener('click', relink);
 		$('cw-go').addEventListener('click', function () {
 			collect('');
 		});

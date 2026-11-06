@@ -436,25 +436,7 @@ function padCopySequence(item, folderPath) {
 
 	if (!newFirst) return { ok: false };
 
-	// a nova importação volta com a interpretação padrão: guarda e devolve a do item
-	var source = item.mainSource;
-	var keep = {};
-	var props = ['conformFrameRate', 'alphaMode', 'premulColor', 'invertAlpha', 'fieldSeparationType', 'removePulldown', 'loop'];
-	var p;
-
-	for (p = 0; p < props.length; p++) {
-		try {
-			keep[props[p]] = source[props[p]];
-		} catch (err) { }
-	}
-
-	item.replaceWithSequence(newFirst, false);
-
-	for (p = 0; p < props.length; p++) {
-		try {
-			if (keep[props[p]] !== undefined && item.mainSource[props[p]] != keep[props[p]]) item.mainSource[props[p]] = keep[props[p]];
-		} catch (err) { }
-	}
+	padReplaceSequence(item, newFirst);
 
 	return { ok: true, frames: copied };
 }
@@ -645,13 +627,17 @@ PADX.collectList = function () {
 	for (var i = 1; i <= app.project.numItems; i++) {
 		var item = app.project.item(i);
 
-		if (!(item instanceof FootageItem) || !item.file) continue;
+		if (!(item instanceof FootageItem)) continue;
 
-		var path = String(item.file.fsName);
-		var kind = padCollectKind(item);
+		var path = padFootagePath(item);
+
+		if (!path) continue; // sólidos e placeholders não têm arquivo
+
+		var missing = padFootageMissing(item);
+		var kind = missing ? padPathKind(item, path) : padCollectKind(item);
 		var state;
 
-		if (!item.file.exists) state = 'missing';
+		if (missing) state = 'missing';
 		else if (rootKey && path.replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) state = 'ok';
 		else if (padCollectFolderPath(settings, kind) == null) state = 'skip';
 		else if (!padIsNetworkPath(path)) state = 'local';
@@ -668,6 +654,145 @@ PADX.collectList = function () {
 
 	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items };
 };
+
+// O caminho do arquivo do item, também quando ele está faltando (o After Effects 2022+ guarda o caminho
+// antigo em missingFootagePath; item.file pode vir vazio). '' sem arquivo (sólido, placeholder).
+function padFootagePath(item) {
+	try {
+		if (item.file) return String(item.file.fsName);
+	} catch (err) { }
+
+	try {
+		if (item.footageMissing && item.mainSource.missingFootagePath) return String(item.mainSource.missingFootagePath);
+	} catch (err) { }
+
+	return '';
+}
+
+function padFootageMissing(item) {
+	try {
+		if (item.footageMissing) return true;
+	} catch (err) { }
+
+	try {
+		return !!item.file && !item.file.exists;
+	} catch (err) {
+		return true;
+	}
+}
+
+// O tipo pelo caminho, para o arquivo que falta (sem o arquivo, item.file pode não existir).
+function padPathKind(item, path) {
+	try {
+		if (item.file) return padCollectKind(item);
+	} catch (err) { }
+
+	var name = String(path).replace(/\\/g, '/').replace(/^.*\//, '');
+	var ext = getFileExt(name);
+	var data = PAD_ORGANIZE.dataExtensions || [];
+
+	for (var i = 0; i < data.length; i++) {
+		if (ext == data[i]) return 'dados';
+	}
+
+	var still = true;
+
+	try {
+		still = item.mainSource.isStill;
+	} catch (err) { }
+
+	if (PAD_IMAGE_EXT.test(name)) return !still && /\d+\.[^.]+$/.test(name) ? 'sequencias' : 'imagens';
+
+	try {
+		if (item.hasAudio && !item.hasVideo) return 'audio';
+	} catch (err) { }
+
+	return 'videos';
+}
+
+// Onde o arquivo que falta está agora: o caminho no formato deste sistema, no volume que tem o caminho
+// (VFX, VFX-1 … VFX-5) e, no macOS, montando o share quando nenhum volume tem (uma vez por share: 'tried').
+// → o File que existe, ou null
+function padRelinkCandidate(path, tried) {
+	var clean = padPath(padNoVolumeSuffix(path)) || String(path);
+	var file = new File(clean);
+
+	if (file.exists) return file;
+
+	var share = String(clean).match(/^\/Volumes\/[^\/]+\/[^\/]+/);
+
+	if (appOs != 'Mac' || !share || tried[share[0]]) return null;
+
+	tried[share[0]] = true;
+	file = new File(padMountedPath(clean));
+
+	return file.exists ? file : null;
+}
+
+// Resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (VFX-1 …): cata o
+// caminho certo e relinka (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses) → { relinked, still: [nome] }
+PADX.collectRelink = function (a) {
+	var only = {};
+	var tried = {};
+	var res = { relinked: 0, still: [] };
+	var i;
+
+	for (i = 0; a && a.ids && i < a.ids.length; i++) only[a.ids[i]] = true;
+
+	app.beginUndoGroup('PADEIRO - relinkar arquivos');
+
+	try {
+		for (i = 1; i <= app.project.numItems; i++) {
+			var item = app.project.item(i);
+
+			if (!(item instanceof FootageItem) || (a && a.ids && !only[item.id]) || !padFootageMissing(item)) continue;
+
+			var path = padFootagePath(item);
+
+			if (!path) continue;
+
+			var file = padRelinkCandidate(path, tried);
+
+			if (!file) {
+				res.still.push(item.name);
+				continue;
+			}
+
+			try {
+				if (padPathKind(item, path) == 'sequencias') padReplaceSequence(item, file);
+				else item.replace(file);
+				res.relinked++;
+			} catch (err) {
+				res.still.push(item.name);
+			}
+		}
+	} finally {
+		app.endUndoGroup();
+	}
+
+	return res;
+};
+
+// Troca pela sequência no lugar novo; a nova importação volta com a interpretação padrão: guarda e devolve a do item.
+function padReplaceSequence(item, first) {
+	var keep = {};
+	var props = ['conformFrameRate', 'alphaMode', 'premulColor', 'invertAlpha', 'fieldSeparationType', 'removePulldown', 'loop'];
+	var p;
+
+	for (p = 0; p < props.length; p++) {
+		try {
+			keep[props[p]] = item.mainSource[props[p]];
+		} catch (err) { }
+	}
+
+	item.replaceWithSequence(first, false);
+
+	for (p = 0; p < props.length; p++) {
+		try {
+			if (keep[props[p]] !== undefined && item.mainSource[props[p]] != keep[props[p]]) item.mainSource[props[p]] = keep[props[p]];
+		} catch (err) { }
+	}
+}
 
 // Mostra o item no painel Project (seleciona só ele). a: { id }
 PADX.collectReveal = function (a) {

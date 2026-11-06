@@ -156,7 +156,7 @@ a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo salvo neste
 - **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
 - arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
 
-`◗ clique direito` → a janela do **coletar**: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ na rede, fora da pasta · ↑ laranja neste computador · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o ⋯ abre a pasta do projeto.
+`◗ clique direito` → a janela do **coletar**: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ na rede, fora da pasta · ↑ laranja neste computador · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
 
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
