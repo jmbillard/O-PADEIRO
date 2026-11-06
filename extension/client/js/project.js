@@ -876,7 +876,7 @@ projetos com o nome certo).
 
 	// as pastas escolhidas só valem ao salvar
 	function editorOutput() {
-		var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto');
+		var picked = PAD_BRIDGE.pickFolder('Pasta de output do projeto', state.edOutput || state.edRoot); // abre na de agora
 
 		if (!picked) return;
 
@@ -886,7 +886,7 @@ projetos com o nome certo).
 	}
 
 	function editorMove() {
-		var picked = PAD_BRIDGE.pickFolder('Nova pasta do projeto');
+		var picked = PAD_BRIDGE.pickFolder('Nova pasta do projeto', state.edRoot || (state.current && state.current.file ? state.current.file.replace(/[\\\/][^\\\/]*$/, '') : '')); // abre na de agora
 
 		if (!picked) return;
 
