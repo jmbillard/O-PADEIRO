@@ -29,7 +29,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	};
 	var FONT_SVG = '<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12M12 5v14M9.5 19h5" /></svg>';
 	var ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12M12 5v14M9.5 19h5" /></svg>';
-	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path class="fold" d="M13.5 3.5V8H18" /></svg>';
+	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var BANK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M5 19.5h14" /></svg>';
 
 	var state = { info: null, fonts: [], open: {}, choices: {}, installed: null, bank: [], swaps: {}, busy: false, key: '', uploading: false };

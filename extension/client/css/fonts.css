@@ -146,20 +146,16 @@ body.fonts-page {
   line-height: 1.75;
 }
 
-/* o .aep na frente do projeto: o ícone sólido de arquivo, com a dobra um tom mais escuro */
+/* o .aep na frente do projeto: só o contorno, na cor do texto */
 .fw-file svg {
   width: 15px;
   height: 15px;
   flex: 0 0 auto;
-  fill: var(--blue-500);
-  stroke: var(--blue-500);
-  stroke-linejoin: round;
-  stroke-width: 1.6;
-}
-
-.fw-file svg .fold {
   fill: none;
-  stroke: var(--fold);
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
 .fw-file span {
@@ -340,4 +336,14 @@ body.fonts-page {
 /* o collect das fontes: o botão redondo no canto esquerdo do rodapé */
 .fw-bar .io-button {
   flex: 0 0 auto;
+}
+
+/* o collect das fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
+#fw-collect .fw-t {
+  stroke-width: 2.1;
+  transition: transform 300ms var(--ease-soft);
+}
+
+#fw-collect:hover:not(:disabled) .fw-t {
+  transform: translateY(-1.6px);
 }

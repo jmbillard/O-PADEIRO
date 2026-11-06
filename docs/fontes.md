@@ -44,7 +44,7 @@ no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quant
 - **trocar** → clique na linha: abre a busca (só os nomes, rápida) com as **sugestões** (a troca que a equipe já usou para essa fonte e a mesma família, o peso mais perto primeiro), as que estão **no banco** (instalam ao trocar) e as **instaladas**. embaixo, a prévia da fonte marcada. a fonte sem arquivo já abre assim, com a sugestão escolhida; apagar o campo desfaz a troca.
 - **Resolver** → instala as que faltam (e as escolhidas que estão só no banco) e troca as escolhidas no projeto inteiro, de uma vez (um `Ctrl/Cmd+Z` desfaz). a troca fica lembrada no banco: da próxima vez que a mesma fonte faltar, em qualquer computador, ela já vem como sugestão.
 - **andamento** → com a janela aberta, a seta do estado anima: sobe enquanto a fonte é copiada para o banco e a pasta do projeto, desce enquanto é instalada.
-- **📂 (canto esquerdo do rodapé)** → copia todas as fontes do projeto para uma pasta qualquer (o collect das fontes).
+- **a pasta com o T (canto esquerdo do rodapé)** → copia todas as fontes do projeto para uma pasta qualquer (o collect das fontes).
 - **⋯** → abrir o banco, ajuda e recarregar.
 
 > 🚩 *obs:*\
