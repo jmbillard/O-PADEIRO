@@ -444,6 +444,11 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return el('p', 'combo-group', label);
 	}
 
+	// separa as partes da lista (ex: as atrações achadas e a "nova atração"): uma linha que não vai de ponta a ponta
+	function sep() {
+		return el('hr', 'combo-sep');
+	}
+
 	// troca o conteúdo do painel animando a altura (de onde estava para onde vai)
 	function resize(panel, change) {
 		var open = !panel.hidden && panel.isConnected && panel.animate;
@@ -612,6 +617,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 						choose('m' + i);
 					}, m.display));
 				});
+				list.appendChild(sep());
 				list.appendChild(comboRow(ICONS.plus, 'nova atração', aepName(name.value) || typedName() || 'o nome digitado', st.choice === 'new', function () {
 					choose('new');
 				}));
@@ -780,6 +786,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		iconFor: iconFor,
 		row: comboRow,
 		group: group,
+		sep: sep,
 		resize: resize,
 		pathTail: pathTail,
 		mode: function () {

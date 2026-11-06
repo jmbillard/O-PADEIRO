@@ -297,10 +297,28 @@
 }
 
 .combo-panel {
+  position: relative;
   display: grid;
   overflow: hidden;
   padding: 2px 0 6px;
-  border-top: 1px solid var(--border);
+}
+
+/* entre a busca e os resultados: a linha não vai de ponta a ponta */
+.combo-panel::before {
+  position: absolute;
+  top: 0;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: var(--border);
+  content: "";
+}
+
+.combo-sep {
+  height: 1px;
+  margin: 5px 14px;
+  border: 0;
+  background: var(--border);
 }
 
 .combo-panel[hidden] {

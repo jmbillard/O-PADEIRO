@@ -274,7 +274,7 @@ projetos com o nome certo).
 					chooseAttraction('m' + i);
 				}, match.display));
 			});
-			list.appendChild(ATR.group('ou'));
+			list.appendChild(ATR.sep());
 			list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
 				chooseAttraction('new');
 			}));
