@@ -575,12 +575,61 @@ function padIsNetworkPath(path) {
 	return !!drive && !!(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
 }
 
-// Os arquivos do projeto fora da rede (salvos neste computador). leve: só os caminhos dos itens.
-// → { state: '' (sem arquivos) | 'ok' (tudo na rede) | 'missing' (algum local), total, local, names }
+// A chave de comparação de um caminho: no formato deste sistema (letra de drive → UNC pelo mapa de drives),
+// sem o sufixo de volume (VFX-1 → VFX), barras normais, minúsculas e com barra no fim.
+function padPathKey(path) {
+	var p = String(path || '');
+
+	// só converte o que é de outro formato (UNC, letra de drive): /Volumes/… e caminhos locais não vão ao disco
+	if (/^(\\\\|\/\/|[a-z]:[\\\/])/i.test(p)) p = padPath(p) || p;
+
+	return padNoVolumeSuffix(p.replace(/\\/g, '/')).replace(/\/+$/, '').toLowerCase() + '/';
+}
+
+// As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada categoria, antes do
+// primeiro token (…/PROGRAMAS/{atracao} → …/PROGRAMAS). [] sem categorias.
+function padProjectsRoots() {
+	var list = padReadProject().categories;
+	var roots = [];
+	var seen = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var fixed = list[i].path.split('{')[0].replace(/\/[^\/]*$/, '');
+
+		if (!fixed) continue;
+
+		var key = padPathKey(fixed);
+
+		if (seen[key]) continue;
+
+		seen[key] = true;
+		roots.push(key);
+	}
+
+	return roots;
+}
+
+// O arquivo está nas pastas de projetos? sem categorias na configuração, vale estar na rede.
+function padInProjects(path, roots) {
+	if (!roots.length) return padIsNetworkPath(path);
+
+	var key = padPathKey(path);
+
+	for (var i = 0; i < roots.length; i++) {
+		if (key.indexOf(roots[i]) == 0) return true;
+	}
+
+	return false;
+}
+
+// Os arquivos do projeto fora das pastas de projetos (configuração > PROJETO; VFX-1 … vale como VFX). leve: só
+// os caminhos dos itens. → { state: '' (sem arquivos) | 'ok' (tudo nas pastas) | 'out' (algum fora), total,
+//   local (quantos fora), names }
 PADX.collectStatus = function () {
 	var total = 0;
 	var local = 0;
 	var names = [];
+	var roots = padProjectsRoots();
 
 	// o mapa de drives (as letras de rede no Windows) já vem da configuração (padApplyConfig, a cada chamada)
 
@@ -595,13 +644,13 @@ PADX.collectStatus = function () {
 
 		total++;
 
-		if (!padIsNetworkPath(file.fsName)) {
+		if (!padInProjects(file.fsName, roots)) {
 			local++;
 			if (names.length < 3) names.push(decodeURI(file.name));
 		}
 	}
 
-	return { state: total ? (local ? 'missing' : 'ok') : '', total: total, local: local, names: names };
+	return { state: total ? (local ? 'out' : 'ok') : '', total: total, local: local, names: names };
 };
 
 /*
@@ -613,8 +662,8 @@ PADX.collectStatus = function () {
 */
 
 // As mídias do projeto e o estado de cada uma, para a janela do coletar:
-//   ok       já na pasta do projeto       local    neste computador (fora da rede)
-//   net      na rede, fora da pasta        missing  o arquivo não existe
+//   ok       já na pasta do projeto       local    fora das pastas de projetos (configuração > PROJETO)
+//   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
 // → { project, root, items: [{ id, name, file, kind, state, layers, frames }] }
 PADX.collectList = function () {
@@ -623,6 +672,7 @@ PADX.collectList = function () {
 	var root = file ? padCollectRoot(file, settings) : '';
 	var rootKey = root ? String(new Folder(root).fsName).replace(/\\/g, '/').toLowerCase() + '/' : '';
 	var items = [];
+	var roots = padProjectsRoots();
 
 	for (var i = 1; i <= app.project.numItems; i++) {
 		var item = app.project.item(i);
@@ -640,7 +690,7 @@ PADX.collectList = function () {
 		if (missing) state = 'missing';
 		else if (rootKey && path.replace(/\\/g, '/').toLowerCase().indexOf(rootKey) == 0) state = 'ok';
 		else if (padCollectFolderPath(settings, kind) == null) state = 'skip';
-		else if (!padIsNetworkPath(path)) state = 'local';
+		else if (!padInProjects(path, roots)) state = 'local';
 		else state = 'net';
 
 		var layers = 0;

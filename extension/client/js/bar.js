@@ -598,8 +598,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var dot = btn.querySelector('.bar-dot');
 		var tip = '';
 
-		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está na rede' : 'os ' + res.total + ' arquivos do projeto estão na rede');
-		if (res && res.state === 'missing') tip = 'arquivos: ' + res.local + (res.local === 1 ? ' salvo neste computador' : ' salvos neste computador') + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a rede';
+		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
+		if (res && res.state === 'out') tip = 'arquivos: ' + res.local + ' fora das pastas de projetos' + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a pasta do projeto';
 		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
 
 		if (!res || !res.state) {

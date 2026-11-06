@@ -6,7 +6,7 @@
 
 O clique direito no coletar (barra). Uma linha por arquivo do projeto: a miniatura (imagem, o primeiro quadro
 do vídeo ou da sequência; áudio e dados com o ícone do tipo), o nome, o tipo e os layers e, à direita, o
-estado: ✓ na pasta do projeto · ↑ na rede, fora da pasta · ↑ neste computador · ✕ faltando · – fora da árvore
+estado: ✓ na pasta do projeto · ↑ nas pastas de projetos · ↑ amarela fora delas · ✕ faltando · – fora da árvore
 do coletar. clicar mostra o item no painel Project. Coletar copia para a estrutura do projeto (a seta sobe
 enquanto copia); a pasta do rodapé coleta em outra pasta; o triângulo resolve os arquivos faltando que estão
 num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e relinka.
@@ -20,8 +20,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#coletar';
 	var STATES = {
 		ok: ['✓', 'na pasta do projeto'],
-		net: ['↑', 'na rede, fora da pasta do projeto: o coletar copia'],
-		local: ['↑', 'neste computador: o coletar leva para a rede'],
+		net: ['↑', 'nas pastas de projetos, fora da pasta deste projeto: o coletar copia'],
+		local: ['↑', 'fora das pastas de projetos (configuração > projeto): o coletar copia'],
 		missing: ['✕', 'o arquivo não existe'],
 		skip: ['–', 'tipo fora da árvore do coletar (configuração > coletar)']
 	};
@@ -95,7 +95,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			count[it.state] = (count[it.state] || 0) + 1;
 		});
 		parts.push(plural(items.length, 'arquivo', 'arquivos'));
-		if (count.local) parts.push(count.local + ' neste computador');
+		if (count.local) parts.push(count.local + ' fora das pastas de projetos');
 		if (count.missing) parts.push(plural(count.missing, 'faltando', 'faltando'));
 
 		$('fw-file').innerHTML = FILE_SVG;

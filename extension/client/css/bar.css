@@ -672,3 +672,8 @@ body.bar-page {
   background: #f5a524;
 }
 
+/* coletar: algum arquivo fora das pastas de projetos */
+.bar-dot.is-out {
+  background: #f2c230;
+}
+

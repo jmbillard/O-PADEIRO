@@ -148,7 +148,7 @@ as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fon
 
 ### coletar
 
-a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo salvo neste computador (fora da rede: o disco do Mac ou do Windows), 🟢 verde quando está tudo na rede (um volume montado no Mac; um caminho de rede ou uma letra do mapa de drives no Windows). o balão diz quantos e quais.
+a bolinha no botão: 🟡 amarela quando o projeto tem algum arquivo fora das pastas de projetos ([configuração > projeto](docs/producoes.md): o começo fixo do caminho de cada categoria, como `…/PROGRAMAS`; `VFX-1` … `VFX-5` valem como `VFX`), 🟢 verde quando está tudo nelas. sem categorias na configuração, vale estar na rede.
 
 `◖ clique esquerdo` → copia os arquivos usados no projeto para a estrutura do projeto, na árvore de pastas da [configuração > coletar](docs/producoes.md#-coletar) (padrão: `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com FONTS, IMAGENS, VÍDEOS, AUDIOS e DADOS, e `03 SAIDA`), e troca os caminhos no projeto para as cópias. a raiz é a pasta de cima da `01 PROJETOS` (ou a pasta do `.aep`, se ele não estiver nela). depois, salva o projeto, sempre.
 
@@ -156,7 +156,7 @@ a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo salvo neste
 - **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
 - arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
 
-`◗ clique direito` → a janela do **coletar**: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ na rede, fora da pasta · ↑ laranja neste computador · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
+`◗ clique direito` → a janela do **coletar**: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ nas pastas de projetos, fora da pasta deste projeto · ↑ amarela fora das pastas de projetos · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
 
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
