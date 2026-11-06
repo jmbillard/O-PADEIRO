@@ -1459,6 +1459,23 @@ PADX.fillFinish = function () {
 
 */
 
+// O compartilhamento do caminho está acessível? macOS: /Volumes/SHARE com a primeira pasta do caminho dentro;
+// Windows: \\servidor\share (ou a letra do drive) existe.
+function padShareReachable(path) {
+	var p = String(path || '').replace(/\\/g, '/');
+	var mac = p.match(/^\/Volumes\/[^\/]+\/([^\/]+)/);
+
+	if (mac) return padVolumeHas(p, mac[1]);
+
+	var unc = p.match(/^\/\/[^\/]+\/[^\/]+/);
+
+	if (unc) return new Folder(unc[0]).exists;
+
+	var drive = p.match(/^[A-Za-z]:\//);
+
+	return drive ? new Folder(drive[0]).exists : false;
+}
+
 // Verifica as pastas de output. a: { outputTemplate }
 PADX.queueBegin = function (a) {
 	var run = PADX_run;
@@ -1475,18 +1492,26 @@ PADX.queueBegin = function (a) {
 	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
 
 	for (var o = 0; o < configured.length; o++) {
-		var outputPath = padPath(configured[o]);
-
 		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
 		if (localMode) {
 			outputs.push(padPath(localOutput));
 			continue;
 		}
 
+		// no volume realmente montado (VFX, VFX-1 … VFX-5; sem nenhum, monta o share); a pasta que ainda não
+		// existe é criada no servidor. não deu (rede fora, sem permissão): vai para a pasta deste computador
+		var outputPath = padMountedPath(padPath(configured[o]));
+
+		// só cria dentro de um volume montado de verdade (com a primeira pasta do caminho lá): nunca uma pasta
+		// solta em /Volumes, que esconderia o volume da próxima vez que ele montar
+		if (!new Folder(outputPath).exists && padShareReachable(outputPath)) {
+			try {
+				padEnsureFolder(outputPath);
+			} catch (err) { }
+		}
+
 		if (!new Folder(outputPath).exists) {
-			// Substitui o caminho inexistente pelo caminho padrão
-			// o caminho já convertido para este sistema (no macOS, /Volumes/...)
-			warnings.push('#PAD_019 - output não pode ser acessado: ' + new Folder(outputPath).fsName);
+			warnings.push('#PAD_019 - output não pode ser acessado (vai para a pasta deste computador): ' + padDisplayPath(outputPath));
 			outputPath = padPath(localOutput);
 		}
 

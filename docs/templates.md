@@ -86,7 +86,7 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![fila de render](images/templates-fila.webp)
 
-depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
+depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), a saída vai para a pasta de saída deste computador ([configuração > meu usuário](producoes.md)) e aparece o aviso `#PAD_019`. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
 
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
