@@ -68,7 +68,7 @@ async function projectTo(page, screen) {
 	// 1 · ATRAÇÃO: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
 	await page.fill('#claq', 'TESTE NOVO');
 	await page.waitForTimeout(800);
-	await page.locator('#atr-list .wz-opt:has-text("nova atração")').click();
+	await page.locator('#atr-list .combo-item:has-text("nova atração")').click();
 	await page.waitForTimeout(500);
 	if (screen === 'nova') return;
 

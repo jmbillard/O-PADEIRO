@@ -254,35 +254,41 @@ projetos com o nome certo).
 		var nova = state.novaBox || (state.novaBox = $('atr-nova')); // o bloco fica (só os cartões são refeitos)
 		var m = flow.matches.slice(0, LIST_MAX);
 
-		Array.prototype.slice.call(list.children).forEach(function (c) {
-			if (c !== nova) c.remove();
-		});
-		if (nova.parentElement !== list) list.appendChild(nova);
-		list.hidden = !flow.claquete;
-		nova.classList.toggle('is-open', flow.choice === 'new');
+		$('claq-combo').classList.toggle('is-open', !!flow.claquete);
 
 		if (!flow.claquete) {
+			list.hidden = true;
 			$('claq-hint').textContent = '';
 			fitHeight();
 			return;
 		}
 
-		m.forEach(function (match, i) {
-			list.insertBefore(option(matchIcon(match), match.name, match.display, flow.choice === 'm' + i, function () {
-				chooseAttraction('m' + i);
-			}), nova);
+		// a lista com busca: as atrações, a nova (o nome e a categoria abrem logo abaixo) e outra pasta
+		var novaLabel = aepName($('nova-name').value || typedName()) || 'o nome digitado'; // antes de tirar o bloco da lista
+
+		ATR.resize(list, function () {
+			list.textContent = '';
+			list.appendChild(ATR.group(m.length ? (ATR.mode() === 'local' ? 'pastas' : 'atrações') : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração com esse nome')));
+			m.forEach(function (match, i) {
+				list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', flow.choice === 'm' + i, function () {
+					chooseAttraction('m' + i);
+				}, match.display));
+			});
+			list.appendChild(ATR.group('ou'));
+			list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
+				chooseAttraction('new');
+			}));
+			list.appendChild(nova);
+			list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', flow.choice === 'folder', function () {
+				chooseAttraction('folder');
+			}));
+			nova.classList.toggle('is-open', flow.choice === 'new');
 		});
-		// o nome e a categoria ficam logo abaixo do cartão da nova atração
-		list.insertBefore(option(PLUS_SVG, 'nova atração', (aepName($('nova-name').value || typedName()) || 'o nome digitado') + ', numa das categorias', flow.choice === 'new', function () {
-			chooseAttraction('new');
-		}), nova);
-		list.appendChild(option(FOLDER_SVG, 'outra pasta…', 'abre o navegador de pastas', flow.choice === 'folder', function () {
-			chooseAttraction('folder');
-		}));
+		list.hidden = false;
 
 		var more = flow.matches.length - m.length;
 
-		$('claq-hint').textContent = more > 0 ? '+ ' + more + (more === 1 ? ' outra atração: continue digitando' : ' outras atrações: continue digitando') : !flow.matches.length ? (ATR.mode() === 'local' ? 'nenhuma pasta do índice local começa com esse nome' : 'nenhuma atração começa com esse nome') : '';
+		$('claq-hint').textContent = more > 0 ? '+ ' + more + (more === 1 ? ' outra atração: continue digitando' : ' outras atrações: continue digitando') : ''; // sem nenhuma: o próprio título da lista diz
 		if (flow.choice === 'new') renderNova();
 		$('claq-next').disabled = !flow.claquete || (flow.choice === 'new' && !novaReady());
 		setTimeout(fitHeight, 300);
@@ -746,7 +752,6 @@ projetos com o nome certo).
 			state.edOutput = cur.output || '';
 			$('ed-user').value = cur.designer;
 			$('ed-atr-list').hidden = true;
-			$('ed-atr-hint').hidden = true;
 
 			state.edKeep = '';
 			if (cur.atracao) {
@@ -818,16 +823,19 @@ projetos com o nome certo).
 		var list = $('ed-atr-list');
 		var m = state.edMatches.slice(0, LIST_MAX);
 		var typed = aepName($('ed-atracao').value);
+		var open = !!typed && !state.edPicked;
 
-		list.textContent = '';
-		m.forEach(function (match, i) {
-			list.appendChild(option(matchIcon(match), match.name.toUpperCase(), match.display, state.edPicked === match.path, function () {
-				edPick(i);
-			}));
+		ATR.resize(list, function () {
+			list.textContent = '';
+			list.appendChild(ATR.group(m.length ? 'atrações' : 'atração não encontrada: fica como está digitado'));
+			m.forEach(function (match, i) {
+				list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', state.edPicked === match.path, function () {
+					edPick(i);
+				}, match.display));
+			});
 		});
-		list.hidden = !m.length || !!state.edPicked;
-		$('ed-atr-hint').hidden = !typed || !!m.length || !!state.edPicked;
-		$('ed-atr-hint').textContent = 'atração não encontrada: confira o nome (fica como está digitado).';
+		list.hidden = !open;
+		$('ed-combo').classList.toggle('is-open', open);
 		setTimeout(fitHeight, 300);
 	}
 
@@ -983,6 +991,10 @@ projetos com o nome certo).
 	function init() {
 		$('claq').addEventListener('input', lookup);
 		onEnter('claq', claqueteNext);
+		// duplo clique num item da lista: escolhe e segue (Próximo)
+		$('atr-list').addEventListener('dblclick', function (e) {
+			if (e.target.closest('.combo-item') && !$('claq-next').disabled) claqueteNext();
+		});
 		$('claq-next').addEventListener('click', claqueteNext);
 
 		// nova atração: o nome (digitado à mão, para de seguir a busca) e a categoria

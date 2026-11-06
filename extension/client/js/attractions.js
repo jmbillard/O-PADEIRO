@@ -418,23 +418,51 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return node;
 	}
 
-	function card(icon, title, sub, selected, onPick) {
-		var item = el('button', 'wz-opt' + (selected ? ' is-selected' : ''));
-		var text = el('span', 'wz-opt-text');
-		var isPath = /[\\\/]/.test(sub || '');
+	/* a lista com busca (combo): o campo e, embaixo, na mesma caixa, a lista (grupos e itens de uma linha).
+	   abre e fecha animada (motion.js, pelo hidden) e acompanha a altura quando o conteúdo muda. */
+
+	// um item: o ícone, o nome e, à direita, o detalhe; o marcado fica em destaque
+	function comboRow(icon, title, meta, selected, onPick, tip) {
+		var item = el('button', 'combo-item' + (selected ? ' is-on' : ''));
 
 		item.type = 'button';
-		item.setAttribute('role', 'radio');
-		item.setAttribute('aria-checked', String(!!selected));
-		item.insertAdjacentHTML('afterbegin', icon);
-		text.appendChild(el('b', null, title));
-		if (sub) text.appendChild(el('small', isPath ? 'is-path' : null, isPath ? '‎' + sub + '‎' : sub));
-		if (isPath) item.title = sub;
-		item.appendChild(text);
-		item.appendChild(el('i', 'wz-radio'));
+		item.setAttribute('role', 'option');
+		item.setAttribute('aria-selected', String(!!selected));
+		if (icon) item.insertAdjacentHTML('afterbegin', icon);
+		item.appendChild(el('span', 'combo-title', title));
+		if (meta) item.appendChild(el('small', 'combo-meta', meta));
+		if (tip) item.title = tip;
+		item.addEventListener('mousedown', function (e) {
+			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
+		});
 		item.addEventListener('click', onPick);
 
 		return item;
+	}
+
+	function group(label) {
+		return el('p', 'combo-group', label);
+	}
+
+	// troca o conteúdo do painel animando a altura (de onde estava para onde vai)
+	function resize(panel, change) {
+		var open = !panel.hidden && panel.isConnected && panel.animate;
+		var from = open ? panel.offsetHeight : 0;
+
+		change();
+
+		if (!open || panel.hidden) return;
+
+		var to = panel.offsetHeight;
+
+		if (Math.abs(to - from) > 1) panel.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: 220, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+	}
+
+	// o último pedaço do caminho (a pasta da atração e a de cima), para o detalhe do item
+	function pathTail(path) {
+		var parts = String(path || '').replace(/[\\\/]+$/, '').split(/[\\\/]/);
+
+		return parts.slice(-2).join('/');
 	}
 
 	function pref(key, value) {
@@ -450,10 +478,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		opts = opts || {};
 
 		var st = { matches: [], picked: null, choice: '', bases: null, pickedBase: null, seq: 0, timer: null, edited: false };
-		var field = el('div', 'has-field-icon atr-field');
+		var field = el('div', 'has-field-icon atr-field combo-field');
 		var input = el('input', 'cfg-input');
-		var list = el('div', 'wz-list atr-list');
-		var hint = el('p', 'wz-hint atr-hint');
+		var list = el('div', 'combo-panel atr-list');
 		var nova = el('div', 'atr-nova');
 		var box = el('div', 'atr-nova-box');
 		var row = el('div', 'atr-nova-row');
@@ -491,11 +518,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		box.appendChild(preview);
 		nova.appendChild(box);
 		list.hidden = true;
-		hint.hidden = true;
-
+		list.setAttribute('role', 'listbox');
+		root.classList.add('combo');
 		root.appendChild(field);
 		root.appendChild(list);
-		root.appendChild(hint);
 
 		function emit() {
 			if (opts.onChange) opts.onChange(st.picked);
@@ -576,24 +602,24 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		function render() {
 			var shown = st.matches.slice(0, LIST_MAX);
 			var typed = aepName(input.value);
+			var open = !!typed && !(st.picked && !st.picked.isNew && st.choice !== 'new');
 
-			Array.prototype.slice.call(list.children).forEach(function (c) {
-				if (c !== nova) c.remove();
+			resize(list, function () {
+				list.textContent = '';
+				list.appendChild(group(shown.length ? 'atrações' : 'nenhuma atração com esse nome'));
+				shown.forEach(function (m, i) {
+					list.appendChild(comboRow(iconFor(m, st.bases), m.name.toUpperCase(), m.category || '', st.choice === 'm' + i, function () {
+						choose('m' + i);
+					}, m.display));
+				});
+				list.appendChild(comboRow(ICONS.plus, 'nova atração', aepName(name.value) || typedName() || 'o nome digitado', st.choice === 'new', function () {
+					choose('new');
+				}));
+				list.appendChild(nova);
+				nova.classList.toggle('is-open', st.choice === 'new');
 			});
-			if (nova.parentElement !== list) list.appendChild(nova);
-
-			shown.forEach(function (m, i) {
-				list.insertBefore(card(iconFor(m, st.bases), m.name.toUpperCase(), m.display, st.choice === 'm' + i, function () {
-					choose('m' + i);
-				}), nova);
-			});
-			list.insertBefore(card(ICONS.plus, 'nova atração', (aepName(name.value) || typedName() || 'o nome digitado') + ', numa das categorias', st.choice === 'new', function () {
-				choose('new');
-			}), nova);
-			nova.classList.toggle('is-open', st.choice === 'new');
-			list.hidden = !typed || (st.picked && !st.picked.isNew && st.choice !== 'new');
-			hint.hidden = !typed || !!st.matches.length || st.choice === 'new';
-			hint.textContent = 'nenhuma atração começa com esse nome: crie uma nova.';
+			list.hidden = !open;
+			root.classList.toggle('is-open', open);
 		}
 
 		async function choose(key) {
@@ -651,20 +677,55 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			}, LOOKUP_MS);
 		}
 
-		input.addEventListener('input', lookup);
+		input.addEventListener('input', function () {
+			st.hover = '';
+			lookup();
+		});
+		// fora do campo e da lista: fecha (a nova atração, sendo preenchida, fica)
+		root.addEventListener('focusout', function () {
+			setTimeout(function () {
+				if (root.contains(document.activeElement) || st.choice === 'new') return;
+
+				list.hidden = true;
+				root.classList.remove('is-open');
+			}, 120);
+		});
+		input.addEventListener('focus', function () {
+			if (aepName(input.value) && !st.picked && st.matches.length) render();
+		});
 		input.addEventListener('keydown', function (e) {
 			// Enter escolhe a primeira atração da lista
-			if (e.key === 'Enter' && !list.hidden && st.matches.length && st.choice !== 'new') {
+			var count = Math.min(st.matches.length, LIST_MAX);
+			var at = /^m\d+$/.test(st.hover || '') ? +st.hover.slice(1) : -1;
+
+			if (list.hidden) return;
+
+			// setas: andam pela lista (a nova atração é a última); Enter escolhe a marcada (ou a primeira)
+			if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
 				e.preventDefault();
-				choose('m0');
+				at = st.hover === 'new' ? count : at;
+				at = Math.max(0, Math.min(count, at + (e.key === 'ArrowDown' ? 1 : -1)));
+				st.hover = at === count ? 'new' : 'm' + at;
+				Array.prototype.forEach.call(list.querySelectorAll('.combo-item'), function (it, i) {
+					it.classList.toggle('is-hover', i === at);
+				});
+			}
+			if (e.key === 'Enter' && st.choice !== 'new') {
+				e.preventDefault();
+				choose(st.hover || (count ? 'm0' : 'new'));
+			}
+			if (e.key === 'Escape') {
+				list.hidden = true;
+				root.classList.remove('is-open');
 			}
 		});
 		name.addEventListener('input', function () {
 			st.edited = true;
 			updateNova();
-			var sub = list.querySelector('.wz-opt:last-of-type small');
+			var items = list.querySelectorAll('.combo-item');
+			var sub = items.length ? items[items.length - 1].querySelector('.combo-meta') : null;
 
-			if (sub && st.choice === 'new') sub.textContent = (aepName(name.value) || 'o nome digitado') + ', numa das categorias';
+			if (sub && st.choice === 'new') sub.textContent = aepName(name.value) || 'o nome digitado';
 		});
 		select.addEventListener('change', function () {
 			if (select.value === 'pick') {
@@ -717,6 +778,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		letterOf: letterOf,
 		resolveNew: resolveNew,
 		iconFor: iconFor,
+		row: comboRow,
+		group: group,
+		resize: resize,
+		pathTail: pathTail,
 		mode: function () {
 			return source.info ? source.info.mode : '';
 		},

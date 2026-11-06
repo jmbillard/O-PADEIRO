@@ -68,6 +68,12 @@ body.project-page {
   height: 22px;
 }
 
+/* a lista com busca da etapa ATRAÇÃO: itens um pouco maiores, como o campo */
+.combo-claq .combo-item {
+  padding-block: 9px;
+  font-size: 0.8rem;
+}
+
 /* a atração encontrada (e a pasta, no editor) */
 .proj-card {
   display: grid;
@@ -355,12 +361,14 @@ body.project-page {
 /* editor */
 .ed-row {
   display: flex;
+  align-items: flex-start;
   gap: 8px;
 }
 
 .ed-atr {
   min-width: 0;
   flex: 1;
+  align-self: flex-start;
 }
 
 .ed-user {
