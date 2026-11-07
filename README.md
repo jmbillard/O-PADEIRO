@@ -19,12 +19,12 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
 | **O FORNINHO** | os templates: buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
 | **A FORMA** | o criador de templates: transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **O PADEIRO projeto** | projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
-| **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
+| **A CLAQUETE** | o projeto: projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
+| **O PRODUTOR** | a configuração: o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta → [documentação](docs/fontes.md) |
 | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam ([abaixo](#coletar)) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
-| **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
+| **O ADAPTADOR** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
 cada painel tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** do próprio painel.
 
@@ -108,7 +108,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → resolve as fontes do projeto (instala as que faltam).\
   `◗` → abre **O TIPÓGRAFO**: as fontes do projeto (trocar, copiar para uma pasta).
 - **projeto**\
-  `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela atração, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
+  `◖` → abre **A CLAQUETE**, a janela do [projeto](docs/projeto.md) (projeto novo pela atração, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
   `◗` → salva o projeto (sem projeto criado pela janela, abre a janela).
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
@@ -118,7 +118,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◗` → abre um `.aep` de versão mais nova (a cópia convertida fica ao lado do original).
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
-  `◗` → abre o conversor de caminhos Windows / macOS.
+  `◗` → abre **O ADAPTADOR**, o conversor de caminhos Windows / macOS.
 - **renomear**\
   `◖` → renomeia as comps selecionadas (pelos tipos de peça da [configuração](docs/producoes.md#-renomear)).\
   `◗` → renomeia todas as saídas da fila de render.

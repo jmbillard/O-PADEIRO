@@ -146,7 +146,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO conversor</Menu>
+					<Menu>O ADAPTADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>800</Width>
@@ -181,7 +181,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO configuração</Menu>
+					<Menu>O PRODUTOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>940</Width>
@@ -251,7 +251,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO projeto</Menu>
+					<Menu>A CLAQUETE</Menu>
 					<Geometry>
 						<Size>
 							<Width>440</Width>

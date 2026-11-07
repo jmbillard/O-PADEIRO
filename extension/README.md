@@ -15,10 +15,10 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O PADEIRO (barra) | `com.jmbillard.opadeiro.bar` | `bar.html` | `js/bar.js` | 8089 |
 | O FORNINHO | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
 | O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
-| O PADEIRO conversor | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
-| O PADEIRO produções | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
+| O ADAPTADOR | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
+| O PRODUTOR | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
 | A FORMA | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
-| O PADEIRO projeto | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
+| A CLAQUETE | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
 | O TIPÓGRAFO | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
 | O CATADOR | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
 

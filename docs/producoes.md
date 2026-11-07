@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PADEIRO configuração** (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
+a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
 
 as abas ficam em três grupos, separados por uma linha:
 

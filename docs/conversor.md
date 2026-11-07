@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-o painel **O PADEIRO conversor**: converte caminhos entre Windows e macOS.
+o painel **O ADAPTADOR**: converte caminhos entre Windows e macOS.
 
 > ![conversor de caminhos](images/conversor.webp)
 

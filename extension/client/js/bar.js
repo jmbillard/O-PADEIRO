@@ -310,7 +310,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'project',
 			label: 'Projeto',
 			icon: 'project',
-			tips: [L_CLICK + 'abrir o PROJETO: novo pela atração, ou o editor', R_CLICK + 'salvar o projeto'],
+			tips: [L_CLICK + 'abrir A CLAQUETE: projeto novo pela atração, ou o editor', R_CLICK + 'salvar o projeto'],
 			left: actions.project,
 			right: actions.saveProject
 		},
@@ -343,7 +343,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'drives',
 			label: 'Pastas',
 			icon: 'folders',
-			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
+			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir O ADAPTADOR: conversor de caminhos Windows/macOS'],
 			left: actions.openLastOutput,
 			right: actions.convertPaths
 		},
