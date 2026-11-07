@@ -301,7 +301,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'fonts',
 			label: 'Fontes',
 			icon: 'fonts',
-			tips: [L_CLICK + 'resolver as fontes do projeto (instalar as que faltam)', R_CLICK + 'abrir O TIPÓGRAFO: as fontes do projeto (trocar, copiar para uma pasta)'],
+			tips: [L_CLICK + 'O TIPÓGRAFO resolve as fontes do projeto (instala as que faltam)', R_CLICK + 'abrir O TIPÓGRAFO: as fontes do projeto (trocar, copiar para uma pasta)'],
 			left: actions.resolveFonts,
 			right: actions.openFonts
 		},
@@ -310,7 +310,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'project',
 			label: 'Projeto',
 			icon: 'project',
-			tips: [L_CLICK + 'abrir A CLAQUETE: projeto novo pela atração, ou o editor', R_CLICK + 'salvar o projeto'],
+			tips: [L_CLICK + 'abrir A CLAQUETE: projeto novo pela atração, ou o editor', R_CLICK + 'A CLAQUETE salva o projeto'],
 			left: actions.project,
 			right: actions.saveProject
 		},
@@ -319,7 +319,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'collect',
 			label: 'Coletar',
 			icon: 'collect',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'abrir O CATADOR: os arquivos do projeto (coletar em outra pasta, resolver os que faltam)'],
+			tips: [L_CLICK + 'O CATADOR coleta os arquivos do projeto na pasta dele', R_CLICK + 'abrir O CATADOR: os arquivos do projeto (coletar em outra pasta, resolver os que faltam)'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -343,7 +343,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'drives',
 			label: 'Pastas',
 			icon: 'folders',
-			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir O ADAPTADOR: conversor de caminhos Windows/macOS'],
+			tips: [L_CLICK + 'O ADAPTADOR abre a pasta do último item da fila de render', R_CLICK + 'abrir O ADAPTADOR: conversor de caminhos Windows/macOS'],
 			left: actions.openLastOutput,
 			right: actions.convertPaths
 		},
@@ -370,7 +370,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'search',
 			label: 'Buscar',
 			icon: 'search',
-			tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
+			tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir O ACESSORISTA: busca em layers de texto'],
 			left: actions.searchPaths,
 			right: actions.searchTexts
 		}
