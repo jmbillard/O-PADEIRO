@@ -64,7 +64,8 @@
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
-/* importar (versão anterior do .aep): a seta em volta do AE dá um giro curto para trás e volta */
+/* importar (versão anterior do .aep): a seta em volta do AE dá um giro curto para trás e volta; enquanto isso,
+   o A e depois o E dão uma subidinha e voltam ao lugar */
 .anim-import .import-turn {
   transform-box: view-box;
   transform-origin: 12px 12px;
@@ -73,6 +74,22 @@
 .bar-btn:hover:not(:disabled) .anim-import .import-turn,
 .tab:hover .anim-import .import-turn {
   animation: import-turn 620ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-letter,
+.tab:hover .anim-import .import-letter {
+  animation: import-hop 420ms var(--ease-soft) 60ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-letter.l2,
+.tab:hover .anim-import .import-letter.l2 {
+  animation-delay: 170ms;
+}
+
+@keyframes import-hop {
+  45% {
+    transform: translateY(-1.5px);
+  }
 }
 
 @keyframes import-turn {
