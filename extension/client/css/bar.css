@@ -331,7 +331,7 @@ body.bar-page {
 
 .bar-btn.is-running .bar-label {
   color: rgb(var(--on-brand));
-  font-size: 0.54rem;
+  font-size: 0.48rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
