@@ -219,6 +219,32 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 		},
 
+		// importar um .aep de qualquer versão: o de versão mais nova vira uma cópia na versão que está rodando (na
+		// pasta temporária) e é importada; 'open': a cópia vai para o lado do original e abre no lugar do projeto
+		importAep: async function (open) {
+			if (!PAD_AEPVERSION.available()) throw new Error('#PAD_100 - importar: este painel não tem acesso aos arquivos (Node).');
+
+			var path = PAD_BRIDGE.pickFile(open ? 'Abrir .aep (na versão deste After Effects)' : 'Importar .aep (na versão deste After Effects)', ['aep']);
+
+			if (!path) return;
+
+			var nodePath = require('path');
+			var ae = await call('aeVersion');
+			var res = await PAD_AEPVERSION.convert(path, ae.major, open ? nodePath.dirname(path) : '');
+			var from = res.converted ? ' (do AE ' + res.from + ' para o ' + res.to + ')' : '';
+
+			if (open) {
+				var done = await call('openAep', { path: res.path });
+
+				if (done.opened) toast('success', 'aberto' + from + ': ' + nodePath.basename(res.path) + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
+				return;
+			}
+
+			var imported = await call('importAep', { path: res.path, name: nodePath.basename(path) });
+
+			toast('success', 'importado' + from + ': ' + imported.name + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
+		},
+
 		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
 		openCollect: function () {
 			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
@@ -300,6 +326,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			right: actions.openCollect
 		},
 		{
+			key: 'importar',
+			config: '',
+			label: 'Importar',
+			icon: 'import',
+			tips: [L_CLICK + 'importar um .aep (de versão mais nova também: converte para a deste After Effects)', R_CLICK + 'abrir um .aep de versão mais nova (a cópia convertida fica ao lado do original)'],
+			left: function () {
+				return actions.importAep(false);
+			},
+			right: function () {
+				return actions.importAep(true);
+			}
+		},
+		{
 			key: 'pastas',
 			config: 'drives',
 			label: 'Pastas',
@@ -337,7 +376,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {

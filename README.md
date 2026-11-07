@@ -111,6 +111,9 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
   `◗` → coleta numa pasta escolhida.
+- **importar**\
+  `◖` → importa um `.aep` no projeto aberto, convertendo o de versão mais nova para a deste After Effects.\
+  `◗` → abre um `.aep` de versão mais nova (a cópia convertida fica ao lado do original).
 - **pastas**\
   `◖` → abre a pasta de output do último item da fila de render.\
   `◗` → abre o conversor de caminhos Windows / macOS.
@@ -161,6 +164,15 @@ a bolinha no botão: 🟡 amarela quando o projeto tem algum arquivo fora das pa
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
 > • arquivos ausentes e fontes sem arquivo local (ex: Adobe Fonts) não são coletados: o padeiro avisa quais.
+
+### importar
+
+`◖ clique esquerdo` → escolha um `.aep`: se ele é de uma versão mais nova do After Effects (ex.: salvo no 2026 e você está no 2025), o padeiro faz uma cópia na versão que está rodando, na pasta temporária, e importa a cópia no projeto aberto. a pasta que a importação cria leva o nome do arquivo original. da mesma versão ou mais velho, importa direto.
+
+`◗ clique direito` → o mesmo, mas a cópia convertida (`nome_AE25.aep`) fica ao lado do original e abre no lugar do projeto atual (se ele tem mudanças, o After Effects pergunta se salva).
+
+- a conversão troca só o número da versão no cabeçalho do arquivo (como o [AEP-Downgrader](https://github.com/itsAnchorpoint/AEP-Downgrader) e o [AESHIFT](https://github.com/mason-reed24/aeshift-after-effects-tool)): efeitos, expressões e recursos que só existem na versão nova podem faltar ou dar aviso. **confira antes de usar em produção**.
+- o original nunca é alterado.
 
 ### pastas
 
@@ -321,6 +333,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_096` | modo local (ligado ou sem a rede): sem cópia da configuração neste computador, ou tentativa de editar a configuração da equipe |
 | `#PAD_097` | criador de templates: variações de layout (nenhum efeito de menu selecionado, sufixo vazio ou repetido, layer do efeito removido) |
 | `#PAD_098` | produção local (configuração > templates, neste computador): sem nome ou sem pasta, ou com o nome de uma produção da equipe |
+| `#PAD_100` | importar: o arquivo não é um `.aep`, a versão não pôde ser lida ou o painel está sem acesso aos arquivos |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

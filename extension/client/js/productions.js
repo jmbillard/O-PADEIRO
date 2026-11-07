@@ -2124,7 +2124,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   e separadores entre os grupos
 	   ========================================================= */
 
-	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
@@ -2132,6 +2132,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
 		projeto: ['Projeto', 'novo projeto pela claquete · salvar o projeto', 'project'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		importar: ['Importar', 'importar um .aep (converte o de versão mais nova) · abrir convertido', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · criar as pastas', 'organize'],

@@ -144,6 +144,10 @@
 		"label": "coletar"
 	},
 	{
+		"key": "barra-import",
+		"label": "importar"
+	},
+	{
 		"key": "oscar",
 		"label": "oscar"
 	},

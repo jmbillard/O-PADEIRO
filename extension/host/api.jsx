@@ -1759,3 +1759,47 @@ PADX.createProjectFolders = function () {
 		});
 	});
 };
+
+/*
+
+---------------------------------------------------------------
+> importar .aep de outra versão (ferramenta importar da barra)
+---------------------------------------------------------------
+
+Quem troca a versão no cabeçalho do arquivo é o painel (js/aepversion.js, pelo Node, numa cópia); o host diz
+qual versão está rodando e importa ou abre o arquivo.
+
+*/
+
+// A versão do After Effects que está rodando: { major } (25 no AE 2025)
+PADX.aeVersion = function () {
+	return { major: parseInt(app.version, 10), version: String(app.version) };
+};
+
+// Importa um .aep no projeto aberto; a pasta que a importação cria leva o nome do arquivo original.
+// a: { path, name } → { name }
+PADX.importAep = function (a) {
+	var file = new File(a.path);
+
+	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
+
+	var folder = app.project.importFile(new ImportOptions(file));
+
+	try {
+		if (folder && a.name) folder.name = a.name;
+	} catch (err) { }
+
+	return { name: folder ? folder.name : decodeURI(file.name) };
+};
+
+// Abre um .aep no lugar do projeto atual (pergunta antes se o atual tem mudanças). a: { path } → { opened }
+PADX.openAep = function (a) {
+	var file = new File(a.path);
+
+	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
+	if (app.project && !app.project.close(CloseOptions.PROMPT_TO_SAVE_CHANGES)) return { opened: false };
+
+	app.open(file);
+
+	return { opened: true };
+};

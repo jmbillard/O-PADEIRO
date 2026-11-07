@@ -135,7 +135,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 
 	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'], hidden: [] };
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'], hidden: [] };
 	}
 
 	var api = {
@@ -1176,6 +1176,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ id: 17, name: 'barra.webp', file: D + 'barra.webp', kind: 'imagens', state: 'ok', layers: 0 }
 				]
 			};
+		},
+
+		aeVersion: function () {
+			return { major: 25, version: '25.2x45' };
+		},
+
+		importAep: function (a) {
+			return { name: a.name };
+		},
+
+		openAep: function () {
+			return { opened: true };
 		},
 
 		collectReveal: function () {

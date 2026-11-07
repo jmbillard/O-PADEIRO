@@ -64,6 +64,18 @@
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
+/* importar: a seta desce até a linha e volta */
+.bar-btn:hover:not(:disabled) .anim-import .import-arrow,
+.tab:hover .anim-import .import-arrow {
+  animation: import-drop 520ms var(--ease-soft);
+}
+
+@keyframes import-drop {
+  45% {
+    transform: translateY(2.5px);
+  }
+}
+
 /* coletar: as folhas saem um pouco da pasta e abrem em leque (movimento rígido: o traço não deforma) */
 .anim-collect .collect-file {
   transform-origin: 50% 100%;
