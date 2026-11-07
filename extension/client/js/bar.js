@@ -22,6 +22,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
+	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -68,6 +69,53 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		else if (doneText) toast('success', doneText);
 	}
 
+	// O CATADOR e O TIPÓGRAFO trabalhando: o nome do botão vira a contagem e a linha embaixo enche.
+	// p: 0 a 1 (null: esperando, sem contagem). progressEnd: volta o nome; ok: o brilho verde
+	function progress(key, text, p) {
+		var btn = $('btn-' + key);
+
+		if (!btn) return;
+
+		var label = btn.querySelector('.bar-label');
+		var line = btn.querySelector('.bar-progress');
+
+		if (!btn.classList.contains('is-running')) {
+			btn.classList.remove('is-done');
+			btn.classList.add('is-running');
+			btn.dataset.label = label ? label.textContent : '';
+		}
+
+		if (!line) {
+			line = el('span', 'bar-progress');
+			line.appendChild(el('i'));
+			btn.appendChild(line);
+		}
+
+		if (label) label.textContent = text;
+		line.classList.toggle('is-wait', p == null);
+		line.firstChild.style.width = p == null ? '' : Math.round(Math.max(0.04, Math.min(1, p)) * 100) + '%';
+	}
+
+	function progressEnd(key, ok) {
+		var btn = $('btn-' + key);
+
+		if (!btn || !btn.classList.contains('is-running')) return;
+
+		var label = btn.querySelector('.bar-label');
+		var line = btn.querySelector('.bar-progress');
+
+		btn.classList.remove('is-running');
+		if (line) line.remove();
+		if (label && btn.dataset.label) label.textContent = btn.dataset.label;
+
+		if (ok) {
+			btn.classList.add('is-done');
+			setTimeout(function () {
+				btn.classList.remove('is-done');
+			}, 1000);
+		}
+	}
+
 	async function requireNetwork(code) {
 		var info = await call('ping');
 
@@ -109,6 +157,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var installed = 0;
 
 			// 1. a pasta de fontes do projeto: poucas e perto, a mais rápida
+			progress('fontes', 'projeto', 0.15);
+
 			try {
 				var local = await call('fontsInstallProject');
 
@@ -126,6 +176,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (info.bank && PAD_FONTBANK.available() && info.fonts.some(function (f) {
 				return f.missing;
 			})) {
+				progress('fontes', 'banco', 0.45);
+
 				var checked = await PAD_FONTBANK.check(info);
 				var files = checked.fonts.filter(function (f) {
 					return f.state === 'install' && f.bankFile;
@@ -143,6 +195,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			}
 
 			// 3. confere de novo: o que ainda falta, só trocando por outra (a janela abre nelas)
+			progress('fontes', 'conferindo', 0.8);
 			await new Promise(function (r) {
 				setTimeout(r, 1500);
 			});
@@ -150,6 +203,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var still = (await call('fontsProject')).fonts.filter(function (f) {
 				return f.missing;
 			});
+
+			progressEnd('fontes', !still.length);
 
 			if (still.length) {
 				toast(installed ? 'success' : null, (installed ? 'fontes instaladas. ' : '') + (still.length === 1 ? '1 fonte não foi achada' : still.length + ' fontes não foram achadas') + ' (nem na pasta de fontes do projeto nem no banco): escolha outra na janela de fontes.');
@@ -206,43 +261,48 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
 		},
 
-		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar)
+		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar): em lotes pequenos,
+		// para a barra contar (e o After Effects respirar entre um e outro)
 		collect: async function (path) {
-			var res = await call('collectProject', { path: path || '' });
-			var d = res.data || {};
+			var res;
+			var d;
+
+			progress('coletar', '…', null);
+
+			try {
+				var plan = await call('collectBegin', { path: path || '' });
+				var total = plan.ids.length;
+				var sum = { target: plan.target, files: 0, sequences: 0, frames: 0, skipped: [], missing: plan.missing };
+
+				for (var i = 0; i < total; i += COLLECT_BATCH) {
+					progress('coletar', Math.min(total, i + 1) + '/' + total, i / total);
+
+					var step = await call('collectStep', { target: plan.target, ids: plan.ids.slice(i, i + COLLECT_BATCH) });
+
+					sum.files += step.files;
+					sum.sequences += step.sequences;
+					sum.frames += step.frames;
+					sum.skipped = sum.skipped.concat(step.skipped);
+				}
+
+				progress('coletar', total ? total + '/' + total : 'salvando', total ? 1 : null);
+				res = await call('collectEnd', sum);
+				d = res.data || {};
+			} catch (err) {
+				progressEnd('coletar', false);
+				throw err;
+			}
+
+			progressEnd('coletar', !(res.messages && res.messages.length));
+
 			var parts = [];
 
 			if (d.files) parts.push(d.files + (d.files === 1 ? ' arquivo' : ' arquivos'));
 			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes');
 
-			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
-		},
-
-		// importar um .aep de qualquer versão: o de versão mais nova vira uma cópia na versão que está rodando (na
-		// pasta temporária) e é importada; 'open': a cópia vai para o lado do original e abre no lugar do projeto
-		importAep: async function (open) {
-			if (!PAD_AEPVERSION.available()) throw new Error('#PAD_100 - importar: este painel não tem acesso aos arquivos (Node).');
-
-			var path = PAD_BRIDGE.pickFile(open ? 'Abrir .aep (na versão deste After Effects)' : 'Importar .aep (na versão deste After Effects)', ['aep']);
-
-			if (!path) return;
-
-			var nodePath = require('path');
-			var ae = await call('aeVersion');
-			var res = await PAD_AEPVERSION.convert(path, ae.major, open ? nodePath.dirname(path) : '');
-			var from = res.converted ? ' (do AE ' + res.from + ' para o ' + res.to + ')' : '';
-
-			if (open) {
-				var done = await call('openAep', { path: res.path });
-
-				if (done.opened) toast('success', 'aberto' + from + ': ' + nodePath.basename(res.path) + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
-				return;
-			}
-
-			var imported = await call('importAep', { path: res.path, name: nodePath.basename(path) });
-
-			toast('success', 'importado' + from + ': ' + imported.name + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
+			report(res, parts.length ? 'O CATADOR coletou: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			setTimeout(watchCollect, 300);
 		},
 
 		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
@@ -396,6 +456,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			toast('error', err.message);
 		} finally {
 			btn.classList.remove('is-busy');
+			if (btn.classList.contains('is-running')) progressEnd(btn.id.replace(/^btn-/, ''), false); // parou no meio (erro)
 		}
 	}
 
@@ -599,11 +660,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 						return f.state === 'up';
 					});
 
+					// a barra conta o envio (O TIPÓGRAFO copiando para o banco e a pasta do projeto)
 					for (var i = 0; i < pending.length; i++) {
+						progress('fontes', (i + 1) + '/' + pending.length, i / pending.length);
+
 						try {
 							await PAD_FONTBANK.upload(info, pending[i], checked);
 						} catch (err) { }
 					}
+
+					if (pending.length) progressEnd('fontes', true);
 
 					if (pending.length) {
 						checked = await PAD_FONTBANK.check(info);

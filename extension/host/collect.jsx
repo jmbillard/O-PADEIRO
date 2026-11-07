@@ -441,69 +441,76 @@ function padCopySequence(item, folderPath) {
 	return { ok: true, frames: copied };
 }
 
-// Coleta os arquivos do projeto para 'target'. Retorna os números para o aviso.
-function padCollectFiles(target, settings) {
-	var root = padEnsureFolder(target);
-	var rootKey = padPathKey(root.fsName); // L:\… e \\servidor\…, VFX e VFX-1: a mesma pasta
-	var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: [], fonts: '' };
+// As pastas de cada tipo na árvore do coletar ({ videos: 'caminho', … }; null: o tipo fica fora).
+function padCollectPaths(settings) {
 	var paths = {};
-	var i;
 
-	for (i = 0; i < PAD_COLLECT_CONTENTS.length; i++) paths[PAD_COLLECT_CONTENTS[i]] = padCollectFolderPath(settings, PAD_COLLECT_CONTENTS[i]);
+	for (var i = 0; i < PAD_COLLECT_CONTENTS.length; i++) paths[PAD_COLLECT_CONTENTS[i]] = padCollectFolderPath(settings, PAD_COLLECT_CONTENTS[i]);
 
-	for (i = 1; i <= app.project.numItems; i++) {
+	return paths;
+}
+
+// Os itens que o coletar vai copiar (fora da pasta do projeto, com o tipo na árvore) e os que faltam.
+// → { ids, missing: [nome] }
+function padCollectQueue(root, paths) {
+	var rootKey = padPathKey(root.fsName); // L:\… e \\servidor\…, VFX e VFX-1: a mesma pasta
+	var out = { ids: [], missing: [] };
+
+	for (var i = 1; i <= app.project.numItems; i++) {
 		var item = app.project.item(i);
 
 		if (!(item instanceof FootageItem) || !item.file) continue; // sólidos e placeholders não têm arquivo
 
 		if (!item.file.exists) {
-			res.missing.push(item.name);
+			out.missing.push(item.name);
 			continue;
 		}
 
-		var kind = padCollectKind(item);
-
-		if (paths[kind] == null) continue; // tipo fora da árvore: não é coletado
+		if (paths[padCollectKind(item)] == null) continue; // tipo fora da árvore: não é coletado
 		if (padPathKey(item.file.fsName).indexOf(rootKey) == 0) continue; // já está na pasta do projeto
 
-		var folderPath = padCollectResolve(root.fsName, paths[kind], false);
-
-		try {
-			if (kind == 'sequencias') {
-				var seq = padCopySequence(item, folderPath);
-
-				if (!seq.ok) {
-					res.skipped.push(item.name);
-					continue;
-				}
-
-				res.sequences++;
-				res.frames += seq.frames;
-				continue;
-			}
-
-			var folder = padEnsureFolder(folderPath);
-			var dest = padFreeFile(folder.fsName, decodeURI(item.file.name), item.file);
-
-			if (!dest.exists && !item.file.copy(dest)) {
-				res.skipped.push(item.name);
-				continue;
-			}
-
-			item.replace(dest);
-			res.files++;
-		} catch (err) {
-			res.skipped.push(item.name + ' (' + err.message + ')');
-		}
+		out.ids.push(item.id);
 	}
 
-	if (paths.fontes != null) res.fonts = fontCollect(padCollectResolve(root.fsName, paths.fontes, false));
-
-	return res;
+	return out;
 }
 
-// a: { path } (sem 'path': a pasta do projeto salvo)
-PADX.collectProject = function (a) {
+// Copia um item para a pasta do tipo dele e troca o caminho no projeto. soma em res.
+function padCollectItem(item, root, paths, res) {
+	var kind = padCollectKind(item);
+	var folderPath = padCollectResolve(root.fsName, paths[kind], false);
+
+	try {
+		if (kind == 'sequencias') {
+			var seq = padCopySequence(item, folderPath);
+
+			if (!seq.ok) {
+				res.skipped.push(item.name);
+				return;
+			}
+
+			res.sequences++;
+			res.frames += seq.frames;
+			return;
+		}
+
+		var folder = padEnsureFolder(folderPath);
+		var dest = padFreeFile(folder.fsName, decodeURI(item.file.name), item.file);
+
+		if (!dest.exists && !item.file.copy(dest)) {
+			res.skipped.push(item.name);
+			return;
+		}
+
+		item.replace(dest);
+		res.files++;
+	} catch (err) {
+		res.skipped.push(item.name + ' (' + err.message + ')');
+	}
+}
+
+// A pasta onde coletar (a escolhida ou a raiz do projeto) e a configuração, já conferidas.
+function padCollectTarget(a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	var settings = padReadCollect();
@@ -511,7 +518,7 @@ PADX.collectProject = function (a) {
 	var target = '';
 
 	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
-	if (a.path) target = padPath(a.path);
+	if (a && a.path) target = padPath(a.path);
 	else if (file) target = padCollectRoot(file, settings);
 
 	if (!target) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
@@ -524,33 +531,95 @@ PADX.collectProject = function (a) {
 
 	if (!hasType) throw new Error('#PAD_094 - coletar: nenhum tipo na árvore (configuração > coletar).');
 
+	return { target: target, settings: settings };
+}
+
+// Depois de copiar: as fontes, a estrutura, salvar (sempre) e os avisos. → os números para o painel
+function padCollectFinish(target, settings, res) {
+	var file = app.project.file;
+	var paths = padCollectPaths(settings);
+
+	padGroup('coletar fontes', function () {
+		if (paths.fontes != null) res.fonts = fontCollect(padCollectResolve(new Folder(target).fsName, paths.fontes, false));
+		padCollectStructure(target, settings); // o collect das fontes apaga a pasta delas se não houver nenhuma
+	});
+
+	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
+	var sub = padCollectFolderPath(settings, 'projeto');
+
+	if (file) app.project.save();
+	else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
+
+	if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
+	if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
+
+	return {
+		folder: padDisplayPath(new Folder(target).fsName),
+		files: res.files,
+		sequences: res.sequences,
+		frames: res.frames,
+		fonts: res.fonts != '',
+		saved: true
+	};
+}
+
+// Coleta tudo numa chamada (a janela do CATADOR). a: { path } → { messages, data }
+PADX.collectProject = function (a) {
+	var t = padCollectTarget(a);
+
 	return padCollect(function () {
-		var res;
+		var root = padEnsureFolder(t.target);
+		var paths = padCollectPaths(t.settings);
+		var queue = padCollectQueue(root, paths);
+		var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: queue.missing, fonts: '' };
 
 		padGroup('coletar arquivos', function () {
-			padCollectStructure(target, settings);
-			res = padCollectFiles(target, settings);
-			padCollectStructure(target, settings); // o collect das fontes apaga a pasta delas se não houver nenhuma
+			padCollectStructure(t.target, t.settings);
+
+			for (var i = 0; i < queue.ids.length; i++) padCollectItem(app.project.itemByID(queue.ids[i]), root, paths, res);
 		});
 
-		// coleta, troca os caminhos e salva, sempre. projeto sem arquivo, coletado numa pasta escolhida:
-		// salva lá (na pasta do .aep da estrutura)
-		var sub = padCollectFolderPath(settings, 'projeto');
+		return padCollectFinish(t.target, t.settings, res);
+	});
+};
 
-		if (file) app.project.save();
-		else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
+// Coleta em partes, para a barra contar (O CATADOR): começar → copiar de lote em lote → terminar.
+// collectBegin: a: { path } → { target, ids, missing }
+PADX.collectBegin = function (a) {
+	var t = padCollectTarget(a);
+	var root = padEnsureFolder(t.target);
 
-		if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
-		if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
+	padCollectStructure(t.target, t.settings);
 
-		return {
-			folder: padDisplayPath(new Folder(target).fsName),
-			files: res.files,
-			sequences: res.sequences,
-			frames: res.frames,
-			fonts: res.fonts != '',
-			saved: true
-		};
+	var queue = padCollectQueue(root, padCollectPaths(t.settings));
+
+	return { target: t.target, ids: queue.ids, missing: queue.missing };
+};
+
+// collectStep: a: { target, ids } → { files, sequences, frames, skipped }
+PADX.collectStep = function (a) {
+	var settings = padReadCollect();
+	var root = padEnsureFolder(a.target);
+	var paths = padCollectPaths(settings);
+	var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: [] };
+
+	padGroup('coletar arquivos', function () {
+		for (var i = 0; i < (a.ids || []).length; i++) {
+			var item = app.project.itemByID(a.ids[i]);
+
+			if (item && item.file && item.file.exists) padCollectItem(item, root, paths, res);
+		}
+	});
+
+	return res;
+};
+
+// collectEnd: a: { target, files, sequences, frames, skipped, missing } → { messages, data }
+PADX.collectEnd = function (a) {
+	var settings = padReadCollect();
+
+	return padCollect(function () {
+		return padCollectFinish(a.target, settings, { files: a.files || 0, sequences: a.sequences || 0, frames: a.frames || 0, skipped: a.skipped || [], missing: a.missing || [], fonts: '' });
 	});
 };
 

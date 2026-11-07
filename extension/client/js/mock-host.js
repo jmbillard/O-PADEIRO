@@ -1236,6 +1236,27 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { relinked: 1, still: [] };
 		},
 
+		// o coletar da barra, em partes (O CATADOR conta um a um)
+		collectBegin: function () {
+			return { target: '/Volumes/VFX/PROGRAMAS/DOMINGAO COM HUCK/2026', ids: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], missing: [] };
+		},
+
+		collectStep: async function (a) {
+			await new Promise(function (r) {
+				setTimeout(r, 350);
+			});
+
+			return { files: a.ids.length, sequences: 0, frames: 0, skipped: [] };
+		},
+
+		collectEnd: async function (a) {
+			await new Promise(function (r) {
+				setTimeout(r, 500);
+			});
+
+			return { messages: [], data: { folder: a.target, files: a.files, sequences: 0, frames: 0, fonts: true, saved: true } };
+		},
+
 		collectProject: function (a) {
 			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 
