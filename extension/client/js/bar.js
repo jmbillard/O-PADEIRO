@@ -895,11 +895,26 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
+		// o tour da turma de novo (js/tour.js)
+		$('logo').addEventListener('contextmenu', function (e) {
+			e.preventDefault();
+			PAD_TOUR.start({});
+		});
+		// o tour achou (ou criou) a configuração: a barra relê os links e as ferramentas
+		document.addEventListener('pad-tour-setup', function () {
+			linksStamp = null;
+			loadLinks();
+		});
 
 		try {
 			var info = await call('ping');
 
 			$('version').textContent = 'v' + info.version;
+
+			// sem a configuração da equipe (nem a cópia deste computador): a primeira vez, pelo tour
+			var setup = await call('setupStatus');
+
+			if (setup.needed) PAD_TOUR.start({ setup: true, user: setup.user });
 
 			if (!info.network) {
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);

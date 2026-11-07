@@ -1178,6 +1178,35 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			};
 		},
 
+		// ?mock=nosetup: a primeira vez (sem a configuração da equipe): a barra abre o tour
+		setupStatus: function () {
+			return { needed: mode === 'nosetup' && !window.PAD_MOCK_SETUP, expected: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json', user: 'JMBILLARD' };
+		},
+
+		setupUseConfig: async function (a) {
+			await new Promise(function (r) {
+				setTimeout(r, 700);
+			});
+
+			if (!/O_PADEIRO(_GLOBAL)?_config\.json$/.test(a.path)) throw new Error('#PAD_101 - primeira vez: escolha o O_PADEIRO_GLOBAL_config.json (a configuração da equipe).');
+
+			window.PAD_MOCK_SETUP = true;
+
+			return { productions: 6, links: 8, drives: ['L', 'K', 'T', 'V', 'Y', 'P'], folder: '/Volumes/VFX/imagem/O PADEIRO' };
+		},
+
+		setupCreateConfig: function () {
+			window.PAD_MOCK_SETUP = true;
+
+			return { productions: 0, links: 0, drives: [], folder: '/Volumes/VFX/imagem/O PADEIRO', existed: false };
+		},
+
+		setupLocal: function () {
+			window.PAD_MOCK_SETUP = true;
+
+			return { local: true };
+		},
+
 		aeVersion: function () {
 			return { major: 25, version: '25.2x45' };
 		},

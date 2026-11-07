@@ -96,9 +96,19 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 
 a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
 
+### primeira vez (o tour)
+
+sem a configuração da equipe (nem na rede, nem a cópia deste computador), a barra abre um tour num balão de vidro, e as ferramentas esperam:
+
+1. **onde fica a configuração da equipe?** → **achar na rede** (escolha o `O_PADEIRO_GLOBAL_config.json`; o caminho fica gravado, como faz o instalador) · **criar uma nova** (numa pasta da rede, com os padrões; se já houver uma lá, vale ela) · **só aqui** (modo local, com os padrões).
+2. **quem é você?** → a sigla do designer (a mesma de configuração > meu usuário).
+3. **a turma** → cada ferramenta acende, com o nome e o que fazem os dois cliques. experimente `◖` e `◗` na ferramenta acesa: durante o tour, os cliques só acendem a linha do clique, não rodam nada.
+
+`◗` no pãozinho refaz o tour da turma a qualquer hora.
+
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
-- **pãozinho** (na ponta direita; na vertical, embaixo) → abre esta documentação.
+- **pãozinho** (na ponta direita; na vertical, embaixo) → `◖` abre esta documentação; `◗` refaz o tour da barra.
 - **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` no servidor abre a [configuração > rede](docs/producoes.md#-rede); no notebook, a [configuração > meu usuário](docs/producoes.md#-meu-usuário).
 - **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
@@ -338,6 +348,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_097` | criador de templates: variações de layout (nenhum efeito de menu selecionado, sufixo vazio ou repetido, layer do efeito removido) |
 | `#PAD_098` | produção local (configuração > templates, neste computador): sem nome ou sem pasta, ou com o nome de uma produção da equipe |
 | `#PAD_100` | importar: o arquivo não é um `.aep`, a versão não pôde ser lida ou o painel está sem acesso aos arquivos |
+| `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

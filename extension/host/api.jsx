@@ -1803,3 +1803,111 @@ PADX.openAep = function (a) {
 
 	return { opened: true };
 };
+
+/*
+
+---------------------------------------------------------------
+> primeira vez (o tour da barra)
+---------------------------------------------------------------
+
+Sem a configuração da equipe (nem na rede, nem a cópia deste computador), a barra abre o tour (js/tour.js):
+achar o arquivo na rede, criar um novo numa pasta ou ficar só neste computador (modo local, com os padrões).
+O caminho escolhido vai para 'shared_config.txt', o mesmo arquivo que o instalador grava.
+
+*/
+
+// → { needed, expected, user }
+PADX.setupStatus = function () {
+	var file = null;
+
+	try {
+		file = padConfigFile();
+	} catch (err) { }
+
+	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padMachineUser() };
+};
+
+function padSetupPointer(path) {
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(String(path), scriptPreferencesPath + '/shared_config.txt');
+	padConfigInvalidate();
+}
+
+// O resumo da configuração que ficou valendo (para o balão): produções, links e letras de drive.
+function padSetupSummary() {
+	var data = padConfigData();
+	var links = 0;
+	var drives = [];
+	var i;
+
+	try {
+		links = padReadLinks().length;
+	} catch (err) { }
+
+	try {
+		var d = padReadDrives().drives;
+
+		for (i = 0; i < d.length; i++) drives.push(d[i].letter);
+	} catch (err) { }
+
+	return { productions: (data.PRODUCTIONS || []).length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
+}
+
+// Usa a configuração escolhida. a: { path } → resumo
+PADX.setupUseConfig = function (a) {
+	var file = new File(a.path);
+	var name = decodeURI(file.name);
+
+	if (!file.exists) throw new Error('#PAD_101 - primeira vez: o arquivo não foi encontrado.');
+	if (name != PAD_CONFIG_NAME && name != PAD_CONFIG_OLD_NAME) throw new Error('#PAD_101 - primeira vez: escolha o ' + PAD_CONFIG_NAME + ' (a configuração da equipe).');
+
+	try {
+		JSON.parse(readFileContent(file));
+	} catch (err) {
+		throw new Error('#PAD_101 - primeira vez: ' + name + ' não é uma configuração válida (JSON).');
+	}
+
+	padSetupPointer(file.fsName);
+
+	return padSetupSummary();
+};
+
+// Cria a configuração da equipe na pasta (com os padrões; se já houver uma lá, usa ela). a: { folder } → resumo
+PADX.setupCreateConfig = function (a) {
+	var folder = new Folder(a.folder);
+
+	if (!folder.exists) throw new Error('#PAD_101 - primeira vez: a pasta não foi encontrada.');
+
+	var file = new File(folder.fsName + '/' + PAD_CONFIG_NAME);
+	var existed = file.exists;
+
+	if (!existed) {
+		saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), file.fsName);
+
+		if (!new File(file.fsName).exists) throw new Error('#PAD_101 - primeira vez: não deu para gravar em ' + padDisplayPath(folder.fsName) + ' (sem permissão?).');
+	}
+
+	padSetupPointer(file.fsName);
+
+	var res = padSetupSummary();
+
+	res.existed = existed;
+
+	return res;
+};
+
+// Só neste computador: a cópia local com os padrões e o modo local ligado.
+PADX.setupLocal = function () {
+	var copy = padConfigCopyFile();
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+	if (!copy.exists) saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), copy.fsName);
+
+	PADX.saveMachinePrefs({ localMode: true });
+
+	return { local: true };
+};
