@@ -21,6 +21,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
 | **O PADEIRO projeto** | projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
 | **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
+| **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam ([abaixo](#coletar)) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
 
@@ -110,7 +111,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◗` → salva o projeto (sem projeto criado pela janela, abre a janela).
 - **coletar**\
   `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
-  `◗` → coleta numa pasta escolhida.
+  `◗` → abre **O CATADOR**: os arquivos do projeto e o estado de cada um (coletar em outra pasta, resolver os que faltam).
 - **importar**\
   `◖` → importa um `.aep` no projeto aberto, convertendo o de versão mais nova para a deste After Effects.\
   `◗` → abre um `.aep` de versão mais nova (a cópia convertida fica ao lado do original).
@@ -159,7 +160,7 @@ a bolinha no botão: 🟡 amarela quando o projeto tem algum arquivo fora das pa
 - **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
 - arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
 
-`◗ clique direito` → a janela do **coletar**: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ nas pastas de projetos, fora da pasta deste projeto · ↑ amarela fora das pastas de projetos · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
+`◗ clique direito` → **O CATADOR**, a janela do coletar: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ nas pastas de projetos, fora da pasta deste projeto · ↑ amarela fora das pastas de projetos · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
 
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\

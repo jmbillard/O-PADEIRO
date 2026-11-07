@@ -321,7 +321,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO coletar</Menu>
+					<Menu>O CATADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>440</Width>

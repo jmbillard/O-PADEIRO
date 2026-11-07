@@ -319,7 +319,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'collect',
 			label: 'Coletar',
 			icon: 'collect',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'os arquivos do projeto (coletar em outra pasta…)'],
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'abrir O CATADOR: os arquivos do projeto (coletar em outra pasta, resolver os que faltam)'],
 			left: function () {
 				return actions.collect('');
 			},
