@@ -76,7 +76,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO templates</Menu>
+					<Menu>O FORNINHO</Menu>
 					<Geometry>
 						<Size>
 							<Width>460</Width>
@@ -216,7 +216,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO criar template</Menu>
+					<Menu>A FORMA</Menu>
 					<Geometry>
 						<Size>
 							<Width>980</Width>

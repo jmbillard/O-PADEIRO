@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-o painel **O PADEIRO criar template**: transforma a comp aberta em um novo template do padeiro.
+o painel **A FORMA**: transforma a comp aberta em um novo template do padeiro.
 
 um template do padeiro é um conjunto de arquivos:
 

@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-o painel **O PADEIRO templates**: buscar, selecionar e preencher templates, e criar a fila de render.
+o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fila de render.
 
 o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
 

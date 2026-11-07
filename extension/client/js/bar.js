@@ -292,7 +292,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'prods',
 			label: 'Templates',
 			icon: 'templates',
-			tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
+			tips: [L_CLICK + 'abrir O FORNINHO: preencher templates', R_CLICK + 'abrir A FORMA: criar novo template'],
 			left: actions.templates,
 			right: actions.createTemplate
 		},

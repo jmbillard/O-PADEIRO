@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> CRIAR TEMPLATE
+> A FORMA — criar template
 ---------------------------------------------------------------
 
 A comp ativa vira a comp principal, os layers

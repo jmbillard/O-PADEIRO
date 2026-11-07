@@ -17,8 +17,8 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | --- | --- |
 | **INSTALAR O PADEIRO.jsx** | instalar, atualizar ou remover o padeiro neste computador ([abaixo](#-instalação)) |
 | **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
-| **O PADEIRO templates** | buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
-| **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
+| **O FORNINHO** | os templates: buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
+| **A FORMA** | o criador de templates: transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
 | **O PADEIRO projeto** | projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
 | **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
 | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta → [documentação](docs/fontes.md) |
@@ -102,8 +102,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 - **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` no servidor abre a [configuração > rede](docs/producoes.md#-rede); no notebook, a [configuração > meu usuário](docs/producoes.md#-meu-usuário).
 - **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
 - **templates**\
-  `◖` → abre o painel de templates.\
-  `◗` → abre o criador de templates (com a comp principal aberta).
+  `◖` → abre **O FORNINHO**, o painel de templates.\
+  `◗` → abre **A FORMA**, o criador de templates (com a comp principal aberta).
 - **fontes**\
   `◖` → resolve as fontes do projeto (instala as que faltam).\
   `◗` → abre **O TIPÓGRAFO**: as fontes do projeto (trocar, copiar para uma pasta).
