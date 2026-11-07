@@ -180,11 +180,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 
 		organizeProject: async function () {
-			report(await call('organizeProject'), 'projeto organizado.');
+			report(await call('organizeProject'), 'O CONTRARREGRA organizou o projeto.');
 		},
 
 		createProjectFolders: async function () {
-			report(await call('createProjectFolders'), 'estrutura de pastas criada.');
+			report(await call('createProjectFolders'), 'O CONTRARREGRA criou a estrutura de pastas.');
 		},
 
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
@@ -301,7 +301,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'fonts',
 			label: 'Fontes',
 			icon: 'fonts',
-			tips: [L_CLICK + 'resolver as fontes do projeto (instalar as que faltam)', R_CLICK + 'fontes do projeto (trocar, copiar para uma pasta)'],
+			tips: [L_CLICK + 'resolver as fontes do projeto (instalar as que faltam)', R_CLICK + 'abrir O TIPÓGRAFO: as fontes do projeto (trocar, copiar para uma pasta)'],
 			left: actions.resolveFonts,
 			right: actions.openFonts
 		},
@@ -361,7 +361,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: 'organize',
 			label: 'Organizar',
 			icon: 'organize',
-			tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'organizar o projeto', R_CLICK + 'criar estrutura de pastas do projeto'],
+			tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'O CONTRARREGRA organiza o projeto', R_CLICK + 'O CONTRARREGRA cria a estrutura de pastas do projeto'],
 			left: actions.organizeProject,
 			right: actions.createProjectFolders
 		},

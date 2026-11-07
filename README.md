@@ -21,6 +21,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | **O PADEIRO criar template** | transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
 | **O PADEIRO projeto** | projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
 | **O PADEIRO configuração** | o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
+| **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta → [documentação](docs/fontes.md) |
 | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam ([abaixo](#coletar)) |
 | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
 | **O PADEIRO conversor** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
@@ -104,8 +105,8 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → abre o painel de templates.\
   `◗` → abre o criador de templates (com a comp principal aberta).
 - **fontes**\
-  `◖` → instala as fontes do template que preencheu o projeto.\
-  `◗` → faz o collect das fontes usadas no projeto.
+  `◖` → resolve as fontes do projeto (instala as que faltam).\
+  `◗` → abre **O TIPÓGRAFO**: as fontes do projeto (trocar, copiar para uma pasta).
 - **projeto**\
   `◖` → abre a janela do [projeto](docs/projeto.md) (projeto novo pela atração, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
   `◗` → salva o projeto (sem projeto criado pela janela, abre a janela).
@@ -122,7 +123,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
   `◖` → renomeia as comps selecionadas (pelos tipos de peça da [configuração](docs/producoes.md#-renomear)).\
   `◗` → renomeia todas as saídas da fila de render.
 - **organizar**\
-  `◖` → organiza o projeto (na árvore de pastas da [configuração](docs/producoes.md#-organizar)).\
+  `◖` → **O CONTRARREGRA** organiza o projeto (na árvore de pastas da [configuração](docs/producoes.md#-organizar)).\
   `◗` → cria só a estrutura de pastas do projeto.
 - **buscar**\
   `◖` → abre **O ACESSORISTA** na busca de caminhos.\
@@ -146,9 +147,9 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 
 as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fontes.md) na rede e para a pasta de fontes do projeto. a bolinha no botão: 🟠 laranja quando falta algo, 🟢 verde quando está tudo certo.
 
-`◖ clique esquerdo` → resolver: com tudo instalado, só avisa que está ok; faltando alguma, instala primeiro da pasta de fontes do projeto e depois do banco; a que não for achada abre a janela de fontes.
+`◖ clique esquerdo` → resolver: com tudo instalado, só avisa que está ok; faltando alguma, instala primeiro da pasta de fontes do projeto e depois do banco; a que não for achada abre O TIPÓGRAFO.
 
-`◗ clique direito` → a janela de [fontes do projeto](docs/fontes.md#-fontes-do-projeto-janela): o estado de cada fonte, a troca por outra (com busca e prévia) e copiar as fontes para uma pasta.
+`◗ clique direito` → **O TIPÓGRAFO**, a janela de [fontes do projeto](docs/fontes.md#-fontes-do-projeto-janela): o estado de cada fonte, a troca por outra (com busca e prévia) e copiar as fontes para uma pasta.
 
 ### coletar
 
@@ -209,6 +210,8 @@ a bolinha no botão: 🟡 amarela quando o projeto tem algum arquivo fora das pa
 | **REF** | REFERENCIA, PREVIEW, REF, PREV |
 
 ### organizar
+
+**O CONTRARREGRA**: deixa cada coisa do projeto no lugar certo, como o contrarregra antes de gravar.
 
 `◖ clique esquerdo` → organiza o projeto no modelo da PROMO.
 

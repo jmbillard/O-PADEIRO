@@ -26,11 +26,13 @@ a bolinha no botão:
 
 `◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar.
 
-`◗ clique direito` → a janela de **fontes do projeto**.
+`◗ clique direito` → **O TIPÓGRAFO**, a janela de **fontes do projeto**.
 
 <br>
 
 ## 📍 fontes do projeto (janela)
+
+a janela se chama **O TIPÓGRAFO** (como O ACESSORISTA e O CATADOR).
 
 no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quantos layers usam, a amostra escrita na própria fonte e o estado (o ícone; o texto no balão):
 
