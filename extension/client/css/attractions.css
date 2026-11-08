@@ -109,6 +109,7 @@
 .wz-preview {
   display: flex;
   min-width: 0;
+  flex: 0 0 auto; /* numa coluna baixa, a linha não encolhe (com overflow hidden, ela cortava o texto) */
   align-items: center;
   gap: 6px;
   margin: 0 2px;
