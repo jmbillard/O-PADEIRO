@@ -504,7 +504,15 @@ Instalar / atualizar:
 		nextBtn.text = removeRdo.value ? 'remover' : installRdo.text;
 	};
 
-	showPage(0);
+	// tudo certo (os testes passam, inclusive a lista compartilhada): direto para instalar / atualizar.
+	// 'anterior' ainda volta para a conferência e as boas-vindas
+	var allOk = true;
+
+	for (var t = 0; t < checks.length; t++) {
+		if (!checks[t].test()) allOk = false;
+	}
+
+	showPage(allOk ? 2 : 0);
 	win.center();
 	win.show();
 })();
