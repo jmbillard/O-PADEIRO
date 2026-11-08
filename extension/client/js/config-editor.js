@@ -267,7 +267,7 @@ são preservadas ao salvar.
 		atrPicker.input.id = 'cfg-atracao';
 		atrPicker.set(base.atracao || null);
 		fields.atracao = { wrap: atrWrap, control: atrPicker.input };
-		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: LETTERING, TARJA, CRÉDITO. identifica o template no log.', 'file');
+		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: SERVIÇO, CONVIDADO, AESP. identifica o template no log.', 'file');
 		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */

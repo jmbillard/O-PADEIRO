@@ -339,7 +339,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		return [
 			{ key: 'atracao', label: 'atração', ok: !!state.atr, target: 'atr-picker', tip: state.atr ? state.atr.name : 'escolha a atração (ou crie uma nova)' },
-			{ key: 'name', label: 'o que é', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'o que é (ex: LETTERING, TARJA)' },
+			{ key: 'name', label: 'o que é', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'o que é (ex: SERVIÇO, CONVIDADO, AESP)' },
 			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{
 				key: 'layers',
@@ -939,7 +939,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		if (cfg.configName === '' || cfg.configName === DEFAULT_CONFIG_NAME) {
 			$('f-config').focus();
-			return toast('error', '#PAD_029 - preencha o que é (ex: LETTERING, TARJA).');
+			return toast('error', '#PAD_029 - preencha o que é (ex: SERVIÇO, CONVIDADO, AESP).');
 		}
 
 		if (fxProblem()) {
