@@ -49,13 +49,16 @@ function padFontsSupported() {
 }
 
 // A pasta de fontes da estrutura do projeto (o coletar junta lá): a raiz gravada no projeto ou a de cima
-// da pasta de projetos. '' sem o projeto salvo.
-function padProjectFontsFolder() {
+// da pasta de projetos. '' sem o projeto salvo. mount: pode montar o share (só depois de um clique)
+function padProjectFontsFolder(mount) {
 	var file = app.project.file;
 	var settings = padReadCollect();
 	var sub = padCollectFolderPath(settings, 'fontes');
 	var m = padMetaRead();
-	var root = m.pasta ? padMountedPath(padPath(m.pasta)) : file ? padCollectRoot(file, settings) : '';
+	var root = '';
+
+	if (m.pasta) root = mount ? padMountedPath(padPath(m.pasta)) : padResolvedPath(padPath(m.pasta));
+	else if (file) root = padCollectRoot(file, settings);
 
 	return root && sub ? new Folder(root + '/' + sub).fsName : '';
 }
@@ -68,7 +71,7 @@ PADX.fontsProject = function () {
 	var out = {
 		supported: padFontsSupported(),
 		fonts: [],
-		bank: cfg.bank ? padMountedPath(padPath(cfg.bank)) : '',
+		bank: cfg.bank ? padResolvedPath(padPath(cfg.bank)) : '', // a barra lê de tempos em tempos: nunca monta
 		bankDisplay: cfg.bank,
 		upload: cfg.upload,
 		machineUpload: padMachineFontsUpload(),
@@ -143,7 +146,7 @@ PADX.fontsInstalled = function (a) {
 // resolver (as já instaladas ficam como estão). → { installed, already, errors, none } (none: sem a pasta ou
 // sem fontes nela; não é erro)
 PADX.fontsInstallProject = function () {
-	var path = padProjectFontsFolder();
+	var path = padProjectFontsFolder(true);
 	var folder = path ? new Folder(path) : null;
 	var files = folder && folder.exists ? getFontFiles(folder, []) : [];
 

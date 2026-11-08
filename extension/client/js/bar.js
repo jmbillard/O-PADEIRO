@@ -638,6 +638,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	async function syncFonts() {
 		if (fontsSync.busy || document.hidden || !window.PAD_FONTBANK || !PAD_FONTBANK.available()) return;
 
+		// sem a rede (caiu ou modo local): o banco fica na rede, nem tenta (tocar num volume que sumiu faz o macOS
+		// avisar a cada vez). volta sozinho quando a rede voltar
+		if (netState === 'offline' || netState === 'forced') {
+			clearTimeout(fontsSync.timer);
+			fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
+			return;
+		}
+
 		fontsSync.busy = true;
 		clearTimeout(fontsSync.timer);
 

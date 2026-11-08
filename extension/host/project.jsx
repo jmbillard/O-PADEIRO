@@ -434,18 +434,40 @@ PADX.projectLookup = function (a) {
 // No macOS, o caminho no volume certo: o mesmo share montado de novo vira VFX-1 … VFX-5 (e a pasta /Volumes/VFX
 // pode sobrar vazia), então vale o volume onde existe o maior trecho do caminho (resolveMacVolumePath). se nenhum
 // volume tem nem a primeira pasta, monta o share como o acessorista faz ao abrir uma pasta (lib/acessorista.js).
+// Montar só depois de um clique: o que roda sozinho (as bolinhas da barra, a janela de fontes) usa
+// padResolvedPath, que nunca monta. sem a rede (VPN fora), cada tentativa de montar abre um aviso do macOS: depois
+// de uma que falhou, o mesmo share só é tentado de novo passado PAD_MOUNT_RETRY.
+var PAD_MOUNT_RETRY = 60000;
+var PAD_MOUNT_FAILED = {};
+
 function padMountedPath(path) {
 	if (appOs != 'Mac' || !path) return path;
 
-	var match = String(path).match(/^\/Volumes\/[^\/]+\/([^\/]+)/);
+	var match = String(path).match(/^\/Volumes\/([^\/]+?)(?:-[1-5])?\/([^\/]+)/);
 
 	if (!match) return path;
 
 	var resolved = resolveMacVolumePath(path);
 
-	if (padVolumeHas(resolved, match[1])) return resolved;
+	if (padVolumeHas(resolved, match[2])) return resolved;
+
+	var share = match[1].toLowerCase();
+	var now = new Date().getTime();
+
+	if (PAD_MOUNT_FAILED[share] && now - PAD_MOUNT_FAILED[share] < PAD_MOUNT_RETRY) return resolved;
 
 	psResolveOnMac(path, '', '');
+	resolved = resolveMacVolumePath(path);
+
+	if (padVolumeHas(resolved, match[2])) delete PAD_MOUNT_FAILED[share];
+	else PAD_MOUNT_FAILED[share] = now;
+
+	return resolved;
+}
+
+// O caminho no volume certo (VFX, VFX-1 … VFX-5), sem nunca montar: para o que roda sozinho, de tempos em tempos.
+function padResolvedPath(path) {
+	if (appOs != 'Mac' || !path) return path;
 
 	return resolveMacVolumePath(path);
 }
