@@ -1,4 +1,4 @@
-# 📄 templates
+# 📄 O FORNINHO · templates
 
 [← O PADEIRO](../README.md)
 
@@ -6,9 +6,19 @@ o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fil
 
 o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
 
-> 📟 *lista de templates:*
->
-> <img src="images/templates-lista.webp" alt="lista de templates" width="420">
+<p align="center"><img src="images/anim/forninho.webp" alt="O FORNINHO: busca, escolhe o template e preenche" width="900"></p>
+
+<table><tr><td width="40%"><img src="images/forninho-lista.webp" alt="a lista de templates, com as partes numeradas"></td><td><img src="images/forninho-preencher.webp" alt="o template selecionado, com as partes numeradas"></td></tr></table>
+
+| | a lista | | o template |
+| :---: | --- | :---: | --- |
+| ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** (a ★ fixa) |
+| ❷ | **pastas** da produção, com quantos templates | ❷ | **preview** (imagem ou vídeo) |
+| ❸ | **atualizar**: lê a pasta de novo | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
+| ❹ | **abrir a pasta** de templates | ❹ | **dicas** de preenchimento |
+| ❺ | **produção**: a pasta de templates mostrada | ❺ | **importar** sem preencher |
+| ❻ | **⋯**: configuração, ajuda e recarregar | ❻ | **pasta de output** do template |
+| | | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
 
 1. `◖ clique esquerdo` em **templates**, na barra.
 2. busque ou navegue pelas pastas.
@@ -16,10 +26,6 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 4. preencha o **input** seguindo as **dicas**.
 5. clique em '*Preencher*' (ou `Ctrl/Cmd+Enter`).
 6. escolha o template de output e clique em '*Criar fila de render*'.
-
-> 📟 *template selecionado:*
->
-> ![template selecionado](images/templates-preencher.webp)
 
 ### a lista
 

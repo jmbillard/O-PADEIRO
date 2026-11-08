@@ -1,4 +1,6 @@
-# 🔤 fontes
+# 🔤 O TIPÓGRAFO · fontes
+
+[← O PADEIRO](../README.md)
 
 o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02 ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
 
@@ -33,6 +35,19 @@ a bolinha no botão:
 ## 📍 fontes do projeto (janela)
 
 a janela se chama **O TIPÓGRAFO** (como O ACESSORISTA e O CATADOR).
+
+<table><tr><td width="50%"><img src="images/tipografo.webp" alt="O TIPÓGRAFO, com as partes numeradas"></td><td><img src="images/anim/tipografo.webp" alt="O TIPÓGRAFO trocando a fonte que falta pela busca"></td></tr></table>
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **o projeto** | quantas fontes e em quantos layers. |
+| ❷ | **a amostra** | cada fonte escrita nela mesma (sem a fonte neste computador, "prévia indisponível"). |
+| ❸ | **✓** | instalada, no banco e na pasta do projeto. |
+| ❹ | **↑** | instalada, subindo para o banco e para a pasta do projeto (a seta anima enquanto copia). |
+| ❺ | **↓** | não está neste computador, mas está no banco: o Resolver instala (a seta desce enquanto instala). |
+| ❻ | **substituir por** | a troca, com a busca: as sugestões (mesma família e peso), o banco e as instaladas, com a prévia. |
+| ❼ | **copiar as fontes** | copia todas as fontes do projeto para uma pasta. |
+| ❽ | **Resolver** | instala o que está no banco e troca o que foi escolhido (desfaz com um Ctrl+Z). |
 
 no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quantos layers usam, a amostra escrita na própria fonte e o estado (o ícone; o texto no balão):
 

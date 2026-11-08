@@ -1,4 +1,4 @@
-# ✨ criar template
+# ✨ A FORMA · criar template
 
 [← O PADEIRO](../README.md)
 
@@ -11,9 +11,21 @@ um template do padeiro é um conjunto de arquivos:
 - `<nome>_preview.png` → a imagem de preview;
 - a pasta `FONTS` → os arquivos das fontes usadas no projeto.
 
-> 📟 *criador de templates:*
->
-> ![criador de templates](images/criador.webp)
+![A FORMA, com as partes numeradas](images/forma.webp)
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **o que falta** | o checklist: cada item fica marcado quando está pronto; clicar leva ao campo. |
+| ❷ | **atração e o que é** | a atração (com a busca, ou uma nova) e o que é (ex: SERVIÇO, CONVIDADO, AESP). |
+| ❸ | **exemplo e dicas** | o exemplo de preenchimento (uma linha por informação; a seta puxa o texto dos layers) e as dicas, uma por linha. |
+| ❹ | **nome final** | como as comps vão se chamar: prefixo, caixa de texto e separador. |
+| ❺ | **preview** | clique para capturar o frame da agulha da timeline. |
+| ❻ | **fontes usadas** | cada fonte da comp, escrita nela mesma (? = não instalada). |
+| ❼ | **layers editáveis** | a ordem das informações no input e o que cada uma muda no layer. |
+| ❽ | **variações de layout** | opcional: um efeito de menu da comp principal, cada opção vira uma comp com o sufixo no nome. |
+| ❾ | **testar agora** | preenche uma cópia com o exemplo, para conferir antes de salvar. |
+| ❿ | **salvar template** | grava o projeto, a config, o preview e as fontes. |
+
 
 1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
 2. abra a comp principal e `◗ clique direito` em **templates**, na barra.

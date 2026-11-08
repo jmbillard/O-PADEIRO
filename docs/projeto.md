@@ -1,4 +1,4 @@
-# 🎬 projeto
+# 🎬 A CLAQUETE · projeto
 
 [← O PADEIRO](../README.md)
 
@@ -8,9 +8,19 @@ a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a a
 
 abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
-> 📟 *janela projeto*:
->
-> ![janela projeto](images/projeto.webp)
+<p align="center"><img src="images/anim/claquete.webp" alt="A CLAQUETE: a atração pela busca, o que é e o nome do .aep" width="480"></p>
+
+<table><tr><td><img src="images/claquete-atracao.webp" alt="a etapa ATRAÇÃO, com as partes numeradas"></td><td><img src="images/claquete-editor.webp" alt="o editor do projeto, com as partes numeradas"></td></tr></table>
+
+| | projeto novo (ATRAÇÃO) | | o editor (projeto já criado) |
+| :---: | --- | :---: | --- |
+| ❶ | **atração**: digite, a busca acha | ❶ | **atração** (com a mesma busca) |
+| ❷ | uma **atração achada** (pasta e output já conhecidos) | ❷ | **designer** (a sigla) |
+| ❸ | **nova atração**: o nome e a categoria abrem embaixo | ❸ | **o que é** (ex: SERVIÇO, CONVIDADO, AESP) |
+| ❹ | **outra pasta…**: o navegador de pastas | ❹ | o **nome do .aep** (a atração + o que é) |
+| ❺ | **Próximo** (`Enter`) → a etapa CRIAR | ❺ | **trocar a pasta**: leva o .aep e a estrutura |
+| | | ❻ | **pasta de output** |
+| | | ❼ | **Salvar** |
 
 ## 📍 projeto novo, em duas telas
 

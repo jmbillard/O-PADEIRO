@@ -8,7 +8,15 @@ a janela abre com 720 px de largura e baixa: sem uma busca, ela mostra só o cab
 
 ### caminhos
 
-> <img src="images/acessorista-caminhos.webp" alt="busca de caminhos" width="420">
+<table><tr><td width="50%"><img src="images/acessorista-caminhos.webp" alt="a busca de caminhos, com as partes numeradas"></td><td><img src="images/anim/acessorista.webp" alt="O ACESSORISTA buscando e trocando para a aba de textos"></td></tr></table>
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **abas** | **caminhos** e **textos** (o mesmo painel). |
+| ❷ | **busca** | atração, claquete, quem mandou, projeto, output ou caminho (a partir de 2 caracteres). |
+| ❸ | **fontes da busca** | liga e desliga cada uma: Teams, Trello, atrações, filmes e servidor. a seta relê o índice. |
+| ❹ | **resultados** | o ícone diz de onde vem; o trecho achado fica marcado. clique para abrir a pasta. |
+
 
 `◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, claquete, quem mandou, projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
 

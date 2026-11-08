@@ -1,8 +1,22 @@
-# 🗂️ configuração
+# 🗂️ O PRODUTOR · configuração
 
 [← O PADEIRO](../README.md)
 
 a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
+
+<p align="center"><img src="images/anim/produtor.webp" alt="O PRODUTOR: as abas (cada ícone anima ao passar)" width="900"></p>
+
+![O PRODUTOR, com as partes numeradas](images/produtor.webp)
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **links** | os links da barra (o primeiro, como na barra). |
+| ❷ | **as ferramentas** | uma aba por ferramenta, na ordem da barra (templates, fontes, projeto, coletar, renomear, organizar, buscar). |
+| ❸ | **rede** | os drives e volumes da rede, os logs e o resto. |
+| ❹ | **meu usuário** | só deste computador: a sigla, as pastas, o modo local. |
+| ❺ | **recarregar** | lê a configuração do arquivo de novo. |
+| ❻ | **salvar** | grava (`Ctrl/Cmd+S`). |
+| ❼ | **onde é salvo** | 🌐 equipe (na rede, vale para todo mundo) ou 👤 neste computador. |
 
 as abas ficam em três grupos, separados por uma linha:
 
@@ -37,9 +51,6 @@ a aba **templates** é a lista de produções. uma **produção** é uma pasta q
 
 a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL_config.json`, na pasta do padeiro na rede. (as versões antigas usavam `O_PADEIRO_config.json`: na primeira vez, o padeiro copia esse arquivo com o nome novo, e daí em diante cada versão grava o seu, sem uma estragar a configuração da outra.) quando alguém muda a lista, os painéis de todo mundo atualizam sozinhos.
 
-> 📟 *aba templates*:
->
-> ![editor de produções](images/producoes.webp)
 
 1. clique em '*+ nova produção*'.
 2. escolha um ícone (opcional: o ícone dentro do campo do nome abre a biblioteca de ícones; ele aparece no seletor de produção do painel de templates), digite o nome e escolha a pasta de templates pelo ícone de pasta dentro do campo (o ponto à esquerda do caminho fica verde quando a pasta existe). a **lixeira**, à direita da linha (fora do campo), exclui a produção.

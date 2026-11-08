@@ -1,10 +1,17 @@
-# 🔁 conversor de caminhos
+# 🔁 O ADAPTADOR · conversor de caminhos
 
 [← O PADEIRO](../README.md)
 
 o painel **O ADAPTADOR**: converte caminhos entre Windows e macOS.
 
-> ![conversor de caminhos](images/conversor.webp)
+<table><tr><td width="50%"><img src="images/adaptador.webp" alt="O ADAPTADOR, com as partes numeradas"></td><td><img src="images/anim/adaptador.webp" alt="cola o caminho do Mac e sai o do Windows"></td></tr></table>
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **macOS** | o caminho do Mac (`/Volumes/…`). |
+| ❷ | **Windows** | o mesmo caminho no Windows (`\\\\servidor\\…` ou a letra do mapa de drives). |
+| ❸ | **copiar** | a prancheta de cada campo copia o caminho. |
+
 
 `◗ clique direito` em **pastas**, na barra. o conversor abre com a pasta da última saída da fila de render.
 

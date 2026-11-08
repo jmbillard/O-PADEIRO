@@ -88,8 +88,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			{ type: 'node', text: 'TARJAS', children: [tpl('TARJA SIMPLES', 'TARJAS'), tpl('TARJA DUPLA', 'TARJAS'), tpl('TARJA JOGO', 'TARJAS')] },
 			{ type: 'node', text: 'RODAPES / ESPORTES', children: [tpl('RODAPE PLACAR', 'RODAPES'), tpl('RODAPE ESCALACAO', 'RODAPES')] },
 			{ type: 'node', text: 'CARTOES', children: [tpl('CARTAO DE VISITA', 'CARTOES'), tpl('CARTAO ENTREVISTADO', 'CARTOES')] },
-			tpl('LETTERING SOLTO', '.'),
-			tpl('ASSINATURA JORNAL', '.')
+			tpl('LETTERING SOLTO', 'TEMPLATES PADEIRO'),
+			tpl('ASSINATURA JORNAL', 'TEMPLATES PADEIRO')
 		]
 	};
 
@@ -1173,7 +1173,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ id: 14, name: 'textura_[0000-0120].png', file: D + 'ae-menu-output-module.png', kind: 'sequencias', state: 'net', layers: 1 },
 					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'net' : 'missing', layers: 1 },
 					{ id: 16, name: 'placar.csv', file: R + '/DADOS/placar.csv', kind: 'dados', state: 'ok', layers: 1 },
-					{ id: 17, name: 'barra.webp', file: D + 'barra.webp', kind: 'imagens', state: 'ok', layers: 0 }
+					{ id: 17, name: 'barra.webp', file: D + 'barra-vertical.webp', kind: 'imagens', state: 'ok', layers: 0 }
 				]
 			};
 		},

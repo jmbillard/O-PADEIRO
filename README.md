@@ -7,28 +7,41 @@ o padeiro duplica comps, preenche os textos e cria a fila de render a partir de 
 o fluxo é simples, em 3 etapas:\
 `1 buscar` > `2 selecionar` > `3 preencher`
 
-![barra principal](docs/images/barra.webp)
+<p align="center"><img src="docs/images/anim/barra.webp" alt="a barra do padeiro: cada ferramenta anima ao passar o mouse" width="1000"></p>
 
 > 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
-o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos, e as outras ferramentas abrem em **janelas** próprias, pelos botões da barra.
+o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos. cada ferramenta tem **dois cliques** (`◖` esquerdo e `◗` direito) e as tarefas maiores abrem em **janelas** próprias, cada uma com um nome de ofício (ou objeto) da padaria e dos bastidores da TV: **a turma**.
 
-| painel | para que serve |
-| --- | --- |
-| **INSTALAR O PADEIRO.jsx** | instalar, atualizar ou remover o padeiro neste computador ([abaixo](#-instalação)) |
-| **O PADEIRO** | a barra principal: ferramentas e atalhos para os outros painéis ([abaixo](#-a-barra-principal)) |
-| **O FORNINHO** | os templates: buscar, selecionar e preencher templates, e criar a fila de render → [documentação](docs/templates.md) |
-| **A FORMA** | o criador de templates: transformar a comp aberta em um novo template → [documentação](docs/criador.md) |
-| **A CLAQUETE** | o projeto: projeto novo pela atração: acha a pasta dela, cria a estrutura e salva o `.aep` → [documentação](docs/projeto.md) |
-| **O PRODUTOR** | a configuração: o que é da equipe (produções, links, logs, drives, renomear, organizar, coletar, busca) e o que é local (aparência, ferramentas, meus links) → [documentação](docs/producoes.md) |
-| **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta → [documentação](docs/fontes.md) |
-| **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam ([abaixo](#coletar)) |
-| **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto → [documentação](docs/acessorista.md) |
-| **O ADAPTADOR** | converter caminhos entre Windows e macOS → [documentação](docs/conversor.md) |
+### 🧑‍🍳 a turma
 
-cada painel tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** do próprio painel.
+| | ferramenta | `◖ clique esquerdo` | `◗ clique direito` |
+| :---: | --- | --- | --- |
+| <img src="docs/images/icons/templates.png" width="40" alt="templates"> | **Templates** | abre **[O FORNINHO](docs/templates.md)**: buscar, preencher e criar a fila de render | abre **[A FORMA](docs/criador.md)**: transformar a comp aberta num template novo |
+| <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
+| <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | **A CLAQUETE** salva o projeto na pasta dele |
+| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
+| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | importa um `.aep` (o de versão mais nova é convertido) | abre o `.aep` convertido no lugar do projeto |
+| <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | renomeia as comps selecionadas | renomeia todas as saídas de render |
+| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | **O CONTRARREGRA** cria a estrutura de pastas |
+| <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
+| <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
 
-<br>
+e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração (`◖ clique DUPLO` em qualquer ferramenta abre a aba dela), e o **[instalador](#-instalação)**.
+
+| janela | menu `Window` > `Extensions` | para que serve |
+| --- | --- | --- |
+| a barra | **O PADEIRO** | as ferramentas e os atalhos para as janelas ([abaixo](#-a-barra-principal)) |
+| 📄 [O FORNINHO](docs/templates.md) | **O FORNINHO** | os templates: buscar, selecionar e preencher, e criar a fila de render |
+| ✨ [A FORMA](docs/criador.md) | **A FORMA** | o criador de templates: transformar a comp aberta em um novo template |
+| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
+| 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
+| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
+| 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
+| 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
+| 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
+
+cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
 <br>
 
@@ -88,15 +101,25 @@ o padeiro lê e grava arquivos na rede (templates, lista de produções, fontes)
 
 ## 📍 a barra principal
 
-a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado (bem estreita, só os ícones, com os links um embaixo do outro).
-
-> ![barra principal](docs/images/barra.webp)
-
 <img src="docs/images/barra-vertical.webp" alt="barra vertical" width="150" align="right">
 
-a ordem das ferramentas, os grupos (separadores) e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra (neste computador), a partir de um padrão da equipe.
+a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos ícones, ou vertical, com os nomes ao lado (bem estreita, só os ícones, com os links um embaixo do outro).
+
+![barra principal, com as partes numeradas](docs/images/barra.webp)
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **rede / local** | **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro usa as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > rede](docs/producoes.md#-rede) (no notebook, [meu usuário](docs/producoes.md#-meu-usuário)). |
+| ❷ | **links** | os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site ([configuração > links](docs/producoes.md#-links)). |
+| ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos. a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
+| ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟡 arquivo fora das pastas de projetos, 🟢 tudo nelas. |
+| ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
+
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas, com o nome de quem faz. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
 
 ### primeira vez (o tour)
+
+<p align="center"><img src="docs/images/anim/tour.webp" alt="o tour da primeira vez, na própria barra" width="1000"></p>
 
 sem a configuração da equipe (nem na rede, nem a cópia deste computador), a barra abre um tour num balão de vidro, e as ferramentas esperam:
 
@@ -106,38 +129,11 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 `◗` no pãozinho refaz o tour da turma a qualquer hora.
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
+### trabalhando na barra
 
-- **pãozinho** (na ponta direita; na vertical, embaixo) → `◖` abre esta documentação; `◗` refaz o tour da barra.
-- **rede / local** (na ponta oposta à do pãozinho: à esquerda; na vertical, no topo) → **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro está usando as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` no servidor abre a [configuração > rede](docs/producoes.md#-rede); no notebook, a [configuração > meu usuário](docs/producoes.md#-meu-usuário).
-- **links** (no começo da barra) → os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site. as listas ficam na [configuração](docs/producoes.md#-links).
-- **templates**\
-  `◖` → abre **O FORNINHO**, o painel de templates.\
-  `◗` → abre **A FORMA**, o criador de templates (com a comp principal aberta).
-- **fontes**\
-  `◖` → resolve as fontes do projeto (instala as que faltam).\
-  `◗` → abre **O TIPÓGRAFO**: as fontes do projeto (trocar, copiar para uma pasta).
-- **projeto**\
-  `◖` → abre **A CLAQUETE**, a janela do [projeto](docs/projeto.md) (projeto novo pela atração, ou o editor). a bolinha no botão: verde, projeto com os dados do padeiro; laranja, sem os dados.\
-  `◗` → salva o projeto (sem projeto criado pela janela, abre a janela).
-- **coletar**\
-  `◖` → copia os arquivos usados no projeto para a pasta dele (na árvore da [configuração](docs/producoes.md#-coletar)).\
-  `◗` → abre **O CATADOR**: os arquivos do projeto e o estado de cada um (coletar em outra pasta, resolver os que faltam).
-- **importar**\
-  `◖` → importa um `.aep` no projeto aberto, convertendo o de versão mais nova para a deste After Effects.\
-  `◗` → abre um `.aep` de versão mais nova (a cópia convertida fica ao lado do original).
-- **pastas**\
-  `◖` → abre a pasta de output do último item da fila de render.\
-  `◗` → abre **O ADAPTADOR**, o conversor de caminhos Windows / macOS.
-- **renomear**\
-  `◖` → renomeia as comps selecionadas (pelos tipos de peça da [configuração](docs/producoes.md#-renomear)).\
-  `◗` → renomeia todas as saídas da fila de render.
-- **organizar**\
-  `◖` → **O CONTRARREGRA** organiza o projeto (na árvore de pastas da [configuração](docs/producoes.md#-organizar)).\
-  `◗` → cria só a estrutura de pastas do projeto.
-- **buscar**\
-  `◖` → abre **O ACESSORISTA** na busca de caminhos.\
-  `◗` → abre **O ACESSORISTA** na busca de textos.
+<p align="center"><img src="docs/images/anim/progresso.webp" alt="O CATADOR coletando: a contagem e a linha embaixo do botão" width="760"></p>
+
+**O CATADOR** (coletar) e **O TIPÓGRAFO** (fontes) mostram o andamento no próprio botão: o nome vira a contagem (`5/12`), uma linha fina enche embaixo e o ícone repete a animação; no fim, um brilho verde. o coletar vai arquivo por arquivo (o After Effects fica livre entre um e outro); as fontes contam as etapas do resolver (projeto → banco → conferindo) e o envio ao banco em segundo plano.
 
 <br clear="right">
 
@@ -173,7 +169,20 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 - **sequências de imagens** são copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela; a interpretação (fps, alpha) é mantida.
 - arquivos que já estão na pasta do projeto ficam como estão: coletar de novo só copia o que é novo.
 
-`◗ clique direito` → **O CATADOR**, a janela do coletar: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece, a pasta e o estado (✓ na pasta do projeto · ↑ nas pastas de projetos, fora da pasta deste projeto · ↑ amarela fora das pastas de projetos · ✕ faltando · – fora da árvore do coletar). clicar numa linha mostra o item no painel Project. **Coletar** copia o que falta para a estrutura do projeto (as setas sobem enquanto copia); a pasta do rodapé coleta em **outra pasta**; o **triângulo** resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (`VFX-1` … `VFX-5`): procura o caminho certo, monta o share se precisar e relinka (desfaz com um Ctrl+Z); o ⋯ abre a pasta do projeto.
+`◗ clique direito` → **O CATADOR**, a janela do coletar: uma linha por arquivo do projeto, com a miniatura (a imagem ou o primeiro quadro; áudio e dados com o ícone do tipo), o tipo, em quantas comps aparece e a pasta. clicar numa linha mostra o item no painel Project.
+
+<table><tr><td width="56%"><img src="docs/images/catador.webp" alt="O CATADOR, com as partes numeradas"></td><td><img src="docs/images/anim/catador.webp" alt="O CATADOR resolvendo um arquivo que falta e coletando"></td></tr></table>
+
+| | | |
+| :---: | --- | --- |
+| ❶ | **o projeto** | o `.aep`, quantos arquivos e quantos estão fora do lugar. |
+| ❷ | **✕ faltando** | o arquivo não existe (ou está num volume desmontado: o ❼ resolve). |
+| ❸ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
+| ❹ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. |
+| ❺ | **✓** | já está na pasta do projeto. (**–** cinza: tipo fora da árvore do coletar.) |
+| ❻ | **outra pasta** | coleta numa pasta escolhida. |
+| ❼ | **resolver os que faltam** | procura cada arquivo faltando no volume certo (`VFX`, `VFX-1` … `VFX-5`), monta o share se precisar e relinka (desfaz com um Ctrl+Z). |
+| ❽ | **Coletar** | copia o que falta para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto. |
 
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
@@ -250,13 +259,14 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | | |
 | --- | --- |
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
-| [📄 templates](docs/templates.md) | buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
-| [✨ criar template](docs/criador.md) | formulário, nomenclatura, layers editáveis e arquivo de configuração |
-| [🔤 fontes](docs/fontes.md) | banco de fontes, o botão fontes e a janela de fontes do projeto |
-| [🎬 projeto](docs/projeto.md) | projeto novo pela atração, estrutura de pastas e editor |
-| [🗂️ configuração](docs/producoes.md) | produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
+| [📄 O FORNINHO](docs/templates.md) | templates: buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
+| [✨ A FORMA](docs/criador.md) | criar template: formulário, nomenclatura, layers editáveis e arquivo de configuração |
+| [🔤 O TIPÓGRAFO](docs/fontes.md) | fontes: banco de fontes, o botão fontes e a janela de fontes do projeto |
+| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração, estrutura de pastas e editor |
+| [🗂️ O PRODUTOR](docs/producoes.md) | configuração: produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
+| [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto, outra pasta e os que faltam |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
-| [🔁 conversor](docs/conversor.md) | caminhos Windows / macOS |
+| [🔁 O ADAPTADOR](docs/conversor.md) | conversor: caminhos Windows / macOS |
 | [🧭 guia de UI](docs/guia-ui.md) | as regras para criar e mexer nas janelas: cores do tema, cantos, campos, ícones, animações, mensagens |
 
 <br>

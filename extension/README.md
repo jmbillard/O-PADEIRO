@@ -68,7 +68,7 @@ O-PADEIRO/
    │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), a checagem do brilho do foco (check-focus-crop.js) e o retrato da pasta de ícones para o modo de teste (build-icons.js)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), a checagem do brilho do foco (check-focus-crop.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>
@@ -170,6 +170,20 @@ sem o After Effects, os painéis usam o `mock-host.js` (templates, produções e
 no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta das fontes).
 
 > 🧭 *antes de enviar uma mudança de tela, rode a checagem do brilho do foco (`node extension/scripts/check-focus-crop.js`) e confira o [guia de UI](../docs/guia-ui.md).*
+
+### imagens da documentação
+
+as telas, as animações e os ícones da documentação saem do modo de teste (o `mock-host.js` responde no lugar do After Effects), sempre iguais:
+
+```bash
+node extension/scripts/doc-media.js
+```
+
+- **telas** → `docs/images/<nome>.webp`: a janela em 2x, com os botões e abas destacados em laranja e numerados (❶ ❷ ❸…). o texto explica na mesma ordem.
+- **animações** → `docs/images/anim/<nome>.webp`: a janela em uso, com um cursor desenhado e um anel a cada clique (laranja no clique direito). webp animado, em loop como um gif: com o degradê das janelas, um gif fica enorme.
+- **ícones** → `docs/images/icons/<nome>.png`: as ferramentas da barra, no degradê, para as tabelas.
+
+só uma parte: `node extension/scripts/doc-media.js gifs tour barra` (ou `telas`, `icones`). quando uma tela mudar, rode de novo e confira se os destaques ainda caem nos botões certos (os seletores ficam no começo do script).
 
 ### depurar no After Effects
 
