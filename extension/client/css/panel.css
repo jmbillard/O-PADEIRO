@@ -1454,7 +1454,7 @@ body {
 }
 
 .area-tool:hover .import-arrow {
-  transform: translateY(2.5px);
+  transform: translateY(-2.5px); /* puxar dos layers: a seta sobe, para dentro do campo */
 }
 
 /* botão redondo de ícone dos rodapés: é o .io-button (fim do arquivo); o de recomeçar gira no hover */

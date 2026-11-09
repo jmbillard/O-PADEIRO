@@ -305,6 +305,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		await refreshLayers();
 
 		var sep = getSeparator();
+		var typed = $('f-separator').value.replace(/\\n|\\r/g, '\n'); // o que está no campo (o '---' de getSeparator também vale para vazio)
 		var oneLine = sep.indexOf('\n') >= 0; // separador de linha: quebras dentro de um texto viram espaço
 		var parts = state.layers
 			.filter(function (layer) {
@@ -315,7 +316,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 				return oneLine ? value.replace(/\s*\n+\s*/g, ' ').trim() : value;
 			});
-		var example = parts.join(sep === '---' ? '\n' : sep).replace(/\n{2,}/g, '\n'); // linha vazia separaria versões
+		// o separador preenchido (ex: ---, |): cada um na sua linha, entre os textos (o preenchimento tira as quebras em
+		// volta). sem separador (ou um layer só): o texto vai inteiro, uma informação por linha
+		var join = oneLine ? sep : typed.trim() && state.layers.length > 1 ? '\n' + typed.trim() + '\n' : '\n';
+		var example = parts.join(join).replace(/\n{2,}/g, '\n'); // linha vazia separaria versões
 
 		$('f-example').value = example;
 		$('f-example').dispatchEvent(new Event('input'));
