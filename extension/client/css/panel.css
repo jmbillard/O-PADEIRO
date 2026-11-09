@@ -1873,13 +1873,20 @@ body.motion-ready .eyebrow {
   visibility: hidden;
 }
 
-/* prévia com transparência (alpha): o quadriculado por baixo, como no preview do template */
+/* prévia com transparência (alpha): o quadriculado por baixo, translúcido (o vidro aparece através, como na
+   miniatura sem alpha: não vira um bloco branco) */
 .tree-thumb.has-image {
-  background: repeating-conic-gradient(#d5dae3 0 25%, #eef1f5 0 50%) 0 0 / 8px 8px;
+  background: repeating-conic-gradient(rgb(var(--shine-rgb) / 30%) 0 25%, rgb(var(--shine-rgb) / 10%) 0 50%) 0 0 / 8px 8px;
 }
 
 .tree-item:not([data-section=""]) .tree-thumb.has-image {
   background-size: 12px 12px;
+}
+
+/* no escolhido (o cartão claro), o quadriculado cinza do preview do template: o branco translúcido sumiria */
+.tree-item.is-selected .tree-thumb.has-image {
+  background-color: transparent;
+  background-image: repeating-conic-gradient(rgb(120 130 150 / 22%) 0 25%, rgb(120 130 150 / 8%) 0 50%);
 }
 
 .tree-thumb.has-image .tree-thumb-img {
