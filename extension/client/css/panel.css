@@ -1139,7 +1139,7 @@ body {
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-medium);
+  border-radius: calc(var(--radius-small) + 13px); /* concêntrico: raio dos campos + respiro (12) + borda (1) */
   background: var(--surface-soft);
 }
 
@@ -1839,12 +1839,30 @@ body.motion-ready .eyebrow {
   opacity: 1;
 }
 
-/* C · a lista: a miniatura cresce no escolhido e no hover (só as que têm prévia) */
+/* C · a lista: a miniatura cresce no escolhido e no hover (só as que têm prévia) até o tamanho das dos cartões
+   em destaque (--card-thumb-w, medido no app.js) */
 .tree-item[data-section=""]:hover .tree-thumb.has-image,
 .tree-item[data-section=""].is-selected .tree-thumb.has-image {
-  width: 128px;
-  height: 72px;
-  border-radius: 9px;
+  width: var(--card-thumb-w, 128px);
+  height: calc(var(--card-thumb-w, 128px) * 9 / 16);
+  border-radius: 10px; /* o mesmo canto dos cartões */
+}
+
+/* a linha em volta da miniatura: respiro igual dos lados (10 + a borda) e o canto concêntrico com ela
+   (raio da miniatura + 10 + 1): 6 + 11 pequena, 10 + 11 crescida */
+.tree-item[data-section=""]>.tree-row {
+  padding-left: 10px !important;
+  border-radius: 17px;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    border-radius 320ms var(--ease-soft),
+    transform 220ms var(--ease-soft);
+}
+
+.tree-item[data-section=""]:hover>.tree-row.has-thumb,
+.tree-item[data-section=""].is-selected>.tree-row.has-thumb {
+  border-radius: 21px;
 }
 
 /* B · fixados, recentes e novos: cartões em três colunas */
@@ -1860,7 +1878,7 @@ body.motion-ready .eyebrow {
   align-items: stretch;
   gap: 7px;
   padding: 7px 7px 9px !important;
-  border-radius: 16px;
+  border-radius: 18px; /* concêntrico com a miniatura: raio (10) + respiro (7) + borda (1) */
 }
 
 .tree-item:not([data-section=""])>.tree-row .tree-label {
@@ -2646,11 +2664,12 @@ body.motion-ready .eyebrow {
   width: 100%;
   margin-top: 4px;
   border-style: dashed;
+  border-radius: var(--radius-small); /* o canto dos campos: no canto de um cartão, fica concêntrico com ele */
 }
 
-/* direto no cartão, o gap é o do cartão (14): desconta para ficar a 10 px da lista, como os outros "+" */
+/* direto no cartão, o gap já é o do cartão (10), como o dos outros "+" */
 .cfg-card>.add-button {
-  margin-top: -4px;
+  margin-top: 0;
 }
 
 .add-button:hover:not(:disabled) {

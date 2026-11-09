@@ -125,13 +125,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	var COMPACT_WIDTH = 460;
-	var EXPANDED_WIDTH = 1000;
+	var EXPANDED_WIDTH = 1100;
+	var OPEN_HEIGHT = 1160; // alta de cara: a lista e a folha inteiras sem rolar (nunca maior que a tela)
 	var compactWidth = null; // largura antes de alargar, para voltar a ela
 
 	function setExpanded(on) {
 		if (on === app.classList.contains('is-expanded')) return;
 
 		app.classList.toggle('is-expanded', on);
+		setTimeout(syncCardThumb, 700); // a coluna da busca muda de largura (depois da transição, 620 ms)
 
 		if (on && window.innerWidth < EXPANDED_WIDTH) {
 			compactWidth = window.innerWidth;
@@ -880,6 +882,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		img.decoding = 'async';
 		img.onload = function () {
 			box.classList.add('has-image');
+			if (box.parentNode) box.parentNode.classList.add('has-thumb'); // a linha: o canto acompanha a miniatura crescida
 		};
 		img.onerror = function () {
 			img.remove(); // sem prévia: fica o ícone
@@ -1004,6 +1007,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		total.textContent = query ? found + ' de ' + plural(countTemplates(state.tree), 'template', 'templates') : plural(found, 'template', 'templates');
+		syncCardThumb();
+	}
+
+	// a miniatura da lista cresce (hover / escolhido) até o tamanho das dos cartões em destaque (fixados, recentes,
+	// novos): a largura vem de um cartão na tela ou, sem nenhum, da mesma conta das três colunas
+	function syncCardThumb() {
+		var list = $('tree');
+		var card = list.querySelector('.tree-item:not([data-section=""]) .tree-thumb');
+		var w = card ? card.getBoundingClientRect().width : 0;
+
+		if (!w) {
+			var children = list.querySelector('.tree-children');
+			var inner = children ? children.clientWidth : list.clientWidth - 21; // 21 = recuo de uma pasta (14 + 6 + a linha)
+
+			w = inner / 3 - 24; // cada cartão: um terço menos a margem (6) e o respiro da linha (18)
+		}
+
+		if (w > 40) list.style.setProperty('--card-thumb-w', Math.round(w) + 'px');
 	}
 
 	function updateFolderButton() {
@@ -2176,8 +2197,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	async function init() {
-		// a janela abre estreita, só com a busca (a largura do manifest só muda reinstalando)
-		if (PAD_BRIDGE.inCep() && window.innerWidth > COMPACT_WIDTH) PAD_BRIDGE.resizeWindow(COMPACT_WIDTH, window.innerHeight);
+		// a janela abre estreita (só com a busca) e alta (o tamanho do manifest só muda reinstalando)
+		if (PAD_BRIDGE.inCep()) {
+			var openH = Math.max(window.innerHeight, Math.min(OPEN_HEIGHT, (screen.availHeight || OPEN_HEIGHT) - 60));
+			if (window.innerWidth > COMPACT_WIDTH || window.innerHeight < openH - 4) PAD_BRIDGE.resizeWindow(Math.min(window.innerWidth, COMPACT_WIDTH), openH);
+		}
 
 		bindEvents();
 		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
@@ -2206,6 +2230,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setInterval(watchProduction, 2000);
 		window.addEventListener('focus', watchProduction);
+		window.addEventListener('resize', syncCardThumb); // a miniatura da lista acompanha a largura dos cartões
 	}
 
 	init();
