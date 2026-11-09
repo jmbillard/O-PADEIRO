@@ -886,7 +886,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	// Depois de salvar: o aviso fica até a escolha (gerar o preview em vídeo ou não) e só então a pasta do
-	// template abre, para não interromper o processo com a janela do Finder / Explorer.
+	// template abre, para não interromper o processo com a janela do Finder / Explorer; depois, o formulário
+	// volta ao começo e a janela fecha.
 	function savedToast(data) {
 		var box = $('toast');
 		var compId = state.comp.id;
@@ -894,6 +895,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 600000);
 
+		// o fim: abre a pasta do template, limpa o formulário e fecha A FORMA (o próximo template começa do zero)
 		function openTemplateFolder() {
 			if (opened) return;
 
@@ -901,6 +903,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			call('openFolder', { path: data.folder }).catch(function (err) {
 				toast('error', err.message);
 			});
+			setTimeout(function () {
+				resetForm();
+				PAD_BRIDGE.closePanel();
+			}, 1200);
 		}
 
 		var render = el('button', 'toast-action', 'gerar preview .mp4');
