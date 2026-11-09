@@ -1053,7 +1053,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		updateNameFull();
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
 		$('f-tip').value = DEFAULT_TIP;
-		$('f-prefix').value = 'TARJA';
+		$('f-prefix').value = '';
 		$('f-case').value = 'upperCase';
 		PAD_DROPDOWN.refresh($('f-case'));
 		$('f-separator').value = '\\n';
