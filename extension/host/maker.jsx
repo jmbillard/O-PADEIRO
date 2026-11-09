@@ -321,7 +321,7 @@ PADX.makerTest = function (a) {
 // Marca a comp como template, salva o projeto (janela do After Effects) e grava o config, o preview e as fontes.
 // a: { compId, layers: [{id, method}], fx: { layerId, fxName, optionIndex, options } | null, config } — 'config' sem
 // 'compName' / 'inputLayers' / 'inputFx'.
-// O arquivo proposto para salvar o template: '<PREFIXO> <O QUE É>.aet' (a atração já é o nome da pasta e aparece
+// O arquivo proposto para salvar o template: '<PREFIXO> <O QUE É>' (a janela põe o .aet) (a atração já é o nome da pasta e aparece
 // na busca), na pasta do projeto aberto (já salvo) ou, sem ela, na pasta de templates da produção escolhida (sem
 // acesso: a Área de Trabalho)
 function padMakerSaveTarget(cfg) {
@@ -339,7 +339,7 @@ function padMakerSaveTarget(cfg) {
 
 	if (!folder) folder = Folder.desktop;
 
-	return new File(folder.fsName + '/' + name + '.aet');
+	return new File(folder.fsName + '/' + name); // sem extensão: a janela do sistema já acrescenta a do filtro (com ela, saía '.aet.aet')
 }
 
 // no macOS, o filtro da janela é uma função: só pastas e projetos do After Effects
@@ -396,10 +396,14 @@ PADX.makerSave = function (a) {
 		comp.comment = 'TEMPLATE';
 
 		// a janela do sistema já com o nome (a atração + o que é, como o .aep da CLAQUETE) e na pasta certa
-		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Projeto do After Effects:*.aep;*.aet' : padMakerSaveFilter);
+		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Template do After Effects:*.aet;*.aep' : padMakerSaveFilter);
 
 		if (target) {
-			if (!/\.ae[pt]$/i.test(target.name)) target = new File(target.fsName + '.aet');
+			// a extensão uma vez só (a janela pode repetir: '.aet.aet'); sem nenhuma, .aet
+			var targetName = decodeURI(target.name).replace(/(\.ae[pt])+$/i, '');
+			var targetExt = (decodeURI(target.name).match(/\.ae[pt]$/i) || ['.aet'])[0].toLowerCase();
+
+			target = new File(target.parent.fsName + '/' + targetName + targetExt);
 			app.project.save(target);
 			saved = true;
 		}
