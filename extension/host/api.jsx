@@ -1084,14 +1084,42 @@ function padInstalledFontFiles() {
 
 		for (var g = 0; g < groups.length; g++) {
 			for (var k = 0; k < groups[g].length; k++) {
-				var location = groups[g][k].location;
+				var font = groups[g][k];
+				var location = '';
+
+				try {
+					if (font.isSubstitute) continue;
+					location = font.location;
+				} catch (err) { }
 
 				if (location) names[File.decode(new File(location).name).toLowerCase()] = true;
+
+				// o Adobe Fonts guarda os arquivos com nomes embaralhados, numa pasta escondida: vale o nome da fonte
+				// (PostScript, e a família + o estilo), que é como o arquivo do template costuma se chamar
+				try {
+					names['#' + padFontKey(font.postScriptName)] = true;
+					names['#' + padFontKey(font.familyName + font.styleName)] = true;
+				} catch (err) { }
 			}
 		}
 	} catch (err) { } // After Effects antes da versão 24 não tem app.fonts
 
 	return names;
+}
+
+// O nome de uma fonte para comparar: só letras e números, em minúsculas (MyriadPro-Regular → myriadproregular)
+function padFontKey(name) {
+	return String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// A fonte do arquivo está instalada? pelo nome do arquivo (pastas do sistema) ou, sem ele, pelo nome da fonte:
+// o arquivo do template (MyriadPro-Regular.otf) com a fonte do Adobe Fonts ativa (MyriadPro-Regular)
+function padFontFileInstalled(installed, fileName) {
+	if (installed[fileName.toLowerCase()]) return true;
+
+	var base = padFontKey(fileName.replace(/\.[^.]+$/, ''));
+
+	return !!base && !!installed['#' + base];
 }
 
 function padTemplateFontsFolder(uri) {
@@ -1115,7 +1143,7 @@ PADX.templateFonts = function (a) {
 	for (var i = 0; i < files.length; i++) {
 		var name = File.decode(files[i].name);
 
-		if (!installed[name.toLowerCase()]) missing.push(name);
+		if (!padFontFileInstalled(installed, name)) missing.push(name);
 	}
 
 	return { hasFolder: true, total: files.length, missing: missing };
