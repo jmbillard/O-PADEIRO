@@ -183,7 +183,7 @@ PADX.fontsReplace = function (a) {
 	var done = [];
 	var failed = [];
 
-	app.beginUndoGroup('PADEIRO - trocar fontes');
+	padUndoBegin('PADEIRO - trocar fontes');
 
 	try {
 		for (var s = 0; s < (a.swaps || []).length; s++) {
@@ -211,7 +211,7 @@ PADX.fontsReplace = function (a) {
 			}
 		}
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 
 	return { done: done, failed: failed };

@@ -37,6 +37,8 @@ function PADX_call(method, argsJson) {
 
 		// todo erro chega ao painel com um código: os sem código são inesperados
 		res = { ok: false, error: /^#PAD_/.test(msg) ? msg : '#PAD_099 - erro inesperado: ' + msg };
+	} finally {
+		padUndoClose(); // nenhum grupo de desfazer fica aberto entre uma chamada e outra
 	}
 
 	return JSON.stringify(res);
@@ -566,13 +568,37 @@ function padTemplateFiles(projectFile) {
 	};
 }
 
+// Os grupos de desfazer (Ctrl+Z) do padeiro: um só por vez. um grupo dentro de outro entra no de fora (o After
+// Effects reclama de grupos aninhados ou deixados abertos: "Undo group mismatch, will attempt to fix") e, no fim de
+// cada chamada do painel, o que tiver ficado aberto é fechado (PADX_call).
+var PAD_UNDO_DEPTH = 0;
+
+function padUndoBegin(name) {
+	if (PAD_UNDO_DEPTH++ == 0) app.beginUndoGroup(name);
+}
+
+function padUndoEnd() {
+	if (PAD_UNDO_DEPTH <= 0) return;
+	if (--PAD_UNDO_DEPTH == 0) app.endUndoGroup();
+}
+
+function padUndoClose() {
+	if (PAD_UNDO_DEPTH > 0) {
+		PAD_UNDO_DEPTH = 0;
+
+		try {
+			app.endUndoGroup();
+		} catch (err) { }
+	}
+}
+
 function padGroup(name, fn) {
-	app.beginUndoGroup(name);
+	padUndoBegin(name);
 
 	try {
 		return fn();
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 }
 

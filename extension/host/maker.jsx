@@ -268,7 +268,7 @@ function padMenuCount(menu) {
 	var before = menu.value;
 	var count = 0;
 
-	app.beginUndoGroup('PADEIRO - opções do menu');
+	padUndoBegin('PADEIRO - opções do menu');
 
 	try {
 		for (var n = 1; n <= 50; n++) {
@@ -284,7 +284,7 @@ function padMenuCount(menu) {
 		try {
 			menu.setValue(before);
 		} catch (err) { }
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 
 	return count;
@@ -389,7 +389,7 @@ PADX.makerSave = function (a) {
 	var previousComment = comp.comment;
 	var saved = false;
 
-	app.beginUndoGroup('PADEIRO - criar template');
+	padUndoBegin('PADEIRO - criar template');
 
 	try {
 		comp.comment = 'TEMPLATE';
@@ -408,7 +408,7 @@ PADX.makerSave = function (a) {
 			return { messages: [], data: { saved: false } };
 		}
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 
 	var project = app.project.file;

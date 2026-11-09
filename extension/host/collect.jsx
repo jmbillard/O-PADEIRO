@@ -864,7 +864,7 @@ PADX.collectRelink = function (a) {
 
 	for (i = 0; a && a.ids && i < a.ids.length; i++) only[a.ids[i]] = true;
 
-	app.beginUndoGroup('PADEIRO - relinkar arquivos');
+	padUndoBegin('PADEIRO - relinkar arquivos');
 
 	try {
 		for (i = 1; i <= app.project.numItems; i++) {
@@ -892,7 +892,7 @@ PADX.collectRelink = function (a) {
 			}
 		}
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 
 	return res;
