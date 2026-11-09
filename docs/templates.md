@@ -115,7 +115,115 @@ o padeiro executa as seguintes tarefas, em ordem:
 5. organizar o projeto no padrão da PROMO.
 6. adicionar as comps à fila de render.
 7. definir os caminhos de output.
-8. rodar o script do template (`_script.js`), se existir.
+8. rodar o script do template (`_script.js`), se existir ([abaixo](#script-do-template-_scriptjs)).
+
+### script do template (`_script.js`)
+
+um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO.aet` → `RODAPE CONVIDADO_script.js`. o padeiro roda esse script **no fim do preenchimento**, depois de criar e organizar as comps e montar a fila de render (ou de concluir sem fila). serve para o que é específico de um template: mexer num efeito a partir do texto, mudar a cor de um label, ajustar a saída de render, ou fazer o preenchimento inteiro de um jeito próprio.
+
+- o script roda dentro do After Effects, em **ExtendScript** (JavaScript antigo, ES3: `var`, `function`, sem `let`, `const`, arrow functions ou template strings), com acesso a tudo do After Effects (`app`, `app.project`…).
+- um erro no script aparece no painel com o código `#PAD_021`; o preenchimento fica feito, e o painel fica aberto para mostrar o erro.
+- o padeiro avisa no painel quando o script rodou: '*script do template executado: …*'.
+
+#### as variáveis
+
+| variável | o que tem | exemplo |
+| --- | --- | --- |
+| `templateData` | a configuração do template (o `_config.json`, já com os valores padrão do que faltar) | `templateData.configName` → `'CONVIDADO'` |
+| `inputTextArray` | o input do painel, uma posição por **versão** (separadas por linha vazia), já na caixa do template | `['ANA MARIA\nAPRESENTADORA', 'JOÃO\nCONVIDADO']` |
+| `newCompsArray` | as comps criadas, na ordem do preenchimento (cada versão × cada variação de layout) | `newCompsArray[0].name` → `'RDP - ANA MARIA APRESENTADORA'` |
+| `newOutputsArray` | os módulos de output criados na fila de render (um por comp e pasta de output). **vazio** quando o preenchimento termina sem fila | `newOutputsArray[0].file` |
+
+**`templateData`** tem os campos do `_config.json`:
+
+| campo | o que é |
+| --- | --- |
+| `configName` | o que é (ex: `'CONVIDADO'`) |
+| `atracao` | a atração: `{ name, path, out }` |
+| `compName` | o nome da comp principal do template |
+| `prefix` | o prefixo do nome das comps (ex: `'RDP'`); com `ignore` no prefixo, o padeiro não duplica nem preenche nada (veja o exemplo 5) |
+| `refTime` | o tempo de referência, em segundos (o frame do preview) |
+| `textCase` | a caixa: `'upperCase'`, `'lowerCase'`, `'titleCase'` ou `'freeCase'` |
+| `separator` | o separador de informações (`'\n'` = quebra de linha) |
+| `inputLayers` | os layers editáveis: `[{ layerIndex, method }]` (`method`: `'textContent'` ou `'layerName'`) |
+| `inputFx` | as variações de layout, se houver: `{ layerIndex, fxName, optionIndex, options, kind }` |
+| `exemple` / `tip` | o exemplo de preenchimento e as dicas |
+| `importPath` / `outputPath` | a pasta de mídias e as pastas de output (`outputPath` é uma lista) |
+
+> 🚩 *obs:*\
+> • para separar as informações de uma versão, use o mesmo separador do template: `inputTextArray[0].split(templateData.separator == '\n' ? /[\n\r]/ : templateData.separator)`.\
+> • com variações de layout, `newCompsArray` tem uma comp por versão **e** por opção: com 2 versões e as opções `E` e `D`, são 4 comps (versão 1 E, versão 1 D, versão 2 E, versão 2 D).\
+> • as variáveis são as mesmas do padeiro antigo (v1): os scripts que já existem continuam funcionando.
+
+#### exemplos
+
+**1 · a cor do label e um comentário nas comps criadas**
+
+```js
+for (var i = 0; i < newCompsArray.length; i++) {
+	newCompsArray[i].label = 9; // verde
+	newCompsArray[i].comment = 'EXPORTAR · ' + templateData.configName;
+}
+```
+
+**2 · desligar o fundo quando a 2ª informação vem vazia** (ex: só o nome, sem o cargo)
+
+```js
+var sep = templateData.separator == '\n' ? /[\n\r]/ : templateData.separator;
+var porVersao = newCompsArray.length / inputTextArray.length; // as variações de layout
+
+for (var i = 0; i < newCompsArray.length; i++) {
+	var infos = inputTextArray[Math.floor(i / porVersao)].split(sep);
+	var fundo = newCompsArray[i].layer('FUNDO CARGO');
+
+	if (fundo && (infos.length < 2 || infos[1].replace(/\s/g, '') == '')) fundo.enabled = false;
+}
+```
+
+**3 · o tamanho do texto pelo número de letras** (nome longo fica menor)
+
+```js
+for (var i = 0; i < newCompsArray.length; i++) {
+	var layer = newCompsArray[i].layer(templateData.inputLayers[0].layerIndex);
+	var doc = layer.property('ADBE Text Properties').property('ADBE Text Document').value;
+
+	if (doc.text.length > 24) {
+		doc.fontSize = doc.fontSize * 0.8;
+		layer.property('ADBE Text Properties').property('ADBE Text Document').setValue(doc);
+	}
+}
+```
+
+**4 · a saída de render com a data no nome do arquivo**
+
+```js
+var d = new Date();
+var data = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+
+for (var i = 0; i < newOutputsArray.length; i++) {
+	var om = newOutputsArray[i];
+	var nome = om.file.name.replace(/(\.[^.]+)$/, '_' + data + '$1');
+
+	om.file = new File(om.file.parent.fsName + '/' + nome);
+}
+```
+
+**5 · um template que se preenche sozinho** (prefixo com `ignore`)
+
+com `ignore` no prefixo, o padeiro importa o template e roda o script, sem duplicar nem preencher: o script faz tudo, com o input do painel. nesse caso, `newCompsArray` tem só a comp principal do template (é ela que entra na fila de render, se houver fila).
+
+```js
+var base = newCompsArray[0]; // a comp principal do template
+
+for (var v = 0; v < inputTextArray.length; v++) {
+	var comp = base.duplicate();
+	var linhas = inputTextArray[v].split(/[\n\r]/);
+
+	comp.name = 'PLACAR - ' + linhas.join(' ');
+	comp.layer('TIME A').property('ADBE Text Properties').property('ADBE Text Document').setValue(linhas[0]);
+	comp.layer('TIME B').property('ADBE Text Properties').property('ADBE Text Document').setValue(linhas[1] || '');
+}
+```
 
 ### editor de config
 
