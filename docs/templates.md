@@ -13,14 +13,14 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 | | a lista | | o template |
 | :---: | --- | :---: | --- |
 | ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** |
-| ❷ | **fixados e recentes** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
+| ❷ | **fixados, recentes e novos** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
 | ❸ | na lista, a **miniatura** cresce no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
 | ❹ | **atualizar**: lê a pasta de novo | ❹ | **dicas** de preenchimento |
 | ❺ | **abrir a pasta** de templates | ❺ | **importar** sem preencher |
 | ❻ | **produção**: a pasta de templates mostrada | ❻ | **pasta de output** do template |
 | ❼ | **⋯**: configuração, ajuda e recarregar | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
 
-**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse; nos fixados e recentes, cartões em duas colunas, com a prévia grande. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
+**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
 1. `◖ clique esquerdo` em **templates**, na barra.
 2. busque ou navegue pelas pastas.
@@ -51,7 +51,7 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 
 ### fixados e recentes
 
-no topo da lista, antes das pastas, ficam dois atalhos:
+no topo da lista, antes das pastas, ficam três atalhos:
 
 - **★ fixados** → passe o mouse em um template e clique na estrela para fixá-lo; clique de novo para desafixar. não há limite de fixados.
 - **recentes** → os templates usados por último.
@@ -59,6 +59,7 @@ no topo da lista, antes das pastas, ficam dois atalhos:
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
   - o limite é de **5 templates**: quando entra o 6º, o mais antigo sai.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos de 5.
+- **novos** → os templates criados nos últimos **15 dias**, do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
 - **preset de render** → fixados e recentes lembram o último template de output usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 

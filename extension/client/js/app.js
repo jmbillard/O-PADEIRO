@@ -622,6 +622,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			.filter(Boolean);
 	}
 
+	// os novos: criados nos últimos 15 dias, do mais novo para o mais velho (os fixados e recentes não repetem)
+	var NEW_DAYS = 15;
+
+	function newNodes(skip) {
+		var since = Date.now() - NEW_DAYS * 86400000;
+
+		return Object.keys(state.byUri)
+			.map(function (uri) {
+				return state.byUri[uri];
+			})
+			.filter(function (node) {
+				return node.created && node.created >= since && skip.indexOf(node) < 0;
+			})
+			.sort(function (a, b) {
+				return b.created - a.created;
+			});
+	}
+
 	function yieldUi() {
 		return new Promise(function (resolve) {
 			setTimeout(resolve, 0);
@@ -654,7 +672,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				var entry = listing.entries[i];
 
 				if (entry.type === 'item') {
-					node.children.push({ type: 'item', text: entry.name, uri: entry.uri, fsName: entry.fsName });
+					node.children.push({ type: 'item', text: entry.name, uri: entry.uri, fsName: entry.fsName, created: entry.created || 0 });
 					continue;
 				}
 
@@ -942,8 +960,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				return favorites.indexOf(node) < 0;
 			});
 
+			var fresh = newNodes(favorites.concat(recents));
+
 			if (favorites.length) list.appendChild(buildSection('fixados', 'star', favorites));
 			if (recents.length) list.appendChild(buildSection('recentes', 'clock', recents));
+			if (fresh.length) list.appendChild(buildSection('novos', 'new', fresh));
 		}
 
 		data.children.forEach(function (child) {

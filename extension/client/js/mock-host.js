@@ -77,8 +77,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
 	}
 
+	// a data de criação: dois templates novos (dos últimos 15 dias), o resto antigo
+	var DAY = 86400000;
+	var NEW = { 'TARJA JOGO': 2, 'CARTAO ENTREVISTADO': 6 };
 	var tpl = function (name, folder, extra) {
-		return Object.assign({ type: 'item', text: name + '.aep', uri: '/mock/' + folder + '/' + name + '.aep', fsName: '/mock/' + folder + '/' + name + '.aep' }, extra || {});
+		return Object.assign({ type: 'item', text: name + '.aep', uri: '/mock/' + folder + '/' + name + '.aep', fsName: '/mock/' + folder + '/' + name + '.aep', created: Date.now() - (NEW[name] || 90) * DAY }, extra || {});
 	};
 
 	var tree = {
@@ -869,7 +872,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				path: a.path || a.uri,
 				name: node.text,
 				entries: node.children.map(function (child) {
-					return child.type === 'node' ? { type: 'folder', name: child.text, uri: child.__id } : { type: 'item', name: child.text, uri: child.uri, fsName: child.fsName };
+					return child.type === 'node' ? { type: 'folder', name: child.text, uri: child.__id } : { type: 'item', name: child.text, uri: child.uri, fsName: child.fsName, created: child.created };
 				})
 			};
 		},

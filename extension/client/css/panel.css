@@ -1834,7 +1834,7 @@ body.motion-ready .eyebrow {
 }
 
 /* a prévia de cada template ('<template>_preview.png'): na lista, uma miniatura pequena no lugar do ícone, que
-   cresce no template escolhido e ao passar o mouse; nos fixados e recentes, cartões em duas colunas (a prévia
+   cresce no template escolhido e ao passar o mouse; nos fixados, recentes e novos, cartões em três colunas (a prévia
    16:9 em cima, o nome embaixo, o selo AEP sobre a prévia e a estrela no canto). sem prévia, o ícone de arquivo */
 .tree-thumb {
   position: relative;
@@ -1901,10 +1901,10 @@ body.motion-ready .eyebrow {
   border-radius: 9px;
 }
 
-/* B · fixados e recentes: cartões em duas colunas */
+/* B · fixados, recentes e novos: cartões em três colunas */
 .tree-item:not([data-section=""]) {
   display: inline-block;
-  width: calc(50% - 6px);
+  width: calc(33.333% - 6px);
   margin: 3px;
   vertical-align: top;
 }
@@ -1918,10 +1918,14 @@ body.motion-ready .eyebrow {
 }
 
 .tree-item:not([data-section=""])>.tree-row .tree-label {
+  display: -webkit-box;
   overflow: hidden;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   line-height: 1.25;
   overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* o nome inteiro em até duas linhas (três colunas: os cartões são estreitos) */
 }
 
 .tree-item:not([data-section=""]) .tree-thumb {

@@ -960,7 +960,14 @@ PADX.listDir = function (a) {
 		if (items[i] instanceof Folder) {
 			entries.push({ type: 'folder', name: name, uri: items[i].absoluteURI });
 		} else if (PADX_TEMPLATE_EXT.indexOf(getFileExt(name)) >= 0) {
-			entries.push({ type: 'item', name: name, uri: items[i].absoluteURI, fsName: items[i].fsName });
+			// a data de criação (os 'novos' da lista: os dos últimos 15 dias); sem ela, a última modificação
+			var created = 0;
+
+			try {
+				created = (items[i].created || items[i].modified).getTime();
+			} catch (err) { }
+
+			entries.push({ type: 'item', name: name, uri: items[i].absoluteURI, fsName: items[i].fsName, created: created });
 		}
 	}
 
