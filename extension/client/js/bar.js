@@ -436,7 +436,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {

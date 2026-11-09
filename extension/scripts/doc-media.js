@@ -273,7 +273,7 @@ const SCENES = {
 	// a barra: o mouse passa pelas ferramentas (cada ícone anima, a dica conta os dois cliques)
 	barra: { w: 1000, h: 110, url: 'bar.html', async run(p) {
 		mouse = [990, 100];
-		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'importar', 'renomear', 'organizar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
+		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
 		await hover(p, '#logo', 700);
 	} },
 
