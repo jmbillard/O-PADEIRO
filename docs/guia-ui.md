@@ -39,7 +39,9 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
     conta o que aparece arredondado (fundo, borda, contorno por dentro) e também botões, abas e linhas, que ganham fundo no hover ou no escolhido. **tela ou etapa nova** → acrescente em `ui-states.js`.
   - **botões "+" e botões quadrados dentro de cartões** usam o canto dos campos (`--radius-small`), não a pílula: assim o cartão fica concêntrico com eles e com os campos ao mesmo tempo.
 - **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
-- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o degradê e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé**: na folha, uma linha fina por cima do rodapé (`border-top: 1px solid var(--border)`, `.action-bar.is-anchored`); no degradê, o conteúdo some numa máscara em degradê (`mask-image`).
+- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o degradê e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé é sempre um degradê**, nunca uma linha: na folha, o fundo do rodapé em degradê (`.action-bar.is-anchored`); no degradê, o conteúdo some numa máscara em degradê (`mask-image`). `--footer-center` é 35 px: o botão redondo (38) fica a 16 px do fundo, o mesmo respiro da lateral. o "⋯" é sempre de 38 px, no degradê e na folha.
+  - **checagem automática** → `node extension/scripts/check-footers.js` passa pelas telas de `ui-states.js` e lista cada botão de rodapé fora da linha (o centro a `--footer-center` do fundo) e cada "⋯" de outro tamanho.
+- **respiro das janelas: 16 px** → em todas as janelas e colunas (degradê e folha), o conteúdo começa a 16 px da borda, dos lados e em cima; embaixo, os botões do rodapé ficam a 16 px do fundo (`--footer-center`).
 - **colunas no degradê** → sem vidro, tudo na coluna (o título, a busca, a lista, os campos, os botões do rodapé) começa na mesma linha à esquerda, a 16 px da borda; e o título da coluna fica na mesma altura do título da folha ao lado (16 px do topo).
 
 ## 📍 campos
@@ -154,6 +156,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
 - [ ] **cantos concêntricos**: `node extension/scripts/check-corners.js` sem nenhum canto fora da conta;
+- [ ] **rodapés na mesma linha**: `node extension/scripts/check-footers.js` sem nenhum botão fora;
 - [ ] **sem halos** (nenhuma sombra ou anel em volta dos componentes) e **o foco aparece inteiro** ([acima](#-foco-um-contorno-fino-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;

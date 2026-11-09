@@ -20,7 +20,7 @@ body.finder-page {
   height: 100%;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 14px 0;
+  padding: 16px 16px 0; /* o respiro de todas as janelas: 16 em volta */
 }
 
 .finder-top {

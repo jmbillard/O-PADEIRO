@@ -665,14 +665,13 @@ body.maker-page {
 }
 
 /* barra ancorada */
-/* o rodapé da folha: uma linha fina por cima (como o dos templates), o centro dos botões alinhado com o da coluna */
+/* o rodapé da folha: a transição é um degradê (como o dos templates), o centro dos botões alinhado com o da coluna */
 .maker-bar.is-anchored {
   position: relative;
-  margin: 0;
-  padding: 12px 16px calc(var(--footer-center) - 23px); /* 23 = meio botão */
+  margin: -24px 0 0;
+  padding: 24px 16px calc(var(--footer-center) - 23px); /* 23 = meio botão */
   align-items: center;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  background: linear-gradient(to top, var(--surface) 72%, transparent);
 }
 
 .maker-bar .button-primary {

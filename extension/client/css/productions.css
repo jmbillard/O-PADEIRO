@@ -361,7 +361,7 @@ body.prods-page {
 }
 
 .prods-section-title {
-  padding: 12px 14px 4px;
+  padding: 12px 16px 4px;
 }
 
 .prods-file {
@@ -407,7 +407,7 @@ body.prods-page {
 .prods-list {
   min-height: 0;
   flex: 1;
-  padding: 0 14px 4px;
+  padding: 0 16px 4px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
@@ -566,7 +566,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 14px 4px;
+  padding: 8px 16px 4px;
 }
 
 .prods-list-head .cfg-title {
@@ -578,7 +578,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 12px 14px 4px;
+  margin: 12px 16px 4px;
 }
 
 .prods-filter {
@@ -673,7 +673,7 @@ body.prods-page {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 14px 14px;
+  padding: 0 16px 14px;
   overflow-y: auto;
 }
 
@@ -918,7 +918,7 @@ body.prods-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
-  padding: 12px 14px 14px;
+  padding: 12px 16px 14px;
 }
 
 .organize-pane[hidden] {
@@ -2249,7 +2249,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 14px 14px;
+  padding: 0 16px 14px;
 }
 
 .prods-local .prods-section-title {
@@ -2268,7 +2268,7 @@ body.is-org-dragging * {
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-soft);
   color: var(--text-secondary);

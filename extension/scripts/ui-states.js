@@ -55,7 +55,12 @@ const CHECKS = [
 	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
 	['projeto: criar', 'project.html', (p) => projectTo(p, 'criar')],
 	['busca', 'finder.html'],
-	['conversor', 'converter.html'],
+	['conversor', 'converter.html', async (p) => {
+		// a janela fica com a altura do conteúdo (fitHeight no converter.js; no navegador, o mock só registra)
+		const h = await p.evaluate(() => Math.ceil(document.getElementById('converter').getBoundingClientRect().height));
+
+		await p.setViewportSize({ width: 720, height: h });
+	}],
 	['fontes do projeto', 'fonts.html'],
 	['coletar', 'collect.html'],
 	['templates', 'index.html', openTemplate],

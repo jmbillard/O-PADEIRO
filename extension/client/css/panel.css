@@ -110,7 +110,7 @@ body {
   }
 
   .app-shell.is-expanded .upload-side {
-    padding-bottom: calc(var(--footer-center) - 34px);
+    padding-bottom: calc(var(--footer-center) - 19px);
   }
 
   .app-shell.is-expanded .picker-list {
@@ -130,7 +130,7 @@ body {
 @media (max-width: 480px) {
   .upload-side,
   .app-shell:not(.is-expanded) .upload-side {
-    padding: 16px 14px calc(var(--footer-center) - 34px);
+    padding: 16px 16px calc(var(--footer-center) - 19px);
   }
 
   .queue-side,
@@ -550,9 +550,11 @@ body {
   z-index: 5;
   bottom: 0;
   margin: auto calc(var(--queue-pad) * -1) 0;
-  padding: 12px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  padding: 16px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
+  background:
+    linear-gradient(to top,
+      var(--surface) 72%,
+      transparent); /* a transição para o rodapé: um degradê, nunca uma linha */
 }
 
 .run-footer.is-anchored {
@@ -1088,6 +1090,17 @@ body {
 .icon-button.is-light svg {
   width: 16px;
   height: 16px;
+}
+
+/* o "⋯" dos rodapés da folha: o mesmo tamanho do "⋯" dos rodapés do degradê */
+.actions-menu>summary.icon-button.is-light {
+  width: 38px;
+  height: 38px;
+}
+
+.actions-menu>summary.icon-button.is-light svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* lápis: dá uma "escrita" a cada hover */

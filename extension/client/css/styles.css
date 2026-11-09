@@ -6,7 +6,7 @@
   /* rodapés: o centro dos botões fica sempre a esta distância do fundo da janela (alinha a busca e o
      formulário lado a lado e todas as janelas entre si). botões de 46 px nas barras brancas; 38 px no
      rodapé do cartão de templates (dentro do cartão, com 15 px de respiro) */
-  --footer-center: 50px;
+  --footer-center: 35px; /* o centro dos botões do rodapé: o redondo (19) a 16 px do fundo, como da lateral */
   --blue-50: #f2f6ff;
   --blue-100: #e9f1ff;
   --blue-200: #c9d9f8;

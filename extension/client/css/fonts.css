@@ -19,8 +19,8 @@ body.fonts-page {
   min-height: 100%;
   flex-direction: column;
   gap: 10px;
-  padding: 20px 20px 0;
-  --queue-pad: 20px;
+  padding: 16px 16px 0; /* o respiro de todas as janelas: 16 em volta */
+  --queue-pad: 16px;
 }
 
 .fw-file {
