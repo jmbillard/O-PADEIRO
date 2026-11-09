@@ -27,6 +27,39 @@ function getLastOutputFile() {
 // Cada botão da estrutura 'PAD_mainGrpUiStructure' (O_PADEIRO.js) aponta para estas funções
 // em 'leftClick' / 'rightClick', então a dica, o ícone e a ação de cada botão ficam juntos.
 var PAD_ACTIONS = {
+	// Abre o instalador da nova versão do padeiro (extensão), que fica na mesma pasta da rede
+	// de onde esta versão é carregada. O instalador também remove esta versão (LEGACY).
+	atualizarPadeiro: function () {
+		if (!netAccess()) {
+			alert(lol + '#PAD_037 - sem acesso a rede...');
+			return;
+		}
+
+		var installerName = 'INSTALAR O PADEIRO.jsx';
+		var scriptFolder = resolveMacVolumePath(String(scriptMainPath).replace(/[\\\/]+$/, ''));
+		var installer = new File(scriptFolder + '/' + installerName);
+
+		// fora da pasta da rede (ex: instalado pelo .jsxbin): o usuário aponta o instalador
+		if (!installer.exists) {
+			alert(lol + '#PAD_038 - o instalador não foi encontrado em:\n' + scriptFolder + '\n\nselecione o arquivo "' + installerName + '" na pasta do padeiro na rede.');
+			installer = File.openDialog('selecione o "' + installerName + '"', '*.jsx', false);
+
+			if (installer == null) return;
+		}
+
+		var msg = 'instalar a nova versão do padeiro?\n\n' +
+			'o instalador será aberto e substituirá esta versão (LEGACY).\n' +
+			'depois da instalação, reinicie o After Effects.';
+
+		if (!confirm(msg)) return;
+
+		try {
+			$.evalFile(installer);
+		} catch (err) {
+			alert(lol + '#PAD_039 - não foi possível abrir o instalador:\n' + err.message);
+		}
+	},
+
 	abrirApontamento: function () {
 		if (!netAccess()) {
 			alert(lol + '#PAD_007 - sem acesso a rede...');
