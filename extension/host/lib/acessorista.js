@@ -5,6 +5,17 @@ var PS_WEBHOOK_URL = 'https://workflows.jmbillard.com/webhook/path-search';
 
 var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 
+// Busca nova (formato v2, workflow PROMO - BUSCAR): o índice já pronto, num GET. O painel do acessorista baixa
+// sozinho (sem travar o After Effects); o curl daqui é só o plano B.
+var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
+var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
+var PS_SERVIDOR = null; // caminhos fixos do servidor: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
+
+// De onde vem o índice (configuração > busca): 'webhook' (PS_WEBHOOK_URL) ou 'file' (PS_INDEX_FILE, o mesmo JSON
+// que o webhook devolveria, num arquivo da rede).
+var PS_SOURCE = 'webhook';
+var PS_INDEX_FILE = '';
+
 var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
 
 var PS_SMB = {
@@ -179,7 +190,16 @@ function psDownloadIndex(cacheFile) {
 
 	if (partFile.exists) partFile.remove();
 
-	if (appOs == 'Win') {
+	// índice num arquivo: copia em vez de baixar
+	if (PS_SOURCE == 'file') {
+		try {
+			var source = new File(padPath(PS_INDEX_FILE));
+
+			if (!source.exists || !source.copy(partFile.fsName)) return false;
+		} catch (err) {
+			return false;
+		}
+	} else if (appOs == 'Win') {
 		cmd =
 			'cmd.exe /c curl.exe -s -L --connect-timeout 5 --max-time 25 -X POST' +
 			' -H "Content-Type: application/json"' +
@@ -272,6 +292,7 @@ function psBuildIndex(data) {
 					caminhos: [],
 					server: rec.fixedShareServer || '',
 					share: rec.fixedShare || '',
+					patterns: [], // o começo das claquetes da atração (coluna 'pattern' do índice), para a janela PROJETO
 					haystack: psNormalize(name)
 				};
 				groups.push(group);
@@ -279,6 +300,15 @@ function psBuildIndex(data) {
 
 			if (rec.fixedShareServer) group.server = rec.fixedShareServer;
 			if (rec.fixedShare) group.share = rec.fixedShare;
+
+			var pat = rec.pattern || rec.patterns || rec.padrao || '';
+			var pats = pat instanceof Array ? pat : String(pat).split(',');
+
+			for (var pp = 0; pp < pats.length; pp++) {
+				var one = String(pats[pp] || '').replace(/^\s+|\s+$/g, '');
+
+				if (one) group.patterns.push(one);
+			}
 
 			psAddUnique(group.projetos, projeto);
 			psAddUnique(group.outputs, output);
@@ -400,6 +430,9 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 	if (!path) return;
 
 	var folderPath = psToPlatform(path);
+
+	// no Windows, um caminho do Mac (/Volumes/SHARE/...) vira o de rede pelo mapa de drives (configuração > rede)
+	if (appOs != 'Mac' && /^\/Volumes\//i.test(psSlashes(path))) folderPath = toWinPath(path);
 
 	// A montagem só é tentada depois do clique do usuário.
 	if (appOs == 'Mac') folderPath = psResolveOnMac(folderPath, fixedServer, fixedShare);

@@ -1,0 +1,389 @@
+{
+	"PRODUCTIONS": [
+		{
+			"name": "PROMO GNEWS",
+			"icon": "",
+			"templatesPath": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/TEMPLATES"
+		}
+	],
+	"DRIVES": {
+		"drives": [
+			{
+				"letter": "T",
+				"path": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign"
+			}
+		],
+		"shares": [
+			{
+				"share": "cdesign",
+				"server": "egcdesign01.servicos.corp.tvglobo.com.br"
+			},
+			{
+				"share": "Arte_Ilha",
+				"server": "pamjb.servicos.corp.tvglobo.com.br"
+			}
+		],
+		"defaultServer": "egcdesign01.servicos.corp.tvglobo.com.br"
+	},
+	"RENAME": {
+		"types": [
+			{
+				"prefix": "EP",
+				"comment": "EXPORT",
+				"terms": [
+					"END PAGE",
+					"ENDPAGE",
+					"EP"
+				]
+			},
+			{
+				"prefix": "TITLE",
+				"comment": "TITLE",
+				"terms": [
+					"TITLE",
+					"TITULO"
+				]
+			},
+			{
+				"prefix": "INFO",
+				"comment": "INFO",
+				"terms": [
+					"INFO",
+					"INFOGRAFICO"
+				]
+			},
+			{
+				"prefix": "MAP",
+				"comment": "MAP",
+				"terms": [
+					"MAP",
+					"MAPA"
+				]
+			},
+			{
+				"prefix": "TWITTER",
+				"comment": "TWITTER",
+				"terms": [
+					"TWITTER",
+					"TWEET",
+					"X"
+				]
+			},
+			{
+				"prefix": "DOCUMENT",
+				"comment": "DOCUMENT",
+				"terms": [
+					"DOCUMENT",
+					"DOCUMENTO",
+					"DOC"
+				]
+			}
+		],
+		"fixed": [],
+		"removeSpecial": true,
+		"textCase": "lowerCase",
+		"separator": " - "
+	},
+	"ORGANIZE": {
+		"folders": [
+			{
+				"name": "_EDITAR",
+				"parent": "",
+				"contents": [
+					"editaveis"
+				]
+			},
+			{
+				"name": "_MATERIAL",
+				"parent": "",
+				"contents": []
+			},
+			{
+				"name": "Comps",
+				"parent": "_MATERIAL",
+				"contents": [
+					"precomps"
+				]
+			},
+			{
+				"name": "Videos",
+				"parent": "_MATERIAL",
+				"contents": [
+					"videos"
+				]
+			},
+			{
+				"name": "Imagens",
+				"parent": "_MATERIAL",
+				"contents": [
+					"imagens",
+					"dados"
+				]
+			},
+			{
+				"name": "Sons",
+				"parent": "_MATERIAL",
+				"contents": [
+					"audio"
+				]
+			},
+			{
+				"name": "Solidos",
+				"parent": "_MATERIAL",
+				"contents": [
+					"solidos"
+				]
+			},
+			{
+				"name": "missing",
+				"parent": "",
+				"contents": [
+					"missing"
+				]
+			}
+		],
+		"renderComments": [
+			"EXPORT"
+		],
+		"editComments": [
+			"EDIT"
+		],
+		"autoComment": "EXPORT",
+		"dataExtensions": [
+			".csv",
+			".json",
+			".jsx",
+			".mgjson",
+			".tsv",
+			".txt"
+		],
+		"commentSubfolders": true
+	},
+	"SEARCH": {
+		"source": "file",
+		"webhook": "",
+		"file": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/O PADEIRO/gnews_path_index.json",
+		"labels": [
+			{
+				"key": "canal",
+				"label": "CANAL"
+			},
+			{
+				"key": "vinhetas",
+				"label": "VINHETAS"
+			},
+			{
+				"key": "jornais",
+				"label": "JORNAIS"
+			},
+			{
+				"key": "factuais",
+				"label": "FACTUAIS"
+			},
+			{
+				"key": "programas",
+				"label": "PROGRAMAS"
+			},
+			{
+				"key": "marca",
+				"label": "MARCA E COMUNICAÇÃO"
+			},
+			{
+				"key": "pastas",
+				"label": "PASTAS DA PROMO"
+			}
+		]
+	},
+	"LINKS": [
+		{
+			"name": "onedrive",
+			"url": "https://tvglobocorp-my.sharepoint.com/",
+			"icon": ""
+		},
+		{
+			"name": "trello da promo",
+			"url": "https://trello.com/promo126/home",
+			"icon": ""
+		},
+		{
+			"name": "apontamento",
+			"url": "https://gglobo-pea-hdg-prd.web.app/#card_view",
+			"icon": ""
+		},
+		{
+			"name": "planner",
+			"url": "https://tasks.office.com/tvglobocorp.onmicrosoft.com/en-US/Home/Planner/#/userboard",
+			"icon": ""
+		}
+	],
+	"PROJECT": {
+		"root": "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO",
+		"folder": true,
+		"fileName": "{id} {projeto}",
+		"retrancas": [
+			{
+				"code": "INS",
+				"path": "CANAL/institucional"
+			},
+			{
+				"code": "DIG",
+				"path": "CANAL/digital"
+			},
+			{
+				"code": "PIL",
+				"path": "CANAL/pilula"
+			},
+			{
+				"code": "MKT",
+				"path": "CANAL/marketing"
+			},
+			{
+				"code": "NDL",
+				"path": "VINHETAS/nunca desliga"
+			},
+			{
+				"code": "BIP",
+				"path": "VINHETAS/bip"
+			},
+			{
+				"code": "ASE",
+				"path": "VINHETAS/a seguir"
+			},
+			{
+				"code": "EMN",
+				"path": "JORNAIS/edicao da meia noite"
+			},
+			{
+				"code": "EMP",
+				"path": "JORNAIS/em ponto"
+			},
+			{
+				"code": "CON",
+				"path": "JORNAIS/conexao"
+			},
+			{
+				"code": "EST",
+				"path": "JORNAIS/estudio i"
+			},
+			{
+				"code": "GMN",
+				"path": "JORNAIS/globonews mais"
+			},
+			{
+				"code": "EDE",
+				"path": "JORNAIS/edicao das 18h"
+			},
+			{
+				"code": "EPA",
+				"path": "JORNAIS/em pauta"
+			},
+			{
+				"code": "JDE",
+				"path": "JORNAIS/jornal das dez"
+			},
+			{
+				"code": "EDO",
+				"path": "JORNAIS/especial de domingo"
+			},
+			{
+				"code": "ELE",
+				"path": "FACTUAIS/eleicoes brasil"
+			},
+			{
+				"code": "EUA",
+				"path": "FACTUAIS/eua"
+			},
+			{
+				"code": "MUN",
+				"path": "FACTUAIS/mundo"
+			},
+			{
+				"code": "RET",
+				"path": "FACTUAIS/retrospectiva"
+			},
+			{
+				"code": "COB",
+				"path": "FACTUAIS/coberturas"
+			},
+			{
+				"code": "INT",
+				"path": "PROGRAMAS/internacional"
+			},
+			{
+				"code": "CID",
+				"path": "PROGRAMAS/cidades e solucoes"
+			},
+			{
+				"code": "GAB",
+				"path": "PROGRAMAS/fernando gabeira"
+			},
+			{
+				"code": "DOC",
+				"path": "PROGRAMAS/documentario"
+			},
+			{
+				"code": "MIR",
+				"path": "PROGRAMAS/miriam leitao"
+			},
+			{
+				"code": "DAV",
+				"path": "PROGRAMAS/roberto davila"
+			},
+			{
+				"code": "PAP",
+				"path": "PROGRAMAS/papo de politica"
+			},
+			{
+				"code": "MSC",
+				"path": "PROGRAMAS/dialogos"
+			},
+			{
+				"code": "CEN",
+				"path": "PROGRAMAS/central"
+			},
+			{
+				"code": "DEB",
+				"path": "PROGRAMAS/debate"
+			},
+			{
+				"code": "ESP",
+				"path": "PROGRAMAS/especial"
+			},
+			{
+				"code": "MAC",
+				"path": "MARCA E COMUNICACAO"
+			}
+		]
+	},
+	"COLLECT": {
+		"folders": [
+			{
+				"name": "project files",
+				"parent": "",
+				"contents": [
+					"videos",
+					"sequencias",
+					"imagens",
+					"audio",
+					"dados"
+				]
+			},
+			{
+				"name": "FONTS",
+				"parent": "",
+				"contents": [
+					"fontes"
+				]
+			}
+		]
+	},
+	"APPEARANCE": {
+		"mode": "light",
+		"background": "solid",
+		"accent": "#3e50b4",
+		"gradientStart": "#3e50b4",
+		"gradientEnd": "#221e1d",
+		"font": "system",
+		"logo": ""
+	}
+}

@@ -1,0 +1,252 @@
+/* =========================================================
+   ÍCONES DAS FERRAMENTAS — as animações (barra e configuração)
+   Os desenhos ficam em js/icons.js; aqui, o que cada um faz com o mouse em cima: no botão da barra
+   (.bar-btn) e na aba da configuração (.tab).
+   ========================================================= */
+
+/* buscar: a lupa procura (vai para o lado e para cima, inclinada) */
+.anim-search {
+  transform-origin: 40% 40%;
+  transition: transform 320ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-search,
+.tab:hover .anim-search {
+  transform: translate(-1.5px, -1.5px) rotate(-8deg);
+}
+
+/* templates: a coluna da lista abre e volta, e o título desce um pouco (a janela se arruma) */
+.anim-tpl .tpl-side,
+.anim-tpl .tpl-head {
+  transform-box: view-box;
+}
+
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
+.tab:hover .anim-tpl .tpl-side {
+  animation: tpl-side 640ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-head,
+.tab:hover .anim-tpl .tpl-head {
+  animation: tpl-head 640ms var(--ease-soft);
+}
+
+@keyframes tpl-side {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes tpl-head {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-1.5px);
+  }
+}
+
+/* pastas: a frente da pasta se abre */
+.anim-folder .folder-front {
+  transform-origin: 50% 100%;
+  transition: transform 280ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-folder .folder-front,
+.tab:hover .anim-folder .folder-front {
+  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
+}
+
+/* importar (versão anterior do .aep): a seta em volta do AE dá um giro curto para trás e volta; enquanto isso,
+   o A e depois o E dão uma subidinha e voltam ao lugar */
+.anim-import .import-turn {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-turn,
+.tab:hover .anim-import .import-turn {
+  animation: import-turn 620ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-letter,
+.tab:hover .anim-import .import-letter {
+  animation: import-hop 420ms var(--ease-soft) 60ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-letter.l2,
+.tab:hover .anim-import .import-letter.l2 {
+  animation-delay: 170ms;
+}
+
+@keyframes import-hop {
+  45% {
+    transform: translateY(-1.5px);
+  }
+}
+
+@keyframes import-turn {
+  45% {
+    transform: rotate(-40deg);
+  }
+}
+
+/* coletar: as folhas saem um pouco da pasta e abrem em leque (movimento rígido: o traço não deforma) */
+.anim-collect .collect-file {
+  transform-origin: 50% 100%;
+  transition: transform 340ms var(--ease-soft);
+}
+
+.anim-collect .f2 {
+  transition-delay: 50ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-collect .f1,
+.tab:hover .anim-collect .f1 {
+  transform: translateY(-1.6px) rotate(-6deg);
+}
+
+.bar-btn:hover:not(:disabled) .anim-collect .f2,
+.tab:hover .anim-collect .f2 {
+  transform: translateY(-1.2px) rotate(5deg);
+}
+
+/* projeto: a claquete fica aberta (diferencia dos outros ícones); no hover bate e abre de novo */
+.anim-clap .clap-top {
+  transform: rotate(-15deg);
+  transform-box: fill-box;
+  transform-origin: 0 100%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-clap .clap-top,
+.tab:hover .anim-clap .clap-top {
+  animation: clap 760ms var(--ease-soft);
+}
+
+@keyframes clap {
+  0%,
+  100% {
+    transform: rotate(-15deg);
+  }
+
+  32% {
+    transform: rotate(1deg);
+  }
+
+  42% {
+    transform: rotate(0);
+  }
+
+  55% {
+    transform: rotate(0);
+  }
+}
+
+/* organizar: as camadas se separam */
+.anim-layers path {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-layers .layer-top,
+.tab:hover .anim-layers .layer-top {
+  transform: translateY(-3.2px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-layers .layer-bottom,
+.tab:hover .anim-layers .layer-bottom {
+  transform: translateY(3.2px);
+}
+
+/* renomear: digitação rápida (letras aparecem e o cursor acompanha) */
+.anim-type .type-char {
+  transform-origin: 0 50%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char,
+.tab:hover .anim-type .type-char {
+  animation: type-char 140ms ease-out backwards;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(2),
+.tab:hover .anim-type .type-char:nth-of-type(2) {
+  animation-delay: 110ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(3),
+.tab:hover .anim-type .type-char:nth-of-type(3) {
+  animation-delay: 220ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-type .type-caret,
+.tab:hover .anim-type .type-caret {
+  animation: type-caret 360ms steps(3, end);
+}
+
+/* fontes: o T fica negrito, itálico e fino */
+.anim-font .font-t {
+  transform-origin: 50% 100%;
+}
+
+.bar-btn:hover:not(:disabled) .anim-font .font-t,
+.tab:hover .anim-font .font-t {
+  animation: font-style 1100ms ease-in-out;
+}
+
+@keyframes type-char {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes type-caret {
+  from {
+    transform: translateX(-9px);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes font-style {
+
+  0%,
+  100% {
+    stroke-width: 1.7;
+    transform: skewX(0);
+  }
+
+  22% {
+    stroke-width: 3.6;
+    transform: skewX(0);
+  }
+
+  44% {
+    stroke-width: 1.7;
+    transform: skewX(0);
+  }
+
+  60%,
+  72% {
+    stroke-width: 1.7;
+    transform: skewX(-16deg);
+  }
+
+  86% {
+    stroke-width: 0.7;
+    transform: skewX(0);
+  }
+}

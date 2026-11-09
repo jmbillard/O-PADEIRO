@@ -44,13 +44,89 @@ PADX.pathsIndex = function (a) {
 	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
 	var downloaded = true;
 
-	if (a.force || !psIsFresh(cacheFile)) downloaded = psDownloadIndex(cacheFile);
+	// modo local (ligado ou com a rede fora): só a cópia guardada, sem tocar na rede
+	if (padLocalMode() && cacheFile.exists) downloaded = false;
+	else if (a.force || !psIsFresh(cacheFile)) downloaded = psDownloadIndex(cacheFile);
 
 	try {
 		return { index: psBuildIndex(psReadJSON(cacheFile)), downloaded: downloaded, platform: appOs };
 	} catch (err) {
 		throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
 	}
+};
+
+// Busca nova (v2): o que o painel precisa para baixar o índice sozinho. → { url, cache, local, platform, servidor, labels }
+PADX.searchInfo = function () {
+	var list = PS_SERVIDOR || padDefaultSearch().servidor;
+	var servidor = [];
+
+	// o servidor e o share saem do caminho de rede (//servidor/share/...); no Mac (/Volumes/SHARE/...), o share
+	// (sem o -1 a -5 de um volume montado de novo) e o servidor pelo mapa de drives, na hora de abrir
+	for (var i = 0; i < list.length; i++) {
+		var path = psSlashes(list[i].path);
+		var unc = path.match(/^\/\/([^\/]+)\/([^\/]+)/);
+		var vol = path.match(/^\/Volumes\/([^\/]+)/i);
+
+		var share = '';
+
+		// if/else: o ExtendScript agrupa o ternário encadeado do jeito errado
+		if (unc) share = unc[2];
+		else if (vol) share = vol[1].replace(/-[1-5]$/, '');
+
+		servidor.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
+	}
+
+	// o índice local (configuração > buscar, neste computador): as pastas deste computador, lidas pelo painel
+	var search = padMachineSearch(padMachineData().search);
+
+	return {
+		url: PS_V2_URL,
+		cache: tempFolder.fsName + '/busca_v2.json',
+		local: padLocalMode(),
+		platform: appOs,
+		servidor: servidor,
+		mode: search.mode,
+		folders: search.folders,
+		foldersOnly: search.foldersOnly,
+		daily: search.daily,
+		localIndex: scriptPreferencesPath + '/indice_local.json'
+	};
+};
+
+// Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
+// a: { force }  →  { text, downloaded }
+PADX.searchDownload = function (a) {
+	var cache = new File(tempFolder.fsName + '/busca_v2.json');
+	var part = new File(cache.fsName + '.part');
+	var downloaded = false;
+
+	if (!padLocalMode()) {
+		if (part.exists) part.remove();
+
+		var cmd = appOs == 'Win'
+			? 'cmd.exe /c curl.exe -s -L --compressed --connect-timeout 5 --max-time 25 -o "' + part.fsName.replace(/"/g, '') + '" "' + PS_V2_URL + '"'
+			: 'curl -s -L --compressed --connect-timeout 5 --max-time 25 -o ' + psShellQuote(part.fsName) + ' ' + psShellQuote(PS_V2_URL);
+
+		try {
+			system.callSystem(cmd);
+		} catch (err) { }
+
+		if (part.exists && part.length > 0) {
+			var text = readFileContent(part);
+
+			if (/^\s*\{\s*"v"\s*:\s*2/.test(text)) {
+				if (cache.exists) cache.remove();
+				part.rename(cache.name);
+				downloaded = true;
+			} else {
+				part.remove();
+			}
+		}
+	}
+
+	if (!cache.exists) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
+
+	return { text: readFileContent(new File(tempFolder.fsName + '/busca_v2.json')), downloaded: downloaded };
 };
 
 // Abre a pasta de um caminho (no macOS, monta o volume SMB se for preciso).

@@ -1,4 +1,4 @@
-﻿/* eslint-disable no-undef */
+/* eslint-disable no-undef */
 /*
 
 ---------------------------------------------------------------
@@ -29,12 +29,16 @@ function PADX_call(method, argsJson) {
 
 		if (typeof PADX[method] !== 'function') throw new Error('#PAD_043 - método desconhecido: ' + method);
 
+		padApplyConfig(); // drives e renomear vêm da configuração compartilhada (relida quando o arquivo muda)
+
 		res = { ok: true, data: PADX[method](args) };
 	} catch (err) {
 		var msg = err.message || String(err);
 
 		// todo erro chega ao painel com um código: os sem código são inesperados
 		res = { ok: false, error: /^#PAD_/.test(msg) ? msg : '#PAD_099 - erro inesperado: ' + msg };
+	} finally {
+		padUndoClose(); // nenhum grupo de desfazer fica aberto entre uma chamada e outra
 	}
 
 	return JSON.stringify(res);
@@ -109,12 +113,21 @@ function padDisplayPath(pathStr) {
 	if (!pathStr) return pathStr || '';
 
 	var path = padPath(pathStr) || String(pathStr);
+	var shown;
 
 	try {
-		return Folder.decode(new Folder(path).fsName);
+		shown = Folder.decode(new Folder(path).fsName);
 	} catch (err) {
-		return path;
+		shown = path;
 	}
+
+	return padNoVolumeSuffix(shown);
+}
+
+// Sem o sufixo que o macOS põe ao montar o mesmo share de novo (/Volumes/VFX-1 → /Volumes/VFX): os caminhos são
+// gravados e mostrados assim; o volume certo (resolveMacVolumePath, via padPath) só entra ao abrir, criar ou montar.
+function padNoVolumeSuffix(path) {
+	return String(path || '').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
 }
 
 function padDisplayPaths(list) {
@@ -125,57 +138,407 @@ function padDisplayPaths(list) {
 	return out;
 }
 
-function padSortProductions(list) {
-	return list.sort(function (a, b) {
-		if (a.name < b.name) return -1;
-		if (a.name > b.name) return 1;
+/*
 
-		return 0;
-	});
+---------------------------------------------------------------
+> este computador (configuração > LOCAL > computador)
+---------------------------------------------------------------
+
+'machine_config.json' na pasta de dados do usuário:
+  user       → a sigla do designer ({usuario} no nome do projeto); vazia: o usuário do computador
+  projects   → a pasta dos projetos neste computador: a atração nova vai para ela ({categoria}/{atracao})
+               quando a pasta da categoria não pode ser acessada (rede fora ou modo local)
+  outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
+  templates  → { 'produção': pasta } a pasta de templates de cada produção neste computador
+  localMode  → modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem
+               da última cópia guardada neste computador, os templates das pastas daqui, os projetos vão
+               para 'projects' (ou a Área de Trabalho), os renders para 'outputs' (ou a Área de Trabalho)
+               e os logs esperam a volta para a rede
+
+*/
+
+var PAD_MACHINE_CACHE = { stamp: -1, data: {} };
+
+function padMachineFile() {
+	return new File(scriptPreferencesPath + '/machine_config.json');
 }
 
-// Lista de produções COMPARTILHADA ('O_PADEIRO_config.json'): fica na pasta do padeiro na rede,
-// ao lado da pasta da extensão. Procura, nesta ordem:
-//   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário);
+function padMachineData() {
+	var file = padMachineFile();
+	var stamp = 0;
+
+	try {
+		stamp = file.exists ? file.modified.getTime() : 0;
+	} catch (err) { }
+
+	if (stamp != PAD_MACHINE_CACHE.stamp) {
+		PAD_MACHINE_CACHE.stamp = stamp;
+		PAD_MACHINE_CACHE.data = {};
+
+		if (stamp) {
+			try {
+				PAD_MACHINE_CACHE.data = JSON.parse(readFileContent(file)) || {};
+			} catch (err) { }
+		}
+	}
+
+	return PAD_MACHINE_CACHE.data;
+}
+
+// O modo local ligado à mão (configuração > meu usuário). 'homeOffice' é o nome antigo da chave.
+function padLocalForced() {
+	var d = padMachineData();
+
+	return d.localMode === true || d.homeOffice === true;
+}
+
+// Modo local: ligado à mão ou a rede fora (a configuração da equipe só existe como a cópia deste
+// computador). Os dois funcionam igual: nada tenta a rede.
+function padLocalMode() {
+	return padLocalForced() || padConfigIsCopy();
+}
+
+// Caminho de pasta digitado: barras normais, sem barra no fim.
+function padMachinePath(path) {
+	return padNoVolumeSuffix(String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1'));
+}
+
+// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas
+function padCleanUser(user) {
+	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9._-]/g, '').substring(0, 24).toUpperCase();
+}
+
+// o padrão: o usuário do computador, completo (quem quiser uma sigla muda na configuração > meu usuário)
+function padDefaultUser() {
+	return padCleanUser(system.userName || '');
+}
+
+// Sigla do designer: a deste computador; sem ela, a antiga (project_user.json) ou a padrão.
+function padMachineUser() {
+	var user = padCleanUser(padMachineData().user);
+
+	if (user) return user;
+
+	var legacy = new File(scriptPreferencesPath + '/project_user.json');
+
+	if (legacy.exists) {
+		try {
+			user = padCleanUser(JSON.parse(readFileContent(legacy)).user);
+		} catch (err) { }
+	}
+
+	return user || padDefaultUser();
+}
+
+// Busca de caminhos neste computador: { mode: 'webhook' | 'local', folders: [], foldersOnly, daily }.
+//   mode        → de onde vêm os caminhos: o webhook da equipe ou o índice local (as pastas abaixo, indexadas aqui)
+//   folders     → as pastas lidas com todas as subpastas
+//   foldersOnly → só pastas (sem arquivos)
+//   daily       → refaz o índice uma vez por dia, ao abrir a busca
+function padMachineSearch(o) {
+	o = o && typeof o == 'object' ? o : {};
+
+	var folders = [];
+	var list = o.folders && typeof o.folders.length == 'number' ? o.folders : [];
+
+	for (var i = 0; i < list.length; i++) {
+		var path = padMachinePath(list[i]);
+
+		if (path) folders.push(path);
+	}
+
+	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
+}
+
+PADX.machinePrefs = function () {
+	var d = padMachineData();
+
+	return {
+		user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(),
+		defaultUser: padDefaultUser(),
+		projects: padMachinePath(d.projects),
+		outputs: padMachinePath(d.outputs),
+		productions: padMachineProductions(d),
+		log: padMachineLog(),
+		localMode: padLocalForced(),
+		search: padMachineSearch(d.search),
+		fontsUpload: padMachineFontsUpload(),
+		localIndex: scriptPreferencesPath + '/indice_local.json',
+		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
+		hasConfigCopy: padConfigCopyFile().exists
+	};
+};
+
+// a: { user, projects, outputs, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
+PADX.saveMachinePrefs = function (a) {
+	var d = padMachineData();
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
+
+	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
+	if (a.projects != null) data.projects = padMachinePath(a.projects);
+	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
+	if (a.log != null) data.log = a.log !== false;
+
+	if (a.productions != null) {
+		var team = [];
+		var names = {};
+		var p;
+
+		try {
+			team = padConfigData().PRODUCTIONS || [];
+		} catch (err) { }
+
+		for (p = 0; p < team.length; p++) if (!padIsLocalPath(team[p].templatesPath)) names[team[p].name.toUpperCase()] = true;
+
+		for (p = 0; p < a.productions.length; p++) {
+			var pname = String(a.productions[p].name || '').replace(/^\s+|\s+$/g, '');
+			var ppath = String(a.productions[p].path || '').replace(/^\s+|\s+$/g, '');
+
+			if (!pname && !ppath) continue;
+			if (!pname || !ppath) throw new Error('#PAD_098 - produção local ' + (p + 1) + ': precisa de um nome e de uma pasta.');
+			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção local "' + pname + '": já existe uma produção da equipe com esse nome.');
+
+			names[pname.toUpperCase()] = true;
+		}
+
+		data.productions = padMachineProductions({ productions: a.productions });
+	}
+	if (a.localMode != null) data.localMode = a.localMode === true;
+	if (a.search != null) data.search = padMachineSearch(a.search);
+	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
+
+	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
+		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
+		try {
+			padConfigData();
+		} catch (err) { }
+
+		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - modo local: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
+	}
+
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify(data, null, '\t'), padMachineFile().fsName);
+	PAD_MACHINE_CACHE.stamp = -1;
+	padConfigInvalidate();
+
+	// a sigla antiga sai: agora fica aqui
+	var legacy = new File(scriptPreferencesPath + '/project_user.json');
+
+	if (legacy.exists) legacy.remove();
+
+	return PADX.machinePrefs();
+};
+
+
+// Caminho deste computador (não da rede): a pasta do usuário (~, /Users, /home), o disco do Mac
+// (/Volumes/Macintosh HD) ou uma letra do Windows que não está no mapa de drives da rede (C:\...).
+// Produções da equipe com caminho assim são ignoradas: cada um cria as suas em configuração > templates (neste computador).
+function padIsLocalPath(path) {
+	var p = String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/');
+
+	if (/^~(\/|$)/.test(p) || /^\/(Users|home)\//i.test(p) || /^\/Volumes\/Macintosh HD(\/|$)/i.test(p)) return true;
+
+	var drive = /^([A-Za-z]):(\/|$)/.exec(p);
+
+	return !!drive && !(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
+}
+
+// Produções locais (configuração > templates, neste computador): [{ name, path }], só deste computador, independentes das da
+// equipe. Sem a lista ainda (versão anterior): as pastas deste computador escolhidas para as produções da
+// equipe com caminho local (ex: Ω PASTA LOCAL) viram produções locais.
+function padMachineProductions(d) {
+	var out = [];
+	var seen = {};
+	var i;
+
+	if (d.productions && typeof d.productions.length == 'number') {
+		for (i = 0; i < d.productions.length; i++) {
+			var row = d.productions[i] || {};
+			var name = String(row.name == null ? '' : row.name).replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+			var path = padMachinePath(row.path);
+
+			if (!name || !path || seen[name.toUpperCase()]) continue;
+
+			seen[name.toUpperCase()] = true;
+			out.push({ name: name, path: path });
+		}
+
+		return out;
+	}
+
+	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
+	var team = [];
+
+	try {
+		team = padConfigData().PRODUCTIONS || [];
+	} catch (err) { }
+
+	for (i = 0; i < team.length; i++) {
+		var local = padMachinePath(old[team[i].name]);
+
+		if (local && padIsLocalPath(team[i].templatesPath)) out.push({ name: team[i].name, path: local });
+	}
+
+	return out;
+}
+
+// O registro de uso deste computador (configuração > meu usuário): ligado, segue o da equipe (aba rede).
+function padMachineLog() {
+	return padMachineData().log !== false;
+}
+
+// Cópia da configuração da equipe guardada neste computador (para o modo local).
+function padConfigCopyFile() {
+	return new File(scriptPreferencesPath + '/config_copy.json');
+}
+
+// Configuração da equipe COMPARTILHADA ('O_PADEIRO_GLOBAL_config.json'): fica na pasta do padeiro na rede,
+// ao lado da pasta da extensão. o nome GLOBAL separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
+// que continuam lendo e gravando o seu sem estragar este. Procura, nesta ordem:
+//   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário; um caminho com o
+//      nome antigo vale como a mesma pasta com o nome novo);
 //   2. o arquivo na pasta que contém a pasta da extensão.
-// Caminho esperado da lista compartilhada: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
-function padSharedConfigPath() {
+// Na primeira vez, só com o arquivo antigo na pasta: ele é copiado com o nome novo (o antigo fica).
+var PAD_CONFIG_NAME = 'O_PADEIRO_GLOBAL_config.json';
+var PAD_CONFIG_OLD_NAME = 'O_PADEIRO_config.json';
+
+// a pasta do instalador (shared_config.txt) ou, sem ele, a de cima da extensão → o caminho com o nome novo
+function padSharedConfigCandidates() {
+	var out = [];
 	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
 
 	if (pointer.exists) {
 		try {
 			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
 
-			if (path != '') return path;
+			if (path != '') out.push(new File(path).parent.fsName + '/' + PAD_CONFIG_NAME);
 		} catch (err) { }
 	}
 
-	return new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json';
+	out.push(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/' + PAD_CONFIG_NAME);
+
+	return out;
+}
+
+// Caminho esperado da configuração da equipe: o que o instalador gravou ou, sem ele, o arquivo ao lado da extensão.
+function padSharedConfigPath() {
+	return padSharedConfigCandidates()[0];
 }
 
 function padSharedConfigFile() {
-	var pointer = new File(scriptPreferencesPath + '/shared_config.txt');
+	var list = padSharedConfigCandidates();
 
-	if (pointer.exists) {
-		try {
-			var path = readFileContent(pointer).replace(/^\s+|\s+$/g, '');
+	for (var i = 0; i < list.length; i++) {
+		var file = new File(list[i]);
 
-			if (path != '' && new File(path).exists) return new File(path);
-		} catch (err) { }
+		if (file.exists) return file;
+
+		// migração: só o arquivo antigo nesta pasta → a cópia com o nome novo
+		var old = new File(file.parent.fsName + '/' + PAD_CONFIG_OLD_NAME);
+
+		if (old.exists) {
+			try {
+				old.copy(file.fsName);
+			} catch (err) { }
+
+			return file.exists ? file : old;
+		}
 	}
 
-	var sibling = new File(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/O_PADEIRO_config.json');
-
-	return sibling.exists ? sibling : null;
+	return null;
 }
 
-// Arquivo da lista de produções: sempre o compartilhado na rede (todos usam a lista mais atual).
-// Sem ele não há lista: nada de cópia local, que ficaria desatualizada.
+// Arquivo da lista de produções: o compartilhado na rede (todos usam a lista mais atual). No modo local
+// ligado, a cópia guardada neste computador na última leitura da rede (sem tocar na rede).
 function padConfigFile() {
-	return padSharedConfigFile();
+	var copy = padConfigCopyFile();
+
+	if (padLocalForced()) return copy.exists ? copy : null;
+
+	// sem a rede: a cópia (só leitura), para o padeiro continuar funcionando
+	return padSharedConfigFile() || (copy.exists ? copy : null);
+}
+
+// A configuração lida agora é a cópia deste computador (modo local ligado ou rede fora)?
+// (usa a leitura guardada de padConfigData: no máximo uma ida à rede a cada 1,5 s)
+function padConfigIsCopy() {
+	try {
+		padConfigData();
+	} catch (err) { }
+
+	return PAD_CONFIG_CACHE.path != '' && PAD_CONFIG_CACHE.path == padConfigCopyFile().fsName;
+}
+
+// Conteúdo da configuração compartilhada, já interpretado. O arquivo fica na rede e é lido por várias
+// seções e janelas o tempo todo: só é lido de novo quando a data dele muda, e a data é conferida no máximo
+// a cada 1,5 s. Quem usa não altera o objeto (as funções padClean* devolvem cópias).
+// Lança Error se não houver arquivo ou se ele não for um JSON válido.
+var PAD_CONFIG_CACHE = { path: '', stamp: -1, data: null, error: null, checked: 0 };
+
+function padConfigData() {
+	var c = PAD_CONFIG_CACHE;
+	var now = new Date().getTime();
+
+	if (now - c.checked < 1500 && c.stamp != -1) {
+		if (c.error) throw c.error;
+
+		return c.data;
+	}
+
+	c.checked = now;
+
+	var file = padConfigFile();
+
+	if (!file) {
+		c.stamp = -1;
+		c.path = '';
+		throw new Error(padNoSharedListError());
+	}
+
+	var stamp = file.modified.getTime();
+
+	if (file.fsName != c.path || stamp != c.stamp) {
+		c.path = file.fsName;
+		c.stamp = stamp;
+		c.data = null;
+		c.error = null;
+
+		try {
+			var text = readFileContent(file);
+
+			c.data = JSON.parse(text);
+
+			// lida da rede: guarda a cópia para o modo local (e para quando a rede cair)
+			if (file.fsName != padConfigCopyFile().fsName) {
+				try {
+					var folder = new Folder(scriptPreferencesPath);
+
+					if (!folder.exists) folder.create();
+					saveTextFile(text, padConfigCopyFile().fsName);
+				} catch (err) { }
+			}
+		} catch (err) {
+			c.error = err;
+		}
+	}
+
+	if (c.error) throw c.error;
+
+	return c.data;
+}
+
+// Depois de gravar: a próxima leitura vai ao arquivo (a data pode não mudar em menos de 1 s na rede).
+function padConfigInvalidate() {
+	PAD_CONFIG_CACHE.stamp = -1;
+	PAD_CONFIG_CACHE.checked = 0;
 }
 
 function padNoSharedListError() {
+	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > meu usuário) com a rede conectada.';
+
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
 
@@ -205,13 +568,37 @@ function padTemplateFiles(projectFile) {
 	};
 }
 
+// Os grupos de desfazer (Ctrl+Z) do padeiro: um só por vez. um grupo dentro de outro entra no de fora (o After
+// Effects reclama de grupos aninhados ou deixados abertos: "Undo group mismatch, will attempt to fix") e, no fim de
+// cada chamada do painel, o que tiver ficado aberto é fechado (PADX_call).
+var PAD_UNDO_DEPTH = 0;
+
+function padUndoBegin(name) {
+	if (PAD_UNDO_DEPTH++ == 0) app.beginUndoGroup(name);
+}
+
+function padUndoEnd() {
+	if (PAD_UNDO_DEPTH <= 0) return;
+	if (--PAD_UNDO_DEPTH == 0) app.endUndoGroup();
+}
+
+function padUndoClose() {
+	if (PAD_UNDO_DEPTH > 0) {
+		PAD_UNDO_DEPTH = 0;
+
+		try {
+			app.endUndoGroup();
+		} catch (err) { }
+	}
+}
+
 function padGroup(name, fn) {
-	app.beginUndoGroup(name);
+	padUndoBegin(name);
 
 	try {
 		return fn();
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 }
 
@@ -229,7 +616,9 @@ PADX.ping = function () {
 		build: app.buildName,
 		os: appOs,
 		version: PADX_VERSION,
-		network: netAccess()
+		network: netAccess(),
+		localMode: padLocalMode(),
+		localForced: padLocalForced()
 	};
 };
 
@@ -242,7 +631,7 @@ PADX.productions = function () {
 	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
-		list = padSortProductions(JSON.parse(readFileContent(configFile)).PRODUCTIONS);
+		list = padConfigData().PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
 	} catch (err) {
 		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
 		list = [];
@@ -253,7 +642,9 @@ PADX.productions = function () {
 	for (var i = 0; i < list.length; i++) {
 		productions.push({
 			name: list[i].name,
-			templatesPath: list[i].templatesPath,
+			templatesPath: list[i].templatesPath, // o da equipe (o editor da configuração edita este)
+			path: list[i].templatesPath,
+			ignored: padIsLocalPath(list[i].templatesPath), // caminho deste computador: fora do painel (cada um cria a sua)
 			icon: list[i].icon || null // literal de string binária (PNG); decodificado no painel
 		});
 	}
@@ -263,9 +654,188 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
+		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
+		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
+		log: padReadLogSettings(),
+		drives: padReadDrives(),
+		rename: padReadRename(),
+		organize: padReadOrganize(),
+		search: padReadSearch(),
+		links: padReadLinks(),
+		appearance: padReadTeamAppearance(), // o padrão da equipe (a pessoa pode personalizar: personal)
+		project: padReadProject(),
+		collect: padReadCollect(),
+		bar: padReadTeamBar(),
+		fonts: padReadFonts(),
+		personal: PADX.personalPrefs(),
+		localMode: padLocalMode(),
+		localForced: padLocalForced(),
+		fromCopy: padConfigIsCopy(),
 		error: error
 	};
 };
+
+/*
+
+---------------------------------------------------------------
+> log dos preenchimentos
+---------------------------------------------------------------
+
+Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel de
+produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
+templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo: o webhook de sempre.
+
+*/
+
+var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
+var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
+
+function padDefaultLog() {
+	return { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
+}
+
+// Valida a config de log vinda do painel. Lança Error com a mensagem.
+function padCleanLog(log) {
+	var clean = padDefaultLog();
+
+	if (!log) return clean;
+
+	clean.mode = log.mode == 'csv' || log.mode == 'csvGlobal' || log.mode == 'off' ? log.mode : 'webhook';
+	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
+
+	// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
+	if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+		throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+	}
+
+	return clean;
+}
+
+function padReadLogSettings() {
+	try {
+		var data = padConfigData();
+
+		return data.LOG ? padCleanLog(data.LOG) : padDefaultLog();
+	} catch (err) {
+		return padDefaultLog();
+	}
+}
+
+function padCsvValue(value) {
+	return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+}
+
+// Pasta de templates de uma produção da lista (onde fica o CSV do log).
+function padProductionFolder(name) {
+	var config = padConfigFile();
+
+	if (!name) return null;
+
+	var list = [];
+
+	try {
+		if (config && config.exists) list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
+	} catch (err) { }
+
+	for (var i = 0; i < list.length; i++) {
+		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
+	}
+
+	// as produções locais (configuração > templates, neste computador)
+	var personal = padMachineProductions(padMachineData());
+
+	for (var p = 0; p < personal.length; p++) {
+		if (personal[p].name == name) return new Folder(padPath(personal[p].path));
+	}
+
+	return null;
+}
+
+// Acrescenta linhas ao CSV de uma pasta (um arquivo só por produção). Devolve false se não conseguiu gravar.
+function padAppendCsv(folderPath, lines) {
+	var folder = new Folder(folderPath);
+
+	if (!folder.exists) return false;
+
+	var file = new File(folder.fsName + '/' + PAD_LOG_FILE_NAME);
+	var isNew = !file.exists;
+
+	file.encoding = 'UTF-8';
+	file.lineFeed = 'Unix';
+
+	// aberto no Excel (bloqueado) ou rede fora: fica para a próxima
+	if (!file.open('a')) return false;
+
+	// arquivo novo: BOM (o Excel reconhece os acentos) e o cabeçalho; ';' é o separador do Excel em pt-BR
+	var ok = isNew ? file.write('\uFEFF' + PAD_LOG_COLUMNS.join(';') + '\n') : true;
+
+	ok = ok && file.write(lines.join('\n') + '\n');
+	file.close();
+
+	return ok !== false;
+}
+
+// Linhas que não puderam ser gravadas, guardadas na máquina até a próxima vez: [{ folder, line }]
+function padPendingLogFile() {
+	return new File(scriptPreferencesPath + '/log_pendente.json');
+}
+
+function padWriteLog(record) {
+	var settings = padReadLogSettings();
+
+	if (settings.mode == 'off' || !padMachineLog()) return; // desligado pela equipe ou neste computador
+	var local = padLocalMode();
+
+	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
+
+	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
+	var config = local ? new File(padSharedConfigPath()) : padConfigFile();
+	var folder = settings.mode == 'csvGlobal' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
+	var line = [];
+
+	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
+
+	var pendingFile = padPendingLogFile();
+	var pending = [];
+
+	if (pendingFile.exists) {
+		try {
+			pending = JSON.parse(readFileContent(pendingFile)) || [];
+		} catch (err) { }
+	}
+
+	if (folder) pending.push({ folder: folder.fsName, line: line.join(';') });
+
+	// modo local: nada na rede; as linhas esperam a volta (gravadas no próximo preenchimento fora dele)
+	if (local) {
+		if (pending.length) saveTextFile(JSON.stringify(pending), pendingFile.fsName);
+
+		return;
+	}
+
+	// agrupa por pasta, mantendo a ordem; o que não puder ser gravado continua pendente
+	var folders = [];
+	var lines = {};
+	var left = [];
+
+	for (var i = 0; i < pending.length; i++) {
+		if (!lines[pending[i].folder]) {
+			lines[pending[i].folder] = [];
+			folders.push(pending[i].folder);
+		}
+
+		lines[pending[i].folder].push(pending[i].line);
+	}
+
+	for (var f = 0; f < folders.length; f++) {
+		if (padAppendCsv(folders[f], lines[folders[f]])) continue;
+
+		for (var l = 0; l < lines[folders[f]].length; l++) left.push({ folder: folders[f], line: lines[folders[f]][l] });
+	}
+
+	if (left.length) saveTextFile(JSON.stringify(left), pendingFile.fsName);
+	else if (pendingFile.exists) pendingFile.remove();
+}
 
 // Produção escolhida na barra principal, gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
@@ -354,7 +924,7 @@ PADX.saveTemplateTreeCache = function (a) {
 };
 
 PADX.openFolder = function (a) {
-	var folder = new Folder(padPath(a.path));
+	var folder = new Folder(padMountedPath(padPath(a.path))); // no volume montado (VFX-1…); monta o share se preciso
 
 	if (!folder.exists) throw new Error('#PAD_019 - pasta não encontrada: ' + folder.fsName);
 
@@ -390,11 +960,34 @@ PADX.listDir = function (a) {
 		if (items[i] instanceof Folder) {
 			entries.push({ type: 'folder', name: name, uri: items[i].absoluteURI });
 		} else if (PADX_TEMPLATE_EXT.indexOf(getFileExt(name)) >= 0) {
-			entries.push({ type: 'item', name: name, uri: items[i].absoluteURI, fsName: items[i].fsName });
+			// a data de criação (os 'novos' da lista: os dos últimos 15 dias); sem ela, a última modificação
+			var created = 0;
+
+			try {
+				created = (items[i].created || items[i].modified).getTime();
+			} catch (err) { }
+
+			entries.push({ type: 'item', name: name, uri: items[i].absoluteURI, fsName: items[i].fsName, created: created });
 		}
 	}
 
 	return { exists: true, path: padDisplayPath(path), name: folder.displayName, entries: entries };
+};
+
+// A pasta de templates está num volume da rede que dá para montar? (macOS: /Volumes/<share>/…). a: { path }
+// → { mountable, volume }
+PADX.mountInfo = function (a) {
+	var path = padPath(a.path) || String(a.path || '');
+	var m = /^\/Volumes\/([^\/]+?)(?:-[1-5])?\//.exec(path);
+
+	return { mountable: appOs == 'Mac' && !!m, volume: m ? m[1] : '' };
+};
+
+// Monta o share da pasta (quem abre a janela de templates pediu: é um clique). a: { path } → { mounted }
+PADX.mountPath = function (a) {
+	var path = padMountedPath(padPath(a.path) || String(a.path || ''));
+
+	return { mounted: new Folder(path).exists };
 };
 
 // Preview, configuração e dicas de um template.
@@ -439,7 +1032,7 @@ PADX.templateInfo = function (a) {
 
 // Caminho no formato do sistema atual (rede Windows / macOS), como o criador de templates grava.
 PADX.normalizePath = function (a) {
-	return { path: padPath(a.path) };
+	return { path: padNoVolumeSuffix(padPath(a.path)) };
 };
 
 // Grava o '_config.json' do template (cria o arquivo se ele ainda não existir).
@@ -453,7 +1046,8 @@ PADX.saveTemplateConfig = function (a) {
 	var cases = ['upperCase', 'lowerCase', 'titleCase', 'freeCase'];
 
 	if (!cfg || typeof cfg !== 'object') throw new Error('#PAD_044 - configuração inválida');
-	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o nome da configuração');
+	if (!cfg.atracao || String(cfg.atracao.name || '').trim() == '') throw new Error('#PAD_044 - escolha a atração do template');
+	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é (o nome do template)');
 	if (String(cfg.compName).trim() == '') throw new Error('#PAD_044 - preencha o nome da comp principal');
 	if (cases.indexOf(cfg.textCase) < 0) throw new Error('#PAD_044 - tipo de caixa de texto inválido: ' + cfg.textCase);
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
@@ -472,6 +1066,8 @@ PADX.saveTemplateConfig = function (a) {
 		delete cfg.inputFx;
 	} else if (!(cfg.inputFx.options instanceof Array) || cfg.inputFx.options.length == 0 || String(cfg.inputFx.fxName).trim() == '') {
 		throw new Error('#PAD_044 - efeito de variações incompleto');
+	} else if (cfg.inputFx.kind == 'checkbox' && cfg.inputFx.options.length > 2) {
+		throw new Error('#PAD_044 - efeito de variações: um checkbox tem só 2 opções (desligado e ligado)');
 	}
 
 	var configFile = padTemplateFiles(projectFile).config;
@@ -537,14 +1133,42 @@ function padInstalledFontFiles() {
 
 		for (var g = 0; g < groups.length; g++) {
 			for (var k = 0; k < groups[g].length; k++) {
-				var location = groups[g][k].location;
+				var font = groups[g][k];
+				var location = '';
+
+				try {
+					if (font.isSubstitute) continue;
+					location = font.location;
+				} catch (err) { }
 
 				if (location) names[File.decode(new File(location).name).toLowerCase()] = true;
+
+				// o Adobe Fonts guarda os arquivos com nomes embaralhados, numa pasta escondida: vale o nome da fonte
+				// (PostScript, e a família + o estilo), que é como o arquivo do template costuma se chamar
+				try {
+					names['#' + padFontKey(font.postScriptName)] = true;
+					names['#' + padFontKey(font.familyName + font.styleName)] = true;
+				} catch (err) { }
 			}
 		}
 	} catch (err) { } // After Effects antes da versão 24 não tem app.fonts
 
 	return names;
+}
+
+// O nome de uma fonte para comparar: só letras e números, em minúsculas (MyriadPro-Regular → myriadproregular)
+function padFontKey(name) {
+	return String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// A fonte do arquivo está instalada? pelo nome do arquivo (pastas do sistema) ou, sem ele, pelo nome da fonte:
+// o arquivo do template (MyriadPro-Regular.otf) com a fonte do Adobe Fonts ativa (MyriadPro-Regular)
+function padFontFileInstalled(installed, fileName) {
+	if (installed[fileName.toLowerCase()]) return true;
+
+	var base = padFontKey(fileName.replace(/\.[^.]+$/, ''));
+
+	return !!base && !!installed['#' + base];
 }
 
 function padTemplateFontsFolder(uri) {
@@ -568,7 +1192,7 @@ PADX.templateFonts = function (a) {
 	for (var i = 0; i < files.length; i++) {
 		var name = File.decode(files[i].name);
 
-		if (!installed[name.toLowerCase()]) missing.push(name);
+		if (!padFontFileInstalled(installed, name)) missing.push(name);
 	}
 
 	return { hasFolder: true, total: files.length, missing: missing };
@@ -610,7 +1234,7 @@ PADX.importTemplate = function (a) {
 		populateProjectFolders();
 		deleteEmptyProjectFolders();
 
-		setXMPData('source', decodeURI(projectFile.path).toString());
+		padRegisterTemplateUse({ name: decodeURI(projectFile.parent.name), path: decodeURI(projectFile.path) });
 	});
 
 	return { name: projectFile.displayName };
@@ -713,6 +1337,7 @@ PADX.fillBegin = function (a) {
 		}
 
 		PADX_run = {
+			production: PADX.selectedProduction().name, // a produção do template (só dá para preencher os da produção escolhida)
 			projectFile: projectFile,
 			files: files,
 			templateData: templateData,
@@ -780,7 +1405,7 @@ PADX.fillStep = function (a) {
 					.property('ADBE Effect Parade')
 					.property(templateData.inputFx.fxName)
 					.property(templateData.inputFx.optionIndex)
-					.setValue(job.f + 1);
+					.setValue(templateData.inputFx.kind == 'checkbox' ? job.f : job.f + 1); // checkbox: 0 desligado, 1 ligado; menu: 1, 2, 3…
 			}
 
 			// Preenche a informação nos layers editáveis
@@ -827,7 +1452,7 @@ PADX.fillStep = function (a) {
 
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
-			template.comment = 'EXPORTAR'; // Comentário para organização do projeto
+			template.comment = PAD_ORGANIZE.autoComment; // comentário de render (configuração > organizar)
 
 			run.newComps.push(template);
 			run.count++;
@@ -862,7 +1487,7 @@ PADX.fillFinish = function () {
 
 		// Define a pasta de importação padrão do projeto
 		try {
-			app.project.setDefaultImportFolder(new Folder(run.templateData.importPath));
+			app.project.setDefaultImportFolder(new Folder(padMountedPath(padPath(run.templateData.importPath)))); // no volume montado (VFX-1…)
 		} catch (err) { }
 
 		// Organização do projeto
@@ -870,32 +1495,30 @@ PADX.fillFinish = function () {
 		populateProjectFolders();
 		deleteEmptyProjectFolders();
 
-		// Metadados XMP indicando o caminho do template
+		// os dados do padeiro: o template (as fontes saem da pasta dele), a produção e o que faltar
 		try {
-			setXMPData('source', decodeURI(run.projectFile.path).toString());
+			padRegisterTemplateUse({ name: run.templateData.configName || decodeURI(run.projectFile.parent.name), path: decodeURI(run.projectFile.path), producao: run.production || '', output: (run.templateData.outputPath || [])[0] });
 		} catch (err) {
 			warnings.push('metadados: ' + err.message);
 		}
 	});
 
-	// Registro de dados (log) — falha silenciosa: não pode atrapalhar o trabalho
+	// Registro de dados (log), como a lista de produções define — falha silenciosa: não pode atrapalhar o trabalho
 	try {
 		var dt = new Date();
 		var pad2 = function (n) {
 			return n < 10 ? '0' + n : String(n);
 		};
 
-		sendToWebhookWithCurl(
-			{
-				template: run.templateData.configName,
-				quantidade: run.count,
-				user: system.userName,
-				work_station: system.machineName.replaceSpecialCharacters(),
-				data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
-				caminho: run.projectFile.fsName
-			},
-			'https://workflows.jmbillard.com/webhook/log_db_padeiro'
-		);
+		padWriteLog({
+			producao: run.production || '',
+			template: run.templateData.configName,
+			quantidade: run.count,
+			user: system.userName,
+			work_station: system.machineName.replaceSpecialCharacters(),
+			data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
+			caminho: run.projectFile.fsName
+		});
 	} catch (err) { }
 
 	return {
@@ -915,6 +1538,23 @@ PADX.fillFinish = function () {
 
 */
 
+// O compartilhamento do caminho está acessível? macOS: /Volumes/SHARE com a primeira pasta do caminho dentro;
+// Windows: \\servidor\share (ou a letra do drive) existe.
+function padShareReachable(path) {
+	var p = String(path || '').replace(/\\/g, '/');
+	var mac = p.match(/^\/Volumes\/[^\/]+\/([^\/]+)/);
+
+	if (mac) return padVolumeHas(p, mac[1]);
+
+	var unc = p.match(/^\/\/[^\/]+\/[^\/]+/);
+
+	if (unc) return new Folder(unc[0]).exists;
+
+	var drive = p.match(/^[A-Za-z]:\//);
+
+	return drive ? new Folder(drive[0]).exists : false;
+}
+
 // Verifica as pastas de output. a: { outputTemplate }
 PADX.queueBegin = function (a) {
 	var run = PADX_run;
@@ -926,14 +1566,32 @@ PADX.queueBegin = function (a) {
 	var outputs = [];
 	var configured = run.templateData.outputPath;
 
+	var machine = padMachineData();
+	var localMode = padLocalMode();
+	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
+
 	for (var o = 0; o < configured.length; o++) {
-		var outputPath = padPath(configured[o]);
+		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
+		if (localMode) {
+			outputs.push(padPath(localOutput));
+			continue;
+		}
+
+		// no volume realmente montado (VFX, VFX-1 … VFX-5; sem nenhum, monta o share); a pasta que ainda não
+		// existe é criada no servidor. não deu (rede fora, sem permissão): vai para a pasta deste computador
+		var outputPath = padMountedPath(padPath(configured[o]));
+
+		// só cria dentro de um volume montado de verdade (com a primeira pasta do caminho lá): nunca uma pasta
+		// solta em /Volumes, que esconderia o volume da próxima vez que ele montar
+		if (!new Folder(outputPath).exists && padShareReachable(outputPath)) {
+			try {
+				padEnsureFolder(outputPath);
+			} catch (err) { }
+		}
 
 		if (!new Folder(outputPath).exists) {
-			// Substitui o caminho inexistente pelo caminho padrão
-			// o caminho já convertido para este sistema (no macOS, /Volumes/...)
-			warnings.push('#PAD_019 - output não pode ser acessado: ' + new Folder(outputPath).fsName);
-			outputPath = defaultTemplateConfigObj.outputPath[0];
+			warnings.push('#PAD_019 - output não pode ser acessado (vai para a pasta deste computador): ' + padDisplayPath(outputPath));
+			outputPath = padPath(localOutput);
 		}
 
 		outputs.push(outputPath);
@@ -1014,13 +1672,17 @@ PADX.openOutputs = function (a) {
 	var missing = [];
 
 	for (var o = 0; o < paths.length; o++) {
-		var folder = new Folder(padPath(paths[o]));
+		// no volume realmente montado (EDIT_IN_PLACE-1 … -5; monta o share se não estiver): o caminho gravado
+		// fica sem o sufixo
+		var folder = new Folder(padMountedPath(padPath(paths[o])));
+		var near = folder.exists ? folder : nearestExistingFolder(folder.fsName);
 
-		if (folder.exists) {
-			openFolder(folder.fsName);
+		// a pasta ainda não existe (o render cria): abre a mais perto que existir, dentro do volume
+		if (near && /^\/Volumes\/[^\/]+\/.+|^\\\\[^\\]+\\[^\\]+\\.+|^[A-Za-z]:\\.+/.test(near.fsName)) {
+			openFolder(near.fsName);
 			opened++;
 		} else {
-			missing.push(folder.fsName);
+			missing.push(padDisplayPath(folder.fsName));
 		}
 	}
 
@@ -1064,7 +1726,9 @@ PADX.openLastOutput = function () {
 
 	if (outputFile == null) throw new Error('#PAD_008 - a fila de render está vazia...');
 
-	var outputPath = normalizeNetworkPath(decodeURI(outputFile.path), { silent: true });
+	// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA & INTER);
+	// padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
+	var outputPath = padPath(outputFile.parent.fsName);
 	var folder = nearestExistingFolder(outputPath);
 
 	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));
@@ -1074,19 +1738,52 @@ PADX.openLastOutput = function () {
 	return { messages: [], data: { path: folder.fsName } };
 };
 
-// Instala as fontes da pasta FONTS do template que preencheu o projeto.
+// Instala as fontes do projeto: as da pasta de fontes dele (o coletar junta lá) ou, sem ela, as da pasta FONTS
+// de cada template que preencheu o projeto (padeiro:templates).
 PADX.installFonts = function () {
 	padRequireNetwork('PAD_004');
 
-	var folderPath = normalizeNetworkPath(getXMPData('source'), { silent: true });
+	var m = padMetaRead();
+	var settings = padReadCollect();
+	var file = app.project.file;
+	var folders = [];
+	var root = m.pasta ? padMountedPath(padPath(m.pasta)) : file ? padCollectRoot(file, settings) : '';
+	var sub = padCollectFolderPath(settings, 'fontes');
+	var list = padTemplatesList(m.templates);
 
-	if (folderPath == '') throw new Error('#PAD_005 - esse projeto não foi preenchido pelo padeiro...');
+	if (root && sub) {
+		var collected = new Folder(root + '/' + sub);
 
-	var fontsPath = folderPath + '/FONTS';
+		if (collected.exists && getFontFiles(collected, []).length) folders.push(collected.fsName);
+	}
 
-	if (!new Folder(fontsPath).exists) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+	var own = folders.length > 0;
 
-	return { messages: [installFontsMessage(installFonts(fontsPath))], data: null }; // Windows ou macOS, sem janelas
+	for (var i = 0; !own && i < list.length; i++) {
+		var tpl = new Folder(normalizeNetworkPath(list[i].path, { silent: true }) + '/FONTS');
+
+		if (tpl.exists) folders.push(tpl.fsName);
+	}
+
+	if (!folders.length && !list.length) throw new Error('#PAD_005 - esse projeto não tem fontes coletadas nem foi preenchido pelo padeiro...');
+	if (!folders.length) throw new Error('#PAD_006 - a pasta de fontes não foi localizada...');
+
+	var messages = [];
+
+	var failed = null;
+
+	// uma pasta sem fontes não impede as outras
+	for (var f = 0; f < folders.length; f++) {
+		try {
+			messages.push(installFontsMessage(installFonts(folders[f])));
+		} catch (err) {
+			failed = failed || err;
+		}
+	}
+
+	if (!messages.length && failed) throw failed;
+
+	return { messages: messages, data: null }; // Windows ou macOS, sem janelas
 };
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }
@@ -1094,7 +1791,7 @@ PADX.collectFonts = function (a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
-		var fontsPath = fontCollect(decodeURI(a.path) + '/FONTS');
+		var fontsPath = fontCollect(padPath(decodeURI(a.path)) + '/FONTS');
 
 		if (fontsPath != '') openFolder(fontsPath);
 
@@ -1126,7 +1823,7 @@ PADX.organizeProject = function () {
 	return padCollect(function () {
 		try {
 			padGroup('organização automática do projeto', function () {
-				organizeProject(); // comps selecionadas sem comentário entram como 'EXPORTAR'
+				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
 			});
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);
@@ -1140,4 +1837,156 @@ PADX.createProjectFolders = function () {
 			projectTemplateFolders(); // cria a estrutura de pastas do projeto
 		});
 	});
+};
+
+/*
+
+---------------------------------------------------------------
+> importar .aep de outra versão (ferramenta importar da barra)
+---------------------------------------------------------------
+
+Quem troca a versão no cabeçalho do arquivo é o painel (js/aepversion.js, pelo Node, numa cópia); o host diz
+qual versão está rodando e importa ou abre o arquivo.
+
+*/
+
+// A versão do After Effects que está rodando: { major } (25 no AE 2025)
+PADX.aeVersion = function () {
+	return { major: parseInt(app.version, 10), version: String(app.version) };
+};
+
+// Importa um .aep no projeto aberto; a pasta que a importação cria leva o nome do arquivo original.
+// a: { path, name } → { name }
+PADX.importAep = function (a) {
+	var file = new File(a.path);
+
+	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
+
+	var folder = app.project.importFile(new ImportOptions(file));
+
+	try {
+		if (folder && a.name) folder.name = a.name;
+	} catch (err) { }
+
+	return { name: folder ? folder.name : decodeURI(file.name) };
+};
+
+// Abre um .aep no lugar do projeto atual (pergunta antes se o atual tem mudanças). a: { path } → { opened }
+PADX.openAep = function (a) {
+	var file = new File(a.path);
+
+	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
+	if (app.project && !app.project.close(CloseOptions.PROMPT_TO_SAVE_CHANGES)) return { opened: false };
+
+	app.open(file);
+
+	return { opened: true };
+};
+
+/*
+
+---------------------------------------------------------------
+> primeira vez (o tour da barra)
+---------------------------------------------------------------
+
+Sem a configuração da equipe (nem na rede, nem a cópia deste computador), a barra abre o tour (js/tour.js):
+achar o arquivo na rede, criar um novo numa pasta ou ficar só neste computador (modo local, com os padrões).
+O caminho escolhido vai para 'shared_config.txt', o mesmo arquivo que o instalador grava.
+
+*/
+
+// → { needed, expected, user }
+PADX.setupStatus = function () {
+	var file = null;
+
+	try {
+		file = padConfigFile();
+	} catch (err) { }
+
+	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padMachineUser() };
+};
+
+function padSetupPointer(path) {
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(String(path), scriptPreferencesPath + '/shared_config.txt');
+	padConfigInvalidate();
+}
+
+// O resumo da configuração que ficou valendo (para o balão): produções, links e letras de drive.
+function padSetupSummary() {
+	var data = padConfigData();
+	var links = 0;
+	var drives = [];
+	var i;
+
+	try {
+		links = padReadLinks().length;
+	} catch (err) { }
+
+	try {
+		var d = padReadDrives().drives;
+
+		for (i = 0; i < d.length; i++) drives.push(d[i].letter);
+	} catch (err) { }
+
+	return { productions: (data.PRODUCTIONS || []).length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
+}
+
+// Usa a configuração escolhida. a: { path } → resumo
+PADX.setupUseConfig = function (a) {
+	var file = new File(a.path);
+	var name = decodeURI(file.name);
+
+	if (!file.exists) throw new Error('#PAD_101 - primeira vez: o arquivo não foi encontrado.');
+	if (name != PAD_CONFIG_NAME && name != PAD_CONFIG_OLD_NAME) throw new Error('#PAD_101 - primeira vez: escolha o ' + PAD_CONFIG_NAME + ' (a configuração da equipe).');
+
+	try {
+		JSON.parse(readFileContent(file));
+	} catch (err) {
+		throw new Error('#PAD_101 - primeira vez: ' + name + ' não é uma configuração válida (JSON).');
+	}
+
+	padSetupPointer(file.fsName);
+
+	return padSetupSummary();
+};
+
+// Cria a configuração da equipe na pasta (com os padrões; se já houver uma lá, usa ela). a: { folder } → resumo
+PADX.setupCreateConfig = function (a) {
+	var folder = new Folder(a.folder);
+
+	if (!folder.exists) throw new Error('#PAD_101 - primeira vez: a pasta não foi encontrada.');
+
+	var file = new File(folder.fsName + '/' + PAD_CONFIG_NAME);
+	var existed = file.exists;
+
+	if (!existed) {
+		saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), file.fsName);
+
+		if (!new File(file.fsName).exists) throw new Error('#PAD_101 - primeira vez: não deu para gravar em ' + padDisplayPath(folder.fsName) + ' (sem permissão?).');
+	}
+
+	padSetupPointer(file.fsName);
+
+	var res = padSetupSummary();
+
+	res.existed = existed;
+
+	return res;
+};
+
+// Só neste computador: a cópia local com os padrões e o modo local ligado.
+PADX.setupLocal = function () {
+	var copy = padConfigCopyFile();
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+	if (!copy.exists) saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), copy.fsName);
+
+	PADX.saveMachinePrefs({ localMode: true });
+
+	return { local: true };
 };

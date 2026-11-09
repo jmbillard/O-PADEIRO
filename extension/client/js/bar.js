@@ -17,10 +17,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
-	var PRODUCTIONS_PANEL_ID = 'com.jmbillard.opadeiro.productions';
 	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
+	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
+	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
+	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
+	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
+	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
+	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
-	var APONTAMENTO_URL = 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i';
 
 	var L_CLICK = '◖  →  ';
 	var R_CLICK = '◗  →  ';
@@ -43,42 +47,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	// Ícones com partes animadas no hover (CSS em bar.css); os demais vêm do sprite.
-	var INLINE_ICONS = {
-		folders:
-			'<g class="anim-folder"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" />' +
-			'<path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></g>',
-		organize:
-			'<g class="anim-layers"><path class="layer-top" d="m12 3-8.5 4.25L12 11.5l8.5-4.25z" />' +
-			'<path class="layer-mid" d="m3.5 12 8.5 4.25L20.5 12" />' +
-			'<path class="layer-bottom" d="m3.5 16.5 8.5 4.25 8.5-4.25" /></g>',
-		rename:
-			'<g class="anim-type"><rect x="2.5" y="6.5" width="19" height="11" rx="3" />' +
-			'<path class="type-char" d="M6 12h2.4" /><path class="type-char" d="M10.3 12h2.4" /><path class="type-char" d="M14.6 12h2.4" />' +
-			'<path class="type-caret" d="M18.6 9.6v4.8" /></g>',
-		search:
-			// o vidro da lupa recorta as letras num círculo um pouco menor que o aro: sobra um contorno
-			// redondo "negativo" mesmo quando a letra ocupa o espaço todo
-			'<g class="anim-search"><defs><clipPath id="lens-clip"><circle cx="10" cy="10" r="5.2" /></clipPath></defs>' +
-			'<circle cx="10" cy="10" r="7.2" /><path d="m15.300 15.300 5.200 5.200" />' +
-			'<g clip-path="url(#lens-clip)"><text class="lens-letter" x="10" y="18.300" text-anchor="middle">A</text></g></g>',
-		fonts: '<g class="anim-font"><path class="font-t" d="M5.5 7.5V5.5h13v2M12 5.5v13M9 18.5h6" /></g>'
-	};
+	// os desenhos ficam em js/icons.js (os mesmos da configuração)
 
 	function svgIcon(name) {
-		var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-		svg.setAttribute('viewBox', '0 0 24 24');
-
-		if (INLINE_ICONS[name]) {
-			svg.innerHTML = INLINE_ICONS[name];
-		} else {
-			var use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-
-			use.setAttribute('href', '#i-' + name);
-			svg.appendChild(use);
-		}
-
-		return svg;
+		return PAD_ICONS.svg(name, ''); // a barra tem uma cópia de cada: os ids das máscaras ficam sem sufixo
 	}
 
 	function toast(kind, text, ms) {
@@ -97,6 +69,53 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		else if (doneText) toast('success', doneText);
 	}
 
+	// O CATADOR e O TIPÓGRAFO trabalhando: o nome do botão vira a contagem e a linha embaixo enche.
+	// p: 0 a 1 (null: esperando, sem contagem). progressEnd: volta o nome; ok: o brilho verde
+	function progress(key, text, p) {
+		var btn = $('btn-' + key);
+
+		if (!btn) return;
+
+		var label = btn.querySelector('.bar-label');
+		var line = btn.querySelector('.bar-progress');
+
+		if (!btn.classList.contains('is-running')) {
+			btn.classList.remove('is-done');
+			btn.classList.add('is-running');
+			btn.dataset.label = label ? label.textContent : '';
+		}
+
+		if (!line) {
+			line = el('span', 'bar-progress');
+			line.appendChild(el('i'));
+			btn.appendChild(line);
+		}
+
+		if (label) label.textContent = text;
+		line.classList.toggle('is-wait', p == null);
+		line.firstChild.style.width = p == null ? '' : Math.round(Math.max(0.04, Math.min(1, p)) * 100) + '%';
+	}
+
+	function progressEnd(key, ok) {
+		var btn = $('btn-' + key);
+
+		if (!btn || !btn.classList.contains('is-running')) return;
+
+		var label = btn.querySelector('.bar-label');
+		var line = btn.querySelector('.bar-progress');
+
+		btn.classList.remove('is-running');
+		if (line) line.remove();
+		if (label && btn.dataset.label) label.textContent = btn.dataset.label;
+
+		if (ok) {
+			btn.classList.add('is-done');
+			setTimeout(function () {
+				btn.classList.remove('is-done');
+			}, 1000);
+		}
+	}
+
 	async function requireNetwork(code) {
 		var info = await call('ping');
 
@@ -111,19 +130,95 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(TEMPLATES_PANEL_ID);
 		},
 
-		installFonts: async function () {
-			await requireNetwork('PAD_004');
-			report(await call('installFonts'), 'fontes enviadas para instalação.');
+		// resolver: instala do banco as que faltam neste computador; sobrou alguma sem arquivo em lugar nenhum,
+		// abre a janela de fontes nela (para trocar). sem banco (ou sem Node), o jeito de antes: as da pasta de
+		// fontes do projeto ou dos templates
+		resolveFonts: async function () {
+			var info = await call('fontsProject');
+
+			// After Effects anterior ao 2024: sem a lista das fontes, o jeito de antes
+			if (!info.supported) {
+				await requireNetwork('PAD_004');
+				report(await call('installFonts'), 'fontes enviadas para instalação.');
+				return;
+			}
+
+			var missing = info.fonts.filter(function (f) {
+				return f.missing;
+			});
+
+			// nada faltando: só avisa (sem erro, mesmo sem banco ou sem pasta de fontes)
+			if (!missing.length) {
+				toast('success', info.fonts.length ? 'fontes ok: ' + (info.fonts.length === 1 ? 'a fonte do projeto está instalada.' : 'as ' + info.fonts.length + ' fontes do projeto estão instaladas.') : 'o projeto não usa nenhuma fonte.');
+				setTimeout(syncFonts, 300);
+				return;
+			}
+
+			var installed = 0;
+
+			// 1. a pasta de fontes do projeto: poucas e perto, a mais rápida
+			progress('fontes', 'projeto', 0.15);
+
+			try {
+				var local = await call('fontsInstallProject');
+
+				installed += local.installed;
+			} catch (err) { }
+
+			// 2. o que ainda falta: do banco (pelo nome PostScript)
+			if (installed) {
+				await new Promise(function (r) {
+					setTimeout(r, 1200); // o After Effects enxergar as recém-instaladas antes de conferir
+				});
+				info = await call('fontsProject');
+			}
+
+			if (info.bank && PAD_FONTBANK.available() && info.fonts.some(function (f) {
+				return f.missing;
+			})) {
+				progress('fontes', 'banco', 0.45);
+
+				var checked = await PAD_FONTBANK.check(info);
+				var files = checked.fonts.filter(function (f) {
+					return f.state === 'install' && f.bankFile;
+				}).map(function (f) {
+					return f.bankFile;
+				});
+
+				if (files.length) {
+					try {
+						var res = await call('fontsInstall', { files: files });
+
+						installed += res.installed + res.already;
+					} catch (err) { }
+				}
+			}
+
+			// 3. confere de novo: o que ainda falta, só trocando por outra (a janela abre nelas)
+			progress('fontes', 'conferindo', 0.8);
+			await new Promise(function (r) {
+				setTimeout(r, 1500);
+			});
+
+			var still = (await call('fontsProject')).fonts.filter(function (f) {
+				return f.missing;
+			});
+
+			progressEnd('fontes', !still.length);
+
+			if (still.length) {
+				toast(installed ? 'success' : null, (installed ? 'fontes instaladas. ' : '') + (still.length === 1 ? '1 fonte não foi achada' : still.length + ' fontes não foram achadas') + ' (nem na pasta de fontes do projeto nem no banco): escolha outra na janela de fontes.');
+				PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
+			} else {
+				toast('success', missing.length === 1 ? 'a fonte que faltava foi instalada.' : 'as ' + missing.length + ' fontes que faltavam foram instaladas.');
+			}
+
+			setTimeout(syncFonts, 300);
 		},
 
-		collectFonts: async function () {
-			var path = PAD_BRIDGE.pickFolder('Pasta para o collect das fontes');
-
-			if (!path) return;
-
-			var res = await call('collectFonts', { path: path });
-
-			report(res, res.data && res.data.path ? 'fontes coletadas em ' + res.data.path : 'nenhuma fonte pôde ser coletada.');
+		// a janela de fontes do projeto: o estado de cada uma e a troca
+		openFonts: function () {
+			PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
 		},
 
 		openLastOutput: async function () {
@@ -140,11 +235,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 
 		organizeProject: async function () {
-			report(await call('organizeProject'), 'projeto organizado.');
+			report(await call('organizeProject'), 'O CONTRARREGRA organizou o projeto.');
 		},
 
 		createProjectFolders: async function () {
-			report(await call('createProjectFolders'), 'estrutura de pastas criada.');
+			report(await call('createProjectFolders'), 'O CONTRARREGRA criou a estrutura de pastas.');
 		},
 
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
@@ -166,15 +261,83 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FINDER_PANEL_ID);
 		},
 
+		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar): em lotes pequenos,
+		// para a barra contar (e o After Effects respirar entre um e outro)
+		collect: async function (path) {
+			var res;
+			var d;
+
+			progress('coletar', '…', null);
+
+			try {
+				var plan = await call('collectBegin', { path: path || '' });
+				var total = plan.ids.length;
+				var sum = { target: plan.target, files: 0, sequences: 0, frames: 0, skipped: [], missing: plan.missing };
+
+				for (var i = 0; i < total; i += COLLECT_BATCH) {
+					progress('coletar', Math.min(total, i + 1) + '/' + total, i / total);
+
+					var step = await call('collectStep', { target: plan.target, ids: plan.ids.slice(i, i + COLLECT_BATCH) });
+
+					sum.files += step.files;
+					sum.sequences += step.sequences;
+					sum.frames += step.frames;
+					sum.skipped = sum.skipped.concat(step.skipped);
+				}
+
+				progress('coletar', total ? total + '/' + total : 'salvando', total ? 1 : null);
+				res = await call('collectEnd', sum);
+				d = res.data || {};
+			} catch (err) {
+				progressEnd('coletar', false);
+				throw err;
+			}
+
+			progressEnd('coletar', !(res.messages && res.messages.length));
+
+			var parts = [];
+
+			if (d.files) parts.push(d.files + (d.files === 1 ? ' arquivo' : ' arquivos'));
+			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
+			if (d.fonts) parts.push('fontes');
+
+			report(res, parts.length ? 'O CATADOR coletou: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			setTimeout(watchCollect, 300);
+		},
+
+		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
+		openCollect: function () {
+			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
+		},
+
+		// janela do projeto: um projeto novo pela atração, ou o editor do atual
+		project: function () {
+			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+		},
+
+		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre a janela PROJETO
+		saveProject: async function () {
+			var cur = await call('projectCurrent');
+
+			if (!cur.created) {
+				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+				return;
+			}
+
+			await call('projectSaveNow');
+			toast('success', 'projeto salvo: ' + cur.fileName);
+		},
+
 		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
 		convertPaths: async function () {
 			await call('requestConverter');
 			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
 		},
 
-		links: async function () {
-			await requireNetwork('PAD_007');
-			PAD_BRIDGE.openUrl(APONTAMENTO_URL);
+		// a configuração, já na aba da ferramenta (2 cliques)
+		config: async function (tab) {
+			await call('requestConfigTab', { tab: tab });
+			PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
 		}
 	};
 
@@ -182,64 +345,104 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Estrutura da barra
 	   ========================================================= */
 
-	var SECTIONS = [
-		[
-			{
-				key: 'templates',
-				label: 'Templates',
-				icon: 'templates',
-				tips: [L_CLICK + 'preencher templates', R_CLICK + 'criar novo template'],
-				left: actions.templates,
-				right: actions.createTemplate
+	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba LAYOUT).
+	var TOOLS = [
+		{
+			key: 'templates',
+			config: 'prods',
+			label: 'Templates',
+			icon: 'templates',
+			tips: [L_CLICK + 'abrir O FORNINHO: preencher templates', R_CLICK + 'abrir A FORMA: criar novo template'],
+			left: actions.templates,
+			right: actions.createTemplate
+		},
+		{
+			key: 'fontes',
+			config: 'fonts',
+			label: 'Fontes',
+			icon: 'fonts',
+			tips: [L_CLICK + 'O TIPÓGRAFO resolve as fontes do projeto (instala as que faltam)', R_CLICK + 'abrir O TIPÓGRAFO: as fontes do projeto (trocar, copiar para uma pasta)'],
+			left: actions.resolveFonts,
+			right: actions.openFonts
+		},
+		{
+			key: 'projeto',
+			config: 'project',
+			label: 'Projeto',
+			icon: 'project',
+			tips: [L_CLICK + 'abrir A CLAQUETE: projeto novo pela atração, ou o editor', R_CLICK + 'A CLAQUETE salva o projeto'],
+			left: actions.project,
+			right: actions.saveProject
+		},
+		{
+			key: 'coletar',
+			config: 'collect',
+			label: 'Coletar',
+			icon: 'collect',
+			tips: [L_CLICK + 'O CATADOR coleta os arquivos do projeto na pasta dele', R_CLICK + 'abrir O CATADOR: os arquivos do projeto (coletar em outra pasta, resolver os que faltam)'],
+			left: function () {
+				return actions.collect('');
 			},
-			{
-				key: 'fontes',
-				label: 'Fontes',
-				icon: 'fonts',
-				tips: [L_CLICK + 'instalar as fontes usadas no template', R_CLICK + 'fazer o collect das fontes usadas no projeto'],
-				left: actions.installFonts,
-				right: actions.collectFonts
-			}
-		],
-		[
-			{
-				key: 'pastas',
-				label: 'Pastas',
-				icon: 'folders',
-				tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'abrir o conversor de caminhos Windows/MacOs'],
-				left: actions.openLastOutput,
-				right: actions.convertPaths
-			}
-		],
-		[
-			{
-				key: 'renomear',
-				label: 'Renomear',
-				icon: 'rename',
-				tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
-				left: actions.renameComps,
-				right: actions.renameOutputs
+			right: actions.openCollect
+		},
+		{
+			key: 'importar',
+			config: '',
+			label: 'Importar',
+			icon: 'import',
+			tips: [L_CLICK + 'importar um .aep (de versão mais nova também: converte para a deste After Effects)', R_CLICK + 'abrir um .aep de versão mais nova (a cópia convertida fica ao lado do original)'],
+			left: function () {
+				return actions.importAep(false);
 			},
-			{
-				key: 'organizar',
-				label: 'Organizar',
-				icon: 'organize',
-				tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'organizar o projeto', R_CLICK + 'criar estrutura de pastas do projeto'],
-				left: actions.organizeProject,
-				right: actions.createProjectFolders
+			right: function () {
+				return actions.importAep(true);
 			}
-		],
-		[
-			{
-				key: 'buscar',
-				label: 'Buscar',
-				icon: 'search',
-				tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir a BUSCA em layers de texto'],
-				left: actions.searchPaths,
-				right: actions.searchTexts
-			}
-		]
+		},
+		{
+			key: 'pastas',
+			config: 'drives',
+			label: 'Pastas',
+			icon: 'folders',
+			tips: [L_CLICK + 'O ADAPTADOR abre a pasta do último item da fila de render', R_CLICK + 'abrir O ADAPTADOR: conversor de caminhos Windows/macOS'],
+			left: actions.openLastOutput,
+			right: actions.convertPaths
+		},
+		{
+			key: 'renomear',
+			config: 'rename',
+			label: 'Renomear',
+			icon: 'rename',
+			tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
+			left: actions.renameComps,
+			right: actions.renameOutputs
+		},
+		{
+			key: 'organizar',
+			config: 'organize',
+			label: 'Organizar',
+			icon: 'organize',
+			tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'O CONTRARREGRA organiza o projeto', R_CLICK + 'O CONTRARREGRA cria a estrutura de pastas do projeto'],
+			left: actions.organizeProject,
+			right: actions.createProjectFolders
+		},
+		{
+			key: 'buscar',
+			config: 'search',
+			label: 'Buscar',
+			icon: 'search',
+			tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir O ACESSORISTA: busca em layers de texto'],
+			left: actions.searchPaths,
+			right: actions.searchTexts
+		}
 	];
+
+	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
+
+	function toolDef(key) {
+		return TOOLS.filter(function (t) {
+			return t.key === key;
+		})[0] || null;
+	}
 
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
@@ -253,12 +456,31 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			toast('error', err.message);
 		} finally {
 			btn.classList.remove('is-busy');
+			if (btn.classList.contains('is-running')) progressEnd(btn.id.replace(/^btn-/, ''), false); // parou no meio (erro)
 		}
 	}
 
-	function bind(btn, left, right) {
+	// 'config': aba da configuração aberta com 2 cliques. Com ela, o clique simples espera um instante
+	// (para saber se vem o segundo) antes de rodar.
+	function bind(btn, left, right, config) {
+		var timer = null;
+
 		btn.addEventListener('click', function () {
-			run(btn, left);
+			if (!config) return run(btn, left);
+
+			if (timer) {
+				clearTimeout(timer);
+				timer = null;
+				run(btn, function () {
+					return actions.config(config);
+				});
+				return;
+			}
+
+			timer = setTimeout(function () {
+				timer = null;
+				run(btn, left);
+			}, DOUBLE_CLICK_MS);
 		});
 
 		// clique direito = segunda ação (sem o menu de contexto do navegador)
@@ -276,69 +498,31 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 	}
 
-	// Lupa: no hover, uma letra (sorteada) entra da esquerda no vidro enquanto a lupa vai para o lado e
-	// para cima e volta, e tudo para; ao sair, a mesma animação roda ao contrário, como nos outros ícones.
-	var LENS_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#&';
-	var LENS_MS = 480;
+	var toolsLayout = ''; // a ordem e as escondidas desenhadas agora (só redesenha quando mudam)
 
-	function bindLensLetters(btn) {
-		var lens = btn.querySelector('.anim-search');
-		var letter = btn.querySelector('.lens-letter');
+	// Monta a barra na ordem da configuração: 'divider' separa os grupos; as escondidas ficam de fora e
+	// um grupo sem nenhuma ferramenta não aparece (nem a divisória dele).
+	function buildTools(items, hidden) {
+		var key = items.join() + '|' + hidden.join();
 
-		if (!lens.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (key === toolsLayout) return;
 
-		var timing = { duration: LENS_MS, easing: 'ease-in-out', fill: 'both' };
-		var anims = [
-			lens.animate(
-				[
-					{ transform: 'translate(0, 0) rotate(0)' },
-					{ transform: 'translate(-2.5px, -2.5px) rotate(-6deg)', offset: 0.45 },
-					{ transform: 'translate(0, 0) rotate(0)' }
-				],
-				timing
-			),
-			letter.animate(
-				[
-					{ opacity: 0, transform: 'translateX(-14px)' },
-					{ opacity: 1, offset: 0.4 },
-					{ opacity: 1, transform: 'translateX(0)' }
-				],
-				timing
-			)
-		];
+		toolsLayout = key;
+		collectSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
 
-		anims.forEach(function (anim) {
-			anim.pause();
-		});
-
-		function play(rate) {
-			var t = anims[0].currentTime || 0;
-
-			anims.forEach(function (anim) {
-				// play() reinicia a animação se ela já estiver na ponta para onde vai: aí só para
-				if ((rate > 0 && t >= LENS_MS) || (rate < 0 && t <= 0)) return anim.pause();
-
-				anim.playbackRate = rate;
-				anim.play();
-			});
-		}
-
-		btn.addEventListener('mouseenter', function () {
-			// letra nova só quando ela está fora do vidro (não troca no meio da volta)
-			if (anims[1].currentTime <= 0) letter.textContent = LENS_LETTERS.charAt(Math.floor(Math.random() * LENS_LETTERS.length));
-
-			play(1);
-		});
-
-		btn.addEventListener('mouseleave', function () {
-			play(-1);
-		});
-	}
-
-	function buildTools() {
 		var tools = $('tools');
+		var groups = [[]];
 
-		SECTIONS.forEach(function (section, i) {
+		tools.textContent = '';
+
+		items.forEach(function (item) {
+			if (item === 'divider') groups.push([]);
+			else if (hidden.indexOf(item) < 0 && toolDef(item)) groups[groups.length - 1].push(toolDef(item));
+		});
+
+		groups.filter(function (g) {
+			return g.length;
+		}).forEach(function (section, i) {
 			if (i > 0) tools.appendChild(el('span', 'bar-divider'));
 
 			var group = el('div', 'bar-section');
@@ -349,12 +533,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n');
+				btn.title = def.tips.join('\n'); // os 2 cliques (configuração) ficam sem dica: é um atalho
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
-				bind(btn, def.left, def.right);
-				if (def.icon === 'search') bindLensLetters(btn);
+				bind(btn, def.left, def.right, def.config);
 
 				group.appendChild(btn);
 			});
@@ -362,84 +545,357 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			tools.appendChild(group);
 		});
 
-		var links = $('btn-links');
+		paintProjectDot(); // a barra montada de novo: a bolinha volta
+	}
 
-		links.title = L_CLICK + 'abrir apontamento de projetos';
-		bind(links, actions.links, null);
+	/* ---------------------------------------------------------------
+	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (atração…);
+	   laranja = sem eles (salvo sem a atração, ou com itens e sem arquivo); sem bolinha = projeto vazio
+	   --------------------------------------------------------------- */
+
+	var projectState = '';
+
+	function paintProjectDot() {
+		var btn = $('btn-projeto');
+
+		if (!btn) return;
+
+		var dot = btn.querySelector('.bar-dot');
+
+		if (!projectState) {
+			if (dot) dot.remove();
+			btn.removeAttribute('data-project');
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + projectState;
+		placeProjectDot(btn, dot);
+		btn.setAttribute('data-project', projectState);
+		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (atração, o que é, pastas): abra a janela PROJETO';
+	}
+
+	// a bolinha fica no canto de baixo, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
+	// com o rótulo ao lado)
+	function placeProjectDot(btn, dot) {
+		var icon = btn.querySelector('svg');
+
+		if (!icon || !icon.getBoundingClientRect().width) return;
+
+		var b = btn.getBoundingClientRect();
+		var r = icon.getBoundingClientRect();
+
+		dot.style.left = Math.round(r.right - b.left - 8) + 'px';
+		dot.style.top = Math.round(r.bottom - b.top - 8) + 'px';
 	}
 
 	/* =========================================================
-	   Produção
+	   Banco de fontes: as fontes do projeto aberto vão sozinhas para o banco e para a pasta de fontes do
+	   projeto (js/fontbank.js, pelo Node, uma por vez). A bolinha no botão de fontes: laranja quando falta algo
+	   (neste computador, no banco ou na pasta do projeto), verde quando está tudo certo.
 	   ========================================================= */
 
-	var state = { productions: [], stamp: 0 };
+	var FONTS_EVERY = 10000; // ms entre as leituras do projeto
+	var fontsSync = { busy: false, timer: null, state: '', tip: '' };
+	var FONT_LABELS = { up: 'enviando', install: 'para instalar', nofile: 'sem arquivo' };
 
-	function updateProdIcon(name) {
-		var prod = state.productions.filter(function (p) {
-			return p.name === name;
-		})[0];
-		var icon = $('prod-icon');
-		var url = prod ? PAD_UTIL.decodeIcon(prod.icon) : null;
+	function paintFontsDot(state, tip) {
+		var btn = $('btn-fontes');
 
-		icon.hidden = !url;
-		icon.title = prod ? prod.name + '\n\ndois cliques: editar a lista de produções' : 'dois cliques: editar a lista de produções';
-		if (url) icon.src = url;
+		if (!btn) return;
+
+		var dot = btn.querySelector('.bar-dot');
+
+		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
+		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+
+		if (!state) {
+			if (dot) dot.remove();
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + state;
+		placeProjectDot(btn, dot);
 	}
 
-	async function loadProductions() {
-		var select = $('production');
-		var chosen = null;
+	function fontsSummary(checked, info) {
+		var count = {};
+		var parts = [];
+
+		checked.fonts.forEach(function (f) {
+			count[f.state] = (count[f.state] || 0) + 1;
+		});
+		Object.keys(FONT_LABELS).forEach(function (k) {
+			if (count[k]) parts.push(count[k] + ' ' + FONT_LABELS[k]);
+		});
+		if (info.bank && !checked.bankOk) parts.push('banco de fontes inacessível');
+		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado (configuração > fontes)');
+
+		return parts.length ? 'fontes: ' + parts.join(' · ') : 'fontes ok: ' + checked.fonts.length + (checked.fonts.length === 1 ? ' fonte instalada e no banco' : ' fontes instaladas e no banco');
+	}
+
+	async function syncFonts() {
+		if (fontsSync.busy || document.hidden || !window.PAD_FONTBANK || !PAD_FONTBANK.available()) return;
+
+		// sem a rede (caiu ou modo local): o banco fica na rede, nem tenta (tocar num volume que sumiu faz o macOS
+		// avisar a cada vez). volta sozinho quando a rede voltar
+		if (netState === 'offline' || netState === 'forced') {
+			clearTimeout(fontsSync.timer);
+			fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
+			return;
+		}
+
+		fontsSync.busy = true;
+		clearTimeout(fontsSync.timer);
 
 		try {
-			var list = await call('productions', {});
+			var info = await call('fontsProject');
 
-			state.productions = list.productions;
-			state.stamp = list.stamp;
-			chosen = (await call('selectedProduction')).name;
+			if (!info.supported || !info.fonts.length) {
+				paintFontsDot('', '');
+			} else {
+				var checked = await PAD_FONTBANK.check(info);
+				var bad = checked.fonts.some(function (f) {
+					return f.state !== 'ok';
+				}) || (info.bank && !checked.bankOk);
 
-			if (list.error) toast('error', list.error, 9000);
-		} catch (err) {
-			toast('error', err.message);
-		}
+				paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
 
-		select.textContent = '';
+				// o envio: uma fonte por vez, até não faltar nenhuma
+				if (info.upload && info.machineUpload) {
+					var pending = checked.fonts.filter(function (f) {
+						return f.state === 'up';
+					});
 
-		state.productions.forEach(function (prod) {
-			var option = el('option', null, prod.name);
+					// a barra conta o envio (O TIPÓGRAFO copiando para o banco e a pasta do projeto)
+					for (var i = 0; i < pending.length; i++) {
+						progress('fontes', (i + 1) + '/' + pending.length, i / pending.length);
 
-			option.value = prod.name;
-			select.appendChild(option);
-		});
+						try {
+							await PAD_FONTBANK.upload(info, pending[i], checked);
+						} catch (err) { }
+					}
 
-		if (!state.productions.length) {
-			select.appendChild(el('option', null, 'sem produções'));
-			select.disabled = true;
-		} else {
-			select.disabled = false;
-			select.value = state.productions.some(function (p) { return p.name === chosen; }) ? chosen : state.productions[0].name;
-		}
+					if (pending.length) progressEnd('fontes', true);
 
-		PAD_DROPDOWN.refresh(select);
-		updateProdIcon(select.value);
+					if (pending.length) {
+						checked = await PAD_FONTBANK.check(info);
+						bad = checked.fonts.some(function (f) {
+							return f.state !== 'ok';
+						}) || (info.bank && !checked.bankOk);
+						paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
+					}
+				}
+			}
+		} catch (err) { }
+
+		fontsSync.busy = false;
+		fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
 	}
 
-	// Acompanha mudanças feitas por fora (lista editada, produção escolhida em outro painel).
-	async function watchProduction() {
+	/* =========================================================
+	   Coletar: a mesma bolinha das fontes. laranja quando o projeto tem arquivo salvo neste computador
+	   (fora da rede), verde quando está tudo na rede; o balão diz quantos e quais
+	   ========================================================= */
+
+	var COLLECT_EVERY = 5000;
+	var collectSync = { state: null, timer: null };
+
+	function paintCollectDot(res) {
+		var btn = $('btn-coletar');
+
+		if (!btn) return;
+		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
+
+		var dot = btn.querySelector('.bar-dot');
+		var tip = '';
+
+		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
+		if (res && res.state === 'out') tip = 'arquivos: ' + res.local + ' fora das pastas de projetos' + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a pasta do projeto';
+		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+
+		if (!res || !res.state) {
+			if (dot) dot.remove();
+			return;
+		}
+
+		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + res.state;
+		placeProjectDot(btn, dot);
+	}
+
+	async function watchCollect() {
+		clearTimeout(collectSync.timer);
+
+		if (!document.hidden) {
+			try {
+				var res = await call('collectStatus');
+				var key = JSON.stringify(res);
+
+				if (key !== collectSync.state) {
+					collectSync.state = key;
+					paintCollectDot(res);
+				}
+			} catch (err) { }
+		}
+
+		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
+	}
+
+	async function watchProject() {
 		if (document.hidden) return;
 
 		try {
-			var selected = await call('selectedProduction');
-			var name = selected.name;
-			var select = $('production');
+			var res = await call('projectStatus');
 
-			// a lista foi editada (editor, script ou outra pessoa) ou voltou a ficar acessível: lê de novo
-			if (selected.stamp !== state.stamp) return loadProductions();
-
-			if (name && name !== select.value && state.productions.some(function (p) { return p.name === name; })) {
-				select.value = name;
-				PAD_DROPDOWN.refresh(select);
-				updateProdIcon(name);
+			if (res.state !== projectState) {
+				projectState = res.state;
+				paintProjectDot();
 			}
+		} catch (err) { }
+	}
+
+	/* =========================================================
+	   Links (configuração > links): ícone do site (favicon) ou um
+	   ícone próprio; clique abre o endereço, 2 cliques editam
+	   ========================================================= */
+
+	var linksStamp = -1;
+
+	function faviconUrl(url) {
+		var m = /^(https?:\/\/[^\/?#]+)/i.exec(url);
+
+		return m ? m[1] + '/favicon.ico' : '';
+	}
+
+	// selo dos links pessoais: um bonequinho (cabeça e busto) num círculo branco; a base do busto é cortada
+	// pela curva do círculo, com um filete branco até a borda
+	var PERSON_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-bg" cx="5.5" cy="5.5" r="5.5" /><circle cx="5.5" cy="4" r="1.5" /><path d="M2.9 9.17C3.2 7.3 4.3 6.6 5.5 6.6S7.8 7.3 8.1 9.17A4.5 4.5 0 0 1 2.9 9.17z" /></svg>';
+
+	// os da equipe e, logo depois, os pessoais (com o selo)
+	function renderLinks(team, personal) {
+		var box = $('links');
+		var links = team.concat(personal.map(function (l) {
+			return Object.assign({ personal: true }, l);
+		}));
+
+		box.textContent = '';
+
+		links.forEach(function (link) {
+			var btn = el('button', 'bar-icon bar-link' + (link.personal ? ' is-personal' : ''));
+			var img = el('img');
+			var custom = PAD_UTIL.decodeIcon(link.icon);
+
+			btn.type = 'button';
+			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
+			btn.setAttribute('aria-label', link.name);
+			img.alt = '';
+			img.src = custom || faviconUrl(link.url);
+
+			// sem favicon (site sem o arquivo, rede fora): o ícone de link
+			img.addEventListener('error', function () {
+				img.replaceWith(svgIcon('link'));
+			});
+
+			btn.appendChild(img);
+
+			if (link.personal) {
+				var badge = el('span', 'bar-link-badge');
+
+				badge.innerHTML = PERSON_BADGE;
+				btn.appendChild(badge);
+			}
+			bind(btn, async function () {
+				await requireNetwork('PAD_007');
+				PAD_BRIDGE.openUrl(link.url);
+			}, null, link.personal ? 'mylinks' : 'links');
+			box.appendChild(btn);
+		});
+
+		placeLinksBreak();
+		box.hidden = !links.length;
+		$('links-divider').hidden = !links.length;
+	}
+
+	// na vertical os links vão em linhas centralizadas de 3 (só ícones: um embaixo do outro) e a incompleta fica em cima:
+	// uma quebra antes do item que abre a primeira linha cheia (CSS: #links .links-break, só na vertical)
+	function placeLinksBreak() {
+		var box = $('links');
+		var old = box.querySelector('.links-break');
+
+		if (old) old.remove();
+
+		var cols = ICON_MEDIA.matches ? 1 : 3;
+		var rest = box.children.length % cols;
+
+		if (rest && box.children[rest]) box.insertBefore(el('i', 'links-break'), box.children[rest]); // sem linha cheia: nada
+	}
+
+	// 100% vertical e bem estreita: só os ícones (css); a quebra dos links muda junto
+	var ICON_MEDIA = window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 99px)');
+
+	if (ICON_MEDIA.addListener) ICON_MEDIA.addListener(placeLinksBreak);
+
+	// Rede ou modo local, no começo da barra: o servidor (rede); o servidor com o alerta amarelo (a rede não
+	// está respondendo: o padeiro usa as cópias deste computador); o notebook (modo local, ligado na configuração).
+	var NET_ICONS = {
+		network: '<svg viewBox="0 0 24 24" aria-hidden="true" class="anim-server"><g class="rack r1"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><path class="led" d="M7.5 7.5h.01" /></g><g class="rack r2"><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="led" d="M7.5 16.5h.01" /></g></svg>', // o servidor (o mesmo da aba drives)
+		local: '<svg viewBox="0 0 24 24" aria-hidden="true" class="anim-laptop"><rect class="lid" x="5" y="5.5" width="14" height="9.5" rx="1.8" /><path d="M3 18.5h18" /></svg>'
+	};
+	var WARN_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-warn" cx="5.5" cy="5.5" r="5.5" /><path class="badge-mark" d="M5.5 2.7v3.3" /><circle class="badge-dot" cx="5.5" cy="8.1" r=".85" /></svg>';
+	var netState = '';
+
+	function applyNet(local, forced) {
+		var key = local ? (forced ? 'forced' : 'offline') : 'network';
+		var btn = $('net-status');
+
+		if (key === netState) return;
+
+		netState = key;
+		btn.hidden = false;
+		btn.className = 'bar-icon bar-net is-' + key;
+		btn.innerHTML = NET_ICONS[key === 'forced' ? 'local' : 'network'];
+
+		if (key === 'offline') {
+			var badge = el('span', 'bar-link-badge bar-net-badge');
+
+			badge.innerHTML = WARN_BADGE;
+			btn.appendChild(badge);
+		}
+
+		var text = {
+			network: 'rede: configuração, templates e busca vêm da rede',
+			forced: 'modo local, ligado por você (configuração > meu usuário): nada tenta a rede',
+			offline: 'modo local: a rede não está respondendo. o padeiro usa as cópias deste computador e volta sozinho quando a rede voltar'
+		}[key];
+
+		btn.title = text + '\n' + L_CLICK + (key === 'forced' ? 'configuração > meu usuário' : 'configuração > rede');
+		btn.setAttribute('aria-label', text);
+	}
+
+	// os links também podem ser escondidos (configuração > layout)
+	function applyLinksHidden(hidden) {
+		if (hidden.indexOf('links') < 0) return;
+
+		$('links').hidden = true;
+		$('links-divider').hidden = true;
+	}
+
+	async function loadLinks() {
+		if (document.hidden) return;
+
+		try {
+			var res = await call('barLinks');
+
+			applyNet(!!res.localMode, !!res.localForced);
+
+			if (res.stamp === linksStamp) return;
+
+			linksStamp = res.stamp;
+			renderLinks(res.links, res.personal || []);
+			buildTools(res.items && res.items.length ? res.items : DEFAULT_ITEMS, res.hidden || []);
+			applyLinksHidden(res.hidden || []);
 		} catch (err) { }
 	}
 
@@ -447,40 +903,92 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Início
 	   ========================================================= */
 
+	// logo escolhida na configuração (aparência) no lugar do pãozinho
+	function applyLogo(theme) {
+		var logo = $('logo');
+		var loaf = logo.querySelector('.bar-loaf');
+		var img = logo.querySelector('.bar-logo-img');
+		var src = theme && theme.logo ? PAD_UTIL.decodeIcon(theme.logo) : null;
+
+		if (!src) {
+			if (img) img.remove();
+			loaf.style.display = '';
+			return;
+		}
+
+		if (!img) {
+			img = el('img', 'bar-logo-img');
+			img.alt = '';
+			logo.insertBefore(img, loaf);
+		}
+
+		img.src = src;
+		loaf.style.display = 'none';
+	}
+
 	async function init() {
-		buildTools();
 
-		PAD_DROPDOWN.enhance($('production'));
+		document.addEventListener('pad-theme', function (e) {
+			applyLogo(e.detail);
+		});
+		if (window.PAD_THEME) applyLogo(PAD_THEME.current());
 
-		// ← → andam pela barra (logo, produção, link e ferramentas)
+		// ← → andam pela barra (logo, link e ferramentas)
 		PAD_KEYS.listNav({
 			root: $('bar'),
-			items: '.bar-logo, .bar-prod .dropdown-trigger, .bar-icon, .bar-btn',
+			items: '.bar-logo, .bar-icon, .bar-btn',
 			horizontal: true
 		});
 
-		$('production').addEventListener('change', async function () {
-			updateProdIcon(this.value);
+		// a barra é montada na ordem da configuração; sem ela (rede fora), na ordem padrão
+		loadLinks().then(function () {
+			if (!toolsLayout) buildTools(DEFAULT_ITEMS, []);
+		});
+		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
+		watchProject();
+		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
+		// as bolinhas (projeto, fontes, coletar) acompanham o ícone ao virar a barra
+		window.addEventListener('resize', function () {
+			paintProjectDot();
+			Array.prototype.forEach.call(document.querySelectorAll('.bar-btn .bar-dot'), function (dot) {
+				placeProjectDot(dot.parentElement, dot);
+			});
+		});
+		window.addEventListener('focus', watchProject);
+		window.addEventListener('focus', loadLinks);
+		syncFonts(); // o banco de fontes (a bolinha das fontes)
+		window.addEventListener('focus', syncFonts);
+		watchCollect(); // os arquivos fora da rede (a bolinha do coletar)
+		window.addEventListener('focus', watchCollect);
 
-			try {
-				await call('setProduction', { name: this.value });
-			} catch (err) {
-				toast('error', err.message);
-			}
+		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
+		$('net-status').addEventListener('click', function () {
+			actions.config(netState === 'forced' ? 'machine' : 'network');
 		});
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
-
-		$('prod-icon').addEventListener('dblclick', function () {
-			PAD_BRIDGE.openPanel(PRODUCTIONS_PANEL_ID);
+		// o tour da turma de novo (js/tour.js)
+		$('logo').addEventListener('contextmenu', function (e) {
+			e.preventDefault();
+			PAD_TOUR.start({});
+		});
+		// o tour achou (ou criou) a configuração: a barra relê os links e as ferramentas
+		document.addEventListener('pad-tour-setup', function () {
+			linksStamp = null;
+			loadLinks();
 		});
 
 		try {
 			var info = await call('ping');
 
 			$('version').textContent = 'v' + info.version;
+
+			// sem a configuração da equipe (nem a cópia deste computador): a primeira vez, pelo tour
+			var setup = await call('setupStatus');
+
+			if (setup.needed) PAD_TOUR.start({ setup: true, user: setup.user });
 
 			if (!info.network) {
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);
@@ -493,11 +1001,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			return;
 		}
-
-		await loadProductions();
-
-		setInterval(watchProduction, 3000);
-		window.addEventListener('focus', watchProduction);
 	}
 
 	init();

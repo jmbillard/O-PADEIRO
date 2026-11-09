@@ -1,0 +1,915 @@
+/* =========================================================
+   PROJETO — janelinha própria, fundo branco: um projeto novo em etapas
+   (uma tela por vez) e, depois de criado, o editor
+   ========================================================= */
+
+html,
+body.project-page {
+  height: 100%;
+  min-width: 0;
+}
+
+body.project-page {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.project {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.wz-screen {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 18px 0;
+}
+
+.wz-screen[hidden] {
+  display: none;
+}
+
+/* o título de cada etapa: só a palavra */
+.wz-title {
+  margin: 0;
+  color: var(--blue-500);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.wz-label {
+  margin: 2px 0 -6px 2px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+/* a claquete: campo grande */
+.wz-claq .cfg-input {
+  min-height: 60px;
+  padding-left: 48px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.wz-claq .field-icon {
+  left: 16px;
+  width: 22px;
+  height: 22px;
+}
+
+/* a lista com busca da etapa ATRAÇÃO: itens um pouco maiores, como o campo */
+.combo-claq .combo-item {
+  padding-block: 9px;
+  font-size: 0.8rem;
+}
+
+/* a atração encontrada (e a pasta, no editor) */
+.proj-card {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface-soft);
+}
+
+.proj-card[hidden] {
+  display: none;
+}
+
+.proj-card-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.proj-retranca {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-target {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* o "…" no começo: o fim do caminho é o que importa */
+  text-align: left;
+}
+
+/* ARQUIVO: o nome que vai ficar */
+.wz-file {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.wz-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-file svg,
+.wz-preview svg,
+.wz-tree svg,
+.wz-meta svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+/* o .aep com o ícone sólido, como os templates (as pastas ficam só no contorno) */
+.wz-file svg,
+.wz-tree-line.is-file svg {
+  fill: currentcolor;
+}
+
+.wz-file svg {
+  color: var(--blue-500);
+}
+
+.wz-file svg path:nth-child(2),
+.wz-tree-line.is-file svg path:nth-child(2) {
+  fill: none;
+  stroke: var(--fold);
+}
+
+.wz-file.is-dup svg {
+  color: #e0a40f;
+  stroke: var(--text-primary);
+}
+
+.wz-file.is-dup {
+  background: rgb(245 191 36 / 14%);
+}
+
+.wz-exist {
+  display: grid;
+  gap: 2px;
+  margin: -4px 2px 0;
+}
+
+.wz-exist:empty {
+  display: none;
+}
+
+.wz-exist-head,
+.wz-exist-more {
+  margin: 0 0 2px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.wz-exist-more {
+  margin: 2px 0 0;
+}
+
+/* um .aep que já existe: o nome e, à direita, quando foi alterado */
+.wz-exist-row {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.wz-exist-row span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-exist-row time {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.wz-exist-row.is-dup span {
+  color: var(--waiting);
+}
+
+.wz-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 2px 2px 0;
+}
+
+.wz-radios[hidden] {
+  display: none;
+}
+
+.wz-pill {
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.wz-pill:hover {
+  border-color: var(--border-hover);
+}
+
+/* CRIAR: a estrutura, no cartão azul */
+.wz-tree {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 55%, var(--blue-600));
+  color: rgb(var(--on-brand));
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.wz-tree-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding-left: calc(var(--depth, 0) * 18px);
+  white-space: nowrap;
+}
+
+.wz-tree-line span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wz-tree svg {
+  width: 15px;
+  height: 15px;
+  stroke: rgb(var(--on-brand));
+}
+
+.wz-tree-line.is-old {
+  opacity: 0.68;
+}
+
+/* o arquivo: o destaque do cartão (pílula branca com o ícone e o nome na cor do tema) */
+.wz-tree-pill {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 12px 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgb(var(--on-brand) / 94%);
+  box-shadow: 0 4px 12px rgb(24 35 85 / 18%);
+  color: var(--blue-500); /* o nome na cor do ícone */
+  font-weight: 800;
+}
+
+.wz-tree-line.is-file svg {
+  color: var(--blue-500);
+  stroke: var(--blue-500);
+}
+
+.wz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* CRIAR: o título à esquerda e as pílulas (atração, designer) à direita, na mesma linha */
+.wz-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wz-title-row .wz-meta {
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.wz-title-row .wz-meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.wz-meta svg {
+  width: 13px;
+  height: 13px;
+  stroke: var(--text-secondary);
+}
+
+/* editor */
+.ed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ed-atr {
+  min-width: 0;
+  flex: 1;
+  align-self: flex-start;
+}
+
+.ed-user {
+  width: 150px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.ed-row .cfg-input {
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.ed-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* rodapé: voltar à esquerda, o botão da etapa à direita */
+.wz-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding: 8px 0 calc(var(--footer-center, 30px) - 23px);
+}
+
+.wz-foot .button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.wz-back {
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.wz-back:hover {
+  color: var(--text-secondary);
+}
+
+.proj-status {
+  min-height: 1.2em;
+  margin: 0 18px 8px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proj-status:empty {
+  display: none;
+}
+
+.proj-status.is-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.proj-status.is-warning {
+  color: var(--waiting);
+  font-weight: 700;
+}
+
+.proj-status.is-success {
+  color: var(--success);
+}
+
+.actions-menu[open]>.icon-button.is-light {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.proj-menu .menu-popover {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+}
+
+.wz-pick[hidden],
+.select[hidden] {
+  display: none;
+}
+
+.wz-pick span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+}
+
+.wz-link {
+  align-self: flex-start;
+  margin: -6px 2px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-500);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.wz-link:hover {
+  text-decoration: underline;
+}
+
+.wz-link[hidden] {
+  display: none;
+}
+
+/* CRIAR: as propostas (a pasta de output; depois, o cadastro no banco), cada uma com um menu radial */
+.opt-box {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.opt-box[hidden] {
+  display: none;
+}
+
+.opt-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.opt-item + .opt-item {
+  border-top: 1px solid var(--border);
+}
+
+.opt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.74rem;
+}
+
+.opt-head svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.opt-path,
+.opt-note {
+  margin: 0 0 2px 25px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opt-path b {
+  color: var(--blue-500);
+}
+
+/* o caminho com a pastinha à direita (o mesmo botão dos campos de caminho) */
+.opt-path-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin: -4px -6px -2px 0;
+}
+
+.opt-path-row .opt-path {
+  min-width: 0;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.opt-path i {
+  font-style: italic;
+}
+
+.opt-pick {
+  width: 28px;
+  height: 28px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.opt-pick:hover:not(:disabled) {
+  border-color: transparent;
+  transform: none;
+}
+
+.opt-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-left: 25px;
+}
+
+/* o menu radial (o mesmo da configuração) */
+.log-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 620;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* o círculo nativo fica escondido: o desenho é o do .log-radio-dot */
+.log-radio input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.log-radio-dot {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.log-radio-dot::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  content: '';
+  transform: scale(0);
+  transition: transform 180ms var(--ease-soft);
+}
+
+.log-radio:hover .log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot {
+  border-color: var(--blue-500);
+}
+
+.log-radio input:checked+.log-radio-dot::after {
+  transform: scale(1);
+}
+
+/* editor: sem pasta de output, o cartão fica apagado */
+#ed-output.is-empty {
+  opacity: 0.6;
+}
+
+/* editor: a pasta e o output no campo, com a pastinha (o mesmo padrão da configuração) */
+.ed-path .cfg-input {
+  padding-right: 44px;
+  cursor: default;
+}
+
+.ed-path .cfg-input::placeholder {
+  font-style: italic;
+}
+
+
+/* CRIAR: a pasta de output em cartões (a da atração, a subpasta do "o que é", pular, outra pasta) */
+.out-box {
+  display: grid;
+  gap: 8px;
+}
+
+.out-box[hidden] {
+  display: none;
+}
+
+.out-box .wz-label {
+  margin: 0;
+}
+
+/* "outra pasta": o campo com a pastinha aparece embaixo do cartão, animado */
+.out-reveal {
+  max-height: 0;
+  /* 4 px de folga em volta (compensados na margem) para o brilho do foco do campo não ser cortado */
+  margin: -12px -4px -4px;
+  padding: 4px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 280ms var(--ease-soft),
+    margin 280ms var(--ease-soft),
+    opacity 220ms ease,
+    transform 280ms var(--ease-soft);
+}
+
+.out-reveal.is-open {
+  max-height: 72px;
+  margin-top: -4px;
+  opacity: 1;
+  transform: none;
+}
+
+.out-reveal .cfg-input {
+  cursor: pointer;
+}
+
+/* =========================================================
+   Fluxo em duas telas (ATRAÇÃO → CRIAR)
+   ========================================================= */
+
+/* ATRAÇÃO: a nova atração (o nome e a categoria) abre embaixo do cartão, animada. 4 px de folga em volta
+   (compensados na margem) para o brilho do foco dos campos não ser cortado */
+/* CRIAR: os .aep que já estão na pasta, numa linha */
+.wz-exist[hidden] {
+  display: none;
+}
+
+p.wz-exist {
+  display: block;
+  margin: -4px 2px 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+p.wz-exist b {
+  color: var(--text-secondary);
+}
+
+/* o .aep repetido: o aviso e as duas saídas ali mesmo */
+.arq-dup {
+  display: grid;
+  gap: 6px;
+  margin-top: -4px;
+}
+
+.arq-dup[hidden] {
+  display: none;
+}
+
+.arq-dup-note {
+  margin: 0 2px;
+  color: var(--waiting);
+  font-size: 0.68rem;
+}
+
+.arq-dup .wz-radios {
+  margin-left: 2px;
+}
+
+/* a pasta de output numa linha só (a escolhida); o clique abre as opções embaixo */
+.out-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.out-line:hover,
+.out-line.is-open {
+  border-color: var(--blue-500);
+}
+
+.out-line:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+}
+
+.out-line > svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.out-line .out-chevron {
+  stroke: var(--text-tertiary);
+  transition: transform 220ms var(--ease-soft);
+}
+
+.out-line.is-open .out-chevron {
+  transform: rotate(180deg);
+}
+
+.out-line-text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.out-line-text b {
+  overflow: hidden;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-line-text span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* o caminho longo corta pelo começo (o fim é o que importa) */
+  text-align: left;
+}
+
+/* as opções do output: abrem embaixo da linha, animadas */
+.out-opts {
+  max-height: 0;
+  margin: -8px -4px 0;
+  padding: 0 4px;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 280ms var(--ease-soft),
+    margin 280ms var(--ease-soft),
+    padding 280ms var(--ease-soft),
+    opacity 200ms ease;
+}
+
+.out-opts.is-open {
+  max-height: 240px;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
+  opacity: 1;
+}
+
+.out-opts-inner {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.out-opt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition: background-color 160ms ease;
+}
+
+.out-opt:hover {
+  background: var(--surface-soft);
+}
+
+.out-opt.is-on {
+  background: var(--blue-50);
+  color: var(--text-primary);
+}
+
+.out-opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.out-dot {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  transition: border 180ms var(--ease-soft);
+}
+
+.out-opt.is-on .out-dot {
+  border: 4px solid var(--blue-500);
+}
+
+.out-opt input:focus-visible + .out-dot {
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%);
+}
+
+.out-opt-label {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-opt small {
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+}
+
+.out-opt .opt-pick {
+  width: 26px;
+  height: 26px;
+  margin: -4px -2px -4px 0;
+}

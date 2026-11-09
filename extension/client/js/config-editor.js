@@ -65,6 +65,28 @@ são preservadas ao salvar.
 		folder: ['M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z']
 	};
 
+	// ícones no início dos campos (os mesmos do criador)
+	var FIELD_ICONS = {
+		file: '<path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" />',
+		tag: '<path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><circle cx="8" cy="8" r="1.4" />',
+		comp: '<rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" />',
+		prefix: '<path d="M5 5v14" /><path d="M9 9h10M9 15h7" />',
+		time: '<circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" />',
+		textCase: '<path d="M3 18 7.5 6 12 18M4.7 13.5h5.6" /><path d="M20.5 12v6M20.5 14.6c0 1.9-1.3 3.4-3 3.4s-2.8-1.4-2.8-3.1 1.2-3.1 2.9-3.1 2.9 1.2 2.9 2.8" />',
+		separator: '<path d="M19 5v7a3 3 0 0 1-3 3H6" /><path d="m9.5 11.5-3.5 3.5 3.5 3.5" />'
+	};
+
+	// põe o ícone no início do campo: 'box' é o próprio contêiner (span.select, div.cfg-path) ou um novo
+	function withIcon(control, icon, box) {
+		var wrap = box || el('div');
+
+		wrap.classList.add('has-field-icon');
+		wrap.insertAdjacentHTML('afterbegin', '<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">' + FIELD_ICONS[icon] + '</svg>');
+		if (!box) wrap.appendChild(control);
+
+		return wrap;
+	}
+
 	function miniButton(icon, title, onClick) {
 		var btn = el('button', 'mini-button');
 
@@ -147,14 +169,14 @@ são preservadas ao salvar.
 			return box;
 		}
 
-		function field(parent, key, label, control, hint) {
+		function field(parent, key, label, control, hint, icon) {
 			var wrap = el('div', 'cfg-field');
 			var lab = el('label', 'cfg-label', label);
 
 			control.id = 'cfg-' + key;
 			lab.htmlFor = control.id;
 			wrap.appendChild(lab);
-			wrap.appendChild(control);
+			wrap.appendChild(icon ? withIcon(control, icon, control.classList.contains('select') ? control : null) : control);
 			if (hint) wrap.appendChild(el('p', 'cfg-hint', hint));
 
 			fields[key] = { wrap: wrap, control: control };
@@ -176,7 +198,7 @@ são preservadas ao salvar.
 			return node;
 		}
 
-		function select(options, value) {
+		function select(options, value, icons) {
 			var wrap = el('span', 'select select-large');
 			var node = el('select');
 
@@ -190,7 +212,7 @@ são preservadas ao salvar.
 			node.value = value;
 			wrap.appendChild(node);
 			wrap.control = node;
-			PAD_DROPDOWN.enhance(node);
+			PAD_DROPDOWN.enhance(node, icons);
 
 			return wrap;
 		}
@@ -211,26 +233,60 @@ são preservadas ao salvar.
 		var idGrid = el('div', 'cfg-grid');
 
 		idCard.appendChild(idGrid);
-		field(idGrid, 'configName', 'Nome da configuração', input(base.configName), 'identifica o template no log.');
-		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.');
+		// a atração (o mesmo seletor do criador): a do índice ou uma nova; a pasta de output dela entra nos outputs
+		var atrWrap = el('div', 'cfg-field cfg-field-wide');
+		var atrBox = el('div', 'atr-picker');
+		var atrPicker;
+		var autoOut = '';
+
+		atrWrap.appendChild(el('label', 'cfg-label', 'Atração'));
+		atrWrap.appendChild(atrBox);
+		idGrid.appendChild(atrWrap);
+		atrPicker = PAD_ATTRACTIONS.picker(atrBox, {
+			onChange: function (atr) {
+				var out = atr && !atr.isNew && atr.out ? atr.out : '';
+				var prev = autoOut ? outputs.indexOf(autoOut) : -1;
+
+				if (out !== autoOut && typeof renderOutputs === 'function') {
+					if (prev >= 0) {
+						if (out && outputs.indexOf(out) < 0) outputs[prev] = out;
+						else outputs.splice(prev, 1);
+					} else if (out && outputs.indexOf(out) < 0) {
+						var empty = outputs.indexOf('');
+
+						if (empty >= 0) outputs[empty] = out;
+						else outputs.push(out);
+					}
+					if (!outputs.length) outputs.push('');
+					autoOut = out;
+					renderOutputs();
+				}
+				changed();
+			}
+		});
+		atrPicker.input.id = 'cfg-atracao';
+		atrPicker.set(base.atracao || null);
+		fields.atracao = { wrap: atrWrap, control: atrPicker.input };
+		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: SERVIÇO, CONVIDADO, AESP. identifica o template no log.', 'file');
+		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */
 
-		var nameCard = card('Nome e texto');
+		var nameCard = card('Nomenclatura');
 		var nameGrid = el('div', 'cfg-grid');
 
 		nameCard.appendChild(nameGrid);
-		field(nameGrid, 'prefix', 'Prefixo', input(base.prefix), 'início do nome de todas as comps criadas (opcional). "ignore" não preenche, só importa o template.');
-		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.');
+		field(nameGrid, 'prefix', 'Prefixo (opcional)', input(base.prefix), 'início do nome de todas as comps criadas. "ignore" não preenche, só importa o template.', 'prefix');
+		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.', 'time');
 
-		var caseSel = select(CASES, base.textCase);
+		var caseSel = select(CASES, base.textCase, 'textCase');
 
-		field(nameGrid, 'textCase', 'Caixa de texto', caseSel);
+		field(nameGrid, 'textCase', 'Caixa de texto', caseSel, null, 'textCase');
 		fields.textCase.control = caseSel.control;
 		caseSel.removeAttribute('id');
 		caseSel.control.id = 'cfg-textCase';
 
-		field(nameGrid, 'separator', 'Separador de informações', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para uma informação por linha. com 1 layer só, o texto inteiro vai para ele.');
+		field(nameGrid, 'separator', 'Separador de informações', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para uma informação por linha. com 1 layer só, o texto inteiro vai para ele.', 'separator');
 
 		var namePreview = el('p', 'cfg-preview');
 
@@ -238,7 +294,7 @@ são preservadas ao salvar.
 
 		/* ---------- 3. exemplo e dicas ---------- */
 
-		var textCard = card('Exemplo e dicas');
+		var textCard = card('Formulário');
 		var textGrid = el('div', 'cfg-grid');
 
 		textCard.appendChild(textGrid);
@@ -267,7 +323,7 @@ são preservadas ao salvar.
 			layers.forEach(function (layer, i) {
 				var row = el('div', 'cfg-row');
 				var num = input(layer.layerIndex, 'number');
-				var methodSel = select(METHODS, layer.method);
+				var methodSel = select(METHODS, layer.method, 'layerMethod');
 
 				num.min = '1';
 				num.step = '1';
@@ -283,22 +339,21 @@ são preservadas ao salvar.
 					changed();
 				});
 
-				// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
-				var remove = miniButton('remove', 'remover layer', function () {
-					layers.splice(i, 1);
-					renderLayers();
-					changed();
+				// puxador à esquerda (arrastar muda a ordem) e a lixeira no fim da linha, fora do campo
+				var remove = PAD_UTIL.trashButton('remover layer', function () {
+					PAD_UTIL.removeRow(row, function () {
+						layers.splice(i, 1);
+						renderLayers();
+						changed();
+					});
 				});
-
-				remove.classList.add('row-remove');
-				methodSel.classList.add('has-remove');
-				methodSel.appendChild(remove);
 
 				row.appendChild(PAD_SORT.handle());
 				row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 				row.appendChild(el('span', 'cfg-row-prefix', 'layer'));
 				row.appendChild(num);
 				row.appendChild(methodSel);
+				row.appendChild(remove);
 				layersList.appendChild(row);
 			});
 
@@ -306,7 +361,7 @@ são preservadas ao salvar.
 		}
 
 		layersCard.appendChild(
-			textButton('+ adicionar layer', 'button-secondary button-compact', function () {
+			textButton('+ layer', 'button-secondary button-compact add-button', function () {
 				var last = layers.length ? layers[layers.length - 1].layerIndex : 0;
 
 				layers.push({ layerIndex: (last || 0) + 1, method: 'textContent' });
@@ -333,8 +388,8 @@ são preservadas ao salvar.
 		fxCard.appendChild(fxBody);
 		field(fxBody, 'fxLayerIndex', 'Layer do efeito', input(fx ? fx.layerIndex : 1, 'number'), 'índice do layer que tem o efeito.');
 		field(fxBody, 'fxName', 'Nome do efeito', input(fx ? fx.fxName : ''), 'nome exato do efeito no layer.');
-		field(fxBody, 'fxOptionIndex', 'Índice da opção', input(fx ? fx.optionIndex : 1, 'number'), 'posição do controle de lista dentro do efeito.');
-		field(fxBody, 'fxOptions', 'Sufixos', input(fx ? fx.options.join(', ') : ''), 'separados por vírgula, na ordem das opções. ex: E, D');
+		field(fxBody, 'fxOptionIndex', 'Índice da opção', input(fx ? fx.optionIndex : 1, 'number'), 'posição do controle (menu ou checkbox) dentro do efeito.');
+		field(fxBody, 'fxOptions', 'Sufixos', input(fx ? fx.options.join(', ') : ''), fx && fx.kind === 'checkbox' ? 'checkbox: o sufixo desligado e o ligado. ex: SEM LOGO, COM LOGO' : 'separados por vírgula, na ordem das opções. ex: E, D');
 
 		function syncFx() {
 			fxBody.hidden = !fxToggle.checked;
@@ -347,7 +402,7 @@ são preservadas ao salvar.
 
 		/* ---------- 6. pastas ---------- */
 
-		var pathCard = card('Pastas');
+		var pathCard = card('Caminhos');
 		var importRow = el('div', 'cfg-field');
 		var importLine = el('div', 'cfg-path');
 		var importInput = input(base.importPath);
@@ -355,8 +410,9 @@ são preservadas ao salvar.
 		importInput.id = 'cfg-importPath';
 		importInput.addEventListener('input', changed);
 		fields.importPath = { wrap: importRow, control: importInput };
-		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de importação'), { htmlFor: 'cfg-importPath' }));
+		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de mídias (opcional)'), { htmlFor: 'cfg-importPath' }));
 		importLine.appendChild(importInput);
+		// campo com botão (pastinha): sem ícone antes
 		importLine.appendChild(pickButton(importInput));
 		importRow.appendChild(importLine);
 		importRow.appendChild(el('p', 'cfg-hint', 'pasta padrão para importar novos footages no projeto.'));
@@ -365,9 +421,11 @@ são preservadas ao salvar.
 		var outputsWrap = el('div', 'cfg-field');
 		var outputsList = el('div', 'cfg-rows');
 
+		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render.');
+
 		outputsWrap.appendChild(el('span', 'cfg-label', 'Pastas de output'));
 		outputsWrap.appendChild(outputsList);
-		outputsWrap.appendChild(el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render.'));
+		outputsWrap.appendChild(outputsHint);
 		pathCard.appendChild(outputsWrap);
 
 		function pickButton(target) {
@@ -392,7 +450,8 @@ são preservadas ao salvar.
 			outputsList.textContent = '';
 
 			outputs.forEach(function (path, i) {
-				var line = el('div', 'cfg-path');
+				var row = el('div', 'path-row'); // o campo com a pastinha e a lixeira fora dele
+				var line = el('div', 'cfg-path one-btn');
 				var node = input(path);
 
 				node.setAttribute('aria-label', 'pasta de output ' + (i + 1));
@@ -415,22 +474,26 @@ são preservadas ao salvar.
 					outputs[i] = node.value;
 					changed();
 				});
-				var remove = miniButton('remove', 'remover output', function () {
-					outputs.splice(i, 1);
-					renderOutputs();
-					changed();
+				var remove = PAD_UTIL.trashButton('remover output', function () {
+					PAD_UTIL.removeRow(row, function () {
+						outputs.splice(i, 1);
+						renderOutputs();
+						changed();
+					});
 				});
 
 				remove.disabled = outputs.length === 1;
 				line.appendChild(node);
 				line.appendChild(pick);
-				line.appendChild(remove);
-				outputsList.appendChild(line);
+				row.appendChild(line);
+				row.appendChild(remove);
+				outputsList.appendChild(row);
 			});
 		}
 
-		pathCard.appendChild(
-			textButton('+ adicionar output', 'button-secondary button-compact', function () {
+		// o "+" logo abaixo da lista (antes da explicação), como no criador
+		outputsWrap.insertBefore(
+			textButton('+ novo output', 'button-secondary button-compact add-button', function () {
 				outputs.push('');
 				renderOutputs();
 				changed();
@@ -438,7 +501,8 @@ são preservadas ao salvar.
 				var inputs = outputsList.querySelectorAll('input');
 
 				inputs[inputs.length - 1].focus();
-			})
+			}),
+			outputsHint
 		);
 
 		/* ---------- barra de ações ---------- */
@@ -462,6 +526,10 @@ são preservadas ao salvar.
 		function readForm() {
 			var cfg = JSON.parse(JSON.stringify(base)); // chaves desconhecidas continuam no arquivo
 
+			var atr = atrPicker.get();
+
+			if (atr) cfg.atracao = { name: atr.name, path: atr.path, out: atr.out || '' };
+			else delete cfg.atracao;
 			cfg.configName = text('configName').trim();
 			cfg.compName = text('compName').trim();
 			cfg.prefix = text('prefix').trim();
@@ -483,6 +551,7 @@ são preservadas ao salvar.
 					layerIndex: parseInt(text('fxLayerIndex'), 10),
 					fxName: text('fxName').trim(),
 					optionIndex: parseInt(text('fxOptionIndex'), 10),
+					kind: fx && fx.kind === 'checkbox' ? 'checkbox' : undefined,
 					options: text('fxOptions')
 						.split(',')
 						.map(function (o) {
@@ -504,7 +573,8 @@ são preservadas ao salvar.
 				errors.push({ key: key, msg: msg });
 			}
 
-			if (cfg.configName === '') bad('configName', 'preencha o nome da configuração.');
+			if (!cfg.atracao) bad('atracao', 'escolha a atração do template (ou crie uma nova).');
+			if (cfg.configName === '') bad('configName', 'preencha o que é (o nome do template).');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 
@@ -520,6 +590,8 @@ são preservadas ao salvar.
 				if (cfg.inputFx.fxName === '') bad('fxName', 'variações: informe o nome do efeito.');
 				if (!(cfg.inputFx.optionIndex >= 1)) bad('fxOptionIndex', 'variações: índice da opção inválido.');
 				if (cfg.inputFx.options.length === 0) bad('fxOptions', 'variações: informe ao menos um sufixo.');
+				if (cfg.inputFx.kind === 'checkbox' && cfg.inputFx.options.length > 2) bad('fxOptions', 'variações: o checkbox tem só 2 sufixos (desligado e ligado).');
+				if (!cfg.inputFx.kind) delete cfg.inputFx.kind;
 			}
 
 			return errors;

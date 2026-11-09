@@ -1,0 +1,349 @@
+/* =========================================================
+   FONTES DO PROJETO — uma linha por fonte, com o estado; a troca abre embaixo dela
+   ========================================================= */
+
+html,
+body.fonts-page {
+  height: 100%;
+}
+
+body.fonts-page {
+  display: block;
+  min-height: 0;
+  padding: 0;
+  background: var(--surface);
+}
+
+.fonts {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 20px 0;
+  --queue-pad: 20px;
+}
+
+.fw-file {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-list {
+  display: grid;
+  gap: 6px;
+}
+
+.fw-empty {
+  margin: 0 2px;
+  color: var(--text-tertiary);
+  font-size: 0.76rem;
+}
+
+.fw-empty[hidden] {
+  display: none;
+}
+
+/* a linha da fonte: o selo, o nome e os layers, a amostra na própria fonte e o estado; clicar abre a troca */
+.fw-row {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px 10px 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  transition: border-color 160ms ease;
+}
+
+.fw-row:hover {
+  border-color: var(--border-hover);
+}
+
+.fw-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.fw-badge {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-family: Georgia, serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.fw-badge.is-missing {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.fw-text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.fw-name {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-name b {
+  color: var(--text-secondary);
+  font-weight: 750;
+}
+
+.fw-to {
+  color: var(--blue-500);
+  font-style: normal;
+  font-weight: 750;
+}
+
+.fw-sample {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-sample.is-missing {
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  font-style: italic;
+  line-height: 1.75;
+}
+
+/* o .aep na frente do projeto: só o contorno, na cor do texto */
+.fw-file svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.fw-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* o estado: só o ícone, na cor (o texto fica no balão) */
+.fw-state {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.fw-state.is-ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.fw-state.is-up {
+  background: var(--processing-bg);
+  color: var(--processing);
+}
+
+.fw-state.is-install {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+.fw-state.is-nofile {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* a troca: embaixo, separada por uma linha tracejada, "substituir por" e a lista com busca */
+.fw-swap {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.fw-swap[hidden] {
+  display: none;
+}
+
+.fw-label {
+  margin: 0 2px;
+  color: var(--text-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.fw-swap .combo {
+  min-width: 0;
+}
+
+/* a lista rola; a prévia da fonte marcada fica sempre embaixo dela */
+.fw-items {
+  display: grid;
+  max-height: 210px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* a prévia da fonte marcada, embaixo da lista */
+.fw-preview {
+  margin: 0;
+  padding: 10px 14px 4px;
+  min-height: 1.3em;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-preview.is-missing {
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  font-style: italic;
+}
+
+.fw-bar {
+  margin-top: auto;
+}
+
+.fw-bar .button-primary {
+  margin-left: auto;
+}
+
+.fw-status {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fw-status.is-error {
+  color: var(--danger);
+}
+
+.fw-menu .menu-popover {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  width: 240px;
+  transform: none;
+}
+
+/* o andamento: a seta sobe (copiando para o banco e a pasta do projeto) ou desce (instalando), em loop */
+.fw-state i {
+  display: block;
+  font-style: normal;
+}
+
+.fw-state.is-moving {
+  overflow: hidden;
+}
+
+.fw-state.is-moving i {
+  animation: fw-up 900ms ease-in-out infinite;
+}
+
+.fw-state.is-moving.is-down i {
+  animation-name: fw-down;
+}
+
+@keyframes fw-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  35%,
+  65% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fw-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  35%,
+  65% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* o collect das fontes: o botão redondo no canto esquerdo do rodapé */
+.fw-bar .io-button {
+  flex: 0 0 auto;
+}
+
+/* o collect das fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
+#fw-collect .fw-t {
+  stroke-width: 2.1;
+  transition: transform 300ms var(--ease-soft);
+}
+
+#fw-collect:hover:not(:disabled) .fw-t {
+  transform: translateY(-1.6px);
+}

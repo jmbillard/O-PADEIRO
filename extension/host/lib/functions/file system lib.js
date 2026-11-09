@@ -1,4 +1,4 @@
-/* eslint-disable no-empty */
+﻿/* eslint-disable no-empty */
 /* eslint-disable no-redeclare */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-undef */
@@ -129,10 +129,12 @@ function openFolder(folderPath) {
 		system.callSystem('explorer ' + Folder.decode(folder.fsName));
 	} else if (appOs == 'Mac') {
 		// Comando para abrir a pasta no Finder (macOS)
-		system.callSystem('open "' + Folder.decode(folder.fsName) + '"');
+		// fsName já vem decodificado; aspas simples no shell (um '%', '$' ou '`' no nome não atrapalha)
+		system.callSystem('open \'' + String(folder.fsName).replace(/'/g, "'\\''") + '\'');
 	}
 }
 
+// Extensão de um nome de arquivo, com o ponto e em minúsculas ('' sem extensão).
 function getFileExt(fileName) {
 	var dotIndex = fileName.lastIndexOf('.');
 	if (dotIndex === -1) return '';
@@ -312,8 +314,8 @@ function normalizeNetworkPath(pathStr, options) {
 		}
 
 		// macParts[0] = "Volumes"
-		// macParts[1] = nome do share
-		var shareName = macParts[1];
+		// macParts[1] = nome do share (sem o sufixo -1 a -5 que o macOS põe ao montar o mesmo share de novo)
+		var shareName = macParts[1].replace(/-[1-5]$/, '');
 		var subPathParts = macParts.slice(2);
 
 		// Procura o servidor correto nas globais DRIVE_MAP
@@ -324,7 +326,7 @@ function normalizeNetworkPath(pathStr, options) {
 				alert("#PAD_072 - Share '" + shareName + "' não encontrado no mapeamento.\n" +
 					"Usando servidor padrão.");
 			}
-			serverName = "vfx-ml-sp.servicos.corp.tvglobo.com.br";
+			serverName = PAD_DEFAULT_SERVER;
 		}
 
 		var winPath = "//" + serverName + "/" + shareName;
@@ -403,15 +405,8 @@ function findServerForShare(shareName) {
 		}
 	}
 
-	// Mapeamento adicional para shares conhecidos
-	var knownShares = {
-		'VFX': 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
-		'cdesign': 'egcdesign01.servicos.corp.tvglobo.com.br',
-		'EDIT_IN_PLACE': 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
-		'promo_ber': '10.193.48.13'
-	};
-
-	return knownShares[shareName] || null;
+	// Volumes sem letra de drive (aba REDE da configuração)
+	return (PAD_SHARE_SERVERS && PAD_SHARE_SERVERS[shareName]) || null;
 }
 
 /**

@@ -1,0 +1,268 @@
+{
+	"canal": [
+		{
+			"atracao": "INS - INSTITUCIONAL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\CANAL\\institucional"
+			}
+		},
+		{
+			"atracao": "DIG - DIGITAL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\CANAL\\digital"
+			}
+		},
+		{
+			"atracao": "PIL - PILULA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\CANAL\\pilula"
+			}
+		},
+		{
+			"atracao": "MKT - MARKETING",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\CANAL\\marketing"
+			}
+		}
+	],
+	"vinhetas": [
+		{
+			"atracao": "NDL - NUNCA DESLIGA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\VINHETAS\\nunca desliga"
+			}
+		},
+		{
+			"atracao": "BIP - BIP",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\VINHETAS\\bip"
+			}
+		},
+		{
+			"atracao": "ASE - A SEGUIR",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\VINHETAS\\a seguir"
+			}
+		}
+	],
+	"jornais": [
+		{
+			"atracao": "EMN - EDICAO DA MEIA NOITE",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\edicao da meia noite"
+			}
+		},
+		{
+			"atracao": "EMP - EM PONTO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\em ponto"
+			}
+		},
+		{
+			"atracao": "CON - CONEXAO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\conexao"
+			}
+		},
+		{
+			"atracao": "EST - ESTUDIO I",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\estudio i"
+			}
+		},
+		{
+			"atracao": "GMN - GLOBONEWS MAIS",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\globonews mais"
+			}
+		},
+		{
+			"atracao": "EDE - EDICAO DAS 18H",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\edicao das 18h"
+			}
+		},
+		{
+			"atracao": "EPA - EM PAUTA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\em pauta"
+			}
+		},
+		{
+			"atracao": "JDE - JORNAL DAS DEZ",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\jornal das dez"
+			}
+		},
+		{
+			"atracao": "EDO - ESPECIAL DE DOMINGO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\JORNAIS\\especial de domingo"
+			}
+		}
+	],
+	"factuais": [
+		{
+			"atracao": "ELE - ELEICOES BRASIL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FACTUAIS\\eleicoes brasil"
+			}
+		},
+		{
+			"atracao": "EUA - EUA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FACTUAIS\\eua"
+			}
+		},
+		{
+			"atracao": "MUN - MUNDO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FACTUAIS\\mundo"
+			}
+		},
+		{
+			"atracao": "RET - RETROSPECTIVA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FACTUAIS\\retrospectiva"
+			}
+		},
+		{
+			"atracao": "COB - COBERTURAS",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FACTUAIS\\coberturas"
+			}
+		}
+	],
+	"programas": [
+		{
+			"atracao": "INT - INTERNACIONAL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\internacional"
+			}
+		},
+		{
+			"atracao": "CID - CIDADES E SOLUCOES",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\cidades e solucoes"
+			}
+		},
+		{
+			"atracao": "GAB - FERNANDO GABEIRA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\fernando gabeira"
+			}
+		},
+		{
+			"atracao": "DOC - DOCUMENTARIO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\documentario"
+			}
+		},
+		{
+			"atracao": "MIR - MIRIAM LEITAO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\miriam leitao"
+			}
+		},
+		{
+			"atracao": "DAV - ROBERTO DAVILA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\roberto davila"
+			}
+		},
+		{
+			"atracao": "PAP - PAPO DE POLITICA",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\papo de politica"
+			}
+		},
+		{
+			"atracao": "MSC - DIALOGOS",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\dialogos"
+			}
+		},
+		{
+			"atracao": "CEN - CENTRAL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\central"
+			}
+		},
+		{
+			"atracao": "DEB - DEBATE",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\debate"
+			}
+		},
+		{
+			"atracao": "ESP - ESPECIAL",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\PROGRAMAS\\especial"
+			}
+		}
+	],
+	"marca": [
+		{
+			"atracao": "MAC - MARCA E COMUNICACAO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\MARCA E COMUNICACAO"
+			}
+		}
+	],
+	"pastas": [
+		{
+			"atracao": "PROMO - ARQUIVO",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO"
+			}
+		},
+		{
+			"atracao": "PROMO - TEMPLATES",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\TEMPLATES"
+			}
+		},
+		{
+			"atracao": "PROMO - FONTS",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\PROMO\\FONTS"
+			}
+		},
+		{
+			"atracao": "BASES DOS JORNAIS",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\JORNAIS\\_PECAS_GRAFICAS"
+			}
+		},
+		{
+			"atracao": "UTILIDADES",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\UTILIDADES"
+			}
+		},
+		{
+			"atracao": "DIARIOS RJ",
+			"win": {
+				"caminho": "\\\\egcdesign01.servicos.corp.tvglobo.com.br\\cdesign\\JORNALISMO\\GLOBONEWS\\DIARIOS\\RJ"
+			}
+		},
+		{
+			"atracao": "MAM - HARD NEWS (ENTRADA)",
+			"win": {
+				"caminho": "\\\\pamjb.servicos.corp.tvglobo.com.br\\Arte_Ilha\\UPLOAD_PAM_HARDNEWS\\01_ENTRADA"
+			}
+		},
+		{
+			"atracao": "MAM - PARA ARTE",
+			"win": {
+				"caminho": "\\\\pamjb.servicos.corp.tvglobo.com.br\\Arte_Ilha\\PARA_ARTE\\PROMO GNEWS\\MXF ARTE Novo"
+			}
+		},
+		{
+			"atracao": "MAM - MAGAZINE",
+			"win": {
+				"caminho": "\\\\pamjb.servicos.corp.tvglobo.com.br\\Arte_Ilha\\UPLOAD_PAM_MAGAZINE"
+			}
+		}
+	]
+}

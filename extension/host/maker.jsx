@@ -202,6 +202,94 @@ PADX.makerLayers = function (a) {
 	return { layers: layers };
 };
 
+// O efeito de layout selecionado no Effect Controls (o efeito inteiro ou a propriedade): as variações de layout. um
+// menu (Dropdown Menu Control: uma comp por opção) ou um checkbox (Checkbox Control: desligado e ligado).
+// → { layerId, layerIndex, layerName, fxName, optionIndex, count, kind } (count: o total de opções, 0 se não deu
+// para saber; kind: 'menu' ou 'checkbox')
+PADX.makerPickEffect = function (a) {
+	var comp = padMakerComp(a.compId);
+	var props = comp.selectedProperties;
+	var menu = null;
+
+	for (var i = 0; i < props.length && !menu; i++) menu = padMenuProperty(props[i]);
+
+	if (!menu) throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito do layout (Dropdown Menu Control ou Checkbox Control).');
+
+	var effect = menu.parentProperty;
+	var layer = effect.parentProperty.parentProperty;
+	var checkbox = padIsCheckbox(menu);
+
+	return { layerId: layer.id, layerIndex: layer.index, layerName: layer.name, fxName: effect.name, optionIndex: menu.propertyIndex, count: checkbox ? 2 : padMenuCount(menu), kind: checkbox ? 'checkbox' : 'menu' };
+};
+
+// Um checkbox: o do Checkbox Control (desligado = 0, ligado = 1)
+function padIsCheckbox(prop) {
+	try {
+		return prop.parentProperty.matchName == 'ADBE Checkbox Control';
+	} catch (err) {
+		return false;
+	}
+}
+
+// A propriedade do layout: a selecionada (direto dentro de um efeito) ou, num efeito selecionado, a primeira de menu
+// (ou de checkbox) dele
+function padMenuProperty(prop) {
+	var isEffect = function (p) {
+		return p && p.parentProperty && p.parentProperty.matchName == 'ADBE Effect Parade';
+	};
+	var isMenu = function (p) {
+		if (!(p instanceof Property) || p.propertyValueType != PropertyValueType.OneD) return false;
+
+		try {
+			if (p.isDropdownEffect) return true;
+		} catch (err) { }
+
+		return p.parentProperty.matchName == 'ADBE Dropdown Control' || padIsCheckbox(p);
+	};
+
+	if (prop instanceof Property) return isEffect(prop.parentProperty) && isMenu(prop) ? prop : null;
+	if (!isEffect(prop)) return null;
+
+	for (var i = 1; i <= prop.numProperties; i++) {
+		if (isMenu(prop.property(i))) return prop.property(i);
+	}
+
+	return null;
+}
+
+// Quantas opções o menu tem: o valor máximo dele ou, sem ele, o maior valor que o menu aceita (volta o valor de antes)
+function padMenuCount(menu) {
+	try {
+		if (menu.hasMax && menu.maxValue >= 1 && menu.maxValue <= 100) return Math.round(menu.maxValue);
+	} catch (err) { }
+
+	if (menu.numKeys > 0 || menu.expressionEnabled) return 0;
+
+	var before = menu.value;
+	var count = 0;
+
+	padUndoBegin('PADEIRO - opções do menu');
+
+	try {
+		for (var n = 1; n <= 50; n++) {
+			try {
+				menu.setValue(n);
+				if (Math.round(menu.value) != n) break;
+				count = n;
+			} catch (err) {
+				break;
+			}
+		}
+	} finally {
+		try {
+			menu.setValue(before);
+		} catch (err) { }
+		padUndoEnd();
+	}
+
+	return count;
+}
+
 // Preenche os layers editáveis com o texto de teste, como no preenchimento real. a: { compId, layers: [{id, method}], inputs: [] }
 PADX.makerTest = function (a) {
 	var comp = padMakerComp(a.compId);
@@ -231,14 +319,44 @@ PADX.makerTest = function (a) {
 };
 
 // Marca a comp como template, salva o projeto (janela do After Effects) e grava o config, o preview e as fontes.
-// a: { compId, layers: [{id, method}], config } — 'config' sem 'compName' / 'inputLayers'.
+// a: { compId, layers: [{id, method}], fx: { layerId, fxName, optionIndex, options } | null, config } — 'config' sem
+// 'compName' / 'inputLayers' / 'inputFx'.
+// O arquivo proposto para salvar o template: '<PREFIXO> <O QUE É>' (a janela põe o .aet) (a atração já é o nome da pasta e aparece
+// na busca), na pasta do projeto aberto (já salvo) ou, sem ela, na pasta de templates da produção escolhida (sem
+// acesso: a Área de Trabalho)
+function padMakerSaveTarget(cfg) {
+	var name = padAepName((cfg.prefix || '') + ' ' + cfg.configName) || 'TEMPLATE';
+	var folder = app.project.file ? app.project.file.parent : null;
+
+	if (!folder) {
+		try {
+			var prod = padProductionFolder(PADX.selectedProduction().name);
+
+			if (prod) prod = new Folder(padResolvedPath(prod.fsName)); // VFX-1 … sem montar
+			if (prod && prod.exists) folder = prod;
+		} catch (err) { }
+	}
+
+	if (!folder) folder = Folder.desktop;
+
+	return new File(folder.fsName + '/' + name); // sem extensão: a janela do sistema já acrescenta a do filtro (com ela, saía '.aet.aet')
+}
+
+// no macOS, o filtro da janela é uma função: só pastas e projetos do After Effects
+function padMakerSaveFilter(f) {
+	return f instanceof Folder || /\.ae[pt]$/i.test(f.name);
+}
+
 PADX.makerSave = function (a) {
 	var comp = padMakerComp(a.compId);
 	var cfg = a.config;
 
 	if (!cfg || String(cfg.configName).replace(/^\s+|\s+$/g, '') == '' || cfg.configName == defaultTemplateConfigObj.configName) {
-		throw new Error('#PAD_029 - preencha o nome da configuração.');
+		throw new Error('#PAD_029 - preencha o que é (o nome do template).');
 	}
+
+	// a atração do template (o seletor do criador: a do índice ou uma nova): { name, path, out }
+	if (!cfg.atracao || String(cfg.atracao.name || '').replace(/^\s+|\s+$/g, '') == '') throw new Error('#PAD_029 - escolha a atração do template.');
 
 	cfg.configName = String(cfg.configName).replace(/^\s+|\s+$/g, '');
 	cfg.compName = comp.name;
@@ -252,24 +370,50 @@ PADX.makerSave = function (a) {
 		cfg.inputLayers.push({ layerIndex: layer.index, method: a.layers[i].method });
 	}
 
+	// as variações de layout (o efeito de menu): o índice do layer de agora; uma comp por opção, com o sufixo
+	if (a.fx && a.fx.options && a.fx.options.length) {
+		var fxLayer = padLayerById(comp, a.fx.layerId);
+
+		if (!fxLayer) throw new Error('#PAD_097 - o layer do efeito de layout não existe mais na comp: troque o efeito.');
+
+		cfg.inputFx = { layerIndex: fxLayer.index, fxName: a.fx.fxName, optionIndex: a.fx.optionIndex, options: a.fx.options };
+
+		// checkbox: as opções são desligado (0) e ligado (1); sem 'kind', é um menu (1, 2, 3…), como sempre foi
+		if (a.fx.kind == 'checkbox') cfg.inputFx.kind = 'checkbox';
+	} else {
+		delete cfg.inputFx;
+	}
+
 	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) cfg.outputPath = defaultTemplateConfigObj.outputPath.slice();
 	if (!cfg.importPath) cfg.importPath = defaultTemplateConfigObj.importPath;
 
 	var previousComment = comp.comment;
 	var saved = false;
 
-	app.beginUndoGroup('PADEIRO - criar template');
+	padUndoBegin('PADEIRO - criar template');
 
 	try {
 		comp.comment = 'TEMPLATE';
-		saved = app.project.saveWithDialog();
+
+		// a janela do sistema já com o nome (a atração + o que é, como o .aep da CLAQUETE) e na pasta certa
+		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Template do After Effects:*.aet;*.aep' : padMakerSaveFilter);
+
+		if (target) {
+			// a extensão uma vez só (a janela pode repetir: '.aet.aet'); sem nenhuma, .aet
+			var targetName = decodeURI(target.name).replace(/(\.ae[pt])+$/i, '');
+			var targetExt = (decodeURI(target.name).match(/\.ae[pt]$/i) || ['.aet'])[0].toLowerCase();
+
+			target = new File(target.parent.fsName + '/' + targetName + targetExt);
+			app.project.save(target);
+			saved = true;
+		}
 
 		if (!saved) {
 			comp.comment = previousComment; // salvamento cancelado: nada mudou
 			return { messages: [], data: { saved: false } };
 		}
 	} finally {
-		app.endUndoGroup();
+		padUndoEnd();
 	}
 
 	var project = app.project.file;

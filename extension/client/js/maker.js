@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> CRIAR TEMPLATE
+> A FORMA — criar template
 ---------------------------------------------------------------
 
 A comp ativa vira a comp principal, os layers
@@ -18,7 +18,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/criador.md';
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
 	// dicas padrão (as do padeiro antigo, defaultTemplateConfigObj.tip no host)
-	var DEFAULT_TIP = 'instruções de preenchimento deste template. ex:\n\ndigite o texto em 1 ou 2 linhas.\nuse a quebra de linha para separar INFORMAÇÃO 1 e INFORMAÇÃO 2.\n\nuse 1 linha vazia para criar mais de 1 versão do mesmo template.';
+	var DEFAULT_TIP = 'digite o texto em 1 ou 2 linhas.\nuse 1 linha vazia para criar mais de 1 versão.';
 	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	var METHODS = [
@@ -30,6 +30,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		comp: null, // { id, name, time }
 		layers: [], // { id, index, name, isText, method, missing }
 		outputs: [''],
+		fx: null, // as variações de layout: { layerId, layerIndex, layerName, fxName, optionIndex, count, kind ('menu' | 'checkbox'), options: [sufixo] }
+		atr: null, // a atração do template: { name, path, out, display, isNew }
+		autoOut: '', // a pasta de output que veio da atração (troca junto com ela)
 		emptyConfirm: null,
 		saving: false,
 		busy: false
@@ -148,23 +151,30 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		return applyTextCase(firstExampleBlock()).split(getSeparator());
 	}
 
-	function updateNamePreview() {
+	// o nome final da comp com o exemplo (sem o sufixo das variações)
+	function finalName() {
 		var info = exampleInputs().join(' ').replace(/[\s-]+/g, ' ').trim();
 		var prefix = $('f-prefix').value.trim();
-		var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+
+		return cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+	}
+
+	function updateNamePreview() {
 		var box = $('name-preview');
 
 		box.textContent = '';
-		box.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));
-		box.appendChild(el('strong', null, name));
+		box.appendChild(el('span', 'cfg-preview-label', 'nome final'));
+		box.appendChild(el('strong', null, finalName()));
+		updateFxNames();
 	}
 
 	function updateSeparatorState() {
 		var many = state.layers.length > 1;
 
 		$('f-separator').disabled = !many;
-		$('sep-hint').textContent = many
-			? 'use \\n para uma informação por linha (cada informação vai para um layer).'
+		// a explicação do separador fica no balão do campo
+		$('sep-field').title = many
+			? 'use \\n para uma informação por linha (cada uma vai para um layer).'
 			: 'com 1 layer só, o texto inteiro vai para ele (o separador fica desligado).';
 	}
 
@@ -182,7 +192,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 
 		if (!state.layers.length) {
-			list.appendChild(el('p', 'cfg-empty', 'nenhum layer editável: selecione layers na comp principal e clique em “+ layers”.'));
+			list.appendChild(el('p', 'cfg-empty', 'selecione os layers na comp principal e clique em “+ layers”.'));
 		}
 
 		updateChecklist();
@@ -215,23 +225,22 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layer.method = select.value;
 			});
 
-			// puxador à esquerda (arrastar muda a ordem) e o × dentro do campo do método
-			var remove = miniButton('remove', 'remover layer', function () {
-				state.layers.splice(i, 1);
-				renderLayers();
+			// puxador à esquerda (arrastar muda a ordem) e a lixeira no fim da linha, fora do campo
+			var remove = PAD_UTIL.trashButton('remover layer', function () {
+				PAD_UTIL.removeRow(row, function () {
+					state.layers.splice(i, 1);
+					renderLayers();
+				});
 			});
-
-			remove.classList.add('row-remove');
-			selWrap.classList.add('has-remove');
-			selWrap.appendChild(remove);
 
 			row.appendChild(PAD_SORT.handle());
 			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
 			row.appendChild(name);
 			row.appendChild(selWrap);
+			row.appendChild(remove);
 			list.appendChild(row);
 
-			PAD_DROPDOWN.enhance(select);
+			PAD_DROPDOWN.enhance(select, 'layerMethod');
 		});
 
 		updateSeparatorState();
@@ -296,6 +305,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		await refreshLayers();
 
 		var sep = getSeparator();
+		var typed = $('f-separator').value.replace(/\\n|\\r/g, '\n'); // o que está no campo (o '---' de getSeparator também vale para vazio)
 		var oneLine = sep.indexOf('\n') >= 0; // separador de linha: quebras dentro de um texto viram espaço
 		var parts = state.layers
 			.filter(function (layer) {
@@ -306,7 +316,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 				return oneLine ? value.replace(/\s*\n+\s*/g, ' ').trim() : value;
 			});
-		var example = parts.join(sep === '---' ? '\n' : sep).replace(/\n{2,}/g, '\n'); // linha vazia separaria versões
+		// o separador preenchido (ex: ---, |): cada um na sua linha, entre os textos (o preenchimento tira as quebras em
+		// volta). sem separador (ou um layer só): o texto vai inteiro, uma informação por linha
+		var join = oneLine ? sep : typed.trim() && state.layers.length > 1 ? '\n' + typed.trim() + '\n' : '\n';
+		var example = parts.join(join).replace(/\n{2,}/g, '\n'); // linha vazia separaria versões
 
 		$('f-example').value = example;
 		$('f-example').dispatchEvent(new Event('input'));
@@ -329,7 +342,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var hasPreview = !!state.comp && $('preview-card').classList.contains('has-image');
 
 		return [
-			{ key: 'name', label: 'nome', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'nome da configuração' },
+			{ key: 'atracao', label: 'atração', ok: !!state.atr, target: 'atr-picker', tip: state.atr ? state.atr.name : 'escolha a atração (ou crie uma nova)' },
+			{ key: 'name', label: 'o que é', ok: config !== '' && config !== DEFAULT_CONFIG_NAME, target: 'f-config', tip: 'o que é (ex: SERVIÇO, CONVIDADO, AESP)' },
 			{ key: 'preview', label: 'preview', ok: hasPreview, target: 'preview-card', tip: hasPreview ? 'preview capturado' : 'capture o preview com a comp principal aberta' },
 			{
 				key: 'layers',
@@ -345,6 +359,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				target: 'f-example',
 				tip: infos === 0 ? 'exemplo vazio' : state.layers.length > 1 && infos !== state.layers.length ? 'o exemplo tem ' + plural(infos, 'informação', 'informações') + ' e a lista tem ' + plural(state.layers.length, 'layer', 'layers') : 'o exemplo bate com os layers'
 			},
+			state.fx ? { key: 'layout', label: 'layout', ok: !fxProblem(), target: 'fx-card', tip: fxProblem() || plural(state.fx.options.length, 'variação', 'variações') } : null,
 			{ key: 'output', label: 'output', ok: outputs > 0, target: 'outputs', tip: outputs ? plural(outputs, 'pasta de output', 'pastas de output') : 'nenhuma pasta de output' }
 		];
 	}
@@ -360,7 +375,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		box.textContent = '';
 
-		checks().forEach(function (item) {
+		checks().filter(Boolean).forEach(function (item) {
 			var chip = el('button', 'check-chip' + (item.ok ? ' is-ok' : ''));
 
 			chip.type = 'button';
@@ -547,7 +562,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		list.textContent = '';
 
 		state.outputs.forEach(function (path, i) {
-			var line = el('div', 'cfg-path');
+			var row = el('div', 'path-row'); // o campo com a pastinha e a lixeira fora dele
+			var line = el('div', 'cfg-path one-btn');
 			var input = el('input', 'cfg-input');
 			var pick = miniButton('folder', 'escolher pasta', async function () {
 				if (await pickPathInto(input, 'Selecione a pasta de output')) {
@@ -555,10 +571,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 					updateChecklist();
 				}
 			});
-			var remove = miniButton('remove', 'remover output', function () {
-				state.outputs.splice(i, 1);
-				renderOutputs();
-				updateChecklist();
+			var remove = PAD_UTIL.trashButton('remover output', function () {
+				PAD_UTIL.removeRow(row, function () {
+					state.outputs.splice(i, 1);
+					renderOutputs();
+					updateChecklist();
+				});
 			});
 
 			input.type = 'text';
@@ -574,8 +592,9 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			remove.disabled = state.outputs.length === 1; // mantém ao menos uma pasta
 			line.appendChild(input);
 			line.appendChild(pick);
-			line.appendChild(remove);
-			list.appendChild(line);
+			row.appendChild(line);
+			row.appendChild(remove);
+			list.appendChild(row);
 		});
 	}
 
@@ -644,8 +663,212 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 	}
 
+	/* =========================================================
+	   Variações de layout (inputFx)
+	   o efeito de menu da comp principal: uma comp por opção, com o sufixo no fim do nome. a posição na lista é
+	   o número da opção no menu (o formato do config), então só a última opção sai. um checkbox (Checkbox
+	   Control) tem sempre as duas: desligado e ligado.
+	   ========================================================= */
+
+	var FX_SVG = '<svg class="fx-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h3M13 17h7" /><circle cx="16" cy="7" r="2.5" /><circle cx="10" cy="17" r="2.5" /></svg>';
+	var SWAP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 0 1-11.9 5" /><path d="M5 12a7 7 0 0 1 11.9-5" /><path d="M17.5 3.5v3.8h-3.8" /><path d="M6.5 20.5v-3.8h3.8" /></svg>';
+
+	function cleanSuffix(text) {
+		return cleanName(String(text || '').trim().toUpperCase());
+	}
+
+	// os sufixos: todos preenchidos e sem repetir → '' (ok) ou o que falta ("falta: …")
+	function fxProblem() {
+		if (!state.fx) return '';
+
+		var seen = {};
+		var problem = '';
+
+		state.fx.options.forEach(function (suffix, i) {
+			var key = cleanSuffix(suffix);
+
+			if (problem) return;
+			if (!key) problem = 'o sufixo da opção ' + (i + 1);
+			else if (seen[key]) problem = 'um sufixo diferente para cada opção (' + key + ' se repete)';
+			seen[key] = true;
+		});
+
+		return problem;
+	}
+
+	async function pickEffect() {
+		if (!state.comp) return toast('error', '#PAD_028 - comp principal não encontrada: abra a comp e capture o preview.');
+
+		try {
+			var fx = await call('makerPickEffect', { compId: state.comp.id });
+			var before = state.fx ? state.fx.options : [];
+			var total = fx.kind === 'checkbox' ? 2 : fx.count || Math.max(before.length, 2); // sem o total do menu: as linhas de antes (ou 2)
+
+			fx.options = [];
+			for (var i = 0; i < total; i++) fx.options.push(before[i] || '');
+			state.fx = fx;
+			renderFx();
+
+			var first = $('fx-box').querySelector('.fx-opt .cfg-input');
+
+			if (first && !first.value) first.focus();
+		} catch (err) {
+			toast('error', err.message);
+		}
+	}
+
+	function renderFx() {
+		var box = $('fx-box');
+		var fx = state.fx;
+
+		box.textContent = '';
+		var checkbox = fx && fx.kind === 'checkbox';
+
+		$('btn-fx').textContent = fx ? '+ opção' : '+ efeito';
+		$('btn-fx').title = fx ? 'mais uma opção do menu (a próxima)' : 'usar o efeito de layout selecionado no Effect Controls da comp principal (menu ou checkbox)';
+		$('btn-fx').hidden = checkbox; // o checkbox tem só desligado e ligado
+
+		if (!fx) {
+			box.appendChild(el('p', 'cfg-empty', 'selecione o efeito de menu (ou de checkbox) no Effect Controls e clique em “+ efeito”.'));
+			updateChecklist();
+			return;
+		}
+
+		// o efeito: a caixa, com o trocar dentro e a lixeira fora
+		var line = el('div', 'fx-line');
+		var row = el('div', 'cfg-row fx-effect');
+		var swap = el('button', 'fx-swap');
+
+		row.insertAdjacentHTML('afterbegin', FX_SVG);
+		var fxName = el('span', 'maker-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName);
+
+		fxName.title = fxName.textContent; // o nome encolhe com reticências: inteiro na dica
+		row.appendChild(fxName);
+		row.appendChild(el('span', 'fx-kind', checkbox ? 'checkbox' : 'menu · ' + fx.options.length + (fx.options.length === 1 ? ' opção' : ' opções')));
+		swap.type = 'button';
+		swap.title = 'trocar pelo efeito selecionado no Effect Controls';
+		swap.setAttribute('aria-label', 'trocar o efeito');
+		swap.innerHTML = SWAP_SVG;
+		swap.addEventListener('click', pickEffect);
+		row.appendChild(swap);
+		line.appendChild(row);
+		line.appendChild(PAD_UTIL.trashButton('remover as variações de layout', function () {
+			PAD_UTIL.removeRow(box, function () {
+				state.fx = null;
+				renderFx();
+			});
+		}));
+		box.appendChild(line);
+
+		// as opções: o número e o sufixo; a lixeira só na última
+		var opts = el('div', 'fx-opts');
+
+		fx.options.forEach(function (suffix, i) {
+			var optLine = el('div', 'fx-line');
+			var opt = el('div', 'cfg-row fx-opt');
+			var input = el('input', 'cfg-input');
+			var last = !checkbox && i === fx.options.length - 1 && fx.options.length > 1;
+			var optName = checkbox ? (i === 0 ? 'desligado' : 'ligado') : 'opção ' + (i + 1);
+
+			input.type = 'text';
+			input.value = suffix;
+			input.placeholder = 'sufixo';
+			input.spellcheck = false;
+			input.autocomplete = 'off';
+			input.setAttribute('aria-label', 'sufixo: ' + optName);
+			input.addEventListener('input', function () {
+				fx.options[i] = input.value;
+				updateFxNames();
+				updateChecklist();
+			});
+			input.addEventListener('change', function () {
+				input.value = fx.options[i] = cleanSuffix(input.value);
+				updateFxNames();
+			});
+			opt.appendChild(el('span', 'cfg-row-label', optName));
+			opt.appendChild(input);
+			optLine.appendChild(opt);
+			optLine.appendChild(last ? PAD_UTIL.trashButton('remover a opção ' + (i + 1), function () {
+				PAD_UTIL.removeRow(optLine, function () {
+					fx.options.pop();
+					renderFx();
+				});
+			}) : el('span', 'fx-gap'));
+			opts.appendChild(optLine);
+		});
+		box.appendChild(opts);
+		box.appendChild(el('p', 'cfg-preview fx-names'));
+		updateFxNames();
+		updateChecklist();
+	}
+
+	// os nomes finais com o exemplo, um por opção
+	function updateFxNames() {
+		var names = $('fx-box') && $('fx-box').querySelector('.fx-names');
+
+		if (!names || !state.fx) return;
+
+		var base = finalName();
+
+		names.textContent = '';
+		names.appendChild(el('span', 'cfg-preview-label', 'nomes finais'));
+		state.fx.options.forEach(function (suffix) {
+			names.appendChild(el('strong', null, (base + ' ' + (cleanSuffix(suffix) || '…')).trim()));
+		});
+	}
+
+	/* =========================================================
+	   Atração e o que é
+	   ========================================================= */
+
+	// a atração escolhida: a pasta de output dela (a que já existe no índice) entra na lista de outputs, no lugar
+	// da que veio da atração anterior (ou de um campo vazio)
+	function onAttraction(atr) {
+		var out = atr && !atr.isNew && atr.out ? atr.out : '';
+		var prev = state.autoOut ? state.outputs.indexOf(state.autoOut) : -1;
+
+		state.atr = atr;
+
+		if (out !== state.autoOut) {
+			if (prev >= 0) {
+				if (out && state.outputs.indexOf(out) < 0) state.outputs[prev] = out;
+				else state.outputs.splice(prev, 1);
+			} else if (out && state.outputs.indexOf(out) < 0) {
+				var empty = state.outputs.indexOf('');
+
+				if (empty >= 0) state.outputs[empty] = out;
+				else state.outputs.push(out);
+			}
+			if (!state.outputs.length) state.outputs.push('');
+			state.autoOut = out;
+			renderOutputs();
+		}
+
+		updateNameFull();
+		updateChecklist();
+	}
+
+	// o template por inteiro: a atração · o que é
+	function updateNameFull() {
+		var box = $('name-full');
+		var what = $('f-config').value.trim();
+
+		box.hidden = !(state.atr && what);
+		box.textContent = '';
+		if (box.hidden) return;
+
+		box.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>');
+
+		var text = el('span', null, 'template: ');
+
+		text.appendChild(el('b', null, state.atr.name + ' · ' + what.toUpperCase()));
+		if (state.atr.isNew) text.appendChild(document.createTextNode(' (atração nova)'));
+		box.appendChild(text);
+	}
+
 	function buildConfig() {
 		return {
+			atracao: state.atr ? { name: state.atr.name, path: state.atr.path, out: state.atr.out || '' } : null,
 			configName: $('f-config').value.trim(),
 			exemple: normalizeBreaks($('f-example').value),
 			tip: normalizeBreaks($('f-tip').value),
@@ -667,7 +890,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	}
 
 	// Depois de salvar: o aviso fica até a escolha (gerar o preview em vídeo ou não) e só então a pasta do
-	// template abre, para não interromper o processo com a janela do Finder / Explorer.
+	// template abre, para não interromper o processo com a janela do Finder / Explorer; depois, o formulário
+	// volta ao começo e a janela fecha.
 	function savedToast(data) {
 		var box = $('toast');
 		var compId = state.comp.id;
@@ -675,6 +899,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 600000);
 
+		// o fim: abre a pasta do template, limpa o formulário e fecha A FORMA (o próximo template começa do zero)
 		function openTemplateFolder() {
 			if (opened) return;
 
@@ -682,6 +907,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			call('openFolder', { path: data.folder }).catch(function (err) {
 				toast('error', err.message);
 			});
+			setTimeout(function () {
+				resetForm();
+				PAD_BRIDGE.closePanel();
+			}, 1200);
 		}
 
 		var render = el('button', 'toast-action', 'gerar preview .mp4');
@@ -721,9 +950,19 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		var cfg = buildConfig();
 
+		if (!cfg.atracao) {
+			state.picker.focus();
+			return toast('error', '#PAD_029 - escolha a atração do template (ou crie uma nova).');
+		}
+
 		if (cfg.configName === '' || cfg.configName === DEFAULT_CONFIG_NAME) {
 			$('f-config').focus();
-			return toast('error', '#PAD_029 - preencha o nome da configuração.');
+			return toast('error', '#PAD_029 - preencha o que é (ex: SERVIÇO, CONVIDADO, AESP).');
+		}
+
+		if (fxProblem()) {
+			goTo('fx-card');
+			return toast('error', '#PAD_097 - variações de layout: falta ' + fxProblem() + '.');
 		}
 
 		// sem layers editáveis o template não terá inputs: pede um segundo clique
@@ -751,6 +990,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layers: state.layers.map(function (l) {
 					return { id: l.id, method: l.method };
 				}),
+				fx: state.fx ? { layerId: state.fx.layerId, fxName: state.fx.fxName, optionIndex: state.fx.optionIndex, kind: state.fx.kind || 'menu', options: state.fx.options.map(cleanSuffix) } : null,
 				config: cfg
 			});
 
@@ -797,7 +1037,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		}
 	}
 
-	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; o × esvazia e esconde.
+	// Pasta de mídias (opcional, uma só): o botão "+ pasta de mídias" mostra o campo; a lixeira esvazia e esconde.
 	function showImportRow(on) {
 		$('import-row').hidden = !on;
 		$('btn-import-add').hidden = on;
@@ -805,9 +1045,15 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	function resetForm() {
 		$('f-config').value = '';
+		state.picker.set(null);
+		state.fx = null;
+		renderFx();
+		state.atr = null;
+		state.autoOut = '';
+		updateNameFull();
 		$('f-example').value = 'INFORMAÇÃO 1\nINFORMAÇÃO 2';
 		$('f-tip').value = DEFAULT_TIP;
-		$('f-prefix').value = 'TARJA';
+		$('f-prefix').value = '';
 		$('f-case').value = 'upperCase';
 		PAD_DROPDOWN.refresh($('f-case'));
 		$('f-separator').value = '\\n';
@@ -823,8 +1069,23 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		start();
 	}
 
+	// A FORMA abre grande: as duas colunas inteiras, sem rolar de cara (o tamanho do manifest só vale para quem
+	// reinstalar; aqui vale para todos). nunca maior que a tela, e nunca encolhe quem já abriu maior
+	var OPEN_WIDTH = 1260;
+	var OPEN_HEIGHT = 960;
+
+	function openBig() {
+		if (!PAD_BRIDGE.inCep()) return;
+
+		var w = Math.min(OPEN_WIDTH, (screen.availWidth || OPEN_WIDTH) - 40);
+		var h = Math.min(OPEN_HEIGHT, (screen.availHeight || OPEN_HEIGHT) - 60);
+
+		if (window.innerWidth < w - 4 || window.innerHeight < h - 4) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, w), Math.max(window.innerHeight, h));
+	}
+
 	function init() {
-		PAD_DROPDOWN.enhance($('f-case'));
+		openBig();
+		PAD_DROPDOWN.enhance($('f-case'), 'textCase');
 
 		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {
 			$(id).addEventListener('input', updateNamePreview);
@@ -832,6 +1093,19 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		['f-config', 'f-example', 'f-separator'].forEach(function (id) {
 			$(id).addEventListener('input', updateChecklist);
 		});
+		state.picker = PAD_ATTRACTIONS.picker($('atr-picker'), { onChange: onAttraction });
+		$('f-config').addEventListener('input', updateNameFull);
+		$('btn-fx').addEventListener('click', function () {
+			if (!state.fx) return pickEffect();
+
+			state.fx.options.push('');
+			renderFx();
+
+			var inputs = $('fx-box').querySelectorAll('.fx-opt .cfg-input');
+
+			inputs[inputs.length - 1].focus();
+		});
+		renderFx();
 		$('f-case').addEventListener('change', updateNamePreview);
 		$('btn-example').addEventListener('click', exampleFromLayers);
 
@@ -872,8 +1146,10 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			$('f-import').focus();
 		});
 		$('remove-import').addEventListener('click', function () {
-			$('f-import').value = '';
-			showImportRow(false);
+			PAD_UTIL.removeRow($('import-row'), function () {
+				$('f-import').value = '';
+				showImportRow(false);
+			});
 		});
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de mídias');

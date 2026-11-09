@@ -13,11 +13,14 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | painel (menu `Window` > `Extensions`) | id | página | script | porta de depuração |
 | --- | --- | --- | --- | --- |
 | O PADEIRO (barra) | `com.jmbillard.opadeiro.bar` | `bar.html` | `js/bar.js` | 8089 |
-| O PADEIRO templates | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
+| O FORNINHO | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
 | O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
-| O PADEIRO conversor | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
-| O PADEIRO produções | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
-| O PADEIRO criar template | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
+| O ADAPTADOR | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
+| O PRODUTOR | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
+| A FORMA | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
+| A CLAQUETE | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
+| O TIPÓGRAFO | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
+| O CATADOR | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
 
 <br>
 
@@ -26,10 +29,10 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 ```text
 O-PADEIRO/
 ├─ INSTALAR O PADEIRO.jsx        → instalador do carregador (File > Scripts > Run Script File... no After Effects)
-├─ O_PADEIRO_config.json         → lista de produções COMPARTILHADA pela equipe
+├─ O_PADEIRO_GLOBAL_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
-   ├─ CSXS/manifest.xml          → os 6 painéis
+   ├─ CSXS/manifest.xml          → os 7 painéis
    ├─ .debug                     → portas de depuração (CEF)
    ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
@@ -37,13 +40,20 @@ O-PADEIRO/
    │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, vidro, folha branca)
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
-   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker
+   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
+   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela PROJETO, criador e editor de config
+   │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
+   │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
+   │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
-   │     ├─ util.js              → ícones das produções, forninho, URLs de arquivo
+   │     ├─ fontbank.js          → banco de fontes pelo Node (conferir e copiar para o banco e a pasta do projeto)
+   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
+   │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
+   │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
    │     └─ <painel>.js          → lógica de cada painel
    ├─ host/                      → ExtendScript (roda dentro do After Effects)
@@ -54,8 +64,11 @@ O-PADEIRO/
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
+   │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
+   │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
+   │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), a checagem do brilho do foco (check-focus-crop.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>
@@ -91,7 +104,7 @@ o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_c
 var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
-- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`).
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`, `collect.jsx`).
 - **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:
@@ -112,7 +125,7 @@ cada painel é uma página separada. eles combinam o que fazer por arquivos pequ
 | `shared_config.txt` | instaladores | host (onde está a lista compartilhada) |
 | `temp/template_lists.json` | templates | templates (fixados e recentes, por produção) |
 
-a **lista de produções** é sempre o `O_PADEIRO_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
+a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
 
 <br>
 
@@ -135,7 +148,7 @@ powershell -ExecutionPolicy Bypass -File extension\scripts\install-win.ps1
 no Windows o instalador sempre copia (`-Uninstall` remove).
 
 > 🚩 *obs:*\
-> • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_config.json` da raiz do repo: salvar no editor de produções grava nele.\
+> • rodando a partir do repositório, a lista "compartilhada" é o `O_PADEIRO_GLOBAL_config.json` da raiz do repo: salvar no editor de produções grava nele.\
 > • os instaladores ligam o `PlayerDebugMode` (CSXS 9 a 13), sem o qual o CEP não carrega extensões sem assinatura.\
 > • os instaladores também removem o `O PADEIRO.jsx` da versão antiga (script ScriptUI) das pastas `Scripts/ScriptUI Panels`.\
 > • mudanças no `manifest.xml` só valem depois de reiniciar o After Effects.
@@ -155,6 +168,22 @@ sem o After Effects, os painéis usam o `mock-host.js` (templates, produções e
 | `?path=...` | conversor aberto com um caminho |
 
 no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta das fontes).
+
+> 🧭 *antes de enviar uma mudança de tela, rode a checagem do brilho do foco (`node extension/scripts/check-focus-crop.js`) e confira o [guia de UI](../docs/guia-ui.md).*
+
+### imagens da documentação
+
+as telas, as animações e os ícones da documentação saem do modo de teste (o `mock-host.js` responde no lugar do After Effects), sempre iguais:
+
+```bash
+node extension/scripts/doc-media.js
+```
+
+- **telas** → `docs/images/<nome>.webp`: a janela em 2x, com os botões e abas destacados em laranja e numerados (❶ ❷ ❸…). o texto explica na mesma ordem.
+- **animações** → `docs/images/anim/<nome>.webp`: a janela em uso, com um cursor desenhado e um anel a cada clique (laranja no clique direito). webp animado, em loop como um gif: com o degradê das janelas, um gif fica enorme.
+- **ícones** → `docs/images/icons/<nome>.png`: as ferramentas da barra, no degradê, para as tabelas.
+
+só uma parte: `node extension/scripts/doc-media.js gifs tour barra` (ou `telas`, `icones`). quando uma tela mudar, rode de novo e confira se os destaques ainda caem nos botões certos (os seletores ficam no começo do script).
 
 ### depurar no After Effects
 

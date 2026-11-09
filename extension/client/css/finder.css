@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    O ACESSORISTA — painel de buscas (caminhos e textos)
    ========================================================= */
 
@@ -28,62 +28,6 @@ body.finder-page {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-}
-
-/* abas: só texto, como o "buscar · selecionar · preencher" dos templates; a aba ativa fica opaca, com um ponto */
-.tabs {
-  display: inline-flex;
-  align-items: center;
-  gap: 20px;
-  padding-left: 5px;
-}
-
-.tab {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 0;
-  border: 0;
-  background: transparent;
-  color: rgb(255 255 255 / 52%);
-  cursor: pointer;
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.18em;
-  transition: color 220ms ease;
-}
-
-.tab::before {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentcolor;
-  content: "";
-  opacity: 0;
-  transform: scale(0);
-  transition:
-    opacity 200ms ease,
-    transform 260ms var(--ease-soft);
-}
-
-.tab:hover {
-  color: rgb(255 255 255 / 80%);
-}
-
-.tab[aria-selected="true"] {
-  color: white;
-}
-
-.tab[aria-selected="true"]::before {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.tab:focus-visible {
-  border-radius: 6px;
-  outline: 2px solid rgb(255 255 255 / 80%);
-  outline-offset: 2px;
 }
 
 /* painéis */
@@ -124,6 +68,17 @@ body.finder-page {
   gap: 4px 12px;
 }
 
+/* de onde vêm os caminhos (índice local) ou o andamento da indexação, entre atualizar e o "⋯" */
+.finder-source {
+  overflow: hidden;
+  padding-left: 4px;
+  color: rgb(var(--on-brand) / 82%);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .finder-menu {
   flex: 0 0 auto;
   align-self: flex-start;
@@ -153,7 +108,7 @@ body.finder-page {
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
-  color: rgb(255 255 255 / 66%);
+  color: rgb(var(--on-brand) / 66%);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 750;
@@ -162,12 +117,12 @@ body.finder-page {
 }
 
 .chip:hover {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .chip:focus-visible {
-  outline: 2px solid rgb(255 255 255 / 80%);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
 }
 
 /* trilho: translúcido quando desligado, branco quando ligado; a bolinha fica azul ao ligar */
@@ -177,8 +132,8 @@ body.finder-page {
   height: 16px;
   flex: 0 0 auto;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 24%);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 22%);
+  background: rgb(var(--on-brand) / 24%);
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 22%);
   transition: background-color 220ms ease;
 }
 
@@ -189,7 +144,7 @@ body.finder-page {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgb(24 43 113 / 28%);
   content: "";
   transition:
@@ -198,16 +153,16 @@ body.finder-page {
 }
 
 .chip.is-on {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .chip.is-on .chip-check {
-  background: white;
+  background: var(--surface);
 }
 
 /* ligado = o inverso do desligado: trilho opaco e bolinha esmaecida */
 .chip.is-on .chip-check::after {
-  background: rgb(79 130 255 / 30%);
+  background: var(--blue-300); /* o destaque esmaecido: acompanha as cores escolhidas */
   box-shadow: none;
   transform: translateX(12px);
 }
@@ -219,7 +174,7 @@ body.finder-page {
   flex: 1;
   flex-direction: column;
   margin: 4px -14px 0;
-  background: white;
+  background: var(--surface);
   transition: background-color 240ms ease;
 }
 
@@ -301,63 +256,13 @@ body.finder-page {
   flex: 1;
 }
 
-/* projeto e output: ícones à direita do nome */
-.result-icons {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 6px;
-}
-
-.card-icon svg {
-  overflow: visible;
-}
-
-.card-icon svg * {
-  transform-box: fill-box;
-}
-
-/* pastinha: a frente abre e o conteúdo sobe um pouco (volta ao sair). conteúdo e frente são
-   preenchidos com o fundo do botão para cobrir o que fica atrás deles */
-.card-icon .folder-front {
-  fill: white;
-  transform-origin: 50% 100%;
-  transition:
-    fill 180ms ease,
-    transform 300ms var(--ease-soft);
-}
-
-.card-icon:hover .folder-front {
-  fill: var(--blue-50);
-  transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
-}
-
-.card-icon .folder-content {
-  fill: white;
-  transition:
-    fill 180ms ease,
-    transform 300ms var(--ease-soft);
-}
-
-.card-icon:hover .folder-content {
-  fill: var(--blue-50);
-}
-
-.card-icon:hover .folder-content {
-  transform: translateY(-2px);
-}
-
-.card-icon:focus-visible,
 .crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
 }
 
-.card-icon.is-busy {
-  pointer-events: none;
-  animation: bar-busy 700ms ease-in-out infinite alternate;
-}
 
 /* caminho em breadcrumb: as pastas iniciais saem com "…" quando não cabem */
 .path-crumbs {
@@ -541,9 +446,12 @@ body.finder-page {
 }
 
 .text-snippet mark,
-.result-name mark {
-  padding: 0 2px;
-  border-radius: 4px;
+.result-name mark,
+.tm-who mark,
+.tr-card mark,
+.at-head mark {
+  padding: 0; /* sem folga dos lados: o destaque no meio da palavra não afasta as letras ("Jo ã o") */
+  border-radius: 3px;
   background: #ffe9a8;
   color: #4a3500;
 }
@@ -576,7 +484,7 @@ body.finder-page {
   padding: 10px 14px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: white;
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 22%),
     0 4px 12px rgb(30 42 80 / 10%);
@@ -666,20 +574,313 @@ body.finder-page {
 
 .finder-pane.is-idle .finder-state {
   padding-top: 8px;
-  color: rgb(255 255 255 / 78%);
+  color: rgb(var(--on-brand) / 78%);
 }
 
 .finder-pane.is-idle .finder-state strong {
-  color: white;
+  color: rgb(var(--on-brand));
 }
 
 .finder-pane.is-idle .oven-loader.is-light {
-  --oven-line: rgb(255 255 255 / 88%);
-  --oven-fill: rgb(255 255 255 / 14%);
-  --oven-belt: rgb(255 255 255 / 40%);
-  --oven-steam: rgb(255 255 255 / 70%);
+  --oven-line: rgb(var(--on-brand) / 88%);
+  --oven-fill: rgb(var(--on-brand) / 14%);
+  --oven-belt: rgb(var(--on-brand) / 40%);
+  --oven-steam: rgb(var(--on-brand) / 70%);
   --oven-text: white;
-  --oven-hint: rgb(255 255 255 / 72%);
+  --oven-hint: rgb(var(--on-brand) / 72%);
 
   padding-top: 2px;
+}
+
+/* =========================================================
+   Busca nova (v2): Teams, Trello, atrações, filmes e servidor
+   ========================================================= */
+
+.result-section+.result-section {
+  margin-top: 20px;
+}
+
+/* Teams: o balão (abre a mensagem), quem mandou - cargo e a data; o caminho logo embaixo */
+.tm-card {
+  gap: 0;
+  padding: 7px 0;
+}
+
+.tm-who {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.tm-who b {
+  overflow: hidden;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-role {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-who time {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: 10px;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tm-msg {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--blue-500);
+}
+
+button.tm-msg {
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+button.tm-msg:hover,
+button.tm-msg:focus-visible {
+  background: var(--blue-50);
+}
+
+.tm-msg svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform 220ms var(--ease-soft);
+}
+
+button.tm-msg:hover svg {
+  transform: translateY(-1px) rotate(-6deg);
+}
+
+.tm-card .path-crumbs {
+  padding-left: 34px;
+}
+
+/* Trello: cards em colunas (quantas couberem na largura, montadas em js/finder.js): cada card vai para a coluna
+   mais curta, com a altura do que tem (sem redator ou editor, fica mais baixo e não sobra buraco) */
+.tr-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.tr-col {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 0;
+  gap: 10px;
+}
+
+.tr-card {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+button.tr-card {
+  cursor: pointer;
+}
+
+button.tr-card:hover,
+button.tr-card:focus-visible {
+  border-color: var(--blue-200);
+  box-shadow: 0 10px 24px rgb(30 42 80 / 12%);
+  transform: translateY(-1px);
+}
+
+.tr-claq {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 2px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tr-card i {
+  overflow: hidden;
+  font-style: normal;
+  text-overflow: ellipsis;
+}
+
+.tr-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.tr-row em {
+  flex: 0 0 50px;
+  padding-top: 2px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.tr-card svg {
+  width: 17px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.tr-card .tr-logo {
+  height: 17px;
+  stroke: var(--blue-500);
+}
+
+.tr-card .tr-logo .tr-bar {
+  fill: var(--blue-500);
+  stroke: none;
+}
+
+/* atrações, filmes e servidor: o ícone e o nome; uma linha por caminho (PROJETO, OUTPUT, CAMINHO) */
+.tm-list {
+  display: grid;
+}
+
+.tm-list>.tm-card+.tm-card {
+  border-top: 1px solid var(--border);
+}
+
+.tm-list>.tm-card {
+  border-bottom: 0;
+}
+
+.at-list {
+  display: grid;
+  gap: 10px;
+}
+
+.at-card {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  padding: 11px 14px 9px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  animation: file-enter 380ms var(--ease-enter) both;
+}
+
+.at-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.at-head b {
+  overflow: hidden;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.at-year {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+
+.at-head>svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.at-head .film-holes {
+  stroke-dasharray: 1.2 2;
+}
+
+.at-line {
+  display: flex;
+  min-width: 0;
+  min-height: 26px;
+  align-items: center;
+  gap: 6px;
+  padding-left: 27px;
+}
+
+.at-line em {
+  flex: 0 0 58px;
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.at-line .path-crumbs {
+  flex: 1;
+}
+
+/* a busca também procura os outros nomes da atração (pelos patterns): o aviso em cima dos resultados */
+.finder-also {
+  margin: 0 0 10px;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 650;
 }

@@ -22,7 +22,8 @@ Passo a passo (como o instalador do script antigo):
 Instalar / atualizar:
   1. grava o carregador na pasta de extensões CEP do usuário;
   2. liga o PlayerDebugMode (extensões sem assinatura só carregam com ele);
-  3. grava onde está a lista de produções compartilhada (O_PADEIRO_config.json, ao lado deste arquivo);
+  3. grava onde está a configuração da equipe (O_PADEIRO_GLOBAL_config.json, ao lado deste arquivo; se
+     só houver o arquivo antigo, O_PADEIRO_config.json, ele é copiado com o nome novo);
   4. remove a versão antiga (o script 'O PADEIRO.jsx' das pastas ScriptUI Panels).
 
 */
@@ -34,7 +35,9 @@ Instalar / atualizar:
 
 	var here = new File($.fileName).parent;
 	var src = new Folder(here.fsName + '/extension');
-	var sharedList = new File(here.fsName + '/O_PADEIRO_config.json');
+	// a configuração da equipe: o nome novo (GLOBAL) separa do arquivo das versões antigas, que continuam com o seu
+	var sharedList = new File(here.fsName + '/O_PADEIRO_GLOBAL_config.json');
+	var oldList = new File(here.fsName + '/O_PADEIRO_config.json');
 	var userData = Folder.userData.fsName; // macOS: ~/Library/Application Support | Windows: %APPDATA%
 	var dest = new Folder(userData + '/Adobe/CEP/extensions/' + EXT_ID);
 	var prefsFolder = new Folder(userData + '/O PADEIRO script');
@@ -169,6 +172,8 @@ Instalar / atualizar:
 	}
 
 	function saveSharedListPath() {
+		// só o arquivo antigo: copia com o nome novo (o antigo fica para as versões antigas)
+		if (!sharedList.exists && oldList.exists) oldList.copy(sharedList.fsName);
 		if (!sharedList.exists) return false;
 
 		if (!prefsFolder.exists) prefsFolder.create();
@@ -290,7 +295,7 @@ Instalar / atualizar:
 		{ label: 'After Effects 2022 ou mais novo', test: aeVersionOk, required: true, help: 'o padeiro precisa do After Effects 2022 (22.0) ou mais novo.' },
 		{ label: 'acesso à rede e escrita de arquivos', test: canWriteFiles, required: true, help: 'habilite "Allow Scripts to Write Files and Access Network" nas preferências de scripts e expressões.' },
 		{ label: 'pasta "extension" ao lado do instalador', test: extensionOk, required: true, help: 'rode o instalador direto da pasta do padeiro na rede (a que tem a pasta "extension").' },
-		{ label: 'lista de produções compartilhada', test: function () { return sharedList.exists; }, required: false, help: 'não achei o O_PADEIRO_config.json ao lado do instalador: sem ele não há lista de produções.' }
+		{ label: 'lista de produções compartilhada', test: function () { return sharedList.exists || oldList.exists; }, required: false, help: 'não achei o O_PADEIRO_GLOBAL_config.json ao lado do instalador: sem ele não há lista de produções.' }
 	];
 
 	for (var c = 0; c < checks.length; c++) {
@@ -499,7 +504,15 @@ Instalar / atualizar:
 		nextBtn.text = removeRdo.value ? 'remover' : installRdo.text;
 	};
 
-	showPage(0);
+	// tudo certo (os testes passam, inclusive a lista compartilhada): direto para instalar / atualizar.
+	// 'anterior' ainda volta para a conferência e as boas-vindas
+	var allOk = true;
+
+	for (var t = 0; t < checks.length; t++) {
+		if (!checks[t].test()) allOk = false;
+	}
+
+	showPage(allOk ? 2 : 0);
 	win.center();
 	win.show();
 })();

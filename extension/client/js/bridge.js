@@ -92,13 +92,62 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
 	}
 
-	// Seletor de pasta do CEP. Retorna o caminho ou null.
+	// Seletor de pasta do CEP. Retorna o caminho ou null. o volume vem sem o sufixo que o macOS põe ao montar o
+	// mesmo share de novo (/Volumes/VFX-1 → /Volumes/VFX): os caminhos são gravados e mostrados sem ele; o host
+	// acha o volume certo na hora de abrir, criar ou montar.
+	// A pasta onde a janela de escolher abre: o caminho guardado (sem o sufixo do volume) no volume realmente
+	// montado (VFX, VFX-1 … VFX-5) e, se a pasta ainda não existe, a mais perto que existir
+	function startFolder(path) {
+		var fs = null;
+
+		path = String(path || '').replace(/\\/g, '/').replace(/\/+$/, '');
+		if (!path) return '';
+
+		try {
+			fs = typeof require === 'function' ? require('fs') : null;
+		} catch (err) { }
+
+		if (!fs) return path;
+
+		var isDir = function (p) {
+			try {
+				return fs.statSync(p).isDirectory();
+			} catch (err) {
+				return false;
+			}
+		};
+		// a mais funda que existe
+		var nearest = function (p) {
+			while (p && p !== '/' && !isDir(p)) p = p.replace(/\/[^\/]*$/, '');
+
+			return p && p !== '/' ? p : '';
+		};
+		var m = /^\/Volumes\/([^\/]+?)(-[1-5])?(\/.*)?$/.exec(path);
+
+		if (!m) return nearest(path);
+
+		var best = '';
+
+		['', '-1', '-2', '-3', '-4', '-5'].forEach(function (suffix) {
+			var found = nearest('/Volumes/' + m[1] + suffix + (m[3] || ''));
+
+			// a que tiver mais do caminho (uma pasta /Volumes/VFX vazia, que sobrou, perde para a VFX-1 montada)
+			if (found.length > best.length && found.split('/').length > 3) best = found;
+		});
+
+		return best || nearest(path);
+	}
+
 	function pickFolder(title, startPath) {
 		if (!cep || !window.cep || !window.cep.fs) return null;
 
-		var res = window.cep.fs.showOpenDialogEx(false, true, title, startPath || '');
+		var res = window.cep.fs.showOpenDialogEx(false, true, title, startFolder(startPath));
 
-		return res && res.err === 0 && res.data && res.data.length ? res.data[0] : null;
+		return res && res.err === 0 && res.data && res.data.length ? noVolumeSuffix(res.data[0]) : null;
+	}
+
+	function noVolumeSuffix(path) {
+		return String(path || '').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
 	}
 
 	// Janela de salvar arquivo. Retorna o caminho escolhido ou null.
@@ -171,5 +220,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
 })();

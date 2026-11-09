@@ -10,7 +10,7 @@ Junta as libs (host/lib) e expõe a API que os painéis chamam através de PADX_
 
 */
 
-var PADX_VERSION = '2.0 beta4';
+var PADX_VERSION = '2.0 beta7';
 var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 
 #include "env.jsx"
@@ -32,4 +32,7 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "api.jsx"
 #include "finder.jsx"
 #include "productions.jsx"
+#include "project.jsx"
+#include "collect.jsx"
 #include "maker.jsx"
+#include "fontbank.jsx"

@@ -1,0 +1,61 @@
+/* =========================================================
+   Aparência (configuração > aparência): modo escuro e fundo
+   sólido. As cores de destaque e a fonte vêm de js/theme.js.
+   ========================================================= */
+
+/* modo escuro: as superfícies brancas, os textos e as linhas */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: #1c2130;
+  --surface-soft: #232a3b;
+  --surface-muted: #2a3245;
+
+  --text-primary: #e8ecf4;
+  --text-secondary: #a9b2c4;
+  --text-tertiary: #7f8a9f;
+  --text-label: #c4cbd8;
+  --text-control: #d3d9e4;
+
+  --border: #2f374a;
+  --border-strong: #3b445a;
+  --border-hover: #4b5672;
+
+  --waiting: #f0c060;
+  --waiting-bg: #3b3120;
+  --processing: var(--blue-500);
+  --processing-bg: var(--blue-50);
+  --success: #5fd4a0;
+  --success-bg: #1c3a2d;
+  --success-surface: #1e3027;
+  --danger: #ff8a8a;
+  --danger-bg: #43242a;
+  --danger-border: #6a3a40;
+  --danger-surface: #32222a;
+
+  --badge-ring: #3b4254;
+  --fold-on-brand: rgb(255 255 255 / 34%);
+
+  --button-glow-rgb: var(--glow-rgb); /* o brilho dos botões continua claro, como no tema claro */
+
+  --shadow-soft: 0 8px 24px rgb(0 0 0 / 28%);
+  --shadow-hover: 0 12px 30px rgb(0 0 0 / 34%);
+}
+
+/* fundo sólido: sem os brilhos sobre o degradê */
+:root[data-bg="solid"] body,
+:root[data-bg="solid"] .upload-side,
+:root[data-bg="solid"] .org-card {
+  background: var(--blue-500);
+}
+
+:root[data-bg="solid"] .upload-side::before {
+  display: none;
+}
+
+/* logo escolhida no lugar do pãozinho (barra) */
+.bar-logo-img {
+  width: 37px;
+  height: 28px;
+  object-fit: contain;
+}

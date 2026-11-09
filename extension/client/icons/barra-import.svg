@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+	<g class="anim-import">
+	<g class="import-turn">
+	<path d="M5.07 16A8 8 0 1 0 6.35 6.35L4 8.7" />
+	<path d="M4 4.4v4.3h4.3" /></g>
+	<path class="import-letter" d="M8.9 15.5 10.6 9.5l1.7 6M9.4 13.7h2.4" />
+	<path class="import-letter l2" d="M14.1 9.5v6h2.6M14.1 9.5h2.6M14.1 12.5h2.3" /></g>
+</svg>

@@ -1,0 +1,109 @@
+/* =========================================================
+   COLETAR — as mídias do projeto (as linhas são as da janela de fontes: css/fonts.css)
+   ========================================================= */
+
+.cw-row {
+  padding: 8px 12px 8px 8px;
+}
+
+/* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo */
+.cw-thumb {
+  display: grid;
+  width: 56px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+}
+
+.cw-thumb img,
+.cw-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cw-thumb svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.cw-name {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* fora da árvore do coletar: neutro */
+.fw-state.is-skip {
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+}
+
+/* resolver arquivos faltando (rodapé): no hover o triângulo balança e o ponto de exclamação pula; catando,
+   o triângulo pulsa e as linhas que faltam piscam o ✕ */
+.cw-relink svg * {
+  transform-box: fill-box;
+}
+
+.cw-relink .relink-tri {
+  transform-origin: 50% 100%;
+}
+
+.cw-relink:hover:not(:disabled) .relink-tri {
+  animation: cw-wobble 520ms var(--ease-soft);
+}
+
+.cw-relink:hover:not(:disabled) .relink-mark {
+  animation: cw-hop 520ms var(--ease-soft);
+}
+
+.cw-relink.is-working .relink-tri,
+.cw-relink.is-working .relink-mark {
+  animation: cw-pulse 900ms ease-in-out infinite;
+}
+
+.fw-state.is-searching i {
+  animation: cw-pulse 900ms ease-in-out infinite;
+}
+
+@keyframes cw-wobble {
+  25% {
+    transform: rotate(-7deg);
+  }
+
+  60% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes cw-hop {
+  35% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes cw-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cw-relink .relink-tri,
+  .cw-relink .relink-mark,
+  .fw-state.is-searching i {
+    animation: none !important;
+  }
+}

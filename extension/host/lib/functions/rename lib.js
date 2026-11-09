@@ -6,13 +6,86 @@
 > 🏷️ renomeação de comps e outputs
 ---------------------------------------------------------------
 
-Os padrões ficam em 'renameRefArray' (globals.js): cada tipo tem um prefixo (ex: 'RDP'),
-um comentário (ex: 'RODAPE') e os termos que o identificam (expressões regulares).
+Os tipos ficam em PAD_RENAME_TYPES (globals.js, ou a aba RENOMEAR da configuração): cada tipo tem um
+prefixo (ex: 'RDP'), um comentário (ex: 'RODAPE') e os termos que o identificam (palavras). Os termos
+viram as expressões de 'renameRefArray' em padRenameRefs.
 
 */
 
 // Separadores aceitos entre as palavras do nome
 var RENAME_SEPARATORS = '[\\s_\\-]';
+
+// Letras que podem vir com acento no nome (maiúsculas e minúsculas): o termo reconhece 'rodapé' e 'RODAPE'.
+var RENAME_ACCENTS = {
+	A: 'A\u00C0-\u00C4a\u00E0-\u00E4',
+	E: 'E\u00C8-\u00CBe\u00E8-\u00EB',
+	I: 'I\u00CC-\u00CFi\u00EC-\u00EF',
+	O: 'O\u00D2-\u00D6o\u00F2-\u00F6',
+	U: 'U\u00D9-\u00DCu\u00F9-\u00FC',
+	C: 'C\u00C7c\u00E7',
+	N: 'N\u00D1n\u00F1'
+};
+
+// Termo (palavra, sem acento, maiúsculas) → expressão: espaços valem qualquer separador, as letras aceitam acento
+// e o plural com S também vale. Usada com a flag 'i' sobre o nome como está (com acentos).
+function padRenameTermRegex(term) {
+	var t = renameNormalize(term).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s_\-]+/g, ' ');
+	var out = '';
+
+	for (var i = 0; i < t.length; i++) {
+		var c = t.charAt(i);
+
+		if (c == ' ') out += RENAME_SEPARATORS + '+'; // espaço: qualquer separador
+		else out += RENAME_ACCENTS[c] ? '[' + RENAME_ACCENTS[c] + ']' : c;
+	}
+
+	return out + '(S)?';
+}
+
+// Aplica o formato do nome (configuração > renomear): acentos e símbolos, e a caixa.
+function padRenameFormat(text) {
+	var t = String(text);
+
+	if (PAD_RENAME_OPTIONS.removeSpecial) t = t.replaceSpecialCharacters();
+
+	t = t.replace(/[\s_]+/g, ' ').replace(/^\s+|\s+$/g, '');
+
+	if (PAD_RENAME_OPTIONS.textCase == 'upperCase') return t.toUpperCase();
+	if (PAD_RENAME_OPTIONS.textCase == 'lowerCase') return t.toLowerCase();
+	if (PAD_RENAME_OPTIONS.textCase == 'titleCase') return t.toTitleCase();
+
+	return t;
+}
+
+// Monta 'renameRefArray' a partir dos tipos (os de globals.js ou os da configuração).
+function padRenameRefs(types) {
+	var refs = [];
+
+	for (var i = 0; i < types.length; i++) {
+		var terms = [];
+
+		for (var j = 0; j < types[i].terms.length; j++) terms.push(padRenameTermRegex(types[i].terms[j]));
+
+		refs.push({ prefix: types[i].prefix, comment: types[i].comment, regExpStr: terms });
+	}
+
+	return refs;
+}
+
+renameRefArray = padRenameRefs(PAD_RENAME_TYPES);
+
+// Nome fixo (PAD_RENAME_FIXED) que o texto contém, ou null.
+function padRenameFixedName(text) {
+	var norm = renameNormalize(text);
+
+	for (var i = 0; i < PAD_RENAME_FIXED.length; i++) {
+		var term = renameNormalize(PAD_RENAME_FIXED[i].match).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s_\-]+/g, '[\\s_\\-]*');
+
+		if (term && new RegExp(term).test(norm)) return PAD_RENAME_FIXED[i].name;
+	}
+
+	return null;
+}
 
 // Templates podem definir o nome final no texto do último layer ('script_template_name').
 function getTemplateNameLayer(comp) {
@@ -99,29 +172,30 @@ function removeRenameTerms(name, terms) {
 // Calcula o nome padronizado de uma comp, sem alterá-la.
 // Retorna { name, comment } — comment é null quando nenhum tipo foi identificado.
 function getPromoRename(comp) {
-	var compName = renameNormalize(comp.name);
+	// os termos aceitam acentos: o nome é tratado como está, e o formato (acentos, caixa) vem no fim
+	var compName = String(comp.name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var prefixFound = null;
 
 	// as pastas da comp têm prioridade (da mais próxima para a raiz)
 	for (var folder = comp.parentFolder; folder != app.project.rootFolder && !prefixFound; folder = folder.parentFolder) {
-		prefixFound = findMatchingPrefix(renameNormalize(folder.name), true);
+		prefixFound = findMatchingPrefix(folder.name, true);
 	}
 
 	if (!prefixFound) prefixFound = findMatchingPrefix(compName, false);
 
-	var result = { name: compName, comment: null };
+	var result = { name: padRenameFormat(compName), comment: null };
 
 	if (prefixFound) {
-		var cleanName = cleanCompName(compName, prefixFound);
+		var cleanName = padRenameFormat(cleanCompName(compName, prefixFound));
 
 		result.comment = prefixFound.comment;
-		result.name = cleanName && cleanName !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
+		result.name = cleanName && cleanName.toUpperCase() !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
 	}
 
-	// LOGO GLOBO tem nome fixo (pelo nome da comp ou pelo comentário original)
-	var originalComment = prefixFound ? '' : comp.comment;
+	// nomes fixos (ex: LOGO GLOBO), pelo nome da comp ou pelo comentário original
+	var fixedName = padRenameFixedName(compName) || (prefixFound ? null : padRenameFixedName(comp.comment));
 
-	if (compName.match(/LOGO[\s_]*GLOBO/) || originalComment.match(/LOGO[\s_]*GLOBO/)) result.name = 'LOGO GLOBO';
+	if (fixedName) result.name = fixedName;
 
 	return result;
 }
@@ -134,7 +208,7 @@ function collectRenameComps(items, compArray) {
 		if (aItem instanceof CompItem) {
 			compArray.push(aItem);
 		} else if (aItem instanceof FolderItem) {
-			aItem.name = aItem.name.toUpperCase();
+			if (PAD_RENAME_OPTIONS.textCase == 'upperCase') aItem.name = aItem.name.toUpperCase();
 
 			var children = [];
 

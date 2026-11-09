@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="css/panel.css">
 	<link rel="stylesheet" href="css/loader.css">
 	<link rel="stylesheet" href="css/finder.css">
+	<link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body class="finder-page">
@@ -32,14 +33,14 @@
 		<section class="finder-pane" id="pane-paths" role="tabpanel">
 			<div class="picker-search">
 				<svg viewBox="0 0 24 24"><use href="#i-search" /></svg>
-				<input type="search" id="q-paths" placeholder="buscar atração, projeto, output ou caminho" autocomplete="off" spellcheck="false" aria-label="Buscar caminhos">
-				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden>×</button>
+				<input type="search" id="q-paths" placeholder="buscar atração, claquete, pessoa, output ou caminho" autocomplete="off" spellcheck="false" aria-label="Buscar caminhos">
+				<button type="button" class="picker-clear" id="clear-paths" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 			</div>
 			<div class="finder-options-row">
 				<button type="button" class="icon-button finder-refresh" title="Atualizar" aria-label="Atualizar">
-					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M23 7l-3 4-4-3" /></svg>
+					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
 				</button>
-				<div class="finder-options" id="opts-paths" aria-label="Categorias"></div>
+				<div class="finder-options finder-source" id="opts-paths" aria-live="polite"></div>
 				<details class="actions-menu finder-menu">
 					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 					<div class="menu-popover">
@@ -49,9 +50,9 @@
 				</details>
 			</div>
 			<div class="finder-sheet">
-				<div class="finder-results" id="results-paths">
+				<div class="finder-results" id="results-paths" data-motion="off">
 				<div class="oven-loader is-light" role="status">
-					<div class="oven" aria-hidden="true"><span class="oven-glow"></span><span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span><span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>
+					<div class="oven" aria-hidden="true"></div>
 					<strong class="oven-title">esquentando o índice…</strong>
 					<span class="oven-hint">o workflow pode demorar alguns segundos</span>
 				</div>
@@ -64,11 +65,11 @@
 			<div class="picker-search">
 				<svg viewBox="0 0 24 24"><use href="#i-search" /></svg>
 				<input type="search" id="q-texts" placeholder="buscar nos textos do projeto" autocomplete="off" spellcheck="false" aria-label="Buscar textos">
-				<button type="button" class="picker-clear" id="clear-texts" aria-label="Limpar busca" hidden>×</button>
+				<button type="button" class="picker-clear" id="clear-texts" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 			</div>
 			<div class="finder-options-row">
 				<button type="button" class="icon-button finder-refresh" title="Atualizar" aria-label="Atualizar">
-					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M23 7l-3 4-4-3" /></svg>
+					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
 				</button>
 				<div class="finder-options" id="opts-texts" aria-label="Opções">
 					<button type="button" class="chip" id="chip-vis" aria-pressed="false" title="buscar apenas em layers visíveis (ligados)"><span class="chip-check"></span>APENAS VISÍVEIS</button>
@@ -91,11 +92,15 @@
 		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>
 	</main>
 
+	<script src="js/motion.js"></script>
 	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
+	<script src="js/local-index.js"></script>
 	<script src="js/finder.js"></script>
 </body>
 

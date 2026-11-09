@@ -25,6 +25,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		if (!tip) {
 			tip = document.createElement('div');
 			tip.className = 'pad-tooltip';
+			tip.style.pointerEvents = 'none'; // o balão nunca pega o mouse (nem antes do css carregar)
 			tip.setAttribute('role', 'tooltip');
 			document.body.appendChild(tip);
 		}
@@ -70,6 +71,9 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 
 		if (!text || !document.contains(el)) return;
 
+		// menu ⋯ aberto: a dica do botão ficaria por cima do menu
+		if (el.matches('summary') && el.parentElement && el.parentElement.open) return;
+
 		balloon().textContent = text;
 		place(el);
 		tip.classList.add('is-visible');
@@ -82,7 +86,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 
 		hide();
 
-		if (!el) return;
+		if (!el || document.querySelector('.is-sorting')) return; // arrastando para reordenar: sem dica por cima
 
 		// o 'title' pode ter sido trocado pelo código desde o último hover
 		if (el.hasAttribute('title')) {

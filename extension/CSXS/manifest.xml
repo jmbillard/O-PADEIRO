@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.3"
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.7"
 	ExtensionBundleName="O PADEIRO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<ExtensionList>
-		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.3" />
-		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.3" />
-		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.3" />
-		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.3" />
-		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.3" />
-		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.3" />
+		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.project" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.fonts" Version="2.0.7" />
+		<Extension Id="com.jmbillard.opadeiro.collect" Version="2.0.7" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -44,7 +47,7 @@
 					<Menu>O PADEIRO</Menu>
 					<Geometry>
 						<Size>
-							<Width>640</Width>
+							<Width>800</Width>
 							<Height>84</Height>
 						</Size>
 						<MinSize>
@@ -73,7 +76,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO templates</Menu>
+					<Menu>O FORNINHO</Menu>
 					<Geometry>
 						<Size>
 							<Width>460</Width>
@@ -143,19 +146,19 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO conversor</Menu>
+					<Menu>O ADAPTADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>800</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</Size>
 						<MinSize>
 							<Width>300</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
-							<Height>214</Height>
+							<Height>170</Height>
 						</MaxSize>
 					</Geometry>
 				</UI>
@@ -178,15 +181,15 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO produções</Menu>
+					<Menu>O PRODUTOR</Menu>
 					<Geometry>
 						<Size>
-							<Width>860</Width>
-							<Height>520</Height>
+							<Width>940</Width>
+							<Height>800</Height>
 						</Size>
 						<MinSize>
-							<Width>320</Width>
-							<Height>320</Height>
+							<Width>940</Width>
+							<Height>600</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -213,15 +216,120 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PADEIRO criar template</Menu>
+					<Menu>A FORMA</Menu>
 					<Geometry>
 						<Size>
-							<Width>980</Width>
-							<Height>780</Height>
+							<Width>1260</Width>
+							<Height>960</Height>
 						</Size>
 						<MinSize>
 							<Width>340</Width>
 							<Height>420</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- projeto: ID, nome, retranca, renomear e salvar -->
+		<Extension Id="com.jmbillard.opadeiro.project">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/project.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>A CLAQUETE</Menu>
+					<Geometry>
+						<Size>
+							<Width>440</Width>
+							<Height>410</Height>
+						</Size>
+						<MinSize>
+							<Width>320</Width>
+							<Height>300</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- fontes do projeto: o estado de cada uma (banco de fontes) e a troca -->
+		<Extension Id="com.jmbillard.opadeiro.fonts">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/fonts.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>O TIPÓGRAFO</Menu>
+					<Geometry>
+						<Size>
+							<Width>440</Width>
+							<Height>420</Height>
+						</Size>
+						<MinSize>
+							<Width>340</Width>
+							<Height>260</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- coletar: as mídias do projeto e o estado de cada uma -->
+		<Extension Id="com.jmbillard.opadeiro.collect">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/collect.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>O CATADOR</Menu>
+					<Geometry>
+						<Size>
+							<Width>440</Width>
+							<Height>480</Height>
+						</Size>
+						<MinSize>
+							<Width>340</Width>
+							<Height>260</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

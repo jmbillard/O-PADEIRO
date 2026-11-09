@@ -4,68 +4,502 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>LISTA DE PRODUÇÕES</title>
+	<title>O PRODUTOR</title>
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/panel.css">
 	<link rel="stylesheet" href="css/loader.css">
 	<link rel="stylesheet" href="css/productions.css">
+	<link rel="stylesheet" href="css/icons.css">
+	<link rel="stylesheet" href="css/theme.css">
 </head>
 
 <body class="prods-page">
 	<main class="prods" id="prods">
-		<header class="prods-top">
-			<p class="eyebrow">lista de produções</p>
-			<div class="picker-search prods-filter">
-				<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
-				<input type="search" id="filter" placeholder="filtrar produções" autocomplete="off" spellcheck="false" aria-label="Filtrar produções">
-				<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar filtro" hidden>×</button>
-			</div>
-			<div class="prods-tools">
-				<button type="button" class="icon-button" id="btn-reload" title="Recarregar a lista do arquivo" aria-label="Recarregar a lista do arquivo">
-					<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M23 7l-3 4-4-3" /></svg>
-				</button>
-				<details class="actions-menu header-menu" id="app-menu">
-					<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
-					<div class="menu-popover">
-						<button type="button" data-action="docs">Ajuda / documentação</button>
-						<button type="button" data-action="reload">Recarregar painel</button>
-					</div>
-				</details>
-			</div>
-		</header>
-
-		<section class="prods-sheet">
-			<p class="prods-file" id="file-info" hidden></p>
-
-			<div class="prods-list" id="list">
-				<div class="oven-loader is-light" role="status">
-					<div class="oven" aria-hidden="true"><span class="oven-glow"></span><span class="oven-belt"><span class="loaf l1"></span><span class="loaf l2"></span><span class="loaf l3"></span></span><span class="steam s1"></span><span class="steam s2"></span><span class="steam s3"></span><span class="oven-body"><span class="oven-panel"><i class="oven-knob k1"></i><i class="oven-knob k2"></i><i class="oven-knob k3"></i></span><span class="oven-door"><span class="oven-handle"></span><span class="oven-window"></span></span></span></div>
-					<strong class="oven-title">lendo a lista…</strong>
-					<span class="oven-hint">o arquivo fica na rede, junto do padeiro</span>
+		<!-- como o painel de templates: um cartão de vidro com as abas e, no rodapé, recarregar, salvar e "⋯" -->
+		<aside class="prods-side">
+			<div class="picker prods-card" id="prods-card">
+				<div class="prods-card-body">
+					<nav class="prods-nav">
+						<div class="tabs" id="tabs" role="tablist" aria-label="Configuração" aria-orientation="vertical">
+							<button type="button" class="tab" role="tab" data-tab="links" aria-selected="false">LINKS</button>
+							<p class="tab-sep" aria-hidden="true"></p>
+							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">TEMPLATES</button>
+							<button type="button" class="tab" role="tab" data-tab="fonts" aria-selected="false">FONTES</button>
+							<button type="button" class="tab" role="tab" data-tab="project" aria-selected="false">PROJETO</button>
+							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
+							<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
+							<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
+							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCAR</button>
+							<p class="tab-sep" aria-hidden="true"></p>
+							<button type="button" class="tab" role="tab" data-tab="network" aria-selected="false">REDE</button>
+							<button type="button" class="tab" role="tab" data-tab="telemetry" aria-selected="false">TELEMETRIA</button>
+							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
+							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">LAYOUT</button>
+							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">MEU USUÁRIO</button>
+						</div>
+					</nav>
+				</div>
+				<div class="picker-footer prods-top">
+					<button type="button" class="icon-button" id="btn-reload" title="Recarregar a configuração do arquivo" aria-label="Recarregar a configuração do arquivo">
+						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg>
+					</button>
+					<button type="button" class="icon-button prods-save" id="btn-save" title="Salvar (Ctrl/Cmd+S)" aria-label="Salvar">
+						<svg viewBox="0 0 24 24"><path d="M5.5 3.5h10.6l4.4 4.4v10.6a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2z" /><path class="save-tab" d="M8 3.5V8h7V3.5" /><path d="M7.5 20.5v-6h9v6" /></svg>
+					</button>
+					<details class="actions-menu header-menu" id="app-menu">
+						<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+						<div class="menu-popover">
+							<button type="button" data-action="team" id="menu-team">Editar o padrão da equipe</button>
+							<button type="button" data-action="docs">Ajuda / documentação</button>
+							<button type="button" data-action="reload">Recarregar painel</button>
+						</div>
+					</details>
 				</div>
 			</div>
+		</aside>
 
-			<div class="action-bar is-anchored prods-bar">
+		<section class="prods-sheet">
+			<!-- onde a aba aberta é salva (equipe, na rede · local, neste computador) -->
+			<div class="scope-note" id="scope-note" aria-live="polite"></div>
+
+			<!-- aba TEMPLATES -->
+			<div class="cfg-pane" id="pane-prods" role="tabpanel">
+			<!-- busca grande no topo da folha (como as outras buscas); o título da lista vem logo abaixo -->
+			<!-- a busca e, ao lado, importar / exportar a lista -->
+			<div class="prods-filter-row">
+				<div class="picker-search prods-filter">
+					<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+					<input type="search" id="filter" placeholder="buscar produção (nome ou pasta)" autocomplete="off" spellcheck="false" aria-label="Buscar produção">
+					<button type="button" class="picker-clear" id="filter-clear" aria-label="Limpar busca" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+				</div>
 				<button type="button" class="io-button" id="btn-import" title="Importar uma lista de produções" aria-label="Importar uma lista de produções">
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg>
 				</button>
 				<button type="button" class="io-button" id="btn-export" title="Exportar a lista completa" aria-label="Exportar a lista completa">
 					<svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 15V5M8 8.500l4-4 4 4" /><path d="M5 18.500h14" /></svg>
 				</button>
-				<button type="button" class="button button-secondary" id="btn-new">+ nova produção</button>
-				<span class="prods-dirty" id="dirty" hidden>alterações não salvas</span>
-				<button type="button" class="button button-primary" id="btn-save">Salvar lista</button>
 			</div>
+			<div class="prods-list-head">
+				<p class="cfg-title">lista de produções</p>
+			</div>
+
+			<!-- "+ nova produção" entra no fim da lista (render), como o "+ novo output" -->
+			<button type="button" class="button button-secondary button-compact add-button prods-add" id="btn-new" hidden>+ nova produção</button>
+
+			<div class="prods-list" id="list">
+				<div class="oven-loader is-light" role="status">
+					<div class="oven" aria-hidden="true"></div>
+					<strong class="oven-title">lendo a lista…</strong>
+					<span class="oven-hint">o arquivo fica na rede, junto do padeiro</span>
+				</div>
+			</div>
+
+			<div class="prods-local" id="prods-local">
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">produções locais</p>
+				<p class="cfg-hint">produções <b>só suas</b>, com pastas deste computador: independentes das da equipe (nada é copiado da rede). aparecem no seletor de produção do painel de templates, depois das da equipe, com o bonequinho. no modo local, só elas aparecem.</p>
+				<div class="drive-rows" id="machine-templates"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-local-prod">+ nova produção local</button>
+
+				<p class="cfg-title prods-section-title">pasta de saída</p>
+				<p class="cfg-hint">para onde vão os renders da fila quando a pasta do template não pode ser acessada. vazia: a Área de Trabalho.</p>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+			</div>
+			</div>
+
+			<!-- aba LINKS (os da barra) -->
+			<div class="cfg-pane drives-pane" id="pane-links" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">links da equipe</p>
+				<p class="cfg-hint">aparecem no começo da barra de todo mundo, nesta ordem (arraste pelos pontinhos para reordenar). o ícone é o do próprio site (favicon); clique nele para escolher outra imagem.</p>
+				<div class="drive-rows" id="link-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link da equipe</button>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="mylinks-section" id="mylinks-section">
+					<p class="cfg-title prods-section-title">meus links</p>
+					<p class="cfg-hint">aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
+					<div class="drive-rows" id="personal-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
+				</div>
+			</div>
+
+			<!-- aba MEU USUÁRIO (só neste computador: designer e modo local; o resto de cada ferramenta fica na aba dela) -->
+			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">designer</p>
+				<p class="cfg-hint">o seu nome nos projetos (<b>{usuario}</b>), ou uma sigla, se preferir. vazio: o usuário do computador.</p>
+				<div class="has-field-icon machine-user"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="machine-user" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
+
+
+				<p class="cfg-title prods-section-title">modo local</p>
+				<label class="cfg-switch">
+					<input type="checkbox" id="machine-local">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">modo local: trabalhar sem a rede</span>
+				</label>
+				<p class="scope-note machine-offline" id="machine-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
+				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções locais (aba templates), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para a pasta de saída (sem elas, a Área de Trabalho). os logs esperam a volta para a rede.</p>
+			</div>
+
+			<!-- aba TELEMETRIA: o que sai do padeiro para fora: o registro de uso e o cadastro no banco (em breve), da
+			     equipe; embaixo, se este computador envia o registro dele -->
+			<div class="cfg-pane prods-log" id="pane-telemetry" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">registro de uso</p>
+				<div class="log-modes" id="log-modes" role="radiogroup" aria-label="Onde gravar o log de uso">
+					<label class="log-radio" title="cada preenchimento é enviado para o webhook abaixo"><input type="radio" name="log-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook</span></label>
+					<label class="log-radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na pasta de templates da produção"><input type="radio" name="log-mode" value="csv"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">CSV por produção</span></label>
+					<label class="log-radio" title="cada preenchimento vira uma nova linha no O_PADEIRO_log.csv, na mesma pasta da lista de produções"><input type="radio" name="log-mode" value="csvGlobal"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">CSV global</span></label>
+					<label class="log-radio" title="nada é registrado"><input type="radio" name="log-mode" value="off"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">desligado</span></label>
+				</div>
+				<div class="log-webhook-field" id="log-webhook-field">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg>
+					<input type="text" class="cfg-input log-webhook" id="log-webhook" placeholder="https://servidor/webhook" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook" title="endereço do webhook (http:// ou https://)">
+				</div>
+				<p class="cfg-hint" id="log-hint"></p>
+
+				<!-- reservado: o cadastro das atrações e dos filmes novos no banco (ainda desligado) -->
+				<div class="soon" aria-disabled="true">
+					<p class="cfg-title prods-section-title">cadastro no banco <span class="soon-tag">em breve</span></p>
+					<p class="cfg-hint">ao criar o projeto de uma atração ou de um filme <b>novo</b>, a etapa CRIAR da janela PROJETO <b>propõe</b> o cadastro (o nome, a categoria e a pasta vão para o webhook, e a busca passa a achar). cada um escolhe na hora: <b>pular</b> (o padrão, para testes) ou <b>cadastrar</b>.</p>
+					<label class="cfg-switch">
+						<input type="checkbox" id="db-update" disabled>
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label">propor o cadastro das atrações e dos filmes novos</span>
+					</label>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="db-webhook" placeholder="https://workflows.jmbillard.com/webhook/…" disabled aria-label="Endereço do webhook do cadastro"></div>
+				</div>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido acima. desligado, nada sai deste computador.</p>
+				<label class="cfg-switch">
+					<input type="checkbox" id="machine-log">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">enviar o meu registro de uso</span>
+				</label>
+			</div>
+
+			<!-- aba FONTES: o banco de fontes (a pasta na rede) -->
+			<div class="cfg-pane prods-log" id="pane-fonts" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">banco de fontes</p>
+				<p class="cfg-hint">as fontes dos projetos abertos vão sozinhas para esta pasta e para a pasta de fontes do projeto, em segundo plano. o botão <b>fontes</b> da barra instala as que faltam a partir dela.</p>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="fonts-bank" placeholder="pasta do banco na rede" spellcheck="false" autocomplete="off" aria-label="Pasta do banco de fontes"><button type="button" class="mini-button" id="fonts-bank-pick" title="escolher a pasta" aria-label="escolher a pasta do banco"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+				<label class="cfg-switch fonts-switch">
+					<input type="checkbox" id="fonts-upload">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">enviar as fontes dos projetos abertos</span>
+				</label>
+				<p class="cfg-hint" id="fonts-count"></p>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint">desligado, as fontes deste computador não vão para o banco (instalar a partir dele continua valendo).</p>
+				<label class="cfg-switch">
+					<input type="checkbox" id="machine-fonts">
+					<span class="cfg-switch-track"></span>
+					<span class="cfg-switch-label">enviar as fontes deste computador</span>
+				</label>
+			</div>
+
+			<!-- aba REDE: os drives (configurados uma vez) -->
+			<div class="cfg-pane prods-log" id="pane-network" role="tabpanel" hidden>
+				<div class="network-section" id="drives-section">
+				<p class="cfg-title prods-section-title">drives da rede</p>
+				<p class="cfg-hint">a letra do Windows e o caminho de rede que ela representa. o padeiro usa este mapa para converter caminhos entre Windows e Mac (conversor, busca e caminhos dos templates).</p>
+				<div class="drive-rows" id="drive-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-drive">+ novo drive</button>
+
+				<p class="cfg-title prods-section-title">volumes sem letra</p>
+				<p class="cfg-hint">volumes montados no Mac (/Volumes/NOME) que não têm letra no Windows: o nome do volume e o servidor onde ele está.</p>
+				<div class="drive-rows" id="share-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-share">+ novo volume</button>
+
+				<p class="cfg-title prods-section-title">servidor padrão</p>
+				<div class="has-field-icon">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>
+					<input type="text" class="cfg-input" id="default-server" placeholder="servidor.empresa.com" spellcheck="false" autocomplete="off" aria-label="Servidor padrão">
+				</div>
+				<p class="cfg-hint">usado quando o volume não está em nenhuma das listas acima.</p>
+				</div>
+			</div>
+
+			<!-- aba RENOMEAR -->
+			<div class="cfg-pane drives-pane" id="pane-rename" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">tipos de peça</p>
+				<p class="cfg-hint">ao renomear, o padeiro procura um destes termos no nome da comp (ou da pasta dela) e aplica o prefixo e o comentário do tipo: <b>rodapé_joão silva</b> → <b>RDP - JOAO SILVA</b>. a ordem importa: vale o primeiro tipo encontrado (arraste para reordenar). os termos são palavras separadas por vírgula; o plural com S também vale.</p>
+								<div class="has-field-icon">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /></svg>
+					<input type="text" class="cfg-input" id="rename-test" placeholder="digite o nome de uma comp (ex: rodapé_joão silva)" spellcheck="false" autocomplete="off" aria-label="Nome de comp para testar">
+				</div>
+				<p class="rename-result" id="rename-result"></p>
+				<div class="rename-format">
+					<span class="select select-large rename-case" title="caixa de texto do nome"><select id="rename-case" aria-label="Caixa de texto do nome">
+						<option value="upperCase">CAIXA ALTA</option>
+						<option value="lowerCase">caixa baixa</option>
+						<option value="titleCase">Título</option>
+						<option value="keep">como está</option>
+					</select></span>
+					<div class="has-field-icon rename-sep" title="separador entre o prefixo e o nome (ex: RDP - JOAO)"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h3M17 12h3M10 12h4" /><path d="M7 7v10M17 7v10" /></svg><input type="text" class="cfg-input" id="rename-sep" placeholder=" - " spellcheck="false" autocomplete="off" aria-label="Separador entre o prefixo e o nome"></div>
+					<label class="cfg-switch">
+						<input type="checkbox" id="rename-special">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label" title="tira acentos e símbolos (JOÃO! → JOAO)">remover caracteres especiais</span>
+					</label>
+				</div>
+				<div class="rename-head" aria-hidden="true"><span></span><span>prefixo</span><span>comentário</span><span>termos</span></div>
+				<div class="drive-rows" id="type-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-type">+ novo tipo</button>
+
+				<p class="cfg-title prods-section-title">nomes fixos</p>
+				<p class="cfg-hint">a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome.</p>
+				<div class="drive-rows" id="fixed-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-fixed">+ novo nome fixo</button>
+
+			</div>
+
+			<!-- aba ORGANIZAR: a árvore (esquerda, no azul) e os tipos de item e ajustes (direita) -->
+			<div class="cfg-pane organize-pane" id="pane-organize" role="tabpanel" hidden>
+				<div class="org-card">
+					<div class="org-tree" id="org-tree"></div>
+				</div>
+
+				<div class="org-side">
+					<p class="cfg-title prods-section-title">tipos de item</p>
+					<p class="cfg-hint">arraste cada tipo para a pasta da árvore que deve recebê-lo. o que fica na raiz não entra em pasta nenhuma. as pastas também se arrastam: sobre outra pasta, ela entra; entre duas, fica no mesmo nível.</p>
+					<div class="org-types" id="org-types"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-folder">+ nova pasta</button>
+
+					<p class="cfg-title prods-section-title">comps de render</p>
+					<p class="cfg-hint">a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).</p>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-render" placeholder="EXPORT, TEMPLATE" spellcheck="false" autocomplete="off" aria-label="Comentários de render"></div>
+					<label class="cfg-label" for="org-auto">comentário automático</label>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-auto" placeholder="EXPORTAR" spellcheck="false" autocomplete="off"></div>
+					<p class="cfg-hint">dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates.</p>
+
+					<p class="cfg-title prods-section-title">comps editáveis</p>
+					<p class="cfg-hint">com uma pasta para as <b>comps editáveis</b> na árvore, a comp vai para ela quando o comentário contém um destes termos (ex: EDIT, EDITAR). sem essa pasta, elas ficam com as outras comps.</p>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-edit" placeholder="EDIT" spellcheck="false" autocomplete="off" aria-label="Comentários das comps editáveis"></div>
+
+					<p class="cfg-title prods-section-title">arquivos</p>
+					<label class="cfg-label" for="org-data">extensões de dados</label>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><input type="text" class="cfg-input" id="org-data" placeholder=".csv, .json, .txt" spellcheck="false" autocomplete="off"></div>
+					<label class="cfg-switch organize-switch">
+						<input type="checkbox" id="org-sub">
+						<span class="cfg-switch-track"></span>
+						<span class="cfg-switch-label" title="ex: comps com comentário RODAPE ficam em 01 COMPS / RODAPE">comentários viram subpastas</span>
+					</label>
+				</div>
+			</div>
+
+			<!-- aba COLETAR (botão COLETAR da barra): a árvore dentro da pasta do projeto -->
+			<!-- aba PROJETO (janela PROJETO: as categorias da atração nova; embaixo, a pasta dos projetos deste computador) -->
+			<div class="cfg-pane drives-pane" id="pane-project" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">categorias · atração nova</p>
+				<p class="cfg-hint">as opções do <b>dentro de</b> da janela PROJETO: a pasta do <b>projeto</b> e a de <b>output</b> (opcional) da atração nova, com tokens. o ícone troca no clique; a ordem, arrastando pelos pontinhos.</p>
+				<div class="tok-bar" id="cat-tokens">
+					<span class="tok-label">tokens</span>
+					<button type="button" class="tok" data-token="atracao" title="o nome da atração nova (obrigatório)">{atracao}</button>
+					<button type="button" class="tok" data-token="ano" title="o ano atual">{ano}</button>
+					<button type="button" class="tok" data-token="mes" title="o mês atual (01 a 12)">{mes}</button>
+					<button type="button" class="tok" data-token="mes_extenso" title="o mês atual por extenso (NOVEMBRO)">{mes_extenso}</button>
+					<button type="button" class="tok" data-token="proximo_mes" title="o próximo mês por extenso (DEZEMBRO; em dezembro, JANEIRO)">{proximo_mes}</button>
+					<button type="button" class="tok" data-token="categoria" title="o nome da categoria">{categoria}</button>
+					<button type="button" class="tok" data-token="letra" title="a primeira letra do nome, sem o artigo (# para números)">{letra}</button>
+					<span class="tok-hint">clique para pôr no caminho em foco</span>
+				</div>
+				<p class="cfg-hint"><b>{letra}</b>: a primeira letra da atração, sem o artigo (# para números).</p>
+				<div class="drive-rows" id="cat-list"></div>
+				<p class="scope-note cat-empty" id="cat-empty" hidden>sem categorias: a janela PROJETO pede a pasta da atração nova (livre).</p>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-cat">+ nova categoria</button>
+
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">pasta dos projetos</p>
+				<p class="cfg-hint">para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura <b>{categoria}/{atracao}</b>. vazia: a Área de Trabalho.</p>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" placeholder="~/Desktop" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+			</div>
+
+			<div class="cfg-pane organize-pane" id="pane-collect" role="tabpanel" hidden>
+				<div class="org-card">
+					<div class="org-tree" id="col-tree"></div>
+				</div>
+
+				<div class="org-side">
+					<p class="cfg-title prods-section-title">tipos de arquivo</p>
+					<p class="cfg-hint">a estrutura de cada projeto. o collect copia os arquivos usados para ela e troca os caminhos no projeto; a janela PROJETO cria as pastas ao salvar e põe o .aep na pasta do tipo <b>projeto</b> (a raiz da estrutura é a pasta de cima). arraste cada tipo para a sua pasta; o que fica na raiz (riscado) <b>não é coletado</b>. pastas sem tipo também são criadas.</p>
+					<div class="org-types" id="col-types"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-col-folder">+ nova pasta</button>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-col-default" title="01 PROJETOS (o .aep) · 02 ARQUIVOS (FONTS, IMAGENS, VÍDEOS, AUDIOS, DADOS) · 03 SAIDA">usar a estrutura padrão</button>
+
+					<p class="cfg-title prods-section-title">sequências de imagens</p>
+					<p class="cfg-hint">copiadas inteiras (os quadros do trecho usado), cada uma numa subpasta com o nome dela (render_0001.png → render). a interpretação do item (fps, alpha) é mantida.</p>
+
+				</div>
+			</div>
+
+			<!-- aba BUSCAR (busca de caminhos, O ACESSORISTA) -->
+			<div class="cfg-pane drives-pane" id="pane-search" role="tabpanel" hidden>
+				<p class="cfg-title prods-section-title">webhook</p>
+				<p class="cfg-hint">o endereço do workflow <b>PROMO - BUSCAR</b>: devolve o índice pronto da busca de caminhos (Teams, Trello, atrações e filmes) e as atrações da janela PROJETO. vazio, vale o padrão.</p>
+				<div class="has-field-icon" id="search-webhook-field"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="search-webhook" placeholder="https://workflows.jmbillard.com/webhook/buscar" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook da busca"></div>
+
+				<p class="cfg-title prods-section-title">servidor · caminhos fixos</p>
+				<p class="cfg-hint">pastas que aparecem sempre na busca de caminhos (com o ícone de servidor), para todo mundo. o caminho pode ser do Mac (/Volumes/...) ou da rede do Windows (\\servidor\share\...): o padeiro converte e monta o volume ao abrir. arraste pelos pontinhos para reordenar.</p>
+				<div class="drive-rows" id="servidor-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-servidor">+ novo caminho fixo</button>
+
+				<div class="local-split"><span class="local-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>neste computador</span></div>
+				<p class="cfg-hint local-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<p class="cfg-title prods-section-title">de onde vêm os caminhos</p>
+				<p class="cfg-hint">o acessorista e a janela PROJETO usam o webhook da equipe (acima) ou um índice das pastas deste computador.</p>
+				<div class="log-modes" id="machine-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
+					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="machine-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook da equipe</span></label>
+					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="machine-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
+				</div>
+				<div class="machine-index" id="machine-index" hidden>
+					<p class="cfg-hint">o padeiro lê as pastas abaixo e todas as subpastas, e guarda o índice <b>neste computador</b>. a busca procura pelo nome de cada pasta; sem rede, continua funcionando. a janela PROJETO procura a claquete pelo nome das pastas.</p>
+					<div class="drive-rows" id="machine-index-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-index-folder">+ nova pasta para indexar</button>
+					<div class="machine-index-opts">
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-folders-only">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">só pastas (sem arquivos): mais rápido e mais leve</span>
+						</label>
+						<label class="cfg-switch">
+							<input type="checkbox" id="machine-index-daily">
+							<span class="cfg-switch-track"></span>
+							<span class="cfg-switch-label">atualizar sozinho uma vez por dia (ao abrir a busca)</span>
+						</label>
+					</div>
+					<div class="machine-index-status">
+						<button type="button" class="button button-primary button-compact" id="btn-index-now">indexar agora</button>
+						<span id="machine-index-status"></span>
+					</div>
+				</div>
+			</div>
+
+			<!-- aba APARÊNCIA (o tema de todas as janelas) -->
+			<div class="cfg-pane drives-pane" id="pane-appearance" role="tabpanel" hidden>
+				<!-- modo e fundo: dois menus na mesma linha -->
+				<div class="app-pair">
+					<div class="app-field">
+						<p class="cfg-title prods-section-title">modo</p>
+						<span class="select select-large"><select id="app-mode" aria-label="Modo">
+							<option value="light">claro</option>
+							<option value="dark">escuro</option>
+							<option value="auto">automático (o do sistema)</option>
+						</select></span>
+					</div>
+					<div class="app-field">
+						<p class="cfg-title prods-section-title">fundo</p>
+						<span class="select select-large"><select id="app-bg" aria-label="Fundo">
+							<option value="gradient">degradê</option>
+							<option value="solid">sólido</option>
+						</select></span>
+					</div>
+				</div>
+
+				<p class="cfg-title prods-section-title">cores</p>
+				<!-- as cores: um quadradinho com o espectro (matiz em volta, saturação do centro para a borda) e as duas amostras dentro (degradê: início e
+				     fim; sólido: a primeira, com a segunda desabilitada). arraste uma amostra para mudar a cor;
+				     ao lado, cada uma com o hex e, ao clicar, o brilho -->
+				<div class="app-swatch">
+					<div class="swatch-tile" aria-label="Cores">
+						<span class="swatch-dot" data-slot="1" aria-hidden="true"></span>
+						<span class="swatch-dot is-second" data-slot="2" aria-hidden="true"></span>
+					</div>
+					<!-- cada amostra: a cor, o nome e o hex; clicando, abre o brilho -->
+					<div class="swatch-rows">
+						<div class="swatch-row" data-slot="1">
+							<div class="swatch-head" role="button" tabindex="0" aria-expanded="false" title="clique para ajustar o brilho"><i class="swatch-mini"></i><span class="swatch-name">início</span><input type="text" class="cfg-input" data-hex="1" spellcheck="false" maxlength="7" aria-label="código da cor 1"><svg class="swatch-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></div>
+							<div class="swatch-sliders" hidden>
+								<label class="swatch-slider"><span>brilho</span><input type="range" min="0" max="100" step="1" data-val="1" aria-label="brilho da cor 1"></label>
+							</div>
+						</div>
+						<div class="swatch-row" data-slot="2">
+							<div class="swatch-head" role="button" tabindex="0" aria-expanded="false" title="clique para ajustar o brilho"><i class="swatch-mini"></i><span class="swatch-name">fim</span><input type="text" class="cfg-input" data-hex="2" spellcheck="false" maxlength="7" aria-label="código da cor 2"><svg class="swatch-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg></div>
+							<div class="swatch-sliders" hidden>
+								<label class="swatch-slider"><span>brilho</span><input type="range" min="0" max="100" step="1" data-val="2" aria-label="brilho da cor 2"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- prévia: uma janela pequena com o que o tema pinta (o degradê com o vidro, a pílula escolhida, o seletor,
+				     o interruptor; na superfície, o título, o campo com o foco, o menu radial, o selo e o botão) -->
+				<div class="app-preview" id="app-preview" aria-hidden="true">
+					<div class="pv-glass">
+						<div class="pv-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg><span>buscar</span></div>
+						<div class="pv-row"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><span>PASTA</span></div>
+						<div class="pv-row is-on"><svg viewBox="0 0 24 24" class="pv-solid"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><span>TEMPLATE</span></div>
+						<div class="pv-row"><svg viewBox="0 0 24 24" class="pv-solid"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><span>OUTRO</span></div>
+						<div class="pv-foot"><span class="pv-round"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4.5V8h-3.5" /></svg></span><span class="pv-round"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6" /></svg></span><span class="pv-dd"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="12" rx="2" /><path d="M8.5 20.5h7" /></svg>DIA-A-DIA<svg viewBox="0 0 24 24" class="pv-chev"><path d="m7 10 5 5 5-5" /></svg></span></div>
+					</div>
+					<div class="pv-surface">
+						<p class="pv-title">TÍTULO</p>
+						<div class="pv-field">campo com foco</div>
+						<div class="pv-dd-line"><span class="pv-sdd"><svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="12" rx="2" /><path d="M8.5 20.5h7" /></svg>PROGRAMAS<svg viewBox="0 0 24 24" class="pv-chev"><path d="m7 10 5 5 5-5" /></svg></span><span class="pv-mini"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></span></div>
+						<div class="pv-radios"><span class="pv-radio is-on"><i></i>escolhido</span><span class="pv-radio"><i></i>outro</span><span class="pv-switch is-on"><i></i>ligado</span><span class="pv-switch"><i></i>desligado</span></div>
+						<div class="pv-line"><span class="pv-badge">processando</span><span class="pv-mini"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4.5V8h-3.5" /></svg></span><span class="pv-button">botão</span></div>
+					</div>
+				</div>
+
+				<p class="cfg-title prods-section-title">fonte</p>
+				<span class="select select-large app-font"><select id="app-font" aria-label="Fonte">
+					<option value="inter">Inter (padrão)</option>
+					<option value="system">fonte do sistema</option>
+					<option value="helvetica">Helvetica / Arial</option>
+					<option value="segoe">Segoe UI</option>
+					<option value="roboto">Roboto</option>
+					<option value="georgia">Georgia (serifada)</option>
+					<option value="mono">monoespaçada</option>
+				</select></span>
+				<p class="cfg-hint">a fonte precisa estar instalada no computador; sem ela, vale a do sistema.</p>
+
+				<p class="cfg-title prods-section-title">logo da barra</p>
+				<div class="app-logo">
+					<div class="app-logo-box" id="app-logo-box"><svg class="appearance-loaf" viewBox="0 0 48 32" aria-hidden="true"><path d="M7 24C7 12.6 14.6 5 24 5s17 7.6 17 19v3a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z" fill="#f2b45f" /><path d="M7.6 23.2h32.8M18.2 10.8l1.4 4.2M23.4 9.4l1.3 4.6M28.6 10.8l1.4 4.2" fill="none" stroke="#9c5a1c" stroke-width="1.6" stroke-linecap="round" /></svg></div>
+					<button type="button" class="button button-secondary button-compact" id="app-logo-pick">escolher imagem</button>
+					<button type="button" class="button button-secondary button-compact" id="app-logo-reset">voltar ao pãozinho</button>
+				</div>
+				<p class="cfg-hint">a imagem é reduzida para caber na barra (até 96 x 72 px), sem cortar. PNG com fundo transparente fica melhor.</p>
+
+				<button type="button" class="button button-secondary button-compact add-button" id="app-defaults">restaurar a aparência padrão</button>
+			</div>
+
+			<!-- aba LAYOUT: à esquerda, a barra em fila única (azul, como a própria barra); à direita, as ferramentas -->
+			<div class="cfg-pane organize-pane" id="pane-tools" role="tabpanel" hidden>
+				<div class="org-card tools-card">
+					<div class="tools-bar" id="tool-list" aria-label="A barra, na ordem"></div>
+				</div>
+
+				<div class="org-side">
+					<p class="cfg-title prods-section-title">fora da barra</p>
+					<p class="cfg-hint">a barra de todo mundo, à esquerda, na ordem: arraste pelos pontinhos para reordenar e use o × para tirar uma ferramenta (ou os links). o que sai aparece aqui: o + põe de volta, no fim da barra. os separadores dividem a barra em grupos; '+ separador' (abaixo) acrescenta um no fim da barra.</p>
+					<div class="org-types tool-cards" id="tool-cards"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-divider">+ separador</button>
+
+				</div>
+			</div>
+
+
 		</section>
 
 		<div class="finder-toast" id="toast" role="status" aria-live="polite" hidden></div>
 	</main>
 
+	<script src="js/motion.js"></script>
 	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>
 	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
+	<script src="js/sortable.js"></script>
+	<script src="js/dropdown.js"></script>
+	<script src="js/icons.js"></script>
+	<script src="js/local-index.js"></script>
 	<script src="js/productions.js"></script>
 </body>
 

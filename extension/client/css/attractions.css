@@ -1,0 +1,462 @@
+/* =========================================================
+   Atrações: o seletor (a busca, os cartões e a atração nova), comum à janela PROJETO, ao criador de
+   templates e ao editor de config (js/attractions.js)
+   ========================================================= */
+
+.wz-hint {
+  min-height: 1em;
+  margin: -6px 2px 0;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+.wz-hint:empty {
+  display: none;
+}
+
+/* as opções (atrações, filmes): cartões com ícone, título, caminho e a bolinha */
+.wz-list {
+  display: grid;
+  min-height: 0;
+  gap: 8px;
+  overflow-y: auto;
+  margin: -4px; /* folga em volta: o brilho do cartão escolhido (3 px) não é cortado pela rolagem */
+  padding: 4px;
+}
+
+.wz-opt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.wz-opt:hover {
+  border-color: var(--border-hover);
+}
+
+.wz-opt.is-selected {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 12%);
+}
+
+.wz-opt svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-opt-text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.wz-opt-text b {
+  overflow: hidden;
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-opt-text small {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* caminho: o "…" no começo (o fim é o que importa) */
+.wz-opt-text small.is-path {
+  direction: rtl;
+  text-align: left;
+}
+
+.wz-radio {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+}
+
+.wz-opt.is-selected .wz-radio {
+  border: 5px solid var(--blue-500);
+}
+
+/* NOVA: a pasta que vai ser criada */
+.wz-preview {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto; /* numa coluna baixa, a linha não encolhe (com overflow hidden, ela cortava o texto) */
+  align-items: center;
+  gap: 6px;
+  margin: 0 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.wz-preview span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+}
+
+.wz-preview b {
+  color: var(--text-primary);
+}
+
+/* a pasta da categoria fora do alcance: vai para a pasta dos projetos deste computador (linha de baixo) */
+.wz-preview:has(.nova-offline) {
+  flex-wrap: wrap;
+}
+
+.nova-offline {
+  flex: 1 0 100%;
+  padding-left: 22px;
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
+/* NOVA sem categorias: escolher a pasta (no lugar da lista) */
+.wz-pick {
+  display: flex;
+  min-width: 0;
+  min-height: 50px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+/* "não é essa? escolher outra ou criar nova": um link discreto embaixo da atração encontrada */
+.wz-pick:hover {
+  border-color: var(--blue-500);
+  color: var(--blue-500);
+}
+
+.wz-pick svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.atr-nova {
+  max-height: 0;
+  margin: -12px -4px -4px;
+  padding: 0 4px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 300ms var(--ease-soft),
+    margin 300ms var(--ease-soft),
+    padding 300ms var(--ease-soft),
+    opacity 220ms ease,
+    transform 300ms var(--ease-soft);
+}
+
+.atr-nova.is-open {
+  max-height: 160px;
+  margin: -4px -4px -4px;
+  padding: 4px;
+  opacity: 1;
+  transform: none;
+}
+
+.atr-nova-box {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px; /* concêntrico com os campos (12) + respiro */
+  background: var(--surface-soft);
+}
+
+.atr-nova-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.atr-nova .wz-preview {
+  margin: 0 2px;
+}
+
+.atr-nova .wz-hint {
+  margin: 0 2px;
+}
+
+.wz-preview svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-pick[hidden],
+.atr-nova .select[hidden],
+.wz-list[hidden],
+.wz-hint[hidden] {
+  display: none;
+}
+
+/* fora da janela PROJETO, a lista e o aviso ficam logo embaixo do campo */
+.atr-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.atr-picker .wz-hint {
+  margin: 0 2px;
+}
+
+/* no editor de config: a atração na largura toda (a lista abre embaixo) */
+.cfg-field-wide {
+  grid-column: 1 / -1;
+}
+
+.cfg-field.has-error .atr-field .cfg-input {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
+}
+
+/* =========================================================
+   A lista com busca (combo): o campo e, embaixo, na mesma caixa, a lista. aberta, a caixa ganha o contorno
+   e o brilho do foco; o campo perde os dele. abre e fecha animada (motion.js) e acompanha a altura.
+   ========================================================= */
+
+.combo {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease;
+}
+
+.combo.is-open {
+  border-color: var(--blue-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%), var(--shadow-soft);
+}
+
+.combo.is-open .combo-field .cfg-input,
+.combo.is-open .combo-field .cfg-input:focus {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-primary);
+}
+
+.combo.is-open .combo-field > .field-icon,
+.maker-glass .combo.is-open .combo-field > .field-icon {
+  stroke: var(--blue-500);
+}
+
+.combo-panel {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  padding: 2px 0 6px;
+}
+
+/* entre a busca e os resultados: a linha não vai de ponta a ponta */
+.combo-panel::before {
+  position: absolute;
+  top: 0;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: var(--border);
+  content: "";
+}
+
+.combo-sep {
+  height: 1px;
+  margin: 5px 14px;
+  border: 0;
+  background: var(--border);
+}
+
+.combo-panel[hidden] {
+  display: none;
+}
+
+.combo-group {
+  margin: 0;
+  padding: 9px 14px 3px;
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.combo-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border: 0;
+  background: none;
+  color: var(--text-control);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 650;
+  text-align: left;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.combo-item:hover,
+.combo-item.is-hover {
+  background: var(--surface-soft);
+}
+
+.combo-item.is-on {
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.combo-item svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.combo-title {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combo-meta {
+  flex: 0 1 auto;
+  max-width: 40%;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* a atração nova dentro da lista: o nome e a categoria logo abaixo do item */
+.combo-panel .atr-nova {
+  margin: 0;
+  padding: 0 10px;
+}
+
+.combo-panel .atr-nova.is-open {
+  margin: 4px 0 2px;
+  padding: 4px 10px;
+}
+
+.combo-panel .atr-nova-box {
+  border-color: var(--border);
+  background: var(--surface-soft);
+}
+
+/* a atração nova dentro da lista: o nome em cima e a categoria embaixo (a lista é estreita) */
+.combo-panel .atr-nova-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.combo-panel .atr-nova.is-open {
+  max-height: 220px;
+}
+
+/* dentro da lista aberta (opaca), os campos são os normais, mesmo sobre o vidro */
+.combo-panel .cfg-input,
+.maker-glass .combo-panel .cfg-input {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.combo-panel .cfg-input::placeholder,
+.maker-glass .combo-panel .cfg-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.maker-glass .combo-panel .has-field-icon > .field-icon {
+  stroke: var(--text-tertiary);
+}
+
+.maker-glass .combo-panel .wz-preview,
+.maker-glass .combo-panel .wz-preview b {
+  color: var(--text-tertiary);
+}
+
+.maker-glass .combo-panel .wz-preview b {
+  color: var(--text-primary);
+}
+
+.maker-glass .combo-panel .wz-preview svg {
+  stroke: var(--blue-500);
+}
+
+.combo-panel .cfg-input:focus,
+.maker-glass .combo-panel .cfg-input:focus {
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
+}
+
+.maker-glass .combo-panel .has-field-icon:focus-within > .field-icon {
+  stroke: var(--blue-500);
+}

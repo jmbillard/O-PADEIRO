@@ -18,7 +18,7 @@ pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/conversor.md';
 		var REQUEST_TTL = 15000; // ms: um pedido da barra feito há pouco vale ao abrir o painel
 
-	var state = { os: 'Mac', seq: 0, lastStamp: 0, timer: null, statusTimer: null };
+	var state = { os: 'Mac', seq: 0, lastStamp: 0, timer: null, statusTimer: null, opening: false };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -231,9 +231,9 @@ pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos 
 	async function openPath(text) {
 		if (text.trim() === '') return;
 
-		var btn = $(state.os === 'Mac' ? 'cv-open-mac' : 'cv-open-win');
+		if (state.opening) return;
 
-		btn.disabled = true;
+		state.opening = true;
 
 		try {
 			var res = await call('openConvertedPath', { text: text });
@@ -242,7 +242,7 @@ pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos 
 		} catch (err) {
 			status(err.message, true);
 		} finally {
-			btn.disabled = false;
+			state.opening = false;
 		}
 	}
 
@@ -283,8 +283,6 @@ pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos 
 		$('cv-copy-win').addEventListener('click', function () {
 			copyField('cv-win', this, 'Windows');
 		});
-		$('cv-open-mac').addEventListener('click', openFolder);
-		$('cv-open-win').addEventListener('click', openFolder);
 
 		// menu "⋯"
 		var menu = $('app-menu');
@@ -327,8 +325,6 @@ pede (botão 'pastas', clique direito). Copiar e abrir a pasta ficam dentro dos 
 			status(err.message, true);
 		}
 
-		// abrir a pasta só faz sentido no campo do sistema em que o After Effects está rodando
-		$(state.os === 'Mac' ? 'cv-open-mac' : 'cv-open-win').hidden = false;
 		$(state.os === 'Mac' ? 'cv-mac' : 'cv-win').focus();
 		fitHeight();
 		window.addEventListener('resize', renderCrumbs);

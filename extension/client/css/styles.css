@@ -3,6 +3,10 @@
    ========================================================= */
 
 :root {
+  /* rodapés: o centro dos botões fica sempre a esta distância do fundo da janela (alinha a busca e o
+     formulário lado a lado e todas as janelas entre si). botões de 46 px nas barras brancas; 38 px no
+     rodapé do cartão de templates (dentro do cartão, com 15 px de respiro) */
+  --footer-center: 50px;
   --blue-50: #f2f6ff;
   --blue-100: #e9f1ff;
   --blue-200: #c9d9f8;
@@ -11,6 +15,21 @@
   --blue-500: #5184f8;
   --blue-600: #5649e9;
   --blue-700: #4038cc;
+  /* os mesmos tons em r g b, para brilhos e anéis de foco com transparência (o tema troca: theme.js) */
+  --accent-rgb: 79 130 255;
+  --accent-deep-rgb: 79 100 255;
+  --button-glow-rgb: var(--accent-deep-rgb); /* o brilho dos botões de destaque (no escuro: o claro, theme.css) */
+  --glow-rgb: 168 208 255;
+  /* brilho é brilho: os reflexos (a faixa que passa nos botões, o fio de luz no topo dos vidros, a mancha clara do
+     degradê) são sempre claros, em qualquer tema. o --on-brand é a tinta sobre o degradê e no escuro vira preta */
+  --shine-rgb: 255 255 255;
+  --shade-rgb: 38 66 173;
+  /* a dobra do canto dos ícones de arquivo: um tom mais escuro da cor do próprio ícone (preto transparente, que
+     escurece qualquer cor do tema); sobre o degradê, o inverso do texto (no escuro, o ícone é preto: dobra clara) */
+  --fold: rgb(0 0 0 / 26%);
+  --fold-on-brand: rgb(0 0 0 / 26%);
+  /* contorno dos indicadores sobre o degradê (no escuro, cinza escuro: theme.css) */
+  --badge-ring: rgb(var(--on-brand));
 
   --white: #ffffff;
   --surface: #ffffff;
@@ -20,17 +39,27 @@
   --text-primary: #202636;
   --text-secondary: #687184;
   --text-tertiary: #8b94a6;
-  --text-on-brand: #ffffff;
-  --text-on-brand-muted: rgb(255 255 255 / 78%);
+  /* texto sobre o degradê: branco; com cores claras o tema (theme.js) troca por um tom escuro */
+  --on-brand: 255 255 255;
+  --text-on-brand: rgb(var(--on-brand));
+  --text-on-brand-muted: rgb(var(--on-brand) / 78%);
 
   --border: #e5e9f0;
   --border-strong: #d7dde8;
+  --border-hover: #ccd5e3;
+
+  /* rótulos e controles (tons fixos que o modo escuro troca) */
+  --text-label: #4e5a6f;
+  --text-control: #505c72;
+  --danger-surface: #fff8f8;
+  --success-surface: #effaf5;
 
   --waiting: #9a6500;
   --waiting-bg: #fff4d7;
 
-  --processing: #3067d6;
-  --processing-bg: #e8f1ff;
+  /* em andamento: o destaque do tema */
+  --processing: var(--blue-500);
+  --processing-bg: var(--blue-50);
 
   --success: #168055;
   --success-bg: #e7f7ef;
@@ -81,18 +110,18 @@ body {
   padding: 24px;
   background:
     radial-gradient(circle at 14% 6%,
-      rgb(255 255 255 / 20%),
+      rgb(var(--shine-rgb) / 20%),
       transparent 25%),
     radial-gradient(circle at 88% 82%,
-      rgb(160 192 255 / 20%),
+      rgb(var(--glow-rgb) / 20%),
       transparent 28%),
     linear-gradient(145deg,
       var(--blue-400) 0%,
-      var(--blue-500) 42%,
+      var(--blue-mid, var(--blue-500)) 42%,
       var(--blue-600) 100%);
   color: var(--text-primary);
   font-family:
-    Inter,
+    var(--font-ui, Inter),
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -212,11 +241,11 @@ svg {
   padding: clamp(38px, 4vw, 64px);
   background:
     radial-gradient(circle at 85% 12%,
-      rgb(168 208 255 / 44%),
+      rgb(var(--glow-rgb) / 44%),
       transparent 28%),
     linear-gradient(155deg,
       var(--blue-400) 0%,
-      var(--blue-500) 43%,
+      var(--blue-mid, var(--blue-500)) 43%,
       var(--blue-600) 100%);
   color: var(--text-on-brand);
   transition: padding 620ms var(--ease-enter);
@@ -231,8 +260,8 @@ svg {
   border-radius: 50%;
   background:
     radial-gradient(ellipse at center,
-      rgb(38 66 173 / 42%) 0%,
-      rgb(90 63 219 / 28%) 42%,
+      rgb(var(--shade-rgb) / 42%) 0%,
+      rgb(var(--accent-deep-rgb) / 28%) 42%,
       transparent 72%);
   content: "";
   pointer-events: none;
@@ -268,7 +297,7 @@ svg {
 }
 
 .eyebrow {
-  color: rgb(255 255 255 / 68%);
+  color: rgb(var(--on-brand) / 68%);
 }
 
 /* Typewriter */
@@ -306,14 +335,18 @@ svg {
 }
 
 .button:focus-visible {
-  outline: 3px solid rgb(79 130 255 / 22%);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
 }
 
 .validation-messages {
   display: grid;
   gap: 7px;
   margin-top: 10px;
+}
+
+.validation-messages:empty {
+  margin-top: 0; /* sem avisos, o cartão de templates desce até o rodapé alinhado */
 }
 
 .validation-message {
@@ -344,9 +377,9 @@ svg {
   isolation: isolate;
   background:
     radial-gradient(circle at 100% 0%,
-      #f0f4ff,
+      var(--blue-50),
       transparent 31%),
-    white;
+    var(--surface);
 }
 
 .queue-header {
@@ -377,24 +410,14 @@ svg {
   font-size: 0.82rem;
 }
 
-.queue-actions {
-  position: relative;
-  z-index: 21;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .button-secondary {
   border-color: var(--border);
-  background: white;
-  color: #505c72;
+  background: var(--surface);
+  color: var(--text-control);
 }
 
 .button-secondary:hover:not(:disabled) {
-  border-color: #ccd5e3;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
   box-shadow: 0 5px 14px rgb(32 45 82 / 7%);
   transform: translateY(-1px);
@@ -431,7 +454,7 @@ svg {
 }
 
 .actions-menu[open] summary {
-  border-color: #c7d2e2;
+  border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
@@ -444,8 +467,8 @@ svg {
   display: grid;
   padding: 7px;
   border: 1px solid var(--border);
-  border-radius: 13px;
-  background: white;
+  border-radius: 16px; /* concêntrico: raio dos itens (8) + respiro (7) + borda (1) */
+  background: var(--surface);
   box-shadow:
     0 18px 45px rgb(30 42 80 / 16%),
     0 4px 12px rgb(30 42 80 / 7%);
@@ -499,7 +522,7 @@ svg {
 }
 
 .progress-header strong {
-  color: #4e5a6f;
+  color: var(--text-label);
   font-weight: 650;
 }
 
@@ -513,7 +536,7 @@ svg {
   height: 6px;
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: #edf1f6;
+  background: var(--surface-muted);
 }
 
 .progress-bar {
@@ -525,9 +548,9 @@ svg {
   background:
     linear-gradient(90deg,
       var(--blue-400),
-      var(--blue-500),
+      var(--blue-mid, var(--blue-500)),
       var(--blue-600));
-  box-shadow: 0 2px 8px rgb(79 130 255 / 28%);
+  box-shadow: 0 2px 8px rgb(var(--accent-rgb) / 28%);
   transition: width 600ms var(--ease-soft);
 }
 
@@ -539,9 +562,9 @@ svg {
   left: -45%;
   background:
     linear-gradient(90deg,
-      transparent,
-      rgb(255 255 255 / 48%),
-      transparent);
+      rgb(var(--shine-rgb) / 0%),
+      rgb(var(--shine-rgb) / 48%),
+      rgb(var(--shine-rgb) / 0%));
   content: "";
   animation: progress-shine 2.3s ease-in-out infinite;
 }
@@ -590,7 +613,7 @@ svg {
   height: 46px;
   border: 1px solid #dfe5ef;
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
   box-shadow: var(--shadow-soft);
 }
 
@@ -609,11 +632,11 @@ svg {
 .empty-illustration span:nth-child(3) {
   top: 2px;
   left: 16px;
-  border-color: #cfdbf2;
+  border-color: var(--border-hover);
   background:
     linear-gradient(135deg,
       var(--blue-50),
-      white);
+      var(--surface));
 }
 
 .empty-state h3 {
@@ -663,8 +686,8 @@ svg {
 }
 
 .file-item:hover {
-  border-color: #dfe5ef;
-  background: white;
+  border-color: var(--border-hover);
+  background: var(--surface);
   box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
@@ -672,13 +695,13 @@ svg {
 .file-item.is-processing {
   overflow: hidden;
   border-color: var(--blue-200);
-  background: #f4f8ff;
+  background: var(--blue-50);
   box-shadow: none;
 }
 
 .file-item.is-processing:hover {
-  border-color: #b9cef4;
-  box-shadow: 0 8px 22px rgb(48 103 214 / 7%);
+  border-color: var(--border-hover);
+  box-shadow: 0 8px 22px rgb(var(--accent-rgb) / 7%);
 }
 
 .file-item.is-processing::after {
@@ -690,7 +713,7 @@ svg {
   background:
     linear-gradient(90deg,
       transparent,
-      rgb(79 130 255 / 5%),
+      rgb(var(--accent-rgb) / 5%),
       transparent);
   content: "";
   pointer-events: none;
@@ -714,7 +737,7 @@ svg {
   place-items: center;
   border: 1px solid #dae3f2;
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 5px 12px rgb(35 50 92 / 7%);
   color: var(--blue-500);
   font-size: 0.58rem;
@@ -754,7 +777,7 @@ svg {
   display: -webkit-box;
   overflow: hidden;
   margin: 9px 0 0;
-  color: #5d687c;
+  color: var(--text-label);
   font-size: 0.75rem;
   line-height: 1.48;
   overflow-wrap: anywhere;
@@ -916,7 +939,7 @@ body.motion-ready .queue-content {
 @keyframes completed-flash {
   40% {
     border-color: #bde5d2;
-    background: #effaf5;
+    background: var(--success-surface);
   }
 }
 
@@ -1069,11 +1092,6 @@ body.motion-ready .queue-content {
     gap: 17px;
   }
 
-  .queue-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
   .empty-state {
     min-height: 340px;
   }
@@ -1156,4 +1174,13 @@ body {
     animation: none;
     transition: none;
   }
+}
+/* ícone Lottie da biblioteca (icons/nome.json): um <svg> como os outros ícones (os tamanhos de quem o mostra valem
+   para ele), com o desenho da animação dentro; com tint, as cores seguem a do texto, como os ícones em svg */
+.pad-lottie.is-tint [stroke]:not([stroke="none"]) {
+  stroke: currentcolor;
+}
+
+.pad-lottie.is-tint [fill]:not([fill="none"]) {
+  fill: currentcolor;
 }
