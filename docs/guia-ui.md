@@ -30,6 +30,14 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 - **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.
 - **cantos concêntricos** → um elemento arredondado dentro de outro tem o raio de fora = raio de dentro + respiro + borda. deixe a conta no comentário do CSS (ex: `/* concêntrico: raio dos campos + respiro (8) + borda (1) */`).
+  - **checagem automática** → `extension/scripts/check-corners.js` passa por todas as janelas (as telas de `extension/scripts/ui-states.js`, as mesmas da checagem do foco) e lista cada canto fora da conta, com o raio que o de fora pede:
+
+    ```bash
+    node extension/scripts/check-corners.js
+    ```
+
+    conta o que aparece arredondado (fundo, borda, contorno por dentro) e também botões, abas e linhas, que ganham fundo no hover ou no escolhido. **tela ou etapa nova** → acrescente em `ui-states.js`.
+  - **botões "+" e botões quadrados dentro de cartões** usam o canto dos campos (`--radius-small`), não a pílula: assim o cartão fica concêntrico com eles e com os campos ao mesmo tempo.
 - **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
 - **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o degradê e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé**: na folha, uma linha fina por cima do rodapé (`border-top: 1px solid var(--border)`, `.action-bar.is-anchored`); no degradê, o conteúdo some numa máscara em degradê (`mask-image`).
 - **colunas no degradê** → sem vidro, tudo na coluna (o título, a busca, a lista, os campos, os botões do rodapé) começa na mesma linha à esquerda, a 16 px da borda; e o título da coluna fica na mesma altura do título da folha ao lado (16 px do topo).
@@ -131,13 +139,13 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   ```
 
   veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
-- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas etapas principais, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
+- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas telas de `ui-states.js`, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
 
   ```bash
   node extension/scripts/check-focus-crop.js
   ```
 
-  precisa do Playwright e sai com erro quando acha algum corte. **tela ou etapa nova** → acrescente o passo na lista `CHECKS` do script.
+  precisa do Playwright e sai com erro quando acha algum corte. **tela ou etapa nova** → acrescente o passo em `ui-states.js`.
 
 ## 📍 antes de enviar
 
@@ -145,6 +153,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
+- [ ] **cantos concêntricos**: `node extension/scripts/check-corners.js` sem nenhum canto fora da conta;
 - [ ] **sem halos** (nenhuma sombra ou anel em volta dos componentes) e **o foco aparece inteiro** ([acima](#-foco-um-contorno-fino-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;

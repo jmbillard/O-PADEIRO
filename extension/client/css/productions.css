@@ -1690,7 +1690,7 @@ body.is-org-dragging * {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
   margin-top: 4px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 28px; /* concêntrico: a busca e o botão (pílulas de ~14) + respiro (13) + borda (1) */
   background: var(--surface);
   font-size: 0.66rem;
   font-weight: 700;
@@ -1723,9 +1723,9 @@ body.is-org-dragging * {
   gap: 6px;
   margin-bottom: 4px;
   padding: 6px 10px;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 32%);
   border-radius: var(--radius-pill);
-  background: rgb(var(--on-brand) / 12%);
+  background: rgb(var(--on-brand) / 6%);
   color: rgb(var(--on-brand) / 80%);
 }
 
@@ -1734,6 +1734,7 @@ body.is-org-dragging * {
   align-items: center;
   gap: 7px;
   padding: 5px 9px;
+  border: 1px solid transparent;
   border-radius: 9px;
   letter-spacing: 0.06em;
 }
@@ -1747,14 +1748,10 @@ body.is-org-dragging * {
   stroke: var(--fold-on-brand);
 }
 
-.pv-row.is-on .pv-solid path:nth-child(2) {
-  stroke: var(--fold);
-}
-
-/* a pílula do escolhido: superfície e destaque, como as abas */
+/* o escolhido: contorno fino e fundo translúcido, como o template escolhido e as abas */
 .pv-row.is-on {
-  background: var(--surface);
-  color: var(--blue-500);
+  border-color: rgb(var(--on-brand) / 80%);
+  background: rgb(var(--on-brand) / 14%);
 }
 
 /* os rodapés dos dois lados: embaixo, na mesma altura */
@@ -1775,9 +1772,8 @@ body.is-org-dragging * {
   width: 24px;
   height: 24px;
   place-items: center;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 35%);
   border-radius: 50%;
-  background: rgb(var(--on-brand) / 12%);
 }
 
 .pv-dd {
@@ -1785,10 +1781,9 @@ body.is-org-dragging * {
   align-items: center;
   gap: 5px;
   margin-left: auto;
-  padding: 4px 8px 4px 9px;
+  padding: 3px 7px 3px 8px;
+  border: 1px solid rgb(var(--on-brand) / 35%); /* como a produção no rodapé dos templates: só o contorno */
   border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--blue-500);
   font-size: 0.6rem;
 }
 
@@ -1884,7 +1879,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px 16px;
+  padding: 12px 13px 13px 14px; /* o botão no canto de baixo: respiro 13 + borda, concêntrico com a moldura */
   color: var(--text-primary);
 }
 

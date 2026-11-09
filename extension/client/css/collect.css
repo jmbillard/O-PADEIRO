@@ -4,6 +4,7 @@
 
 .cw-row {
   padding: 8px 12px 8px 8px;
+  border-radius: 18px; /* concêntrico com a miniatura: raio (9) + respiro (8) + borda (1) */
 }
 
 /* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo */

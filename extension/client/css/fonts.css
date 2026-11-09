@@ -57,7 +57,7 @@ body.fonts-page {
   gap: 10px;
   padding: 10px 12px 10px 10px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: calc(var(--radius-small) + 11px); /* concêntrico: raio dos campos + respiro (10) + borda (1) */
   background: var(--surface);
   transition: border-color 160ms ease;
 }
