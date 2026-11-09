@@ -12,13 +12,15 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 
 | | a lista | | o template |
 | :---: | --- | :---: | --- |
-| ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** (a ★ fixa) |
-| ❷ | **pastas** da produção, com quantos templates | ❷ | **preview** (imagem ou vídeo) |
-| ❸ | **atualizar**: lê a pasta de novo | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
-| ❹ | **abrir a pasta** de templates | ❹ | **dicas** de preenchimento |
-| ❺ | **produção**: a pasta de templates mostrada | ❺ | **importar** sem preencher |
-| ❻ | **⋯**: configuração, ajuda e recarregar | ❻ | **pasta de output** do template |
-| | | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
+| ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** |
+| ❷ | **fixados e recentes** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
+| ❸ | na lista, a **miniatura** cresce no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
+| ❹ | **atualizar**: lê a pasta de novo | ❹ | **dicas** de preenchimento |
+| ❺ | **abrir a pasta** de templates | ❺ | **importar** sem preencher |
+| ❻ | **produção**: a pasta de templates mostrada | ❻ | **pasta de output** do template |
+| ❼ | **⋯**: configuração, ajuda e recarregar | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
+
+**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse; nos fixados e recentes, cartões em duas colunas, com a prévia grande. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
 1. `◖ clique esquerdo` em **templates**, na barra.
 2. busque ou navegue pelas pastas.

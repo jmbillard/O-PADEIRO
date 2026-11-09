@@ -169,6 +169,37 @@ const DOC_FONTS = `(() => {
 		] };
 })();`;
 
+// O FORNINHO: as prévias dos templates (imagens de exemplo, no lugar dos '_preview.png' da rede; um template fica
+// sem prévia, com o ícone) e dois fixados e um recente
+const DOC_PREVIEWS = `(() => {
+	try {
+		sessionStorage.setItem('mock.templateLists', JSON.stringify({ 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/mock/RODAPES/RODAPE PLACAR.aep'], recents: ['/mock/TEMPLATES PADEIRO/LETTERING SOLTO.aep'], renderPresets: {} } }));
+	} catch (e) { }
+
+	const PALS = [['#ff7a59', '#c2185b'], ['#00c6ff', '#0072ff'], ['#f7b733', '#fc4a1a'], ['#43e97b', '#1fa2a8'], ['#a18cd1', '#5f2c82'], ['#f953c6', '#b91d73']];
+	const hash = (t) => { let x = 0; for (let i = 0; i < t.length; i++) x = (x * 31 + t.charCodeAt(i)) | 0; return Math.abs(x); };
+	const thumb = (name) => {
+		const p = PALS[hash(name) % PALS.length];
+		const k = hash(name + 'k') % 3;
+		const t = name.replace(/&/g, '&amp;');
+		const shape = k === 0 ? '<rect x="40" y="250" width="440" height="64" rx="10" fill="#fff" opacity=".94"/><text x="62" y="292" font-family="Arial" font-weight="800" font-size="30" fill="#1b1f2e">' + t + '</text><rect x="40" y="314" width="300" height="24" rx="6" fill="' + p[1] + '"/>'
+			: k === 1 ? '<rect x="0" y="282" width="640" height="78" fill="#0d1020" opacity=".86"/><rect x="0" y="282" width="12" height="78" fill="' + p[0] + '"/><text x="34" y="331" font-family="Arial" font-weight="800" font-size="30" fill="#fff">' + t + '</text>'
+			: '<circle cx="320" cy="150" r="70" fill="#fff" opacity=".22"/><text x="320" y="200" text-anchor="middle" font-family="Arial" font-weight="900" font-size="44" fill="#fff">' + t + '</text>';
+
+		return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + p[0] + '"/><stop offset="1" stop-color="' + p[1] + '"/></linearGradient></defs><rect width="640" height="360" fill="url(#g)"/><circle cx="560" cy="60" r="140" fill="#fff" opacity=".12"/>' + shape + '</svg>');
+	};
+
+	addEventListener('DOMContentLoaded', () => {
+		const orig = PAD_UTIL.fileUrl;
+
+		PAD_UTIL.fileUrl = (path) => {
+			const m = /([^\/]+)_preview\.png$/.exec(path);
+
+			return m && !/JOGO/.test(m[1]) ? thumb(m[1]) : orig(path);
+		};
+	});
+})();`;
+
 const CATEGORIES = { categories: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
@@ -189,10 +220,17 @@ const SHOTS = {
 		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#btn-coletar .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
 	] },
 	'barra-vertical': { w: 170, h: 640, url: 'bar.html' },
-	'forninho-lista': { w: 560, h: 620, url: 'index.html', marks: [
-		{ sel: '#search' }, { sel: '.tree-row', text: 'TARJAS' }, { sel: '#btn-refresh', round: true }, { sel: '#btn-open-templates', round: true }, { sel: '.picker-prod .dropdown-trigger, .picker-prod' }, { sel: '#app-menu summary', round: true }
+	'forninho-lista': { w: 560, h: 800, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
+		await p.locator('.tree-row', { hasText: 'RECENTES' }).first().click(); // recolhe os recentes: cabem os fixados e a pasta aberta
+		await p.waitForTimeout(400);
+		await p.locator('.tree-folder > .tree-row', { hasText: 'TARJAS' }).first().click();
+		await p.waitForTimeout(500);
+		await p.locator('.tree-item[data-section=""]', { hasText: 'TARJA DUPLA' }).first().hover();
+		await p.waitForTimeout(400); // a miniatura cresce (320 ms), antes da dica (450 ms)
+	}, keepMouse: true, marks: [
+		{ sel: '#search' }, { sel: '.tree-item:not([data-section=""])', pad: 2 }, { sel: '.tree-item[data-section=""]:hover .tree-thumb', pad: 2 }, { sel: '#btn-refresh', round: true }, { sel: '#btn-open-templates', round: true }, { sel: '.picker-prod .dropdown-trigger, .picker-prod' }, { sel: '#app-menu summary', round: true }
 	] },
-	'forninho-preencher': { w: 1080, h: 860, url: 'index.html', run: selectTemplate, marks: [
+	'forninho-preencher': { w: 1080, h: 860, url: 'index.html', init: DOC_PREVIEWS, run: selectTemplate, marks: [
 		{ sel: '.tree-item.is-selected .tree-row' }, { sel: '#preview-card' }, { sel: '#input' }, { sel: '#tip' }, { sel: '#btn-import', round: true }, { sel: '#btn-output', round: true }, { sel: '#btn-fill' }
 	] },
 	forma: { w: 1180, h: 780, url: 'maker.html', marks: [
@@ -266,19 +304,22 @@ const SCENES = {
 		await tap(p, '#btn-coletar', { wait: 6800 });
 	} },
 
-	// O FORNINHO: busca, escolhe o template, preenche
-	forninho: { w: 1000, h: 640, url: 'index.html', async run(p) {
-		mouse = [960, 600];
+	// O FORNINHO: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
+	forninho: { w: 1000, h: 700, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
+		mouse = [960, 660];
 		await p.waitForTimeout(600);
+		await hover(p, '.tree-item:not([data-section=""]) .tree-row', 700);
+		await tap(p, p.locator('.tree-folder > .tree-row', { hasText: 'TARJAS' }).first(), { wait: 600 });
+		await hover(p, p.locator('.tree-item[data-section=""]', { hasText: 'TARJA SIMPLES' }).first(), 800);
+		await hover(p, p.locator('.tree-item[data-section=""]', { hasText: 'TARJA DUPLA' }).first(), 800);
 		await tap(p, '#search', { wait: 200 });
 		await type(p, 'letter', 110);
 		await p.waitForTimeout(700);
-		await tap(p, p.locator('.tree-row:visible', { hasText: 'LETTERING SOLTO' }).first(), { wait: 1200 });
+		await tap(p, p.locator('.tree-item[data-section=""]', { hasText: 'LETTERING SOLTO' }).first().locator('.tree-row'), { wait: 1200 });
 		await tap(p, '#input', { wait: 200 });
 		await p.keyboard.press('Control+A');
 		await type(p, 'ANA MARIA BRAGA\nAPRESENTADORA', 55);
 		await p.waitForTimeout(600);
-		await hover(p, '#btn-output', 900);
 		await hover(p, '#btn-fill', 1200);
 	} },
 
@@ -425,7 +466,8 @@ async function shots(b, names) {
 		await p.goto(CLIENT + s.url);
 		await p.waitForTimeout(1600);
 		if (s.run) await s.run(p);
-		await p.mouse.move(1, 1);
+		if (!s.keepMouse) await p.mouse.move(1, 1);
+		else await p.addStyleTag({ content: '.pad-tooltip { display: none !important; }' }); // o mouse fica (hover), a dica não
 		await p.waitForTimeout(500);
 		if (s.marks) await p.evaluate(markInPage, s.marks);
 		await p.waitForTimeout(150);
