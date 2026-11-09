@@ -54,7 +54,7 @@ body {
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px 14px calc(var(--footer-center) - 34px); /* 34 = borda + respiro + meio botão do rodapé do cartão */
+  padding: 16px 16px calc(var(--footer-center) - 19px); /* 19 = meio botão do rodapé da lista */
 }
 
 .upload-side-content,
@@ -78,10 +78,10 @@ body {
 
 .queue-side,
 .app-shell.is-expanded .queue-side {
-  --queue-pad: 24px;
+  --queue-pad: 16px;
 
   min-height: 0;
-  padding: 24px var(--queue-pad) 0;
+  padding: 16px var(--queue-pad) 0;
   overflow-y: auto;
 }
 
@@ -191,7 +191,6 @@ body {
 .select select:focus-visible {
   border-color: var(--blue-500);
   outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
 }
 
 .select-large select {
@@ -210,21 +209,14 @@ body {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  border: 1px solid rgb(var(--on-brand) / 40%);
-  /* cantos concêntricos: em cima com a busca (pílula de raio 27 a 15 px da borda), embaixo com os botões
-     redondos do rodapé (raio 19, também a 15 px) */
-  border-radius: 42px 42px 34px 34px;
-  background: rgb(var(--on-brand) / 13%);
-  box-shadow:
-    inset 0 1px 0 rgb(var(--shine-rgb) / 16%),
-    0 18px 40px rgb(24 43 113 / 10%);
+  /* sem vidro: o degradê é a primeira camada; a busca, a lista e o rodapé ficam direto nele */
 }
 
 .picker-search {
   position: relative;
   display: flex;
   align-items: center;
-  margin: 14px 14px 10px;
+  margin: 0 0 10px;
 }
 
 .picker-search>svg {
@@ -244,9 +236,9 @@ body {
   width: 100%;
   min-height: 54px;
   padding: 10px 46px 10px 48px;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 32%);
   border-radius: var(--radius-pill);
-  background: rgb(var(--on-brand) / 12%);
+  background: rgb(var(--on-brand) / 6%);
   color: rgb(var(--on-brand));
   font-size: 1rem;
   font-weight: 560;
@@ -268,8 +260,7 @@ body {
 
 .picker-search input:focus {
   border-color: rgb(var(--on-brand) / 88%);
-  background: rgb(var(--on-brand) / 20%);
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 12%);
+  background: rgb(var(--on-brand) / 10%);
 }
 
 .picker-clear {
@@ -306,7 +297,7 @@ body {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 4px 8px 18px;
+  padding: 2px 0 18px;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
   /* a transição para o rodapé: a lista some num degradê (sem linha) */
@@ -344,12 +335,12 @@ body {
 }
 
 .tree-row:hover {
-  background: rgb(var(--on-brand) / 14%);
+  background: rgb(var(--on-brand) / 8%);
 }
 
 .tree-row:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 4px rgb(var(--on-brand) / 30%); /* o brilho do foco por dentro: a lista rola e cortaria */
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 80%); /* o foco por dentro (a lista rola e cortaria): só um contorno fino */
 }
 
 .tree-row>svg {
@@ -401,7 +392,7 @@ body {
 .tree-children {
   margin-left: 14px;
   padding-left: 6px;
-  border-left: 1px solid rgb(var(--on-brand) / 20%);
+  border-left: 1px solid rgb(var(--on-brand) / 14%);
 }
 
 .tree-folder:not(.is-open)>.tree-children {
@@ -423,16 +414,12 @@ body {
   letter-spacing: 0.06em;
 }
 
-.tree-item.is-selected>.tree-row {
-  border-color: rgb(var(--on-brand));
-  background: var(--surface);
-  box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
-  color: var(--blue-ink, var(--blue-600));
-}
-
-.tree-item.is-selected>.tree-row .tree-ext {
-  border-color: var(--blue-200);
-  color: var(--blue-500);
+/* o escolhido: contorno fino e fundo translúcido, a tinta continua a do degradê */
+.tree-item.is-selected>.tree-row,
+.tree-item.is-selected>.tree-row:hover {
+  border-color: rgb(var(--on-brand) / 80%);
+  background: rgb(var(--on-brand) / 14%);
+  color: rgb(var(--on-brand));
 }
 
 .picker-state {
@@ -456,7 +443,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px 14px;
+  padding: 6px 0 0;
   color: rgb(var(--on-brand) / 70%);
   font-size: 0.68rem;
   font-weight: 650;
@@ -468,9 +455,9 @@ body {
   height: 38px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 35%);
   border-radius: 50%;
-  background: rgb(var(--on-brand) / 12%);
+  background: transparent;
   color: rgb(var(--on-brand));
   cursor: pointer;
   list-style: none;
@@ -502,8 +489,8 @@ body {
 }
 
 .icon-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .picker-footer .actions-menu {
@@ -543,8 +530,8 @@ body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 14px;
 }
 
 #view-run {
@@ -563,11 +550,9 @@ body {
   z-index: 5;
   bottom: 0;
   margin: auto calc(var(--queue-pad) * -1) 0;
-  padding: 16px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
-  background:
-    linear-gradient(to top,
-      var(--surface) 72%,
-      transparent);
+  padding: 12px var(--queue-pad) calc(var(--footer-center) - 23px); /* 23 = meio botão */
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .run-footer.is-anchored {
@@ -585,7 +570,6 @@ body {
     linear-gradient(145deg,
       var(--blue-50),
       var(--surface-soft));
-  box-shadow: var(--shadow-soft);
 }
 
 .preview-card img,
@@ -679,7 +663,6 @@ body {
 .field-textarea:focus {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .field-textarea:disabled {
@@ -688,7 +671,7 @@ body {
 }
 
 .tip-card {
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid var(--blue-200);
   border-radius: var(--radius-medium);
   background: var(--blue-50);
@@ -728,7 +711,6 @@ body {
   background: linear-gradient(135deg,
       var(--blue-400),
       var(--blue-600));
-  box-shadow: 0 10px 24px rgb(var(--button-glow-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 
@@ -737,30 +719,8 @@ body {
   min-height: 46px;
 }
 
-.button-primary::after {
-  position: absolute;
-  width: 38%;
-  height: 190%;
-  top: -45%;
-  left: -65%;
-  background:
-    linear-gradient(90deg,
-      rgb(var(--shine-rgb) / 0%),
-      rgb(var(--shine-rgb) / 34%), /* brilho: sempre claro (no escuro, o --on-brand é preto) */
-      rgb(var(--shine-rgb) / 0%));
-  content: "";
-  pointer-events: none;
-  transform: rotate(18deg);
-  transition: left 650ms var(--ease-enter);
-}
-
-.button-primary:hover:not(:disabled)::after {
-  left: 125%;
-}
-
 .button-primary:hover:not(:disabled) {
-  box-shadow: 0 14px 30px rgb(var(--button-glow-rgb) / 38%);
-  transform: translateY(-2px);
+  filter: brightness(1.06);
 }
 
 .button-primary:active:not(:disabled) {
@@ -1061,13 +1021,9 @@ body {
   --file-fold: var(--fold-on-brand); /* a dobra do ícone (o desenho vem do <symbol>: a cor passa pela variável) */
 }
 
-/* o escolhido (na pílula): o ícone na cor de destaque, a dobra um tom mais escuro dela */
-.tree-item.is-selected>.tree-row>svg {
-  --file-fold: var(--fold);
-}
 
 .upload-side .eyebrow {
-  padding-left: 5px;
+  padding-left: 0; /* na mesma linha da busca e da lista */
 }
 
 .tip-list {
@@ -1180,8 +1136,8 @@ body {
 
 .cfg-card {
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-medium);
   background: var(--surface-soft);
@@ -1251,7 +1207,6 @@ body {
 
 .cfg-input:focus {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .cfg-textarea {
@@ -1268,7 +1223,6 @@ body {
 .cfg-field.has-error .cfg-input,
 .cfg-field.has-error .select select {
   border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
 }
 
 .cfg-preview {
@@ -1355,7 +1309,7 @@ body {
   place-items: center;
   border: 1px solid var(--border);
   border-radius: 50%;
-  background: var(--surface);
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -1383,8 +1337,8 @@ body {
 }
 
 .mini-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .mini-button:disabled {
@@ -1512,7 +1466,6 @@ body {
 
 .cfg-switch input:focus-visible+.cfg-switch-track {
   outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
 }
 
 .cfg-switch-label {
@@ -1614,7 +1567,6 @@ body {
 .dropdown-trigger[aria-expanded="true"] {
   border-color: var(--blue-500);
   outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .dropdown-trigger:disabled {
@@ -1628,7 +1580,6 @@ body {
 
 .cfg-field.has-error .dropdown-trigger {
   border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
 }
 
 .dropdown-popover {
@@ -1798,8 +1749,8 @@ body.motion-ready .eyebrow {
 }
 
 .picker-clear:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 @keyframes clear-pop {
@@ -1883,11 +1834,6 @@ body.motion-ready .eyebrow {
   background-size: 12px 12px;
 }
 
-/* no escolhido (o cartão claro), o quadriculado cinza do preview do template: o branco translúcido sumiria */
-.tree-item.is-selected .tree-thumb.has-image {
-  background-color: transparent;
-  background-image: repeating-conic-gradient(rgb(120 130 150 / 22%) 0 25%, rgb(120 130 150 / 8%) 0 50%);
-}
 
 .tree-thumb.has-image .tree-thumb-img {
   opacity: 1;
@@ -1998,9 +1944,6 @@ body.motion-ready .eyebrow {
   white-space: nowrap;
 }
 
-.tree-item.is-selected .tree-trail {
-  color: var(--text-tertiary);
-}
 
 .tree-star {
   position: absolute;
@@ -2046,8 +1989,8 @@ body.motion-ready .eyebrow {
 }
 
 .tree-star:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .tree-item.is-favorite>.tree-star svg {
@@ -2055,18 +1998,6 @@ body.motion-ready .eyebrow {
   stroke: #ffd36b;
 }
 
-.tree-item.is-selected>.tree-star {
-  color: var(--blue-500);
-}
-
-.tree-item.is-selected>.tree-star:hover {
-  background: var(--blue-50);
-}
-
-.tree-item.is-selected.is-favorite>.tree-star svg {
-  fill: #f2b23a;
-  stroke: #f2b23a;
-}
 
 .tree-section>.tree-row svg:not(.tree-chevron) {
   stroke-width: 1.8;
@@ -2289,31 +2220,25 @@ body.motion-ready .eyebrow {
 }
 
 .picker-prod .dropdown-trigger {
-  /* opaco, como a pílula da aba escolhida: fundo da superfície (branco no claro, escuro no escuro) e texto na
-     cor de destaque */
+  /* como os botões redondos ao lado: só o contorno, a tinta do degradê */
   min-height: 34px;
-  border-color: transparent;
-  background: var(--surface);
-  color: var(--blue-500);
-  box-shadow: 0 6px 16px rgb(24 43 113 / 16%);
+  border-color: rgb(var(--on-brand) / 35%);
+  background: transparent;
+  color: rgb(var(--on-brand));
 }
 
 .picker-prod .dropdown-trigger:hover:not(:disabled) {
-  border-color: transparent;
-  background: var(--surface);
-  box-shadow: 0 8px 20px rgb(24 43 113 / 22%);
+  border-color: rgb(var(--on-brand) / 70%);
+  background: rgb(var(--on-brand) / 12%);
 }
 
 .picker-prod .dropdown-trigger:focus-visible,
 .picker-prod .dropdown-trigger[aria-expanded="true"] {
-  border-color: transparent;
-  box-shadow:
-    0 6px 16px rgb(24 43 113 / 16%),
-    0 0 0 4px rgb(var(--on-brand) / 24%);
+  border-color: rgb(var(--on-brand) / 80%);
 }
 
 .picker-prod.select::after {
-  border-color: var(--blue-500);
+  border-color: rgb(var(--on-brand) / 85%);
 }
 
 .picker-footer .picker-menu .menu-popover {
@@ -2553,7 +2478,6 @@ body.motion-ready .eyebrow {
 
 .tag-box:focus-within {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .tag-field>.mini-button:last-child {
@@ -2652,8 +2576,8 @@ body.motion-ready .eyebrow {
 }
 
 .io-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .io-button svg {
@@ -2822,7 +2746,7 @@ body.motion-ready .eyebrow {
 .tab:focus-visible {
   border-radius: 6px;
   outline: none;
-  box-shadow: inset 0 0 0 4px rgb(var(--on-brand) / 30%); /* o brilho do foco por dentro: a coluna rola e cortaria */
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 80%); /* o foco por dentro (a lista rola e cortaria): só um contorno fino */
 }
 
 /* as letras (AB, Aa) sentam na mesma linha do rótulo */

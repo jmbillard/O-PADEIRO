@@ -1,17 +1,17 @@
 /*
 
 ---------------------------------------------------------------
-> checagem do brilho do foco (guia de UI)
+> checagem do foco: nada cortado (guia de UI)
 ---------------------------------------------------------------
 
 Abre as janelas no navegador (modo de teste, mock-host.js), foca cada campo (input, textarea, seletor) e confere
-se o brilho azul do foco (4 px em volta) cabe inteiro no primeiro bloco de cima que corta o que passa dele
+se a folga do contorno do foco (3 px em volta: 1 px a 2 px de distância) cabe inteira no primeiro bloco de cima que corta o que passa dele
 (overflow diferente de visible: o que rola ou recolhe). Lista cada campo cortado, o bloco que corta e de que lado.
 
   node extension/scripts/check-focus-crop.js
 
 Precisa do Playwright (npm i -D playwright, ou o que já estiver instalado na máquina). Sai com código 1 quando
-acha algum corte. As transições ficam desligadas: o brilho é medido já no tamanho final.
+acha algum corte. As transições ficam desligadas: o contorno é medido já no tamanho final.
 
 Não cobre os campos que só aparecem depois de uma ação que não está nos passos abaixo (ex: uma linha nova):
 quando criar um passo novo numa janela, acrescente aqui.
@@ -22,9 +22,9 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
-const RING = 4; // .cfg-input:focus { box-shadow: 0 0 0 4px … } (panel.css)
+const RING = 3; // :focus-visible { outline: 1px solid …; outline-offset: 2px } (guia de UI: foco)
 
-// roda na página: foca cada campo visível e procura o primeiro bloco de cima que corta o brilho
+// roda na página: foca cada campo visível e procura o primeiro bloco de cima que corta a folga do foco
 function findCrops(ring) {
 	const out = [];
 	const fields = Array.from(document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, .dropdown-trigger')).filter(function (e) {
@@ -151,6 +151,6 @@ const CHECKS = [
 	}
 
 	await browser.close();
-	console.log(found ? '\n' + found + ' campo(s) com o brilho cortado.' : '\nnenhum brilho cortado.');
+	console.log(found ? '\n' + found + ' campo(s) com o foco cortado.' : '\nnenhum foco cortado.');
 	process.exit(found ? 1 : 0);
 })();

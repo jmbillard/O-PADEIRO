@@ -50,7 +50,6 @@
 .wz-opt.is-selected {
   border-color: var(--blue-300);
   background: var(--blue-50);
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 12%);
 }
 
 .wz-opt svg {
@@ -258,7 +257,6 @@
 
 .cfg-field.has-error .atr-field .cfg-input {
   border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
 }
 
 /* =========================================================
@@ -270,6 +268,7 @@
   position: relative;
   display: grid;
   min-width: 0;
+  margin: -1px; /* a borda (transparente) do aberto não empurra o campo: ele alinha com os outros */
   border: 1px solid transparent;
   border-radius: var(--radius-small);
   transition:
@@ -281,7 +280,6 @@
 .combo.is-open {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%), var(--shadow-soft);
 }
 
 .combo.is-open .combo-field .cfg-input,
@@ -454,7 +452,6 @@
 .combo-panel .cfg-input:focus,
 .maker-glass .combo-panel .cfg-input:focus {
   border-color: var(--blue-500);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .maker-glass .combo-panel .has-field-icon:focus-within > .field-icon {

@@ -331,12 +331,13 @@ svg {
     background-color 180ms ease,
     border-color 180ms ease,
     box-shadow 220ms ease,
+    filter 220ms ease,
     transform 220ms var(--ease-soft);
 }
 
 .button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .validation-messages {
@@ -419,7 +420,6 @@ svg {
 .button-secondary:hover:not(:disabled) {
   border-color: var(--border-hover);
   background: var(--surface-soft);
-  box-shadow: 0 5px 14px rgb(32 45 82 / 7%);
   transform: translateY(-1px);
 }
 
@@ -550,7 +550,6 @@ svg {
       var(--blue-400),
       var(--blue-mid, var(--blue-500)),
       var(--blue-600));
-  box-shadow: 0 2px 8px rgb(var(--accent-rgb) / 28%);
   transition: width 600ms var(--ease-soft);
 }
 
@@ -688,7 +687,6 @@ svg {
 .file-item:hover {
   border-color: var(--border-hover);
   background: var(--surface);
-  box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -701,7 +699,6 @@ svg {
 
 .file-item.is-processing:hover {
   border-color: var(--border-hover);
-  box-shadow: 0 8px 22px rgb(var(--accent-rgb) / 7%);
 }
 
 .file-item.is-processing::after {
@@ -738,7 +735,6 @@ svg {
   border: 1px solid #dae3f2;
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: 0 5px 12px rgb(35 50 92 / 7%);
   color: var(--blue-500);
   font-size: 0.58rem;
   font-weight: 800;

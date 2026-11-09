@@ -121,8 +121,8 @@ body.finder-page {
 }
 
 .chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 /* trilho: translúcido quando desligado, branco quando ligado; a bolinha fica azul ao ligar */
@@ -259,8 +259,8 @@ body.finder-page {
 .crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 

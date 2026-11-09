@@ -22,19 +22,19 @@ body.prods-page {
   grid-template-columns: auto minmax(0, 1fr);
 }
 
-/* a coluna azul, como a busca do painel de templates: título no degradê e o cartão de vidro */
+/* a coluna azul, como a busca do painel de templates: as abas direto no degradê */
 .prods-side {
   display: flex;
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: 14px;
+  padding: 16px 16px calc(var(--footer-center) - 19px); /* 19 = meio botão do rodapé: o centro na mesma linha das outras janelas */
 }
 
 .prods-card {
   min-width: 0;
   min-height: 0;
-  border-radius: 26px 26px 34px 34px; /* em cima, concêntrico com a aba (raio 12, 14 de respiro); embaixo, com os botões */
+  /* sem vidro: as abas ficam direto no degradê */
 }
 
 .prods-card-body {
@@ -45,10 +45,10 @@ body.prods-page {
 }
 
 .prods-nav {
-  width: 214px;
+  width: 200px;
   flex: 0 0 auto;
   min-height: 0;
-  padding: 14px;
+  padding: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -88,10 +88,9 @@ body.prods-page {
 }
 
 .prods-nav .tab[aria-selected="true"] {
-  border-color: rgb(var(--on-brand));
-  background: var(--surface);
-  box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
-  color: var(--blue-500); /* texto e ícone na cor dos ícones dos cartões */
+  border-color: rgb(var(--on-brand) / 85%);
+  background: rgb(var(--on-brand) / 12%);
+  color: rgb(var(--on-brand)); /* contorno fino e fundo translúcido, como o template escolhido */
 }
 
 /* o ícone no lugar da bolinha */
@@ -362,7 +361,7 @@ body.prods-page {
 }
 
 .prods-section-title {
-  padding: 16px 20px 6px;
+  padding: 12px 14px 4px;
 }
 
 .prods-file {
@@ -408,7 +407,7 @@ body.prods-page {
 .prods-list {
   min-height: 0;
   flex: 1;
-  padding: 0 20px 6px;
+  padding: 0 14px 4px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
@@ -430,7 +429,7 @@ body.prods-page {
   grid-template-columns: 22px minmax(150px, 230px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  padding: 7px 0;
+  padding: 4px 0;
   animation: file-enter 320ms var(--ease-enter) both;
 }
 
@@ -475,12 +474,10 @@ body.prods-page {
 
 .prod-dot.is-ok {
   background: #27a874;
-  box-shadow: 0 0 0 4px rgb(39 168 116 / 12%);
 }
 
 .prod-dot.is-missing {
   background: #dd5656;
-  box-shadow: 0 0 0 4px rgb(221 86 86 / 12%);
 }
 
 .prod-path-actions {
@@ -507,7 +504,6 @@ body.prods-page {
 
 .prod-row.has-error .cfg-input {
   border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
 }
 
 .prods-empty {
@@ -570,7 +566,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px 6px;
+  padding: 8px 14px 4px;
 }
 
 .prods-list-head .cfg-title {
@@ -582,7 +578,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 16px 20px 4px;
+  margin: 12px 14px 4px;
 }
 
 .prods-filter {
@@ -612,7 +608,6 @@ body.prods-page {
 .prods-filter input:focus {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .prods-filter>svg {
@@ -678,7 +673,7 @@ body.prods-page {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 20px 18px;
+  padding: 0 14px 14px;
   overflow-y: auto;
 }
 
@@ -795,9 +790,7 @@ body.prods-page {
   color: var(--text-primary);
 }
 
-.log-radio input:focus-visible+.log-radio-dot {
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 18%);
-}
+.log-radio input:focus-visible+.log-radio-dot {}
 
 .log-radio input:disabled~* {
   opacity: 0.45;
@@ -925,7 +918,7 @@ body.prods-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
-  padding: 16px 20px 18px;
+  padding: 12px 14px 14px;
 }
 
 .organize-pane[hidden] {
@@ -1592,7 +1585,9 @@ body.is-org-dragging * {
 }
 
 .swatch-head:focus-visible {
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 22%);
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+
+  outline-offset: 2px;
 }
 
 .swatch-mini {
@@ -1759,7 +1754,6 @@ body.is-org-dragging * {
 /* a pílula do escolhido: superfície e destaque, como as abas */
 .pv-row.is-on {
   background: var(--surface);
-  box-shadow: 0 6px 14px rgb(24 43 113 / 18%);
   color: var(--blue-500);
 }
 
@@ -1794,7 +1788,6 @@ body.is-org-dragging * {
   padding: 4px 8px 4px 9px;
   border-radius: var(--radius-pill);
   background: var(--surface);
-  box-shadow: 0 4px 12px rgb(24 43 113 / 16%);
   color: var(--blue-500);
   font-size: 0.6rem;
 }
@@ -1908,7 +1901,6 @@ body.is-org-dragging * {
   border: 1px solid var(--blue-500);
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
   color: var(--text-secondary);
   font-weight: 600;
 }
@@ -1956,7 +1948,6 @@ body.is-org-dragging * {
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
-  box-shadow: 0 6px 14px rgb(var(--button-glow-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 
@@ -2263,7 +2254,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 20px 20px;
+  padding: 0 14px 14px;
 }
 
 .prods-local .prods-section-title {
@@ -2282,7 +2273,7 @@ body.is-org-dragging * {
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
-  padding: 6px 20px;
+  padding: 6px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-soft);
   color: var(--text-secondary);

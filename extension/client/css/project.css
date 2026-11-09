@@ -773,8 +773,8 @@ p.wz-exist b {
 }
 
 .out-line:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .out-line > svg {
@@ -891,9 +891,7 @@ p.wz-exist b {
   border: 4px solid var(--blue-500);
 }
 
-.out-opt input:focus-visible + .out-dot {
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%);
-}
+.out-opt input:focus-visible + .out-dot {}
 
 .out-opt-label {
   min-width: 0;

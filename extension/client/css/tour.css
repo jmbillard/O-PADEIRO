@@ -378,8 +378,8 @@ body.is-touring .pad-tooltip {
 }
 
 .tour-btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%);
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .tour-btn:disabled {
@@ -520,7 +520,9 @@ body.is-touring .pad-tooltip {
 }
 
 .tour-field:focus-within {
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 22%);
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+
+  outline-offset: 2px;
 }
 
 .tour-field svg {

@@ -18,11 +18,11 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - destaque e tons: `--blue-50` … `--blue-700`, `--blue-ink`, `--blue-mid` (os nomes são históricos: o tema troca o azul por qualquer cor);
   - com transparência: `rgb(var(--accent-rgb) / 20%)`, `--accent-deep-rgb`, `--glow-rgb`, `--shade-rgb`;
   - superfícies, textos e linhas: `--surface`, `--surface-soft`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--border`…
-- **sobre o degradê (e o vidro em cima dele)**, texto, ícones, vidros, contornos e brilhos usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
-- **o modo escuro é o inverso do claro sobre o degradê**: o vidro, o texto e os ícones ficam pretos, e o item escolhido vira uma pílula escura. nunca coloque uma superfície escura sobre o vidro claro.
-- **pílula do item escolhido** (aba, template, arquivo do CRIAR): fundo `--surface` (ou `--on-brand`), texto e ícone na cor de destaque (`--blue-500`), a mesma dos ícones dos cartões.
-- **o brilho dos botões de destaque é sempre claro**: a sombra colorida usa `--button-glow-rgb` (no claro, o fim do degradê; no escuro, a cor clara do brilho, `--glow-rgb`). nunca `--accent-deep-rgb` direto numa sombra de botão: no escuro, ela some no fundo.
-- **brilho é brilho, em qualquer tema**: reflexos (a faixa de luz que passa no botão principal, o fio de luz no topo dos vidros, a mancha clara do degradê) usam `--shine-rgb` (branco). nunca `--on-brand` num brilho: ele é a tinta sobre o degradê e, no escuro, vira preta.
+- **sobre o degradê**, texto, ícones, campos, contornos e o item escolhido usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
+- **o modo escuro é o inverso do claro sobre o degradê**: o texto, os ícones e os contornos ficam pretos. nunca coloque uma superfície escura sobre o degradê claro.
+- **o item escolhido sobre o degradê** (aba da configuração, template da lista): contorno fino `rgb(var(--on-brand) / 80%)` e fundo translúcido `rgb(var(--on-brand) / 14%)`, o texto na tinta do degradê. sem pílula branca e sem sombra.
+- **UI enxuta: sem halos** → nada de sombra colorida ou anel em volta dos componentes (botões, campos, cartões, item escolhido). o degradê já é a primeira camada (sem a caixa de vidro em cima) e cada coisa tem só um **contorno fino** de 1 px. sombra só no que flutua por cima de tudo: menus, listas abertas, dicas, avisos e o que está sendo arrastado.
+- **brilho é brilho, em qualquer tema**: reflexos (a mancha clara do degradê, o fio de luz das miniaturas) usam `--shine-rgb` (branco). nunca `--on-brand` num brilho: ele é a tinta sobre o degradê e, no escuro, vira preta.
 - **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, a bolinha do projeto (verde / laranja), o pãozinho da logo e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
 - **o tom de "em andamento"** (`--processing`) é o destaque do tema.
 
@@ -31,7 +31,8 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.
 - **cantos concêntricos** → um elemento arredondado dentro de outro tem o raio de fora = raio de dentro + respiro + borda. deixe a conta no comentário do CSS (ex: `/* concêntrico: raio dos campos + respiro (8) + borda (1) */`).
 - **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
-- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o vidro e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé é sempre um degradê**, nunca uma linha: na folha, o fundo do rodapé em degradê (`.action-bar.is-anchored`); no vidro, o conteúdo some numa máscara em degradê (`mask-image`).
+- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o degradê e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé**: na folha, uma linha fina por cima do rodapé (`border-top: 1px solid var(--border)`, `.action-bar.is-anchored`); no degradê, o conteúdo some numa máscara em degradê (`mask-image`).
+- **colunas no degradê** → sem vidro, tudo na coluna (o título, a busca, a lista, os campos, os botões do rodapé) começa na mesma linha à esquerda, a 16 px da borda; e o título da coluna fica na mesma altura do título da folha ao lado (16 px do topo).
 
 ## 📍 campos
 
@@ -115,30 +116,28 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
 
-## 📍 brilho do foco: nada cortado
+## 📍 foco: um contorno fino, nada cortado
 
-o campo com foco ganha um brilho de **4 px em volta** (`.cfg-input:focus`, em `panel.css`). se o campo fica dentro de algo que **rola ou recolhe** (`overflow` diferente de `visible`: listas com rolagem, colunas, blocos que abrem animados), o brilho é cortado na borda desse bloco, mais visível na **primeira linha** das listas e nos campos de largura total.
-
-- **como resolver** → dê ao bloco que corta 4 px de folga por dentro e compense na margem, para nada sair do lugar:
+- **campos** (`input`, `textarea`, lista) → no foco, só a cor do contorno muda (`--blue-500` na folha, `rgb(var(--on-brand) / 88%)` no degradê). sem anel em volta e sem linha extra.
+- **botões, abas e linhas** (`:focus-visible`, só pelo teclado) → um contorno fino de 1 px a 2 px de distância (`outline: 1px solid …; outline-offset: 2px`): `--blue-500` na folha, `rgb(var(--on-brand) / 80%)` no degradê. nas linhas de uma lista que rola, o contorno fica por dentro (`box-shadow: inset 0 0 0 1px …`), senão a rolagem corta.
+- **nada cortado** → o contorno do botão sai 3 px da borda. se ele fica dentro de algo que **rola ou recolhe** (`overflow` diferente de `visible`), dê ao bloco uma folga por dentro e compense na margem, para nada sair do lugar:
 
   ```css
   .bloco-que-rola {
     margin: -4px;  /* compensa a folga: o conteúdo fica onde estava */
-    padding: 4px;  /* o brilho cabe aqui dentro */
+    padding: 4px;  /* o contorno do foco cabe aqui dentro */
     overflow-y: auto;
   }
   ```
 
-  num bloco que abre e fecha animado, a folga entra na margem dos dois estados (fechado e aberto). veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
-- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas etapas principais (o criador com a pasta de mídias, as etapas da janela projeto, o editor de config, as abas da configuração…), foca cada campo e lista os que têm o brilho cortado: o campo, o bloco que corta e de que lado.
+  veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
+- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas etapas principais, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
 
   ```bash
   node extension/scripts/check-focus-crop.js
   ```
 
-  precisa do Playwright. as transições ficam desligadas (o brilho é medido no tamanho final) e o script sai com erro quando acha algum corte.
-- **tela ou etapa nova** → acrescente o passo para chegar nela na lista `CHECKS` do script. ele não vê o que só aparece depois de uma ação que não está nos passos (ex: uma linha nova).
-- **corte só durante a animação** (o bloco abrindo, com `overflow: hidden` do `motion.js`) é aceitável: no fim da animação o brilho aparece inteiro.
+  precisa do Playwright e sai com erro quando acha algum corte. **tela ou etapa nova** → acrescente o passo na lista `CHECKS` do script.
 
 ## 📍 antes de enviar
 
@@ -146,7 +145,7 @@ o campo com foco ganha um brilho de **4 px em volta** (`.cfg-input:focus`, em `p
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
-- [ ] **o brilho do foco aparece inteiro** em todos os campos ([acima](#-brilho-do-foco-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
+- [ ] **sem halos** (nenhuma sombra ou anel em volta dos componentes) e **o foco aparece inteiro** ([acima](#-foco-um-contorno-fino-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
 - [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
