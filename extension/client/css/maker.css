@@ -171,6 +171,29 @@ body.maker-page {
   opacity: 0.55;
 }
 
+/* a caixa de texto (lista) no vidro: igual aos campos do vidro, nos dois temas (não a pílula sólida da folha) */
+.maker-glass .dropdown-trigger {
+  min-height: 42px; /* a altura dos campos ao lado */
+  border-color: rgb(var(--on-brand) / 30%);
+  background: rgb(var(--on-brand) / 12%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .dropdown-trigger:hover:not(:disabled) {
+  border-color: rgb(var(--on-brand) / 55%);
+  background: rgb(var(--on-brand) / 16%);
+}
+
+.maker-glass .dropdown-trigger[aria-expanded="true"],
+.maker-glass .dropdown-trigger:focus-visible {
+  border-color: rgb(var(--on-brand) / 80%);
+  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 22%);
+}
+
+.maker-glass .select::after {
+  border-color: rgb(var(--on-brand) / 85%);
+}
+
 .maker-glass .has-field-icon>.field-icon,
 .maker-glass .has-field-icon:focus-within>.field-icon {
   stroke: rgb(var(--on-brand) / 85%);
@@ -233,6 +256,7 @@ body.maker-page {
 
 .maker-glass .cfg-grid {
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 0.85fr); /* a caixa de texto ("CAIXA ALTA") cabe inteira */
+  align-items: end; /* um rótulo em duas linhas não desalinha os campos */
 }
 
 /* exemplo e dicas lado a lado */
