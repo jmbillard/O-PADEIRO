@@ -770,7 +770,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			btn.type = 'button';
 			btn.title = (node.fsName || node.text) + (templatePreset(node.uri) ? '\nrender: ' + templatePreset(node.uri) : '');
-			btn.appendChild(svgIcon('file'));
+			btn.appendChild(templateThumb(node));
 			btn.appendChild(el('span', 'tree-label', node.text.replace(/\.[a-z0-9]+$/i, '')));
 
 			// nos fixados e recentes, a pasta do template ajuda a diferenciar nomes iguais
@@ -809,6 +809,35 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		return li;
+	}
+
+	// O cartão do template: a prévia (o '<template>_preview.png' que o criador grava, ao lado do .aep/.aet) ou, sem
+	// ela, o ícone de arquivo. a imagem carrega só quando o cartão aparece na lista (loading lazy) e fica no cache do
+	// painel: a lista continua abrindo na hora
+	function templateThumb(node) {
+		var box = el('span', 'tree-thumb');
+		var path = String(node.fsName || node.uri || '');
+
+		box.appendChild(svgIcon('file'));
+
+		if (!path || !/\.ae[pt]x?$/i.test(path)) return box;
+
+		var img = new Image();
+
+		img.className = 'tree-thumb-img';
+		img.alt = '';
+		img.loading = 'lazy';
+		img.decoding = 'async';
+		img.onload = function () {
+			box.classList.add('has-image');
+		};
+		img.onerror = function () {
+			img.remove(); // sem prévia: fica o ícone
+		};
+		img.src = PAD_UTIL.fileUrl(path.replace(/\.ae[pt]x?$/i, '') + '_preview.png');
+		box.appendChild(img);
+
+		return box;
 	}
 
 	// Loader temático (css/loader.css, desenho em util.js)
