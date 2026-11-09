@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
+a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas direto no degradê à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé. a aba aberta fica com um contorno fino.
 
 <p align="center"><img src="images/anim/produtor.webp" alt="O PRODUTOR: as abas (cada ícone anima ao passar)" width="900"></p>
 
@@ -276,7 +276,7 @@ a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca mu
 
 a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro **neste computador**. sem personalização, vale o padrão da equipe (que se edita em **⋯ > editar o padrão da equipe**).
 
-- **modo** e **fundo** → dois menus lado a lado: claro, escuro ou automático (segue o sistema); degradê ou sólido. o escuro é o inverso do claro sobre o degradê: o vidro, os textos e os ícones (barra, listas, abas, botões) ficam pretos, e o item escolhido vira uma pílula escura.
+- **modo** e **fundo** → dois menus lado a lado: claro, escuro ou automático (segue o sistema); degradê ou sólido. o escuro é o inverso do claro sobre o degradê: os textos, os ícones e os contornos (barra, listas, abas, botões) ficam pretos, e o item escolhido ganha um contorno escuro. a prévia ao lado mostra as duas colunas de uma janela com as escolhas.
 - **cores** → o quadradinho com o espectro mostra as duas amostras: no **degradê**, início e fim (o fundo das janelas e da barra); no **sólido**, só a primeira (a cor do fundo e dos destaques); a linha da segunda fica desabilitada e ela volta ao trocar para degradê. cada amostra fica sobre a própria cor no quadradinho: a volta em torno do centro é a **matiz** e a distância do centro é a **saturação** (no centro, sem cor; na borda, a cor pura). **arraste** a amostra por todo o quadradinho (ou clique nele para levar até ali a amostra da linha aberta); clicar numa amostra abre a linha dela. ao lado, cada amostra tem uma linha com o nome e o código (`#rrggbb`, para digitar); clique na linha para abrir o **brilho** (o trilho mostra o efeito na própria cor; o quadradinho mostra as cores no brilho da cor da linha aberta, e a amostra dela fica por cima). no degradê, o destaque (botões, títulos, seleção) é o tom do meio entre início e fim; os tons claros (seleção, avisos, bordas de foco) são calculados a partir dele. com cores claras, o padeiro ajusta a leitura sozinho: o destaque usado em textos escurece até dar para ler (no modo escuro, clareia), e os textos e ícones sobre o degradê (barra, abas, botões) trocam o branco por um tom escuro.
 - **fonte** → Inter (padrão), a do sistema, Helvetica / Arial, Segoe UI, Roboto, Georgia ou monoespaçada. a fonte precisa estar instalada no computador.
 - **logo da barra** → uma imagem no lugar do pãozinho (reduzida para caber, sem cortar; PNG com fundo transparente fica melhor). '*voltar ao pãozinho*' desfaz.

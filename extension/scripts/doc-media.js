@@ -79,10 +79,13 @@ function markInPage(list) {
 		const n = document.createElement('b');
 		const left = Math.max(2, r.left - pad);
 		const top = Math.max(2, r.top - pad);
+		// o número fica sempre inteiro na imagem: perto da borda, ele entra no anel em vez de sair
+		const nLeft = Math.max(-9, 2 - left);
+		const nTop = Math.max(-9, 2 - top);
 
 		box.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + Math.min(innerWidth - left - 2, r.width + pad * 2) + 'px;height:' + Math.min(innerHeight - top - 2, r.height + pad * 2) + 'px;border-radius:' + radius + ';border:2px solid #ff9f1c;box-shadow:0 0 0 3px rgba(255,159,28,.25),0 0 14px rgba(255,159,28,.35);box-sizing:border-box';
 		n.textContent = m.n || i + 1;
-		n.style.cssText = 'position:absolute;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#ff9f1c;color:#1d2340;font:800 11px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,30,70,.35);border:1.5px solid #fff;' + (m.at === 'right' ? 'right:-9px;top:-9px' : m.at === 'bottom' ? 'left:-9px;bottom:-9px' : 'left:-9px;top:-9px');
+		n.style.cssText = 'position:absolute;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#ff9f1c;color:#1d2340;font:800 11px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,30,70,.35);border:1.5px solid #fff;' + (m.at === 'right' ? 'right:-9px;top:' + nTop + 'px' : m.at === 'bottom' ? 'left:' + nLeft + 'px;bottom:-9px' : 'left:' + nLeft + 'px;top:' + nTop + 'px');
 		box.appendChild(n);
 		layer.appendChild(box);
 	});
@@ -255,7 +258,7 @@ const SHOTS = {
 		await p.fill('#q-paths', 'reporter');
 		await p.waitForTimeout(1600);
 	}, marks: [{ sel: '#tabs' }, { sel: '#q-paths' }, { sel: '#opts-paths' }, { sel: '#results-paths > *:first-child' }] },
-	adaptador: { w: 560, h: 300, url: 'converter.html', async run(p) {
+	adaptador: { w: 560, h: 182, url: 'converter.html', async run(p) {
 		await p.fill('#cv-mac', '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026');
 		await p.locator('#cv-mac').dispatchEvent('input');
 		await p.waitForTimeout(800);
@@ -378,9 +381,9 @@ const SCENES = {
 		await tap(p, '#tab-texts', { wait: 1400 });
 	} },
 
-	// O ADAPTADOR: cola o caminho do Mac e sai o do Windows
-	adaptador: { w: 560, h: 260, url: 'converter.html', async run(p) {
-		mouse = [520, 230];
+	// O ADAPTADOR: cola o caminho do Mac e sai o do Windows (a altura do conteúdo, como a janela)
+	adaptador: { w: 560, h: 182, url: 'converter.html', async run(p) {
+		mouse = [520, 160];
 		await p.waitForTimeout(500);
 		await tap(p, '#cv-mac', { wait: 200 });
 		await p.keyboard.press('Control+A');

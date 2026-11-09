@@ -43,6 +43,18 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração (`◖ clique DUPLO
 
 cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
+### 🎨 o visual
+
+todas as janelas falam a mesma língua: o **degradê** à esquerda, com as listas, as abas e os campos direto nele (só um contorno fino, sem caixas nem brilhos em volta), e a **folha branca** à direita. o escolhido ganha um contorno; os cantos arredondados são concêntricos; o respiro é de 16 px em volta; e os botões do rodapé ficam na mesma linha em todas as janelas, lado a lado. claro, escuro e as cores da equipe ficam na aba **aparência** d'[O PRODUTOR](docs/producoes.md#-aparência).
+
+<table><tr>
+<td width="34%"><a href="docs/templates.md"><img src="docs/images/forninho-preencher.webp" alt="O FORNINHO"></a><p align="center"><b>O FORNINHO</b></p></td>
+<td width="33%"><a href="docs/criador.md"><img src="docs/images/forma.webp" alt="A FORMA"></a><p align="center"><b>A FORMA</b></p></td>
+<td width="33%"><a href="docs/producoes.md"><img src="docs/images/produtor.webp" alt="O PRODUTOR"></a><p align="center"><b>O PRODUTOR</b></p></td>
+</tr></table>
+
+> 🧭 *vai mexer nas telas? o [guia de UI](docs/guia-ui.md) tem as regras e as três checagens automáticas (cantos, rodapés e foco).*
+
 <br>
 
 ## 📍 sumário

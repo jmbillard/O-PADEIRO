@@ -37,7 +37,7 @@ O-PADEIRO/
    ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
    │  ├─ *.html                  → uma página por painel
-   │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, vidro, folha branca)
+   │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, folha branca, contornos finos)
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
    │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
@@ -68,7 +68,7 @@ O-PADEIRO/
    │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), a checagem do brilho do foco (check-focus-crop.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js e check-focus-crop.js, com as telas em ui-states.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>
@@ -169,7 +169,23 @@ sem o After Effects, os painéis usam o `mock-host.js` (templates, produções e
 
 no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta das fontes).
 
-> 🧭 *antes de enviar uma mudança de tela, rode a checagem do brilho do foco (`node extension/scripts/check-focus-crop.js`) e confira o [guia de UI](../docs/guia-ui.md).*
+### checagens de UI
+
+antes de enviar uma mudança de tela, confira o [guia de UI](../docs/guia-ui.md) e rode as três checagens. elas abrem todas as janelas no modo de teste, passam pelas telas de `extension/scripts/ui-states.js` (a barra, o tour, cada etapa e cada aba) e saem com erro quando acham algo fora:
+
+```bash
+node extension/scripts/check-corners.js
+node extension/scripts/check-footers.js
+node extension/scripts/check-focus-crop.js
+```
+
+| checagem | confere |
+| --- | --- |
+| `check-corners.js` | **cantos concêntricos**: todo canto arredondado dentro de outro fecha a conta (raio de fora = raio de dentro + respiro + borda); diz o raio que o de fora pede |
+| `check-footers.js` | **rodapés na mesma linha**: o centro de cada botão de rodapé a `--footer-center` (35 px) do fundo, e todo `⋯` com 38 px |
+| `check-focus-crop.js` | **foco inteiro**: o contorno do foco (3 px em volta) não é cortado por um bloco que rola ou recolhe |
+
+tela ou etapa nova → acrescente o passo para chegar nela em `ui-states.js`: vale para as três.
 
 ### imagens da documentação
 

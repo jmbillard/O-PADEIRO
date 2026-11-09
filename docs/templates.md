@@ -4,7 +4,7 @@
 
 o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita e alta, só com a busca (a lista inteira sem rolar), e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
 
 <p align="center"><img src="images/anim/forninho.webp" alt="O FORNINHO: busca, escolhe o template e preenche" width="900"></p>
 
@@ -14,13 +14,13 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 | :---: | --- | :---: | --- |
 | ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** |
 | ❷ | **fixados, recentes e novos** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
-| ❸ | na lista, a **miniatura** cresce no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
+| ❸ | na lista, a **miniatura** cresce até o tamanho dos cartões no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
 | ❹ | **atualizar**: lê a pasta de novo | ❹ | **dicas** de preenchimento |
 | ❺ | **abrir a pasta** de templates | ❺ | **importar** sem preencher |
 | ❻ | **produção**: a pasta de templates mostrada | ❻ | **pasta de output** do template |
 | ❼ | **⋯**: configuração, ajuda e recarregar | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
 
-**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
+**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse, até o tamanho das dos cartões; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. prévias com transparência ficam sobre um quadriculado. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
 1. `◖ clique esquerdo` em **templates**, na barra.
 2. busque ou navegue pelas pastas.
