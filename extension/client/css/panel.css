@@ -1833,45 +1833,30 @@ body.motion-ready .eyebrow {
   padding-right: 38px;
 }
 
-/* os templates em cartões, duas colunas: a prévia (16:9) em cima e o nome embaixo; o selo AEP sobre a prévia e a
-   estrela no canto. as pastas continuam em linhas, de ponta a ponta */
-.tree-item {
-  display: inline-block;
-  width: calc(50% - 6px);
-  margin: 3px;
-  vertical-align: top;
-}
-
-.tree-item>.tree-row {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 7px;
-  padding: 7px 7px 9px !important;
-  border-radius: 16px;
-}
-
-.tree-item>.tree-row .tree-label {
-  overflow: hidden;
-  font-size: 0.74rem;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
+/* a prévia de cada template ('<template>_preview.png'): na lista, uma miniatura pequena no lugar do ícone, que
+   cresce no template escolhido e ao passar o mouse; nos fixados e recentes, cartões em duas colunas (a prévia
+   16:9 em cima, o nome embaixo, o selo AEP sobre a prévia e a estrela no canto). sem prévia, o ícone de arquivo */
 .tree-thumb {
   position: relative;
   display: grid;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
+  width: 40px;
+  height: 22.5px;
+  flex: 0 0 auto;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 6px;
   background: rgb(var(--on-brand) / 10%);
   box-shadow: inset 0 0 0 1px rgb(var(--shine-rgb) / 16%);
+  transition:
+    width 320ms var(--ease-soft),
+    height 320ms var(--ease-soft),
+    border-radius 320ms var(--ease-soft);
 }
 
 .tree-thumb>svg {
-  width: 26px !important;
-  height: 26px !important;
-  opacity: 0.6;
+  width: 15px !important;
+  height: 15px !important;
+  opacity: 0.7;
 }
 
 .tree-thumb-img {
@@ -1892,7 +1877,51 @@ body.motion-ready .eyebrow {
   opacity: 1;
 }
 
-.tree-item>.tree-row .tree-ext {
+/* C · a lista: a miniatura cresce no escolhido e no hover (só as que têm prévia) */
+.tree-item[data-section=""]:hover .tree-thumb.has-image,
+.tree-item[data-section=""].is-selected .tree-thumb.has-image {
+  width: 128px;
+  height: 72px;
+  border-radius: 9px;
+}
+
+/* B · fixados e recentes: cartões em duas colunas */
+.tree-item:not([data-section=""]) {
+  display: inline-block;
+  width: calc(50% - 6px);
+  margin: 3px;
+  vertical-align: top;
+}
+
+.tree-item:not([data-section=""])>.tree-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 7px;
+  padding: 7px 7px 9px !important;
+  border-radius: 16px;
+}
+
+.tree-item:not([data-section=""])>.tree-row .tree-label {
+  overflow: hidden;
+  font-size: 0.74rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.tree-item:not([data-section=""]) .tree-thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+}
+
+.tree-item:not([data-section=""]) .tree-thumb>svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.tree-item:not([data-section=""])>.tree-row .tree-ext,
+.tree-item:not([data-section=""]).is-selected>.tree-row .tree-ext {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -1901,12 +1930,24 @@ body.motion-ready .eyebrow {
   color: #fff;
 }
 
-.tree-item.is-selected>.tree-row .tree-ext {
-  border-color: transparent;
-  color: #fff;
+.tree-item:not([data-section=""])>.tree-row .tree-trail {
+  max-width: 100%;
 }
 
-.tree-item>.tree-row .tree-trail {
+.tree-item:not([data-section=""])>.tree-star {
+  top: 11px;
+  right: 11px;
+  background: rgb(0 0 0 / 28%);
+  color: #fff;
+  transform: none;
+}
+
+.tree-item:not([data-section=""])>.tree-star:hover {
+  background: rgb(0 0 0 / 42%);
+  transform: rotate(-14deg) scale(1.12);
+}
+
+.tree-trail {
   max-width: 100%;
 }
 
