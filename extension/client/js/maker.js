@@ -1065,7 +1065,22 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		start();
 	}
 
+	// A FORMA abre grande: as duas colunas inteiras, sem rolar de cara (o tamanho do manifest só vale para quem
+	// reinstalar; aqui vale para todos). nunca maior que a tela, e nunca encolhe quem já abriu maior
+	var OPEN_WIDTH = 1260;
+	var OPEN_HEIGHT = 960;
+
+	function openBig() {
+		if (!PAD_BRIDGE.inCep()) return;
+
+		var w = Math.min(OPEN_WIDTH, (screen.availWidth || OPEN_WIDTH) - 40);
+		var h = Math.min(OPEN_HEIGHT, (screen.availHeight || OPEN_HEIGHT) - 60);
+
+		if (window.innerWidth < w - 4 || window.innerHeight < h - 4) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, w), Math.max(window.innerHeight, h));
+	}
+
 	function init() {
+		openBig();
 		PAD_DROPDOWN.enhance($('f-case'), 'textCase');
 
 		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {
