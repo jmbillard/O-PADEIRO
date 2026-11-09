@@ -321,10 +321,11 @@ PADX.makerTest = function (a) {
 // Marca a comp como template, salva o projeto (janela do After Effects) e grava o config, o preview e as fontes.
 // a: { compId, layers: [{id, method}], fx: { layerId, fxName, optionIndex, options } | null, config } — 'config' sem
 // 'compName' / 'inputLayers' / 'inputFx'.
-// O arquivo proposto para salvar o template: '<ATRAÇÃO> <O QUE É>.aep', na pasta do projeto aberto (já salvo) ou,
-// sem ela, na pasta de templates da produção escolhida (sem acesso: a Área de Trabalho)
+// O arquivo proposto para salvar o template: '<PREFIXO> <O QUE É>.aet' (a atração já é o nome da pasta e aparece
+// na busca), na pasta do projeto aberto (já salvo) ou, sem ela, na pasta de templates da produção escolhida (sem
+// acesso: a Área de Trabalho)
 function padMakerSaveTarget(cfg) {
-	var name = padAepName((cfg.atracao ? cfg.atracao.name : '') + ' ' + cfg.configName) || 'TEMPLATE';
+	var name = padAepName((cfg.prefix || '') + ' ' + cfg.configName) || 'TEMPLATE';
 	var folder = app.project.file ? app.project.file.parent : null;
 
 	if (!folder) {
@@ -338,7 +339,7 @@ function padMakerSaveTarget(cfg) {
 
 	if (!folder) folder = Folder.desktop;
 
-	return new File(folder.fsName + '/' + name + '.aep');
+	return new File(folder.fsName + '/' + name + '.aet');
 }
 
 // no macOS, o filtro da janela é uma função: só pastas e projetos do After Effects
@@ -398,7 +399,7 @@ PADX.makerSave = function (a) {
 		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Projeto do After Effects:*.aep;*.aet' : padMakerSaveFilter);
 
 		if (target) {
-			if (!/\.ae[pt]$/i.test(target.name)) target = new File(target.fsName + '.aep');
+			if (!/\.ae[pt]$/i.test(target.name)) target = new File(target.fsName + '.aet');
 			app.project.save(target);
 			saved = true;
 		}
