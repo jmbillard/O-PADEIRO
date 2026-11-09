@@ -20,6 +20,9 @@
   --accent-deep-rgb: 79 100 255;
   --button-glow-rgb: var(--accent-deep-rgb); /* o brilho dos botões de destaque (no escuro: o claro, theme.css) */
   --glow-rgb: 168 208 255;
+  /* brilho é brilho: os reflexos (a faixa que passa nos botões, o fio de luz no topo dos vidros, a mancha clara do
+     degradê) são sempre claros, em qualquer tema. o --on-brand é a tinta sobre o degradê e no escuro vira preta */
+  --shine-rgb: 255 255 255;
   --shade-rgb: 38 66 173;
   /* a dobra do canto dos ícones de arquivo: um tom mais escuro da cor do próprio ícone (preto transparente, que
      escurece qualquer cor do tema); sobre o degradê, o inverso do texto (no escuro, o ícone é preto: dobra clara) */
@@ -107,7 +110,7 @@ body {
   padding: 24px;
   background:
     radial-gradient(circle at 14% 6%,
-      rgb(var(--on-brand) / 20%),
+      rgb(var(--shine-rgb) / 20%),
       transparent 25%),
     radial-gradient(circle at 88% 82%,
       rgb(var(--glow-rgb) / 20%),
@@ -559,9 +562,9 @@ svg {
   left: -45%;
   background:
     linear-gradient(90deg,
-      transparent,
-      rgb(255 255 255 / 48%),
-      transparent);
+      rgb(var(--shine-rgb) / 0%),
+      rgb(var(--shine-rgb) / 48%),
+      rgb(var(--shine-rgb) / 0%));
   content: "";
   animation: progress-shine 2.3s ease-in-out infinite;
 }
