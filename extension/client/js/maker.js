@@ -30,7 +30,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		comp: null, // { id, name, time }
 		layers: [], // { id, index, name, isText, method, missing }
 		outputs: [''],
-		fx: null, // as variações de layout: { layerId, layerIndex, layerName, fxName, optionIndex, count, options: [sufixo] }
+		fx: null, // as variações de layout: { layerId, layerIndex, layerName, fxName, optionIndex, count, kind ('menu' | 'checkbox'), options: [sufixo] }
 		atr: null, // a atração do template: { name, path, out, display, isNew }
 		autoOut: '', // a pasta de output que veio da atração (troca junto com ela)
 		emptyConfirm: null,
@@ -662,7 +662,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	/* =========================================================
 	   Variações de layout (inputFx)
 	   o efeito de menu da comp principal: uma comp por opção, com o sufixo no fim do nome. a posição na lista é
-	   o número da opção no menu (o formato do config), então só a última opção sai.
+	   o número da opção no menu (o formato do config), então só a última opção sai. um checkbox (Checkbox
+	   Control) tem sempre as duas: desligado e ligado.
 	   ========================================================= */
 
 	var FX_SVG = '<svg class="fx-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h3M13 17h7" /><circle cx="16" cy="7" r="2.5" /><circle cx="10" cy="17" r="2.5" /></svg>';
@@ -697,7 +698,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		try {
 			var fx = await call('makerPickEffect', { compId: state.comp.id });
 			var before = state.fx ? state.fx.options : [];
-			var total = fx.count || Math.max(before.length, 2); // sem o total do menu: as linhas de antes (ou 2)
+			var total = fx.kind === 'checkbox' ? 2 : fx.count || Math.max(before.length, 2); // sem o total do menu: as linhas de antes (ou 2)
 
 			fx.options = [];
 			for (var i = 0; i < total; i++) fx.options.push(before[i] || '');
@@ -717,11 +718,14 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var fx = state.fx;
 
 		box.textContent = '';
+		var checkbox = fx && fx.kind === 'checkbox';
+
 		$('btn-fx').textContent = fx ? '+ opção' : '+ efeito';
-		$('btn-fx').title = fx ? 'mais uma opção do menu (a próxima)' : 'usar o efeito de menu selecionado no Effect Controls da comp principal';
+		$('btn-fx').title = fx ? 'mais uma opção do menu (a próxima)' : 'usar o efeito de layout selecionado no Effect Controls da comp principal (menu ou checkbox)';
+		$('btn-fx').hidden = checkbox; // o checkbox tem só desligado e ligado
 
 		if (!fx) {
-			box.appendChild(el('p', 'cfg-empty', 'selecione o efeito de menu no Effect Controls e clique em “+ efeito”.'));
+			box.appendChild(el('p', 'cfg-empty', 'selecione o efeito de menu (ou de checkbox) no Effect Controls e clique em “+ efeito”.'));
 			updateChecklist();
 			return;
 		}
@@ -732,8 +736,11 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var swap = el('button', 'fx-swap');
 
 		row.insertAdjacentHTML('afterbegin', FX_SVG);
-		row.appendChild(el('span', 'maker-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName));
-		row.appendChild(el('span', 'fx-kind', 'menu · ' + fx.options.length + (fx.options.length === 1 ? ' opção' : ' opções')));
+		var fxName = el('span', 'maker-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName);
+
+		fxName.title = fxName.textContent; // o nome encolhe com reticências: inteiro na dica
+		row.appendChild(fxName);
+		row.appendChild(el('span', 'fx-kind', checkbox ? 'checkbox' : 'menu · ' + fx.options.length + (fx.options.length === 1 ? ' opção' : ' opções')));
 		swap.type = 'button';
 		swap.title = 'trocar pelo efeito selecionado no Effect Controls';
 		swap.setAttribute('aria-label', 'trocar o efeito');
@@ -756,14 +763,15 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var optLine = el('div', 'fx-line');
 			var opt = el('div', 'cfg-row fx-opt');
 			var input = el('input', 'cfg-input');
-			var last = i === fx.options.length - 1 && fx.options.length > 1;
+			var last = !checkbox && i === fx.options.length - 1 && fx.options.length > 1;
+			var optName = checkbox ? (i === 0 ? 'desligado' : 'ligado') : 'opção ' + (i + 1);
 
 			input.type = 'text';
 			input.value = suffix;
 			input.placeholder = 'sufixo';
 			input.spellcheck = false;
 			input.autocomplete = 'off';
-			input.setAttribute('aria-label', 'sufixo da opção ' + (i + 1));
+			input.setAttribute('aria-label', 'sufixo: ' + optName);
 			input.addEventListener('input', function () {
 				fx.options[i] = input.value;
 				updateFxNames();
@@ -773,7 +781,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				input.value = fx.options[i] = cleanSuffix(input.value);
 				updateFxNames();
 			});
-			opt.appendChild(el('span', 'cfg-row-label', 'opção ' + (i + 1)));
+			opt.appendChild(el('span', 'cfg-row-label', optName));
 			opt.appendChild(input);
 			optLine.appendChild(opt);
 			optLine.appendChild(last ? PAD_UTIL.trashButton('remover a opção ' + (i + 1), function () {
@@ -972,7 +980,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				layers: state.layers.map(function (l) {
 					return { id: l.id, method: l.method };
 				}),
-				fx: state.fx ? { layerId: state.fx.layerId, fxName: state.fx.fxName, optionIndex: state.fx.optionIndex, options: state.fx.options.map(cleanSuffix) } : null,
+				fx: state.fx ? { layerId: state.fx.layerId, fxName: state.fx.fxName, optionIndex: state.fx.optionIndex, kind: state.fx.kind || 'menu', options: state.fx.options.map(cleanSuffix) } : null,
 				config: cfg
 			});
 

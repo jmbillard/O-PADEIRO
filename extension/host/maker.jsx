@@ -202,9 +202,10 @@ PADX.makerLayers = function (a) {
 	return { layers: layers };
 };
 
-// O efeito de menu selecionado no Effect Controls (o efeito inteiro ou a propriedade do menu): as variações de layout.
-// → { layerId, layerIndex, layerName, fxName, optionIndex, count } (count: o total de opções do menu, 0 se não deu
-// para saber)
+// O efeito de layout selecionado no Effect Controls (o efeito inteiro ou a propriedade): as variações de layout. um
+// menu (Dropdown Menu Control: uma comp por opção) ou um checkbox (Checkbox Control: desligado e ligado).
+// → { layerId, layerIndex, layerName, fxName, optionIndex, count, kind } (count: o total de opções, 0 se não deu
+// para saber; kind: 'menu' ou 'checkbox')
 PADX.makerPickEffect = function (a) {
 	var comp = padMakerComp(a.compId);
 	var props = comp.selectedProperties;
@@ -212,15 +213,26 @@ PADX.makerPickEffect = function (a) {
 
 	for (var i = 0; i < props.length && !menu; i++) menu = padMenuProperty(props[i]);
 
-	if (!menu) throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito de menu do layout (ex: Dropdown Menu Control).');
+	if (!menu) throw new Error('#PAD_097 - selecione no Effect Controls da comp principal o efeito do layout (Dropdown Menu Control ou Checkbox Control).');
 
 	var effect = menu.parentProperty;
 	var layer = effect.parentProperty.parentProperty;
+	var checkbox = padIsCheckbox(menu);
 
-	return { layerId: layer.id, layerIndex: layer.index, layerName: layer.name, fxName: effect.name, optionIndex: menu.propertyIndex, count: padMenuCount(menu) };
+	return { layerId: layer.id, layerIndex: layer.index, layerName: layer.name, fxName: effect.name, optionIndex: menu.propertyIndex, count: checkbox ? 2 : padMenuCount(menu), kind: checkbox ? 'checkbox' : 'menu' };
 };
 
-// A propriedade de menu: a selecionada (direto dentro de um efeito) ou, num efeito selecionado, a primeira de menu dele
+// Um checkbox: o do Checkbox Control (desligado = 0, ligado = 1)
+function padIsCheckbox(prop) {
+	try {
+		return prop.parentProperty.matchName == 'ADBE Checkbox Control';
+	} catch (err) {
+		return false;
+	}
+}
+
+// A propriedade do layout: a selecionada (direto dentro de um efeito) ou, num efeito selecionado, a primeira de menu
+// (ou de checkbox) dele
 function padMenuProperty(prop) {
 	var isEffect = function (p) {
 		return p && p.parentProperty && p.parentProperty.matchName == 'ADBE Effect Parade';
@@ -232,7 +244,7 @@ function padMenuProperty(prop) {
 			if (p.isDropdownEffect) return true;
 		} catch (err) { }
 
-		return p.parentProperty.matchName == 'ADBE Dropdown Control';
+		return p.parentProperty.matchName == 'ADBE Dropdown Control' || padIsCheckbox(p);
 	};
 
 	if (prop instanceof Property) return isEffect(prop.parentProperty) && isMenu(prop) ? prop : null;
@@ -339,6 +351,9 @@ PADX.makerSave = function (a) {
 		if (!fxLayer) throw new Error('#PAD_097 - o layer do efeito de layout não existe mais na comp: troque o efeito.');
 
 		cfg.inputFx = { layerIndex: fxLayer.index, fxName: a.fx.fxName, optionIndex: a.fx.optionIndex, options: a.fx.options };
+
+		// checkbox: as opções são desligado (0) e ligado (1); sem 'kind', é um menu (1, 2, 3…), como sempre foi
+		if (a.fx.kind == 'checkbox') cfg.inputFx.kind = 'checkbox';
 	} else {
 		delete cfg.inputFx;
 	}

@@ -1017,6 +1017,8 @@ PADX.saveTemplateConfig = function (a) {
 		delete cfg.inputFx;
 	} else if (!(cfg.inputFx.options instanceof Array) || cfg.inputFx.options.length == 0 || String(cfg.inputFx.fxName).trim() == '') {
 		throw new Error('#PAD_044 - efeito de variações incompleto');
+	} else if (cfg.inputFx.kind == 'checkbox' && cfg.inputFx.options.length > 2) {
+		throw new Error('#PAD_044 - efeito de variações: um checkbox tem só 2 opções (desligado e ligado)');
 	}
 
 	var configFile = padTemplateFiles(projectFile).config;
@@ -1326,7 +1328,7 @@ PADX.fillStep = function (a) {
 					.property('ADBE Effect Parade')
 					.property(templateData.inputFx.fxName)
 					.property(templateData.inputFx.optionIndex)
-					.setValue(job.f + 1);
+					.setValue(templateData.inputFx.kind == 'checkbox' ? job.f : job.f + 1); // checkbox: 0 desligado, 1 ligado; menu: 1, 2, 3…
 			}
 
 			// Preenche a informação nos layers editáveis

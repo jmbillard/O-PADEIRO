@@ -22,7 +22,7 @@ um template do padeiro é um conjunto de arquivos:
 | ❺ | **preview** | clique para capturar o frame da agulha da timeline. |
 | ❻ | **fontes usadas** | cada fonte da comp, escrita nela mesma (? = não instalada). |
 | ❼ | **layers editáveis** | a ordem das informações no input e o que cada uma muda no layer. |
-| ❽ | **variações de layout** | opcional: um efeito de menu da comp principal, cada opção vira uma comp com o sufixo no nome. |
+| ❽ | **variações de layout** | opcional: um efeito de menu (ou um checkbox) da comp principal, cada opção vira uma comp com o sufixo no nome. |
 | ❾ | **testar agora** | preenche uma cópia com o exemplo, para conferir antes de salvar. |
 | ❿ | **salvar template** | grava o projeto, a config, o preview e as fontes. |
 
@@ -89,6 +89,7 @@ opcional: um efeito de menu da comp principal (ex: um Dropdown Menu Control com 
 - **+ efeito** → selecione no Effect Controls da comp principal o efeito (ou a propriedade do menu) e clique: a linha do efeito mostra o layer, o efeito e o total de opções do menu, e cada opção ganha o campo do **sufixo**.
 - **⟳** (dentro da linha do efeito) → troca pelo efeito selecionado agora (os sufixos ficam).
 - **+ opção** → quando o padeiro não consegue ler o total de opções do menu. só a última opção sai (a lixeira): a posição na lista é o número da opção no menu.
+- **checkbox** → um **Checkbox Control** também vale: as opções são sempre duas, **desligado** e **ligado**, cada uma com o seu sufixo (ex: `SEM LOGO` e `COM LOGO`). no config, o efeito fica com `"kind": "checkbox"`.
 - **nomes finais com o exemplo** → um por opção. cada opção precisa de um sufixo, sem repetir (o item **layout** do topo avisa).
 
 ### arquivo de configuração
@@ -125,7 +126,8 @@ opcional: um efeito de menu da comp principal (ex: um Dropdown Menu Control com 
 
 > 📋 *variações de layout* (`inputFx`):\
 > o primeiro layer da comp principal tem um controlador de expressão chamado '**layout**' com **2 opções** de alinhamento, esquerda e direita, e os sufixos '**E**' e '**D**'.\
-> cada preenchimento desse template gera **2 comps**: uma alinhada à esquerda, com sufixo '**E**', e outra à direita, com sufixo '**D**'. as variações são editadas no [editor de config](templates.md#editor-de-config).
+> cada preenchimento desse template gera **2 comps**: uma alinhada à esquerda, com sufixo '**E**', e outra à direita, com sufixo '**D**'. as variações são editadas no [editor de config](templates.md#editor-de-config).\
+> com um **checkbox** (`"kind": "checkbox"`), os sufixos são o desligado e o ligado, nessa ordem: `{"fxName": "logo", "optionIndex": 1, "kind": "checkbox", "options": ["SEM LOGO", "COM LOGO"]}`. *o padeiro legacy (v1) não conhece o checkbox: um template assim só preenche nesta versão.*
 
 <br>
 

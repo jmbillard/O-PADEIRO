@@ -388,8 +388,8 @@ são preservadas ao salvar.
 		fxCard.appendChild(fxBody);
 		field(fxBody, 'fxLayerIndex', 'Layer do efeito', input(fx ? fx.layerIndex : 1, 'number'), 'índice do layer que tem o efeito.');
 		field(fxBody, 'fxName', 'Nome do efeito', input(fx ? fx.fxName : ''), 'nome exato do efeito no layer.');
-		field(fxBody, 'fxOptionIndex', 'Índice da opção', input(fx ? fx.optionIndex : 1, 'number'), 'posição do controle de lista dentro do efeito.');
-		field(fxBody, 'fxOptions', 'Sufixos', input(fx ? fx.options.join(', ') : ''), 'separados por vírgula, na ordem das opções. ex: E, D');
+		field(fxBody, 'fxOptionIndex', 'Índice da opção', input(fx ? fx.optionIndex : 1, 'number'), 'posição do controle (menu ou checkbox) dentro do efeito.');
+		field(fxBody, 'fxOptions', 'Sufixos', input(fx ? fx.options.join(', ') : ''), fx && fx.kind === 'checkbox' ? 'checkbox: o sufixo desligado e o ligado. ex: SEM LOGO, COM LOGO' : 'separados por vírgula, na ordem das opções. ex: E, D');
 
 		function syncFx() {
 			fxBody.hidden = !fxToggle.checked;
@@ -551,6 +551,7 @@ são preservadas ao salvar.
 					layerIndex: parseInt(text('fxLayerIndex'), 10),
 					fxName: text('fxName').trim(),
 					optionIndex: parseInt(text('fxOptionIndex'), 10),
+					kind: fx && fx.kind === 'checkbox' ? 'checkbox' : undefined,
 					options: text('fxOptions')
 						.split(',')
 						.map(function (o) {
@@ -589,6 +590,8 @@ são preservadas ao salvar.
 				if (cfg.inputFx.fxName === '') bad('fxName', 'variações: informe o nome do efeito.');
 				if (!(cfg.inputFx.optionIndex >= 1)) bad('fxOptionIndex', 'variações: índice da opção inválido.');
 				if (cfg.inputFx.options.length === 0) bad('fxOptions', 'variações: informe ao menos um sufixo.');
+				if (cfg.inputFx.kind === 'checkbox' && cfg.inputFx.options.length > 2) bad('fxOptions', 'variações: o checkbox tem só 2 sufixos (desligado e ligado).');
+				if (!cfg.inputFx.kind) delete cfg.inputFx.kind;
 			}
 
 			return errors;

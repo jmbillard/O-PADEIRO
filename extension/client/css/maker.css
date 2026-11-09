@@ -872,12 +872,17 @@ body.maker-page {
 }
 
 .fx-effect .maker-layer-name {
+  min-width: 0;
+  flex: 0 1 auto; /* o nome do efeito encolhe (com reticências): o tipo ao lado fica inteiro */
+  overflow: hidden;
   cursor: default;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fx-kind {
-  min-width: 0;
-  flex: 1;
+  min-width: max-content;
+  flex: 1 0 auto;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.72rem;
