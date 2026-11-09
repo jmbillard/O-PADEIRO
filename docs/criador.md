@@ -66,6 +66,8 @@ ao salvar, o padeiro:
 - **caixa de texto** → `CAIXA ALTA`, `caixa baixa`, `Título` ou `livre` (sem conversão).
 - **separador** → o texto que separa informações diferentes no input. use `\n` para uma informação por linha.
 
+
+> 💡 *o nome das comps também pode vir de um layer de texto `script_template_name` (o último da comp principal), com uma expressão que junta as informações do jeito que o template quiser: veja [o nome da comp pelo layer](templates.md#o-nome-da-comp-pelo-layer-script_template_name).*
 ### layers editáveis
 
 > ![layers editáveis](images/criador-layers.webp)

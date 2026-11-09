@@ -214,7 +214,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 > 🚩 *obs:*\
 > • com uma pasta do projeto selecionada, a pasta e todas as comps dentro dela são renomeadas.\
 > • cada saída continua na pasta em que estava; itens já renderizados não mudam e nomes repetidos na mesma pasta ganham um sufixo (`_2`, `_3`...).\
-> • comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer.
+> • comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer ([como usar](docs/templates.md#o-nome-da-comp-pelo-layer-script_template_name)).
 
 **prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento, como palavras inteiras):
 

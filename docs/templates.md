@@ -111,11 +111,53 @@ o padeiro executa as seguintes tarefas, em ordem:
 1. importar o projeto do template.
 2. duplicar a comp principal para cada item do input.
 3. preencher os textos.
-4. renomear as comps a partir do conteúdo.
+4. renomear as comps a partir do conteúdo (ou pelo layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name)).
 5. organizar o projeto no padrão da PROMO.
 6. adicionar as comps à fila de render.
 7. definir os caminhos de output.
 8. rodar o script do template (`_script.js`), se existir ([abaixo](#script-do-template-_scriptjs)).
+
+### o nome da comp pelo layer `script_template_name`
+
+sem script nenhum, o template também pode decidir o nome das comps: o **último layer** da comp principal sendo um layer de **texto** chamado `script_template_name`, o texto dele vira o nome da comp. sem esse layer, o nome segue o padrão (`PREFIXO - INFORMAÇÕES SUFIXO`).
+
+- o nome sai em maiúsculas e sem acentos.
+- o padeiro lê o texto depois de preencher os layers editáveis: com uma **expressão** no texto do layer, o nome pode juntar as informações do jeito que o template quiser.
+- vale também para o **renomear** da barra: as comps (`◖`) e as saídas de render (`◗`) com esse layer recebem o nome dele.
+- deixe o layer como **guide layer** (ou com o olho desligado): ele está lá só para o nome, não aparece no render.
+- com o nome vindo do layer, o sufixo das [variações de layout](criador.md#variações-de-layout) **não** entra sozinho: se precisar, a expressão monta (exemplo 3).
+
+**exemplos** (a expressão vai no *Source Text* do layer `script_template_name`):
+
+**1 · o nome com as informações em outra ordem**: o cargo antes do nome.
+
+```js
+"RDP - " + thisComp.layer("CARGO").text.sourceText + " " + thisComp.layer("NOME").text.sourceText
+```
+→ `RDP - APRESENTADORA ANA MARIA`
+
+**2 · só a primeira linha de um texto de várias linhas**
+
+```js
+"VINHETA - " + thisComp.layer("TITULO").text.sourceText.split("\r")[0]
+```
+→ `VINHETA - PROXIMA` (de `PRÓXIMA` / `SEGUNDA`)
+
+**3 · o lado da variação de layout no nome** (o menu `layout`, opção 1 = esquerda)
+
+```js
+var lado = thisComp.layer("CTRL").effect("layout")("Menu").value == 1 ? "ESQ" : "DIR";
+
+"TARJA - " + thisComp.layer("NOME").text.sourceText + " " + lado
+```
+→ `TARJA - JOAO BOSCO ESQ` e `TARJA - JOAO BOSCO DIR`
+
+**4 · um nome fixo com a informação que varia**: o mesmo nome para todas as versões, mudando só o número.
+
+```js
+"PLACAR RODADA " + thisComp.layer("RODADA").text.sourceText
+```
+→ `PLACAR RODADA 12`
 
 ### script do template (`_script.js`)
 
