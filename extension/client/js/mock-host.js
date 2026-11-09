@@ -862,6 +862,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var node;
 
+			if (mode === 'unmounted' && !window.PAD_MOCK_MOUNTED && !a.uri) return { exists: false, path: a.path, name: '', entries: [] };
 			if (a.uri) node = find(tree, a.uri);
 			else if (/TESTES/.test(a.path)) node = { type: 'node', text: 'TESTES', children: [] };
 			else if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, name: '', entries: [] };
@@ -875,6 +876,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					return child.type === 'node' ? { type: 'folder', name: child.text, uri: child.__id } : { type: 'item', name: child.text, uri: child.uri, fsName: child.fsName, created: child.created };
 				})
 			};
+		},
+
+		// ?mock=unmounted: a pasta de templates no volume desmontado; monta depois de um tempo
+		mountInfo: function () {
+			return { mountable: true, volume: 'VFX' };
+		},
+
+		mountPath: async function () {
+			await wait(1600);
+			window.PAD_MOCK_MOUNTED = true;
+
+			return { mounted: true };
 		},
 
 		templateTree: function (a) {

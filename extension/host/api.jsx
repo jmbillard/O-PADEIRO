@@ -974,6 +974,22 @@ PADX.listDir = function (a) {
 	return { exists: true, path: padDisplayPath(path), name: folder.displayName, entries: entries };
 };
 
+// A pasta de templates está num volume da rede que dá para montar? (macOS: /Volumes/<share>/…). a: { path }
+// → { mountable, volume }
+PADX.mountInfo = function (a) {
+	var path = padPath(a.path) || String(a.path || '');
+	var m = /^\/Volumes\/([^\/]+?)(?:-[1-5])?\//.exec(path);
+
+	return { mountable: appOs == 'Mac' && !!m, volume: m ? m[1] : '' };
+};
+
+// Monta o share da pasta (quem abre a janela de templates pediu: é um clique). a: { path } → { mounted }
+PADX.mountPath = function (a) {
+	var path = padMountedPath(padPath(a.path) || String(a.path || ''));
+
+	return { mounted: new Folder(path).exists };
+};
+
 // Preview, configuração e dicas de um template.
 PADX.templateInfo = function (a) {
 	var projectFile = new File(a.uri);

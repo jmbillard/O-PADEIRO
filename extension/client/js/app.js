@@ -402,6 +402,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var prod = state.productions[state.production];
 
 		state.loading = true;
+		state.mountTried = false;
 		state.loadHint = 'pastas de rede podem demorar um pouco';
 		state.tree = null;
 		state.byUri = {};
@@ -439,6 +440,19 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				},
 				function () {
 					return loadId !== state.loadId;
+				},
+				// o volume não está montado: a lista de antes não abre nada; o loader avisa que está montando
+				function (volume) {
+					if (loadId !== state.loadId) return;
+
+					state.tree = null;
+					state.byUri = {};
+					state.treeStatus = 'loading';
+					state.loading = true;
+					state.loadHint = 'o volume ' + volume + ' não está montado: tentando montar…';
+					state.mountTried = true;
+					setRefreshing(false);
+					renderTree();
 				}
 			);
 
@@ -659,8 +673,26 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	// Lê a árvore pasta a pasta (chamadas curtas ao host). Pastas sem templates não entram.
-	async function readTemplateTree(path, onProgress, isStale) {
+	// sem a pasta (o volume da rede desmontado, ex: depois da VPN cair): onMount avisa e o host tenta montar o
+	// share (como o acessorista faz ao abrir uma pasta); montou, a leitura segue
+	async function readTemplateTree(path, onProgress, isStale, onMount) {
 		var first = await call('listDir', { path: path });
+
+		if (!first.exists && onMount) {
+			var volume = await call('mountInfo', { path: path }).catch(function () {
+				return { mountable: false };
+			});
+
+			if (volume.mountable && !isStale()) {
+				onMount(volume.volume);
+
+				var mounted = await call('mountPath', { path: path }).catch(function () {
+					return { mounted: false };
+				});
+
+				if (mounted.mounted && !isStale()) first = await call('listDir', { path: path });
+			}
+		}
 
 		if (!first.exists) return { exists: false, path: first.path, tree: null };
 
@@ -930,7 +962,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		if (state.treeStatus === 'missing') {
-			list.appendChild(treeState('pasta de templates não localizada', state.templatesPath));
+			list.appendChild(treeState('pasta de templates não localizada', state.templatesPath + (state.mountTried ? ' · o volume não montou (a rede está conectada? a VPN?)' : '')));
 			return;
 		}
 
