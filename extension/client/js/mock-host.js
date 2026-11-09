@@ -138,7 +138,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 
 	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'], hidden: [] };
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
 	}
 
 	var api = {

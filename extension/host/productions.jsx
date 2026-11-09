@@ -714,8 +714,8 @@ PADX.savePersonalLinks = function (a) {
 
 */
 
-var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'importar', 'pastas', 'renomear', 'organizar', 'buscar'];
-var PAD_BAR_DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'importar', 'divider', 'renomear', 'organizar', 'divider', 'pastas', 'buscar'];
+var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'pastas', 'renomear', 'organizar', 'importar', 'buscar'];
+var PAD_BAR_DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 function padCleanBar(o) {
 	var items = [];

@@ -21,9 +21,9 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
 | <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | **A CLAQUETE** salva o projeto na pasta dele |
 | <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
-| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | importa um `.aep` (o de versão mais nova é convertido) | abre o `.aep` convertido no lugar do projeto |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | renomeia as comps selecionadas | renomeia todas as saídas de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | **O CONTRARREGRA** cria a estrutura de pastas |
+| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | importa um `.aep` (o de versão mais nova é convertido) | abre o `.aep` convertido no lugar do projeto |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
 
