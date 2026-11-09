@@ -1873,6 +1873,15 @@ body.motion-ready .eyebrow {
   visibility: hidden;
 }
 
+/* prévia com transparência (alpha): o quadriculado por baixo, como no preview do template */
+.tree-thumb.has-image {
+  background: repeating-conic-gradient(#d5dae3 0 25%, #eef1f5 0 50%) 0 0 / 8px 8px;
+}
+
+.tree-item:not([data-section=""]) .tree-thumb.has-image {
+  background-size: 12px 12px;
+}
+
 .tree-thumb.has-image .tree-thumb-img {
   opacity: 1;
 }
