@@ -677,8 +677,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// Lê a árvore pasta a pasta (chamadas curtas ao host). Pastas sem templates não entram.
 	// sem a pasta (o volume da rede desmontado, ex: depois da VPN cair): onMount avisa e o host tenta montar o
 	// share (como o acessorista faz ao abrir uma pasta); montou, a leitura segue
-	var MOUNT_RETRIES = 8; // depois de montar: até ~12 s esperando o volume aparecer
-	var MOUNT_RETRY_MS = 1500;
+	var MOUNT_RETRIES = 23; // depois de montar: até ~45 s esperando o volume aparecer (digitar a senha da rede demora)
+	var MOUNT_RETRY_MS = 2000;
 
 	async function readTemplateTree(path, onProgress, isStale, onMount) {
 		var first = await call('listDir', { path: path });
