@@ -122,6 +122,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 ## 📍 janelas
 
 - **altura automática** → a janela cresce para caber a etapa (`fitHeight`) e volta ao tamanho padrão quando cabe.
+- **sempre no meio da tela** → toda janela (menos a barra) abre centralizada e, ao crescer ou encolher, se centraliza de novo. mude o tamanho só pelo `PAD_BRIDGE.resizeWindow` (`bridge.js`): ele limita o tamanho à área livre da tela (menos 24 px de margem), centraliza e, se o After Effects não deixar mover a janela, encolhe a altura até a parte de baixo caber na tela.
 - **a ação final fecha a janela** (ex: **Salvar** no editor do projeto).
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
