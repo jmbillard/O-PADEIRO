@@ -318,11 +318,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	// as categorias da busca (a ordem é a dos resultados)
 	var V2_CATS = [
-		{ key: 'teams', label: 'TEAMS', max: 20 },
-		{ key: 'trello', label: 'TRELLO', max: 24 },
+		{ key: 'servidor', label: 'SERVIDOR', max: 10 },
 		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
 		{ key: 'filmes', label: 'FILMES', max: 20 },
-		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
+		{ key: 'teams', label: 'TEAMS', max: 20 },
+		{ key: 'trello', label: 'TRELLO', max: 24 }
 	];
 	// índice local (configuração > buscar, neste computador): as pastas deste computador e o servidor
 	var LOCAL_CATS = [
@@ -535,7 +535,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		$('opts-paths').textContent = text || '';
 	}
 
-	// Webhook: um interruptor por categoria que tem itens (TEAMS, TRELLO, ATRAÇÕES, FILMES, SERVIDOR). a escolha
+	// Webhook: um interruptor por categoria que tem itens (SERVIDOR, ATRAÇÕES, FILMES, TEAMS, TRELLO). a escolha
 	// fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 	function buildCategoryFilters() {
 		var box = $('opts-paths');
