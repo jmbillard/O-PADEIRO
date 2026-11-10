@@ -64,8 +64,9 @@
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
-/* importar (o .aep de outra versão): AE entre duas meias setas (⇌, a conversão). no hover, a de cima vai um pouco
-   para a direita e a de baixo para a esquerda, e voltam; enquanto isso, o A e depois o E dão uma subidinha */
+/* importar (o .aep de outra versão): AE entre duas meias setas (⇌, a conversão). no hover, tudo anda só na
+   horizontal e volta, junto: a seta de cima e o E para a direita, a de baixo e o A para a esquerda (sem pular nem
+   crescer: as letras e as setas não se esbarram) */
 .bar-btn:hover:not(:disabled) .anim-import .import-arrow.up,
 .tab:hover .anim-import .import-arrow.up {
   animation: import-right 520ms var(--ease-soft);
@@ -78,18 +79,12 @@
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter,
 .tab:hover .anim-import .import-letter {
-  animation: import-hop 420ms var(--ease-soft) 60ms;
+  animation: import-letter-left 520ms var(--ease-soft);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter.l2,
 .tab:hover .anim-import .import-letter.l2 {
-  animation-delay: 170ms;
-}
-
-@keyframes import-hop {
-  45% {
-    transform: translateY(-1.5px);
-  }
+  animation-name: import-letter-right;
 }
 
 @keyframes import-right {
@@ -101,6 +96,18 @@
 @keyframes import-left {
   45% {
     transform: translateX(-2px);
+  }
+}
+
+@keyframes import-letter-right {
+  45% {
+    transform: translateX(1.2px);
+  }
+}
+
+@keyframes import-letter-left {
+  45% {
+    transform: translateX(-1.2px);
   }
 }
 
