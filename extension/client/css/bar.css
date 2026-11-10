@@ -316,9 +316,10 @@ body.bar-page {
   outline-offset: 2px;
 }
 
+/* ocupado: o botão pulsa, mas continua clicável. o run() (bar.js) não repete a mesma ação enquanto ela anda; o
+   clique direito que só abre uma janela (O CATADOR, O TIPÓGRAFO…) passa, mesmo com uma coleta andando */
 .bar-btn.is-busy,
 .bar-icon.is-busy {
-  pointer-events: none;
   animation: bar-busy 700ms ease-in-out infinite alternate;
 }
 

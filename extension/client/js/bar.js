@@ -366,6 +366,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	};
 
+	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
+	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
+	['openCollect', 'openFonts', 'openVersioner', 'project'].forEach(function (key) {
+		actions[key].opensWindow = true;
+	});
+
 	/* =========================================================
 	   Estrutura da barra
 	   ========================================================= */
@@ -469,7 +475,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
-		if (!handler || btn.classList.contains('is-busy')) return;
+		if (!handler) return;
+		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão
+		if (btn.classList.contains('is-busy')) return;
 
 		btn.classList.add('is-busy');
 
