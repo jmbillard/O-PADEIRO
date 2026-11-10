@@ -49,7 +49,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
 		projeto: { title: 'Projeto', l: ['A CLAQUETE', 'projeto novo pela atração, ou o editor'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
 		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
-		importar: { title: 'Importar', l: ['', 'importa um .aep (o de versão mais nova é convertido)'], r: ['', 'abre o .aep convertido no lugar do projeto'] },
+		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
 		renomear: { title: 'Renomear', l: ['', 'renomeia as comps selecionadas'], r: ['', 'renomeia todas as saídas de render'] },
 		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'cria só a estrutura de pastas'] },
 		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },

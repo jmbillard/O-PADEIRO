@@ -1871,16 +1871,35 @@ PADX.importAep = function (a) {
 	return { name: folder ? folder.name : decodeURI(file.name) };
 };
 
-// Abre um .aep no lugar do projeto atual (pergunta antes se o atual tem mudanças). a: { path } → { opened }
-PADX.openAep = function (a) {
-	var file = new File(a.path);
+// O VERSIONADOR (a janela): o projeto aberto e a versão do After que está rodando. → { major, version, path, name,
+// folder, saved } (path / folder vazios num projeto nunca salvo)
+PADX.versionInfo = function () {
+	var file = app.project.file;
+	var dirty = false;
 
-	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
-	if (app.project && !app.project.close(CloseOptions.PROMPT_TO_SAVE_CHANGES)) return { opened: false };
+	try {
+		dirty = !!app.project.dirty;
+	} catch (err) { }
 
-	app.open(file);
+	return {
+		major: parseInt(app.version, 10),
+		version: String(app.version),
+		path: file ? file.fsName : '',
+		name: file ? decodeURI(file.name) : '',
+		folder: file ? file.parent.fsName : '',
+		dirty: dirty
+	};
+};
 
-	return { opened: true };
+// Salva o projeto aberto no arquivo dele (as cópias em outras versões saem do arquivo salvo). → { path }
+PADX.versionSave = function () {
+	var file = app.project.file;
+
+	if (!file) throw new Error('#PAD_102 - versionador: o projeto ainda não foi salvo. salve uma vez (Arquivo > Salvar) e tente de novo.');
+
+	app.project.save(file);
+
+	return { path: file.fsName };
 };
 
 /*

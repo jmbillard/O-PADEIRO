@@ -254,6 +254,10 @@ const SHOTS = {
 	catador: { w: 540, h: 640, url: 'collect.html', marks: [
 		{ sel: '#fw-file', pad: 3 }, { sel: '.cw-row:nth-child(1) .fw-state', round: true }, { sel: '.cw-row:nth-child(2) .fw-state', round: true }, { sel: '.cw-row:nth-child(4) .fw-state', round: true }, { sel: '.cw-row:nth-child(6) .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
+	versionador: { w: 560, h: 540, url: 'versioner.html', async run(p) {
+		await p.locator('.vs-row').nth(1).locator('.fw-head').click();
+		await p.waitForTimeout(400);
+	}, marks: [{ sel: '#vs-file', pad: 3 }, { sel: '#vs-list' }, { sel: '.cfg-path' }, { sel: '.vs-switch' }, { sel: '#vs-go' }] },
 	'acessorista-caminhos': { w: 720, h: 620, url: 'finder.html', async run(p) {
 		await p.fill('#q-paths', 'reporter');
 		await p.waitForTimeout(1600);

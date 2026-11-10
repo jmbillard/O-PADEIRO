@@ -45,4 +45,9 @@
 			<Host Name="AEFT" Port="8096" />
 		</HostList>
 	</Extension>
+	<Extension Id="com.jmbillard.opadeiro.versioner">
+		<HostList>
+			<Host Name="AEFT" Port="8097" />
+		</HostList>
+	</Extension>
 </ExtensionList>

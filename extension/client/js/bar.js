@@ -22,6 +22,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
+	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
@@ -310,31 +311,29 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
 		},
 
-		// importar um .aep de qualquer versão: o de versão mais nova vira uma cópia na versão que está rodando (na
-		// pasta temporária) e é importada; 'open': a cópia vai para o lado do original e abre no lugar do projeto
-		importAep: async function (open) {
+		// O VERSIONADOR, clique esquerdo: importa um projeto do After (.aep / .aet) de qualquer versão no projeto aberto;
+		// o de versão mais nova vira antes uma cópia na versão que está rodando (na pasta temporária)
+		importAep: async function () {
 			if (!PAD_AEPVERSION.available()) throw new Error('#PAD_100 - importar: este painel não tem acesso aos arquivos (Node).');
 
-			var path = PAD_BRIDGE.pickFile(open ? 'Abrir .aep (na versão deste After Effects)' : 'Importar .aep (na versão deste After Effects)', ['aep']);
+			var path = PAD_BRIDGE.pickFile('Importar um projeto do After Effects (qualquer versão)', ['aep', 'aet']);
 
 			if (!path) return;
 
 			var nodePath = require('path');
 			var ae = await call('aeVersion');
-			var res = await PAD_AEPVERSION.convert(path, ae.major, open ? nodePath.dirname(path) : '');
+			var res = await PAD_AEPVERSION.convert(path, ae.major, '');
 			var from = res.converted ? ' (do AE ' + res.from + ' para o ' + res.to + ')' : '';
-
-			if (open) {
-				var done = await call('openAep', { path: res.path });
-
-				if (done.opened) toast('success', 'aberto' + from + ': ' + nodePath.basename(res.path) + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
-				return;
-			}
-
 			var imported = await call('importAep', { path: res.path, name: nodePath.basename(path) });
 
 			toast('success', 'importado' + from + ': ' + imported.name + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
 		},
+
+		// O VERSIONADOR, clique direito: a janela para salvar o projeto em versões mais velhas do After
+		openVersioner: function () {
+			PAD_BRIDGE.openPanel(VERSIONER_PANEL_ID);
+		},
+
 
 		// janela do projeto: um projeto novo pela atração, ou o editor do atual
 		project: function () {
@@ -416,13 +415,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			config: '',
 			label: 'Importar',
 			icon: 'import',
-			tips: [L_CLICK + 'importar um .aep (de versão mais nova também: converte para a deste After Effects)', R_CLICK + 'abrir um .aep de versão mais nova (a cópia convertida fica ao lado do original)'],
+			tips: [L_CLICK + 'O VERSIONADOR importa um projeto do After (.aep / .aet) de qualquer versão: o mais novo é convertido para a deste After Effects', R_CLICK + 'abrir O VERSIONADOR: salvar o projeto em versões mais velhas do After (até 3 para trás)'],
 			left: function () {
-				return actions.importAep(false);
+				return actions.importAep();
 			},
-			right: function () {
-				return actions.importAep(true);
-			}
+			right: actions.openVersioner
 		},
 		{
 			key: 'pastas',

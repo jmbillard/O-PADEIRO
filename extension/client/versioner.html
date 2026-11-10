@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O VERSIONADOR</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/attractions.css">
+	<link rel="stylesheet" href="css/icons.css">
+	<link rel="stylesheet" href="css/fonts.css">
+	<link rel="stylesheet" href="css/collect.css">
+	<link rel="stylesheet" href="css/versioner.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="fonts-page versioner-page">
+	<!-- salvar o projeto aberto em versões mais velhas do After (até 3 para trás da que está rodando): uma cópia
+	     <projeto>_AE<versão>.aep por versão marcada, na pasta do campo (que já vem com a do projeto) -->
+	<main class="fonts versioner" id="versioner">
+		<p class="fw-file" id="vs-file"></p>
+
+		<div class="vs-head">
+			<p class="cfg-title">salvar como</p>
+			<p class="cfg-hint">uma cópia do projeto para cada versão marcada, até 3 para trás da que está aberta</p>
+		</div>
+		<div class="fw-list vs-list" id="vs-list"></div>
+
+		<div class="vs-head">
+			<p class="cfg-title">pasta</p>
+			<p class="cfg-hint">já vem com a pasta do projeto</p>
+		</div>
+		<div class="cfg-path">
+			<input type="text" class="cfg-input" id="vs-folder" placeholder="a pasta do projeto" spellcheck="false" autocomplete="off" aria-label="Pasta das cópias">
+			<button type="button" class="mini-button" id="vs-pick" title="escolher a pasta" aria-label="escolher a pasta das cópias"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button>
+		</div>
+
+		<label class="cfg-switch vs-switch">
+			<input type="checkbox" id="vs-save" checked>
+			<span class="cfg-switch-track"></span>
+			<span class="cfg-switch-label">salvar o projeto antes (as cópias saem do arquivo salvo)</span>
+		</label>
+
+		<p class="vs-note" id="vs-note"></p>
+
+		<div class="action-bar is-anchored fw-bar">
+			<details class="actions-menu fw-menu" id="app-menu">
+				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="folder">Abrir a pasta das cópias</button>
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
+				</div>
+			</details>
+			<span class="fw-status" id="fw-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="vs-go" disabled>Salvar</button>
+		</div>
+	</main>
+
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/aepversion.js"></script>
+	<script src="js/versioner.js"></script>
+</body>
+
+</html>

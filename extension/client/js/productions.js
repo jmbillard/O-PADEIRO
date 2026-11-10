@@ -2132,7 +2132,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
 		projeto: ['Projeto', 'novo projeto pela claquete · salvar o projeto', 'project'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
-		importar: ['Importar', 'importar um .aep (converte o de versão mais nova) · abrir convertido', 'import'],
+		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · criar as pastas', 'organize'],

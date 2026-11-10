@@ -63,6 +63,8 @@ const CHECKS = [
 	}],
 	['fontes do projeto', 'fonts.html'],
 	['coletar', 'collect.html'],
+	['versionador', 'versioner.html'],
+	['versionador: projeto não salvo', 'versioner.html?mock=unsaved'],
 	['templates', 'index.html', openTemplate],
 	['templates: fixados e recentes', 'index.html?lists', async (p) => {
 		await p.locator('.tree-folder > .tree-row', { hasText: 'TARJAS' }).first().click();

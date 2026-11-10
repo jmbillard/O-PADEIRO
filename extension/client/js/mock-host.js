@@ -1233,8 +1233,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { name: a.name };
 		},
 
-		openAep: function () {
-			return { opened: true };
+		// O VERSIONADOR: ?mock=unsaved simula um projeto nunca salvo
+		versionInfo: function () {
+			if (mode === 'unsaved') return { major: 25, version: '25.2x45', path: '', name: '', folder: '', dirty: true };
+
+			return { major: 25, version: '25.2x45', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK SERVICO.aep', name: 'DOMINGAO COM HUCK SERVICO.aep', folder: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS', dirty: false };
+		},
+
+		versionSave: function () {
+			return { path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK SERVICO.aep' };
 		},
 
 		collectReveal: function () {
