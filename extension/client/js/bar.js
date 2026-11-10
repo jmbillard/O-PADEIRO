@@ -310,6 +310,32 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
 		},
 
+		// importar um .aep de qualquer versão: o de versão mais nova vira uma cópia na versão que está rodando (na
+		// pasta temporária) e é importada; 'open': a cópia vai para o lado do original e abre no lugar do projeto
+		importAep: async function (open) {
+			if (!PAD_AEPVERSION.available()) throw new Error('#PAD_100 - importar: este painel não tem acesso aos arquivos (Node).');
+
+			var path = PAD_BRIDGE.pickFile(open ? 'Abrir .aep (na versão deste After Effects)' : 'Importar .aep (na versão deste After Effects)', ['aep']);
+
+			if (!path) return;
+
+			var nodePath = require('path');
+			var ae = await call('aeVersion');
+			var res = await PAD_AEPVERSION.convert(path, ae.major, open ? nodePath.dirname(path) : '');
+			var from = res.converted ? ' (do AE ' + res.from + ' para o ' + res.to + ')' : '';
+
+			if (open) {
+				var done = await call('openAep', { path: res.path });
+
+				if (done.opened) toast('success', 'aberto' + from + ': ' + nodePath.basename(res.path) + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
+				return;
+			}
+
+			var imported = await call('importAep', { path: res.path, name: nodePath.basename(path) });
+
+			toast('success', 'importado' + from + ': ' + imported.name + (res.converted ? '. confira efeitos e expressões antes de usar.' : ''));
+		},
+
 		// janela do projeto: um projeto novo pela atração, ou o editor do atual
 		project: function () {
 			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
