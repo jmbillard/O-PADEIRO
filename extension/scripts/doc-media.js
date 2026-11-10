@@ -254,7 +254,7 @@ const SHOTS = {
 	catador: { w: 540, h: 640, url: 'collect.html', marks: [
 		{ sel: '#fw-file', pad: 3 }, { sel: '.cw-row:nth-child(1) .fw-state', round: true }, { sel: '.cw-row:nth-child(2) .fw-state', round: true }, { sel: '.cw-row:nth-child(4) .fw-state', round: true }, { sel: '.cw-row:nth-child(6) .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
-	'acessorista-caminhos': { w: 560, h: 620, url: 'finder.html', async run(p) {
+	'acessorista-caminhos': { w: 720, h: 620, url: 'finder.html', async run(p) {
 		await p.fill('#q-paths', 'reporter');
 		await p.waitForTimeout(1600);
 	}, marks: [{ sel: '#tabs' }, { sel: '#q-paths' }, { sel: '#opts-paths' }, { sel: '#results-paths > *:first-child' }] },
@@ -371,7 +371,7 @@ const SCENES = {
 	} },
 
 	// O ACESSORISTA: busca de caminhos
-	acessorista: { w: 560, h: 560, url: 'finder.html', async run(p) {
+	acessorista: { w: 720, h: 560, url: 'finder.html', async run(p) {
 		mouse = [520, 520];
 		await p.waitForTimeout(700);
 		await tap(p, '#q-paths', { wait: 200 });

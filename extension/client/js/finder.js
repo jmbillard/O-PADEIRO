@@ -562,6 +562,29 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			});
 			box.appendChild(chip);
 		});
+
+		fitFilters();
+	}
+
+	// os interruptores sempre numa linha só, já ao abrir (antes de qualquer busca): a janela alarga até caber
+	// (nunca menos que a largura padrão; nunca estreita)
+	function fitFilters() {
+		var opts = $('opts-paths');
+
+		if (!opts || !opts.children.length) return;
+
+		requestAnimationFrame(function () {
+			var natural = 0;
+
+			Array.prototype.forEach.call(opts.children, function (chip) {
+				natural += chip.getBoundingClientRect().width;
+			});
+			natural += Math.max(0, opts.children.length - 1) * parseFloat(getComputedStyle(opts).columnGap || 0);
+
+			var width = Math.max(FIT_MIN_WIDTH, Math.ceil(window.innerWidth + Math.max(0, natural - opts.clientWidth) + 2));
+
+			if (width > window.innerWidth + 1) PAD_BRIDGE.resizeWindow(width, window.innerHeight);
+		});
 	}
 
 	/* ---------------------------------------------------------------
