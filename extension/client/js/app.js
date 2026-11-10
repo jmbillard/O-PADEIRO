@@ -444,14 +444,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 					return loadId !== state.loadId;
 				},
 				// o volume não está montado: a lista de antes não abre nada; o loader avisa que está montando
-				function (volume) {
+				function (volume, step) {
 					if (loadId !== state.loadId) return;
 
 					state.tree = null;
 					state.byUri = {};
 					state.treeStatus = 'loading';
 					state.loading = true;
-					state.loadHint = 'o volume ' + volume + ' não está montado: tentando montar…';
+					state.loadHint = step === 'waiting' ? 'montando o volume ' + volume + ': esperando a pasta aparecer…' : 'o volume ' + volume + ' não está montado: tentando montar…';
 					state.mountTried = true;
 					setRefreshing(false);
 					renderTree();
@@ -677,6 +677,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// Lê a árvore pasta a pasta (chamadas curtas ao host). Pastas sem templates não entram.
 	// sem a pasta (o volume da rede desmontado, ex: depois da VPN cair): onMount avisa e o host tenta montar o
 	// share (como o acessorista faz ao abrir uma pasta); montou, a leitura segue
+	var MOUNT_RETRIES = 8; // depois de montar: até ~12 s esperando o volume aparecer
+	var MOUNT_RETRY_MS = 1500;
+
 	async function readTemplateTree(path, onProgress, isStale, onMount) {
 		var first = await call('listDir', { path: path });
 
@@ -686,13 +689,20 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			});
 
 			if (volume.mountable && !isStale()) {
-				onMount(volume.volume);
+				onMount(volume.volume, 'mounting');
 
-				var mounted = await call('mountPath', { path: path }).catch(function () {
+				await call('mountPath', { path: path }).catch(function () {
 					return { mounted: false };
 				});
 
-				if (mounted.mounted && !isStale()) first = await call('listDir', { path: path });
+				// recém-montado, o volume pode levar uns segundos para aparecer (o macOS ainda lembra que a pasta "não
+				// existia"): lê de novo algumas vezes antes de desistir, mesmo que o host diga que não montou
+				for (var t = 0; t < MOUNT_RETRIES && !isStale(); t++) {
+					first = await call('listDir', { path: path });
+					if (first.exists) break;
+					onMount(volume.volume, 'waiting');
+					await new Promise(function (r) { setTimeout(r, MOUNT_RETRY_MS); });
+				}
 			}
 		}
 

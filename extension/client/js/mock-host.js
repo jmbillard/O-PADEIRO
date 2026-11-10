@@ -862,7 +862,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var node;
 
-			if (mode === 'unmounted' && !window.PAD_MOCK_MOUNTED && !a.uri) return { exists: false, path: a.path, name: '', entries: [] };
+			if ((mode === 'unmounted' || mode === 'slowmount') && !window.PAD_MOCK_MOUNTED && !a.uri) return { exists: false, path: a.path, name: '', entries: [] };
 			if (a.uri) node = find(tree, a.uri);
 			else if (/TESTES/.test(a.path)) node = { type: 'node', text: 'TESTES', children: [] };
 			else if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, name: '', entries: [] };
@@ -883,8 +883,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { mountable: true, volume: 'VFX' };
 		},
 
+		// ?mock=slowmount: monta, mas o volume só aparece uns segundos depois (o host responde que não montou)
 		mountPath: async function () {
 			await wait(1600);
+
+			if (mode === 'slowmount') {
+				setTimeout(function () {
+					window.PAD_MOCK_MOUNTED = true;
+				}, 3500);
+
+				return { mounted: false };
+			}
+
 			window.PAD_MOCK_MOUNTED = true;
 
 			return { mounted: true };
