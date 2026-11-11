@@ -43,28 +43,9 @@ body {
   flex: 1;
 }
 
-/* busca (esquerda) e trabalho (direita) rolam separadamente. as colunas não animam a largura: a janela muda de
-   tamanho por fora (o sistema estica a imagem enquanto isso) e qualquer animação por dentro distorce e pisca */
-.app-shell.is-expanded .workspace,
-.app-shell.is-opening .workspace {
-  display: grid;
+/* busca (esquerda) e trabalho (direita) rolam separadamente */
+.app-shell.is-expanded .workspace {
   grid-template-columns: var(--search-width) minmax(0, 1fr);
-  transition: none;
-}
-
-/* abrindo ou fechando (a janela crescendo ou encolhendo): a busca fica presa à esquerda, na largura dela, e o resto
-   é só a folha. a coluna do preenchimento entra quando a janela termina de crescer (app.js, setExpanded) */
-.app-shell.is-opening .upload-side {
-  height: auto;
-}
-
-.app-shell.is-opening .upload-side-content {
-  max-width: none;
-  margin-inline: 0;
-}
-
-.app-shell.is-opening .queue-side {
-  display: none;
 }
 
 .upload-side,
@@ -155,6 +136,70 @@ body {
   .queue-side,
   .app-shell.is-expanded .queue-side {
     --queue-pad: 16px;
+  }
+}
+
+/* a janela abre larga e não muda de tamanho (mudar de tamanho estica a imagem e pisca): só a interface anima.
+   sem template, a busca fica no meio do degradê; escolhido um, a coluna do degradê encolhe até a largura da busca
+   (ela desliza do meio para a esquerda) e a folha, que já tem a largura final (o conteúdo não se rearranja no
+   caminho), entra pela direita. no painel estreito (até 900 px), as regras de cima */
+@media (min-width: 901px) {
+  .app-shell:not(.is-expanded) .workspace,
+  .app-shell.is-expanded .workspace {
+    display: flex;
+    overflow: hidden;
+    transition: none;
+  }
+
+  .app-shell:not(.is-expanded) .upload-side,
+  .app-shell.is-expanded .upload-side {
+    height: auto;
+    flex: 0 0 100%;
+    transition: flex-basis 520ms var(--ease-enter);
+  }
+
+  .app-shell.is-expanded .upload-side {
+    flex-basis: var(--search-width);
+  }
+
+  /* a busca no meio enquanto a coluna é larga; quando ela chega na largura da busca, ocupa tudo */
+  .app-shell:not(.is-expanded) .upload-side .upload-side-content,
+  .app-shell.is-expanded .upload-side .upload-side-content {
+    width: 100%;
+    max-width: var(--search-width);
+    margin-inline: auto;
+  }
+
+  .app-shell:not(.is-expanded) .queue-side,
+  .app-shell.is-expanded .queue-side {
+    display: flex;
+    flex: 0 0 calc(100% - var(--search-width));
+    flex-direction: column;
+    animation: none;
+    opacity: 0;
+    transform: translateX(28px);
+    visibility: hidden;
+    transition:
+      opacity 280ms ease,
+      transform 520ms var(--ease-enter),
+      visibility 0s linear 520ms;
+  }
+
+  .app-shell.is-expanded .queue-side {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition:
+      opacity 360ms ease 160ms,
+      transform 520ms var(--ease-enter),
+      visibility 0s;
+  }
+}
+
+@media (min-width: 901px) and (prefers-reduced-motion: reduce) {
+  .app-shell .upload-side,
+  .app-shell .queue-side {
+    transition: none !important;
   }
 }
 

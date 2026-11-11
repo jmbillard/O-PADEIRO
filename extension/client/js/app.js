@@ -120,91 +120,20 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	var app = $('app-shell');
 
 	/* =========================================================
-	   Largura da janela: estreita só com a busca, larga com um template
-	   selecionado (como no script original)
+	   Largura da janela: larga desde o início (a busca no meio sem template;
+	   com um template, as duas colunas)
 	   ========================================================= */
 
-	var COMPACT_WIDTH = 460;
 	var EXPANDED_WIDTH = 1100;
 	var OPEN_HEIGHT = 1160; // alta de cara: a lista e a folha inteiras sem rolar (nunca maior que a tela)
-	var compactWidth = null; // largura antes de alargar, para voltar a ela
 
-	// Abrir e fechar sem distorcer: enquanto a janela cresce (o sistema estica a imagem da tela até ela redesenhar),
-	// nada anima por dentro. abrindo: a busca fica presa à esquerda e o resto é folha (is-opening); só quando a
-	// janela chega na largura nova a coluna do preenchimento entra, com um fade curto. fechando: a coluna sai na hora
-	// e a janela encolhe com a busca presa
-	var expandWait = null;
-
+	// A janela abre larga e não muda mais de tamanho (mudar de tamanho estica a imagem da tela e pisca): só a
+	// interface anima (panel.css): a busca desliza do meio para a esquerda e a folha entra pela direita
 	function setExpanded(on) {
-		var opening = app.classList.contains('is-opening');
+		if (on === app.classList.contains('is-expanded')) return;
 
-		if (on === app.classList.contains('is-expanded') && !opening) return;
-
-		if (expandWait) expandWait.cancel();
-
-		var grow = on && window.innerWidth < EXPANDED_WIDTH - 2;
-		var shrink = !on && !!compactWidth;
-
-		if (on && !grow) {
-			app.classList.remove('is-opening');
-			app.classList.add('is-expanded');
-		} else if (on) {
-			compactWidth = window.innerWidth;
-			app.classList.add('is-opening');
-			afterResize(EXPANDED_WIDTH, function () {
-				app.classList.remove('is-opening');
-				app.classList.add('is-expanded');
-				syncCardThumb();
-			});
-			PAD_BRIDGE.resizeWindow(EXPANDED_WIDTH, window.innerHeight);
-		} else {
-			app.classList.remove('is-expanded');
-
-			if (shrink) {
-				var target = compactWidth;
-
-				compactWidth = null;
-				app.classList.add('is-opening');
-				afterResize(target, function () {
-					app.classList.remove('is-opening');
-					syncCardThumb();
-				});
-				PAD_BRIDGE.resizeWindow(target, window.innerHeight);
-			} else {
-				app.classList.remove('is-opening');
-			}
-		}
-
-		requestAnimationFrame(syncCardThumb);
-	}
-
-	// Roda 'done' quando a janela chega na largura pedida (no evento de resize, um quadro depois, já desenhada) ou,
-	// se o pedido não vier (fora do After Effects, ou limitado pelo manifest), depois de 900 ms
-	function afterResize(width, done) {
-		var timer = null;
-		var finished = false;
-
-		function stop() {
-			finished = true;
-			expandWait = null;
-			clearTimeout(timer);
-			window.removeEventListener('resize', check);
-		}
-
-		function finish() {
-			if (finished) return;
-
-			stop();
-			requestAnimationFrame(done);
-		}
-
-		function check() {
-			if (Math.abs(window.innerWidth - width) <= 4) finish();
-		}
-
-		window.addEventListener('resize', check);
-		timer = setTimeout(finish, PAD_BRIDGE.inCep() ? 900 : 0);
-		expandWait = { cancel: stop };
+		app.classList.toggle('is-expanded', on);
+		setTimeout(syncCardThumb, 560); // depois da animação: a coluna da busca mudou de largura
 	}
 
 	/* =========================================================
@@ -2286,10 +2215,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	async function init() {
-		// a janela abre estreita (só com a busca) e alta (o tamanho do manifest só muda reinstalando)
+		// a janela abre larga (as duas colunas, sem mudar de tamanho depois) e alta (o tamanho do manifest só muda reinstalando)
 		if (PAD_BRIDGE.inCep()) {
 			var openH = Math.max(window.innerHeight, Math.min(OPEN_HEIGHT, (screen.availHeight || OPEN_HEIGHT) - 60));
-			if (window.innerWidth > COMPACT_WIDTH || window.innerHeight < openH - 4) PAD_BRIDGE.resizeWindow(Math.min(window.innerWidth, COMPACT_WIDTH), openH);
+			if (window.innerWidth < EXPANDED_WIDTH - 4 || window.innerHeight < openH - 4) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, EXPANDED_WIDTH), openH);
 		}
 
 		bindEvents();

@@ -252,12 +252,21 @@ body.fonts-page {
   margin-top: auto;
 }
 
+/* o rodapé numa linha só, em qualquer largura: o status encolhe (com reticências) e o principal fica à direita */
+.fw-bar.action-bar {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+
 .fw-bar .button-primary {
+  min-width: 120px;
+  flex: 0 1 auto;
   margin-left: auto;
 }
 
 .fw-status {
   min-width: 0;
+  flex: 0 1 auto;
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 0.7rem;

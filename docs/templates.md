@@ -4,7 +4,7 @@
 
 o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita e alta, só com a busca (a lista inteira sem rolar), e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre larga e alta (a lista inteira sem rolar), com a busca no meio do degradê. ao escolher um template, a busca desliza para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
 
 <p align="center"><img src="images/anim/forninho.webp" alt="O FORNINHO: busca, escolhe o template e preenche" width="900"></p>
 
