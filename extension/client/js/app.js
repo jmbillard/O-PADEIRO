@@ -1014,10 +1014,15 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	// a miniatura da lista cresce (hover / escolhido) até o tamanho das dos cartões em destaque (fixados, recentes,
 	// novos): a largura vem de um cartão na tela ou, sem nenhum, da mesma conta das três colunas
+	var CARD_THUMB = 114; // a miniatura do cartão de 130 px (panel.css): 130 menos o respiro e a borda
+
 	function syncCardThumb() {
 		var list = $('tree');
 		var card = list.querySelector('.tree-item:not([data-section=""]) .tree-thumb');
 		var w = card ? card.getBoundingClientRect().width : 0;
+
+		// janela larga: os cartões têm tamanho fixo (panel.css), a miniatura também, com ou sem cartão na tela
+		if (!w && window.innerWidth > 900) w = CARD_THUMB;
 
 		if (!w) {
 			var children = list.querySelector('.tree-children');
