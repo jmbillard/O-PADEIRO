@@ -162,12 +162,18 @@ body {
     flex-basis: var(--search-width);
   }
 
-  /* a busca no meio enquanto a coluna é larga; quando ela chega na largura da busca, ocupa tudo */
+  /* a busca ocupa a coluna azul inteira, larga ou estreita: no caminho, ela acompanha a coluna */
   .app-shell:not(.is-expanded) .upload-side .upload-side-content,
   .app-shell.is-expanded .upload-side .upload-side-content {
     width: 100%;
-    max-width: var(--search-width);
-    margin-inline: auto;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  /* fixados, recentes e novos: cartões de tamanho fixo (o das 3 colunas da coluna estreita): na coluna larga
+     cabem mais por linha, e a miniatura não muda de tamanho entre um estado e outro */
+  .upload-side .tree-item:not([data-section=""]) {
+    width: 130px;
   }
 
   .app-shell:not(.is-expanded) .queue-side,
