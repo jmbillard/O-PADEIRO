@@ -1504,10 +1504,23 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var res = await call('installTemplateFonts', { uri: uri });
 			var missing = res.data.missing;
 
+			// o After Effects pode levar uns segundos para enxergar as novas: confere de novo até aparecerem (até ~15 s)
+			if (res.data.total) {
+				await PAD_UTIL.syncFonts(call, 15, async function () {
+					var again = await call('templateFonts', { uri: uri }).catch(function () {
+						return null;
+					});
+
+					if (again) missing = again.missing;
+
+					return !missing.length;
+				});
+			}
+
 			if (state.selected && state.selected.uri === uri) state.fonts = { uri: uri, missing: missing, total: res.data.total };
 
 			note = !missing.length
-				? { kind: 'success', text: 'Fontes instaladas. Se precisar, reinicie o After Effects e/ou a máquina.' }
+				? { kind: 'success', text: 'Fontes instaladas.' }
 				: { kind: 'warning', text: (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Ainda não aparecem como instaladas: ' + missing.join(', ') };
 		} catch (err) {
 			note = { kind: 'error', text: err.message };

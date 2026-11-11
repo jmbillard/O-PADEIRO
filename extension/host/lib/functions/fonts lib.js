@@ -206,6 +206,7 @@ function installMacFonts(fontFiles) {
 	var installed = 0;
 	var alreadyInstalled = 0;
 	var errors = [];
+	var copied = [];
 
 	for (var i = 0; i < fontFiles.length; i++) {
 		var destFile = new File(destFolder.fsName + '/' + fontFiles[i].displayName);
@@ -217,19 +218,107 @@ function installMacFonts(fontFiles) {
 
 		if (fontFiles[i].copy(destFile)) {
 			installed++;
+			copied.push(destFile.fsName);
 		} else {
 			errors.push(fontFiles[i].displayName);
 		}
 	}
 
-	// atualiza o cache de fontes do sistema para os apps enxergarem as fontes novas
-	if (installed > 0) {
-		try {
-			system.callSystem('atsutil databases -removeUser');
-			system.callSystem('atsutil server -shutdown');
-			system.callSystem('atsutil server -ping');
-		} catch (err) { }
-	}
+	// registra as copiadas no sistema na hora (como o Catálogo de Fontes): o macOS avisa os apps abertos e o After
+	// Effects passa a enxergar a fonte sem reiniciar. (antes: 'atsutil databases -removeUser' e 'atsutil server
+	// -shutdown', que apagavam o cache de fontes do usuário e só voltavam ao normal reiniciando ou relogando)
+	if (copied.length) padRegisterMacFonts(copied);
 
 	return { total: fontFiles.length, installed: installed, already: alreadyInstalled, errors: errors };
+}
+
+// macOS: CTFontManagerRegisterFontsForURL (CoreText) por um JavaScript for Automation (osascript), escopo 2: o do
+// usuário, que fica. Já registrada (o macOS também registra sozinho o que entra em ~/Library/Fonts): sem efeito.
+function padRegisterMacFonts(paths) {
+	var lines = ['ObjC.import("CoreText");', 'ObjC.import("Foundation");', 'var paths = ['];
+
+	for (var i = 0; i < paths.length; i++) {
+		lines.push('\t"' + String(paths[i]).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"' + (i < paths.length - 1 ? ',' : ''));
+	}
+
+	lines.push('];');
+	lines.push('paths.forEach(function (p) {');
+	lines.push('\ttry { $.CTFontManagerRegisterFontsForURL($.NSURL.fileURLWithPath(p), 2, null); } catch (e) { }');
+	lines.push('});');
+
+	var scriptFile = new File(tempPath + '/register_fonts.js');
+
+	try {
+		scriptFile.encoding = 'UTF-8';
+		writeFileContent(scriptFile, lines.join('\n'));
+		system.callSystem('osascript -l JavaScript "' + scriptFile.fsName + '"');
+	} catch (err) { }
+
+	try {
+		scriptFile.remove();
+	} catch (err) { }
+}
+
+// Depois de instalar: o After Effects confere as pastas de fontes dele (2024.6 ou mais novo) e as camadas com uma
+// fonte substituída (faltando ao abrir o projeto) passam para a fonte de verdade, se ela já aparece (o texto
+// redesenha na hora). → { supported, replaced, missing: [nomes PostScript ainda substituídos] }
+function padFontsSync() {
+	if (!app.fonts || !app.project || app.project.usedFonts === undefined) return { supported: false, replaced: 0, missing: [] };
+
+	try {
+		if (app.fonts.pollForAndPushNonSystemFontFoldersChanges) app.fonts.pollForAndPushNonSystemFontFoldersChanges();
+	} catch (err) { }
+
+	var used = app.project.usedFonts;
+	var swaps = [];
+	var missing = [];
+	var replaced = 0;
+	var seen = {};
+
+	for (var u = 0; u < used.length; u++) {
+		var font = used[u].font;
+
+		if (!font || !font.isSubstitute || seen[font.postScriptName]) continue;
+
+		seen[font.postScriptName] = true;
+
+		var real = padRealFont(font.postScriptName);
+
+		if (real) swaps.push({ from: font, to: real });
+		else missing.push(String(font.postScriptName));
+	}
+
+	if (swaps.length) {
+		padUndoBegin('PADEIRO - fontes instaladas');
+
+		try {
+			for (var s = 0; s < swaps.length; s++) {
+				try {
+					app.project.replaceFont(swaps[s].from, swaps[s].to);
+					replaced++;
+				} catch (err) {
+					missing.push(String(swaps[s].from.postScriptName));
+				}
+			}
+		} finally {
+			padUndoEnd();
+		}
+	}
+
+	return { supported: true, replaced: replaced, missing: missing };
+}
+
+// A fonte instalada (não a substituta) com esse nome PostScript, ou null.
+function padRealFont(postScriptName) {
+	var list = [];
+
+	try {
+		list = app.fonts.getFontsByPostScriptName(postScriptName) || [];
+	} catch (err) { }
+
+	for (var i = 0; i < list.length; i++) {
+		if (list[i] && !list[i].isSubstitute) return list[i];
+	}
+
+	return null;
 }

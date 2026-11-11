@@ -26,7 +26,7 @@ a bolinha no botão:
 - 🟠 **laranja** → falta algo: uma fonte que não está neste computador, ou que ainda não está no banco ou na pasta do projeto (o envio está a caminho). o balão diz quantas e o quê.
 - 🟢 **verde** → todas instaladas, no banco e na pasta do projeto.
 
-`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar.
+`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar. depois de instalar, o padeiro espera o After Effects enxergar as fontes novas (até uns 15 segundos) e passa os textos que estavam com a fonte substituída para a de verdade: o desenho atualiza na hora, sem reiniciar.
 
 `◗ clique direito` → **O TIPÓGRAFO**, a janela de **fontes do projeto**.
 

@@ -488,6 +488,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { path: '/mock/output' } };
 		},
 
+		// depois de instalar: o After Effects enxerga as novas e as camadas passam para elas (no teste: nada faltando)
+		fontsSync: function () {
+			return { supported: true, replaced: 0, missing: [] };
+		},
+
 		installFonts: async function () {
 			await wait(delay);
 

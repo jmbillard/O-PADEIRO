@@ -89,8 +89,8 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 - **preencher** (ou importar) com fontes faltando → segue normalmente, sem a janela '*Resolve Fonts*' do After Effects (as fontes que faltam são trocadas pela padrão).
 
 > 🚩 *obs:*\
-> • no macOS as fontes são copiadas para `~/Library/Fonts`; no Windows, instaladas por um script de PowerShell.\
-> • se o After Effects ainda não mostrar uma fonte recém-instalada, reinicie-o.
+> • no macOS as fontes são copiadas para `~/Library/Fonts` e registradas no sistema na hora (como o Catálogo de Fontes faz); no Windows, instaladas pela pasta de fontes do sistema.\
+> • depois de instalar, o padeiro espera o After Effects enxergar as fontes novas (até uns 15 segundos) e passa os textos que estavam com a fonte substituída para a fonte de verdade: o desenho atualiza sem reiniciar (After Effects 2024 ou mais novo).
 
 ### fila de render
 

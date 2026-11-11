@@ -573,9 +573,8 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 
 			if (fromProject.installed) {
 				parts.push(fromProject.installed + (fromProject.installed === 1 ? ' fonte instalada da pasta do projeto' : ' fontes instaladas da pasta do projeto'));
-				await new Promise(function (r) {
-					setTimeout(r, 1200);
-				});
+				status('esperando o After Effects enxergar as fontes…');
+				await PAD_UTIL.syncFonts(call, 8);
 
 				var after = await call('fontsProject');
 				var nowOk = {};
@@ -612,9 +611,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 
 			if (p.swaps.length) {
 				// a fonte recém-instalada pode demorar um instante para o After Effects enxergar
-				if (p.install.length) await new Promise(function (r) {
-					setTimeout(r, 1500);
-				});
+				if (p.install.length) await PAD_UTIL.syncFonts(call, 8);
 
 				var rep = await call('fontsReplace', { swaps: p.swaps });
 
@@ -627,6 +624,12 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 					delete state.choices[d.from];
 					delete state.open[d.from];
 				});
+			}
+
+			// o After Effects enxerga as instaladas e as camadas com a fonte substituída passam para elas (o texto redesenha)
+			if (p.install.length && !p.swaps.length) {
+				status('esperando o After Effects enxergar as fontes…');
+				await PAD_UTIL.syncFonts(call, 15);
 			}
 
 			status(parts.join(' · '), '');

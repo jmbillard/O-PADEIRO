@@ -469,5 +469,35 @@
 		};
 	}
 
-	window.PAD_UTIL = { iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
+	// Depois de instalar fontes: pede ao After Effects que enxergue as novas e passe as camadas com fonte substituída
+	// para a de verdade (host: fontsSync), de segundo em segundo, até não faltar nada (ou 'tries' vezes). 'done'
+	// (opcional): outra condição para parar (ex: a conferência das fontes do template). → a última resposta do host
+	async function syncFonts(call, tries, done) {
+		var res = { supported: false, replaced: 0, missing: [] };
+		var replaced = 0;
+
+		for (var t = 0; t < (tries || 15); t++) {
+			try {
+				res = await call('fontsSync');
+			} catch (err) {
+				return res;
+			}
+
+			replaced += res.replaced || 0;
+
+			var ok = done ? await done() : !res.missing.length;
+
+			if (ok || (!res.supported && !done)) break;
+
+			await new Promise(function (r) {
+				setTimeout(r, 1000);
+			});
+		}
+
+		res.replaced = replaced;
+
+		return res;
+	}
+
+	window.PAD_UTIL = { iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
 })();

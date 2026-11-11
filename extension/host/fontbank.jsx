@@ -174,6 +174,12 @@ PADX.fontsInstall = function (a) {
 	return { installed: res.installed, already: res.already, errors: res.errors };
 };
 
+// Depois de instalar: o After Effects enxerga as fontes novas e as camadas com fonte substituída passam para a de
+// verdade (fonts lib.js). o painel chama de segundo em segundo até não faltar nada. → { supported, replaced, missing }
+PADX.fontsSync = function () {
+	return padFontsSync();
+};
+
 // Troca fontes no projeto inteiro (desfaz com um Ctrl+Z). a: { swaps: [{ from, to }] } (nomes PostScript)
 // → { done: [{ from, to }], failed: [{ from, to, reason }] }
 PADX.fontsReplace = function (a) {

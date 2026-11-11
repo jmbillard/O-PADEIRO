@@ -166,11 +166,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				installed += local.installed;
 			} catch (err) { }
 
-			// 2. o que ainda falta: do banco (pelo nome PostScript)
+			// 2. o que ainda falta: do banco (pelo nome PostScript). antes, o After Effects enxerga as recém-instaladas
+			// (e as camadas passam para elas)
 			if (installed) {
-				await new Promise(function (r) {
-					setTimeout(r, 1200); // o After Effects enxergar as recém-instaladas antes de conferir
-				});
+				await PAD_UTIL.syncFonts(call, 8);
 				info = await call('fontsProject');
 			}
 
@@ -195,11 +194,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				}
 			}
 
-			// 3. confere de novo: o que ainda falta, só trocando por outra (a janela abre nelas)
+			// 3. confere de novo, esperando o After Effects enxergar as novas (até ~15 s): as camadas com a fonte
+			// substituída passam para a de verdade e o texto redesenha. o que ainda falta, só trocando por outra
 			progress('fontes', 'conferindo', 0.8);
-			await new Promise(function (r) {
-				setTimeout(r, 1500);
-			});
+			if (installed) await PAD_UTIL.syncFonts(call, 15);
 
 			var still = (await call('fontsProject')).fonts.filter(function (f) {
 				return f.missing;
