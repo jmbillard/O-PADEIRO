@@ -43,9 +43,28 @@ body {
   flex: 1;
 }
 
-/* busca (esquerda) e trabalho (direita) rolam separadamente */
-.app-shell.is-expanded .workspace {
+/* busca (esquerda) e trabalho (direita) rolam separadamente. as colunas não animam a largura: a janela muda de
+   tamanho por fora (o sistema estica a imagem enquanto isso) e qualquer animação por dentro distorce e pisca */
+.app-shell.is-expanded .workspace,
+.app-shell.is-opening .workspace {
+  display: grid;
   grid-template-columns: var(--search-width) minmax(0, 1fr);
+  transition: none;
+}
+
+/* abrindo ou fechando (a janela crescendo ou encolhendo): a busca fica presa à esquerda, na largura dela, e o resto
+   é só a folha. a coluna do preenchimento entra quando a janela termina de crescer (app.js, setExpanded) */
+.app-shell.is-opening .upload-side {
+  height: auto;
+}
+
+.app-shell.is-opening .upload-side-content {
+  max-width: none;
+  margin-inline: 0;
+}
+
+.app-shell.is-opening .queue-side {
+  display: none;
 }
 
 .upload-side,
@@ -1725,10 +1744,15 @@ body.motion-ready .eyebrow {
   }
 }
 
+/* a coluna do preenchimento entra depois que a janela terminou de crescer: um fade curto, deslizando um pouco */
+.app-shell.is-expanded .queue-side {
+  animation: queue-side-enter 280ms var(--ease-enter) both;
+}
+
 @keyframes queue-side-enter {
   from {
-    opacity: 0.6;
-    transform: translateX(14px);
+    opacity: 0;
+    transform: translateX(10px);
   }
 
   to {

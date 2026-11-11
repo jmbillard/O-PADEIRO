@@ -129,19 +129,82 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	var OPEN_HEIGHT = 1160; // alta de cara: a lista e a folha inteiras sem rolar (nunca maior que a tela)
 	var compactWidth = null; // largura antes de alargar, para voltar a ela
 
+	// Abrir e fechar sem distorcer: enquanto a janela cresce (o sistema estica a imagem da tela até ela redesenhar),
+	// nada anima por dentro. abrindo: a busca fica presa à esquerda e o resto é folha (is-opening); só quando a
+	// janela chega na largura nova a coluna do preenchimento entra, com um fade curto. fechando: a coluna sai na hora
+	// e a janela encolhe com a busca presa
+	var expandWait = null;
+
 	function setExpanded(on) {
-		if (on === app.classList.contains('is-expanded')) return;
+		var opening = app.classList.contains('is-opening');
 
-		app.classList.toggle('is-expanded', on);
-		setTimeout(syncCardThumb, 700); // a coluna da busca muda de largura (depois da transição, 620 ms)
+		if (on === app.classList.contains('is-expanded') && !opening) return;
 
-		if (on && window.innerWidth < EXPANDED_WIDTH) {
+		if (expandWait) expandWait.cancel();
+
+		var grow = on && window.innerWidth < EXPANDED_WIDTH - 2;
+		var shrink = !on && !!compactWidth;
+
+		if (on && !grow) {
+			app.classList.remove('is-opening');
+			app.classList.add('is-expanded');
+		} else if (on) {
 			compactWidth = window.innerWidth;
+			app.classList.add('is-opening');
+			afterResize(EXPANDED_WIDTH, function () {
+				app.classList.remove('is-opening');
+				app.classList.add('is-expanded');
+				syncCardThumb();
+			});
 			PAD_BRIDGE.resizeWindow(EXPANDED_WIDTH, window.innerHeight);
-		} else if (!on && compactWidth) {
-			PAD_BRIDGE.resizeWindow(compactWidth, window.innerHeight);
-			compactWidth = null;
+		} else {
+			app.classList.remove('is-expanded');
+
+			if (shrink) {
+				var target = compactWidth;
+
+				compactWidth = null;
+				app.classList.add('is-opening');
+				afterResize(target, function () {
+					app.classList.remove('is-opening');
+					syncCardThumb();
+				});
+				PAD_BRIDGE.resizeWindow(target, window.innerHeight);
+			} else {
+				app.classList.remove('is-opening');
+			}
 		}
+
+		requestAnimationFrame(syncCardThumb);
+	}
+
+	// Roda 'done' quando a janela chega na largura pedida (no evento de resize, um quadro depois, já desenhada) ou,
+	// se o pedido não vier (fora do After Effects, ou limitado pelo manifest), depois de 900 ms
+	function afterResize(width, done) {
+		var timer = null;
+		var finished = false;
+
+		function stop() {
+			finished = true;
+			expandWait = null;
+			clearTimeout(timer);
+			window.removeEventListener('resize', check);
+		}
+
+		function finish() {
+			if (finished) return;
+
+			stop();
+			requestAnimationFrame(done);
+		}
+
+		function check() {
+			if (Math.abs(window.innerWidth - width) <= 4) finish();
+		}
+
+		window.addEventListener('resize', check);
+		timer = setTimeout(finish, PAD_BRIDGE.inCep() ? 900 : 0);
+		expandWait = { cancel: stop };
 	}
 
 	/* =========================================================
