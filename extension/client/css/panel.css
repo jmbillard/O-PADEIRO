@@ -998,26 +998,6 @@ body {
   margin-left: auto;
 }
 
-.rq-confirm {
-  flex-wrap: nowrap;
-}
-
-.rq-confirm-text {
-  min-width: 0;
-  flex: 1;
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-
-.rq-confirm-text b {
-  color: var(--danger);
-}
-
-.button-primary.rq-danger {
-  background: linear-gradient(135deg, #e0605f, #b8323a); /* vermelho: desfaz (cor com significado) */
-}
 
 .render-options .select select {
   width: 100%;

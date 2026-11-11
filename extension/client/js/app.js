@@ -1746,7 +1746,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		list.classList.remove('is-editing');
 		$('queue-list-head').hidden = true;
 		$('queue-note').hidden = true;
-		$('undo-confirm').hidden = true;
 
 		begin.jobs.forEach(function (job, i) {
 			var row = buildItem(i, job.label);
@@ -1943,34 +1942,22 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	// Voltar e desfazer (antes de criar a fila): tira do projeto o template importado e as comps criadas; o projeto
-	// volta a como estava antes de preencher, e o painel volta para o input (com o texto)
-	function askUndoFill() {
-		var n = state.run.items.filter(function (item) {
-			return item.status === 'success';
-		}).length;
-
-		$('undo-what').textContent = 'o template importado e ' + (n === 1 ? 'a comp saem' : 'as ' + n + ' comps saem') + ' do projeto.';
-		$('queue-footer').hidden = true;
-		$('undo-confirm').hidden = false;
-	}
-
+	// volta a como estava antes de preencher, e o painel volta para o input, com o texto (por isso sem confirmar:
+	// é só preencher de novo)
 	async function undoFill() {
-		$('btn-undo-go').disabled = true;
+		var btn = $('btn-undo-fill');
+
+		btn.disabled = true;
 
 		try {
-			var res = await call('fillUndo');
-
-			$('undo-confirm').hidden = true;
+			await call('fillUndo');
 			$('file-list').classList.remove('is-editing');
 			newRun();
-			notify('success', 'Preenchimento desfeito: o projeto voltou a como estava antes de preencher' + (res.removed ? ' (' + plural(res.removed, 'item removido', 'itens removidos') + ').' : '.'));
 		} catch (err) {
 			notify('error', err.message);
-			$('undo-confirm').hidden = true;
-			$('queue-footer').hidden = false;
 		}
 
-		$('btn-undo-go').disabled = false;
+		btn.disabled = false;
 	}
 
 	async function createQueue() {
@@ -2043,7 +2030,6 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		run.finished = true;
 		$('render-options').hidden = true;
 		$('queue-footer').hidden = true;
-		$('undo-confirm').hidden = true;
 		$('file-list').classList.remove('is-editing');
 		$('queue-list-head').hidden = true;
 		$('queue-note').hidden = true;
@@ -2358,12 +2344,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
-		$('btn-undo-fill').addEventListener('click', askUndoFill);
-		$('btn-undo-back').addEventListener('click', function () {
-			$('undo-confirm').hidden = true;
-			$('queue-footer').hidden = false;
-		});
-		$('btn-undo-go').addEventListener('click', undoFill);
+		$('btn-undo-fill').addEventListener('click', undoFill);
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;

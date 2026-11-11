@@ -211,16 +211,9 @@
 
 					<!-- as ações da fila ficam no rodapé, como nas outras telas -->
 					<div class="run-footer action-bar is-anchored" id="queue-footer" hidden>
-						<button type="button" class="io-button rq-undo" id="btn-undo-fill" title="voltar e desfazer: tira do projeto o template importado e as comps criadas (como antes de preencher)" aria-label="voltar e desfazer o preenchimento"><svg viewBox="0 0 24 24"><path class="undo-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
+						<button type="button" class="io-button rq-undo" id="btn-undo-fill" title="voltar e desfazer: tira do projeto o template importado e as comps criadas e volta para o input, com o texto" aria-label="voltar e desfazer o preenchimento"><svg viewBox="0 0 24 24"><path class="undo-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
 						<button type="button" class="button button-secondary" id="btn-skip-queue">Concluir sem fila</button>
 						<button type="button" class="button button-primary" id="btn-queue">Criar fila de render</button>
-					</div>
-
-					<!-- desfazer: a confirmação no próprio rodapé (sem janela) -->
-					<div class="run-footer action-bar is-anchored rq-confirm" id="undo-confirm" hidden>
-						<p class="rq-confirm-text"><b>desfazer o preenchimento?</b> <span id="undo-what"></span></p>
-						<button type="button" class="button button-secondary" id="btn-undo-back">Voltar</button>
-						<button type="button" class="button button-primary rq-danger" id="btn-undo-go">Desfazer tudo</button>
 					</div>
 
 					<div class="run-footer action-bar is-anchored" id="run-footer" hidden>

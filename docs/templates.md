@@ -100,7 +100,7 @@ depois de preencher, o padeiro mostra cada comp criada e pede o **template de ou
 
 - **ordem** → arraste cada comp pelo puxador (os pontinhos à esquerda) para mudar a ordem da fila; os números acompanham.
 - **lixeira** (à direita de cada comp) → tira a comp da fila de render; ela continua no projeto. '*desfazer*', logo abaixo da lista, devolve.
-- **voltar e desfazer** (a seta no rodapé, à esquerda) → antes de criar a fila, desfaz o preenchimento inteiro: o template importado e as comps criadas saem do projeto, as pastas e as configurações voltam a como estavam, e o painel volta para o input (com o texto). confirma no próprio rodapé.
+- **voltar e desfazer** (a seta no rodapé, à esquerda) → antes de criar a fila, desfaz o preenchimento inteiro: o template importado e as comps criadas saem do projeto, as pastas e as configurações voltam a como estavam, e o painel volta para o input, com o texto digitado (é só ajustar e preencher de novo).
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
 
