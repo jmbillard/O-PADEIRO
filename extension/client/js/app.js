@@ -1670,7 +1670,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	async function startFill() {
-		var text = $('input').value;
+		// a letra e o acento juntos num caractere só (É, não E + ´): texto colado de PDFs, nomes de arquivo do macOS
+		// e alguns sistemas vem com o acento separado, que a fonte do template pode não ter (o After Effects desenha
+		// esse pedaço na fonte padrão, a Myriad)
+		var text = $('input').value.normalize ? $('input').value.normalize('NFC') : $('input').value;
 
 		if (!state.info || !state.info.hasInputLayers || text.trim() === '' || state.busy) return;
 

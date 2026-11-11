@@ -1248,6 +1248,27 @@ PADX.importTemplate = function (a) {
 
 */
 
+// A letra e o acento num caractere só (E + ´ → É): o texto que chega com o acento separado (NFD) é desenhado com o
+// acento na fonte padrão (Myriad) quando a fonte do template não tem o acento solto. o painel já manda junto
+// (normalize); aqui vale para o que vem de outros lugares (scripts). só as letras do português e do espanhol
+var PAD_ACCENT_MARKS = { '\u0300': 'grave', '\u0301': 'acute', '\u0302': 'circ', '\u0303': 'tilde', '\u0308': 'uml', '\u0327': 'cedil' };
+var PAD_ACCENT_TABLE = {
+	grave: { a: '\u00E0', e: '\u00E8', i: '\u00EC', o: '\u00F2', u: '\u00F9', A: '\u00C0', E: '\u00C8', I: '\u00CC', O: '\u00D2', U: '\u00D9' },
+	acute: { a: '\u00E1', e: '\u00E9', i: '\u00ED', o: '\u00F3', u: '\u00FA', y: '\u00FD', A: '\u00C1', E: '\u00C9', I: '\u00CD', O: '\u00D3', U: '\u00DA', Y: '\u00DD' },
+	circ: { a: '\u00E2', e: '\u00EA', i: '\u00EE', o: '\u00F4', u: '\u00FB', A: '\u00C2', E: '\u00CA', I: '\u00CE', O: '\u00D4', U: '\u00DB' },
+	tilde: { a: '\u00E3', o: '\u00F5', n: '\u00F1', A: '\u00C3', O: '\u00D5', N: '\u00D1' },
+	uml: { a: '\u00E4', e: '\u00EB', i: '\u00EF', o: '\u00F6', u: '\u00FC', A: '\u00C4', E: '\u00CB', I: '\u00CF', O: '\u00D6', U: '\u00DC' },
+	cedil: { c: '\u00E7', C: '\u00C7' }
+};
+
+function padComposeAccents(text) {
+	return String(text).replace(/([A-Za-z])([\u0300\u0301\u0302\u0303\u0308\u0327])/g, function (all, letter, mark) {
+		var table = PAD_ACCENT_TABLE[PAD_ACCENT_MARKS[mark]];
+
+		return table && table[letter] ? table[letter] : all;
+	});
+}
+
 // Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
 // a: { uri, text, quiet }
 PADX.fillBegin = function (a) {
@@ -1258,7 +1279,7 @@ PADX.fillBegin = function (a) {
 	if (!files.config.exists) throw new Error('#PAD_017 - esse template não tem arquivo de configuração');
 
 	var templateData = padReadTemplateConfig(files.config);
-	var text = String(a.text);
+	var text = padComposeAccents(String(a.text));
 
 	if (text.trim() == '') throw new Error('#PAD_046 - o texto de input está vazio');
 
