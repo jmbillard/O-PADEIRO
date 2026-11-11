@@ -1120,6 +1120,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return items.length ? items[items.length - 1] : null;
 	}
 
+	var LOADER_DELAY = 300; // ms: leitura mais rápida que isso não mostra o loader
+
 	async function selectTemplate(node, opts) {
 		if (runIsOpen()) {
 			notify('warning', 'Finalize o preenchimento atual (fila de render) antes de trocar de template.');
@@ -1139,24 +1141,37 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setExpanded(true);
 		setStage('2 · preencher', node.text.replace(/\.[a-z0-9]+$/i, ''), '');
-		showView('loading');
+
+		// o loader só aparece se a leitura demorar (sem piscar a cada clique): até lá, o template anterior fica
+		// apagado e é trocado direto pelo novo
+		var queueSide = document.querySelector('.queue-side');
+
+		clearTimeout(state.loadingTimer);
+		queueSide.classList.add('is-switching');
+		state.loadingTimer = setTimeout(function () {
+			if (state.selected === node && !state.info) showView('loading');
+		}, LOADER_DELAY);
 
 		try {
 			state.info = await call('templateInfo', { uri: node.uri });
 		} catch (err) {
 			state.info = null;
-			showReadonly(err.message);
+			if (state.selected === node) {
+				clearTimeout(state.loadingTimer);
+				queueSide.classList.remove('is-switching');
+				showReadonly(err.message);
+			}
 			return;
 		}
 
 		if (!state.selected || state.selected.uri !== node.uri) return; // mudou de template enquanto lia
 
+		clearTimeout(state.loadingTimer);
+		queueSide.classList.remove('is-switching');
 		showTemplate(state.info);
 		checkFonts(node.uri);
 
 		if (opts && opts.focusInput) focusInput();
-
-		var queueSide = document.querySelector('.queue-side');
 
 		if (window.matchMedia('(max-width: 900px)').matches && queueSide.scrollIntoView) {
 			queueSide.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1239,6 +1254,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function deselectTemplate() {
+		clearTimeout(state.loadingTimer);
+		document.querySelector('.queue-side').classList.remove('is-switching');
+
 		closeEditor();
 		state.selected = null;
 		state.info = null;

@@ -594,6 +594,12 @@ body {
 
 .view {
   animation: reveal-up 520ms var(--ease-enter) both;
+  transition: opacity 160ms ease;
+}
+
+/* trocando de template: o anterior fica apagado até o novo chegar (o loader só aparece se demorar) */
+.queue-side.is-switching .view:not(#view-loading) {
+  opacity: 0.45;
 }
 
 .view-stack {
