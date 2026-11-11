@@ -1064,6 +1064,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			$('view-' + view).hidden = view !== name;
 		});
 
+		// o rodapé do preenchimento fica no lugar ao trocar de template (carregando: os botões desligados)
+		$('input-footer').hidden = name !== 'input' && name !== 'loading';
+		$('btn-import').disabled = name !== 'input';
+		$('btn-output').disabled = name !== 'input';
+		if (name === 'loading') $('btn-fill').disabled = true;
+
 		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
 		$('btn-edit-config').setAttribute('aria-pressed', String(name === 'config'));
