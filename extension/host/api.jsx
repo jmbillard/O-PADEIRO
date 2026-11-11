@@ -1289,6 +1289,7 @@ PADX.fillBegin = function (a) {
 	if (templateData.textCase == 'titleCase') text = text.toTitleCase();
 
 	var inputTextArray = text.split(/[\n\r]{2,}/);
+	var snapshot = padProjectSnapshot(); // para o "voltar e desfazer" da fila de render (PADX.fillUndo)
 
 	return padGroup('O PADEIRO: importar template', function () {
 		// Define configurações do projeto
@@ -1370,6 +1371,7 @@ PADX.fillBegin = function (a) {
 			newComps: [],
 			newOutputs: [],
 			renderTemplates: renderList,
+			snapshot: snapshot,
 			count: 0
 		};
 
@@ -1549,6 +1551,129 @@ PADX.fillFinish = function () {
 		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};
+};
+
+// Como o projeto estava antes de preencher: cada item (o id, o nome, se é pasta e a pasta onde estava), as
+// configurações que o preenchimento muda e os metadados. → para o padFillUndo
+function padProjectSnapshot() {
+	var p = app.project;
+	var items = [];
+	var ids = {};
+
+	for (var i = 1; i <= p.numItems; i++) {
+		var it = p.item(i);
+		var parent = it.parentFolder;
+
+		items.push({ id: it.id, name: it.name, folder: it instanceof FolderItem, parent: parent && parent !== p.rootFolder ? parent.id : 0 });
+		ids[it.id] = true;
+	}
+
+	var xmp = null;
+
+	try {
+		xmp = p.xmpPacket;
+	} catch (err) { }
+
+	return {
+		items: items,
+		ids: ids,
+		settings: { bitsPerChannel: p.bitsPerChannel, expressionEngine: p.expressionEngine, linearBlending: p.linearBlending, timeDisplayType: p.timeDisplayType },
+		xmp: xmp
+	};
+}
+
+function padItemByID(id) {
+	try {
+		return app.project.itemByID(id);
+	} catch (err) {
+		return null;
+	}
+}
+
+// Voltar e desfazer (na fila de render, antes de criá-la): o projeto volta a como estava antes de preencher. as
+// pastas que existiam voltam (o organizar desfaz e refaz as pastas; as que sumiram são criadas de novo, com o mesmo
+// nome), cada item volta para a pasta onde estava, e sai tudo o que entrou (o template importado, as comps criadas,
+// as pastas novas). as configurações do projeto e os metadados também voltam. → { removed }
+PADX.fillUndo = function () {
+	var run = PADX_run;
+
+	if (!run || !run.snapshot) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
+	if (run.outputs) throw new Error('#PAD_049 - a fila de render já foi criada: use o Ctrl+Z do After Effects');
+
+	var snap = run.snapshot;
+	var p = app.project;
+	var removed = 0;
+
+	padGroup('O PADEIRO: desfazer preenchimento', function () {
+		var byOld = {};
+		var keep = {};
+		var s;
+
+		// 1. as pastas que existiam (as que sumiram, de novo) e os outros itens
+		for (s = 0; s < snap.items.length; s++) {
+			var rec = snap.items[s];
+			var item = padItemByID(rec.id);
+
+			if (!item && rec.folder) item = p.items.addFolder(rec.name);
+			if (item) byOld[rec.id] = item;
+		}
+
+		for (var k in byOld) if (byOld.hasOwnProperty(k)) keep[byOld[k].id] = true;
+
+		// 2. cada um na pasta onde estava
+		for (s = 0; s < snap.items.length; s++) {
+			var it = byOld[snap.items[s].id];
+			var parent = snap.items[s].parent ? byOld[snap.items[s].parent] : p.rootFolder;
+
+			if (!it || !parent || it.parentFolder === parent) continue;
+
+			try {
+				it.parentFolder = parent;
+			} catch (err) { }
+		}
+
+		// 3. sai o que entrou: primeiro os itens, depois as pastas novas (já vazias)
+		for (var i = p.numItems; i >= 1; i--) {
+			var a = p.item(i);
+
+			if (!keep[a.id] && !(a instanceof FolderItem)) {
+				a.remove();
+				removed++;
+			}
+		}
+
+		var again = true;
+
+		while (again) {
+			again = false;
+
+			for (var f = p.numItems; f >= 1; f--) {
+				var folder = p.item(f);
+
+				if (folder instanceof FolderItem && !keep[folder.id] && folder.numItems === 0) {
+					folder.remove();
+					removed++;
+					again = true;
+				}
+			}
+		}
+
+		// 4. as configurações do projeto e os metadados
+		try {
+			p.bitsPerChannel = snap.settings.bitsPerChannel;
+			p.expressionEngine = snap.settings.expressionEngine;
+			p.linearBlending = snap.settings.linearBlending;
+			p.timeDisplayType = snap.settings.timeDisplayType;
+		} catch (err) { }
+
+		try {
+			if (snap.xmp != null) p.xmpPacket = snap.xmp;
+		} catch (err) { }
+	});
+
+	PADX_run = null;
+
+	return { removed: removed };
 };
 
 /*

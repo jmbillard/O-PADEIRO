@@ -488,6 +488,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { path: '/mock/output' } };
 		},
 
+		// voltar e desfazer (fila de render): o projeto como antes de preencher
+		fillUndo: async function () {
+			await wait(500);
+
+			return { removed: 4 };
+		},
+
 		// depois de instalar: o After Effects enxerga as novas e as camadas passam para elas (no teste: nada faltando)
 		fontsSync: function () {
 			return { supported: true, replaced: 0, missing: [] };

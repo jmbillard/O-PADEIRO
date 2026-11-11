@@ -188,9 +188,9 @@
 					</div>
 
 					<div class="render-options" id="render-options" hidden>
-						<div>
-							<h3>Fila de render</h3>
-							<p>Escolha o template de output para criar a fila de render.</p>
+						<div class="rq-head">
+							<p class="cfg-title">fila de render</p>
+							<p class="cfg-hint">o template de output vale para todas as comps</p>
 						</div>
 						<span class="select select-large">
 							<select id="render-template" aria-label="Template de output"></select>
@@ -198,14 +198,29 @@
 						<ul class="render-outputs" id="render-outputs"></ul>
 					</div>
 
+					<!-- antes de criar a fila: a ordem (puxador) e o que fica de fora (lixeira: sai só da fila) -->
+					<div class="rq-head rq-list-head" id="queue-list-head" hidden>
+						<p class="cfg-title">comps criadas <span class="rq-count" id="queue-count"></span></p>
+						<p class="cfg-hint">arraste pelo puxador para mudar a ordem da fila · a lixeira tira da fila (a comp fica no projeto)</p>
+					</div>
+
 					<div class="queue-content">
 						<ul class="file-list" id="file-list"></ul>
+						<p class="rq-note" id="queue-note" hidden></p>
 					</div>
 
 					<!-- as ações da fila ficam no rodapé, como nas outras telas -->
 					<div class="run-footer action-bar is-anchored" id="queue-footer" hidden>
+						<button type="button" class="io-button rq-undo" id="btn-undo-fill" title="voltar e desfazer: tira do projeto o template importado e as comps criadas (como antes de preencher)" aria-label="voltar e desfazer o preenchimento"><svg viewBox="0 0 24 24"><path class="undo-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
 						<button type="button" class="button button-secondary" id="btn-skip-queue">Concluir sem fila</button>
 						<button type="button" class="button button-primary" id="btn-queue">Criar fila de render</button>
+					</div>
+
+					<!-- desfazer: a confirmação no próprio rodapé (sem janela) -->
+					<div class="run-footer action-bar is-anchored rq-confirm" id="undo-confirm" hidden>
+						<p class="rq-confirm-text"><b>desfazer o preenchimento?</b> <span id="undo-what"></span></p>
+						<button type="button" class="button button-secondary" id="btn-undo-back">Voltar</button>
+						<button type="button" class="button button-primary rq-danger" id="btn-undo-go">Desfazer tudo</button>
 					</div>
 
 					<div class="run-footer action-bar is-anchored" id="run-footer" hidden>

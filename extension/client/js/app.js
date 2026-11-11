@@ -1613,8 +1613,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	var STATUS_LABEL = { waiting: 'aguardando', processing: 'processando', success: 'pronto', error: 'erro' };
 
+	// uma linha da fila: o cartão (li._card) dentro da linha, que ganha o puxador e a lixeira antes de criar a fila
 	function buildItem(index, label) {
-		var li = el('li', 'file-item is-new');
+		var row = el('li', 'rq-row');
+		var li = el('div', 'file-item is-new');
 		var main = el('div', 'file-main');
 		var heading = el('div', 'file-heading');
 		var actions = el('div', 'file-actions');
@@ -1636,11 +1638,21 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			li.classList.remove('is-new', 'just-completed');
 		});
 
-		return li;
+		row.appendChild(li);
+		row._card = li;
+
+		return row;
+	}
+
+	// o item pelo índice de quando foi criado (a ordem da fila pode mudar)
+	function runItem(i) {
+		return state.run.items.filter(function (item) {
+			return item.index === i;
+		})[0];
 	}
 
 	function setItem(i, status, info) {
-		var item = state.run.items[i];
+		var item = runItem(i);
 		var li = item.node;
 
 		item.status = status;
@@ -1731,11 +1743,18 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		list.textContent = '';
 		state.run = { items: [], finished: false, total: begin.total, queued: false, renderTemplates: [], outputPath: [] };
 
-		begin.jobs.forEach(function (job, i) {
-			var node = buildItem(i, job.label);
+		list.classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
+		$('undo-confirm').hidden = true;
 
-			list.appendChild(node);
-			state.run.items.push({ node: node, status: 'waiting', index: i, hostIndex: -1 });
+		begin.jobs.forEach(function (job, i) {
+			var row = buildItem(i, job.label);
+			var item = { node: row._card, row: row, status: 'waiting', index: i, hostIndex: -1, excluded: false };
+
+			row._item = item;
+			list.appendChild(row);
+			state.run.items.push(item);
 		});
 
 		$('render-options').hidden = true;
@@ -1754,7 +1773,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			try {
 				var res = await call('fillStep', { index: i });
 
-				state.run.items[i].hostIndex = hostIndex++;
+				runItem(i).hostIndex = hostIndex++;
 				setItem(i, 'success', { name: res.name, meta: 'comp criada no projeto', message: '' });
 			} catch (err) {
 				setItem(i, 'error', { meta: 'não foi possível preencher', message: err.message });
@@ -1827,8 +1846,131 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setStage('4 · render', null, 'selecione o template de output para continuar');
 		$('render-options').hidden = false;
 		$('queue-footer').hidden = false;
+		editQueue();
 		setPickerLocked(true);
 		select.focus();
+	}
+
+	// Antes de criar a fila: a ordem (o puxador, à esquerda) e o que fica de fora (a lixeira, à direita: sai só da
+	// fila; a comp fica no projeto)
+	function queueItems() {
+		return Array.prototype.map.call($('file-list').children, function (row) {
+			return row._item;
+		}).filter(function (item) {
+			return item && item.status === 'success' && !item.excluded;
+		});
+	}
+
+	function editQueue() {
+		var list = $('file-list');
+
+		list.classList.add('is-editing');
+		state.run.items.forEach(function (item) {
+			if (item.row.querySelector('.drag-handle')) return;
+
+			item.row.insertBefore(PAD_SORT.handle(), item.row.firstChild);
+			item.row.appendChild(item.status === 'success' ? PAD_UTIL.trashButton('tirar da fila de render (a comp fica no projeto)', function () {
+				excludeItem(item);
+			}) : el('span', 'rq-del-space'));
+		});
+
+		PAD_SORT.enable(list, '.rq-row', function (from, to) {
+			var rows = Array.prototype.slice.call(list.children);
+			var row = rows.splice(from, 1)[0];
+
+			rows.splice(to, 0, row);
+			rows.forEach(function (r) {
+				list.appendChild(r);
+			});
+			renumberQueue();
+		});
+
+		$('queue-list-head').hidden = false;
+		renumberQueue();
+	}
+
+	function renumberQueue() {
+		Array.prototype.forEach.call($('file-list').children, function (row, i) {
+			row._card.querySelector('.file-type').textContent = String(i + 1).padStart(2, '0');
+		});
+
+		var n = queueItems().length;
+
+		$('queue-count').textContent = n;
+		$('btn-queue').textContent = n ? 'Criar fila de render: ' + n : 'Criar fila de render';
+		$('btn-queue').disabled = !n;
+	}
+
+	// a linha sai da lista (e da fila); a nota embaixo devolve, no mesmo lugar (a última que saiu primeiro)
+	function excludeItem(item) {
+		var row = item.row;
+
+		row.classList.add('is-gone');
+		setTimeout(function () {
+			item.excluded = true;
+			item.before = row.nextSibling;
+			(state.run.out = state.run.out || []).push(item);
+			row.remove();
+			row.classList.remove('is-gone');
+			renumberQueue();
+			showQueueNote();
+		}, 200);
+	}
+
+	function showQueueNote() {
+		var note = $('queue-note');
+		var out = state.run.out || [];
+		var last = out[out.length - 1];
+
+		note.textContent = '';
+		note.hidden = !last;
+		if (!last) return;
+
+		var undo = el('button', null, 'desfazer');
+
+		undo.type = 'button';
+		undo.addEventListener('click', function () {
+			var item = out.pop();
+			var list = $('file-list');
+
+			item.excluded = false;
+			list.insertBefore(item.row, item.before && item.before.parentNode === list ? item.before : null);
+			renumberQueue();
+			showQueueNote();
+		});
+		note.appendChild(document.createTextNode('“' + last.node.querySelector('.file-name').textContent + '” saiu da fila (a comp continua no projeto) · '));
+		note.appendChild(undo);
+	}
+
+	// Voltar e desfazer (antes de criar a fila): tira do projeto o template importado e as comps criadas; o projeto
+	// volta a como estava antes de preencher, e o painel volta para o input (com o texto)
+	function askUndoFill() {
+		var n = state.run.items.filter(function (item) {
+			return item.status === 'success';
+		}).length;
+
+		$('undo-what').textContent = 'o template importado e ' + (n === 1 ? 'a comp saem' : 'as ' + n + ' comps saem') + ' do projeto.';
+		$('queue-footer').hidden = true;
+		$('undo-confirm').hidden = false;
+	}
+
+	async function undoFill() {
+		$('btn-undo-go').disabled = true;
+
+		try {
+			var res = await call('fillUndo');
+
+			$('undo-confirm').hidden = true;
+			$('file-list').classList.remove('is-editing');
+			newRun();
+			notify('success', 'Preenchimento desfeito: o projeto voltou a como estava antes de preencher' + (res.removed ? ' (' + plural(res.removed, 'item removido', 'itens removidos') + ').' : '.'));
+		} catch (err) {
+			notify('error', err.message);
+			$('undo-confirm').hidden = true;
+			$('queue-footer').hidden = false;
+		}
+
+		$('btn-undo-go').disabled = false;
 	}
 
 	async function createQueue() {
@@ -1840,12 +1982,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
 		$('queue-footer').hidden = true;
+		$('file-list').classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');
 
-		var targets = state.run.items.filter(function (item) {
-			return item.status === 'success';
-		});
+		// na ordem da lista, sem as que saíram da fila
+		var targets = queueItems();
 
 		try {
 			var begin = await call('queueBegin', { outputTemplate: template });
@@ -1858,6 +2002,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			setBusy(false);
 			$('render-options').hidden = false;
 			$('queue-footer').hidden = false;
+			editQueue();
 			return;
 		}
 
@@ -1898,6 +2043,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		run.finished = true;
 		$('render-options').hidden = true;
 		$('queue-footer').hidden = true;
+		$('undo-confirm').hidden = true;
+		$('file-list').classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
 		$('run-footer').hidden = false;
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
@@ -2209,6 +2358,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
+		$('btn-undo-fill').addEventListener('click', askUndoFill);
+		$('btn-undo-back').addEventListener('click', function () {
+			$('undo-confirm').hidden = true;
+			$('queue-footer').hidden = false;
+		});
+		$('btn-undo-go').addEventListener('click', undoFill);
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
