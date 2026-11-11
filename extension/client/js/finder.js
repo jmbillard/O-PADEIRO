@@ -1374,6 +1374,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	window.addEventListener('resize', function () {
 		relayoutTrello();
+		markFit();
 		crumbsCollapse($('results-paths'));
 
 		if (!refitOnResize) return;
@@ -1381,6 +1382,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		refitOnResize = false;
 		scheduleFit();
 	});
+
+	// sobrando no máximo uns pixels para rolar (arredondamento), a barra de rolagem some; faltando mais (a janela não
+	// pôde crescer: o limite da tela), ela fica
+	function markFit() {
+		var results = $('results-' + state.tab);
+
+		if (!results) return;
+
+		results.classList.remove('is-fit');
+		results.classList.toggle('is-fit', results.scrollHeight - results.clientHeight <= 4);
+	}
 
 	function fitHeight(skipWidth) {
 		var results = $('results-' + state.tab);
@@ -1429,15 +1441,19 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var bottom = top;
 
 		Array.prototype.forEach.call(results.children, function (child) {
-			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
+			// com a margem de baixo de cada bloco (senão sobram uns pixels para rolar)
+			bottom = Math.max(bottom, child.getBoundingClientRect().bottom + (parseFloat(getComputedStyle(child).marginBottom) || 0));
 		});
 
 		var content = bottom - top + results.scrollTop + parseFloat(getComputedStyle(results).paddingBottom);
 		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
-		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
+		var height = Math.ceil(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
 
-
-		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+		// cabendo tudo, a barra de rolagem não aparece (nem por 1 px). crescer: qualquer diferença (faltando um pixel,
+		// a barra aparece); encolher: só se sobrar mais que uns pixels (sem tremer a cada busca)
+		if (height > window.innerHeight || window.innerHeight - height > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+		setTimeout(markFit, 450); // depois que a janela mudou de tamanho
+		markFit();
 	}
 
 	// Sem busca, a folha branca sai: só o cabeçalho (loader e avisos aparecem sobre o degradê).

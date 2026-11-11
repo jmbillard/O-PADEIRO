@@ -189,6 +189,11 @@ body.finder-page {
   scrollbar-width: thin;
 }
 
+/* tudo cabe na janela (ela cresceu até a altura do conteúdo): sem barra de rolagem, nem por um arredondamento */
+.finder-results.is-fit {
+  overflow-y: hidden;
+}
+
 .finder-results::-webkit-scrollbar {
   width: 8px;
 }
