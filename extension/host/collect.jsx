@@ -148,12 +148,14 @@ function padFolderKey(name) {
 	return String(name || '').replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
-// Pasta que o After Effects (ou alguém) cria e não interessa nas listas: autosave, logs e as pastas sem nome
-// (Adobe After Effects Auto-Save, Auto-Save, logs, New Folder, untitled folder 2, Nova pasta (3), Sem título…).
+// Pasta que o After Effects (ou alguém) cria e não interessa nas listas: autosave, logs, as pastas sem nome
+// (Adobe After Effects Auto-Save, Auto-Save, logs, New Folder, untitled folder 2, Nova pasta (3), Sem título…) e as
+// que guardam o que saiu de uso (OLD, _old, NÃO VALE, nao_vale).
 function padIsJunkFolder(name) {
 	var n = padTrim(name);
+	var key = padFolderKey(n);
 
-	return /auto[\s._-]*save/i.test(n) || /^logs?$/i.test(n) || /^(new folder|untitled( folder)?|nova pasta|(pasta )?sem t[i\u00ED]tulo)([\s._-]*\(?\d+\)?)?$/i.test(n);
+	return key == 'OLD' || key == 'OLDS' || key == 'NAOVALE' || /auto[\s._-]*save/i.test(n) || /^logs?$/i.test(n) || /^(new folder|untitled( folder)?|nova pasta|(pasta )?sem t[i\u00ED]tulo)([\s._-]*\(?\d+\)?)?$/i.test(n);
 }
 
 // Pasta de projetos com outra grafia, comum no servidor: 01 PROJETOS, 01PROJETOS, 01 PROJETO, PROJETOS.

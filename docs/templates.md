@@ -48,7 +48,7 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 > 🚩 *obs:*\
 > • a lista mostra só os arquivos `.aep` / `.aet` e as pastas que têm templates. uma pasta com uma única subpasta aparece como `PASTA / SUBPASTA`.\
 > • pastas de rede podem demorar: enquanto a lista é lida, A FORMA mostra quantas pastas já foram lidas.\
-> • pastas de autosave (`Auto-Save`), de logs e sem nome (`New Folder`, `untitled folder`, `Nova pasta`…) não aparecem na lista.\
+> • pastas de autosave (`Auto-Save`), de logs, sem nome (`New Folder`, `untitled folder`, `Nova pasta`…) e as de coisas fora de uso (`OLD`, `NÃO VALE`) não aparecem na lista.\
 > • fixados e recentes são de cada computador e de cada produção.
 
 ### fixados e recentes
