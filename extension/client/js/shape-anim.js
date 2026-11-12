@@ -141,8 +141,8 @@ da pasta, com a pasta abrindo um pouco para receber.
 
 		svg.style.setProperty('--sa-loop', LOOP + 'ms');
 
-		// justo no desenho e ocupando o espaço que sobra: nunca menor que o tamanho real (a janela cresce até ele) e,
-		// sobrando espaço, maior, até MAX_SCALE
+		// justo no desenho, alinhado pela esquerda e ocupando o espaço que sobra: nunca menor que o tamanho real (o que
+		// passa do espaço some no degradê, embaixo, e o rodapé fica no lugar) e, sobrando espaço, maior, até MAX_SCALE
 		var bb = svg.getBBox();
 		var w = Math.ceil(bb.width) + 8;
 		var h = Math.ceil(bb.height) + 8;
@@ -152,7 +152,9 @@ da pasta, com a pasta abrindo um pouco para receber.
 		svg.removeAttribute('height');
 		svg.style.maxWidth = Math.round(w * MAX_SCALE) + 'px';
 		svg.style.maxHeight = Math.round(h * MAX_SCALE) + 'px';
-		box.style.minHeight = h + 'px';
+		svg.style.minWidth = w + 'px';
+		svg.style.minHeight = h + 'px';
+		svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
 	}
 
 	function mount(box, folders, opts) {

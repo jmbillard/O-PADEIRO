@@ -921,15 +921,19 @@ p.wz-exist b {
   min-height: 0;
   flex: 1;
   margin-top: 8px;
+  overflow: hidden;
+  /* a transição para o rodapé: o que passa do espaço some num degradê (sem linha) e o botão fica no lugar */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
 }
 
-/* a árvore ocupa o espaço que sobra (no meio, sem distorcer), entre o tamanho real e 1,7× (shape-anim.js) */
+/* a árvore ocupa o espaço que sobra (pela esquerda, sem distorcer), entre o tamanho real e 1,7× (shape-anim.js) */
 .shape-anim {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  margin: auto;
   overflow: visible;
 }
 

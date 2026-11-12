@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02 ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
+o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02_ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
 
 > requer o After Effects 2024 ou mais novo.
 

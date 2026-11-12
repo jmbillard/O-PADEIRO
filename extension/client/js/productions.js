@@ -1676,6 +1676,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					renderTypes();
 					updateDirty();
 				});
+				// Enter aplica o nome: sai do campo
+				name.addEventListener('keydown', function (e) {
+					if (e.key !== 'Enter') return;
+
+					e.preventDefault();
+					name.blur();
+				});
 				row.appendChild(name);
 
 				remove.type = 'button';
@@ -2046,14 +2053,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// a estrutura padrão (a mesma do host, PAD_DEFAULT_COLLECT): o .aep em 01, os arquivos em 02, as saídas em 03
 	var DEFAULT_COLLECT_FOLDERS = [
-		{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
-		{ name: '02 ARQUIVOS', parent: '', contents: [] },
-		{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
-		{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
-		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
-		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
-		{ name: '03 SAIDA', parent: '', contents: [] }
+		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+		{ name: '02_ARQUIVOS', parent: '', contents: [] },
+		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+		{ name: '03_SAIDA', parent: '', contents: [] },
+		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+		{ name: '04_REFS', parent: '', contents: [] }
 	];
 
 	function setCollect(c) {
@@ -2110,7 +2119,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindCollect() {
 		colTree.bind();
 
-		// troca a árvore pela estrutura padrão (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA); salvar grava
+		// troca a árvore pela estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS); salvar grava
 		$('btn-col-default').addEventListener('click', function () {
 			state.collect.folders = JSON.parse(JSON.stringify(DEFAULT_COLLECT_FOLDERS));
 			renderCollect();

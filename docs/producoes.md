@@ -124,17 +124,19 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela **projeto** salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
 
 ```
-01 PROJETOS        ← o .aep (tipo projeto)
-02 ARQUIVOS
+01_PROJETOS        ← o .aep (tipo projeto)
+02_ARQUIVOS
    FONTS           ← fontes
    IMAGENS         ← imagens e sequências de imagens
    VÍDEOS          ← vídeos
    AUDIOS          ← áudio
    DADOS           ← dados (json, csv, txt...)
-03 SAIDA           ← previews e finais para avaliação (criada vazia)
+03_SAIDA           ← finais para avaliação (criada vazia)
+   PREVIEWS        ← previews (criada vazia)
+04_REFS            ← referências (criada vazia)
 ```
 
-a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01 PROJETOS`). pastas sem tipo (como `02 ARQUIVOS` e `03 SAIDA`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
+a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01_PROJETOS`). pastas sem tipo (como `02_ARQUIVOS`, `03_SAIDA` e `04_REFS`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
 
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
 - **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).

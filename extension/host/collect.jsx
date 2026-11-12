@@ -20,17 +20,19 @@ Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 
 var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes'];
 
-// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo) e as saídas em 03.
+// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo), as saídas em 03 (com os previews) e as referências em 04.
 var PAD_DEFAULT_COLLECT = {
 	folders: [
-		{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
-		{ name: '02 ARQUIVOS', parent: '', contents: [] },
-		{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
-		{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
-		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
-		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
-		{ name: '03 SAIDA', parent: '', contents: [] }
+		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+		{ name: '02_ARQUIVOS', parent: '', contents: [] },
+		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+		{ name: '03_SAIDA', parent: '', contents: [] },
+		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+		{ name: '04_REFS', parent: '', contents: [] }
 	]
 };
 

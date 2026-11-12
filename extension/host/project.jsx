@@ -300,7 +300,7 @@ PADX.projectOpenFolder = function () {
 
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
 comparado com os padrões da atração ('pattern' no índice) e com o nome. A pasta da atração recebe a
-estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que já existir.
+estrutura do coletar (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA…), aproveitando a que já existir.
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
 No projeto ficam os dados do padeiro (padeiro:, em 'dados do projeto aberto'): a atração, o que é, o designer,
@@ -503,7 +503,7 @@ function padListedFolder(path) {
 
 function padNewProjectPlan(a) {
 	var settings = padReadCollect();
-	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
+	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var root;
 	var fileBase;
 

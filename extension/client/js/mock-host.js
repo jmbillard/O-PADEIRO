@@ -197,14 +197,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					project: mockProject(), // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
 					collect: {
 						folders: [
-							{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
-							{ name: '02 ARQUIVOS', parent: '', contents: [] },
-							{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
-							{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-							{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
-							{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
-							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
-							{ name: '03 SAIDA', parent: '', contents: [] }
+							{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+							{ name: '02_ARQUIVOS', parent: '', contents: [] },
+							{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+							{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+							{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+							{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+							{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+							{ name: '03_SAIDA', parent: '', contents: [] },
+							{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+							{ name: '04_REFS', parent: '', contents: [] }
 						]
 					},
 					items: [
@@ -490,14 +492,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		projectShape: function () {
 			return { folders: [
-				{ name: '01 PROJETOS', depth: 0, contents: ['projeto'] },
-				{ name: '02 ARQUIVOS', depth: 0, contents: [] },
+				{ name: '01_PROJETOS', depth: 0, contents: ['projeto'] },
+				{ name: '02_ARQUIVOS', depth: 0, contents: [] },
 				{ name: 'AUDIOS', depth: 1, contents: ['audio'] },
 				{ name: 'DADOS', depth: 1, contents: ['dados'] },
 				{ name: 'FONTS', depth: 1, contents: ['fontes'] },
 				{ name: 'IMAGENS', depth: 1, contents: ['imagens', 'sequencias'] },
 				{ name: 'VÍDEOS', depth: 1, contents: ['videos'] },
-				{ name: '03 SAIDA', depth: 0, contents: [] }
+				{ name: '03_SAIDA', depth: 0, contents: [] },
+				{ name: 'PREVIEWS', depth: 1, contents: [] },
+				{ name: '04_REFS', depth: 0, contents: [] }
 			] };
 		},
 
@@ -1166,7 +1170,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
 				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
 			] : [];
-			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
+			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
 
 			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
 		},

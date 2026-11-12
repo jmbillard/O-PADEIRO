@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01 PROJETOS`, `02 ARQUIVOS`, `03 SAIDA`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas.
+a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas.
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
@@ -35,7 +35,7 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
    - **já na pasta** → uma linha com o último `.aep` alterado da pasta de projetos (`hoje 14:32 · +2`).
    - **nome repetido** → o aviso e as duas saídas ali mesmo: **abrir o existente** ou **salvar como … 2** (o padrão; a árvore já mostra o `… 2.aep`).
-   - **a estrutura** (o cartão azul): `01 PROJETOS` com o `.aep`, `02 ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, e `03 SAIDA` (a pasta de projetos que já existe aparece mais clara).
+   - **a estrutura** (o cartão azul): `01_PROJETOS` com o `.aep`, `02_ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, `03_SAIDA` e `04_REFS` (a pasta de projetos que já existe aparece mais clara).
    - **pasta de output** → numa linha só, a escolhida e o caminho (ex: `SERVICO · nova`, `…/2026/SERVICO`). o clique abre as opções embaixo: a da atração (do caminho de output da categoria, ou a do índice), a **subpasta do "o que é"** dentro dela (o padrão), **pular** (não cria nem grava nada; dá para escolher depois, no editor) e **outra pasta…** (com a pastinha). cada uma diz se **já existe** ou é **nova** (a nova é criada junto com o projeto); a escolha (menos a outra pasta) fica lembrada neste computador.
    - **Criar projeto** (ou `Enter` no "o que é") cria as pastas que faltam e salva o `.aep`; a janela cresce sozinha para caber tudo. no macOS, se o volume da rede do caminho (ex: `/Volumes/VFX`) não estiver montado, o padeiro monta antes, como o acessorista faz ao abrir uma pasta. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
 
