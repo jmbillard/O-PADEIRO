@@ -958,6 +958,8 @@ PADX.listDir = function (a) {
 		var name = items[i].displayName;
 
 		if (items[i] instanceof Folder) {
+			if (padIsJunkFolder(name)) continue; // autosave e logs ficam fora da lista
+
 			entries.push({ type: 'folder', name: name, uri: items[i].absoluteURI });
 		} else if (PADX_TEMPLATE_EXT.indexOf(getFileExt(name)) >= 0) {
 			// a data de criação (os 'novos' da lista: os dos últimos 15 dias); sem ela, a última modificação

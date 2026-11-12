@@ -148,6 +148,12 @@ function padFolderKey(name) {
 	return String(name || '').replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
+// Pasta que o After Effects (ou alguém) cria e não interessa nas listas: autosave e logs
+// (Adobe After Effects Auto-Save, Auto-Save, autosave, logs, log).
+function padIsJunkFolder(name) {
+	return /auto[\s._-]*save/i.test(name) || /^logs?$/i.test(padTrim(name));
+}
+
 // Pasta de projetos com outra grafia, comum no servidor: 01 PROJETOS, 01PROJETOS, 01 PROJETO, PROJETOS.
 function padIsProjectsFolderName(name) {
 	return /^(0?1)?PROJETOS?$/.test(padFolderKey(name));

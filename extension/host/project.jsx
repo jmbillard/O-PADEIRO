@@ -580,7 +580,7 @@ var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 
 Os quadros são as subpastas da pasta da atração (a de cima da de projetos, quando o índice aponta para ela; com o
 ano, a do ano): DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS. ficam de fora as da estrutura do coletar (01_PROJETOS,
-02_ARQUIVOS…, em qualquer grafia), as que são só números (anos) e as escondidas. o projeto de um quadro vai para a
+02_ARQUIVOS…, em qualquer grafia), as que são só números (anos), as de autosave e logs e as escondidas. o projeto de um quadro vai para a
 estrutura dentro dele.
 
 */
@@ -608,7 +608,7 @@ PADX.projectQuadros = function (a) {
 		var name = decodeURI(items[i].name);
 
 		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^[._]/.test(name) || /^[\d\s._-]+$/.test(name)) continue;
-		if (skip[padFolderKey(name)] || padIsProjectsFolderName(name)) continue;
+		if (skip[padFolderKey(name)] || padIsProjectsFolderName(name) || padIsJunkFolder(name)) continue;
 
 		quadros.push({ name: name, path: padDisplayPath(items[i].fsName) });
 	}
