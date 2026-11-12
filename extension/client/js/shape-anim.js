@@ -25,6 +25,7 @@ da pasta, com a pasta abrindo um pouco para receber.
 	var STEP = 170; // ms entre uma pasta e a próxima
 	var KIND_STEP = 110; // ms entre um arquivo e o próximo
 	var LOOP = 8200; // ms do ciclo inteiro
+	var MAX_SCALE = 1.7; // o quanto a árvore cresce com espaço sobrando
 
 	var FOLDER_BACK = 'M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5';
 	var FOLDER_FRONT = 'M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z';
@@ -140,12 +141,18 @@ da pasta, com a pasta abrindo um pouco para receber.
 
 		svg.style.setProperty('--sa-loop', LOOP + 'ms');
 
-		// em tamanho real (1 unidade = 1 px), justo no desenho: a árvore fica no meio do espaço
+		// justo no desenho e ocupando o espaço que sobra: nunca menor que o tamanho real (a janela cresce até ele) e,
+		// sobrando espaço, maior, até MAX_SCALE
 		var bb = svg.getBBox();
+		var w = Math.ceil(bb.width) + 8;
+		var h = Math.ceil(bb.height) + 8;
 
-		svg.setAttribute('viewBox', [Math.floor(bb.x) - 4, Math.floor(bb.y) - 4, Math.ceil(bb.width) + 8, Math.ceil(bb.height) + 8].join(' '));
-		svg.setAttribute('width', Math.ceil(bb.width) + 8);
-		svg.setAttribute('height', Math.ceil(bb.height) + 8);
+		svg.setAttribute('viewBox', [Math.floor(bb.x) - 4, Math.floor(bb.y) - 4, w, h].join(' '));
+		svg.removeAttribute('width');
+		svg.removeAttribute('height');
+		svg.style.maxWidth = Math.round(w * MAX_SCALE) + 'px';
+		svg.style.maxHeight = Math.round(h * MAX_SCALE) + 'px';
+		box.style.minHeight = h + 'px';
 	}
 
 	function mount(box, folders, opts) {
