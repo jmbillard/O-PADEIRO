@@ -80,6 +80,8 @@ projetos com o nome certo).
 	var BASE_HEIGHT = 410;
 
 	function fitHeight() {
+		if (state.holdFit) return; // trocando de tela: mede uma vez só, com a nova pronta (a janela não samba)
+
 		requestAnimationFrame(function () {
 			var screen = document.querySelector('.wz-screen:not([hidden])');
 
@@ -242,13 +244,15 @@ projetos com o nome certo).
 				$('claq-hint').textContent = PAD_UTIL.errorText(err.message);
 			}
 
-			// a primeira atração vem marcada (sem nenhuma, a "nova atração"); o que a pessoa escolheu fica
-			if (!state.userChose || /^m/.test(flow.choice)) flow.choice = flow.matches.length ? 'm0' : 'new';
+			// nada vem marcado: Enter (ou Próximo) sem escolher fica com o nome digitado, como atração nova. sem
+			// nenhuma atração achada, a nova já vem aberta; o que a pessoa escolheu fica (se ainda estiver na lista)
+			if (!state.userChose || (/^m(\d+)$/.test(flow.choice) && +flow.choice.slice(1) >= flow.matches.length)) flow.choice = flow.matches.length ? '' : 'new';
 			if (flow.choice === 'new') {
 				await ensureBases();
 				if (!state.novaEdited) $('nova-name').value = typedName();
 			}
 			renderAttractions();
+			if (state.holdFit) setTimeout(releaseFit, 320); // mede depois de a lista abrir (ATR.resize)
 		}, LOOKUP_MS);
 	}
 
@@ -339,8 +343,11 @@ projetos com o nome certo).
 			} catch (err) {
 				flow.matches = [];
 			}
-			if (!state.userChose) flow.choice = flow.matches.length ? 'm0' : 'new';
+			if (!state.userChose) flow.choice = flow.matches.length ? '' : 'new';
 		}
+
+		// nada escolhido: o nome digitado, como atração nova (o nome e a categoria abrem para conferir)
+		if (!flow.choice) return chooseAttraction('new');
 
 		if (/^m\d+$/.test(flow.choice)) return pickAttraction(flow.matches[+flow.choice.slice(1)]);
 		if (flow.choice === 'new') return novaNext();
@@ -844,7 +851,7 @@ projetos com o nome certo).
 		var list = $('ed-atr-list');
 		var m = state.edMatches.slice(0, LIST_MAX);
 		var typed = aepName($('ed-atracao').value);
-		var open = !!typed && !state.edPicked;
+		var open = !!typed && !state.edPicked && !state.edTyped;
 
 		ATR.resize(list, function () {
 			list.textContent = '';
@@ -949,22 +956,37 @@ projetos com o nome certo).
 	// do editor: o fluxo de projeto novo começa à mão (a atração não foi achada), com o nome digitado. o editor
 	// não volta sozinho enquanto isso (o refresh respeita o manual); '‹ voltar ao projeto' volta para ele
 	function startManualNew(typed) {
-		startWizard();
+		state.holdFit = true; // a janela muda de altura uma vez, quando a busca responder
+		clearTimeout(state.holdTimer);
+		state.holdTimer = setTimeout(releaseFit, 1500); // a busca não respondeu: mede assim mesmo
+		// a lista do editor fecha: na volta, o editor já vem na altura certa
+		$('ed-atr-list').hidden = true;
+		$('ed-combo').classList.remove('is-open');
+		startWizard(typed);
 		state.manualNew = state.currentKey;
 		$('claq-back').hidden = false;
 		$('claq-back-space').hidden = true;
-		$('claq').value = typed || '';
 		lookup();
 	}
 
+	function releaseFit() {
+		if (!state.holdFit) return;
+
+		clearTimeout(state.holdTimer);
+		state.holdFit = false;
+		fitHeight();
+	}
+
+	// volta para o editor do projeto aberto (o refresh trata como projeto trocado: redesenha o editor)
 	function leaveManualNew() {
 		state.manualNew = null;
+		state.currentKey = null;
 		$('claq-back').hidden = true;
 		$('claq-back-space').hidden = false;
 		refresh(true);
 	}
 
-	function startWizard() {
+	function startWizard(typed) {
 		flow.history = [];
 		flow.matches = [];
 		flow.pick = null;
@@ -976,7 +998,7 @@ projetos com o nome certo).
 		state.outChoice = '';
 		state.otherOutput = '';
 		state.editorKey = null;
-		$('claq').value = '';
+		$('claq').value = typed || '';
 		$('nova-name').value = '';
 		$('claq-next').disabled = true;
 		renderAttractions();
@@ -1106,16 +1128,20 @@ projetos com o nome certo).
 		['ed-what', 'ed-user'].forEach(function (id) {
 			onEnter(id, editorSave);
 		});
-		// a atração: digitar busca (a escolhida sai); Enter escolhe a primeira da lista
+		// a atração: digitar busca (a escolhida sai)
 		$('ed-atracao').addEventListener('input', function () {
+			state.edTyped = false;
 			state.edPicked = '';
 			state.edKeep = '';
 			edLookup(this.value, false);
 			edFile();
 		});
+		// Enter com a lista aberta: fica o nome digitado (escolher uma atração é com o clique); de novo, salva
 		onEnter('ed-atracao', function () {
-			if (!$('ed-atr-list').hidden && state.edMatches.length) edPick(0);
-			else editorSave();
+			if ($('ed-atr-list').hidden) return editorSave();
+
+			state.edTyped = true;
+			edRenderList();
 		});
 		$('ed-what').addEventListener('input', function () {
 			state.edKeep = '';

@@ -24,9 +24,9 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 ## 📍 projeto novo, em duas telas
 
-**ATRAÇÃO → CRIAR**. o que é opcional aparece só quando é preciso, na mesma tela; **‹ voltar** volta para a atração. quem acha a atração de primeira faz: digitar → `Enter` → digitar o que é → `Enter`.
+**ATRAÇÃO → CRIAR**. o que é opcional aparece só quando é preciso, na mesma tela; o botão redondo de **voltar** (a seta, no rodapé) volta para a atração. quem acha a atração faz: digitar → clicar nela → digitar o que é → `Enter`.
 
-1. **ATRAÇÃO** → digite a atração (ex: `DOMINGÃO`). enquanto você digita, o padeiro procura no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e **lista as atrações em cartões**, com a primeira marcada (até 4; com mais, continue digitando). `Enter` (ou **Próximo**) segue com a marcada.
+1. **ATRAÇÃO** → digite a atração (ex: `DOMINGÃO`). enquanto você digita, o padeiro procura no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e **lista as atrações em cartões** (até 4; com mais, continue digitando). nenhuma vem marcada: clique na atração para escolher. `Enter` (ou **Próximo**) sem escolher nenhuma fica com o **nome digitado**, como **nova atração** (o nome e a categoria abrem para conferir; `Enter` de novo segue).
    - **como acha** → pelo nome completo (o nome ou um *pattern* da atração é o começo do que foi digitado: *MAIS VOCE* para `MAIS VOCE 30 10`) ou pelo nome em parte, palavra a palavra (cada palavra digitada é uma palavra do nome, na ordem; só a última, ou a que vem antes de um número, pode estar pela metade: `la na minha` → *Lá na Minha Terra*; `GREP 6 11` → *G REPORTER*), a partir de 3 letras. quando a completa acha, as parciais ficam de fora.
    - **nova atração** (sempre no fim da lista; marcada sozinha quando nada é encontrado) → o **nome** (já vem com o que foi digitado, sem números no fim) e a **categoria** abrem logo abaixo do cartão: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`), com a prévia do caminho. a **última categoria usada** vem escolhida (neste computador). **nenhuma destas: escolher a pasta…** (no fim das categorias) é a saída livre; sem categorias na configuração, o **escolher a pasta…** fica no lugar da lista. a pasta da atração nova é criada ao criar o projeto.
    - **outra pasta…** → abre o navegador de pastas ao seguir.
@@ -75,7 +75,9 @@ ao abrir a janela com um projeto criado por ela:
 
 **a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
 
-**não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). '*‹ voltar ao projeto*', no rodapé, volta para o editor sem mudar nada.
+**não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). o botão redondo de **voltar** (a seta, no rodapé) volta para o editor sem mudar nada.
+
+no editor, `Enter` na atração com a lista aberta fica com o **nome digitado** (para usar uma atração da lista, clique nela); `Enter` de novo salva.
 
 **projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela pula as etapas e abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
 

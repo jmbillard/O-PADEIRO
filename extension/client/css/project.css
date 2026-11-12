@@ -403,19 +403,17 @@ body.project-page {
   white-space: nowrap;
 }
 
+/* voltar: o botão redondo de ícone (o mesmo do voltar dos templates); a seta volta um pouco no hover */
 .wz-back {
-  padding: 8px 4px;
-  border: 0;
-  background: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
+  flex: 0 0 auto;
 }
 
-.wz-back:hover {
-  color: var(--text-secondary);
+.wz-back .back-arrow {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.wz-back:hover .back-arrow {
+  transform: translateX(-2px);
 }
 
 .proj-status {
