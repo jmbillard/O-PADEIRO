@@ -189,8 +189,29 @@ projetos com o nome certo).
 		return '';
 	}
 
+	// a estrutura animada (só com o campo vazio: digitando, a lista ocupa o lugar)
+	async function showShape() {
+		var box = $('claq-shape');
+		var empty = !$('claq').value.trim();
+
+		box.hidden = !empty;
+		if (!empty) return PAD_SHAPE_ANIM.stop(box);
+		if (box._saTimer) return;
+
+		if (!state.shape) {
+			try {
+				state.shape = (await call('projectShape')).folders;
+			} catch (err) {
+				state.shape = [];
+			}
+		}
+
+		if (!$('claq').value.trim() && state.screen === 'claquete') PAD_SHAPE_ANIM.mount(box, state.shape, { root: 'ATRAÇÃO NOVA', file: 'ATRAÇÃO O QUE É.aep' });
+	}
+
 	function lookup() {
 		clearTimeout(state.lookupTimer);
+		showShape();
 
 		var claq = $('claq').value.trim();
 		var seq = ++state.lookupSeq;
@@ -960,6 +981,7 @@ projetos com o nome certo).
 		$('claq-next').disabled = true;
 		renderAttractions();
 		show('claquete', false);
+		showShape();
 		ensureBases();
 		// o índice já carrega ao abrir a etapa: a primeira tecla não espera por ele
 		candidates().catch(function () { });

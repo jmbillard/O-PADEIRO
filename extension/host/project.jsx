@@ -569,6 +569,20 @@ function padAepList(folderPath) {
 // áudio e dados o coletar cria quando aparecerem.
 var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 
+// A estrutura de pastas de um projeto (configuração > coletar), para a árvore animada da etapa ATRAÇÃO: cada pasta
+// com a profundidade e o que ela recebe. → { folders: [{ name, depth, contents: ['projeto', 'imagens', …] }] }
+PADX.projectShape = function () {
+	var settings = padReadCollect();
+	var list = padStructureFolders(settings, null);
+	var byName = {};
+	var out = [];
+
+	for (var i = 0; i < settings.folders.length; i++) byName[settings.folders[i].name.toUpperCase()] = settings.folders[i].contents;
+	for (var j = 0; j < list.length; j++) out.push({ name: list[j].name, depth: list[j].depth, contents: byName[String(list[j].name).toUpperCase()] || [] });
+
+	return { folders: out };
+};
+
 // O que vai ser criado (para a etapa CRIAR e o aviso de arquivo existente). Não cria nada.
 PADX.projectPlan = function (a) {
 	var plan = padNewProjectPlan(a);

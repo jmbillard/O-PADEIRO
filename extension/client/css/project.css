@@ -911,3 +911,156 @@ p.wz-exist b {
   height: 26px;
   margin: -4px -2px -4px 0;
 }
+
+/* =========================================================
+   a estrutura do projeto, animada (etapa ATRAÇÃO, js/shape-anim.js): no espaço de baixo, com o campo vazio
+   ========================================================= */
+
+.shape-box {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 0;
+  overflow: hidden;
+}
+
+.shape-anim {
+  max-width: 100%;
+  overflow: visible;
+}
+
+.shape-anim .sa-line {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.4;
+}
+
+.shape-anim .sa-back,
+.shape-anim .sa-front,
+.shape-anim .sa-kind,
+.shape-anim .sa-file-icon {
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.shape-anim .sa-front {
+  fill: var(--surface);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.shape-anim .is-root .sa-front {
+  fill: var(--blue-50);
+}
+
+.shape-anim .sa-kind {
+  stroke: var(--text-tertiary);
+}
+
+.shape-anim .sa-file-icon {
+  fill: var(--blue-500);
+}
+
+.shape-anim .sa-file-icon path {
+  stroke: var(--surface);
+  stroke-width: 1.3;
+}
+
+.shape-anim .sa-name {
+  fill: var(--text-secondary);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.shape-anim .is-root .sa-name {
+  fill: var(--text-primary);
+  font-weight: 800;
+}
+
+.shape-anim .sa-pill {
+  fill: var(--blue-50);
+  stroke: var(--blue-200);
+  stroke-width: 1;
+}
+
+.shape-anim .sa-file-name {
+  fill: var(--blue-500);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.shape-anim .sa-row,
+.shape-anim .sa-drop {
+  opacity: 0;
+}
+
+/* o ciclo: tudo entra no seu tempo (animation-delay de cada peça), fica e some junto no fim */
+.shape-anim.is-playing .sa-line {
+  animation: sa-draw var(--sa-loop) var(--ease-soft) both;
+}
+
+.shape-anim.is-playing .sa-row {
+  animation: sa-row var(--sa-loop) var(--ease-soft) both;
+}
+
+.shape-anim.is-playing .sa-drop {
+  animation: sa-drop var(--sa-loop) var(--ease-soft) both;
+}
+
+.shape-anim.is-playing .sa-front.is-receiving {
+  animation: sa-open var(--sa-loop) ease both;
+}
+
+@keyframes sa-draw {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  5% { stroke-dashoffset: 0; opacity: 1; }
+  78% { stroke-dashoffset: 0; opacity: 1; }
+  88%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes sa-row {
+  0% { opacity: 0; transform: translateX(-6px); }
+  4%, 78% { opacity: 1; transform: none; }
+  88%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes sa-drop {
+  0% { opacity: 0; transform: translateY(-10px); }
+  4% { opacity: 1; transform: translateY(1px); }
+  5.5%, 76% { opacity: 1; transform: none; }
+  86%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes sa-open {
+  0% { transform: none; }
+  2.5% { transform: skewX(-10deg) scaleY(0.78); }
+  6%, 100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape-anim .sa-row,
+  .shape-anim .sa-drop {
+    opacity: 1;
+  }
+
+  .shape-anim .sa-line {
+    stroke-dashoffset: 0;
+  }
+
+  .shape-anim.is-playing * {
+    animation: none !important;
+  }
+}

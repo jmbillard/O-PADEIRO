@@ -488,6 +488,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { path: '/mock/output' } };
 		},
 
+		projectShape: function () {
+			return { folders: [
+				{ name: '01 PROJETOS', depth: 0, contents: ['projeto'] },
+				{ name: '02 ARQUIVOS', depth: 0, contents: [] },
+				{ name: 'AUDIOS', depth: 1, contents: ['audio'] },
+				{ name: 'DADOS', depth: 1, contents: ['dados'] },
+				{ name: 'FONTS', depth: 1, contents: ['fontes'] },
+				{ name: 'IMAGENS', depth: 1, contents: ['imagens', 'sequencias'] },
+				{ name: 'VÍDEOS', depth: 1, contents: ['videos'] },
+				{ name: '03 SAIDA', depth: 0, contents: [] }
+			] };
+		},
+
 		// voltar e desfazer (fila de render): o projeto como antes de preencher
 		fillUndo: async function () {
 			await wait(500);
