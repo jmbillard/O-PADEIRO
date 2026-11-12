@@ -367,7 +367,7 @@ body {
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 2px 0 18px;
+  padding: 2px 8px 18px 0; /* 8 à direita: o respiro entre a lista e a barra de rolagem */
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
   /* a transição para o rodapé: a lista some num degradê (sem linha) */
@@ -1983,7 +1983,7 @@ body.motion-ready .eyebrow {
 
 /* a prévia de cada template ('<template>_preview.png'): na lista, uma miniatura pequena no lugar do ícone, que
    cresce no template escolhido e ao passar o mouse; nos fixados, recentes e novos, cartões em três colunas (a prévia
-   16:9 em cima, o nome embaixo, o selo AEP sobre a prévia e a estrela no canto). sem prévia, o ícone de arquivo */
+   16:9 em cima, o nome embaixo e a estrela no canto). sem prévia, o ícone de arquivo */
 .tree-thumb {
   position: relative;
   display: grid;
@@ -2101,14 +2101,9 @@ body.motion-ready .eyebrow {
   height: 26px !important;
 }
 
-.tree-item:not([data-section=""])>.tree-row .tree-ext,
-.tree-item:not([data-section=""]).is-selected>.tree-row .tree-ext {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  border-color: transparent;
-  background: rgb(0 0 0 / 28%);
-  color: #fff;
+/* nos cartões, sem o selo (AEP / AET): a prévia fica limpa */
+.tree-item:not([data-section=""])>.tree-row .tree-ext {
+  display: none;
 }
 
 .tree-item:not([data-section=""])>.tree-row .tree-trail {
