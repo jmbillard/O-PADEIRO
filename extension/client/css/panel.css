@@ -3044,3 +3044,12 @@ body.motion-ready .eyebrow {
 .cfg-path.one-btn .cfg-input {
   padding-right: 44px;
 }
+
+/* lendo o template: o loader no meio da parte branca (entre o título e o rodapé) */
+#view-loading:not([hidden]) {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
