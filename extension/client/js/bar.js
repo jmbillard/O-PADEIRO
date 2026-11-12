@@ -724,7 +724,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* =========================================================
-	   Coletar: a mesma bolinha das fontes. laranja quando o projeto tem arquivo salvo neste computador
+	   Coletar: a mesma bolinha das fontes. laranja quando o projeto tem arquivo fora das pastas de projetos
 	   (fora da rede), verde quando está tudo na rede; o balão diz quantos e quais
 	   ========================================================= */
 

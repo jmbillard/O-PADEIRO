@@ -125,7 +125,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | ❶ | **rede / local** | **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro usa as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > rede](docs/producoes.md#-rede) (no notebook, [meu usuário](docs/producoes.md#-meu-usuário)). |
 | ❷ | **links** | os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site ([configuração > links](docs/producoes.md#-links)). |
 | ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos. a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
-| ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟡 arquivo fora das pastas de projetos, 🟢 tudo nelas. |
+| ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": o balão do botão diz o quê. |
 | ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
 
 cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) lista as duas, com o nome de quem faz. `◖ clique DUPLO` em qualquer ferramenta abre a configuração já na aba dela (ex: renomear → aba renomear).
@@ -172,7 +172,7 @@ as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fon
 
 ### coletar
 
-a bolinha no botão: 🟡 amarela quando o projeto tem algum arquivo fora das pastas de projetos ([configuração > projeto](docs/producoes.md): o começo fixo do caminho de cada categoria, como `…/PROGRAMAS`; `VFX-1` … `VFX-5` valem como `VFX`; no Windows, `L:\…` vale como o caminho de rede da letra no [mapa de drives](docs/producoes.md), e o nome do servidor, curto ou completo, não importa), 🟢 verde quando está tudo nelas. sem categorias na configuração, vale estar na rede.
+a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo fora das pastas de projetos ([configuração > projeto](docs/producoes.md): o começo fixo do caminho de cada categoria, como `…/PROGRAMAS`; `VFX-1` … `VFX-5` valem como `VFX`; no Windows, `L:\…` vale como o caminho de rede da letra no [mapa de drives](docs/producoes.md), e o nome do servidor, curto ou completo, não importa), 🟢 verde quando está tudo nelas. sem categorias na configuração, vale estar na rede.
 
 enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enche embaixo dele e o ícone repete a animação; no fim, um brilho verde. o mesmo vale para as **fontes**: ao resolver (projeto → banco → conferindo) e ao enviar as fontes ao banco em segundo plano.
 

@@ -746,7 +746,7 @@ body.bar-page {
   justify-content: center;
 }
 
-/* a bolinha do botão Projeto: verde (salvo com os dados do padeiro) ou laranja (sem eles) */
+/* as bolinhas (projeto, fontes, coletar): verde, tudo certo; laranja, falta algo (uma cor só de atenção) */
 .bar-btn {
   position: relative;
 }
@@ -770,8 +770,9 @@ body.bar-page {
   background: #f5a524;
 }
 
-/* coletar: algum arquivo fora das pastas de projetos */
+/* coletar: algum arquivo fora das pastas de projetos. a mesma cor de atenção das outras bolinhas (o balão diz o
+   que falta) */
 .bar-dot.is-out {
-  background: #f2c230;
+  background: #f5a524;
 }
 
