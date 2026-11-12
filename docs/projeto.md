@@ -73,7 +73,7 @@ ao abrir a janela com um projeto criado por ela:
 - **output** → a pasta de output do projeto. o botão de pasta dentro do campo escolhe outra.
 - **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a pasta de projetos se faltar; as outras pastas da estrutura o [coletar](#-coletar-os-arquivos) cria quando precisar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
-**a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe (o `.aep`, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
+**a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
 
 **não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). '*‹ voltar ao projeto*', no rodapé, volta para o editor sem mudar nada.
 

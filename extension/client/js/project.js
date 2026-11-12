@@ -206,7 +206,7 @@ projetos com o nome certo).
 			}
 		}
 
-		if (!$('claq').value.trim() && state.screen === 'claquete') PAD_SHAPE_ANIM.mount(box, state.shape, { root: 'ATRAÇÃO NOVA', file: 'ATRAÇÃO O QUE É.aep' });
+		if (!$('claq').value.trim() && state.screen === 'claquete') PAD_SHAPE_ANIM.mount(box, state.shape, { root: 'ATRAÇÃO NOVA', file: 'projeto (.aep)' });
 	}
 
 	function lookup() {

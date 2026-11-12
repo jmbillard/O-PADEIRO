@@ -988,10 +988,15 @@ p.wz-exist b {
   font-weight: 800;
 }
 
-.shape-anim .sa-pill {
-  fill: var(--blue-50);
-  stroke: var(--blue-200);
-  stroke-width: 1;
+.shape-anim .sa-item-name {
+  fill: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.shape-anim .sa-line.is-item {
+  stroke-dasharray: 1;
 }
 
 .shape-anim .sa-file-name {
