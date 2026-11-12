@@ -547,8 +547,8 @@ body.finder-page {
 
 .finder-results .oven-loader .oven {
   grid-row: 1 / span 2;
-  margin: -14px -12px -14px -4px;
-  transform: scale(0.7);
+  margin: 0;
+  zoom: 0.42; /* a cena (480 × 216) ao lado do texto, sem sobra em volta */
 }
 
 .finder-results .oven-loader .oven-title {

@@ -1,18 +1,14 @@
 /* =========================================================
-   Loader temático: do roteiro ao vídeo
-   Um roteiro (doc do Word) cai na boca do forno, a porta abre e
-   fecha, o forno trabalha (treme e os botões giram), a porta abre
-   de novo e sai um vídeo pulando para a esteira, que o leva até a
-   pasta; a pasta acusa a queda. Desenho em js/util.js (um SVG só),
-   tudo em contorno e animado só com transform / opacity.
+   Loader temático: o forninho
+   O forno trabalha (pulsa, o pão cresce na janela com o brilho passando, sai fumaça) e solta pãezinhos, que
+   pulam na esteira e caem na cesta. O desenho da equipe (canvas "O Padeiro — Loader"), em js/util.js: uma
+   cena de 480 × 216 em divs, animada só com transform e opacity. As cores são as do desenho (fixas: é a
+   ilustração, como o pãozinho da logo).
    ========================================================= */
 
 .oven-loader {
-  --oven-line: rgb(var(--on-brand, 255 255 255) / 92%);
-  --oven-dash: rgb(var(--on-brand, 255 255 255) / 92%);
   --oven-text: rgb(var(--on-brand, 255 255 255));
   --oven-hint: rgb(var(--on-brand, 255 255 255) / 72%);
-  --oven-cycle: 4s;
 
   display: grid;
   min-height: 190px;
@@ -25,123 +21,19 @@
 
 /* sobre fundo claro (painel de trabalho) */
 .oven-loader.is-light {
-  --oven-line: var(--blue-500);
-  --oven-dash: var(--blue-500);
   --oven-text: var(--text-primary);
   --oven-hint: var(--text-tertiary);
 }
 
-.oven-loader.is-compact .oven {
+.oven {
+  width: 480px;
+  height: 216px;
+  margin: 0 0 6px;
   zoom: 0.72;
 }
 
-.oven {
-  width: 300px;
-  height: 120px;
-  margin: 40px 0 8px; /* espaço para o roteiro que cai por cima */
-}
-
-.oven-art {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: none;
-  stroke: var(--oven-line);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* pesos: silhuetas grossas, porta / boca / botões / rodas médios, o resto fino */
-.oven-art .o {
-  stroke-width: 3.2px;
-}
-
-.oven-art .b {
-  stroke-width: 2px;
-}
-
-.oven-art .m {
-  stroke-width: 1.4px;
-}
-
-.oven-art .d {
-  stroke-width: 1.2px;
-}
-
-/* arquivos: desenhados em 24 x 30 e ampliados 1,6x; o traço é dividido pela escala */
-.oven-art .ov-file .o {
-  stroke-width: calc(3.2px / 1.6);
-}
-
-.oven-art .ov-file .d {
-  stroke-width: calc(1.2px / 1.6);
-}
-
-.oven-art .f {
-  fill: var(--oven-line);
-  stroke: none;
-}
-
-.oven-art g,
-.oven-art path,
-.oven-art rect {
-  transform-box: view-box;
-}
-
-/* esteira: o pontilhado corre em volta e as rodas giram */
-.ov-belt {
-  stroke: var(--oven-dash);
-  stroke-dasharray: 4 6;
-  animation: ov-belt 0.32s linear infinite;
-}
-
-.ov-wheel {
-  transform-box: fill-box !important;
-  transform-origin: center;
-  animation: ov-wheel 0.7s linear infinite;
-}
-
-/* forno: treme enquanto trabalha; os botões giram */
-.ov-shake {
-  transform-origin: 50px 116px;
-  animation: ov-shake var(--oven-cycle) linear infinite;
-}
-
-.ov-knob {
-  transform-box: fill-box !important;
-  transform-origin: center;
-  animation: ov-knob var(--oven-cycle) ease-in-out infinite;
-}
-
-/* porta: abre a partir da base (escala vertical); o recorte acima dela acompanha */
-.ov-door {
-  transform-origin: 50px 106px;
-  animation: ov-door var(--oven-cycle) ease-in-out infinite;
-}
-
-.ov-gap {
-  animation: ov-gap var(--oven-cycle) ease-in-out infinite;
-}
-
-/* arquivos (desenho e silhueta na máscara usam as mesmas animações) */
-.ov-doc {
-  animation: ov-doc var(--oven-cycle) linear infinite;
-}
-
-.ov-vid {
-  transform-origin: 50px 90px;
-  animation: ov-vid var(--oven-cycle) linear infinite;
-}
-
-.ov-folder {
-  transform-origin: 253px 116px;
-  animation: ov-folder var(--oven-cycle) linear infinite;
-}
-
-.ov-flap {
-  transform-origin: 253px 116px;
-  animation: ov-flap var(--oven-cycle) ease-in-out infinite;
+.oven-loader.is-compact .oven {
+  zoom: 0.55;
 }
 
 .oven-title {
@@ -157,241 +49,97 @@
   line-height: 1.5;
 }
 
-/* ---------- linha do tempo (um ciclo) ----------
-   0–28%  o roteiro cai e entra pela porta (aberta de 12 a 30%)
-   34–54% o forno trabalha
-   58–70% a porta abre e o vídeo pula para a esteira
-   70–122% (até 22% do ciclo seguinte) o vídeo anda; 22–34% cai na pasta */
+.bakery {
+  --bk-dur: 4.8s;
 
-@keyframes ov-doc {
-  0% {
-    opacity: 0;
-    transform: translate(-10px, -112px) rotate(-10deg);
-  }
-
-  5% {
-    opacity: 1;
-    transform: translate(-8px, -100px) rotate(-8deg);
-  }
-
-  18% {
-    opacity: 1;
-    transform: translate(0, -40px) rotate(3deg);
-  }
-
-  28% {
-    opacity: 1;
-    transform: translate(0, 6px) rotate(0);
-  }
-
-  30%,
-  100% {
-    opacity: 0;
-    transform: translate(0, 6px) rotate(0);
-  }
+  position: relative;
+  width: 480px;
+  height: 216px;
+  font-family: inherit;
 }
 
-@keyframes ov-vid {
-  /* chegando ao fim da esteira (vem do ciclo anterior) */
-  0% {
-    opacity: 1;
-    transform: translate(121px, -26px) rotate(0);
-  }
-
-  22% {
-    opacity: 1;
-    transform: translate(156px, -26px) rotate(0);
-    animation-timing-function: ease-out;
-  }
-
-  26% {
-    opacity: 1;
-    transform: translate(173px, -33px) rotate(16deg);
-    animation-timing-function: ease-in;
-  }
-
-  33% {
-    opacity: 1;
-    transform: translate(200px, 2px) rotate(8deg);
-  }
-
-  /* dentro da pasta: abaixo da borda da frente o recorte esconde */
-  37% {
-    opacity: 1;
-    transform: translate(203px, 52px) rotate(4deg);
-  }
-
-  38%,
-  56% {
-    opacity: 0;
-    transform: translate(0, 12px) rotate(0);
-  }
-
-  /* sai pela porta e pula para a esteira */
-  59% {
-    opacity: 1;
-    transform: translate(0, 8px) rotate(0);
-    animation-timing-function: ease-out;
-  }
-
-  65% {
-    opacity: 1;
-    transform: translate(38px, -62px) rotate(14deg);
-    animation-timing-function: ease-in;
-  }
-
-  71% {
-    opacity: 1;
-    transform: translate(75px, -26px) rotate(0);
-  }
-
-  73% {
-    opacity: 1;
-    transform: translate(78px, -28px) rotate(-3deg);
-  }
-
-  75% {
-    opacity: 1;
-    transform: translate(81px, -26px) rotate(0);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate(121px, -26px) rotate(0);
-  }
+@keyframes bk-bun{
+0%{transform:translate(0,0) rotate(0deg)}
+70%{transform:translate(196px,0) rotate(0deg);animation-timing-function:ease-in}
+76%{transform:translate(216px,12px) rotate(45deg);animation-timing-function:linear}
+84%,100%{transform:translate(246px,82px) rotate(130deg)}
 }
-
-@keyframes ov-door {
-  0%,
-  12%,
-  33%,
-  57%,
-  73%,
-  100% {
-    transform: none;
-  }
-
-  18%,
-  28% {
-    transform: scaleY(0.62);
-  }
-
-  61%,
-  68% {
-    transform: scaleY(0.62);
-  }
+@keyframes bk-hop{
+0%,15%{transform:translateY(0) scale(1,1)}
+17%{transform:translateY(0) scale(1.1,.85)}
+21%{transform:translateY(-12px) scale(.95,1.08)}
+25%{transform:translateY(0) scale(1.06,.92)}
+28%,100%{transform:translateY(0) scale(1,1)}
 }
-
-@keyframes ov-gap {
-  0%,
-  12%,
-  33%,
-  57%,
-  73%,
-  100% {
-    transform: none;
-  }
-
-  18%,
-  28% {
-    transform: translateY(16px);
-  }
-
-  61%,
-  68% {
-    transform: translateY(16px);
-  }
+@keyframes bk-wfade{
+0%,66%{opacity:1}
+72%,100%{opacity:0}
 }
-
-@keyframes ov-shake {
-  0%,
-  34%,
-  54%,
-  100% {
-    transform: none;
-  }
-
-  36%,
-  40%,
-  44%,
-  48%,
-  52% {
-    transform: translateX(-1.2px) rotate(-0.8deg);
-  }
-
-  38%,
-  42%,
-  46%,
-  50% {
-    transform: translateX(1.2px) rotate(0.8deg);
-  }
+@keyframes bk-glint{
+0%{transform:translateX(0) rotate(24deg);opacity:0}
+8%{opacity:1}
+50%{transform:translateX(190px) rotate(24deg);opacity:1}
+58%,100%{transform:translateX(190px) rotate(24deg);opacity:0}
 }
-
-@keyframes ov-knob {
-  0%,
-  34% {
-    transform: rotate(0);
-  }
-
-  54%,
-  100% {
-    transform: rotate(360deg);
-  }
+@keyframes bk-pile{
+0%,30%{transform:translateY(0)}
+38%{transform:translateY(3px)}
+52%{transform:translateY(-2px)}
+64%,100%{transform:translateY(0)}
 }
-
-/* a pasta acusa a queda do vídeo (por volta de 34%) */
-@keyframes ov-folder {
-  0%,
-  33%,
-  42%,
-  100% {
-    transform: none;
-  }
-
-  35% {
-    transform: translateY(1.5px) scale(1.06, 0.88);
-  }
-
-  38.5% {
-    transform: scale(0.98, 1.04);
-  }
+@keyframes bk-oven{
+0%{transform:scale(1.035,.965)}
+22%{transform:scale(.985,1.025)}
+45%,100%{transform:scale(1,1)}
 }
-
-@keyframes ov-flap {
-  0%,
-  28%,
-  39%,
-  100% {
-    transform: none;
-  }
-
-  33% {
-    transform: skewX(-6deg);
-  }
+@keyframes bk-glow{
+0%,100%{opacity:.35}
+50%{opacity:.8}
 }
-
-@keyframes ov-belt {
-  to {
-    stroke-dashoffset: -10;
-  }
+@keyframes bk-rise{
+0%,100%{transform:scale(.94,.9)}
+50%{transform:scale(1.04,1.1)}
 }
-
-@keyframes ov-wheel {
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes bk-ticks{
+0%{background-position-x:0}
+100%{background-position-x:70px}
 }
+@keyframes bk-spin{
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
+}
+@keyframes bk-steam{
+0%{transform:translate(0,0) scale(.4);opacity:0}
+20%{opacity:.9}
+100%{transform:translate(10px,-36px) scale(1.4);opacity:0}
+}
+@keyframes bk-wisp{
+0%{transform:translate(0,2px) scaleY(.5);opacity:0}
+30%{opacity:.95}
+100%{transform:translate(4px,-17px) scaleY(1.25);opacity:0}
+}
+@keyframes bk-dot{
+0%,20%{opacity:.2}
+40%,60%{opacity:1}
+80%,100%{opacity:.2}
+}
+.bakery .bk-bun{animation:bk-bun var(--bk-dur) linear infinite both}
+.bakery .bk-hop{animation:bk-hop var(--bk-dur) ease-out infinite both;transform-origin:50% 100%}
+.bakery .bk-oven{animation:bk-oven calc(var(--bk-dur) / 4) ease-out infinite both;transform-origin:50% 100%}
+.bakery .bk-glow{animation:bk-glow calc(var(--bk-dur) / 4) ease-in-out infinite both}
+.bakery .bk-rise{animation:bk-rise calc(var(--bk-dur) / 2) ease-in-out infinite both;transform-origin:50% 100%}
+.bakery .bk-ticks{animation:bk-ticks calc(var(--bk-dur) / 4) linear infinite both}
+.bakery .bk-spin{animation:bk-spin calc(var(--bk-dur) / 4) linear infinite both}
+.bakery .bk-steam{animation:bk-steam calc(var(--bk-dur) / 2) ease-out infinite both}
+.bakery .bk-wisp{animation:bk-wisp calc(var(--bk-dur) / 4) ease-out infinite both;transform-origin:50% 100%}
+.bakery .bk-wfade{animation:bk-wfade var(--bk-dur) linear infinite both}
+.bakery .bk-wisp2{animation:bk-wisp calc(var(--bk-dur) / 2) ease-out infinite both;transform-origin:50% 100%}
+.bakery .bk-glint{animation:bk-glint calc(var(--bk-dur) / 4) ease-in-out infinite both}
+.bakery .bk-pile{animation:bk-pile calc(var(--bk-dur) / 4) ease-out infinite both}
+.bakery .bk-dot{animation:bk-dot calc(var(--bk-dur) / 4) ease-in-out infinite both}
 
 @media (prefers-reduced-motion: reduce) {
-  .oven-art * {
+  .bakery * {
     animation: none !important;
-  }
-
-  .ov-doc {
-    opacity: 0;
-  }
-
-  .ov-vid {
-    transform: translate(100px, -13px);
   }
 }
