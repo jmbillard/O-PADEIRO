@@ -76,7 +76,7 @@ ao abrir a janela com um projeto criado por ela:
 
 **a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
 
-**quadro de uma atração** → digite a atração, uma barra e o quadro: `DOMINGÃO/DANÇA`. depois da barra, a lista mostra a atração (com mais de uma achada, clique na certa) e os **quadros** dela: as subpastas da pasta da atração (com o ano, a do ano), lidas na hora; as da estrutura (`01_PROJETOS`, `02_ARQUIVOS`…) as que são só números e as de autosave e logs ficam de fora. o texto depois da barra filtra os quadros.
+**quadro de uma atração** → digite a atração, uma barra e o quadro: `DOMINGÃO/DANÇA`. depois da barra, a lista mostra a atração (com mais de uma achada, clique na certa) e os **quadros** dela: as subpastas da pasta da atração (com o ano, a do ano), lidas na hora; as da estrutura (`01_PROJETOS`, `02_ARQUIVOS`…) as que são só números e as de autosave e logs e as sem nome (`New Folder`, `untitled folder`…) ficam de fora. o texto depois da barra filtra os quadros.
 
 - clique num quadro para usar a pasta dele (ex: `DANÇA DOS FAMOSOS`).
 - `Enter` (ou **Próximo**) sem escolher fica com o **nome digitado**: a pasta com esse nome, se já existir (sem diferenciar acentos e maiúsculas), ou um **quadro novo**, criado junto com o projeto. sem nada depois da barra, segue com a própria atração.
