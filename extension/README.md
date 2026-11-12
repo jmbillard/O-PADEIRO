@@ -13,7 +13,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | painel (menu `Window` > `Extensions`) | id | página | script | porta de depuração |
 | --- | --- | --- | --- | --- |
 | O PADEIRO (barra) | `com.jmbillard.opadeiro.bar` | `bar.html` | `js/bar.js` | 8089 |
-| O FORNINHO | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
+| A FORMA | `com.jmbillard.opadeiro.panel` | `index.html` | `js/app.js` | 8088 |
 | O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
 | O ADAPTADOR | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
 | O PRODUTOR | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |

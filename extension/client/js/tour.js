@@ -43,15 +43,15 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 	};
 	var LOAF = '<svg class="tour-loaf" viewBox="0 0 48 32" aria-hidden="true"><path d="M7 24C7 12.6 14.6 5 24 5s17 7.6 17 19v3a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z" fill="url(#loaf-grad)"/><path class="loaf-line" d="M7.6 23.2h32.8"/><path class="loaf-scores" d="m18.2 10.8 1.4 4.2M23.4 9.4l1.3 4.6M28.6 10.8l1.4 4.2"/></svg>';
 
-	// cada clique com o nome de quem faz: o próprio (O FORNINHO, A FORMA) ou, sem ele, o da ferramenta
+	// cada clique com o nome de quem faz
 	var TOOLS = {
-		templates: { title: 'Templates', l: ['O FORNINHO', 'preenche templates e manda para a fila de render'], r: ['A FORMA', 'transforma a comp aberta num template novo'] },
+		templates: { title: 'Templates', l: ['A FORMA', 'preenche um template e cria a fila de render'], r: ['A FORMA', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
 		projeto: { title: 'Projeto', l: ['A CLAQUETE', 'projeto novo pela atração, ou o editor'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
 		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
 		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
-		renomear: { title: 'Renomear', l: ['', 'renomeia as comps selecionadas'], r: ['', 'renomeia todas as saídas de render'] },
-		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'cria só a estrutura de pastas'] },
+		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },
+		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica as cores das etiquetas (labels) do After'] },
 		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },
 		buscar: { title: 'Buscar', l: ['O ACESSORISTA', 'busca caminhos das atrações'], r: ['O ACESSORISTA', 'busca nos textos dos layers'] }
 	};

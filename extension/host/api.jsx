@@ -1977,14 +1977,6 @@ PADX.organizeProject = function () {
 	});
 };
 
-PADX.createProjectFolders = function () {
-	return padCollect(function () {
-		padGroup('criar pastas do projeto', function () {
-			projectTemplateFolders(); // cria a estrutura de pastas do projeto
-		});
-	});
-};
-
 /*
 
 ---------------------------------------------------------------

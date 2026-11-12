@@ -1,12 +1,12 @@
-# 📄 O FORNINHO · templates
+# 📄 A FORMA · templates
 
 [← O PADEIRO](../README.md)
 
-o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fila de render.
+o painel **A FORMA**: buscar, selecionar e preencher templates, e criar a fila de render.
 
 o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
 
-<p align="center"><img src="images/anim/forninho.webp" alt="O FORNINHO: busca, escolhe o template e preenche" width="900"></p>
+<p align="center"><img src="images/anim/forninho.webp" alt="A FORMA: busca, escolhe o template e preenche" width="900"></p>
 
 <table><tr><td width="40%"><img src="images/forninho-lista.webp" alt="a lista de templates, com as partes numeradas"></td><td><img src="images/forninho-preencher.webp" alt="o template selecionado, com as partes numeradas"></td></tr></table>
 

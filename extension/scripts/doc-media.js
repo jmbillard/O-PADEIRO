@@ -172,7 +172,7 @@ const DOC_FONTS = `(() => {
 		] };
 })();`;
 
-// O FORNINHO: as prévias dos templates (imagens de exemplo, no lugar dos '_preview.png' da rede; um template fica
+// A FORMA: as prévias dos templates (imagens de exemplo, no lugar dos '_preview.png' da rede; um template fica
 // sem prévia, com o ícone) e dois fixados e um recente
 const DOC_PREVIEWS = `(() => {
 	try {
@@ -311,7 +311,7 @@ const SCENES = {
 		await tap(p, '#btn-coletar', { wait: 6800 });
 	} },
 
-	// O FORNINHO: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
+	// A FORMA: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
 	forninho: { w: 1000, h: 700, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
 		mouse = [960, 660];
 		await p.waitForTimeout(600);

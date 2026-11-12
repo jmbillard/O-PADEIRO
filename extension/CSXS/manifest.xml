@@ -77,7 +77,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O FORNINHO</Menu>
+					<Menu>A FORMA</Menu>
 					<Geometry>
 						<Size>
 							<Width>1100</Width>
@@ -217,7 +217,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A FORMA</Menu>
+					<Menu>A FORMA · criar</Menu>
 					<Geometry>
 						<Size>
 							<Width>1260</Width>

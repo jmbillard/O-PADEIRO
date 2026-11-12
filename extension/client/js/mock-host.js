@@ -541,10 +541,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [] };
 		},
 
-		createProjectFolders: function () {
-			return { messages: [] };
-		},
-
 		requestTab: function (a) {
 			window.PAD_MOCK_TAB = { tab: a.tab, stamp: Date.now() };
 

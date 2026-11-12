@@ -24,7 +24,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
-	var DOUBLE_CLICK_MS = 260; // 2 cliques numa ferramenta: abre a configuração na aba dela
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
 	var L_CLICK = '◖  →  ';
@@ -237,8 +236,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			report(await call('organizeProject'), 'O CONTRARREGRA organizou o projeto.');
 		},
 
-		createProjectFolders: async function () {
-			report(await call('createProjectFolders'), 'O CONTRARREGRA criou a estrutura de pastas.');
+		openLabels: async function () {
+			toast('', 'a janela das etiquetas do CONTRARREGRA ainda está no forno.');
 		},
 
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
@@ -378,37 +377,37 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TOOLS = [
 		{
 			key: 'templates',
-			config: 'prods',
 			label: 'Templates',
 			icon: 'templates',
-			tips: [L_CLICK + 'abrir O FORNINHO: preencher templates', R_CLICK + 'abrir A FORMA: criar novo template'],
+			name: 'A FORMA',
+			tips: [L_CLICK + 'preencher um template e criar a fila de render', R_CLICK + 'criar um template a partir da comp aberta'],
 			left: actions.templates,
 			right: actions.createTemplate
 		},
 		{
 			key: 'fontes',
-			config: 'fonts',
 			label: 'Fontes',
 			icon: 'fonts',
-			tips: [L_CLICK + 'O TIPÓGRAFO resolve as fontes do projeto (instala as que faltam)', R_CLICK + 'abrir O TIPÓGRAFO: as fontes do projeto (trocar, copiar para uma pasta)'],
+			name: 'O TIPÓGRAFO',
+			tips: [L_CLICK + 'instalar as fontes que faltam no projeto', R_CLICK + 'ver as fontes do projeto: trocar e copiar para uma pasta'],
 			left: actions.resolveFonts,
 			right: actions.openFonts
 		},
 		{
 			key: 'projeto',
-			config: 'project',
 			label: 'Projeto',
 			icon: 'project',
-			tips: [L_CLICK + 'abrir A CLAQUETE: projeto novo pela atração, ou o editor', R_CLICK + 'A CLAQUETE salva o projeto'],
+			name: 'A CLAQUETE',
+			tips: [L_CLICK + 'criar um projeto novo pela atração (ou editar o atual)', R_CLICK + 'salvar o projeto na pasta dele'],
 			left: actions.project,
 			right: actions.saveProject
 		},
 		{
 			key: 'coletar',
-			config: 'collect',
 			label: 'Coletar',
 			icon: 'collect',
-			tips: [L_CLICK + 'O CATADOR coleta os arquivos do projeto na pasta dele', R_CLICK + 'abrir O CATADOR: os arquivos do projeto (coletar em outra pasta, resolver os que faltam)'],
+			name: 'O CATADOR',
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto: coletar em outra pasta e resolver os que faltam'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -416,10 +415,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'importar',
-			config: '',
 			label: 'Importar',
 			icon: 'import',
-			tips: [L_CLICK + 'O VERSIONADOR importa um projeto do After (.aep / .aet) de qualquer versão: o mais novo é convertido para a deste After Effects', R_CLICK + 'abrir O VERSIONADOR: salvar o projeto em versões mais velhas do After (até 3 para trás)'],
+			name: 'O VERSIONADOR',
+			tips: [L_CLICK + 'importar um projeto do After de qualquer versão', R_CLICK + 'salvar o projeto em versões mais velhas do After'],
 			left: function () {
 				return actions.importAep();
 			},
@@ -427,37 +426,37 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'pastas',
-			config: 'drives',
 			label: 'Pastas',
 			icon: 'folders',
-			tips: [L_CLICK + 'O ADAPTADOR abre a pasta do último item da fila de render', R_CLICK + 'abrir O ADAPTADOR: conversor de caminhos Windows/macOS'],
+			name: 'O ADAPTADOR',
+			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'converter caminhos entre Windows e macOS'],
 			left: actions.openLastOutput,
 			right: actions.convertPaths
 		},
 		{
 			key: 'renomear',
-			config: 'rename',
 			label: 'Renomear',
 			icon: 'rename',
-			tips: [L_CLICK + 'renomear comps selecionadas', R_CLICK + 'renomear TODAS as saídas de render'],
+			name: 'O ETIQUETADOR',
+			tips: [L_CLICK + 'renomear as comps selecionadas', R_CLICK + 'renomear todas as saídas da fila de render'],
 			left: actions.renameComps,
 			right: actions.renameOutputs
 		},
 		{
 			key: 'organizar',
-			config: 'organize',
 			label: 'Organizar',
 			icon: 'organize',
-			tips: ['selecione as comps que serão\nRENDERIZADAS primeiro!', L_CLICK + 'O CONTRARREGRA organiza o projeto', R_CLICK + 'O CONTRARREGRA cria a estrutura de pastas do projeto'],
+			name: 'O CONTRARREGRA',
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar as cores das etiquetas (labels) do After'],
 			left: actions.organizeProject,
-			right: actions.createProjectFolders
+			right: actions.openLabels
 		},
 		{
 			key: 'buscar',
-			config: 'search',
 			label: 'Buscar',
 			icon: 'search',
-			tips: [L_CLICK + 'abrir O ACESSORISTA: busca de caminhos de atrações', R_CLICK + 'abrir O ACESSORISTA: busca em layers de texto'],
+			name: 'O ACESSORISTA',
+			tips: [L_CLICK + 'buscar caminhos de atrações, filmes, Teams e Trello', R_CLICK + 'buscar nos textos dos layers do projeto'],
 			left: actions.searchPaths,
 			right: actions.searchTexts
 		}
@@ -489,27 +488,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	}
 
-	// 'config': aba da configuração aberta com 2 cliques. Com ela, o clique simples espera um instante
-	// (para saber se vem o segundo) antes de rodar.
-	function bind(btn, left, right, config) {
-		var timer = null;
-
+	// clique = primeira ação, na hora (o duplo clique não abre mais a configuração: muita gente dá 2 cliques por reflexo)
+	function bind(btn, left, right) {
 		btn.addEventListener('click', function () {
-			if (!config) return run(btn, left);
-
-			if (timer) {
-				clearTimeout(timer);
-				timer = null;
-				run(btn, function () {
-					return actions.config(config);
-				});
-				return;
-			}
-
-			timer = setTimeout(function () {
-				timer = null;
-				run(btn, left);
-			}, DOUBLE_CLICK_MS);
+			run(btn, left);
 		});
 
 		// clique direito = segunda ação (sem o menu de contexto do navegador)
@@ -562,11 +544,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.tips.join('\n'); // os 2 cliques (configuração) ficam sem dica: é um atalho
+				btn.title = def.name + '\n\n' + def.tips.join('\n'); // NOME, uma linha em branco e os 2 cliques
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
-				bind(btn, def.left, def.right, def.config);
+				bind(btn, def.left, def.right);
 
 				group.appendChild(btn);
 			});
@@ -636,7 +618,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var dot = btn.querySelector('.bar-dot');
 
 		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
-		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
 
 		if (!state) {
 			if (dot) dot.remove();
@@ -742,7 +724,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
 		if (res && res.state === 'out') tip = 'arquivos: ' + res.local + ' fora das pastas de projetos' + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a pasta do projeto';
-		btn.title = btn.dataset.baseTip + (tip ? '\n' + tip : '');
+		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
 
 		if (!res || !res.state) {
 			if (dot) dot.remove();
