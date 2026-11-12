@@ -239,10 +239,10 @@ const SHOTS = {
 	forma: { w: 1180, h: 780, url: 'maker.html', marks: [
 		{ sel: '#checklist' }, { sel: '#atr-picker' }, { sel: '#f-example' }, { sel: '#name-preview' }, { sel: '#preview-card' }, { sel: '#fonts' }, { sel: '#layers' }, { sel: '#fx-card' }, { sel: '#btn-test' }, { sel: '#btn-save' }
 	] },
-	'claquete-atracao': { w: 480, h: 520, url: 'project.html', async run(p) {
+	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#claq-next' }] },
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
 	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
@@ -331,14 +331,16 @@ const SCENES = {
 	} },
 
 	// A CLAQUETE: a atração pela busca, o que é e o nome do .aep
-	claquete: { w: 480, h: 560, url: 'project.html', async run(p) {
-		mouse = [450, 520];
+	claquete: { w: 480, h: 680, url: 'project.html', async run(p) {
+		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
 		await type(p, 'domingao', 120);
 		await p.waitForTimeout(900);
 		await tap(p, p.locator('#atr-list .combo-item', { hasText: 'HUCK' }).first(), { wait: 900 });
-		await tap(p, '#claq-next', { wait: 1000 });
+		await tap(p, p.locator('#atr-list .combo-item', { hasText: 'DANÇA DOS FAMOSOS' }).first(), { wait: 900 });
+		await p.keyboard.press('Enter');
+		await p.waitForTimeout(600);
 		await tap(p, '#arq-what', { wait: 200 });
 		await type(p, 'servico', 120);
 		await p.waitForTimeout(1300);

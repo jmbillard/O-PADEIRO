@@ -1073,3 +1073,45 @@ p.wz-exist b {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   projeto novo numa tela: o destino embaixo dos campos (o caminho com os níveis em destaque; os novos com a marca)
+   ========================================================= */
+
+.wz-dest {
+  min-height: 1.4em;
+}
+
+.wz-dest span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-dest.is-hint {
+  color: var(--text-tertiary);
+}
+
+.wz-new {
+  margin-left: 5px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-500);
+  color: var(--surface);
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+
+.wz-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wz-rest[hidden] {
+  display: none;
+}

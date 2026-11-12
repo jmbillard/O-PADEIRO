@@ -1147,12 +1147,27 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
 		},
 
-		// os quadros: as subpastas da pasta da atração (a de cima da de projetos)
-		projectQuadros: function (a) {
-			var root = String(a.path || '').replace(/\/0?1[ _]?PROJETOS?$/i, '');
-			var names = /DOMINGAO/.test(root) ? ['DANÇA DOS FAMOSOS', 'DOMINGÃO RECORD', 'QUEM QUER SER UM MILIONÁRIO', 'VIDEOSHOW', 'TE VI NA TV', 'ARQUIVO CONFIDENCIAL', 'PATRÕES'] : /CHEF/.test(root) ? ['REPESCAGEM'] : [];
+		// as pastas de um nível (ATRAÇÃO/PASTA/… e o output): uma árvore de exemplo pelo fim do caminho
+		projectFolders: function (a) {
+			var root = String(a.path || '').replace(/\/+$/, '');
 
-			return { root: root, rootName: root.split('/').pop(), exists: true, quadros: names.map(function (n) {
+			if (!a.plain) root = root.replace(/\/0?1[ _]?PROJETOS?$/i, '');
+
+			var TREE = {
+				'DOMINGAO COM HUCK/2026': ['DANÇA DOS FAMOSOS', 'DOMINGÃO RECORD', 'QUEM QUER SER UM MILIONÁRIO', 'VIDEOSHOW', 'TE VI NA TV', 'ARQUIVO CONFIDENCIAL', 'PATRÕES'],
+				'DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['ESTREIA', 'FINAL', 'SEMIFINAL'],
+				'DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS/FINAL': ['2025'],
+				'CHEF DE ALTO NIVEL': ['REPESCAGEM'],
+				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026': ['CHAMADAS', 'DANÇA DOS FAMOSOS', 'VIRADA'],
+				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['SEMANA 1', 'SEMANA 2']
+			};
+			var names = [];
+
+			Object.keys(TREE).forEach(function (k) {
+				if (root.slice(-k.length - 1) === '/' + k) names = TREE[k];
+			});
+
+			return { root: root, rootName: root.split('/').pop(), exists: true, folders: names.map(function (n) {
 				return { name: n, path: root + '/' + n };
 			}) };
 		},
@@ -1210,7 +1225,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 			};
 			var film = a.kind === 'film';
-			var base = film ? key(a.title) : key((a.quadro || a.atracao) + ' ' + (a.what || ''));
+			var base = film ? key(a.title) : key((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
 			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
 			var H = 3600000;
@@ -1243,7 +1258,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// Salvar do editor: o .aep vai para a pasta de projetos da estrutura, com o nome da atração + o que é
 		projectSave: function (a) {
-			var base = String((a.quadro || a.atracao) + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			var base = String((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 
 			if (!base) throw new Error('#PAD_090 - escolha a atração.');
 			if (a.fileBase) base = a.fileBase;

@@ -100,8 +100,8 @@ PADX.projectCategories = function () {
 
 Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos texto:
   atracao    → a atração (LÁ NA MINHA TERRA)                       janela projeto
-  quadro     → o quadro da atração (DANÇA DOS FAMOSOS), opcional: o .aep é o quadro + o que é    janela projeto
-  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o quadro) + o que é    janela projeto
+  quadro     → as pastas abaixo da atração (DANÇA DOS FAMOSOS/FINAL), opcional: o .aep é o último nível + o que é
+  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o último nível) + o que é    janela projeto
   designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
   pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
   output     → a pasta de output                                     projeto; o template grava se faltar
@@ -508,7 +508,10 @@ function padNewProjectPlan(a) {
 	var root;
 	var fileBase;
 
-	fileBase = padAepName((padTrim(a.quadro) || a.atracao) + ' ' + (a.what || '')); // com quadro: o quadro + o que é
+	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
+	var levels = padTrim(a.quadro).split('/');
+
+	fileBase = padAepName((padTrim(levels[levels.length - 1]) || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
@@ -575,49 +578,52 @@ var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 /*
 
 ---------------------------------------------------------------
-> quadros da atração (ATRAÇÃO/QUADRO na janela projeto)
+> pastas de um nível (ATRAÇÃO/PASTA/PASTA… e o output na janela projeto)
 ---------------------------------------------------------------
 
-Os quadros são as subpastas da pasta da atração (a de cima da de projetos, quando o índice aponta para ela; com o
-ano, a do ano): DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS. ficam de fora as da estrutura do coletar (01_PROJETOS,
-02_ARQUIVOS…, em qualquer grafia), as que são só números (anos), as de autosave e logs e as escondidas. o projeto de um quadro vai para a
-estrutura dentro dele.
+As pastas dentro de uma pasta, lidas na hora, para a lista que abre a cada barra digitada. na pasta de uma atração
+(e nas de baixo), a de cima da de projetos quando o caminho aponta para ela, e ficam de fora as da estrutura do
+coletar (01_PROJETOS, 02_ARQUIVOS…, em qualquer grafia). plain (o output): só a pasta, sem tirar a estrutura. as de
+autosave, logs, sem nome (New Folder…) e as escondidas nunca aparecem.
 
 */
 
-// a: { path } → { root, rootName, exists, quadros: [{ name, path }] }
-PADX.projectQuadros = function (a) {
+// a: { path, plain } → { root, rootName, exists, folders: [{ name, path }] }
+PADX.projectFolders = function (a) {
 	var root = padMountedPath(padPath(a.path));
 
-	if (!root) return { root: '', rootName: '', exists: false, quadros: [] };
+	if (!root) return { root: '', rootName: '', exists: false, folders: [] };
 
 	var folder = new Folder(root);
 
-	if (padIsProjectsFolderName(decodeURI(folder.name))) folder = folder.parent;
+	if (!a.plain && padIsProjectsFolderName(decodeURI(folder.name))) folder = folder.parent;
 
 	var skip = {};
-	var settings = padReadCollect();
-	var quadros = [];
+	var folders = [];
 	var i;
 
-	for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
+	if (!a.plain) {
+		var settings = padReadCollect();
+
+		for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
+	}
 
 	var items = folder.exists ? folder.getFiles() || [] : [];
 
 	for (i = 0; i < items.length; i++) {
 		var name = decodeURI(items[i].name);
 
-		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^[._]/.test(name) || /^[\d\s._-]+$/.test(name)) continue;
-		if (skip[padFolderKey(name)] || padIsProjectsFolderName(name) || padIsJunkFolder(name)) continue;
+		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^\./.test(name) || padIsJunkFolder(name)) continue;
+		if (!a.plain && (skip[padFolderKey(name)] || padIsProjectsFolderName(name))) continue;
 
-		quadros.push({ name: name, path: padDisplayPath(items[i].fsName) });
+		folders.push({ name: name, path: padDisplayPath(items[i].fsName) });
 	}
 
-	quadros.sort(function (x, y) {
+	folders.sort(function (x, y) {
 		return x.name.toUpperCase() < y.name.toUpperCase() ? -1 : 1;
 	});
 
-	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, quadros: quadros };
+	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, folders: folders };
 };
 
 PADX.projectShape = function () {

@@ -20,19 +20,19 @@ const LISTS = { 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/m
 const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }] };
 
 async function projectTo(page, screen) {
-	// 1 · ATRAÇÃO: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
+	// o campo do projeto: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
 	await page.fill('#claq', 'TESTE NOVO');
 	await page.waitForTimeout(800);
 	await page.locator('#atr-list .combo-item:has-text("nova atração")').click();
 	await page.waitForTimeout(500);
 	if (screen === 'nova') return;
 
-	// 2 · CRIAR: o que é e as opções do output abertas
-	await page.click('#claq-next');
+	// o resto da tela: Enter fecha a lista, o que é e a lista do output aberta
+	await page.press('#nova-name', 'Enter');
 	await page.waitForTimeout(600);
 	await page.fill('#arq-what', 'vt');
 	await page.waitForTimeout(600);
-	await page.click('.out-line');
+	await page.click('#out-in');
 	await page.waitForTimeout(400);
 }
 
@@ -53,7 +53,11 @@ const CHECKS = [
 	['projeto: editor', 'project.html?mock=created'],
 	['projeto: atração', 'project.html'],
 	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
-	['projeto: criar', 'project.html', (p) => projectTo(p, 'criar')],
+	['projeto: o que é e output', 'project.html', (p) => projectTo(p, 'criar')],
+	['projeto: pastas da atração', 'project.html', async (p) => {
+		await p.fill('#claq', 'domingao com huck/');
+		await p.waitForTimeout(1000);
+	}],
 	['busca', 'finder.html'],
 	['conversor', 'converter.html', async (p) => {
 		// a janela fica com a altura do conteúdo (fitHeight no converter.js; no navegador, o mock só registra)

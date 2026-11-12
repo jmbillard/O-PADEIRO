@@ -10,34 +10,36 @@ abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo b
 
 <p align="center"><img src="images/anim/claquete.webp" alt="A CLAQUETE: a atração pela busca, o que é e o nome do .aep" width="480"></p>
 
-<table><tr><td><img src="images/claquete-atracao.webp" alt="a etapa ATRAÇÃO, com as partes numeradas"></td><td><img src="images/claquete-editor.webp" alt="o editor do projeto, com as partes numeradas"></td></tr></table>
+<table><tr><td><img src="images/claquete-atracao.webp" alt="o projeto novo, com as partes numeradas"></td><td><img src="images/claquete-editor.webp" alt="o editor do projeto, com as partes numeradas"></td></tr></table>
 
-| | projeto novo (ATRAÇÃO) | | o editor (projeto já criado) |
+| | projeto novo | | o editor (projeto já criado) |
 | :---: | --- | :---: | --- |
-| ❶ | **atração**: digite, a busca acha | ❶ | **atração** (com a mesma busca) |
+| ❶ | **o caminho**: a atração e, com barras, as pastas dela | ❶ | **atração** (com a mesma busca e as barras) |
 | ❷ | uma **atração achada** (pasta e output já conhecidos) | ❷ | **designer** (a sigla) |
 | ❸ | **nova atração**: o nome e a categoria abrem embaixo | ❸ | **o que é** (ex: SERVIÇO, CONVIDADO, AESP) |
-| ❹ | **outra pasta…**: o navegador de pastas | ❹ | o **nome do .aep** (a atração + o que é) |
-| ❺ | **Próximo** (`Enter`) → a etapa CRIAR | ❺ | **trocar a pasta**: leva o .aep e a estrutura |
+| ❹ | **outra pasta…**: o navegador de pastas | ❹ | o **nome do .aep** (o último nível + o que é) |
+| ❺ | **Criar projeto** | ❺ | **trocar a pasta**: leva o .aep e a estrutura |
 | | | ❻ | **pasta de output** |
 | | | ❼ | **Salvar** |
 
-## 📍 projeto novo, em duas telas
+## 📍 projeto novo, numa tela
 
-**ATRAÇÃO → CRIAR**. o que é opcional aparece só quando é preciso, na mesma tela; o botão redondo de **voltar** (a seta, no rodapé) volta para a atração. quem acha a atração faz: digitar → clicar nela → digitar o que é → `Enter`.
+tudo numa tela só: o **caminho** do projeto, o **o que é** e o **output**. quem acha a atração faz: digitar → clicar nela → (as pastas, se quiser) → `Enter` → digitar o que é → `Enter`.
 
-1. **ATRAÇÃO** → digite a atração (ex: `DOMINGÃO`). enquanto você digita, o padeiro procura no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e **lista as atrações em cartões** (até 4; com mais, continue digitando). nenhuma vem marcada: clique na atração para escolher. `Enter` (ou **Próximo**) sem escolher nenhuma fica com o **nome digitado**, como **nova atração** (o nome e a categoria abrem para conferir; `Enter` de novo segue).
+1. **PROJETO** → o caminho, digitado como uma pasta: `ATRAÇÃO/PASTA/PASTA…`.
+   - **a atração** → digite (ex: `DOMINGÃO`). enquanto você digita, o padeiro procura no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e lista as atrações (até 4; com mais, continue digitando). **clique na atração para entrar nela**: o campo ganha o nome e a barra, e a lista mostra as pastas dela. `Enter` sem barra entra na atração de nome igual ou, sem nenhuma, fica com o **nome digitado**, como **nova atração** (o nome e a categoria abrem para conferir; `Enter` de novo segue).
+   - **as pastas** → a cada barra, a lista mostra as **pastas daquele nível** (quadros, especiais, semanas, o que tiver), lidas na hora; o texto depois da barra filtra. clique numa pasta para descer nela. no fim da lista, **nova pasta** com o nome digitado. `Enter` fica com o caminho como está escrito: o que já existe é usado (sem diferenciar acentos e maiúsculas) e o resto é **novo**, criado junto com o projeto. ficam de fora as da estrutura (`01_PROJETOS`, `02_ARQUIVOS`…), as de autosave e logs e as sem nome (`New Folder`, `untitled folder`…).
+   - embaixo do campo, a linha do **destino**: a pasta do projeto com os níveis em destaque (os novos com a marca **nova**) e a de projetos dentro dela.
    - **como acha** → pelo nome completo (o nome ou um *pattern* da atração é o começo do que foi digitado: *MAIS VOCE* para `MAIS VOCE 30 10`) ou pelo nome em parte, palavra a palavra (cada palavra digitada é uma palavra do nome, na ordem; só a última, ou a que vem antes de um número, pode estar pela metade: `la na minha` → *Lá na Minha Terra*; `GREP 6 11` → *G REPORTER*), a partir de 3 letras. quando a completa acha, as parciais ficam de fora.
-   - **nova atração** (sempre no fim da lista; marcada sozinha quando nada é encontrado) → o **nome** (já vem com o que foi digitado, sem números no fim) e a **categoria** abrem logo abaixo do cartão: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`), com a prévia do caminho. a **última categoria usada** vem escolhida (neste computador). **nenhuma destas: escolher a pasta…** (no fim das categorias) é a saída livre; sem categorias na configuração, o **escolher a pasta…** fica no lugar da lista. a pasta da atração nova é criada ao criar o projeto.
-   - **outra pasta…** → abre o navegador de pastas ao seguir.
+   - **nova atração** (no fim da lista; aberta sozinha quando nada é encontrado) → o **nome** (já vem com o que foi digitado, sem números no fim) e a **categoria** abrem logo abaixo: as da [configuração > projeto](producoes.md#-projeto), cada uma com o seu ícone e o caminho com tokens (ex: `…/SHOWS/{atracao}/{ano}`), com a prévia do caminho. a **última categoria usada** vem escolhida (neste computador). **nenhuma destas: escolher a pasta…** (no fim das categorias) é a saída livre; sem categorias na configuração, o **escolher a pasta…** fica no lugar da lista. a pasta da atração nova é criada ao criar o projeto.
+   - **outra pasta…** → o navegador de pastas: o projeto vai para a pasta escolhida.
    - **filmes** seguem o mesmo fluxo: a pasta da letra é só o token `{letra}` do caminho (`…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`).
    - se a pasta da categoria não pode ser acessada (rede fora ou modo local), o projeto vai para a **pasta dos projetos** deste computador (`{categoria}/{atracao}`), com o aviso na prévia.
-2. **CRIAR** → no topo, a atração e o designer; logo abaixo, **o que é** (ex: `SERVIÇO`, `ELENCO`, `AESP`). o `.aep` é a atração + o que é, sem acentos e caracteres especiais, em maiúsculas (ex: `MAIS VOCE SERVICO.aep`). o nome do `.aep` e a árvore mudam enquanto você digita. uma atração pode ter vários projetos.
+2. **O QUE É** → ex: `SERVIÇO`, `ELENCO`, `AESP`. o `.aep` é o **último nível do caminho** (ou a atração, sem pastas) + o que é, sem acentos e caracteres especiais, em maiúsculas: `DOMINGÃO/DANÇA DOS FAMOSOS` + `ABERTURA` → `DANCA DOS FAMOSOS ABERTURA.aep`; `MAIS VOCÊ` + `SERVIÇO` → `MAIS VOCE SERVICO.aep`. o nome muda enquanto você digita.
    - **já na pasta** → uma linha com o último `.aep` alterado da pasta de projetos (`hoje 14:32 · +2`).
-   - **nome repetido** → o aviso e as duas saídas ali mesmo: **abrir o existente** ou **salvar como … 2** (o padrão; a árvore já mostra o `… 2.aep`).
-   - **a estrutura** (o cartão azul): `01_PROJETOS` com o `.aep`, `02_ARQUIVOS` com `FONTS`, `IMAGENS` e `VÍDEOS`, `03_SAIDA` e `04_REFS` (a pasta de projetos que já existe aparece mais clara).
-   - **pasta de output** → numa linha só, a escolhida e o caminho (ex: `SERVICO · nova`, `…/2026/SERVICO`). o clique abre as opções embaixo: a da atração (do caminho de output da categoria, ou a do índice), a **subpasta do "o que é"** dentro dela (o padrão), **pular** (não cria nem grava nada; dá para escolher depois, no editor) e **outra pasta…** (com a pastinha). cada uma diz se **já existe** ou é **nova** (a nova é criada junto com o projeto); a escolha (menos a outra pasta) fica lembrada neste computador.
-   - **Criar projeto** (ou `Enter` no "o que é") cria as pastas que faltam e salva o `.aep`; a janela cresce sozinha para caber tudo. no macOS, se o volume da rede do caminho (ex: `/Volumes/VFX`) não estiver montado, o padeiro monta antes, como o acessorista faz ao abrir uma pasta. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
+   - **nome repetido** → o aviso e as duas saídas ali mesmo: **abrir o existente** ou **salvar como … 2** (o padrão).
+3. **OUTPUT** → começa na pasta de output da atração (do caminho de output da categoria, ou a do índice). digitar no campo funciona como no caminho do projeto: a lista mostra as subpastas, a barra desce, **nova pasta** cria uma no fim. de um clique: **pasta com o o que é** (`…/2026/SERVICO`), **outra pasta…** (o navegador de pastas) e **sem output** (não cria nem grava nada; dá para escolher depois, no editor). a linha de baixo mostra o destino, com as pastas novas marcadas.
+4. **Criar projeto** (ou `Enter` no o que é) cria as pastas novas, a estrutura (`01_PROJETOS` com o `.aep`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`…) e salva o `.aep`. no macOS, se o volume da rede do caminho (ex: `/Volumes/VFX`) não estiver montado, o padeiro monta antes, como o acessorista faz ao abrir uma pasta. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados.
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
 
@@ -48,7 +50,7 @@ os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metada
 | campo | exemplo | quem grava |
 |---|---|---|
 | `padeiro:atracao` | LÁ NA MINHA TERRA | janela projeto |
-| `padeiro:quadro` | DANÇA DOS FAMOSOS | janela projeto (opcional: o `.aep` é o quadro + o que é) |
+| `padeiro:quadro` | DANÇA DOS FAMOSOS/FINAL | janela projeto (opcional: as pastas abaixo da atração; o `.aep` é o último nível + o que é) |
 | `padeiro:oQueE` | SERVIÇO | janela projeto |
 | `padeiro:designer` | JBILLARD | janela projeto; o template grava se faltar |
 | `padeiro:pasta` | a raiz da estrutura | janela projeto |
@@ -68,26 +70,21 @@ projeto de antes desta versão: os campos antigos (`dc:coverage`, `dc:relation`,
 
 ao abrir a janela com um projeto criado por ela:
 
-- **atração** e **designer** (bonequinho) → a atração é buscada como na etapa ATRAÇÃO: digitar mostra as atrações logo abaixo, e a escolhida fica com o nome oficial e a pasta dela. o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
+- **atração** e **designer** (bonequinho) → a atração é buscada como no projeto novo: digitar mostra as atrações logo abaixo, e a escolhida fica com o nome oficial e a pasta dela. o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
 - **o que é** → embaixo, o nome do `.aep` (a atração + o que é) e, quando muda, o nome de hoje. um projeto antigo com o nome fora desse padrão fica com o nome dele até a atração ou o o que é mudarem.
 - **pasta** → o caminho do projeto. o botão de pasta dentro do campo escolhe outra pasta.
 - **output** → a pasta de output do projeto. o botão de pasta dentro do campo escolhe outra.
 - **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a pasta de projetos se faltar; as outras pastas da estrutura o [coletar](#-coletar-os-arquivos) cria quando precisar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
-**a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
+**a estrutura do projeto** → com o campo do projeto vazio, a tela mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e o resto da tela (o que é e output) entra no lugar.
 
-**quadro de uma atração** → digite a atração, uma barra e o quadro: `DOMINGÃO/DANÇA`. depois da barra, a lista mostra a atração (com mais de uma achada, clique na certa) e os **quadros** dela: as subpastas da pasta da atração (com o ano, a do ano), lidas na hora; as da estrutura (`01_PROJETOS`, `02_ARQUIVOS`…) as que são só números e as de autosave e logs e as sem nome (`New Folder`, `untitled folder`…) ficam de fora. o texto depois da barra filtra os quadros.
-
-- clique num quadro para usar a pasta dele (ex: `DANÇA DOS FAMOSOS`).
-- `Enter` (ou **Próximo**) sem escolher fica com o **nome digitado**: a pasta com esse nome, se já existir (sem diferenciar acentos e maiúsculas), ou um **quadro novo**, criado junto com o projeto. sem nada depois da barra, segue com a própria atração.
-- o projeto vai para a estrutura dentro do quadro (`…/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS/01_PROJETOS/`) e o `.aep` leva só o quadro e o o que é: `DANCA DOS FAMOSOS ABERTURA.aep`.
-- no editor, `DOMINGÃO/DANÇA` no campo da atração faz o mesmo: o quadro escolhido (ou o digitado, com `Enter` ou ao salvar) troca a pasta e o nome do `.aep`. o quadro fica gravado no projeto (`padeiro:quadro`).
+**pastas abaixo da atração no editor** → o campo da atração aceita o caminho, como no projeto novo: `DOMINGÃO/DANÇA DOS FAMOSOS/FINAL`. a lista mostra as pastas de cada nível; `Enter` (ou Salvar) fica com o caminho digitado e troca a pasta do projeto e o nome do `.aep` (o último nível + o que é). as pastas ficam gravadas no projeto (`padeiro:quadro`).
 
 **não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). o botão redondo de **voltar** (a seta, no rodapé) volta para o editor sem mudar nada.
 
 no editor, `Enter` na atração com a lista aberta fica com o **nome digitado** (para usar uma atração da lista, clique nela); `Enter` de novo salva.
 
-**projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela pula as etapas e abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
+**projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
 
 abrir outro projeto troca os dados da janela.
 
@@ -105,7 +102,7 @@ o botão **coletar** da barra varre o projeto, copia as mídias usadas (vídeos,
 
 ## 📍 menu ⋯
 
-- **novo projeto** → começa as etapas de novo.
+- **novo projeto** → abre o projeto novo de novo.
 - **abrir a pasta** → no Explorer / Finder.
 - **ajuda / documentação** → esta página.
 - **recarregar painel**
