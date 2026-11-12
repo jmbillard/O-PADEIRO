@@ -833,6 +833,12 @@ projetos com o nome certo).
 					edPick(i);
 				}, match.display));
 			});
+			// não achou (ou não é nenhuma dessas): o fluxo do projeto novo, com o que foi digitado (nova atração,
+			// categoria e pasta, como num projeto do zero)
+			list.appendChild(ATR.sep());
+			list.appendChild(ATR.row(PLUS_SVG, 'começar projeto novo', typed || 'nova atração', false, function () {
+				startManualNew(typed);
+			}));
 		});
 		list.hidden = !open;
 		$('ed-combo').classList.toggle('is-open', open);
@@ -919,6 +925,24 @@ projetos com o nome certo).
 		}
 	}
 
+	// do editor: o fluxo de projeto novo começa à mão (a atração não foi achada), com o nome digitado. o editor
+	// não volta sozinho enquanto isso (o refresh respeita o manual); '‹ voltar ao projeto' volta para ele
+	function startManualNew(typed) {
+		startWizard();
+		state.manualNew = state.currentKey;
+		$('claq-back').hidden = false;
+		$('claq-back-space').hidden = true;
+		$('claq').value = typed || '';
+		lookup();
+	}
+
+	function leaveManualNew() {
+		state.manualNew = null;
+		$('claq-back').hidden = true;
+		$('claq-back-space').hidden = false;
+		refresh(true);
+	}
+
 	function startWizard() {
 		flow.history = [];
 		flow.matches = [];
@@ -962,6 +986,14 @@ projetos com o nome certo).
 		state.current = cur;
 		state.currentKey = key;
 
+		// começou o projeto novo à mão (do editor): fica no fluxo enquanto o projeto aberto for o mesmo
+		if (state.manualNew) {
+			if (state.manualNew === key && !changed) return;
+			state.manualNew = null;
+			$('claq-back').hidden = true;
+			$('claq-back-space').hidden = false;
+		}
+
 		if (cur.created) {
 			if (state.screen !== 'editor') show('editor', false);
 			renderEditor(cur);
@@ -990,6 +1022,7 @@ projetos com o nome certo).
 
 	function init() {
 		$('claq').addEventListener('input', lookup);
+		$('claq-back').addEventListener('click', leaveManualNew);
 		onEnter('claq', claqueteNext);
 		// duplo clique num item da lista: escolhe e segue (Próximo)
 		$('atr-list').addEventListener('dblclick', function (e) {

@@ -73,6 +73,8 @@ ao abrir a janela com um projeto criado por ela:
 - **output** → a pasta de output do projeto. o botão de pasta dentro do campo escolhe outra.
 - **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a pasta de projetos se faltar; as outras pastas da estrutura o [coletar](#-coletar-os-arquivos) cria quando precisar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
+**não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). '*‹ voltar ao projeto*', no rodapé, volta para o editor sem mudar nada.
+
 **projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela pula as etapas e abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
 
 abrir outro projeto troca os dados da janela.
