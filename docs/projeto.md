@@ -48,6 +48,7 @@ os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metada
 | campo | exemplo | quem grava |
 |---|---|---|
 | `padeiro:atracao` | LÁ NA MINHA TERRA | janela projeto |
+| `padeiro:quadro` | DANÇA DOS FAMOSOS | janela projeto (opcional: o `.aep` é o quadro + o que é) |
 | `padeiro:oQueE` | SERVIÇO | janela projeto |
 | `padeiro:designer` | JBILLARD | janela projeto; o template grava se faltar |
 | `padeiro:pasta` | a raiz da estrutura | janela projeto |
@@ -74,6 +75,13 @@ ao abrir a janela com um projeto criado por ela:
 - **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a pasta de projetos se faltar; as outras pastas da estrutura o [coletar](#-coletar-os-arquivos) cria quando precisar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
 **a estrutura do projeto** → com o campo da atração vazio, a etapa mostra, animada, a árvore de pastas que o projeto novo vai ter: a da [configuração > coletar](producoes.md), com o que cada pasta recebe numa linha logo abaixo dela, com o ícone e o nome (o projeto, as fontes, as imagens, os vídeos…). digitando, ela sai e a lista de atrações entra no lugar.
+
+**quadro de uma atração** → digite a atração, uma barra e o quadro: `DOMINGÃO/DANÇA`. depois da barra, a lista mostra a atração (com mais de uma achada, clique na certa) e os **quadros** dela: as subpastas da pasta da atração (com o ano, a do ano), lidas na hora; as da estrutura (`01_PROJETOS`, `02_ARQUIVOS`…) e as que são só números ficam de fora. o texto depois da barra filtra os quadros.
+
+- clique num quadro para usar a pasta dele (ex: `DANÇA DOS FAMOSOS`).
+- `Enter` (ou **Próximo**) sem escolher fica com o **nome digitado**: a pasta com esse nome, se já existir (sem diferenciar acentos e maiúsculas), ou um **quadro novo**, criado junto com o projeto. sem nada depois da barra, segue com a própria atração.
+- o projeto vai para a estrutura dentro do quadro (`…/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS/01_PROJETOS/`) e o `.aep` leva só o quadro e o o que é: `DANCA DOS FAMOSOS ABERTURA.aep`.
+- no editor, `DOMINGÃO/DANÇA` no campo da atração faz o mesmo: o quadro escolhido (ou o digitado, com `Enter` ou ao salvar) troca a pasta e o nome do `.aep`. o quadro fica gravado no projeto (`padeiro:quadro`).
 
 **não achou a atração no editor?** → digitando a atração, a lista termina em '*começar projeto novo*': abre o fluxo do projeto novo com o nome digitado (a nova atração, a categoria e a pasta, como num projeto do zero). o botão redondo de **voltar** (a seta, no rodapé) volta para o editor sem mudar nada.
 

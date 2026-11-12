@@ -100,7 +100,8 @@ PADX.projectCategories = function () {
 
 Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos texto:
   atracao    → a atração (LÁ NA MINHA TERRA)                       janela projeto
-  oQueE      → o que é (SERVIÇO): o .aep é a atração + o que é       janela projeto
+  quadro     → o quadro da atração (DANÇA DOS FAMOSOS), opcional: o .aep é o quadro + o que é    janela projeto
+  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o quadro) + o que é    janela projeto
   designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
   pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
   output     → a pasta de output                                     projeto; o template grava se faltar
@@ -116,7 +117,7 @@ dc:publisher, dc:source, dc:identifier) são lidos aqui e, na próxima gravaçã
 
 var PAD_NS = 'https://github.com/jmbillard/O-PADEIRO/ns/1.0/';
 var PAD_META_VERSION = '1';
-var PAD_META_FIELDS = ['atracao', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado'];
+var PAD_META_FIELDS = ['atracao', 'quadro', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado'];
 var PAD_META_LEGACY = ['identifier', 'coverage', 'relation', 'publisher', 'source'];
 var padNsReady = false;
 
@@ -163,7 +164,7 @@ function padMetaRead() {
 	try {
 		meta = padXmpMeta();
 	} catch (err) {
-		return { atracao: '', oQueE: '', designer: '', pasta: '', output: '', producao: '', templates: '', criado: '', versao: '' };
+		return { atracao: '', quadro: '', oQueE: '', designer: '', pasta: '', output: '', producao: '', templates: '', criado: '', versao: '' };
 	}
 
 	for (var i = 0; i < PAD_META_FIELDS.length; i++) out[PAD_META_FIELDS[i]] = padXmpProp(meta, PAD_NS, PAD_META_FIELDS[i]);
@@ -507,7 +508,7 @@ function padNewProjectPlan(a) {
 	var root;
 	var fileBase;
 
-	fileBase = padAepName(a.atracao + ' ' + (a.what || ''));
+	fileBase = padAepName((padTrim(a.quadro) || a.atracao) + ' ' + (a.what || '')); // com quadro: o quadro + o que é
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
@@ -571,6 +572,54 @@ var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 
 // A estrutura de pastas de um projeto (configuração > coletar), para a árvore animada da etapa ATRAÇÃO: cada pasta
 // com a profundidade e o que ela recebe. → { folders: [{ name, depth, contents: ['projeto', 'imagens', …] }] }
+/*
+
+---------------------------------------------------------------
+> quadros da atração (ATRAÇÃO/QUADRO na janela projeto)
+---------------------------------------------------------------
+
+Os quadros são as subpastas da pasta da atração (a de cima da de projetos, quando o índice aponta para ela; com o
+ano, a do ano): DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS. ficam de fora as da estrutura do coletar (01_PROJETOS,
+02_ARQUIVOS…, em qualquer grafia), as que são só números (anos) e as escondidas. o projeto de um quadro vai para a
+estrutura dentro dele.
+
+*/
+
+// a: { path } → { root, rootName, exists, quadros: [{ name, path }] }
+PADX.projectQuadros = function (a) {
+	var root = padMountedPath(padPath(a.path));
+
+	if (!root) return { root: '', rootName: '', exists: false, quadros: [] };
+
+	var folder = new Folder(root);
+
+	if (padIsProjectsFolderName(decodeURI(folder.name))) folder = folder.parent;
+
+	var skip = {};
+	var settings = padReadCollect();
+	var quadros = [];
+	var i;
+
+	for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
+
+	var items = folder.exists ? folder.getFiles() || [] : [];
+
+	for (i = 0; i < items.length; i++) {
+		var name = decodeURI(items[i].name);
+
+		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^[._]/.test(name) || /^[\d\s._-]+$/.test(name)) continue;
+		if (skip[padFolderKey(name)] || padIsProjectsFolderName(name)) continue;
+
+		quadros.push({ name: name, path: padDisplayPath(items[i].fsName) });
+	}
+
+	quadros.sort(function (x, y) {
+		return x.name.toUpperCase() < y.name.toUpperCase() ? -1 : 1;
+	});
+
+	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, quadros: quadros };
+};
+
 PADX.projectShape = function () {
 	var settings = padReadCollect();
 	var list = padStructureFolders(settings, null);
@@ -696,6 +745,7 @@ PADX.projectCreate = function (a) {
 
 	padMetaWrite({
 		atracao: String(a.atracao || ''),
+		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
 		designer: padMachineUser(),
 		pasta: padDisplayPath(plan.root),
@@ -745,7 +795,7 @@ PADX.projectStatus = function () {
 };
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
-// → { created, outside, atracao, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
+// → { created, outside, atracao, quadro, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
 PADX.projectCurrent = function () {
 	var file = app.project.file;
 	var m = padMetaRead();
@@ -756,6 +806,7 @@ PADX.projectCurrent = function () {
 		created: inRoot,
 		outside: !!(file && m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
 		atracao: m.atracao,
+		quadro: m.quadro,
 		oQueE: m.oQueE,
 		designer: m.designer || padMachineUser(),
 		defaultUser: padDefaultUser(),
@@ -779,13 +830,13 @@ PADX.projectSaveNow = function () {
 
 // Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura (criada se
 // faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
-// a: { atracao, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
+// a: { atracao, quadro, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
 PADX.projectSave = function (a) {
 	padLastMkdir = '';
 
 	var file = app.project.file;
-	var plan = padNewProjectPlan({ atracao: a.atracao, what: a.what, path: a.root });
+	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root });
 
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 
@@ -804,6 +855,7 @@ PADX.projectSave = function (a) {
 
 	padMetaWrite({
 		atracao: String(a.atracao || ''),
+		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
 		designer: padCleanUser(a.designer) || padMachineUser(),
 		pasta: padDisplayPath(plan.root),

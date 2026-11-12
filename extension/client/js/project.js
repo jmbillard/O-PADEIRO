@@ -217,6 +217,18 @@ projetos com o nome certo).
 
 		var claq = $('claq').value.trim();
 		var seq = ++state.lookupSeq;
+		var split = splitQuadro(claq);
+
+		// ATRAÇÃO/QUADRO: a atração escolhida antes da barra fica; sem a barra, volta a busca das atrações
+		if (split) {
+			if (!flow.attr && state.userChose && /^m\d+$/.test(flow.choice)) flow.attr = flow.matches[+flow.choice.slice(1)] || null;
+			flow.choice = '';
+			state.userChose = false;
+		} else {
+			flow.attr = null;
+			flow.quadInfo = null;
+		}
+		flow.quadText = split ? split.quad : '';
 
 		flow.claquete = claq;
 		$('claq-next').disabled = !claq;
@@ -233,11 +245,20 @@ projetos com o nome certo).
 			state.lookupTimer = null;
 
 			try {
-				var res = await findAttractions(claq);
+				var res = await findAttractions(split ? split.atr : claq);
 
 				if (seq !== state.lookupSeq) return;
 
 				flow.matches = res.matches;
+
+				// a atração dos quadros: a escolhida (se ainda está na lista) ou a única achada
+				if (split) {
+					if (!flow.attr || !flow.matches.some(function (m) {
+						return m.path === flow.attr.path;
+					})) flow.attr = flow.matches.length === 1 ? flow.matches[0] : null;
+					flow.quadInfo = flow.attr ? await loadQuadros(flow.attr) : null;
+					if (seq !== state.lookupSeq) return;
+				}
 			} catch (err) {
 				if (seq !== state.lookupSeq) return;
 				flow.matches = [];
@@ -246,13 +267,18 @@ projetos com o nome certo).
 
 			// nada vem marcado: Enter (ou Próximo) sem escolher fica com o nome digitado, como atração nova. sem
 			// nenhuma atração achada, a nova já vem aberta; o que a pessoa escolheu fica (se ainda estiver na lista)
-			if (!state.userChose || (/^m(\d+)$/.test(flow.choice) && +flow.choice.slice(1) >= flow.matches.length)) flow.choice = flow.matches.length ? '' : 'new';
+			if (split) flow.choice = '';
+			else if (!state.userChose || (/^m(\d+)$/.test(flow.choice) && +flow.choice.slice(1) >= flow.matches.length)) flow.choice = flow.matches.length ? '' : 'new';
 			if (flow.choice === 'new') {
 				await ensureBases();
 				if (!state.novaEdited) $('nova-name').value = typedName();
 			}
 			renderAttractions();
 			if (state.holdFit) setTimeout(releaseFit, 320); // mede depois de a lista abrir (ATR.resize)
+			if (state.nextPending) {
+				state.nextPending = false;
+				claqueteNext();
+			}
 		}, LOOKUP_MS);
 	}
 
@@ -288,6 +314,8 @@ projetos com o nome certo).
 			return;
 		}
 
+		if (splitQuadro(flow.claquete)) return renderQuadros(list, nova);
+
 		// a lista com busca: as atrações, a nova (o nome e a categoria abrem logo abaixo) e outra pasta
 		var novaLabel = aepName($('nova-name').value || typedName()) || 'o nome digitado'; // antes de tirar o bloco da lista
 
@@ -319,6 +347,136 @@ projetos com o nome certo).
 		setTimeout(fitHeight, 300);
 	}
 
+	/* ATRAÇÃO/QUADRO: depois da barra, os quadros da atração (as subpastas da pasta dela, lidas na hora); o
+	   texto depois da barra filtra e, sem escolher, vira um quadro novo (ou o que já tiver esse nome) */
+
+	var QUAD_MAX = 6; // quantos quadros aparecem (os outros: continue digitando)
+
+	function splitQuadro(text) {
+		var at = String(text || '').indexOf('/');
+
+		return at < 0 ? null : { atr: text.slice(0, at).trim(), quad: text.slice(at + 1).trim() };
+	}
+
+	async function loadQuadros(match) {
+		var cache = state.quadCache || (state.quadCache = {});
+
+		if (!cache[match.path]) {
+			try {
+				cache[match.path] = await call('projectQuadros', { path: match.path });
+			} catch (err) {
+				cache[match.path] = { root: '', rootName: '', quadros: [] };
+				status(err.message, 'error');
+			}
+		}
+
+		return cache[match.path];
+	}
+
+	function filterQuadros(list, text) {
+		var words = aepName(text).split(' ').filter(Boolean);
+
+		return (list || []).filter(function (q) {
+			var name = aepName(q.name);
+
+			return words.every(function (w) {
+				return name.indexOf(w) >= 0;
+			});
+		});
+	}
+
+	function exactQuadro(list, text) {
+		return (list || []).filter(function (q) {
+			return aepName(q.name) === aepName(text);
+		})[0] || null;
+	}
+
+	// a atração do quadro: o .aep vai para a estrutura dentro dele (o quadro novo é criado junto)
+	function quadroTarget(attr, info, quad, typed) {
+		if (quad) return { name: attr.name, path: quad.path, display: displayPath(quad.path), out: attr.out || '', quadro: quad.name };
+
+		var name = String(typed || '').toUpperCase().replace(/\s+/g, ' ').trim();
+		var sep = /\\/.test(info.root) ? '\\' : '/';
+		var path = info.root.replace(/[\\\/]+$/, '') + sep + name;
+
+		return { name: attr.name, path: path, display: displayPath(path), out: attr.out || '', quadro: name };
+	}
+
+	function renderQuadros(list, nova) {
+		var info = flow.quadInfo;
+		var shown = info ? filterQuadros(info.quadros, flow.quadText) : [];
+		var more = Math.max(0, shown.length - QUAD_MAX);
+
+		ATR.resize(list, function () {
+			list.textContent = '';
+
+			if (!flow.attr) {
+				// mais de uma atração com esse nome: escolher qual (os quadros aparecem depois)
+				var m = flow.matches.slice(0, LIST_MAX);
+
+				list.appendChild(ATR.group(m.length ? 'escolha a atração do quadro' : 'nenhuma atração com esse nome'));
+				m.forEach(function (match) {
+					list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+						chooseQuadroAttr(match);
+					}, match.display));
+				});
+			} else {
+				list.appendChild(ATR.group('atração'));
+				// clicar na atração solta ela (para escolher outra)
+				list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.category || '', true, function () {
+					flow.attr = null;
+					flow.quadInfo = null;
+					renderAttractions();
+				}, flow.attr.display));
+				list.appendChild(ATR.sep());
+
+				if (!info) list.appendChild(ATR.group('procurando os quadros…'));
+				else {
+					list.appendChild(ATR.group(!info.quadros.length ? 'nenhum quadro em ' + (info.rootName || 'a pasta da atração') : shown.length ? 'quadros · ' + info.rootName : 'nenhum quadro com esse nome'));
+					shown.slice(0, QUAD_MAX).forEach(function (q, i) {
+						list.appendChild(ATR.row(FOLDER_SVG, q.name.toUpperCase(), '', flow.choice === 'q' + i, function () {
+							chooseAttraction('q' + i);
+						}, q.path));
+					});
+					list.appendChild(ATR.sep());
+					list.appendChild(ATR.row(PLUS_SVG, 'novo quadro', flow.quadText ? flow.quadText.toUpperCase() : 'digite depois da /', flow.choice === 'qnew', function () {
+						if (flow.quadText) chooseAttraction('qnew');
+					}));
+				}
+			}
+
+			list.appendChild(nova); // o bloco da nova atração fica na lista, fechado
+			nova.classList.remove('is-open');
+		});
+		list.hidden = false;
+		$('claq-hint').textContent = more ? '+ ' + more + (more === 1 ? ' outro quadro: continue digitando' : ' outros quadros: continue digitando') : '';
+		$('claq-next').disabled = !flow.attr;
+		setTimeout(fitHeight, 300);
+	}
+
+	async function chooseQuadroAttr(match) {
+		flow.attr = match;
+		flow.quadInfo = null;
+		renderAttractions();
+		flow.quadInfo = await loadQuadros(match);
+		if (flow.attr === match) renderAttractions();
+	}
+
+	// Enter / Próximo com a barra: o quadro escolhido; sem escolher, o digitado (o que já existe com esse nome, ou
+	// um novo); sem nada depois da barra, a própria atração
+	async function quadroNext() {
+		if (!flow.attr) return;
+
+		var info = flow.quadInfo || (flow.quadInfo = await loadQuadros(flow.attr));
+		var shown = filterQuadros(info.quadros, flow.quadText);
+
+		if (/^q\d+$/.test(flow.choice)) return pickAttraction(quadroTarget(flow.attr, info, shown[+flow.choice.slice(1)]));
+		if (!flow.quadText) return pickAttraction(flow.attr);
+		if (!info.root) return status('#PAD_091 - não deu para ler a pasta da atração (rede fora?).', 'error');
+
+		pickAttraction(quadroTarget(flow.attr, info, exactQuadro(info.quadros, flow.quadText), flow.quadText));
+	}
+
 	async function chooseAttraction(key) {
 		flow.choice = key;
 		state.userChose = true;
@@ -332,6 +490,16 @@ projetos com o nome certo).
 
 	async function claqueteNext() {
 		if (!flow.claquete) return;
+
+		if (splitQuadro(flow.claquete)) {
+			// a busca (ou a lista dos quadros) ainda não respondeu: segue quando responder
+			if (state.lookupTimer) {
+				state.nextPending = true;
+				return;
+			}
+
+			return quadroNext();
+		}
 
 		// a busca ainda não respondeu: espera ela
 		if (state.lookupTimer) {
@@ -491,7 +659,7 @@ projetos com o nome certo).
 	}
 
 	function planArgs(extra) {
-		return Object.assign({ kind: 'program', atracao: flow.pick.name, path: flow.pick.path, what: flow.what, output: flow.output || '' }, extra || {});
+		return Object.assign({ kind: 'program', atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.output || '' }, extra || {});
 	}
 
 	function planCriar() {
@@ -537,7 +705,7 @@ projetos com o nome certo).
 		var fileName = plan.exists && flow.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName;
 
 		meta.textContent = '';
-		meta.appendChild(el('span', null, aepName(flow.pick.name)));
+		meta.appendChild(el('span', null, aepName(flow.pick.name) + (flow.pick.quadro ? ' / ' + aepName(flow.pick.quadro) : '')));
 		user.innerHTML = USER_SVG;
 		user.appendChild(document.createTextNode(plan.user));
 		meta.appendChild(user);
@@ -776,6 +944,9 @@ projetos com o nome certo).
 			state.editorKey = key;
 			state.edMatches = [];
 			state.edPicked = '';
+			state.edAttr = null;
+			state.edQuadInfo = null;
+			state.edQuadDone = !!cur.quadro;
 			state.edRoot = cur.root || '';
 			state.edOutput = cur.output || '';
 			$('ed-user').value = cur.designer;
@@ -785,11 +956,12 @@ projetos com o nome certo).
 			if (cur.atracao) {
 				// o que é: o gravado (padeiro:oQueE) ou, sem ele, o que vem depois da atração no nome do arquivo. um
 				// nome fora desse padrão (projeto antigo) fica como está até a atração ou o que é mudarem
-				var atr = aepName(cur.atracao);
+				// com quadro: ATRAÇÃO/QUADRO no campo, e o .aep é o quadro + o que é
+				var atr = aepName(cur.quadro || cur.atracao);
 				var fname = aepName(String(cur.fileName || '').replace(/\.aep$/i, ''));
 				var what = cur.oQueE || (fname.indexOf(atr + ' ') === 0 ? fname.slice(atr.length + 1) : '');
 
-				$('ed-atracao').value = cur.atracao.toUpperCase();
+				$('ed-atracao').value = cur.atracao.toUpperCase() + (cur.quadro ? '/' + cur.quadro.toUpperCase() : '');
 				$('ed-what').value = what;
 				if (!cur.oQueE && fname && fname !== atr && fname.indexOf(atr + ' ') !== 0) state.edKeep = String(cur.fileName).replace(/\.aep$/i, '');
 			} else {
@@ -809,7 +981,8 @@ projetos com o nome certo).
 
 	// o nome do .aep: a atração + o que é (e o de hoje, quando muda)
 	function edFile() {
-		var name = state.edKeep || aepName($('ed-atracao').value + ' ' + $('ed-what').value);
+		var split = splitQuadro($('ed-atracao').value);
+		var name = state.edKeep || aepName((split ? split.quad || split.atr : $('ed-atracao').value) + ' ' + $('ed-what').value);
 		var now = state.current ? String(state.current.fileName || '').replace(/\.aep$/i, '') : '';
 		var span = $('ed-file').querySelector('span');
 
@@ -823,8 +996,10 @@ projetos com o nome certo).
 		clearTimeout(state.edTimer);
 
 		var seq = state.edSeq = (state.edSeq || 0) + 1;
+		var split = auto ? null : splitQuadro(text);
 
-		if (!aepName(text)) {
+		if (!split) state.edAttr = null;
+		if (!aepName(split ? split.atr : text)) {
 			state.edMatches = [];
 			edRenderList();
 			return;
@@ -834,7 +1009,7 @@ projetos com o nome certo).
 			var res;
 
 			try {
-				res = await findAttractions(text);
+				res = await findAttractions(split ? split.atr : text);
 			} catch (err) {
 				res = { matches: [] };
 			}
@@ -842,6 +1017,15 @@ projetos com o nome certo).
 			if (seq !== state.edSeq) return;
 
 			state.edMatches = res.matches;
+
+			// ATRAÇÃO/QUADRO: a atração escolhida (se ainda está na lista) ou a única achada, e os quadros dela
+			if (split) {
+				if (!state.edAttr || !res.matches.some(function (m) {
+					return m.path === state.edAttr.path;
+				})) state.edAttr = res.matches.length === 1 ? res.matches[0] : null;
+				state.edQuadInfo = state.edAttr ? await loadQuadros(state.edAttr) : null;
+				if (seq !== state.edSeq) return;
+			}
 			if (auto && res.matches.length) edPick(0, text);
 			else edRenderList();
 		}, LOOKUP_MS);
@@ -851,7 +1035,10 @@ projetos com o nome certo).
 		var list = $('ed-atr-list');
 		var m = state.edMatches.slice(0, LIST_MAX);
 		var typed = aepName($('ed-atracao').value);
-		var open = !!typed && !state.edPicked && !state.edTyped;
+		var split = splitQuadro($('ed-atracao').value);
+		var open = !!typed && !state.edPicked && !state.edTyped && !(split && state.edQuadDone);
+
+		if (split) return edRenderQuadros(list, split, open);
 
 		ATR.resize(list, function () {
 			list.textContent = '';
@@ -873,6 +1060,71 @@ projetos com o nome certo).
 		setTimeout(fitHeight, 300);
 	}
 
+	// ATRAÇÃO/QUADRO no editor: a atração (escolher, se houver mais de uma) e os quadros dela
+	function edRenderQuadros(list, split, open) {
+		var info = state.edQuadInfo;
+		var shown = info ? filterQuadros(info.quadros, split.quad) : [];
+
+		ATR.resize(list, function () {
+			list.textContent = '';
+
+			if (!state.edAttr) {
+				var m = state.edMatches.slice(0, LIST_MAX);
+
+				list.appendChild(ATR.group(m.length ? 'escolha a atração do quadro' : 'nenhuma atração com esse nome'));
+				m.forEach(function (match) {
+					list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, async function () {
+						state.edAttr = match;
+						state.edQuadInfo = await loadQuadros(match);
+						edRenderList();
+					}, match.display));
+				});
+				return;
+			}
+
+			list.appendChild(ATR.group('atração'));
+			list.appendChild(ATR.row(matchIcon(state.edAttr), state.edAttr.name.toUpperCase(), state.edAttr.category || '', true, function () { }, state.edAttr.display));
+			list.appendChild(ATR.sep());
+			if (!info) return list.appendChild(ATR.group('procurando os quadros…'));
+
+			list.appendChild(ATR.group(!info.quadros.length ? 'nenhum quadro em ' + (info.rootName || 'a pasta da atração') : shown.length ? 'quadros · ' + info.rootName : 'nenhum quadro com esse nome'));
+			shown.slice(0, QUAD_MAX).forEach(function (q) {
+				list.appendChild(ATR.row(FOLDER_SVG, q.name.toUpperCase(), '', false, function () {
+					edPickQuadro(q);
+				}, q.path));
+			});
+			list.appendChild(ATR.sep());
+			list.appendChild(ATR.row(PLUS_SVG, 'novo quadro', split.quad ? split.quad.toUpperCase() : 'digite depois da /', false, function () {
+				if (split.quad) edPickQuadro(null, split.quad);
+			}));
+		});
+		list.hidden = !open;
+		$('ed-combo').classList.toggle('is-open', open);
+		setTimeout(fitHeight, 300);
+	}
+
+	// o quadro (o que existe ou um novo com o nome digitado): o .aep vai para a estrutura dentro dele ao salvar
+	function edPickQuadro(q, typed) {
+		var attr = state.edAttr;
+		var info = state.edQuadInfo;
+
+		if (!attr || !info || !info.root) return;
+
+		var target = quadroTarget(attr, info, q || exactQuadro(info.quadros, typed), typed);
+
+		state.edQuadDone = true;
+		state.edKeep = '';
+		state.edRoot = target.path;
+		pathValue($('ed-root'), target.display);
+		$('ed-atracao').value = attr.name.toUpperCase() + '/' + target.quadro.toUpperCase();
+		if (!state.edOutput && attr.out) {
+			state.edOutput = attr.out;
+			pathValue($('ed-output'), displayPath(attr.out));
+		}
+		edRenderList();
+		edFile();
+	}
+
 	// escolheu: o nome oficial, a pasta da atração (o .aep vai para a de projetos dela ao salvar) e a de output
 	// dela, se o projeto ainda não tem. com o nome do arquivo (auto), o que sobra depois da atração é o o que é.
 	function edPick(i, typed) {
@@ -884,6 +1136,7 @@ projetos com o nome certo).
 		var atr = aepName(match.name);
 
 		state.edPicked = match.path;
+		state.edAttr = match; // digitando a barra depois, os quadros são desta
 		state.edKeep = '';
 		$('ed-atracao').value = match.name.toUpperCase();
 		if (typed && !$('ed-what').value && rest.indexOf(atr + ' ') === 0) $('ed-what').value = rest.slice(atr.length + 1);
@@ -931,7 +1184,14 @@ projetos com o nome certo).
 
 	// salvar: grava os dados, leva o .aep para a pasta dele com o nome certo e fecha a janela
 	async function editorSave() {
-		var atracao = $('ed-atracao').value.trim();
+		var split = splitQuadro($('ed-atracao').value);
+
+		// o quadro digitado e ainda não escolhido: fica o digitado (o que existe com esse nome, ou um novo)
+		if (split && split.quad && !state.edQuadDone) edPickQuadro(null, split.quad);
+		split = splitQuadro($('ed-atracao').value);
+
+		var atracao = split ? split.atr : $('ed-atracao').value.trim();
+		var quadro = split ? split.quad : '';
 
 		if (!aepName(atracao)) {
 			status('#PAD_090 - escolha a atração do projeto.', 'error');
@@ -940,7 +1200,7 @@ projetos com o nome certo).
 		}
 
 		try {
-			var cur = await call('projectSave', { atracao: atracao, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep });
+			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep });
 
 			state.editorKey = null;
 			state.current = cur;
@@ -1131,6 +1391,7 @@ projetos com o nome certo).
 		// a atração: digitar busca (a escolhida sai)
 		$('ed-atracao').addEventListener('input', function () {
 			state.edTyped = false;
+			state.edQuadDone = false;
 			state.edPicked = '';
 			state.edKeep = '';
 			edLookup(this.value, false);
@@ -1139,6 +1400,11 @@ projetos com o nome certo).
 		// Enter com a lista aberta: fica o nome digitado (escolher uma atração é com o clique); de novo, salva
 		onEnter('ed-atracao', function () {
 			if ($('ed-atr-list').hidden) return editorSave();
+
+			var split = splitQuadro($('ed-atracao').value);
+
+			// com a barra: o quadro digitado (o que existe com esse nome, ou um novo)
+			if (split && split.quad && state.edAttr && state.edQuadInfo) return edPickQuadro(null, split.quad);
 
 			state.edTyped = true;
 			edRenderList();

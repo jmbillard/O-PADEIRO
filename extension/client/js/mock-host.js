@@ -1147,6 +1147,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
 		},
 
+		// os quadros: as subpastas da pasta da atração (a de cima da de projetos)
+		projectQuadros: function (a) {
+			var root = String(a.path || '').replace(/\/0?1[ _]?PROJETOS?$/i, '');
+			var names = /DOMINGAO/.test(root) ? ['DANÇA DOS FAMOSOS', 'DOMINGÃO RECORD', 'QUEM QUER SER UM MILIONÁRIO', 'VIDEOSHOW', 'TE VI NA TV', 'ARQUIVO CONFIDENCIAL', 'PATRÕES'] : /CHEF/.test(root) ? ['REPESCAGEM'] : [];
+
+			return { root: root, rootName: root.split('/').pop(), exists: true, quadros: names.map(function (n) {
+				return { name: n, path: root + '/' + n };
+			}) };
+		},
+
 		projectLookup: function (a) {
 			var V = '/Volumes/VFX/imagem/drive_l/Fileserver_3';
 			var list = [
@@ -1200,7 +1210,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 			};
 			var film = a.kind === 'film';
-			var base = film ? key(a.title) : key(a.atracao + ' ' + (a.what || ''));
+			var base = film ? key(a.title) : key((a.quadro || a.atracao) + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
 			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
 			var H = 3600000;
@@ -1222,7 +1232,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
@@ -1233,7 +1243,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// Salvar do editor: o .aep vai para a pasta de projetos da estrutura, com o nome da atração + o que é
 		projectSave: function (a) {
-			var base = String(a.atracao + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			var base = String((a.quadro || a.atracao) + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 
 			if (!base) throw new Error('#PAD_090 - escolha a atração.');
 			if (a.fileBase) base = a.fileBase;
@@ -1242,7 +1252,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var root = String(a.root || '').replace(/\/01 ?PROJETOS$/i, '');
 			var file = root + '/01 PROJETOS/' + base + '.aep';
 
-			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, root: root, output: a.output || '', file: file };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, quadro: a.quadro || '', root: root, output: a.output || '', file: file };
 			window.PAD_MOCK_SAVED = null;
 
 			var cur = api.projectCurrent();
