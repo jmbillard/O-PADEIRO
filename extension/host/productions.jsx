@@ -377,7 +377,8 @@ function padReadRename() {
 ---------------------------------------------------------------
 
 'ORGANIZE' no O_PADEIRO_GLOBAL_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
-{ folders: [{ name, parent, contents: [...] }], renderComments: [...], editComments: [...], autoComment, dataExtensions: [...], commentSubfolders }
+{ folders: [{ name, parent, contents: [...] }], renderComments: [...], editComments: [...], autoComment, dataExtensions: [...], commentSubfolders,
+  fileTags: [...] }
 Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
 
 */
@@ -406,7 +407,7 @@ function padCommaList(value) {
 
 // Valida e normaliza a organização vinda do painel. Lança Error com a mensagem.
 function padCleanOrganize(o) {
-	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false, version: 2 };
+	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false, fileTags: [], version: 2 };
 	var names = {};
 	var contents = {};
 	var i;
@@ -485,6 +486,15 @@ function padCleanOrganize(o) {
 	var exts = padCommaList(o.dataExtensions);
 
 	for (i = 0; i < exts.length; i++) clean.dataExtensions.push('.' + exts[i].replace(/^\*?\.+/, '').toLowerCase());
+
+	// as etiquetas dos arquivos (janela de etiquetas); configurações antigas: as do padrão
+	var tags = o.fileTags == null ? padDefaultOrganize().fileTags : padCommaList(o.fileTags);
+
+	for (i = 0; i < tags.length; i++) {
+		var tag = tags[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ');
+
+		if (padIndexOf(clean.fileTags, tag) < 0) clean.fileTags.push(tag);
+	}
 
 	return clean;
 }

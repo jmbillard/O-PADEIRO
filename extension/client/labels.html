@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O CONTRARREGRA</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/attractions.css">
+	<link rel="stylesheet" href="css/icons.css">
+	<link rel="stylesheet" href="css/fonts.css">
+	<link rel="stylesheet" href="css/labels.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="fonts-page labels-page">
+	<!-- as etiquetas: comentários nos itens selecionados no painel Project, os que o organizar entende
+	     (render, editáveis, tipo de peça, arquivos); o rodapé limpa todos e organiza -->
+	<main class="fonts labels" id="labels">
+		<p class="lb-sel" id="lb-sel"><i></i><span id="lb-sel-text"></span></p>
+
+		<div class="has-field-icon lb-free">
+			<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg>
+			<input type="text" class="cfg-input" id="lb-free" placeholder="etiqueta livre · Enter aplica (vazio limpa)" spellcheck="false" autocomplete="off" aria-label="Etiqueta livre">
+			<button type="button" class="lb-free-go" id="lb-free-go" title="aplicar nos itens selecionados (Enter)" aria-label="aplicar a etiqueta livre"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg></button>
+		</div>
+
+		<div class="lb-groups" id="lb-groups"></div>
+
+		<div class="action-bar is-anchored fw-bar">
+			<button type="button" class="io-button lb-broom" id="lb-clear" title="limpar o comentário de todos os itens do projeto" aria-label="limpar o comentário de todos os itens do projeto"><svg viewBox="0 0 24 24"><g class="lb-broom-body"><path d="M20.5 3.5 13 11" /><path d="M10.6 9.6l3.8 3.8" /><path d="M10.6 9.6C7.4 10.3 5 13.4 3.5 20.5c7.1-1.5 10.2-3.9 10.9-7.1" /><path d="M7.6 16.4 6 18" /></g><g class="lb-dust"><path d="M3 7.5h.01" /><path d="M5.5 5h.01" /><path d="M7 8h.01" /></g></svg></button>
+			<details class="actions-menu fw-menu" id="app-menu">
+				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="clearSel">Limpar o comentário dos selecionados</button>
+					<button type="button" data-action="config">Editar as etiquetas (O PRODUTOR)</button>
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
+				</div>
+			</details>
+			<span class="fw-status" id="fw-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="lb-organize">Organizar</button>
+		</div>
+	</main>
+
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/labels.js"></script>
+</body>
+
+</html>

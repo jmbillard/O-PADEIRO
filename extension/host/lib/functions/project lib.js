@@ -20,6 +20,7 @@
 //   autoComment      → comentário dado às comps selecionadas sem comentário (e às criadas pelos templates)
 //   dataExtensions   → extensões tratadas como arquivos de dados
 //   commentSubfolders→ o comentário (antes de ':') vira subpasta
+//   fileTags         → as etiquetas dos arquivos na janela de etiquetas (O CONTRARREGRA, clique direito)
 var PAD_ORGANIZE = {
 	folders: [
 		{ name: '01 COMPS', parent: '', contents: ['render'] },
@@ -36,7 +37,8 @@ var PAD_ORGANIZE = {
 	editComments: ['EDIT'],
 	autoComment: 'EXPORTAR',
 	dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
-	commentSubfolders: true
+	commentSubfolders: true,
+	fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
 };
 
 // Pasta da árvore pelo nome (sem diferenciar maiúsculas).

@@ -23,6 +23,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
+	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -236,8 +237,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			report(await call('organizeProject'), 'O CONTRARREGRA organizou o projeto.');
 		},
 
-		openLabels: async function () {
-			toast('', 'a janela das etiquetas do CONTRARREGRA ainda está no forno.');
+		openLabels: function () {
+			PAD_BRIDGE.openPanel(LABELS_PANEL_ID);
 		},
 
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
@@ -365,7 +366,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
 	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
-	['openCollect', 'openFonts', 'openVersioner', 'project'].forEach(function (key) {
+	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project'].forEach(function (key) {
 		actions[key].opensWindow = true;
 	});
 
@@ -447,7 +448,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Organizar',
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
-			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar as cores das etiquetas (labels) do After'],
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
 			left: actions.organizeProject,
 			right: actions.openLabels
 		},

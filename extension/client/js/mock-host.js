@@ -181,7 +181,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
 						autoComment: 'EXPORTAR',
 						dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
-						commentSubfolders: true
+						commentSubfolders: true,
+						fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
 					},
 					links: [
 						{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' },
@@ -543,6 +544,47 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		organizeProject: function () {
 			return { messages: [] };
+		},
+
+		// etiquetas: 3 itens selecionados e alguns comentários no projeto
+		tagsSelection: function () {
+			return { selection: window.PAD_MOCK_SEL == null ? 3 : window.PAD_MOCK_SEL };
+		},
+
+		tagsInfo: function () {
+			var counts = window.PAD_MOCK_TAGS || (window.PAD_MOCK_TAGS = { EXPORTAR: 4, TEMPLATE: 1, EDIT: 2, RODAPE: 6, CARTAO: 2, LETTERING: 3, TARJA: 1, ASSINA: 1, FUNDO: 3, LOGO: 2, FOTO: 5, TRILHA: 1 });
+			var list = function (names) {
+				return names.map(function (n) {
+					return { name: n, count: counts[n] || 0 };
+				});
+			};
+
+			return {
+				selection: window.PAD_MOCK_SEL == null ? 3 : window.PAD_MOCK_SEL,
+				groups: [
+					{ id: 'render', tags: list(['EXPORTAR', 'LOGO GLOBO', 'TEMPLATE']) },
+					{ id: 'edit', tags: list(['EDIT']) },
+					{ id: 'types', tags: list(['RODAPE', 'CARTAO', 'LETTERING', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']) },
+					{ id: 'files', tags: list(['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']) }
+				],
+				folders: { render: '01 COMPS', edit: '' }
+			};
+		},
+
+		tagsApply: function (a) {
+			var text = String(a.text || '').trim().toUpperCase();
+
+			var tag = text.split(':')[0].trim();
+
+			if (tag) window.PAD_MOCK_TAGS[tag] = (window.PAD_MOCK_TAGS[tag] || 0) + 3;
+
+			return { count: 3 };
+		},
+
+		tagsClearAll: function () {
+			window.PAD_MOCK_TAGS = {};
+
+			return { count: 31 };
 		},
 
 		requestTab: function (a) {

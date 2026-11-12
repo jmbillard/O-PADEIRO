@@ -51,7 +51,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
 		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
 		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },
-		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica as cores das etiquetas (labels) do After'] },
+		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica etiquetas (comentários) nos itens do projeto'] },
 		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },
 		buscar: { title: 'Buscar', l: ['O ACESSORISTA', 'busca caminhos das atrações'], r: ['O ACESSORISTA', 'busca nos textos dos layers'] }
 	};

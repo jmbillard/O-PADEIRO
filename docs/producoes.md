@@ -179,6 +179,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
+- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, TRILHA, LOC).
 - **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\

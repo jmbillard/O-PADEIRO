@@ -22,7 +22,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | **A CLAQUETE** salva o projeto na pasta dele |
 | <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
-| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **O CONTRARREGRA**: as cores das etiquetas (labels) do After |
+| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
@@ -37,6 +37,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
 | 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
+| 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
 | 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
 | 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
@@ -268,7 +269,13 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 > • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto do comentário antes de ':' vira subpasta.\
 > • pastas que ficarem vazias são removidas.
 
-`◗ clique direito` → abre **O CONTRARREGRA**: as cores das etiquetas (labels) do After.
+`◗ clique direito` → abre **O CONTRARREGRA**: as **etiquetas**, comentários nos itens selecionados no painel Project que o organizar entende.
+
+- **render** (EXPORTAR, TEMPLATE, LOGO GLOBO) e **editáveis** (EDIT): os comentários da configuração > organizar.
+- **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
+- **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
+
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **vassourinha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Ctrl/Cmd+Z`.
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
@@ -385,6 +392,7 @@ todo erro do padeiro começa com um código `#PAD_` (o aviso pode ser fechado no
 | `#PAD_098` | produção local (configuração > templates, neste computador): sem nome ou sem pasta, ou com o nome de uma produção da equipe |
 | `#PAD_100` | importar / versionador: o arquivo não é um projeto do After (`.aep` / `.aet`), a versão não pôde ser lida ou o painel está sem acesso aos arquivos |
 | `#PAD_102` | versionador: projeto nunca salvo, sem pasta ou pasta que não existe |
+| `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |
 | `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 

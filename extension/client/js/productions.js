@@ -28,7 +28,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
-		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
+		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
@@ -407,7 +407,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			editComments: commaList(o.editComments),
 			autoComment: o.autoComment.trim(),
 			dataExtensions: commaList(o.dataExtensions),
-			commentSubfolders: o.commentSubfolders
+			commentSubfolders: o.commentSubfolders,
+			fileTags: commaList(o.fileTags)
 		};
 	}
 
@@ -1455,7 +1456,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			editComments: (data.editComments || ['EDIT']).join(', '),
 			autoComment: data.autoComment || '',
 			dataExtensions: (data.dataExtensions || []).join(', '),
-			commentSubfolders: data.commentSubfolders !== false
+			commentSubfolders: data.commentSubfolders !== false,
+			fileTags: (data.fileTags || ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']).join(', ')
 		};
 		renderOrganize();
 	}
@@ -2008,7 +2010,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// os campos à direita (comentários de render, extensões...)
 	function organizeFields() {
 		var o = state.organize;
-		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
+		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions', 'org-files': 'fileTags' };
 
 		Object.keys(fields).forEach(function (id) {
 			if ($(id).value !== o[fields[id]]) $(id).value = o[fields[id]];
@@ -2022,7 +2024,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindOrganize() {
 		orgTree.bind();
 
-		[['org-render', 'renderComments'], ['org-edit', 'editComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {
+		[['org-render', 'renderComments'], ['org-edit', 'editComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions'], ['org-files', 'fileTags']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				state.organize[pair[1]] = this.value;
 				updateDirty();

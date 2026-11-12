@@ -1963,6 +1963,135 @@ PADX.renameOutputs = function () {
 	});
 };
 
+/*
+
+---------------------------------------------------------------
+> etiquetas (O CONTRARREGRA, clique direito): comentários nos itens
+---------------------------------------------------------------
+
+As etiquetas são comentários que o organizar entende: as de render e das editáveis (configuração > organizar), os
+tipos de peça (os do renomear: a comp vai para uma subpasta com o tipo) e as dos arquivos (o comentário vira
+subpasta). A janela aplica no que está selecionado no painel Project; as pastas ficam de fora.
+
+  tagsInfo        → { selection, groups: [{ id, tags: [{ name, count }] }], folders: { render, edit } }
+  tagsSelection   → { selection } (a janela pergunta a cada instante)
+  tagsApply       → { text } ('' limpa)                        → { count }
+  tagsClearAll    → limpa o comentário de todos os itens do projeto → { count }
+
+*/
+
+// O comentário como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
+function padTagOf(comment) {
+	return padTrim(String(comment).split(':')[0]).toUpperCase();
+}
+
+function padTagList(list, out, seen) {
+	for (var i = 0; i < list.length; i++) {
+		var name = padTrim(list[i]).toUpperCase();
+
+		if (name == '' || seen[name]) continue;
+
+		seen[name] = true;
+		out.push({ name: name, count: 0 });
+	}
+
+	return out;
+}
+
+function padOrganizeFolderFor(content) {
+	for (var i = 0; i < PAD_ORGANIZE.folders.length; i++) {
+		if (padIndexOf(PAD_ORGANIZE.folders[i].contents, content) >= 0) return PAD_ORGANIZE.folders[i].name;
+	}
+
+	return '';
+}
+
+PADX.tagsSelection = function () {
+	return { selection: app.project.selection.length };
+};
+
+PADX.tagsInfo = function () {
+	var seen = {};
+	var render = [PAD_ORGANIZE.autoComment];
+	var types = [];
+	var i;
+
+	// os de render que o automático já contém (EXPORT em EXPORTAR) ficam só no automático
+	for (i = 0; i < PAD_ORGANIZE.renderComments.length; i++) {
+		if (String(PAD_ORGANIZE.autoComment).indexOf(PAD_ORGANIZE.renderComments[i]) < 0) render.push(PAD_ORGANIZE.renderComments[i]);
+	}
+
+	for (i = 0; i < renameRefArray.length; i++) types.push(renameRefArray[i].comment);
+
+	var groups = [
+		{ id: 'render', tags: padTagList(render, [], seen) },
+		{ id: 'edit', tags: padTagList(PAD_ORGANIZE.editComments || [], [], seen) },
+		{ id: 'types', tags: padTagList(types, [], seen) },
+		{ id: 'files', tags: padTagList(PAD_ORGANIZE.fileTags || [], [], {}) }
+	];
+
+	// quantos itens do projeto já têm cada etiqueta (comps nos três primeiros grupos, arquivos no último)
+	for (i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (item instanceof FolderItem || item.comment == '') continue;
+
+		var tag = padTagOf(item.comment);
+		var list = item instanceof CompItem ? groups.slice(0, 3) : [groups[3]];
+
+		for (var g = 0; g < list.length; g++) {
+			for (var t = 0; t < list[g].tags.length; t++) {
+				if (list[g].tags[t].name == tag) list[g].tags[t].count++;
+			}
+		}
+	}
+
+	return {
+		selection: app.project.selection.length,
+		groups: groups,
+		folders: { render: padOrganizeFolderFor('render'), edit: padOrganizeFolderFor('editaveis') }
+	};
+};
+
+// O comentário em cada item selecionado (sem as pastas). '' limpa.
+PADX.tagsApply = function (a) {
+	var text = padTrim(a && a.text).replace(/\s+/g, ' ').toUpperCase();
+	var sel = app.project.selection;
+	var count = 0;
+
+	if (!sel.length) throw new Error('#PAD_103 - etiquetas: nada selecionado no painel Project.');
+
+	padGroup(text ? 'etiqueta ' + text : 'limpar etiquetas', function () {
+		for (var i = 0; i < sel.length; i++) {
+			if (sel[i] instanceof FolderItem) continue;
+
+			sel[i].comment = text;
+			count++;
+		}
+	});
+
+	if (!count) throw new Error('#PAD_103 - etiquetas: só pastas selecionadas (as etiquetas vão nas comps e nos arquivos).');
+
+	return { count: count };
+};
+
+PADX.tagsClearAll = function () {
+	var count = 0;
+
+	padGroup('limpar todas as etiquetas', function () {
+		for (var i = 1; i <= app.project.numItems; i++) {
+			var item = app.project.item(i);
+
+			if (item.comment == '') continue;
+
+			item.comment = '';
+			count++;
+		}
+	});
+
+	return { count: count };
+};
+
 PADX.organizeProject = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 

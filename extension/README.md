@@ -22,6 +22,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O TIPÓGRAFO | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
 | O CATADOR | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
 | O VERSIONADOR | `com.jmbillard.opadeiro.versioner` | `versioner.html` | `js/versioner.js` | 8097 |
+| O CONTRARREGRA | `com.jmbillard.opadeiro.labels` | `labels.html` | `js/labels.js` | 8098 |
 
 <br>
 
