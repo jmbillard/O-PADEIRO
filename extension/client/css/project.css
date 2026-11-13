@@ -1128,7 +1128,8 @@ p.wz-exist b {
 }
 
 /* a seta de voltar dentro do campo: volta para a busca */
-.claq-nova-back {
+.claq-nova-back,
+.claq-clear {
   position: absolute;
   top: 50%;
   right: 12px;
@@ -1149,17 +1150,21 @@ p.wz-exist b {
 }
 
 .claq-nova-back:hover,
-.claq-nova-back:focus-visible {
+.claq-nova-back:focus-visible,
+.claq-clear:hover,
+.claq-clear:focus-visible {
   background: var(--surface-muted);
   color: var(--text-primary);
 }
 
-.claq-nova-back:focus-visible {
+.claq-nova-back:focus-visible,
+.claq-clear:focus-visible {
   outline: 1px solid var(--blue-500);
   outline-offset: 0;
 }
 
-.claq-nova-back svg {
+.claq-nova-back svg,
+.claq-clear svg {
   width: 17px;
   height: 17px;
   fill: none;
@@ -1326,4 +1331,13 @@ p.wz-exist b {
 
 #sc-claquete > .wz-foot {
   margin-top: 0;
+}
+
+/* o campo do projeto com o × no fim: o texto não passa por baixo dele */
+.combo-claq .combo-field {
+  position: relative;
+}
+
+.combo-claq .combo-field .cfg-input {
+  padding-right: 52px;
 }

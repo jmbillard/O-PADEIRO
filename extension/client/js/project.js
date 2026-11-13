@@ -164,6 +164,8 @@ projetos com o nome certo).
 		var box = $('claq-shape');
 		var empty = !$('claq').value.trim();
 
+		$('claq-clear').hidden = !$('claq').value; // o × aparece com algo digitado
+
 		box.hidden = !empty;
 		$('claq-rest').hidden = empty;
 		$('claq-out').hidden = empty;
@@ -1654,6 +1656,17 @@ projetos com o nome certo).
 		});
 
 		$('claq').addEventListener('input', lookup);
+		// o × no fim do campo: limpa e volta para o começo (a busca e a animação das pastas)
+		$('claq-clear').addEventListener('click', function () {
+			var input = $('claq');
+
+			input.value = '';
+			flow.attr = null;
+			flow.choice = '';
+			state.userChose = false;
+			lookup();
+			input.focus();
+		});
 		$('claq-back').addEventListener('click', leaveManualNew);
 		onEnter('claq', claqEnter);
 		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
