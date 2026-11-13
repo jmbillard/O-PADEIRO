@@ -549,6 +549,75 @@ body.is-touring .pad-tooltip {
   text-transform: uppercase;
 }
 
+/* barra vertical estreita (até 119 px, como a equipe usa na lateral): letras menores, o texto quebra por palavra
+   (e hifeniza), e cada botão ocupa a largura do balão */
+@media (max-width: 119px) {
+  .tour-card.is-vertical {
+    right: 4px;
+    left: 4px;
+    padding: 9px 7px;
+    border-radius: 12px;
+    gap: 6px;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .tour-card.is-vertical .tour-kicker {
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .tour-card.is-vertical .tour-title {
+    font-size: 0.72rem;
+    text-overflow: clip;
+  }
+
+  .tour-card.is-vertical .tour-head {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+  }
+
+  .tour-card.is-vertical .tour-text,
+  .tour-card.is-vertical .tour-lines span {
+    display: block;
+    font-size: 0.62rem;
+    line-height: 1.32;
+  }
+
+  .tour-card.is-vertical .tour-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+  }
+
+  .tour-card.is-vertical .tour-btn:not(.tour-round) {
+    min-width: 0;
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 0.62rem;
+    gap: 4px;
+    white-space: normal;
+  }
+
+  .tour-card.is-vertical .tour-btn.is-option {
+    align-items: stretch;
+  }
+
+  .tour-card.is-vertical .tour-btn.is-option small {
+    font-size: 0.54rem;
+    white-space: normal;
+  }
+
+  .tour-card.is-vertical .tour-round {
+    align-self: center;
+  }
+
+  .tour-card.is-vertical .tour-skip {
+    font-size: 0.6rem;
+    text-align: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tour *,
   .bar.is-touring * {

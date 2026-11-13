@@ -271,7 +271,8 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			status('limpar o comentário de todos os itens do projeto? clique de novo na borracha.', '');
 			state.clearTimer = setTimeout(function () {
 				eraser.classList.remove('is-confirm');
-				status('', '');
+				// só tira a pergunta: se outra ação já escreveu o resultado dela na linha, ele fica
+				if (/clique de novo na borracha/.test($('fw-status').textContent)) status('', '');
 			}, 4000);
 		});
 
