@@ -234,14 +234,16 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 
 | | | |
 | :---: | --- | --- |
-| ❶ | **o projeto** | o `.aep`, quantos arquivos e quantos estão fora do lugar. |
-| ❷ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❼ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
-| ❸ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
-| ❹ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. |
-| ❺ | **✓** | já está na pasta do projeto. (**–** cinza: tipo fora da árvore do coletar.) |
+| ❶ | **o projeto** | o `.aep` e quantos arquivos ele usa. |
+| ❷ | **o filtro** | quantos arquivos em cada situação: **faltando**, **locais** (neste computador), **na rede** e **no lugar**. cada etiqueta liga e desliga a situação na lista. a janela abre mostrando só o que precisa de atenção (o que está no lugar fica escondido). **o filtro vale para as ações**: o Coletar só copia, e a busca só procura, o que está aparecendo. |
+| ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❼ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
+| ❹ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
+| ❺ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. (**✓**: já está na pasta do projeto; **–** cinza: tipo fora da árvore do coletar. os dois ficam em **no lugar**.) |
 | ❻ | **outra pasta** | coleta numa pasta escolhida. |
 | ❼ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
-| ❽ | **Coletar** | copia o que falta para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto. |
+| ❽ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
+
+a lista é dividida em **faltando**, **para coletar** e **na pasta do projeto**. cada linha tem a miniatura, o nome, o tipo (com o ícone na cor do tipo, a mesma da configuração) e as comps que usam o arquivo, e **de onde → para onde**: a pasta de hoje e a pasta da estrutura que vai recebê-lo.
 
 > 🚩 *obs:*\
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\

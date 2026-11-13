@@ -27,11 +27,16 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, as bolinhas da barra (projeto, fontes, coletar: verde, tudo certo; laranja, falta algo, uma cor só de atenção), o pãozinho da logo, a ilustração do forninho (o loader) e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
 - **o tom de "em andamento"** (`--processing`) é o destaque do tema.
 
+### filtros que valem
+
+um filtro numa lista de coisas a fazer (as situações no topo do CATADOR) **vale para as ações**: o botão principal só age no que está aparecendo, e diz quantos. a lista abre mostrando o que precisa de atenção; o que já está certo fica escondido, a um clique.
+
 ### as cores dos tipos
 
 cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, áudio, dados, projeto, fontes…) tem **uma cor só**, `--type`, usada **sólida** em todo lugar. o degradê (de `--type-soft`, o tom claro, até `--type`) fica só nas faixas da migração do CATADOR, onde ele diz o sentido: de onde o arquivo sai → para onde vai. a tabela fica no `styles.css` e quem tem `data-type="<tipo>"` recebe as duas. é a mesma cor na configuração (organizar e coletar) e na migração do CATADOR: um tipo novo entra na tabela antes de aparecer em qualquer tela.
 
 - **sobre o degradê azul** (as etiquetas da árvore) → a cor do tipo com um contorno claro fino (`1px solid rgb(var(--on-brand) / 85%)`), que separa a cor do fundo.
+- **nada de faixa colorida na borda** de uma linha ou de um cartão (a tira de cor encostada no lado esquerdo): numa linha de lista, a cor do tipo vai só no ícone dele, pequeno, junto do nome do tipo; a miniatura fica maior, com a mesma margem em cima, embaixo e do lado.
 - **sobre a folha** (os cartões dos tipos) → o ícone e uma pílula em pé na cor do tipo, à esquerda, com a mesma margem em cima e embaixo (como a amostra aberta da aparência). sem borda colorida no cartão.
 
 ## 📍 formas: cantos concêntricos e centros alinhados

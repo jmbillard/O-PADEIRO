@@ -1294,6 +1294,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return {
 				project: 'DOMINGAO COM HUCK SERVICO.aep',
 				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026',
+				dests: { videos: '02_ARQUIVOS/VÍDEOS', sequencias: '02_ARQUIVOS/IMAGENS', imagens: '02_ARQUIVOS/IMAGENS', audio: '02_ARQUIVOS/AUDIOS', dados: '02_ARQUIVOS/DADOS' },
 				items: [
 					{ id: 11, name: 'logo_convidado.png', file: D + 'ae-estrutura-projeto.png', kind: 'imagens', state: 'local', layers: 2 },
 					{ id: 12, name: 'trilha_abertura.wav', file: '/Users/jmbillard/Desktop/trilha_abertura.wav', kind: 'audio', state: 'local', layers: 1 },

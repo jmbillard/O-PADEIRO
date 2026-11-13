@@ -2,20 +2,111 @@
    COLETAR — as mídias do projeto (as linhas são as da janela de fontes: css/fonts.css)
    ========================================================= */
 
-.cw-row {
-  padding: 8px 12px 8px 8px;
-  border-radius: 18px; /* concêntrico com a miniatura: raio (9) + respiro (8) + borda (1) */
+/* o resumo no topo: quantos arquivos em cada situação. cada etiqueta liga e desliga a situação na lista (ligada,
+   cheia; desligada, só o contorno, apagada); o Coletar e a busca dos faltando só veem o que aparece */
+.cw-filter {
+  display: flex;
+  gap: 6px;
 }
 
-/* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo */
+.cw-filter[hidden] {
+  display: none;
+}
+
+.cw-chip {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.cw-chip .fw-state {
+  width: 18px;
+  height: 18px;
+  font-size: 0.58rem;
+}
+
+.cw-chip b {
+  font-weight: 800;
+}
+
+.cw-chip:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.cw-chip:focus-visible {
+  outline: 1px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.cw-chip.is-off,
+.cw-chip:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.cw-chip.is-off .fw-state,
+.cw-chip:disabled .fw-state {
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+}
+
+.cw-chip:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* as seções da lista: a situação, quantos e o que acontece com eles */
+.cw-sec {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 2px 0;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.cw-sec:first-child {
+  margin-top: 0;
+}
+
+.cw-sec small {
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.cw-row {
+  padding: 8px 12px 8px 8px;
+  border-radius: 19px; /* concêntrico com a miniatura: raio (10) + respiro (8) + borda (1) */
+}
+
+/* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo. ocupa a altura da linha, com a mesma
+   margem em cima, embaixo e à esquerda */
 .cw-thumb {
   display: grid;
-  width: 56px;
-  height: 38px;
+  width: 92px;
+  height: 60px;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--surface-soft);
   color: var(--text-tertiary);
 }
@@ -35,6 +126,74 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.7;
+}
+
+/* o tipo, na linha do meio: o ícone na cor do tipo (styles.css) e o nome, com as comps que usam o arquivo */
+.cw-kind,
+.cw-where {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 650;
+}
+
+.cw-kind svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--type, currentcolor);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.cw-kind b,
+.cw-where b {
+  color: var(--text-secondary);
+  font-weight: 750;
+}
+
+/* de onde → para onde */
+.cw-where span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cw-where b,
+.cw-where i {
+  flex: 0 0 auto;
+}
+
+.cw-where i {
+  color: var(--type, var(--text-tertiary));
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* sem uso em nenhuma comp */
+.cw-row.is-unused .cw-name {
+  color: var(--text-secondary);
+  font-weight: 650;
+}
+
+.cw-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 750;
+  vertical-align: 1px;
+}
+
+.cw-row .fw-text {
+  gap: 3px;
 }
 
 .cw-name {

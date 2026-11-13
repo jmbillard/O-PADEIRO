@@ -585,7 +585,8 @@ function padCollectFinish(target, settings, res) {
 	};
 }
 
-// Coleta tudo numa chamada (a janela do CATADOR). a: { path } → { messages, data }
+// Coleta tudo numa chamada (a janela do CATADOR). a: { path, ids (opcional: só esses itens, os que a janela está
+// mostrando) } → { messages, data }
 PADX.collectProject = function (a) {
 	var t = padCollectTarget(a);
 
@@ -593,6 +594,16 @@ PADX.collectProject = function (a) {
 		var root = padEnsureFolder(t.target);
 		var paths = padCollectPaths(t.settings);
 		var queue = padCollectQueue(root, paths);
+
+		if (a && a.ids) {
+			var only = [];
+
+			for (var k = 0; k < queue.ids.length; k++) {
+				if (padIndexOf(a.ids, queue.ids[k]) >= 0) only.push(queue.ids[k]);
+			}
+
+			queue.ids = only;
+		}
 		var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: queue.missing, fonts: '' };
 
 		padGroup('coletar arquivos', function () {
@@ -771,7 +782,7 @@ PADX.collectStatus = function () {
 //   ok       já na pasta do projeto       local    fora das pastas de projetos (configuração > PROJETO)
 //   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
-// → { project, root, migrated, items: [{ id, name, file, kind, state, layers, frames }] }
+// → { project, root, migrated, dests, items: [{ id, name, file, kind, state, layers, frames }] }
 PADX.collectList = function () {
 	var settings = padReadCollect();
 	var file = app.project.file;
@@ -808,8 +819,19 @@ PADX.collectList = function () {
 		items.push({ id: item.id, name: item.name, file: path, kind: kind, state: state, layers: layers });
 	}
 
+	// dests: a pasta da estrutura que recebe cada tipo ({ imagens: '02_ARQUIVOS/IMAGENS' …}), para a janela dizer para
+	// onde o coletar leva cada arquivo
+	var dests = {};
+	var kinds = ['videos', 'sequencias', 'imagens', 'audio', 'dados'];
+
+	for (var k = 0; k < kinds.length; k++) {
+		var dest = padCollectFolderPath(settings, kinds[k]);
+
+		if (dest != null) dests[kinds[k]] = dest;
+	}
+
 	// migrated: a pasta tem o registro de uma migração (migrate.jsx): dá para desfazer
-	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items, migrated: !!root && new File(new Folder(root).fsName + '/' + PAD_MIGRATION_LOG).exists };
+	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items, dests: dests, migrated: !!root && new File(new Folder(root).fsName + '/' + PAD_MIGRATION_LOG).exists };
 };
 
 // O caminho do arquivo do item, também quando ele está faltando (o After Effects 2022+ guarda o caminho

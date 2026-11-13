@@ -40,7 +40,19 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 	// finds: o resultado da última busca dos arquivos faltando ({ id: { to, how, more } } e os não achados), até
 	// relinkar ou eles deixarem de faltar
-	var state = { data: null, busy: false, key: '', finds: null, mig: null };
+	// filter: as situações que aparecem na lista (e que o Coletar e a busca dos faltando levam em conta). a janela
+	// abre mostrando só o que precisa de atenção; o que já está no lugar fica escondido
+	var state = { data: null, busy: false, key: '', finds: null, mig: null, filter: { missing: true, local: true, net: true, ok: false } };
+	var FILTERS = [['missing', 'nofile', '✕', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'locais', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
+
+	// a situação do arquivo para o filtro: os de tipo fora da árvore (não coletados) contam como no lugar
+	function group(it) {
+		return it.state === 'skip' ? 'ok' : it.state;
+	}
+
+	function shown(it) {
+		return !!state.filter[group(it)];
+	}
 
 	function $(id) {
 		return document.getElementById(id);
@@ -68,8 +80,9 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	}
 
 	function pending() {
+		// só os que aparecem: o filtro vale para o Coletar
 		return (state.data ? state.data.items : []).filter(function (it) {
-			return it.state === 'local' || it.state === 'net';
+			return (it.state === 'local' || it.state === 'net') && shown(it);
 		});
 	}
 
@@ -78,7 +91,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (!state.finds || !state.data) return [];
 
 		return state.data.items.filter(function (it) {
-			return it.state === 'missing' && state.finds.to[it.id];
+			return it.state === 'missing' && state.finds.to[it.id] && shown(it);
 		});
 	}
 
@@ -93,46 +106,102 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		}
 	}
 
+	// o resumo no topo: quantos arquivos em cada situação; cada etiqueta liga e desliga a situação na lista
+	function renderFilter(count) {
+		var box = $('cw-filter');
+
+		box.textContent = '';
+		box.hidden = !(state.data && state.data.items.length);
+
+		FILTERS.forEach(function (f) {
+			var n = count[f[0]] || 0;
+			var chip = el('button', 'cw-chip' + (state.filter[f[0]] ? '' : ' is-off'));
+			var dot = el('span', 'fw-state is-' + f[1]);
+
+			chip.type = 'button';
+			chip.disabled = !n;
+			chip.setAttribute('aria-pressed', state.filter[f[0]] ? 'true' : 'false');
+			chip.title = f[4] + (n ? '\n(clique: ' + (state.filter[f[0]] ? 'esconde' : 'mostra') + ' na lista; o Coletar só copia o que aparece)' : '');
+			dot.appendChild(el('i', null, f[2]));
+			chip.appendChild(dot);
+			chip.appendChild(el('b', null, String(n)));
+			chip.appendChild(document.createTextNode(' ' + f[3]));
+			chip.addEventListener('click', function () {
+				state.filter[f[0]] = !state.filter[f[0]];
+				render();
+			});
+			box.appendChild(chip);
+		});
+	}
+
 	function render() {
 		var data = state.data || { items: [] };
 		var items = data.items.slice().sort(function (a, b) {
 			return ORDER[a.state] - ORDER[b.state] || a.name.localeCompare(b.name);
 		});
 		var count = {};
-		var parts = [];
-		var key = JSON.stringify(items.map(function (it) {
+		var key = JSON.stringify(state.filter) + JSON.stringify(items.map(function (it) {
 			return it.id + ':' + it.state + (state.finds && it.state === 'missing' ? ':' + (state.finds.to[it.id] ? state.finds.to[it.id].to : '?') : '');
 		}));
 
 		items.forEach(function (it) {
-			count[it.state] = (count[it.state] || 0) + 1;
+			count[group(it)] = (count[group(it)] || 0) + 1;
 		});
-		parts.push(plural(items.length, 'arquivo', 'arquivos'));
-		if (count.local) parts.push(count.local + ' fora das pastas de projetos');
-		if (count.missing) parts.push(plural(count.missing, 'faltando', 'faltando'));
+
+		var visible = items.filter(shown);
 
 		$('fw-file').innerHTML = FILE_SVG;
-		$('fw-file').appendChild(el('span', null, (data.project || 'projeto sem nome') + ' · ' + parts.join(' · ')));
-		$('fw-empty').hidden = !!items.length;
-		$('fw-empty').textContent = 'o projeto não tem arquivos (só comps, sólidos ou textos).';
+		$('fw-file').appendChild(el('span', null, (data.project || 'projeto sem nome') + ' · ' + plural(items.length, 'arquivo', 'arquivos')));
+		$('fw-empty').hidden = !!visible.length;
+
+		// sem nada na lista: o projeto não tem arquivos, está tudo certo, ou o filtro escondeu tudo
+		if (!items.length) $('fw-empty').textContent = 'o projeto não tem arquivos (só comps, sólidos ou textos).';
+		else if (!count.missing && !count.local && !count.net) $('fw-empty').textContent = 'tudo no lugar: nada faltando nem fora da pasta do projeto.';
+		else $('fw-empty').textContent = 'nada para mostrar: ligue uma das situações em cima.';
+
+		renderFilter(count);
 
 		var n = pending().length;
 		var hits = found().length;
+		var missing = visible.filter(function (it) {
+			return it.state === 'missing';
+		}).length;
 
-		// com arquivos achados pela busca, o botão principal relinka; sem, coleta
+		// com arquivos achados pela busca, o botão principal relinka; sem, coleta (só o que aparece)
 		$('cw-go').disabled = (!n && !hits) || state.busy;
 		$('cw-go').textContent = hits ? 'Relinkar: ' + hits : n ? 'Coletar: ' + n : 'Coletar';
-		$('cw-relink').disabled = !count.missing || state.busy;
+		$('cw-relink').disabled = !missing || state.busy;
 
 		if (key === state.key) return; // nada mudou: as miniaturas não recarregam
 
 		state.key = key;
 
 		var list = $('fw-list');
+		var all = (count.local || 0) + (count.net || 0);
+		var sections = [
+			['missing', 'FALTANDO', hits ? 'achados: o Relinkar aponta para eles' : 'o triângulo procura nas pastas'],
+			['collect', 'PARA COLETAR', n < all ? 'só os que aparecem são copiados' : 'o Coletar copia para a pasta do projeto'],
+			['ok', 'NA PASTA DO PROJETO', '']
+		];
 
 		list.textContent = '';
-		items.forEach(function (it) {
-			list.appendChild(row(it));
+		sections.forEach(function (s) {
+			var rows = visible.filter(function (it) {
+				var g = group(it);
+
+				return s[0] === 'collect' ? g === 'local' || g === 'net' : g === s[0];
+			});
+
+			if (!rows.length) return;
+
+			var head = el('p', 'cw-sec');
+
+			head.appendChild(document.createTextNode(s[1] + ' · ' + rows.length + (s[0] === 'collect' && rows.length < all ? ' de ' + all : '')));
+			if (s[2]) head.appendChild(el('small', null, s[2]));
+			list.appendChild(head);
+			rows.forEach(function (it) {
+				list.appendChild(row(it));
+			});
 		});
 	}
 
@@ -168,6 +237,12 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		return box;
 	}
 
+	// o fim do caminho de uma pasta (…/as duas últimas)
+	function tail(path) {
+		return '…/' + String(path).replace(/\\/g, '/').replace(/\/[^\/]*$/, '').split('/').slice(-2).join('/');
+	}
+
+	// a linha: a miniatura, o nome, o tipo (o ícone na cor do tipo) com as comps, e de onde → para onde
 	function row(it) {
 		var box = el('div', 'fw-row cw-row');
 		var head = el('button', 'fw-head');
@@ -176,17 +251,45 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var hit = it.state === 'missing' && state.finds ? state.finds.to[it.id] : null;
 		var searched = it.state === 'missing' && state.finds && !hit;
 		var dot = el('span', 'fw-state is-' + (hit ? 'found' : it.state === 'local' ? 'install' : it.state === 'net' ? 'up' : it.state === 'missing' ? 'nofile' : it.state === 'skip' ? 'skip' : 'ok'));
-		var folder = (hit ? hit.to : it.file).replace(/\\/g, '/').replace(/\/[^\/]*$/, '');
+		var name = el('b', 'cw-name', it.name);
+		var kind = el('span', 'cw-kind');
+		var where = el('span', 'cw-where');
+		var dest = state.data && state.data.dests ? state.data.dests[it.kind] : '';
 
 		// achado pela busca: a linha mostra onde (o relinkar leva para lá); procurado e não achado: avisa
 		if (hit) st = ['→', 'achado em ' + hit.to + (hit.more ? '\n(há mais ' + plural(hit.more, 'arquivo', 'arquivos') + ' com esse nome: este é o do caminho mais parecido)' : '') + '\nRelinkar aponta o item para ele'];
 		if (searched) st = [st[0], 'o arquivo não existe e a busca não achou outro com esse nome nas pastas do projeto'];
 
+		box.setAttribute('data-type', it.kind); // a cor do tipo (styles.css)
+		box.dataset.state = it.state;
 		head.type = 'button';
 		head.title = it.file + '\n' + st[1] + '\n(clique: mostra no painel Project)';
 		head.appendChild(thumb(it));
-		text.appendChild(el('b', 'cw-name', it.name));
-		text.appendChild(el('span', 'fw-name', (KINDS[it.kind] || it.kind) + (it.layers ? ' · ' + plural(it.layers, 'comp', 'comps') : ' · sem uso') + ' · ' + (hit ? 'achado em ' : '') + '…/' + folder.split('/').slice(-2).join('/')));
+
+		if (!it.layers) {
+			box.classList.add('is-unused');
+			name.appendChild(el('span', 'cw-tag', 'sem uso'));
+		}
+		text.appendChild(name);
+
+		kind.innerHTML = KIND_SVG[it.kind] || KIND_SVG.videos;
+		kind.appendChild(el('b', null, KINDS[it.kind] || it.kind));
+		if (it.layers) kind.appendChild(document.createTextNode('· ' + plural(it.layers, 'comp', 'comps')));
+		text.appendChild(kind);
+
+		// de onde → para onde: o que vai ser coletado mostra a pasta da estrutura que o recebe
+		if (hit) {
+			where.appendChild(el('span', null, 'era ' + tail(it.file)));
+			where.appendChild(el('i', null, '→'));
+			where.appendChild(el('b', null, tail(hit.to)));
+		} else if (it.state === 'missing') where.appendChild(el('span', null, 'era ' + tail(it.file)));
+		else if ((it.state === 'local' || it.state === 'net') && dest) {
+			where.appendChild(el('span', null, tail(it.file)));
+			where.appendChild(el('i', null, '→'));
+			where.appendChild(el('b', null, dest));
+		} else where.appendChild(el('span', null, tail(it.file) + (it.state === 'skip' ? ' · tipo não coletado' : '')));
+		text.appendChild(where);
+
 		head.appendChild(text);
 		dot.appendChild(el('i', null, st[0]));
 		dot.dataset.id = it.id;
@@ -217,7 +320,10 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		status('coletando…');
 
 		try {
-			var res = await call('collectProject', { path: path || '' });
+			// só os que aparecem na lista (o filtro)
+			var res = await call('collectProject', { path: path || '', ids: pending().map(function (it) {
+				return it.id;
+			}) });
 			var d = res.data || {};
 			var parts = [];
 
@@ -257,7 +363,12 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		status('procurando os arquivos faltando…');
 
 		try {
-			var res = await call('collectRelinkFind', {});
+			// só os faltando que aparecem na lista
+			var res = await call('collectRelinkFind', { ids: state.data.items.filter(function (it) {
+				return it.state === 'missing' && shown(it);
+			}).map(function (it) {
+				return it.id;
+			}) });
 			var to = {};
 
 			(res.found || []).forEach(function (f) {
@@ -635,6 +746,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			state.finds = null;
 			$('fw-list').hidden = true;
 			$('fw-empty').hidden = true;
+			$('cw-filter').hidden = true;
 			$('cw-other').hidden = true;
 			$('cw-relink').hidden = true;
 			$('mg-back').hidden = false;
