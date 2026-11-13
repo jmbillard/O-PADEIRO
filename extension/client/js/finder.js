@@ -701,7 +701,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var parts = display.split(/[\\/]+/).filter(Boolean);
 
 		nav.dataset.copy = display;
-		nav.title = display + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		nav.title = display + '\n\n' + PAD_KEYS.modLabel + '+C copia o caminho';
 		nav.appendChild(el('span', 'crumb-more', '…'));
 
 		parts.forEach(function (name, i) {
@@ -1195,7 +1195,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var row = el('button', 'text-row' + (entry.enabled ? '' : ' is-off'));
 
 			row.type = 'button';
-			row.title = entry.text + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o texto';
+			row.title = entry.text + '\n\n' + PAD_KEYS.modLabel + '+C copia o texto';
 			row.dataset.copy = entry.text;
 			row.appendChild(el('span', 'text-layer', entry.label));
 			row.appendChild(snippetNode(entry.text, key, opts, !opts.invert));

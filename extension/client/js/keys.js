@@ -68,6 +68,9 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 			item[modKey] = true;
 			withShift[modKey] = true;
 			list.push(item, withShift);
+
+			// macOS: os mesmos atalhos com o Ctrl (o Cmd pode não chegar ao painel)
+			if (MAC) list.push({ keyCode: CODES[name], ctrlKey: true }, { keyCode: CODES[name], ctrlKey: true, shiftKey: true });
 		});
 
 		try {
@@ -75,8 +78,10 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 		} catch (err) { }
 	}
 
+	// a tecla dos atalhos. no macOS o After Effects costuma ficar com o Cmd (ele vai para os menus do aplicativo e
+	// nem chega ao painel): os atalhos do padeiro valem com o Ctrl nos dois sistemas, e também com o Cmd quando chega
 	function isMod(e) {
-		return MAC ? e.metaKey : e.ctrlKey;
+		return MAC ? e.metaKey || e.ctrlKey : e.ctrlKey;
 	}
 
 	function isTyping(node) {
@@ -220,12 +225,12 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 		input.select();
 	}
 
-	// O botão principal de uma janela (Resolver, Coletar, Salvar, Organizar…): Cmd+Enter (macOS) / Ctrl+Enter (Windows)
-	// em qualquer lugar da janela faz o mesmo que o clique nele, e a dica do botão mostra o atalho com o nome do sistema
+	// O botão principal de uma janela (Resolver, Coletar, Salvar, Organizar…): Ctrl+Enter (nos dois sistemas; no macOS o
+	// Cmd costuma ficar com o After Effects) em qualquer lugar da janela faz o mesmo que o clique nele; a dica mostra o atalho
 	function primary(button) {
 		if (!button) return;
 
-		button.title = (button.title ? button.title + ' · ' : '') + (MAC ? 'Cmd' : 'Ctrl') + '+Enter';
+		button.title = (button.title ? button.title + ' · ' : '') + 'Ctrl+Enter';
 		document.addEventListener('keydown', function (e) {
 			if (e.key !== 'Enter' || !isMod(e) || e.defaultPrevented) return;
 			if (button.disabled || !button.getClientRects().length) return;
@@ -251,7 +256,8 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 	window.PAD_KEYS = {
 		mac: MAC,
 		primary: primary,
-		undoKey: MAC ? 'Cmd+Z' : 'Ctrl+Z', // o nome do atalho de desfazer neste sistema, para os textos
+		undoKey: MAC ? 'Cmd+Z' : 'Ctrl+Z', // desfazer: no macOS o Cmd+Z vai para o After Effects, que desfaz (é o que se quer)
+		modLabel: 'Ctrl', // a tecla dos atalhos do padeiro, para os textos (vale nos dois sistemas)
 		isMod: isMod,
 		isTyping: isTyping,
 		focusItem: focusItem,

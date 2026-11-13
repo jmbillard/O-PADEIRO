@@ -2371,7 +2371,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
-		$('btn-queue').title = $('btn-fill').title = (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+Enter'; // o atalho com o nome do sistema
+		$('btn-queue').title = $('btn-fill').title = PAD_KEYS.modLabel + '+Enter'; // o atalho com o nome do sistema
 		// o mesmo atalho do Preencher segue o fluxo: Ctrl/Cmd+Enter na etapa da fila cria a fila de render
 		document.addEventListener('keydown', function (e) {
 			if (e.key !== 'Enter' || !PAD_KEYS.isMod(e) || e.defaultPrevented) return;
