@@ -183,7 +183,7 @@ projetos com o nome certo).
 		// só as pastas (sem o que cada uma recebe)
 		if (!$('claq').value.trim() && state.screen === 'claquete') PAD_SHAPE_ANIM.mount(box, state.shape.map(function (f) {
 			return { name: f.name, depth: f.depth, contents: [] };
-		}), { root: 'ATRAÇÃO NOVA' });
+		}), { root: '…' });
 	}
 
 	/* ---------- caminhos com barra: as pastas de cada nível ---------- */

@@ -957,13 +957,20 @@ p.wz-exist b {
 }
 
 .shape-anim .sa-front {
-  fill: var(--surface);
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }
 
-.shape-anim .is-root .sa-front {
-  fill: var(--blue-50);
+/* as pastas cheias, sem contorno (como o forninho do loader): um desenho decorativo, que não parece um botão nem
+   algo para configurar. o fundo da pasta mais escuro, a frente na cor do destaque */
+.shape-anim .sa-back,
+.shape-anim .sa-front {
+  fill: var(--blue-500);
+  stroke: none;
+}
+
+.shape-anim .sa-back {
+  fill-opacity: 0.5;
 }
 
 .shape-anim .sa-kind {
@@ -1016,7 +1023,12 @@ p.wz-exist b {
   opacity: 0;
 }
 
-/* o ciclo: tudo entra no seu tempo (animation-delay de cada peça), fica e some junto no fim */
+/* o ciclo: cada peça entra no seu tempo (animation-delay), fica e sai no seu tempo (a saída gradual, de cima para
+   baixo). as linhas saem todas antes das pastas (o grupo delas some de uma vez): nenhuma fica sobrando sem pasta */
+.shape-anim.is-playing .sa-lines {
+  animation: sa-lines-out var(--sa-loop) linear both;
+}
+
 .shape-anim.is-playing .sa-line {
   animation: sa-draw var(--sa-loop) var(--ease-soft) both;
 }
@@ -1033,24 +1045,70 @@ p.wz-exist b {
   animation: sa-open var(--sa-loop) ease both;
 }
 
+@keyframes sa-lines-out {
+  0%,
+  72% {
+    opacity: 1;
+  }
+
+  77%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes sa-draw {
-  0% { stroke-dashoffset: 1; opacity: 1; }
-  5% { stroke-dashoffset: 0; opacity: 1; }
-  78% { stroke-dashoffset: 0; opacity: 1; }
-  88%, 100% { stroke-dashoffset: 0; opacity: 0; }
+  0% {
+    stroke-dashoffset: 1;
+  }
+
+  5%,
+  100% {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes sa-row {
-  0% { opacity: 0; transform: translateX(-6px); }
-  4%, 78% { opacity: 1; transform: none; }
-  88%, 100% { opacity: 0; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  4%,
+  78% {
+    opacity: 1;
+    transform: none;
+  }
+
+  88%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
 }
 
 @keyframes sa-drop {
-  0% { opacity: 0; transform: translateY(-10px); }
-  4% { opacity: 1; transform: translateY(1px); }
-  5.5%, 76% { opacity: 1; transform: none; }
-  86%, 100% { opacity: 0; transform: none; }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  4% {
+    opacity: 1;
+    transform: translateY(1px);
+  }
+
+  5.5%,
+  76% {
+    opacity: 1;
+    transform: none;
+  }
+
+  86%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
 }
 
 @keyframes sa-open {
