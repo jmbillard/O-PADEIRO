@@ -165,6 +165,7 @@ projetos com o nome certo).
 
 		box.hidden = !empty;
 		$('claq-rest').hidden = empty;
+		$('claq-out').hidden = empty;
 		if (!empty) return PAD_SHAPE_ANIM.stop(box);
 		if (box._saTimer) return;
 

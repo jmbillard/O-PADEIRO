@@ -1325,3 +1325,13 @@ p.wz-exist b {
 .wz-rest > .wz-title {
   margin-top: 10px;
 }
+
+/* o output embaixo, logo acima do rodapé: o espaço que sobra separa as pastas do projeto das de exportação */
+.wz-out {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+#sc-claquete > .wz-foot {
+  margin-top: 0;
+}

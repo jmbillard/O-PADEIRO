@@ -64,6 +64,11 @@
 						<label class="log-radio"><input type="radio" name="arq-dup" value="increment" checked><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text" id="arq-increment">salvar como … 2</span></label>
 					</div>
 				</div>
+			</div>
+			<!-- a estrutura que o projeto novo vai ter (configuração > coletar), animada, enquanto o campo está vazio -->
+			<div class="shape-box" id="claq-shape"></div>
+			<!-- o output, separado das pastas do projeto: embaixo, logo acima do rodapé -->
+			<div class="wz-rest wz-out" id="claq-out" hidden>
 				<p class="wz-title">OUTPUT</p>
 				<!-- o output escolhido, num cartão (sem cara de campo vazio); "mudar" (ou o clique) abre o campo: a pasta de
 				     output da atração e, com barras, as subpastas dela (ou novas) -->
@@ -77,8 +82,6 @@
 				</div>
 				<p class="wz-preview wz-dest" id="out-dest" hidden></p>
 			</div>
-			<!-- a estrutura que o projeto novo vai ter (configuração > coletar), animada, enquanto o campo está vazio -->
-			<div class="shape-box" id="claq-shape"></div>
 			<footer class="wz-foot">
 				<button type="button" class="io-button wz-back" id="claq-back" title="voltar ao projeto" aria-label="voltar ao projeto" hidden><svg viewBox="0 0 24 24"><path class="back-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
 				<span id="claq-back-space"></span>
