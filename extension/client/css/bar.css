@@ -675,9 +675,9 @@ body.bar-page {
 }
 
 .bar-toast.is-warn {
-  border-color: var(--warning-border, #f1d08a);
-  background: var(--warning-bg, #fff6df);
-  color: var(--warning, #8a5a00);
+  border-color: var(--waiting);
+  background: var(--waiting-bg);
+  color: var(--waiting);
 }
 
 .bar-status-dot {
@@ -1244,3 +1244,87 @@ body.bar-page {
   background: #f5a524;
 }
 
+
+/* =========================================================
+   barra vertical estreita (56 a 119 px): é como a equipe usa, acoplada na lateral. sem lugar para uma linha de
+   texto ao lado dos botões, o aviso e a gaveta são cartões da largura da barra, com o texto quebrando por
+   palavra (nunca letra por letra)
+   ========================================================= */
+@media (max-aspect-ratio: 1/1) {
+  /* o aviso em toda barra vertical: um cartão embaixo, acima do pãozinho. em cima, a bolinha do resultado e o
+     ×; o texto na largura toda, quebrando por palavra; as ações, uma por linha */
+  .bar-toast {
+    right: 8px;
+    bottom: 62px;
+    left: 8px;
+    display: grid;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 7px 10px 9px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 620;
+    gap: 4px 4px;
+    hyphens: auto;
+    line-height: 1.32;
+    overflow-wrap: break-word;
+  }
+
+  .bar-toast .bar-status-dot {
+    margin: 0 0 0 2px;
+    grid-area: 1 / 1;
+  }
+
+  .bar-toast .toast-close {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    grid-area: 1 / 2;
+  }
+
+  .bar-toast .toast-text {
+    grid-column: 1 / -1;
+  }
+
+  .bar-toast .bar-status-action {
+    padding: 2px 0;
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 119px) {
+  .bar-toast {
+    right: 4px;
+    left: 4px;
+    padding: 6px 7px 8px;
+    font-size: 0.62rem;
+  }
+
+  /* a gaveta: o ícone e o nome da ferramenta em cima, cada opção numa linha da largura da barra */
+  .bar-drawer {
+    gap: 5px;
+  }
+
+  .bar-drawer-head {
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 4px;
+    font-size: 0.62rem;
+  }
+
+  .bar-option {
+    padding: 6px 4px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+    hyphens: auto;
+    line-height: 1.22;
+    overflow-wrap: break-word;
+  }
+
+  .bar-drawer-close {
+    width: 26px;
+    height: 26px;
+  }
+}

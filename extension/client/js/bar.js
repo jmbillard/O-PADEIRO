@@ -812,8 +812,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			run(btn, left);
 		});
 
-		// clique direito = as opções da ferramenta (a gaveta), sem executar nada. na barra só de ícones (sem
-		// lugar para os nomes), a segunda ação direto, como antes
+		// clique direito = as opções da ferramenta (a gaveta), sem executar nada. só na barra mais estreita que
+		// 72 px (sem lugar para os nomes) a segunda ação direto, como antes
 		btn.addEventListener('contextmenu', function (e) {
 			e.preventDefault();
 			if (def && def.menu && drawerFits()) openDrawer(def, btn, false);
@@ -861,7 +861,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var drawer = { open: false, btn: null, timer: null };
 
 	function drawerFits() {
-		return !(window.matchMedia && window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 99px)').matches);
+		// abaixo de 72 px os nomes das opções não cabem nem quebrando: aí o clique direito faz a segunda ação
+		return !(window.matchMedia && window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 71px)').matches);
 	}
 
 	function closeDrawer(refocus) {

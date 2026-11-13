@@ -2557,6 +2557,8 @@ body.motion-ready .eyebrow {
 }
 
 .pad-tooltip.is-narrow {
+  hyphens: auto; /* barra estreita: quebra por palavra (hifeniza), nunca no meio sem aviso */
+  overflow-wrap: break-word;
   padding: 5px 3px;
   border-radius: 6px;
   font-size: 9px;

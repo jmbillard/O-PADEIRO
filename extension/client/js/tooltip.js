@@ -96,7 +96,8 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 				var name = document.createElement('p');
 
 				name.className = 'tip-name';
-				name.textContent = line.trim();
+				// barra estreita: só a função ("Organizar"); a turma depois do · não cabe e quebraria no meio
+				name.textContent = document.documentElement.clientWidth < 160 ? line.trim().split(' · ')[0] : line.trim();
 				t.appendChild(name);
 				named = true;
 			} else if (line.trim()) notes.push(line.trim());

@@ -115,6 +115,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **todo erro tem código**: no código, `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
 - **na tela, o texto vem primeiro e o código no fim** (`PAD_UTIL.errorText`: `texto curto · PAD_0xx`): a pessoa lê o que fazer, o suporte acha o código. o texto diz o que fazer (`selecione as comps…`), não só o que deu errado.
 - **o que deu certo diz o alcance**: a contagem (`3 itens renomeados`) e, se dá para desfazer, `· Ctrl+Z desfaz`. sem o nome da ferramenta na frase.
+- **a barra vertical estreita é o caso principal**, não a exceção: 86 px de largura, na lateral. tudo o que aparece na barra (aviso, gaveta, dica, tour) tem a versão em cartão da largura da barra (`bar.css`, no fim; `tour.css`), com `overflow-wrap: break-word` e `hyphens: auto`. nunca `overflow-wrap: anywhere` num texto dentro de flex ou grid estreito: ele quebra letra por letra.
 - **na barra, clique esquerdo faz e clique direito mostra**: o direito abre a gaveta de opções da ferramenta (`menu` de cada ferramenta no `bar.js`) e nunca executa nada sozinho. uma ação nova de uma ferramenta entra como opção da gaveta, com o nome por extenso, não como um terceiro gesto.
 - **o que é da equipe abre só para ler**: nas abas da equipe da configuração, a parte da equipe fica travada até o '*editar*' da faixa de cima (`lockTeam`); a parte "neste computador" (depois do `.local-split`) fica sempre livre.
 - **o que decide o conteúdo de uma lista é o título dela** (a produção, na lista de templates), não um controle no rodapé.
@@ -163,6 +164,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 ## 📍 antes de enviar
 
+- [ ] **a barra vertical com 86 px de largura** (é como a equipe usa, acoplada na lateral esquerda): o aviso, a gaveta do clique direito, a dica e o tour legíveis, com o texto quebrando por palavra, nunca letra por letra. confira também em 150 px (com os nomes) e na horizontal;
 - [ ] modo **claro e escuro**, com um tema de cores bem diferentes do azul padrão (ex: laranja → roxo);
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;

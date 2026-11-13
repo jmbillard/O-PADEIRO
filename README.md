@@ -136,7 +136,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 cada botão tem **dois cliques**:
 
 - `◖ clique esquerdo` → a ação principal, na hora (ou a janela da ferramenta, quando ela precisa de uma).
-- `◗ clique direito` → **as opções** (a gaveta): no lugar dos botões aparecem o nome da ferramenta, cada coisa que ela faz num botão com o nome por extenso (a do clique esquerdo em destaque), a configuração dela (tracejada) e o **×** para voltar. o clique direito nunca executa nada sozinho. a gaveta fecha ao escolher, no `Esc`, clicando fora ou um instante depois de o mouse sair da barra. na barra bem estreita (só ícones), o clique direito faz direto a segunda ação.
+- `◗ clique direito` → **as opções** (a gaveta): no lugar dos botões aparecem o nome da ferramenta, cada coisa que ela faz num botão com o nome por extenso (a do clique esquerdo em destaque), a configuração dela (tracejada) e o **×** para voltar. o clique direito nunca executa nada sozinho. a gaveta fecha ao escolher, no `Esc`, clicando fora ou um instante depois de o mouse sair da barra. na barra vertical, a gaveta é uma coluna da largura da barra; só abaixo de 72 px (sem lugar para os nomes) o clique direito faz direto a segunda ação.
 
 com o mouse num botão, a linha de status mostra o nome e os dois cliques (na barra vertical ou baixa, um balão).
 
@@ -160,7 +160,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 - **a dica do botão sob o mouse**: o nome e os dois cliques, cada um com o mousezinho (no lugar do balão, que cobria os botões vizinhos).
 - **a conferência do projeto**, em repouso: o que as bolinhas sabem, por extenso (`projeto sem atração nem pasta`, `2 arquivos fora das pastas de projetos`, as fontes que faltam). clicar numa pendência leva à ferramenta dela, e com o mouse em cima o botão da ferramenta acende. sem pendências: `em ordem: projeto, fontes e arquivos`.
 
-com a barra vertical ou bem baixa (menos de 76 px), valem o aviso flutuante e o balão de sempre.
+na **barra vertical** (acoplada na lateral, como a equipe usa: uns 86 px de largura), o resultado aparece num cartão embaixo, acima do pãozinho, com o texto quebrando por palavra; a dica é o balão ao lado do botão, e o estado continua nas bolinhas. na horizontal bem baixa (menos de 76 px), também o cartão e o balão.
 
 **coletar com arquivos faltando** → O CATADOR avisa antes (quais faltam) e oferece '*ver a lista*' (para resolver) ou coletar o resto.
 
