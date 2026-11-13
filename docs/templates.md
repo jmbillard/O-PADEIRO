@@ -4,7 +4,7 @@
 
 o painel **A FORMA**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da **produção**, que é o título da lista (no topo, à esquerda: clique nela para trocar). a janela abre com o foco na busca: é só digitar. a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre com o foco na busca: é só digitar. a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
 
 <p align="center"><img src="images/anim/forninho.webp" alt="A FORMA: busca, escolhe o template e preenche" width="900"></p>
 
@@ -37,7 +37,7 @@ o painel de templates mostra os templates da **produção**, que é o título da
 - **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
 - **volume desmontado** → no macOS, se a pasta de templates está num volume da rede que não está montado (ex: depois da VPN cair), o loader avisa '*o volume VFX não está montado: tentando montar…*' e o padeiro monta o share, como ao abrir uma pasta pelo acessorista. recém-montado, o volume pode levar uns segundos para aparecer: o loader avisa '*esperando a pasta aparecer…*' e a lista carrega sozinha assim que ela aparece (até uns 45 segundos, o tempo de digitar a senha da rede). não montando (sem rede, sem VPN), a lista avisa. uma tentativa que falhou só se repete depois de 1 minuto.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
-- **produção** (o título da lista, no topo) → escolhe a produção: a pasta de templates mostrada. a escolha vale para os outros painéis (e para o log). no meio de um preenchimento a troca espera.
+- **produção** (no rodapé, à esquerda do **⋯**) → escolhe a produção: a pasta de templates mostrada. a escolha vale para os outros painéis (e para o log). no meio de um preenchimento a troca espera.
 - **⋯** (canto direito, embaixo) → configuração (produções, logs e drives), ajuda (esta página) e recarregar o painel.
 - **total** (acima da busca) → quantos templates a produção tem (com uma busca, quantos foram encontrados).
 - `◖ clique` no template selecionado (ou no fundo da lista, ou `Esc`) → desmarca o template.
