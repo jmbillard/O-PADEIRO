@@ -264,7 +264,7 @@ function padMigrateBuild(all) {
 // O plano para o desenho da janela: as pastas de hoje, a estrutura nova e os fluxos entre elas.
 // → { root, name, total, stay, conflicts, others, outside, partial, undo (há um registro para desfazer),
 //     sources: [{ name ('' = soltos na raiz), count }], dests: [{ path, depth, type, count, extra (fora da árvore) }],
-//     links: [{ from, to, type, count }] }
+//     links: [{ from, to, type, count, names (os primeiros arquivos) }] }
 // a: { all } (com o uso dos outros projetos, já lido)
 PADX.migratePlan = function (a) {
 	var plan = padMigrateBuild(a && a.all);
@@ -317,9 +317,11 @@ PADX.migratePlan = function (a) {
 
 		if (linkIndex[lk] == null) {
 			linkIndex[lk] = res.links.length;
-			res.links.push({ from: op.top, to: dest, type: op.type, count: 0 });
+			res.links.push({ from: op.top, to: dest, type: op.type, count: 0, names: [] });
 		}
 		res.links[linkIndex[lk]].count++;
+		// os primeiros nomes de cada faixa, para a dica dizer quais arquivos são
+		if (res.links[linkIndex[lk]].names.length < 6) res.links[linkIndex[lk]].names.push(padSlash(op.from).replace(/^.*\//, ''));
 	}
 
 	// as pastas, por nome; os soltos na raiz e os de fora da pasta ('..') por último

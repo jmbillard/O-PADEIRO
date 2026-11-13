@@ -442,6 +442,9 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	   ========================================================= */
 
 	var TYPE_NAMES = { projeto: 'projeto', videos: 'vídeos', imagens: 'imagens', sequencias: 'sequências', audio: 'áudio', dados: 'dados', fontes: 'fontes', saidas: 'saídas', externos: 'arquivos externos' };
+	// no plural, para contar ('2 projetos', '240 quadros de sequência')
+	var TYPE_MANY = { projeto: 'projetos', videos: 'vídeos', imagens: 'imagens', sequencias: 'quadros de sequência', audio: 'áudios', dados: 'dados', fontes: 'fontes', saidas: 'saídas', externos: 'arquivos externos' };
+	var TYPE_SINGLE = { projeto: 'projeto', videos: 'vídeo', imagens: 'imagem', sequencias: 'quadro de sequência', audio: 'áudio', dados: 'dado', fontes: 'fonte', saidas: 'saída', externos: 'arquivo externo' };
 	var TYPE_ORDER = ['projeto', 'videos', 'imagens', 'sequencias', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var NS = 'http://www.w3.org/2000/svg';
@@ -688,6 +691,21 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		grid.appendChild(newCol);
 		box.appendChild(grid);
 		if (legend.childNodes.length) box.appendChild(legend);
+
+		// a dica de cada pasta: para onde vai (ou de onde vem) cada parte, com os primeiros nomes dos arquivos
+		Array.prototype.forEach.call(box.querySelectorAll('.mg-item'), function (item) {
+			var old = item.closest('.mg-col').classList.contains('is-old');
+			var lines = plan.links.filter(function (l) {
+				return (old ? l.from : l.to) === item.dataset.key;
+			}).map(function (l) {
+				var other = old ? l.to : l.from === '..' ? 'fora da pasta' : l.from || 'soltos na raiz';
+				var names = l.names && l.names.length ? l.names.join(', ') + (l.count > l.names.length ? '…' : '') : '';
+
+				return (old ? '→ ' : '← ') + other + ' · ' + plural(l.count, TYPE_SINGLE[l.type] || 'arquivo', TYPE_MANY[l.type] || 'arquivos') + (names ? ': ' + names : '');
+			});
+
+			if (lines.length) item.title = (item.title ? item.title + '\n' : '') + lines.join('\n');
+		});
 
 		Array.prototype.forEach.call(box.querySelectorAll('.mg-item'), function (item) {
 			item.addEventListener('mouseenter', function () {
