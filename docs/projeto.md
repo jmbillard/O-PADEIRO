@@ -26,7 +26,7 @@ abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o pro
 
 tudo numa tela só: o **caminho** do projeto, o **o que é** e o **output**. quem acha a atração faz: digitar → `Tab` (completa com a primeira) → (as pastas, se quiser) → `Enter` → digitar o que é → `Enter`. a janela fica do tamanho que você deixar: o que não cabe rola, e o botão fica no rodapé.
 
-> 🚩 *teclado:* nas listas, `↓` / `↑` andam pelas opções e `Enter` escolhe a marcada; `Tab` completa com a marcada ou, sem nenhuma, com a primeira (a atração, ou a pasta do nível).
+> 🚩 *teclado:* nas listas, `↓` / `↑` andam pelas opções e `Enter` escolhe a marcada; `Tab` completa com a marcada ou, sem nenhuma, com a primeira (a atração, ou a pasta do nível). o `Tab` logo depois de digitar espera a busca responder antes de completar; sem nenhuma atração achada, vai para a primeira opção da lista (**nova atração**). a opção marcada pelas setas sobe quando fica atrás do rodapé.
 
 1. **PROJETO** → o caminho, digitado como uma pasta: `ATRAÇÃO/PASTA/PASTA…`.
    - **a atração** → digite (ex: `DOMINGÃO`). enquanto você digita, o padeiro procura no índice da [busca](acessorista.md) (o mesmo do acessorista, na memória) e lista as atrações (até 4; com mais, continue digitando). **clique na atração (ou `Tab`) para entrar nela**: o campo ganha o nome e a barra, e a lista mostra as pastas dela. sem pastas dentro (um filme novo, por exemplo), a barra sai e o campo recolhe. `Enter` sem barra entra na atração de nome igual ou, sem nenhuma, fica com o **nome digitado**, como **nova atração**.
