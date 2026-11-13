@@ -1093,19 +1093,6 @@ p.wz-exist b {
   color: var(--text-tertiary);
 }
 
-.wz-new {
-  margin-left: 5px;
-  padding: 0 6px;
-  border-radius: var(--radius-pill);
-  background: var(--blue-500);
-  color: var(--surface);
-  font-size: 0.58rem;
-  font-style: normal;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  vertical-align: 1px;
-}
-
 .wz-rest {
   display: flex;
   flex-direction: column;
@@ -1281,11 +1268,6 @@ p.wz-exist b {
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.out-card-title .wz-new {
-  flex: 0 0 auto;
-  margin-left: 0;
 }
 
 .out-card.is-muted .out-card-title b {

@@ -292,7 +292,7 @@ projetos com o nome certo).
 		return more > 0 ? '+ ' + more + (more === 1 ? ' outra pasta: continue digitando' : ' outras pastas: continue digitando') : '';
 	}
 
-	// o caminho numa linha: a pasta de partida e os níveis em destaque (os novos com a marca "nova")
+	// o caminho numa linha: a pasta de partida e os níveis em destaque (em negrito)
 	function destLine(node, base, segs, tail) {
 		node.textContent = '';
 		node.classList.remove('is-hint');
@@ -304,7 +304,6 @@ projetos com o nome certo).
 		segs.forEach(function (s) {
 			span.appendChild(document.createTextNode('/'));
 			span.appendChild(el('b', null, s.name));
-			if (s.isNew) span.appendChild(el('i', 'wz-new', 'nova'));
 		});
 		if (tail) span.appendChild(document.createTextNode('/' + tail));
 		node.appendChild(span);
@@ -676,10 +675,7 @@ projetos com o nome certo).
 			segs = [{ name: plan.rootName, isNew: true }];
 			head = cut.slice(0, -1).join('/');
 		}
-		// no caminho do projeto, sem a marca de nova (o output mostra)
-		destLine(node, head, segs.map(function (seg) {
-			return { name: seg.name };
-		}), plan.projectsName);
+		destLine(node, head, segs, plan.projectsName);
 	}
 
 	// o nome do .aep e se ele já existe, sem perguntar ao After: o último nível (ou a atração) + o que é (a mesma
@@ -1025,9 +1021,6 @@ projetos com o nome certo).
 		card.disabled = !flow.pick;
 		$('out-card-icon').innerHTML = muted && flow.pick ? SKIP_SVG : OUTPUT_SVG;
 		$('out-card-title').textContent = title;
-		$('out-card-new').hidden = !segs.some(function (seg) {
-			return seg.isNew;
-		});
 		$('out-card-path').textContent = '\u200E' + path + '\u200E';
 		card.title = muted ? 'escolher a pasta de output' : path;
 	}
