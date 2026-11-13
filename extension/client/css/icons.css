@@ -2,6 +2,8 @@
    ÍCONES DAS FERRAMENTAS — as animações (barra e configuração)
    Os desenhos ficam em js/icons.js; aqui, o que cada um faz com o mouse em cima: no botão da barra
    (.bar-btn) e na aba da configuração (.tab).
+   o padrão: enquanto o mouse está em cima, o ícone fica diferente do normal (o movimento chega num estado e para
+   nele); ao sair, volta. nada anima e volta sozinho com o mouse ainda em cima.
    ========================================================= */
 
 /* buscar: a lupa procura (vai para o lado e para cima, inclinada) */
@@ -15,42 +17,21 @@
   transform: translate(-1.5px, -1.5px) rotate(-8deg);
 }
 
-/* templates: a coluna da lista abre e volta, e o título desce um pouco (a janela se arruma) */
+/* templates: a coluna da lista se abre e o título desce um pouco (a janela se arruma) */
 .anim-tpl .tpl-side,
 .anim-tpl .tpl-head {
   transform-box: view-box;
+  transition: transform 420ms var(--ease-soft);
 }
 
 .bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
 .tab:hover .anim-tpl .tpl-side {
-  animation: tpl-side 640ms var(--ease-soft);
+  transform: translateX(4px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-tpl .tpl-head,
 .tab:hover .anim-tpl .tpl-head {
-  animation: tpl-head 640ms var(--ease-soft);
-}
-
-@keyframes tpl-side {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  45% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes tpl-head {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  45% {
-    transform: translateY(-1.5px);
-  }
+  transform: translateY(-1.5px);
 }
 
 /* pastas: a frente da pasta se abre */
@@ -65,50 +46,31 @@
 }
 
 /* importar (o .aep de outra versão): AE entre duas meias setas (⇌, a conversão). no hover, tudo anda só na
-   horizontal e volta, junto: a seta de cima e o E para a direita, a de baixo e o A para a esquerda (sem pular nem
-   crescer: as letras e as setas não se esbarram) */
+   horizontal: a seta de cima e o E para a direita, a de baixo e o A para a esquerda (sem pular nem crescer: as
+   letras e as setas não se esbarram) */
+.anim-import .import-arrow,
+.anim-import .import-letter {
+  transition: transform 420ms var(--ease-soft);
+}
+
 .bar-btn:hover:not(:disabled) .anim-import .import-arrow.up,
 .tab:hover .anim-import .import-arrow.up {
-  animation: import-right 520ms var(--ease-soft);
+  transform: translateX(2px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-arrow.down,
 .tab:hover .anim-import .import-arrow.down {
-  animation: import-left 520ms var(--ease-soft);
+  transform: translateX(-2px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter,
 .tab:hover .anim-import .import-letter {
-  animation: import-letter-left 520ms var(--ease-soft);
+  transform: translateX(-1.2px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter.l2,
 .tab:hover .anim-import .import-letter.l2 {
-  animation-name: import-letter-right;
-}
-
-@keyframes import-right {
-  45% {
-    transform: translateX(2px);
-  }
-}
-
-@keyframes import-left {
-  45% {
-    transform: translateX(-2px);
-  }
-}
-
-@keyframes import-letter-right {
-  45% {
-    transform: translateX(1.2px);
-  }
-}
-
-@keyframes import-letter-left {
-  45% {
-    transform: translateX(-1.2px);
-  }
+  transform: translateX(1.2px);
 }
 
 /* coletar: as folhas saem um pouco da pasta e abrem em leque (movimento rígido: o traço não deforma) */
@@ -131,7 +93,7 @@
   transform: translateY(-1.2px) rotate(5deg);
 }
 
-/* projeto: a claquete fica aberta (diferencia dos outros ícones); no hover bate e abre de novo */
+/* projeto: a claquete fica aberta (diferencia dos outros ícones); no hover ela bate e fica fechada */
 .anim-clap .clap-top {
   transform: rotate(-15deg);
   transform-box: fill-box;
@@ -140,24 +102,19 @@
 
 .bar-btn:hover:not(:disabled) .anim-clap .clap-top,
 .tab:hover .anim-clap .clap-top {
-  animation: clap 760ms var(--ease-soft);
+  animation: clap 420ms var(--ease-soft) forwards;
 }
 
 @keyframes clap {
-  0%,
-  100% {
+  0% {
     transform: rotate(-15deg);
   }
 
-  32% {
+  70% {
     transform: rotate(1deg);
   }
 
-  42% {
-    transform: rotate(0);
-  }
-
-  55% {
+  100% {
     transform: rotate(0);
   }
 }
@@ -177,14 +134,18 @@
   transform: translateY(3.2px);
 }
 
-/* renomear: digitação rápida (letras aparecem e o cursor acompanha) */
+/* renomear: o campo só com o cursor; no hover, o texto é digitado (os tracinhos aparecem e o cursor acompanha) e
+   fica */
 .anim-type .type-char {
+  opacity: 0;
+  transform: scaleX(0);
   transform-origin: 0 50%;
 }
 
+
 .bar-btn:hover:not(:disabled) .anim-type .type-char,
 .tab:hover .anim-type .type-char {
-  animation: type-char 140ms ease-out backwards;
+  animation: type-char 140ms ease-out forwards;
 }
 
 .bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(2),
@@ -199,17 +160,17 @@
 
 .bar-btn:hover:not(:disabled) .anim-type .type-caret,
 .tab:hover .anim-type .type-caret {
-  animation: type-caret 360ms steps(3, end);
+  animation: type-caret 360ms steps(3, end) forwards;
 }
 
-/* fontes: o T fica negrito, itálico e fino */
+/* fontes: o T passa por negrito e fino e fica itálico */
 .anim-font .font-t {
   transform-origin: 50% 100%;
 }
 
 .bar-btn:hover:not(:disabled) .anim-font .font-t,
 .tab:hover .anim-font .font-t {
-  animation: font-style 1100ms ease-in-out;
+  animation: font-style 900ms ease-in-out forwards;
 }
 
 @keyframes type-char {
@@ -226,40 +187,32 @@
 
 @keyframes type-caret {
   from {
-    transform: translateX(-9px);
+    transform: translateX(0);
   }
 
   to {
-    transform: translateX(0);
+    transform: translateX(12.6px);
   }
 }
 
 @keyframes font-style {
-
-  0%,
-  100% {
+  0% {
     stroke-width: 1.7;
     transform: skewX(0);
   }
 
-  22% {
+  30% {
     stroke-width: 3.6;
     transform: skewX(0);
   }
 
-  44% {
-    stroke-width: 1.7;
+  55% {
+    stroke-width: 0.8;
     transform: skewX(0);
   }
 
-  60%,
-  72% {
+  100% {
     stroke-width: 1.7;
-    transform: skewX(-16deg);
-  }
-
-  86% {
-    stroke-width: 0.7;
-    transform: skewX(0);
+    transform: skewX(-14deg);
   }
 }

@@ -647,17 +647,18 @@ body.bar-page {
   transform: none;
 }
 
-/* servidor: as gavetas saem uma depois da outra e as luzinhas piscam */
+/* servidor: as gavetas saem uma depois da outra (e ficam fora) e as luzinhas piscam */
 .anim-server .rack {
   transform-box: view-box;
+  transition: transform 420ms var(--ease-soft);
 }
 
-.bar-net:hover .anim-server .r1 {
-  animation: net-rack 560ms var(--ease-soft);
+.anim-server .r2 {
+  transition-delay: 90ms;
 }
 
-.bar-net:hover .anim-server .r2 {
-  animation: net-rack 560ms var(--ease-soft) 90ms;
+.bar-net:hover .anim-server .rack {
+  transform: translateX(2.5px);
 }
 
 .anim-server .led {
@@ -665,54 +666,24 @@ body.bar-page {
 }
 
 .bar-net:hover .anim-server .led {
-  animation: net-led 560ms steps(1) 2;
-}
-
-@keyframes net-rack {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  45% {
-    transform: translateX(2.5px);
-  }
+  animation: net-led 560ms steps(1) infinite;
 }
 
 @keyframes net-led {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
   50% {
     opacity: 0.15;
   }
 }
 
-/* notebook: a tela inclina para trás e volta */
+/* notebook: a tela inclina para trás (e fica) */
 .anim-laptop .lid {
   transform-box: fill-box;
   transform-origin: 50% 100%;
+  transition: transform 420ms var(--ease-soft);
 }
 
 .bar-net:hover .anim-laptop .lid {
-  animation: net-lid 620ms var(--ease-soft);
-}
-
-@keyframes net-lid {
-  0%,
-  100% {
-    transform: scaleY(1);
-  }
-
-  40% {
-    transform: scaleY(0.72) skewX(-6deg);
-  }
-
-  70% {
-    transform: scaleY(1.06);
-  }
+  transform: scaleY(0.78) skewX(-6deg);
 }
 
 .bar-net-badge .badge-warn {

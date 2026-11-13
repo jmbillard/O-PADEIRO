@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
 	<g class="anim-type">
 	<rect x="2.5" y="6.5" width="19" height="11" rx="3" />
-	<path class="type-char" d="M6 12h2.4" />
-	<path class="type-char" d="M10.3 12h2.4" />
-	<path class="type-char" d="M14.6 12h2.4" />
-	<path class="type-caret" d="M18.6 9.6v4.8" /></g>
+	<path class="type-char" d="M6 12h2.4" opacity="0" />
+	<path class="type-char" d="M10.3 12h2.4" opacity="0" />
+	<path class="type-char" d="M14.6 12h2.4" opacity="0" />
+	<path class="type-caret" d="M6 9.6v4.8" /></g>
 </svg>
