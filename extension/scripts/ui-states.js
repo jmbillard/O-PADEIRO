@@ -105,6 +105,12 @@ const CHECKS = [
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 
 		if (await button.count()) await button.click();
+		await p.waitForTimeout(300);
+
+		// os padrões da equipe abrem só para ler: destrava para medir os campos
+		const edit = p.locator('#btn-team-edit');
+
+		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(500);
 	}];
 }));

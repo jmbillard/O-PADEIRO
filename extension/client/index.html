@@ -70,7 +70,11 @@
 			<!-- 1 · buscar -->
 			<section class="upload-side" aria-label="Busca de templates">
 				<div class="upload-side-content">
-					<p class="eyebrow picker-total" id="picker-total" aria-live="polite"></p>
+					<!-- o título da coluna é a produção (ela decide o que a lista mostra): clicar troca. ao lado, o total -->
+					<div class="picker-head">
+						<span class="select picker-prod"><select id="production" aria-label="Produção"></select></span>
+						<p class="eyebrow picker-total" id="picker-total" aria-live="polite"></p>
+					</div>
 
 					<div class="upload-section">
 						<div class="picker" id="picker">
@@ -91,7 +95,6 @@
 							<div class="picker-footer">
 								<button type="button" class="icon-button" id="btn-refresh" title="Atualizar lista de templates" aria-label="Atualizar lista de templates"><svg viewBox="0 0 24 24" class="anim-refresh"><path d="M18.67 14.64a7.92 7.92 0 1 1-1.87-8.24L20.88 10.24" /><path d="M20.88 4.96v5.28h-5.28" /></svg></button>
 								<button type="button" class="icon-button" id="btn-open-templates" title="Abrir pasta de templates" aria-label="Abrir pasta de templates"><svg viewBox="0 0 24 24" class="anim-folder"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" /><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
-								<span class="select picker-prod"><select id="production" aria-label="Produção"></select></span>
 								<details class="actions-menu picker-menu" id="app-menu">
 									<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 									<div class="menu-popover">

@@ -473,6 +473,29 @@ body.bar-page {
   color: var(--success);
 }
 
+/* "falta algo" não depende só da cor: a bolinha de atenção é um losango (a de tudo certo continua redonda) */
+.bar-dot.is-missing,
+.bar-dot.is-out,
+.bar-check.is-warn .bar-status-dot,
+.bar-toast.is-warn .bar-status-dot {
+  border-radius: 1.5px;
+  transform: rotate(45deg) scale(0.92);
+}
+
+/* barra horizontal mais estreita que as ferramentas: a ponta que continua some num degradê (há mais para lá);
+   a roda do mouse rola de lado (bar.js) */
+.bar.is-clipped-end {
+  mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent);
+}
+
+.bar.is-clipped-start {
+  mask-image: linear-gradient(to right, transparent, #000 44px);
+}
+
+.bar.is-clipped-start.is-clipped-end {
+  mask-image: linear-gradient(to right, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+}
+
 /* a gaveta: as opções da ferramenta (clique direito) no lugar dos botões. o nome da ferramenta, cada opção num
    botão só de contorno (a principal, a do clique esquerdo, preenchida de leve), a configuração mais calma, e o × */
 .bar-drawer {

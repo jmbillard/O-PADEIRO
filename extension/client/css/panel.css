@@ -2420,25 +2420,42 @@ body.motion-ready .eyebrow {
   min-height: 1.2em;
 }
 
-/* "⋯" no canto direito do rodapé da lista; o menu abre para cima, alinhado à direita */
-/* produção: no rodapé, à esquerda do ⋯ */
-.picker-footer .picker-prod {
+/* a produção é o título da coluna: no topo, no estilo do título (sem caixa), com a setinha; clicar abre a lista.
+   o total de templates fica na mesma linha, à direita. a linha tem a altura do título da folha ao lado */
+.picker-head {
+  display: flex;
+  min-height: 1.2em;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+}
+
+.picker-head .eyebrow.picker-total {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.picker-head .picker-prod {
   min-width: 0;
-  max-width: 190px;
   flex: 0 1 auto;
-  margin-left: auto;
+  margin: -6px 0 -6px -8px; /* a área de clique é maior que a linha, sem empurrar o que vem embaixo */
 }
 
 .picker-prod .dropdown-trigger {
-  /* como os botões redondos ao lado: só o contorno, a tinta do degradê */
-  min-height: 34px;
-  border-color: rgb(var(--on-brand) / 35%);
+  min-height: 0;
+  padding: 6px 26px 6px 8px;
+  border-color: transparent;
+  border-radius: var(--radius-small);
   background: transparent;
   color: rgb(var(--on-brand));
+  font-size: 0.74rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .picker-prod .dropdown-trigger:hover:not(:disabled) {
-  border-color: rgb(var(--on-brand) / 70%);
   background: rgb(var(--on-brand) / 12%);
 }
 
@@ -2448,7 +2465,13 @@ body.motion-ready .eyebrow {
 }
 
 .picker-prod.select::after {
+  right: 10px;
   border-color: rgb(var(--on-brand) / 85%);
+}
+
+/* "⋯" no canto direito do rodapé da lista; o menu abre para cima, alinhado à direita */
+.picker-footer .picker-menu {
+  margin-left: auto;
 }
 
 .picker-footer .picker-menu .menu-popover {

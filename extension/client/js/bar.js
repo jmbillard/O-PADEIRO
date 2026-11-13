@@ -836,6 +836,28 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   escolher, no ×, no Esc, clicando fora ou um instante depois de o mouse sair da barra
 	   --------------------------------------------------------------- */
 
+	// barra horizontal mais estreita que o conteúdo: marca a ponta que continua (o CSS apaga ela num degradê) e
+	// deixa a roda do mouse rolar de lado
+	function markClipped() {
+		var bar = $('bar');
+		var over = bar.scrollWidth - bar.clientWidth > 1;
+
+		bar.classList.toggle('is-clipped-start', over && bar.scrollLeft > 1);
+		bar.classList.toggle('is-clipped-end', over && bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 1);
+	}
+
+	$('bar').addEventListener('scroll', markClipped);
+	window.addEventListener('resize', markClipped);
+	setInterval(markClipped, 1500); // links e ferramentas mudam a largura do conteúdo
+	$('bar').addEventListener('wheel', function (e) {
+		var bar = $('bar');
+
+		if (bar.scrollWidth - bar.clientWidth <= 1 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+
+		e.preventDefault();
+		bar.scrollLeft += e.deltaY;
+	}, { passive: false });
+
 	var drawer = { open: false, btn: null, timer: null };
 
 	function drawerFits() {

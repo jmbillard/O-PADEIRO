@@ -2192,8 +2192,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function orderToolTabs() {
 		var nav = $('tabs');
-		var seps = nav.querySelectorAll('.tab-sep');
-		var end = seps[1];
+		var end = nav.querySelector('.tab[data-tab="links"]'); // as das ferramentas ficam antes de LINKS, no grupo da equipe
 
 		if (!end || !state.bar) return;
 
@@ -3742,6 +3741,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	/* ---------- onde a aba é salva (a faixa no topo da folha) ---------- */
 
 	var SCOPE_GLOBE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg>';
+	var SCOPE_LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2.5" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /></svg>';
 	var SCOPE_PERSON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
 	// a pessoa personalizou (difere do padrão da equipe)?
@@ -3771,14 +3771,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		box.textContent = '';
 		box.className = 'scope-note ' + (team ? 'is-team' : 'is-mine') + (mine && team ? ' is-editing-team' : '');
-		box.insertAdjacentHTML('afterbegin', team ? SCOPE_GLOBE : SCOPE_PERSON);
+		var readOnly = !mine && (state.machine.localMode || state.fromCopy); // modo local: já é só leitura
+		var locked = !mine && !readOnly && !state.teamUnlocked;
+
+		box.classList.toggle('is-locked', locked);
+		box.insertAdjacentHTML('afterbegin', locked ? SCOPE_LOCK : team ? SCOPE_GLOBE : SCOPE_PERSON);
+		lockTeam(locked);
 
 		var split = SPLIT_TABS.indexOf(tab) >= 0 ? ' · embaixo, <b>neste computador</b>' : '';
 
 		if (!mine && (state.machine.localMode || state.fromCopy)) {
 			text.innerHTML = '<b>equipe</b> · modo local' + (state.machine.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler' + split;
+		} else if (locked) {
+			text.innerHTML = '<b>equipe</b> · só para ler: o que está aqui vale para todo mundo' + split;
 		} else if (!mine) {
-			text.innerHTML = '<b>equipe</b> · salvo na rede, vale para todo mundo' + split;
+			text.innerHTML = '<b>equipe</b> · editando: salvo na rede, vale para todo mundo' + split;
 		} else if (team) {
 			text.innerHTML = '<b>padrão da equipe</b> · salvo na rede, para quem não personalizou';
 		} else if (tab === 'machine') {
@@ -3791,6 +3798,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		// alterações não salvas: o aviso fica aqui no topo, à direita (o disquete também ganha o ponto)
 		if ($('btn-save') && $('btn-save').classList.contains('is-dirty')) box.appendChild(el('span', 'prods-dirty', 'alterações não salvas'));
+
+		if (locked) {
+			var edit = scopeButton('editar', function () {
+				state.teamUnlocked = true;
+				renderScope();
+			});
+
+			edit.classList.add('is-strong');
+			edit.id = 'btn-team-edit';
+			box.appendChild(edit);
+		} else if (!mine && !readOnly) {
+			box.appendChild(scopeButton('travar de novo', function () {
+				state.teamUnlocked = false;
+				renderScope();
+			}));
+		}
 
 		if (mine && team) {
 			box.appendChild(scopeButton('voltar às minhas preferências', function () {
@@ -3805,6 +3828,46 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			}));
 		}
 	}
+
+	// a trava dos padrões da equipe: na aba aberta, tudo o que vem antes da parte "neste computador" (.local-split)
+	// para de responder ao clique. a parte local, embaixo, continua livre
+	function lockTeam(on) {
+		Array.prototype.forEach.call(document.querySelectorAll('.is-team-locked'), function (node) {
+			node.classList.remove('is-team-locked');
+		});
+
+		var pane = $('pane-' + state.tab);
+
+		if (!on || !pane) return;
+
+		for (var i = 0; i < pane.children.length; i++) {
+			if (pane.children[i].classList.contains('local-split')) break;
+			pane.children[i].classList.add('is-team-locked');
+		}
+	}
+
+	// clique (ou foco pelo teclado) na parte travada: a faixa de cima pisca, para mostrar onde fica o "editar"
+	function nudgeScope() {
+		var box = $('scope-note');
+
+		if (!box || !box.classList.contains('is-locked')) return;
+
+		box.classList.remove('is-nudged');
+		void box.offsetWidth; // recomeça a animação
+		box.classList.add('is-nudged');
+	}
+
+	document.addEventListener('mousedown', function (e) {
+		// com pointer-events: none nos filhos, o clique cai na própria folha da aba
+		if (e.target.classList && e.target.classList.contains('cfg-pane') && e.target.querySelector(':scope > .is-team-locked')) nudgeScope();
+	});
+
+	document.addEventListener('focusin', function (e) {
+		if (!e.target.closest || !e.target.closest('.is-team-locked')) return;
+
+		e.target.blur();
+		nudgeScope();
+	});
 
 	// "editar o padrão da equipe" (menu ⋯): aparência e layout passam a editar o da rede
 	function setEditTeam(on) {
