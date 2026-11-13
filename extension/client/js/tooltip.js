@@ -21,6 +21,10 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 	var target = null;
 	var timer = null;
 
+	// PAD_TIP.mouse: o mousezinho das dicas; PAD_TIP.hook(el, texto, 'enter' | 'leave' | 'input') → true se a
+	// dica foi mostrada em outro lugar (a barra põe o dela aqui)
+	window.PAD_TIP = { mouse: mouse, hook: null };
+
 	function balloon() {
 		if (!tip) {
 			tip = document.createElement('div');
@@ -108,11 +112,14 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		t.classList.toggle('has-name', named);
 	}
 
-	function hide() {
+	// why: 'leave' (o mouse saiu) ou 'input' (clique, tecla, rolagem). quem mostra a dica em outro lugar (a linha
+	// de status da barra, pelo PAD_TIP.hook) é avisado para tirar a dele
+	function hide(why) {
 		clearTimeout(timer);
 		target = null;
 
 		if (tip) tip.classList.remove('is-visible');
+		if (window.PAD_TIP.hook) window.PAD_TIP.hook(null, '', why === 'leave' ? 'leave' : 'input');
 	}
 
 	function place(el) {
@@ -170,16 +177,22 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		}
 
 		target = el;
+
+		// a barra, com a linha de status à vista, mostra a dica nela (não cobre os botões vizinhos): sem balão
+		if (window.PAD_TIP.hook && window.PAD_TIP.hook(el, el.getAttribute('data-tip') || '', 'enter')) return;
+
 		timer = setTimeout(function () {
 			if (target === el) show(el);
 		}, DELAY);
 	});
 
 	document.addEventListener('mouseout', function (e) {
-		if (target && !(e.relatedTarget && target.contains(e.relatedTarget))) hide();
+		if (target && !(e.relatedTarget && target.contains(e.relatedTarget))) hide('leave');
 	});
 
 	['mousedown', 'keydown', 'wheel', 'blur'].forEach(function (type) {
-		window.addEventListener(type, hide, true);
+		window.addEventListener(type, function () {
+			hide('input');
+		}, true);
 	});
 })();

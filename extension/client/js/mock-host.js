@@ -817,7 +817,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// ?mock=localfiles: o projeto com arquivos neste computador (a bolinha do coletar fica laranja)
 		collectStatus: function () {
-			return mode === 'localfiles' ? { state: 'out', total: 12, local: 2, names: ['logo.png', 'trilha.wav'] } : { state: 'ok', total: 12, local: 0, names: [] };
+			return mode === 'localfiles' || mode === 'check' ? { state: 'out', total: 12, local: 2, names: ['logo.png', 'trilha.wav'] } : { state: 'ok', total: 12, local: 0, names: [] };
 		},
 
 		fontsInstallProject: function () {
@@ -1137,7 +1137,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		projectStatus: function () {
 			if (window.PAD_MOCK_CUR || mode === 'created') return { state: 'ok' };
 
-			return { state: mode === 'saved' || mode === 'items' || mode === 'outside' ? 'missing' : '' };
+			return { state: mode === 'saved' || mode === 'items' || mode === 'outside' || mode === 'check' ? 'missing' : '' }; // ?mock=check: a conferência da barra com pendências
 		},
 
 		projectCurrent: function () {
@@ -1371,7 +1371,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// o coletar da barra, em partes (O CATADOR conta um a um)
 		collectBegin: function () {
-			return { target: '/Volumes/VFX/PROGRAMAS/DOMINGAO COM HUCK/2026', ids: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], missing: [] };
+			return { target: '/Volumes/VFX/PROGRAMAS/DOMINGAO COM HUCK/2026', ids: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], missing: mode === 'gone' ? ['arte_antiga.psd', 'logo_velho.png'] : [] }; // ?mock=gone: a barra avisa antes de coletar
 		},
 
 		collectStep: async function (a) {

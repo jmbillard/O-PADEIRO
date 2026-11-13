@@ -73,6 +73,8 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		},
 		background: function (value) {
 			if (value === 'solid') return svg('<rect x="4" y="4" width="16" height="16" rx="4.5" class="is-fill" />');
+			// neutro: o quadrado só no contorno (sem cor), com um ponto de destaque no canto
+			if (value === 'neutral') return svg('<rect x="4" y="4" width="16" height="16" rx="4.5" /><circle cx="15.2" cy="15.2" r="1.9" class="is-fill" />');
 
 			// degradê: do transparente ao cheio, na diagonal (um id novo a cada desenho: o rótulo e a lista
 			// existem ao mesmo tempo)

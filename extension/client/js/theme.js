@@ -4,7 +4,8 @@
 > aparência (todas as janelas)
 ---------------------------------------------------------------
 
-Aplica o tema da configuração (aba APARÊNCIA): modo claro / escuro / automático, fundo em degradê ou sólido,
+Aplica o tema da configuração (aba APARÊNCIA): modo claro / escuro / automático, fundo em degradê, sólido ou
+neutro (o cinza da interface do After Effects, com a cor de destaque só nos botões e no que está escolhido),
 as cores (destaque e as pontas do degradê, com os tons claros calculados a partir do destaque), a fonte e a
 logo da barra. O último tema fica guardado no navegador do painel e é aplicado assim que a janela abre; depois
 o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a janela à vista).
@@ -29,6 +30,10 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		mono: 'ui-monospace, Menlo, Consolas, monospace'
 	};
 	var SURFACE = { light: '#ffffff', dark: '#1c2130' };
+	// fundo neutro: o cinza do painel do After Effects (lido do aplicativo; sem ele, estes) e a folha um tom acima
+	var NEUTRAL = { light: '#dcdcde', dark: '#232323' };
+	var NEUTRAL_SURFACE = { light: '#f4f4f5', dark: '#2b2b2b' };
+	var NEUTRAL_INK = { light: '#1f2126', dark: '#dedede' };
 	var BRAND_INK = '#18213a'; // o texto escuro sobre degradês claros
 	var DARK_INK = '#10121a'; // modo escuro: texto, ícones e vidros sobre o degradê (o inverso do branco do claro)
 	var current = null;
@@ -78,6 +83,23 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		return out;
 	}
 
+	// a cor do painel do After Effects (a interface do aplicativo), para o fundo neutro combinar com os painéis
+	// ao lado. só vale se for do mesmo lado do modo (escura no escuro, clara no claro); fora do After, null
+	function hostPanelColor(dark) {
+		try {
+			var env = JSON.parse(window.__adobe_cep__.getHostEnvironment());
+			var c = env.appSkinInfo.panelBackgroundColor.color;
+			var hex = '#' + [c.red, c.green, c.blue].map(function (v) {
+				return ('0' + Math.max(0, Math.min(255, Math.round(v))).toString(16)).slice(-2);
+			}).join('');
+			var lum = luminance(hex);
+
+			if (dark ? lum < 0.12 : lum > 0.45) return hex;
+		} catch (err) { }
+
+		return null;
+	}
+
 	function isDark(theme) {
 		if (theme.mode === 'dark') return true;
 		if (theme.mode === 'auto') return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -89,15 +111,24 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		var t = Object.assign({}, DEFAULTS, theme || {});
 		var root = document.documentElement;
 		var dark = isDark(t);
-		var solid = t.background === 'solid';
-		var surface = dark ? SURFACE.dark : SURFACE.light;
+		var neutral = t.background === 'neutral';
+		var solid = t.background === 'solid' || neutral; // neutro: sem degradê também (o destaque é uma cor só)
+		var side = dark ? 'dark' : 'light';
+		var surface = neutral ? NEUTRAL_SURFACE[side] : SURFACE[side];
+		var ground = neutral ? hostPanelColor(dark) || NEUTRAL[side] : '';
 		var set = function (name, value) {
 			root.style.setProperty(name, value);
 		};
 
 		current = t;
 		root.setAttribute('data-theme', dark ? 'dark' : 'light');
-		root.setAttribute('data-bg', solid ? 'solid' : 'gradient');
+		root.setAttribute('data-bg', neutral ? 'neutral' : solid ? 'solid' : 'gradient');
+
+		// neutro: o fundo (no lugar do degradê) e a folha, um tom acima dele
+		if (neutral) {
+			set('--neutral-bg', ground);
+			set('--neutral-surface', mix(ground, dark ? '#ffffff' : '#ffffff', dark ? 0.045 : 0.6));
+		}
 
 		// destaque e degradê (sólido: as pontas viram o destaque). --blue-500 também é cor de texto: vai na
 		// versão legível; o meio dos degradês (--blue-mid) fica com a cor escolhida, como está
@@ -112,7 +143,7 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		set('--accent-rgb', rgb(readable(t.accent, surface, dark)).join(' '));
 		set('--accent-deep-rgb', rgb(solid ? t.accent : t.gradientEnd).join(' '));
 		set('--glow-rgb', rgb(mix(solid ? t.accent : t.gradientStart, '#ffffff', 0.45)).join(' '));
-		set('--shade-rgb', rgb(mix(solid ? t.accent : t.gradientEnd, '#000000', 0.35)).join(' '));
+		set('--shade-rgb', rgb(neutral ? '#000000' : mix(solid ? t.accent : t.gradientEnd, '#000000', 0.35)).join(' '));
 
 		// tons claros (no escuro, misturados com a superfície escura)
 		set('--blue-50', mix(t.accent, surface, dark ? 0.86 : 0.95));
@@ -130,8 +161,10 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 		};
 		var white = average('#ffffff');
 
+		// neutro: a tinta dos painéis do After (cinza claro no escuro, quase preto no claro).
 		// modo escuro: o inverso do claro (texto, ícones e vidros pretos sobre o degradê)
-		if (dark) set('--on-brand', rgb(DARK_INK).join(' '));
+		if (neutral) set('--on-brand', rgb(NEUTRAL_INK[side]).join(' '));
+		else if (dark) set('--on-brand', rgb(DARK_INK).join(' '));
 		else set('--on-brand', white >= 3 || white >= average(BRAND_INK) ? '255 255 255' : rgb(BRAND_INK).join(' '));
 
 		set('--font-ui', FONTS[t.font] || FONTS.inter);

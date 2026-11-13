@@ -60,6 +60,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// baixa demais ou vertical, o CSS mostra como um aviso flutuante. Um clique no texto abre a mensagem inteira.
 	// kind: 'success' | 'error' | 'warn' | null; action: { label, run } (um botão no fim, ex: "organizar assim mesmo")
 	function toast(kind, text, ms, action) {
+		lineMessage(); // o aviso tem a vez na linha de status: a dica do botão sai
 		var box = $('toast');
 		var dot = el('i', 'bar-status-dot');
 		var body = el('span', 'toast-text', kind === 'error' ? PAD_UTIL.errorText(text) : text);
@@ -85,20 +86,168 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		box.appendChild(dot);
 		box.appendChild(body);
 
-		if (action) {
-			var btn = el('button', 'bar-status-action', action.label);
+		[].concat(action || []).forEach(function (a) {
+			var btn = el('button', 'bar-status-action', a.label);
 
 			btn.type = 'button';
 			btn.addEventListener('click', function () {
 				hide();
-				action.run();
+				a.run();
 			});
 			box.appendChild(btn);
-		}
+		});
 
 		box.appendChild(close);
 		box.hidden = false;
 		box._timer = setTimeout(hide, ms || (kind === 'error' || action ? 20000 : 8000));
+	}
+
+	/* ---------------------------------------------------------------
+	   a linha de status (barra horizontal com altura para ela): embaixo dos botões, três coisas no mesmo lugar,
+	   nesta ordem de vez: o aviso da última ação (toast), a dica do botão sob o mouse e, em repouso, a
+	   conferência do projeto (o que as bolinhas sabem, por extenso)
+	   --------------------------------------------------------------- */
+
+	var LINE_QUERY = '(min-aspect-ratio: 1001/1000) and (min-height: 76px)'; // a mesma do bar.css
+	var lineState = { hinted: null, blocked: null };
+
+	function lineOn() {
+		return !!(window.matchMedia && window.matchMedia(LINE_QUERY).matches) && !document.body.classList.contains('is-touring');
+	}
+
+	// a dica do botão (o mesmo texto do balão: NOME, ◖ → …, ◗ → … e o estado) numa linha só
+	function lineHint(target, text) {
+		var box = $('line-hint');
+		var notes = [];
+
+		box.textContent = '';
+
+		String(text).split('\n').forEach(function (line, i) {
+			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
+
+			if (m) {
+				var click = el('span', 'bar-line-click');
+
+				click.appendChild(PAD_TIP.mouse(m[1] === '◖' ? 'l' : 'r'));
+				click.appendChild(el('span', '', m[2]));
+				box.appendChild(click);
+			} else if (line.trim() && i === 0) {
+				// "Renomear · O ETIQUETADOR": a função na frente; a turma vai para o fim, com o estado (corta primeiro)
+				var name = line.trim().split(' · ');
+
+				box.appendChild(el('b', 'bar-line-name', name[0]));
+				if (name[1]) notes.push(name.slice(1).join(' · ').toLowerCase());
+			} else if (line.trim()) {
+				notes.push(line.trim());
+			}
+		});
+
+		// o estado (o que a bolinha diz) antes da turma: é o que importa ler
+		if (notes.length) box.appendChild(el('span', 'bar-line-note', notes.slice(1).concat(notes[0]).join(' · ')));
+
+		lineState.hinted = target;
+		$('bar').setAttribute('data-line', 'hint');
+	}
+
+	function lineClear() {
+		lineState.hinted = null;
+		$('bar').removeAttribute('data-line');
+	}
+
+	// um aviso novo: a dica sai e não volta para o mesmo botão até o mouse sair dele (o clique que gerou o aviso
+	// deixa o mouse em cima: sem isso, a dica cobriria o resultado)
+	function lineMessage() {
+		lineState.blocked = lineState.hinted || lineState.blocked;
+		lineClear();
+	}
+
+	// o gancho das dicas (tooltip.js): com a linha à vista, a dica vai nela e o balão não abre
+	PAD_TIP.hook = function (target, text, why) {
+		if (!target) {
+			if (why === 'leave') lineState.blocked = null;
+			else lineState.blocked = lineState.hinted || lineState.blocked; // clicou: espera o resultado
+			lineClear();
+			return false;
+		}
+
+		if (!lineOn() || !target.closest('#bar') || target.closest('.bar-toast')) return false;
+		if (target.closest('.bar-line')) return true; // os itens da conferência já dizem o que são
+		if (target === lineState.blocked && !$('toast').hidden) return true;
+
+		lineState.blocked = null;
+		lineHint(target, text);
+
+		return true;
+	};
+
+	// a conferência do projeto: o que cada bolinha sabe (projeto, fontes, arquivos). clicar num item leva à
+	// ferramenta dele; com o mouse em cima, o botão dela acende
+	var check = { project: '', fonts: { state: '', tip: '' }, collect: null };
+
+	function checkItem(kind, text, key, go) {
+		var item = el('button', 'bar-check is-' + kind);
+
+		item.type = 'button';
+		item.appendChild(el('i', 'bar-status-dot'));
+		item.appendChild(el('span', '', text));
+
+		if (!go) {
+			item.disabled = true;
+			return item;
+		}
+
+		item.addEventListener('click', go);
+		item.addEventListener('mouseenter', function () {
+			var btn = $('btn-' + key);
+
+			if (btn) btn.classList.add('is-pointed');
+		});
+		item.addEventListener('mouseleave', function () {
+			var btn = $('btn-' + key);
+
+			if (btn) btn.classList.remove('is-pointed');
+		});
+
+		return item;
+	}
+
+	function paintCheck() {
+		var box = $('line-check');
+
+		if (!box) return;
+
+		var todo = [];
+		var fine = [];
+
+		if (check.project === 'ok') fine.push('projeto');
+		else if (check.project) {
+			todo.push(checkItem('warn', 'projeto sem atração nem pasta', 'projeto', function () {
+				actions.project();
+			}));
+		}
+
+		if (check.fonts.state === 'ok') fine.push('fontes');
+		else if (check.fonts.state) {
+			todo.push(checkItem('warn', check.fonts.tip || 'fontes faltando', 'fontes', function () {
+				run($('btn-fontes'), actions.resolveFonts);
+			}));
+		}
+
+		if (check.collect && check.collect.state === 'ok') fine.push('arquivos');
+		else if (check.collect && check.collect.state === 'out') {
+			todo.push(checkItem('warn', counted(check.collect.local, 'arquivo fora', 'arquivos fora') + ' das pastas de projetos', 'coletar', function () {
+				actions.openCollect();
+			}));
+		}
+
+		box.textContent = '';
+		todo.forEach(function (item) {
+			box.appendChild(item);
+		});
+
+		// tudo certo: uma linha só, discreta, com o que foi conferido
+		if (!todo.length && fine.length) box.appendChild(checkItem('ok', 'em ordem: ' + fine.join(', ').replace(/, ([^,]*)$/, ' e $1')));
+		else if (fine.length) box.appendChild(checkItem('ok', fine.join(', ').replace(/, ([^,]*)$/, ' e $1') + ' ok'));
 	}
 
 	// "3 comps renomeadas", "1 comp renomeada": o número e o plural (um / vários)
@@ -349,7 +498,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar): em lotes pequenos,
 		// para a barra contar (e o After Effects respirar entre um e outro)
-		collect: async function (path) {
+		// force: coleta mesmo com arquivos faltando (a barra avisa antes e deixa escolher)
+		collect: async function (path, force) {
 			var res;
 			var d;
 
@@ -358,6 +508,27 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			try {
 				var plan = await call('collectBegin', { path: path || '' });
 				var total = plan.ids.length;
+
+				if (plan.missing && plan.missing.length && force !== true) {
+					progressEnd('coletar', false);
+					toast('warn', counted(plan.missing.length, 'arquivo faltando não entra', 'arquivos faltando não entram') + ' na coleta: ' + plan.missing.slice(0, 3).join(', ') + (plan.missing.length > 3 ? '…' : ''), 0, [
+						{
+							label: 'ver a lista',
+							run: actions.openCollect
+						},
+						{
+							label: total ? 'coletar ' + counted(total, 'arquivo', 'arquivos') : 'coletar assim mesmo',
+							run: function () {
+								run($('btn-coletar'), function () {
+									return actions.collect(path, true);
+								});
+							}
+						}
+					]);
+
+					return;
+				}
+
 				var sum = { target: plan.target, files: 0, sequences: 0, frames: 0, skipped: [], missing: plan.missing };
 
 				for (var i = 0; i < total; i += COLLECT_BATCH) {
@@ -477,7 +648,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Fontes',
 			icon: 'fonts',
 			name: 'O TIPÓGRAFO',
-			tips: [L_CLICK + 'instalar as fontes que faltam no projeto', R_CLICK + 'ver as fontes do projeto: trocar e copiar para uma pasta'],
+			tips: [L_CLICK + 'instalar as fontes que faltam no projeto', R_CLICK + 'ver as fontes: trocar e copiar para uma pasta'],
 			left: actions.resolveFonts,
 			right: actions.openFonts
 		},
@@ -495,7 +666,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Coletar',
 			icon: 'collect',
 			name: 'O CATADOR',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto: coletar em outra pasta e resolver os que faltam'],
+			tips: [L_CLICK + 'coletar os arquivos na pasta do projeto', R_CLICK + 'ver os arquivos: outra pasta e os que faltam'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -535,7 +706,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Organizar',
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
-			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps do render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
 			left: function () {
 				return actions.organizeProject();
 			},
@@ -635,7 +806,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.type = 'button';
 				btn.id = 'btn-' + def.key;
 				btn.dataset.icon = def.icon;
-				btn.title = def.name + '\n\n' + def.tips.join('\n'); // NOME, uma linha em branco e os 2 cliques
+				btn.title = def.label + ' · ' + def.name + '\n\n' + def.tips.join('\n'); // a função e a turma, uma linha em branco e os 2 cliques
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
@@ -663,6 +834,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!btn) return;
 
 		var dot = btn.querySelector('.bar-dot');
+
+		check.project = projectState;
+		paintCheck();
 
 		if (!projectState) {
 			if (dot) dot.remove();
@@ -701,6 +875,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var fontsSync = { busy: false, timer: null, state: '', tip: '' };
 	var FONT_LABELS = { up: 'enviando', install: 'para instalar', nofile: 'sem arquivo' };
 
+	// a dica do botão com o estado no fim. o texto fica no 'title' ou, depois do primeiro hover, no 'data-tip'
+	// (tooltip.js troca um pelo outro): o texto de base é guardado uma vez
+	function setTip(btn, note) {
+		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.getAttribute('title') || btn.getAttribute('data-tip') || '';
+
+		btn.setAttribute('title', btn.dataset.baseTip + (note ? '\n\n' + note : ''));
+	}
+
 	function paintFontsDot(state, tip) {
 		var btn = $('btn-fontes');
 
@@ -708,8 +890,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		var dot = btn.querySelector('.bar-dot');
 
-		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
-		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
+		setTip(btn, tip);
+		check.fonts = { state: state, tip: state === 'ok' ? '' : tip };
+		paintCheck();
 
 		if (!state) {
 			if (dot) dot.remove();
@@ -808,14 +991,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var btn = $('btn-coletar');
 
 		if (!btn) return;
-		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
+
+		check.collect = res || null;
+		paintCheck();
 
 		var dot = btn.querySelector('.bar-dot');
 		var tip = '';
 
 		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
 		if (res && res.state === 'out') tip = 'arquivos: ' + res.local + ' fora das pastas de projetos' + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a pasta do projeto';
-		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
+		setTip(btn, tip);
 
 		if (!res || !res.state) {
 			if (dot) dot.remove();

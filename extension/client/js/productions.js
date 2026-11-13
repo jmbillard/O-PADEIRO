@@ -3029,7 +3029,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function slotKey(slot) {
 		if (String(slot) === '2') return 'gradientEnd';
 
-		return state.appearance && state.appearance.background === 'solid' ? 'accent' : 'gradientStart';
+		return state.appearance && state.appearance.background !== 'gradient' ? 'accent' : 'gradientStart';
 	}
 
 	function changeAppearance(key, value) {
@@ -3037,14 +3037,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		// a cor 1 é a mesma nos dois modos: ao trocar, passa de um campo para o outro
 		if (key === 'background' && value !== a.background) {
+			// neutro: a cor é só o destaque (botões, o escolhido) e fica como está
 			if (value === 'solid') a.accent = a.gradientStart;
-			else a.gradientStart = a.accent;
+			else if (value === 'gradient') a.gradientStart = a.accent;
 		}
 
 		a[key] = value;
 
 		// no degradê só há início e fim: o destaque (botões, realces) é o tom do meio entre os dois
-		if (state.appearance.background !== 'solid' && (key === 'gradientStart' || key === 'gradientEnd')) {
+		if (state.appearance.background === 'gradient' && (key === 'gradientStart' || key === 'gradientEnd')) {
 			state.appearance.accent = mixHex(state.appearance.gradientStart, state.appearance.gradientEnd);
 		}
 		PAD_THEME.apply(state.appearance);
@@ -3063,7 +3064,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			PAD_DROPDOWN.refresh($(pair[0]));
 		});
 
-		var solid = a.background === 'solid';
+		var solid = a.background !== 'gradient'; // sólido e neutro: uma cor só
 
 		['1', '2'].forEach(function (slot) {
 			var key = slotKey(slot);
@@ -3082,7 +3083,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			hex.disabled = !state.available || off;
 			row.style.setProperty('--dot', a[key]);
 			row.classList.toggle('is-disabled', off);
-			row.querySelector('.swatch-name').textContent = slot === '2' ? 'fim' : solid ? 'cor' : 'início';
+			row.querySelector('.swatch-name').textContent = slot === '2' ? 'fim' : a.background === 'neutral' ? 'destaque' : solid ? 'cor' : 'início';
 
 			// os trilhos mostram o que cada slider faz com esta cor
 			if (document.activeElement !== val) val.value = Math.round(hsv.v);

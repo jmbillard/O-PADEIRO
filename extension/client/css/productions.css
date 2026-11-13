@@ -1950,6 +1950,10 @@ body.is-org-dragging * {
   background: var(--blue-500);
 }
 
+:root[data-bg="neutral"] .pv-glass {
+  background: var(--neutral-bg);
+}
+
 .app-font {
   max-width: 280px;
 }

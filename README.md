@@ -152,7 +152,15 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 ### trabalhando na barra
 
-**a linha de status** → o resultado de cada ação aparece numa linha embaixo dos botões, sem cobrir nenhum: uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro), o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`) e o × para fechar. um clique no texto abre a mensagem inteira. com a barra vertical ou bem baixa (menos de 76 px), o aviso volta a ser um cartão flutuante.
+**a linha de status** → uma linha embaixo dos botões, que nunca cobre nenhum deles. três coisas aparecem nela, nesta ordem de vez:
+
+- **o resultado da última ação**: uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro), o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`) e o × para fechar. um clique no texto abre a mensagem inteira; uma ação que pede uma decisão traz os botões na própria linha.
+- **a dica do botão sob o mouse**: o nome e os dois cliques, cada um com o mousezinho (no lugar do balão, que cobria os botões vizinhos).
+- **a conferência do projeto**, em repouso: o que as bolinhas sabem, por extenso (`projeto sem atração nem pasta`, `2 arquivos fora das pastas de projetos`, as fontes que faltam). clicar numa pendência leva à ferramenta dela, e com o mouse em cima o botão da ferramenta acende. sem pendências: `em ordem: projeto, fontes e arquivos`.
+
+com a barra vertical ou bem baixa (menos de 76 px), valem o aviso flutuante e o balão de sempre.
+
+**coletar com arquivos faltando** → O CATADOR avisa antes (quais faltam) e oferece '*ver a lista*' (para resolver) ou coletar o resto.
 
 **organizar sem nada marcado** → sem nenhuma comp selecionada nem com comentário, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
 

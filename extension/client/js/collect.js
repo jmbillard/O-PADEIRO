@@ -106,7 +106,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var n = pending().length;
 
 		$('cw-go').disabled = !n || state.busy;
-		$('cw-go').textContent = n ? 'Coletar: ' + n : 'Coletar';
+		$('cw-go').textContent = n ? 'Coletar ' + n + (n === 1 ? ' arquivo' : ' arquivos') : 'Coletar';
 		$('cw-relink').disabled = !count.missing || state.busy;
 
 		if (key === state.key) return; // nada mudou: as miniaturas não recarregam

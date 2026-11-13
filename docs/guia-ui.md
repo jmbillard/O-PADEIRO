@@ -20,6 +20,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - superfícies, textos e linhas: `--surface`, `--surface-soft`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--border`…
 - **sobre o degradê**, texto, ícones, campos, contornos e o item escolhido usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
 - **texto sobre o degradê: no mínimo 88%** de `--on-brand` (`rgb(var(--on-brand) / 88%)`), também o secundário: abaixo disso some no começo claro do degradê. menos que isso só no que está desabilitado ou é placeholder.
+- **fundo neutro** (`data-bg="neutral"`, `theme.js` / `theme.css`): o cinza do painel do After Effects no lugar do degradê; `--on-brand` vira a tinta dos painéis (clara no escuro, escura no claro) e o destaque fica só nos botões e no escolhido. tudo o que usa `--on-brand` sobre o degradê funciona nele sem regra própria: teste as telas novas também no neutro.
 - **o modo escuro é o inverso do claro sobre o degradê**: o texto, os ícones e os contornos ficam pretos. nunca coloque uma superfície escura sobre o degradê claro.
 - **o item escolhido sobre o degradê** (aba da configuração, template da lista): contorno fino `rgb(var(--on-brand) / 80%)` e fundo translúcido `rgb(var(--on-brand) / 14%)`, o texto na tinta do degradê. sem pílula branca e sem sombra.
 - **UI enxuta: sem halos** → nada de sombra colorida ou anel em volta dos componentes (botões, campos, cartões, item escolhido). o degradê já é a primeira camada (sem a caixa de vidro em cima) e cada coisa tem só um **contorno fino** de 1 px. sombra só no que flutua por cima de tudo: menus, listas abertas, dicas, avisos e o que está sendo arrastado.
@@ -113,6 +114,8 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **todo erro tem código**: no código, `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
 - **na tela, o texto vem primeiro e o código no fim** (`PAD_UTIL.errorText`: `texto curto · PAD_0xx`): a pessoa lê o que fazer, o suporte acha o código. o texto diz o que fazer (`selecione as comps…`), não só o que deu errado.
 - **o que deu certo diz o alcance**: a contagem (`3 itens renomeados`) e, se dá para desfazer, `· Ctrl+Z desfaz`. sem o nome da ferramenta na frase.
+- **botões com contagem por extenso**: `Preencher 3 versões`, `Coletar 4 arquivos`, `Resolver 2 fontes` (nunca `Preencher: 3`). sem nada para contar, só o verbo.
+- **a linha de status da barra tem três camadas** (`bar.js`): o aviso da última ação, a dica do botão sob o mouse (`PAD_TIP.hook`, no lugar do balão) e, em repouso, a conferência do projeto. uma ferramenta nova com bolinha entra também na conferência (`paintCheck`).
 - **na barra, o resultado vai na linha de status** (embaixo dos botões, `toast` do `bar.js`), nunca por cima das ferramentas. uma ação que pede uma decisão ganha um botão na própria linha (ex: `organizar assim mesmo`).
 - **validação** (campo vazio, escolha faltando) também tem código e aparece na linha de status da janela, sem alert.
 - **o que deu certo** aparece rápido e some sozinho.

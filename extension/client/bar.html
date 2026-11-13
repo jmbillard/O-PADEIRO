@@ -51,6 +51,13 @@
 		</div>
 
 		<div class="bar-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+		<!-- a linha de status (barra horizontal): a conferência do projeto e, com o mouse num botão, a dica dele.
+		     o aviso (acima) aparece no mesmo lugar e tem a vez enquanto está à vista -->
+		<div class="bar-line" id="line">
+			<div class="bar-line-check" id="line-check"></div>
+			<div class="bar-line-hint" id="line-hint" aria-hidden="true"></div>
+		</div>
 	</main>
 
 	<script src="js/motion.js"></script>

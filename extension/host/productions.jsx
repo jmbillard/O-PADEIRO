@@ -834,7 +834,7 @@ PADX.requestedConfigTab = function () {
 
 'APPEARANCE' no O_PADEIRO_GLOBAL_config.json: o tema de todas as janelas (aplicado por client/js/theme.js).
   mode          → light, dark ou auto (segue o sistema)
-  background    → gradient (degradê) ou solid (a cor de destaque)
+  background    → gradient (degradê), solid (a cor de destaque) ou neutral (o cinza do After Effects)
   accent        → cor de destaque (#rrggbb); gradientStart / gradientEnd → as pontas do degradê
   font          → inter, system, helvetica, segoe, roboto, georgia ou mono
   logo          → PNG (literal de string binária, como o ícone das produções) no lugar do pãozinho; vazio = o pãozinho
@@ -856,7 +856,7 @@ function padCleanAppearance(o) {
 	var d = PAD_DEFAULT_APPEARANCE;
 	var clean = {
 		mode: /^(light|dark|auto)$/.test(o.mode) ? o.mode : d.mode,
-		background: o.background == 'solid' ? 'solid' : 'gradient',
+		background: /^(solid|neutral)$/.test(o.background) ? o.background : 'gradient',
 		accent: padTrim(o.accent).toLowerCase(),
 		gradientStart: padTrim(o.gradientStart).toLowerCase(),
 		gradientEnd: padTrim(o.gradientEnd).toLowerCase(),

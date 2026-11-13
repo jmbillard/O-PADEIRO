@@ -1408,8 +1408,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function updateInputCount() {
 		var n = countInputs();
 
-		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'item', 'itens');
-		$('btn-fill').textContent = 'Preencher: ' + n;
+		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'versão', 'versões');
+		$('btn-fill').textContent = n ? 'Preencher ' + plural(n, 'versão', 'versões') : 'Preencher';
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
 	}
 
@@ -1896,7 +1896,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var n = queueItems().length;
 
 		$('queue-count').textContent = n;
-		$('btn-queue').textContent = n ? 'Criar fila de render: ' + n : 'Criar fila de render';
+		$('btn-queue').textContent = n ? 'Criar fila com ' + n + (n === 1 ? ' comp' : ' comps') : 'Criar fila de render';
 		$('btn-queue').disabled = !n;
 	}
 

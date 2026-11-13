@@ -59,3 +59,56 @@
   height: 28px;
   object-fit: contain;
 }
+
+/* fundo neutro: o cinza do painel do After Effects no lugar do degradê (a cor vem do aplicativo: theme.js). a cor
+   de destaque fica só nos botões principais e no que está escolhido. feito para quem trabalha com cor o dia todo:
+   a barra e as janelas ficam da cor dos painéis em volta */
+:root[data-bg="neutral"] body,
+:root[data-bg="neutral"] .upload-side,
+:root[data-bg="neutral"] .org-card {
+  background: var(--neutral-bg);
+}
+
+:root[data-bg="neutral"] .upload-side::before {
+  display: none;
+}
+
+:root[data-bg="neutral"] {
+  --badge-ring: var(--neutral-bg); /* as bolinhas recortadas do fundo, sem anel claro */
+  --fold-on-brand: rgb(0 0 0 / 34%);
+}
+
+/* neutro escuro: as superfícies e as linhas em cinza puro (sem o azulado do modo escuro), um tom acima do fundo */
+:root[data-bg="neutral"][data-theme="dark"] {
+  --surface: var(--neutral-surface);
+  --surface-soft: #323232;
+  --surface-muted: #393939;
+
+  --text-primary: #e6e6e6;
+  --text-secondary: #a8a8a8;
+  --text-tertiary: #858585;
+  --text-label: #c2c2c2;
+  --text-control: #d0d0d0;
+
+  --border: #3a3a3a;
+  --border-strong: #464646;
+  --border-hover: #5a5a5a;
+
+  --shadow-soft: 0 8px 24px rgb(0 0 0 / 34%);
+  --shadow-hover: 0 12px 30px rgb(0 0 0 / 42%);
+}
+
+:root[data-bg="neutral"][data-theme="light"] {
+  --surface: var(--neutral-surface);
+  --surface-soft: #ececee;
+  --surface-muted: #e4e4e7;
+  --border: #d2d2d6;
+  --border-strong: #c4c4c9;
+  --border-hover: #b2b2b8;
+}
+
+/* neutro: o ícone de arquivo das miniaturas na tinta do fundo (sem cor própria, ele sai preto) */
+:root[data-bg="neutral"] .tree-thumb > svg {
+  fill: currentcolor;
+  --file-fold: var(--fold-on-brand);
+}

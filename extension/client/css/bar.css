@@ -580,6 +580,170 @@ body.bar-page {
   }
 }
 
+/* a linha de status em repouso (a conferência do projeto) e a dica do botão sob o mouse: só na barra horizontal
+   com altura para ela (abaixo); fora disso, as bolinhas e o balão de sempre */
+.bar-line {
+  display: none;
+}
+
+@media (min-aspect-ratio: 1001/1000) and (min-height: 76px) {
+  .bar-line {
+    position: fixed;
+    right: 14px;
+    bottom: 5px;
+    left: 14px;
+    display: block;
+    height: 16px;
+    color: rgb(var(--on-brand));
+    font-size: 0.68rem;
+    font-weight: 620;
+    line-height: 16px;
+  }
+
+  .bar-line-check,
+  .bar-line-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 160ms ease;
+  }
+
+  /* no meio quando cabe; sem espaço, começa da esquerda e o fim corta (as margens automáticas viram zero) */
+  .bar-line-check > :first-child,
+  .bar-line-hint > :first-child {
+    margin-left: auto;
+  }
+
+  .bar-line-check > :last-child,
+  .bar-line-hint > :last-child {
+    margin-right: auto;
+  }
+
+  /* a vez de cada um: a dica (mouse num botão) > o aviso > a conferência */
+  .bar-line-hint,
+  .bar[data-line="hint"] .bar-line-check,
+  .bar-toast:not([hidden]) ~ .bar-line .bar-line-check {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .bar[data-line="hint"] .bar-line-hint {
+    opacity: 1;
+  }
+
+  .bar[data-line="hint"] .bar-toast:not(.is-open) {
+    visibility: hidden;
+  }
+
+  body.is-touring .bar-line {
+    display: none;
+  }
+
+  /* a conferência: cada pendência é um botão de texto (leva à ferramenta); "em ordem" é só leitura, mais calmo */
+  .bar-check {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .bar-check span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-check:disabled {
+    cursor: default;
+    font-weight: 560;
+    opacity: 0.88;
+  }
+
+  .bar-check:not(:disabled):hover span {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .bar-check:focus-visible {
+    outline: 1px solid rgb(var(--on-brand) / 80%);
+    outline-offset: 2px;
+  }
+
+  .bar-check .bar-status-dot {
+    margin-top: 0;
+    box-shadow: 0 0 0 1.5px var(--badge-ring);
+  }
+
+  .bar-check.is-ok .bar-status-dot {
+    background: #2fbf71;
+  }
+
+  .bar-check.is-warn .bar-status-dot {
+    background: #f5a524;
+  }
+
+  /* um item da conferência com o mouse em cima acende a ferramenta dele */
+  .bar-btn.is-pointed {
+    color: rgb(var(--on-brand));
+    transform: translateY(-1px);
+  }
+
+  /* a dica: o nome, os dois cliques (cada um com o mousezinho) e o estado, mais calmo, que corta primeiro */
+  .bar-line-name {
+    flex: 0 0 auto;
+    font-weight: 780;
+  }
+
+  .bar-line-click {
+    display: inline-flex;
+    min-width: 0;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bar-line-click span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-line-note {
+    min-width: 0;
+    flex: 0 1000 auto; /* o estado e a turma cedem o espaço antes dos dois cliques */
+    overflow: hidden;
+    font-weight: 560;
+    opacity: 0.88;
+    text-overflow: ellipsis;
+  }
+
+  .bar-line .tip-mouse {
+    width: 9px;
+    height: 12px;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .bar-line .tip-mouse-body {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.3;
+  }
+
+  .bar-line .tip-mouse-btn {
+    fill: currentcolor;
+  }
+}
+
 @keyframes status-enter {
   from {
     opacity: 0;

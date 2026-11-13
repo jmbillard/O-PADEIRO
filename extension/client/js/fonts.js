@@ -549,7 +549,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 
 		// faltando alguma, Resolver tenta também a pasta de fontes do projeto (mesmo sem nada do banco)
 		$('fw-go').disabled = (!n && !missing) || state.busy;
-		$('fw-go').textContent = n ? 'Resolver: ' + n : 'Resolver';
+		$('fw-go').textContent = n ? 'Resolver ' + n + (n === 1 ? ' fonte' : ' fontes') : 'Resolver';
 	}
 
 	async function resolve() {

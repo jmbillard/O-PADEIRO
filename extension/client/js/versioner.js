@@ -155,7 +155,7 @@ para trás", e valem em qualquer versão do After.
 		var count = list.querySelectorAll('.vs-row.is-on').length;
 		var go = $('vs-go');
 
-		go.textContent = count ? 'Salvar: ' + count : 'Salvar';
+		go.textContent = count ? 'Salvar ' + count + (count === 1 ? ' versão' : ' versões') : 'Salvar';
 		go.disabled = state.busy || !count || !(info && info.path);
 		go.title = info && !info.path ? 'salve o projeto uma vez antes (Arquivo > Salvar)' : '';
 		if (info && !info.path && !state.busy) status('salve o projeto uma vez (Arquivo > Salvar) para criar as cópias.');
