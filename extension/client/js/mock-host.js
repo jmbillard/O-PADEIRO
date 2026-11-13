@@ -1367,7 +1367,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		migratePlan: function (a) {
 			var all = !!(a && a.all);
 			var dests = [['01_PROJETOS', 0, 'projeto'], ['02_ARQUIVOS', 0, ''], ['02_ARQUIVOS/AUDIOS', 1, 'audio'], ['02_ARQUIVOS/DADOS', 1, 'dados'], ['02_ARQUIVOS/FONTS', 1, 'fontes'], ['02_ARQUIVOS/IMAGENS', 1, 'imagens'], ['02_ARQUIVOS/VÍDEOS', 1, 'videos'], ['03_SAIDA', 0, 'saidas'], ['03_SAIDA/PREVIEWS', 1, ''], ['04_REFS', 0, ''], ['05_EXTERNOS', 0, 'externos']];
-			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', all ? 2 : 6], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', all ? 4 : 0], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', all ? 24 : 36], ['03 EXTERNOS', '02_ARQUIVOS/IMAGENS', 'imagens', all ? 12 : 0], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['', '05_EXTERNOS', 'externos', 16]];
+			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', all ? 2 : 6], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', all ? 4 : 0], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', all ? 24 : 36], ['03 EXTERNOS', '02_ARQUIVOS/IMAGENS', 'imagens', all ? 12 : 0], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['', '05_EXTERNOS', 'externos', 16], ['..', '02_ARQUIVOS/VÍDEOS', 'videos', 2]];
 			var sources = {};
 			var count = {};
 			var total = 0;
@@ -1393,8 +1393,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: 1, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED,
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED,
 				sources: Object.keys(sources).sort(function (a, b) {
+					if (a === '..' || b === '..') return a === '..' ? 1 : -1;
+
 					return a === '' ? 1 : b === '' ? -1 : a.localeCompare(b);
 				}).map(function (k) {
 					return { name: k, count: sources[k] };

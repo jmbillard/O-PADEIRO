@@ -630,8 +630,12 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		oldCol.appendChild(el('p', 'mg-title', 'HOJE'));
 		newCol.appendChild(el('p', 'mg-title', 'ESTRUTURA NOVA'));
 
+		// as pastas de hoje; no fim, os arquivos soltos na raiz e os usados que estão fora da pasta do projeto ('..'),
+		// que a migração copia (os originais ficam onde estão)
 		plan.sources.forEach(function (s) {
-			oldCol.appendChild(migItem(s.name, s.name || 'soltos na raiz', s.count, { loose: !s.name }));
+			var out = s.name === '..';
+
+			oldCol.appendChild(migItem(s.name, out ? 'fora da pasta · copiados' : s.name || 'soltos na raiz', s.count, { loose: out || !s.name, title: out ? 'arquivos usados pelo projeto que estão fora da pasta dele (outra pasta da rede, este computador): a migração copia para a pasta do tipo e aponta o projeto para a cópia. os originais ficam onde estão.' : '' }));
 		});
 		// sem nada fora do lugar (já migrada, ou já arrumada): o lado de hoje diz isso
 		if (!plan.sources.length) oldCol.appendChild(migItem('', plan.undo ? 'tudo na estrutura nova' : 'nada fora do lugar', 0, { loose: true, empty: true }));
@@ -728,7 +732,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (plan.others && !plan.all) notes.push(plural(plan.others, 'outro .aep vai', 'outros .aep vão') + ' sem religar');
 		if (plan.others && plan.all) notes.push(plural(plan.others, 'outro projeto é religado', 'outros projetos são religados') + ' (o After abre cada um)');
 		if (state.mig.unread && state.mig.unread.length) notes.push(plural(state.mig.unread.length, 'projeto não abriu', 'projetos não abriram') + ' (vão sem religar)');
-		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta fica', 'arquivos de fora da pasta ficam') + ' para o Coletar');
+		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta é copiado', 'arquivos de fora da pasta são copiados'));
 		status(notes.join(' · ') + (notes.length ? '.' : ''), '');
 		$('fw-status').title = notes.join('\n');
 	}

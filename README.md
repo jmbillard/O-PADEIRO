@@ -262,7 +262,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 - **desfazer** → arquivo movido no disco não volta com `Cmd+Z` / `Ctrl+Z`: a migração grava um registro na raiz (`_migracao_padeiro.json`) e o botão vira **Desfazer a migração**, que leva tudo de volta (os outros projetos voltam a ser os originais guardados). com o registro na pasta, ela não migra de novo.
 
 > 🚩 *obs:*\
-> • os arquivos usados que estão **fora** da pasta do projeto não entram: é o Coletar que copia esses.\
+> • os arquivos usados que estão **fora** da pasta do projeto (outra pasta da rede, este computador) são **copiados** para a pasta do tipo de cada um, como o Coletar faz, e o projeto passa a apontar para a cópia: no desenho, a origem '*fora da pasta · copiados*'. os originais ficam onde estão (outros projetos podem usar); o desfazer aponta de volta para eles e apaga as cópias.\
 > • a pasta é lida até 10 níveis para dentro, 30 mil arquivos ou 15 segundos; passando disso, a migração avisa e não move nada.
 
 ### importar

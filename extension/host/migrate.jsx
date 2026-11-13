@@ -13,8 +13,8 @@ com outra grafia (02 ARQUIVOS, 02_ARQUIVOS) se juntam e nada fica solto.
   o que está numa pasta de saída               → a pasta do tipo 'saidas', com as subpastas
   as fontes de uma pasta de fontes             → a pasta do tipo 'fontes'
   todo o resto                                 → a pasta do tipo 'externos', com o caminho de antes dentro dela
-
-Os arquivos usados que estão FORA da raiz não entram: é o coletar que copia esses.
+  os arquivos usados que estão FORA da raiz    → COPIADOS (não movidos: outros projetos podem usar) para a pasta do
+                                                 tipo de cada um, como o coletar faz
 
   PADX.migratePlan()   → o plano, sem mexer em nada (para o desenho: de onde sai, para onde vai, quantos, de que tipo)
   PADX.migrateBegin()  → refaz o plano, cria as pastas e guarda a lista do que mover
@@ -64,7 +64,7 @@ function padMigrateDest(settings, type) {
 	return padMigrateDest(settings, 'externos');
 }
 
-// Os arquivos usados pelo projeto: { chave do caminho: { id, kind, seq (o nome da subpasta da sequência), first } }.
+// Os arquivos usados pelo projeto: { chave do caminho: { id, kind, seq (o nome da subpasta da sequência), first, path } }.
 function padMigrateUsed() {
 	var used = {};
 
@@ -83,9 +83,9 @@ function padMigrateUsed() {
 			var seq = padSequenceFrames(item);
 
 			for (var f = 0; f < seq.files.length; f++) {
-				used[padPathKey(seq.files[f].fsName)] = { id: item.id, kind: kind, seq: seq.base, first: padPathKey(seq.files[f].fsName) == padPathKey(seq.first.fsName) };
+				used[padPathKey(seq.files[f].fsName)] = { id: item.id, kind: kind, seq: seq.base, first: padPathKey(seq.files[f].fsName) == padPathKey(seq.first.fsName), path: seq.files[f].fsName };
 			}
-		} else used[padPathKey(path)] = { id: item.id, kind: kind, seq: '', first: true };
+		} else used[padPathKey(path)] = { id: item.id, kind: kind, seq: '', first: true, path: path };
 	}
 
 	return used;
@@ -177,9 +177,15 @@ function padMigrateBuild(all) {
 	padMigrateScan(root, '', 10, state);
 	plan.partial = state.partial;
 
-	// os usados que estão fora da raiz: é o coletar que leva
+	// os usados que estão fora da raiz: copiados para a pasta do tipo (o original fica onde está). 'top' = '..' é a
+	// origem "fora da pasta" no desenho; 'from' é o caminho inteiro
 	for (k in used) {
-		if (used.hasOwnProperty(k) && k.indexOf(rootKey) != 0 && used[k].first) plan.outside++;
+		if (!used.hasOwnProperty(k) || k.indexOf(rootKey) == 0 || padCollectFolderPath(settings, used[k].kind) == null) continue;
+
+		var outName = padSlash(used[k].path).replace(/^.*\//, '');
+
+		plan.ops.push({ from: used[k].path, to: padCollectFolderPath(settings, used[k].kind) + (used[k].seq ? '/' + used[k].seq : '') + '/' + outName, type: used[k].kind, top: '..', id: used[k].id, first: used[k].first, project: false, copy: true });
+		plan.outside++;
 	}
 
 	for (var i = 0; i < state.files.length; i++) {
@@ -316,8 +322,10 @@ PADX.migratePlan = function (a) {
 		res.links[linkIndex[lk]].count++;
 	}
 
-	// os soltos na raiz por último; as pastas, por nome
+	// as pastas, por nome; os soltos na raiz e os de fora da pasta ('..') por último
 	res.sources.sort(function (a, b) {
+		if (a.name == '..') return 1;
+		if (b.name == '..') return -1;
 		if (a.name == '') return 1;
 		if (b.name == '') return -1;
 		if (a.name < b.name) return -1;
@@ -582,6 +590,17 @@ PADX.migrateStep = function (a) {
 
 		if (op.project) continue; // o .aep aberto: o After salva no lugar novo, no fim
 
+		if (op.copy) {
+			// de fora da pasta: copia (confere o tamanho); o original fica
+			var src = new File(op.from);
+			var dst = new File(plan.root + '/' + op.to);
+
+			padEnsureFolder(dst.parent.fsName);
+			if (src.exists && !dst.exists && src.copy(dst.fsName) && new File(dst.fsName).length == src.length) plan.moved.push(op);
+			else plan.failed.push(padSlash(op.from).replace(/^.*\//, ''));
+			continue;
+		}
+
 		if (padMoveFile(plan.root + '/' + op.from, plan.root + '/' + op.to)) plan.moved.push(op);
 		else plan.failed.push(op.from);
 	}
@@ -603,7 +622,7 @@ PADX.migrateEnd = function () {
 	var map = {};
 	var tops = {};
 	var prefixes = [];
-	var log = { version: 1, date: new Date().getTime(), project: null, moves: [], queue: [], backups: [] };
+	var log = { version: 1, date: new Date().getTime(), project: null, moves: [], copies: [], queue: [], backups: [] };
 	var res = { moved: plan.moved.length, failed: plan.failed, relinked: 0, folders: 0, queue: 0, project: '', others: 0 };
 	var others = [];
 	var destSaidas = padMigrateDest(plan.settings, 'saidas');
@@ -612,6 +631,13 @@ PADX.migrateEnd = function () {
 
 	for (i = 0; i < plan.moved.length; i++) {
 		var op = plan.moved[i];
+
+		// copiado de fora: o registro guarda o caminho inteiro do original (o desfazer religa e apaga a cópia)
+		if (op.copy) {
+			log.copies.push([padSlash(op.from), op.to]);
+			map[padPathKey(op.from)] = plan.root + '/' + op.to;
+			continue;
+		}
 
 		log.moves.push([op.from, op.to]);
 		map[padPathKey(plan.root + '/' + op.from)] = plan.root + '/' + op.to;
@@ -775,6 +801,17 @@ PADX.migrateUndo = function () {
 		} else res.failed.push(log.moves[i][1]);
 	}
 
+	// os copiados de fora da pasta: os itens voltam a apontar para o original (se ele ainda existe) e a cópia sai
+	var copies = [];
+
+	for (i = 0; i < (log.copies || []).length; i++) {
+		if (!new File(log.copies[i][0]).exists) continue; // o original sumiu: a cópia fica, e o item com ela
+
+		map[padPathKey(root + '/' + log.copies[i][1])] = log.copies[i][0];
+		copies.push(root + '/' + log.copies[i][1]);
+		dirs[log.copies[i][1].split('/')[0]] = true;
+	}
+
 	// os outros projetos: o original de cada um (guardado antes de religar) volta para o lugar de antes, por cima
 	// do religado
 	var backTo = {};
@@ -815,6 +852,13 @@ PADX.migrateUndo = function () {
 		}
 	} finally {
 		padUndoEnd();
+	}
+
+	for (i = 0; i < copies.length; i++) {
+		try {
+			new File(copies[i]).remove();
+			res.restored++;
+		} catch (err) { }
 	}
 
 	if (log.project) {
