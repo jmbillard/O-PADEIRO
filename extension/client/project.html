@@ -31,21 +31,19 @@
 			</div>
 			<div class="combo-panel" id="atr-list" role="listbox" aria-label="Atração e pastas" hidden></div>
 			</div>
-			<!-- nova atração: o nome e a categoria (entra logo abaixo do cartão "nova atração") -->
-			<div class="atr-nova" id="atr-nova">
-				<div class="atr-nova-box">
-					<div class="atr-nova-row">
-						<div class="has-field-icon">
-							<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
-							<input type="text" class="cfg-input" id="nova-name" placeholder="nome da atração" spellcheck="false" autocomplete="off" aria-label="Nome da atração nova">
-						</div>
-						<span class="select select-large"><select id="nova-base" aria-label="Categoria"></select></span>
-						<!-- sem categorias na configuração: a pasta é livre -->
-						<button type="button" class="wz-pick" id="nova-pick" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><span>escolher a pasta…</span></button>
-					</div>
-					<p class="wz-hint" id="nova-free" hidden>sem categorias na configuração (aba PROJETO): escolha a pasta onde a atração nova vai ficar.</p>
-					<p class="wz-preview" id="nova-preview"></p>
+			<!-- nova atração: toma o lugar do campo, com o mesmo jeito dele (o nome) e a categoria logo abaixo; o × (ou
+			     Esc) volta para a busca -->
+			<div class="claq-nova" id="atr-nova" hidden>
+				<div class="has-field-icon wz-claq claq-nova-field">
+					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>
+					<input type="text" class="cfg-input" id="nova-name" placeholder="nome da atração nova" spellcheck="false" autocomplete="off" aria-label="Nome da atração nova">
+					<button type="button" class="claq-nova-back" id="nova-back" title="voltar para a busca (Esc)" aria-label="voltar para a busca"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
 				</div>
+				<span class="select select-large"><select id="nova-base" aria-label="Categoria"></select></span>
+				<!-- sem categorias na configuração: a pasta é livre -->
+				<button type="button" class="wz-pick" id="nova-pick" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><span>escolher a pasta…</span></button>
+				<p class="wz-hint" id="nova-free" hidden>sem categorias na configuração (aba PROJETO): escolha a pasta onde a atração nova vai ficar.</p>
+				<p class="wz-preview" id="nova-preview" hidden></p>
 			</div>
 			<p class="wz-preview wz-dest" id="claq-dest"></p>
 			<p class="wz-hint" id="claq-hint"></p>

@@ -1115,3 +1115,85 @@ p.wz-exist b {
 .wz-rest[hidden] {
   display: none;
 }
+
+/* =========================================================
+   nova atração: no lugar do campo do projeto, com o mesmo jeito dele; a categoria logo abaixo
+   ========================================================= */
+
+.claq-nova {
+  display: grid;
+  gap: 8px;
+}
+
+.claq-nova[hidden],
+.claq-nova .select[hidden],
+.claq-nova .wz-pick[hidden],
+.claq-nova .wz-preview[hidden] {
+  display: none;
+}
+
+.claq-nova-field {
+  position: relative;
+}
+
+.claq-nova-field .cfg-input {
+  padding-right: 52px;
+}
+
+/* o × dentro do campo: volta para a busca */
+.claq-nova-back {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.claq-nova-back:hover,
+.claq-nova-back:focus-visible {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.claq-nova-back:focus-visible {
+  outline: 1px solid var(--blue-500);
+  outline-offset: 0;
+}
+
+.claq-nova-back svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-width: 2.2;
+}
+
+/* a tela não muda o tamanho da janela: o que não cabe rola, e o rodapé fica no lugar, com o degradê por cima */
+.wz-screen {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.wz-screen > .wz-foot {
+  position: sticky;
+  z-index: 3;
+  bottom: 0;
+  margin-inline: -16px;
+  padding-inline: 16px;
+  padding-top: 16px;
+  background: linear-gradient(to top, var(--surface) 72%, transparent);
+}
