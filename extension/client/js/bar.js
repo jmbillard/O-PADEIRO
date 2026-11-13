@@ -920,7 +920,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var list = Array.prototype.map.call(box.querySelectorAll('.bar-btn'), function (m) {
 				return (warnings(m).length ? '! ' : '· ') + m.getAttribute('aria-label');
 			});
-			var text = gbtn.dataset.name + '\n\n' + list.join('\n');
+			var text = gbtn.dataset.name + '\n\n' + L_CLICK + '\n' + list.join('\n');
 
 			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
 			gbtn.dataset.baseTip = text;

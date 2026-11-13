@@ -85,6 +85,7 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 		var named = false;
 		var clicksBox = document.createElement('div');
 		var warnBox = document.createElement('div');
+		var listBox = null; // '◖ →' sem texto: os itens que vêm depois ficam numa lista ao lado do mouse
 
 		clicksBox.className = 'tip-clicks';
 		warnBox.className = 'tip-warns';
@@ -98,14 +99,33 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 				var body = document.createElement('span');
 
 				row.className = 'tip-click';
-				body.textContent = m[2];
 				row.appendChild(mouse(m[1] === '◖' ? 'l' : 'r'));
-				row.appendChild(body);
+				if (m[2]) {
+					body.textContent = m[2];
+					row.appendChild(body);
+					listBox = null;
+				} else {
+					row.classList.add('is-list');
+					listBox = document.createElement('div');
+					listBox.className = 'tip-list';
+					row.appendChild(listBox);
+				}
 				clicksBox.appendChild(row);
 				if (!clicksBox.parentNode) t.appendChild(clicksBox);
 			} else if (w) {
 				var warn = document.createElement('p');
 				var text = document.createElement('span');
+
+				// na lista do clique (ex: as ferramentas de uma gaveta)
+				if (listBox && w[1] !== '!#') {
+					warn.className = w[1] === '!' ? 'tip-warn' : 'tip-item';
+					if (w[1] === '!') listBox.classList.add('has-warn');
+					text.textContent = w[2];
+					warn.appendChild(document.createElement('i'));
+					warn.appendChild(text);
+					listBox.appendChild(warn);
+					return;
+				}
 
 				// um título abre um grupo novo; um item sem título entra no último grupo (ou num grupo novo)
 				if (w[1] === '!#' || !warnBox.lastChild) {
