@@ -34,18 +34,18 @@ um template do padeiro é um conjunto de arquivos:
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.
 6. selecione os layers editáveis na comp, na ordem de preenchimento, e clique em '*+ layers*' (os que já estavam selecionados ao abrir entram sozinhos).
 7. se quiser, clique em '*+ pasta de mídias*' (uma só) e escolha as '*pastas de output*'.
-8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo.
+8. use '*Testar agora*' (canto esquerdo do rodapé) para conferir o preenchimento com o exemplo. o aviso confirma o teste e o preview passa a mostrar a comp preenchida.
 9. clique em '*Salvar template*' (ou `Ctrl/Cmd+S`).
 10. se quiser, clique em '*gerar preview .mp4*' no aviso de template salvo (ou em '*agora não*'): o padeiro renderiza a comp principal (H.264 de 15 Mbps, meia resolução) como `<template>_preview.mp4`, e a janela de templates passa a mostrar o vídeo.
 
-- **↻** (cabeçalho) → limpa o formulário e começa de novo.
+- **↻** (cabeçalho) → limpa o formulário e começa de novo. pede um **segundo clique** (em até 4 s) para confirmar: o primeiro só avisa.
 - **⋯** (cabeçalho) → ajuda (esta página) e recarregar o painel.
 
 > 📟 *o que falta para salvar:*
 >
 > ![checklist do criador](images/criador-checklist.webp)
 
-o topo do criador, antes do **⋯**, mostra o que falta: **atração**, **o que é**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele. o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+o topo do criador, antes do **⋯**, mostra o que falta: **atração**, **o que é**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele (o foco vai para o campo ou, sem campo livre, para o botão do item). um aviso de erro some sozinho assim que o que faltava muda. a janela abre com o foco na atração e não encolhe abaixo de 1000 × 700 px (as três colunas precisam disso; o tamanho vem do manifest e vale depois de rodar o instalador de novo). o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
 
 ao salvar, o padeiro:
 

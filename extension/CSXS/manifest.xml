@@ -224,9 +224,11 @@
 							<Width>1260</Width>
 							<Height>960</Height>
 						</Size>
+						<!-- as três colunas (formulário, projeto e layers) precisam de 1000 px: abaixo disso a folha da direita, com o
+						     Testar e o Salvar, ficava cortada -->
 						<MinSize>
-							<Width>340</Width>
-							<Height>420</Height>
+							<Width>1000</Width>
+							<Height>700</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
