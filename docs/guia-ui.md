@@ -126,6 +126,9 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **todo erro tem código**: no código, `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
 - **na tela, o texto vem primeiro e o código no fim** (`PAD_UTIL.errorText`: `texto curto · PAD_0xx`): a pessoa lê o que fazer, o suporte acha o código. o texto diz o que fazer (`selecione as comps…`), não só o que deu errado.
 - **o que deu certo diz o alcance**: a contagem (`3 itens renomeados`) e, se dá para desfazer, `· Cmd+Z desfaz` (`PAD_UTIL.undoKey`: Cmd+Z no Mac, Ctrl+Z no Windows; nunca Ctrl+Z fixo, que no Mac não desfaz). sem o nome da ferramenta na frase.
+- **toda janela abre com o foco no primeiro campo que a pessoa vai usar** (a busca, a atração, a etiqueta livre): digitar funciona sem clicar antes.
+- **o botão principal responde a `Cmd/Ctrl+Enter`** (`PAD_KEYS.primary(botão)`, que também põe o atalho na dica com o nome do sistema).
+- **o que apaga muita coisa de uma vez pede um segundo clique** (o ↻ do criador, a borracha das etiquetas): o primeiro clique marca o botão e avisa; o segundo, em até 4 s, faz.
 - **na barra, o resultado vai no aviso** (`toast` do `bar.js`): a bolinha (deu certo, atenção, erro) e o texto. uma ação que pede uma decisão ganha um botão no próprio aviso (ex: `organizar assim mesmo`).
 - **validação** (campo vazio, escolha faltando) também tem código e aparece na linha de status da janela, sem alert.
 - **o que deu certo** aparece rápido e some sozinho.

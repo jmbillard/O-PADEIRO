@@ -311,7 +311,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
 - **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
-`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **borracha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
@@ -353,7 +353,7 @@ o mesmo vocabulário em todos os painéis:
 | `Esc` | limpa a busca ou volta um passo |
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
-| `Ctrl/Cmd+Enter` | preenche (templates) |
+| `Cmd+Enter` (macOS) · `Ctrl+Enter` (Windows) | o botão principal da janela: preenche e cria a fila (templates), resolve (fontes), coleta (coletar), salva (versões), organiza (etiquetas) |
 | `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 

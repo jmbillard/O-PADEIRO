@@ -649,6 +649,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	   --------------------------------------------------------------- */
 
 	function init() {
+		PAD_KEYS.primary($('fw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('fw-go').addEventListener('click', resolve);
 
 		// copiar todas as fontes do projeto para uma pasta qualquer (o collect das fontes)
