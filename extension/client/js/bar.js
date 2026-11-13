@@ -56,8 +56,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	var UNDO_KEY = /Mac/i.test(navigator.platform || '') ? 'Cmd+Z' : 'Ctrl+Z';
 
-	// A linha de status da barra: o resultado da última ação, embaixo dos botões (não cobre nenhum). Com a barra
-	// baixa demais ou vertical, o CSS mostra como um aviso flutuante. Um clique no texto abre a mensagem inteira.
+	// O aviso flutuante da barra: o resultado da última ação, com a bolinha (deu certo, atenção, erro).
 	// kind: 'success' | 'error' | 'warn' | null; action: { label, run } (um botão no fim, ex: "organizar assim mesmo")
 	function toast(kind, text, ms, action) {
 		var box = $('toast');
@@ -71,10 +70,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			clearTimeout(box._timer);
 			box.hidden = true;
 		}
-
-		body.addEventListener('click', function () {
-			box.classList.toggle('is-open');
-		});
 
 		close.type = 'button';
 		close.setAttribute('aria-label', 'fechar aviso');

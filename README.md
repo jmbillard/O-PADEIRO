@@ -152,7 +152,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 ### trabalhando na barra
 
-**a linha de status** → o resultado de cada ação aparece numa linha embaixo dos botões, sem cobrir nenhum: uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro), o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`) e o × para fechar. um clique no texto abre a mensagem inteira. com a barra vertical ou bem baixa (menos de 76 px), o aviso volta a ser um cartão flutuante.
+**o aviso** → o resultado de cada ação aparece num aviso flutuante, com uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro) e o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`); o × fecha, e ele some sozinho.
 
 **organizar sem nada marcado** → sem nenhuma comp selecionada nem com comentário, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
 
