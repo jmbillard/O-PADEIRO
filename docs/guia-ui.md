@@ -27,6 +27,13 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, as bolinhas da barra (projeto, fontes, coletar: verde, tudo certo; laranja, falta algo, uma cor só de atenção), o pãozinho da logo, a ilustração do forninho (o loader) e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
 - **o tom de "em andamento"** (`--processing`) é o destaque do tema.
 
+### as cores dos tipos
+
+cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, áudio, dados, projeto, fontes…) tem **uma cor só**, em dois tons: `--type-soft` (o claro, o começo de um degradê) e `--type` (o forte). a tabela fica no `styles.css` e quem tem `data-type="<tipo>"` recebe as duas. é a mesma cor na configuração (organizar e coletar) e na migração do CATADOR: um tipo novo entra na tabela antes de aparecer em qualquer tela.
+
+- **sobre o degradê azul** (as etiquetas da árvore) → o degradê do tipo com um contorno claro fino (`1px solid rgb(var(--on-brand) / 85%)`), que separa a cor do fundo.
+- **sobre a folha** (os cartões dos tipos) → o ícone na cor forte e uma pílula em pé com o degradê, à esquerda, com a mesma margem em cima e embaixo (como a amostra aberta da aparência). sem borda colorida no cartão.
+
 ## 📍 formas: cantos concêntricos e centros alinhados
 
 - **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.

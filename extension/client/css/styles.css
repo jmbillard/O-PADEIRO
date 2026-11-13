@@ -89,6 +89,79 @@
   --workspace-max-width: 1500px;
 }
 
+/* as cores dos tipos de item e de arquivo: uma por tipo, a mesma na configuração (organizar e coletar) e na migração
+   do CATADOR. --type-soft é o tom claro (o começo de um degradê) e --type o forte. quem tem data-type="<tipo>" recebe
+   as duas */
+[data-type="render"] {
+  --type-soft: #ffa39b; /* comps de render */
+  --type: #e5483a;
+}
+
+[data-type="editaveis"] {
+  --type-soft: #ffbe8f; /* comps editáveis */
+  --type: #ef7d2a;
+}
+
+[data-type="precomps"] {
+  --type-soft: #f7dc7a; /* outras comps */
+  --type: #d6a50c;
+}
+
+[data-type="videos"] {
+  --type-soft: #ffa3cf; /* vídeos */
+  --type: #e0468f;
+}
+
+[data-type="imagens"] {
+  --type-soft: #8cc2ff; /* imagens */
+  --type: #2f7df0;
+}
+
+[data-type="sequencias"] {
+  --type-soft: #86e1e8; /* sequências de imagens */
+  --type: #0fa3b1;
+}
+
+[data-type="audio"] {
+  --type-soft: #8fe3b5; /* áudio */
+  --type: #1faa62;
+}
+
+[data-type="solidos"] {
+  --type-soft: #c3c9d6; /* sólidos */
+  --type: #7a8499;
+}
+
+[data-type="dados"] {
+  --type-soft: #cbe58a; /* dados */
+  --type: #7fae1d;
+}
+
+[data-type="missing"] {
+  --type-soft: #f3a6a6; /* arquivos ausentes */
+  --type: #c9302c;
+}
+
+[data-type="projeto"] {
+  --type-soft: #b3a8ff; /* projeto (.aep) */
+  --type: #6f5bf0;
+}
+
+[data-type="fontes"] {
+  --type-soft: #e2a6f5; /* fontes */
+  --type: #b04fd6;
+}
+
+[data-type="externos"] {
+  --type-soft: #ffd592; /* arquivos externos */
+  --type: #f09a12;
+}
+
+[data-type="saidas"] {
+  --type-soft: #b9c6e0; /* saídas (renders) */
+  --type: #5f7199;
+}
+
 /* =========================================================
    Base
    ========================================================= */

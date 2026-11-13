@@ -1091,9 +1091,11 @@ body.prods-page {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 4px 3px 8px;
+  padding: 2px 3px 2px 7px;
+  /* a cor do tipo (styles.css), em degradê, com um contorno claro fino que a separa do fundo azul */
+  border: 1px solid rgb(var(--on-brand) / 85%);
   border-radius: var(--radius-pill);
-  background: rgb(var(--on-brand) / 20%);
+  background: linear-gradient(90deg, var(--type-soft, rgb(var(--on-brand) / 20%)), var(--type, rgb(var(--on-brand) / 20%)));
   color: rgb(var(--on-brand));
   cursor: grab;
   font-size: 0.66rem;
@@ -1178,10 +1180,11 @@ body.prods-page {
 }
 
 .org-type {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 8px 10px 8px 26px; /* a pílula da cor fica à esquerda, fora do fluxo */
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
@@ -1197,11 +1200,23 @@ body.prods-page {
   background: var(--blue-50);
 }
 
+/* a cor do tipo: uma pílula em pé, com a mesma margem em cima e embaixo (como a amostra aberta da aparência) */
+.org-type::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 8px;
+  width: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--type-soft, var(--blue-200)), var(--type, var(--blue-500)));
+  content: "";
+}
+
 .org-type>svg {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
-  color: var(--blue-500);
+  color: var(--type, var(--blue-500));
   stroke-width: 1.7;
 }
 
@@ -2146,6 +2161,15 @@ body.is-org-dragging * {
 }
 
 /* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + como os botões dentro dos campos */
+/* os cartões das ferramentas (layout) não são tipos: sem a pílula da cor */
+.org-type.tool-card {
+  padding-left: 10px;
+}
+
+.org-type.tool-card::before {
+  display: none;
+}
+
 .org-type.tool-card {
   cursor: default;
 }
