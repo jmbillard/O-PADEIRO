@@ -4,7 +4,8 @@
 > O PADEIRO — barra principal
 ---------------------------------------------------------------
 
-Clique esquerdo e direito fazem ações diferentes, e a dica de cada botão lista as duas.
+Clique esquerdo: a ação principal da ferramenta, na hora. Clique direito: as opções dela (a gaveta), na própria
+barra: tudo o que a ferramenta faz, com nome, e a configuração dela. O clique direito nunca executa nada sozinho.
 Ações sem tela própria rodam no host; as outras abrem o painel correspondente.
 
 */
@@ -636,37 +637,61 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TOOLS = [
 		{
 			key: 'templates',
+			menu: [
+				{ label: 'preencher um template', tip: 'buscar, selecionar e preencher: cria as comps e a fila de render', run: actions.templates },
+				{ label: 'criar um template', tip: 'transforma a comp aberta em um template novo', run: actions.createTemplate },
+				{ label: 'produções', tip: 'configuração: as produções e as pastas de templates', config: 'prods' }
+			],
 			label: 'Templates',
 			icon: 'templates',
 			name: 'A FORMA',
-			tips: [L_CLICK + 'preencher um template e criar a fila de render', R_CLICK + 'criar um template a partir da comp aberta'],
+			tips: [L_CLICK + 'preencher um template e criar a fila de render', R_CLICK + 'opções: criar um template, produções'],
 			left: actions.templates,
 			right: actions.createTemplate
 		},
 		{
 			key: 'fontes',
+			menu: [
+				{ label: 'instalar as que faltam', tip: 'procura na pasta de fontes do projeto e no banco de fontes', run: actions.resolveFonts },
+				{ label: 'ver as fontes do projeto', tip: 'o estado de cada fonte, trocar por outra e copiar para uma pasta', run: actions.openFonts },
+				{ label: 'banco de fontes', tip: 'configuração: o banco de fontes da equipe', config: 'fonts' }
+			],
 			label: 'Fontes',
 			icon: 'fonts',
 			name: 'O TIPÓGRAFO',
-			tips: [L_CLICK + 'instalar as fontes que faltam no projeto', R_CLICK + 'ver as fontes: trocar e copiar para uma pasta'],
+			tips: [L_CLICK + 'instalar as fontes que faltam no projeto', R_CLICK + 'opções: ver as fontes do projeto, banco de fontes'],
 			left: actions.resolveFonts,
 			right: actions.openFonts
 		},
 		{
 			key: 'projeto',
+			menu: [
+				{ label: 'novo projeto ou editar', tip: 'projeto novo pela atração; com o projeto já criado, o editor dele', run: actions.project },
+				{ label: 'salvar na pasta do projeto', tip: 'salva o .aep na pasta dele (sem os dados do padeiro, abre a janela)', run: actions.saveProject },
+				{ label: 'categorias e pastas', tip: 'configuração: as categorias e os caminhos das atrações', config: 'project' }
+			],
 			label: 'Projeto',
 			icon: 'project',
 			name: 'A CLAQUETE',
-			tips: [L_CLICK + 'criar um projeto novo pela atração (ou editar o atual)', R_CLICK + 'salvar o projeto na pasta dele'],
+			tips: [L_CLICK + 'criar um projeto novo pela atração (ou editar o atual)', R_CLICK + 'opções: salvar na pasta do projeto, categorias'],
 			left: actions.project,
 			right: actions.saveProject
 		},
 		{
 			key: 'coletar',
+			menu: [
+				{
+					label: 'coletar agora', tip: 'copia os arquivos para a pasta do projeto, troca os caminhos e salva', run: function () {
+						return actions.collect('');
+					}
+				},
+				{ label: 'ver os arquivos', tip: 'cada arquivo e onde está, coletar em outra pasta e resolver os que faltam', run: actions.openCollect },
+				{ label: 'pastas da coleta', tip: 'configuração: a árvore de pastas do coletar', config: 'collect' }
+			],
 			label: 'Coletar',
 			icon: 'collect',
 			name: 'O CATADOR',
-			tips: [L_CLICK + 'coletar os arquivos na pasta do projeto', R_CLICK + 'ver os arquivos: outra pasta e os que faltam'],
+			tips: [L_CLICK + 'coletar os arquivos na pasta do projeto', R_CLICK + 'opções: ver os arquivos, pastas da coleta'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -674,10 +699,18 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'importar',
+			menu: [
+				{
+					label: 'importar um projeto', tip: 'importa um .aep de qualquer versão do After no projeto aberto', run: function () {
+						return actions.importAep();
+					}
+				},
+				{ label: 'salvar em versão anterior', tip: 'salva o projeto aberto em até 3 versões mais velhas do After', run: actions.openVersioner }
+			],
 			label: 'Importar',
 			icon: 'import',
 			name: 'O VERSIONADOR',
-			tips: [L_CLICK + 'importar um projeto do After de qualquer versão', R_CLICK + 'salvar o projeto em versões mais velhas do After'],
+			tips: [L_CLICK + 'importar um projeto do After de qualquer versão', R_CLICK + 'opções: salvar em versão anterior do After'],
 			left: function () {
 				return actions.importAep();
 			},
@@ -685,28 +718,46 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'pastas',
+			menu: [
+				{ label: 'abrir a pasta do último render', tip: 'a pasta de saída do último item da fila de render', run: actions.openLastOutput },
+				{ label: 'converter caminhos', tip: 'caminhos Windows ⇄ macOS', run: actions.convertPaths }
+			],
 			label: 'Pastas',
 			icon: 'folders',
 			name: 'O ADAPTADOR',
-			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'converter caminhos entre Windows e macOS'],
+			tips: [L_CLICK + 'abrir a pasta do último item da fila de render', R_CLICK + 'opções: converter caminhos Windows ⇄ macOS'],
 			left: actions.openLastOutput,
 			right: actions.convertPaths
 		},
 		{
 			key: 'renomear',
+			menu: [
+				{ label: 'comps selecionadas', tip: 'renomeia as comps (ou a pasta) selecionadas no painel Project, no padrão da equipe', run: actions.renameComps },
+				{ label: 'saídas da fila de render', tip: 'renomeia os arquivos de saída de todos os itens da fila de render', run: actions.renameOutputs },
+				{ label: 'regras de nomes', tip: 'configuração: os tipos, os prefixos e os termos do renomear', config: 'rename' }
+			],
 			label: 'Renomear',
 			icon: 'rename',
 			name: 'O ETIQUETADOR',
-			tips: [L_CLICK + 'renomear as comps selecionadas', R_CLICK + 'renomear todas as saídas da fila de render'],
+			tips: [L_CLICK + 'renomear as comps selecionadas', R_CLICK + 'opções: saídas da fila de render, regras de nomes'],
 			left: actions.renameComps,
 			right: actions.renameOutputs
 		},
 		{
 			key: 'organizar',
+			menu: [
+				{
+					label: 'organizar o projeto', tip: 'cada item na pasta dele (selecione antes as comps do render)', run: function () {
+						return actions.organizeProject();
+					}
+				},
+				{ label: 'etiquetas', tip: 'os comentários que o organizar entende, nos itens selecionados', run: actions.openLabels },
+				{ label: 'pastas do projeto', tip: 'configuração: a árvore de pastas do organizar', config: 'organize' }
+			],
 			label: 'Organizar',
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
-			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps do render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps do render)', R_CLICK + 'opções: etiquetas, pastas do projeto'],
 			left: function () {
 				return actions.organizeProject();
 			},
@@ -714,10 +765,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'buscar',
+			menu: [
+				{ label: 'caminhos', tip: 'atrações, filmes, Teams e Trello', run: actions.searchPaths },
+				{ label: 'textos dos layers', tip: 'busca nos textos dos layers do projeto', run: actions.searchTexts },
+				{ label: 'fontes da busca', tip: 'configuração: o índice e as pastas da busca', config: 'search' }
+			],
 			label: 'Buscar',
 			icon: 'search',
 			name: 'O ACESSORISTA',
-			tips: [L_CLICK + 'buscar caminhos de atrações, filmes, Teams e Trello', R_CLICK + 'buscar nos textos dos layers do projeto'],
+			tips: [L_CLICK + 'buscar caminhos de atrações, filmes, Teams e Trello', R_CLICK + 'opções: textos dos layers, fontes da busca'],
 			left: actions.searchPaths,
 			right: actions.searchTexts
 		}
@@ -751,25 +807,127 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	// clique = primeira ação, na hora (o duplo clique não abre mais a configuração: muita gente dá 2 cliques por reflexo)
-	function bind(btn, left, right) {
+	function bind(btn, left, right, def) {
 		btn.addEventListener('click', function () {
 			run(btn, left);
 		});
 
-		// clique direito = segunda ação (sem o menu de contexto do navegador)
+		// clique direito = as opções da ferramenta (a gaveta), sem executar nada. na barra só de ícones (sem
+		// lugar para os nomes), a segunda ação direto, como antes
 		btn.addEventListener('contextmenu', function (e) {
 			e.preventDefault();
-			run(btn, right);
+			if (def && def.menu && drawerFits()) openDrawer(def, btn, false);
+			else run(btn, right);
 		});
 
-		// no teclado: Shift+Enter faz a segunda ação
+		// no teclado: Shift+Enter abre as opções (o foco vai para a primeira)
 		btn.addEventListener('keydown', function (e) {
 			if (e.key !== 'Enter' || !e.shiftKey) return;
 
 			e.preventDefault();
-			run(btn, right);
+			if (def && def.menu && drawerFits()) openDrawer(def, btn, true);
+			else run(btn, right);
 		});
 	}
+
+	/* ---------------------------------------------------------------
+	   a gaveta: as opções de uma ferramenta no lugar dos botões (clique direito). o nome da ferramenta, cada
+	   coisa que ela faz num botão com o nome por extenso, a configuração dela e o × para voltar. fecha ao
+	   escolher, no ×, no Esc, clicando fora ou um instante depois de o mouse sair da barra
+	   --------------------------------------------------------------- */
+
+	var drawer = { open: false, btn: null, timer: null };
+
+	function drawerFits() {
+		return !(window.matchMedia && window.matchMedia('(max-aspect-ratio: 1/1) and (max-width: 99px)').matches);
+	}
+
+	function closeDrawer(refocus) {
+		if (!drawer.open) return;
+
+		clearTimeout(drawer.timer);
+		drawer.open = false;
+		$('bar').classList.remove('has-drawer');
+		$('drawer').hidden = true;
+		$('drawer').textContent = '';
+		if (refocus && drawer.btn) drawer.btn.focus();
+	}
+
+	function openDrawer(def, btn, focus) {
+		var box = $('drawer');
+		var head = el('span', 'bar-drawer-head');
+		var close = el('button', 'bar-drawer-close', '×');
+
+		clearTimeout(drawer.timer);
+		$('toast').hidden = true; // o aviso anterior sai: a linha fica para as dicas das opções
+		box.textContent = '';
+
+		head.appendChild(svgIcon(def.icon));
+		head.appendChild(el('b', '', def.label));
+		head.title = def.name.toLowerCase();
+		box.appendChild(head);
+
+		def.menu.forEach(function (item, i) {
+			var b = el('button', 'bar-option' + (item.config ? ' is-config' : '') + (i === 0 ? ' is-main' : ''), item.label);
+
+			b.type = 'button';
+			b.title = item.tip + (i === 0 ? ' (o mesmo do clique esquerdo)' : '');
+			b.addEventListener('click', function () {
+				closeDrawer(false);
+
+				if (item.config) {
+					run(btn, function () {
+						return actions.config(item.config);
+					});
+				} else {
+					run(btn, item.run);
+				}
+			});
+			box.appendChild(b);
+		});
+
+		close.type = 'button';
+		close.title = 'voltar para as ferramentas';
+		close.setAttribute('aria-label', 'voltar para as ferramentas');
+		close.addEventListener('click', function () {
+			closeDrawer(true);
+		});
+		box.appendChild(close);
+
+		drawer.open = true;
+		drawer.btn = btn;
+		box.hidden = false;
+		$('bar').classList.add('has-drawer');
+
+		if (focus) box.querySelector('.bar-option').focus();
+	}
+
+	document.addEventListener('keydown', function (e) {
+		if (e.key === 'Escape' && drawer.open) closeDrawer(true);
+	});
+
+	// clicar fora da gaveta (em qualquer outro lugar da barra) volta para as ferramentas
+	document.addEventListener('mousedown', function (e) {
+		if (drawer.open && !e.target.closest('#drawer')) closeDrawer(false);
+	}, true);
+
+	// o mouse saiu da barra: a gaveta espera um pouco e fecha (não fica uma barra "diferente" esquecida aberta)
+	document.addEventListener('mouseleave', function () {
+		if (!drawer.open) return;
+
+		clearTimeout(drawer.timer);
+		drawer.timer = setTimeout(function () {
+			closeDrawer(false);
+		}, 2500);
+	});
+
+	document.addEventListener('mouseenter', function () {
+		clearTimeout(drawer.timer);
+	});
+
+	window.addEventListener('blur', function () {
+		closeDrawer(false);
+	});
 
 	var toolsLayout = ''; // a ordem e as escondidas desenhadas agora (só redesenha quando mudam)
 
@@ -810,7 +968,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				btn.setAttribute('aria-label', def.label);
 				btn.appendChild(svgIcon(def.icon));
 				btn.appendChild(el('span', 'bar-label', def.label));
-				bind(btn, def.left, def.right);
+				bind(btn, def.left, def.right, def);
 
 				group.appendChild(btn);
 			});

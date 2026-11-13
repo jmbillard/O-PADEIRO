@@ -473,6 +473,173 @@ body.bar-page {
   color: var(--success);
 }
 
+/* a gaveta: as opções da ferramenta (clique direito) no lugar dos botões. o nome da ferramenta, cada opção num
+   botão só de contorno (a principal, a do clique esquerdo, preenchida de leve), a configuração mais calma, e o × */
+.bar-drawer {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 8px;
+  animation: drawer-enter 240ms var(--ease-soft) both;
+}
+
+.bar-drawer[hidden] {
+  display: none;
+}
+
+.bar.has-drawer .bar-tools,
+.bar.has-drawer #links,
+.bar.has-drawer #links-divider {
+  display: none;
+}
+
+/* com a gaveta, o miolo da barra pode encolher: as opções cortam com … antes de empurrar o pãozinho para fora */
+.bar.has-drawer .bar-main {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+@keyframes drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.bar-drawer-head {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  margin-right: 6px;
+  color: rgb(var(--on-brand));
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+}
+
+.bar-drawer-head svg {
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.bar-drawer-head b {
+  font-weight: 780;
+}
+
+.bar-option {
+  min-width: 0;
+  height: 32px;
+  flex: 0 1 auto;
+  overflow: hidden;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--on-brand) / 42%);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: rgb(var(--on-brand));
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.bar-option.is-main {
+  border-color: rgb(var(--on-brand) / 80%);
+  background: rgb(var(--on-brand) / 14%);
+}
+
+.bar-option.is-config {
+  border-style: dashed;
+  border-color: rgb(var(--on-brand) / 34%);
+  color: rgb(var(--on-brand) / 88%);
+  font-weight: 600;
+}
+
+.bar-option:hover {
+  border-color: rgb(var(--on-brand) / 88%);
+  background: rgb(var(--on-brand) / 20%);
+  color: rgb(var(--on-brand));
+}
+
+.bar-option:focus-visible,
+.bar-drawer-close:focus-visible {
+  outline: 1px solid rgb(var(--on-brand) / 80%);
+  outline-offset: 2px;
+}
+
+.bar-drawer-close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--on-brand) / 88%);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  transition:
+    background-color 160ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.bar-drawer-close:hover {
+  background: rgb(var(--on-brand) / 16%);
+  color: rgb(var(--on-brand));
+  transform: rotate(90deg);
+}
+
+/* barra vertical: a gaveta em coluna, cada opção numa linha (o nome quebra se precisar) */
+@media (max-aspect-ratio: 1/1) {
+  .bar-drawer {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    animation-name: drawer-enter-down;
+  }
+
+  .bar-drawer-head {
+    justify-content: center;
+    margin: 0 0 4px;
+  }
+
+  .bar-option {
+    height: auto;
+    min-height: 32px;
+    padding: 7px 8px;
+    border-radius: var(--radius-small);
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .bar-drawer-close {
+    align-self: center;
+  }
+}
+
+@keyframes drawer-enter-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
 /* aviso: a bolinha do resultado, o botão de ação (ex: "organizar assim mesmo") e o texto que abre no clique */
 .bar-toast {
   display: flex;

@@ -45,15 +45,15 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 
 	// cada clique com o nome de quem faz
 	var TOOLS = {
-		templates: { title: 'Templates', l: ['A FORMA', 'preenche um template e cria a fila de render'], r: ['A FORMA', 'cria um template a partir da comp aberta'] },
-		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
-		projeto: { title: 'Projeto', l: ['A CLAQUETE', 'projeto novo pela atração, ou o editor'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
-		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
-		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
-		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },
-		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica etiquetas (comentários) nos itens do projeto'] },
-		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },
-		buscar: { title: 'Buscar', l: ['O ACESSORISTA', 'busca caminhos das atrações'], r: ['O ACESSORISTA', 'busca nos textos dos layers'] }
+		templates: { title: 'Templates', l: ['A FORMA', 'preenche um template e cria a fila de render'], r: ['opções', 'criar um template da comp aberta, e as produções'] },
+		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['opções', 'ver cada fonte, trocar por outra, o banco de fontes'] },
+		projeto: { title: 'Projeto', l: ['A CLAQUETE', 'projeto novo pela atração, ou o editor'], r: ['opções', 'salvar o projeto na pasta dele, as categorias'] },
+		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['opções', 'ver os arquivos, coletar em outra pasta, resolver os que faltam'] },
+		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['opções', 'salvar o projeto em versões mais velhas do After'] },
+		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['opções', 'renomear as saídas da fila de render, as regras de nomes'] },
+		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['opções', 'as etiquetas (comentários) e as pastas do projeto'] },
+		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['opções', 'converter caminhos Windows ⇄ macOS'] },
+		buscar: { title: 'Buscar', l: ['O ACESSORISTA', 'busca caminhos das atrações'], r: ['opções', 'buscar nos textos dos layers, as fontes da busca'] }
 	};
 	var LOGO = { id: 'logo', title: 'O pãozinho', l: ['O PADEIRO', 'ajuda e documentação'], r: ['O PADEIRO', 'refaz este tour'] };
 
@@ -172,7 +172,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 			return { wide: true, lead: '<span class="tour-step-icon">' + I.person + '</span>', kicker: '2 de 3 · meu usuário', title: 'quem é você?', text: state.error ? esc(state.error) : 'a sigla vai nos projetos, nos logs e no banco de fontes.', error: !!state.error, actions: '<label class="tour-field">' + I.person + '<input id="tour-user" value="' + esc(state.user) + '" maxlength="24" aria-label="sigla do designer"></label>' + round('config', true) + btn('continuar', 'save-user', 'is-primary', I.next) };
 		},
 		ask: function () {
-			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: (state.setup ? '3 de 3 · ' : '') + 'a turma', title: 'quer conhecer a turma da barra?', text: 'cada ferramenta tem um nome e dois cliques: ' + ML + ' esquerdo e ' + MR + ' direito. uns 40 segundos.', actions: skip('pular', 'done') + (state.setup ? round('user', true) : '') + btn('fazer o tour', 'tool', 'is-primary', I.next) };
+			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: (state.setup ? '3 de 3 · ' : '') + 'a turma', title: 'quer conhecer a turma da barra?', text: 'cada ferramenta tem dois cliques: ' + ML + ' faz na hora, ' + MR + ' abre as opções dela. uns 40 segundos.', actions: skip('pular', 'done') + (state.setup ? round('user', true) : '') + btn('fazer o tour', 'tool', 'is-primary', I.next) };
 		},
 		tool: function () {
 			var t = state.tools[state.tool];
@@ -181,7 +181,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 			return { spot: t.id, kicker: '<span class="tour-head">a turma ' + (state.tool + 1) + '/' + n + ' · clique na ferramenta ' + dots(n, state.tool) + '</span>', title: t.title + names(t), extra: '<span class="tour-lines"><span data-k="l"><i>' + ML + '</i><em>' + who(t.l) + '</em></span><span data-k="r"><i>' + MR + '</i><em>' + who(t.r) + '</em></span></span>', actions: skip('sair', 'done') + round('prev', true) + round('next') };
 		},
 		done: function () {
-			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: '2 cliques numa ferramenta abrem O PRODUTOR na aba dela; ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
+			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: MR + ' numa ferramenta mostra tudo o que ela faz (e a configuração dela); ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
 		}
 	};
 
