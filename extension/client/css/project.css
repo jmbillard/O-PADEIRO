@@ -1320,3 +1320,8 @@ p.wz-exist b {
 .out-card:disabled .out-card-edit {
   visibility: hidden;
 }
+
+/* as seções do projeto novo (o que é, output) separadas: um respiro a mais antes de cada título */
+.wz-rest > .wz-title {
+  margin-top: 10px;
+}
