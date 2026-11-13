@@ -352,6 +352,7 @@ projetos com o nome certo).
 		if (flow.choice === 'new') $('nova-name').value = $('claq').value.trim();
 
 		if (!claq) {
+			state.lookupBusy = false;
 			flow.matches = [];
 			flow.choice = '';
 			renderAttractions();
@@ -359,6 +360,7 @@ projetos com o nome certo).
 			return;
 		}
 
+		state.lookupBusy = true; // até a resposta desta busca chegar (o Tab espera por ela)
 		state.lookupTimer = setTimeout(async function () {
 			state.lookupTimer = null;
 
@@ -405,6 +407,7 @@ projetos com o nome certo).
 			}
 			renderAttractions();
 			updatePick();
+			if (seq === state.lookupSeq) state.lookupBusy = false;
 		}, LOOKUP_MS);
 	}
 
@@ -1160,8 +1163,9 @@ projetos com o nome certo).
 
 			var res = await call('projectCreate', args || createArgs());
 
-			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 			await refresh(true);
+			// depois da troca para o editor (ela limpa a linha de status): a confirmação fica à vista
+			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 		} catch (err) {
 			status(err.message, 'error');
 		} finally {
@@ -1584,11 +1588,12 @@ projetos com o nome certo).
 	// as setas andam pela lista aberta (a marcada fica em destaque); Enter escolhe a marcada; Tab completa com a
 	// marcada ou, sem nenhuma, com a primeira (complete() → true quando completou). registrado antes do Enter do
 	// campo: com uma marcada, o Enter do campo não roda
-	function comboKeys(id, listId, complete) {
+	// pending() → true enquanto a busca do campo ainda não respondeu (a lista nem abriu): o Tab espera por ela
+	function comboKeys(id, listId, complete, pending) {
 		$(id).addEventListener('keydown', function (e) {
 			var list = $(listId);
 
-			if (list.hidden) return;
+			if (list.hidden && !(e.key === 'Tab' && !e.shiftKey && pending && pending())) return;
 
 			// a atração já escolhida (no topo da lista das pastas) fica fora: as setas andam pelas opções
 			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item'), function (it) {
@@ -1605,7 +1610,10 @@ projetos com o nome certo).
 				items.forEach(function (it, i) {
 					it.classList.toggle('is-hover', i === at);
 				});
-				if (at >= 0) items[at].scrollIntoView({ block: 'nearest' });
+				if (at >= 0) {
+					items[at].scrollIntoView({ block: 'nearest' });
+					clearFooter(items[at]);
+				}
 			} else if (e.key === 'Enter' && at >= 0) {
 				e.preventDefault();
 				e.stopImmediatePropagation();
@@ -1619,6 +1627,21 @@ projetos com o nome certo).
 		});
 	}
 
+	// o rodapé fica por cima do fim da tela: o que está atrás dele (a opção marcada pelas setas, a lista que
+	// acabou de abrir) sobe até aparecer
+	function clearFooter(node) {
+		var screen = node.closest('.wz-screen');
+		var foot = screen && screen.querySelector('.wz-foot');
+
+		if (!foot) return;
+
+		var over = node.getBoundingClientRect().bottom + 8 - foot.getBoundingClientRect().top;
+		var scroller = screen;
+
+		while (scroller && scroller.scrollHeight <= scroller.clientHeight + 1) scroller = scroller.parentElement;
+		if (over > 0 && scroller) scroller.scrollTop += over;
+	}
+
 	function onEnter(id, fn) {
 		$(id).addEventListener('keydown', function (e) {
 			if (e.key === 'Enter') {
@@ -1630,14 +1653,32 @@ projetos com o nome certo).
 
 	function init() {
 		// setas e Tab nas listas (antes dos Enter dos campos)
-		comboKeys('claq', 'atr-list', function () {
+		var claqComplete = function () {
 			var p = claqParts();
+
+			// digitou e deu Tab antes de a busca responder: espera a resposta (até 3 s) e completa com o que ela achar
+			if (state.lookupBusy) {
+				var tries = 0;
+				var wait = function () {
+					if (state.lookupBusy && ++tries < 75) return setTimeout(wait, 40);
+					state.lookupBusy = false;
+					if (!claqComplete()) $('claq').focus(); // nada para completar: o foco fica no campo
+				};
+
+				setTimeout(wait, 40);
+
+				return true;
+			}
 
 			if (p.deep && flow.attr && flow.walk && flow.walk.shown.length) enterLevel(flow.walk.shown[0].name, true);
 			else if (!p.deep && flow.matches.length) enterAttraction(flow.matches[0], true);
 			else return false;
 
 			return true;
+		};
+
+		comboKeys('claq', 'atr-list', claqComplete, function () {
+			return !!state.lookupBusy;
 		});
 		comboKeys('out-in', 'out-list', function () {
 			if (!state.outWalk || !state.outWalk.shown.length) return false;
@@ -1764,6 +1805,10 @@ projetos com o nome certo).
 		});
 		$('out-card').addEventListener('click', function () {
 			outEdit(true);
+			// a lista do output abre no fim da tela: sobe para as últimas opções (outra pasta…, sem output) aparecerem
+			setTimeout(function () {
+				if (!$('out-list').hidden) clearFooter($('out-list'));
+			}, 380);
 		});
 
 		$('criar-go').addEventListener('click', function () {
