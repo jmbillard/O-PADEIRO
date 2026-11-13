@@ -103,6 +103,7 @@ body {
   .app-shell.is-expanded {
     height: auto;
     min-height: 100vh;
+    overflow: visible; /* quem rola é a página: com o corte aqui, o rodapé (sticky) não gruda no fim da janela */
   }
 
   .app-shell.is-expanded .workspace {
