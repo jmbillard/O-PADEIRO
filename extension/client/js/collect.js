@@ -386,7 +386,12 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (old) old.remove();
 		if (!plan || !plan.links.length) return;
 
-		var svg = svgNode('svg', { 'class': 'mg-wires', 'aria-hidden': 'true' }, box);
+		// as faixas ficam por trás das pastas (o css): cada uma começa no centro da ponta redonda da pasta de hoje e
+		// sai de trás dela, então o começo da faixa é o próprio arco da pasta
+		var svg = svgNode('svg', { 'class': 'mg-wires', 'aria-hidden': 'true' });
+
+		box.insertBefore(svg, box.firstChild);
+
 		var area = box.getBoundingClientRect();
 		var defs = svgNode('defs', {}, svg);
 		var colors = {};
@@ -435,7 +440,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var w = width(l.count);
 			var y1 = ra.top - area.top + ra.height / 2 - (sumOut[l.from] - 2) / 2 + (offOut[l.from] || 0) + w / 2;
 			var y2 = rz.top - area.top + rz.height / 2 - (sumIn[l.to] - 2) / 2 + (offIn[l.to] || 0) + w / 2;
-			var x1 = ra.right - area.left + 6;
+			var x1 = ra.right - area.left - ra.height / 2;
 			var x2 = rz.left - area.left - 12;
 			var mid = (x1 + x2) / 2;
 			var head = Math.max(4.5, w / 2 + 2.5);
