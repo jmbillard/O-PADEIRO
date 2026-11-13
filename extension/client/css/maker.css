@@ -993,3 +993,9 @@ body.maker-page {
   align-items: flex-start;
   gap: 4px;
 }
+
+/* começar de novo, esperando o segundo clique: o botão fica marcado na cor de atenção até confirmar ou passar */
+#btn-reset.is-confirm {
+  border-color: var(--waiting);
+  color: var(--waiting);
+}
