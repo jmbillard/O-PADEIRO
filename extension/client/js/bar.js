@@ -790,9 +790,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var btn = d.previousSibling;
 
 		if (open) {
-			// fechada, o conteúdo já está montado (só escondido): o tamanho dele, mais a folga e o contorno
-			d.style.setProperty('--drawer-size', (v ? d.scrollHeight : d.scrollWidth) + 6 + 'px');
+			// o tamanho de aberta, medido de verdade: abre um instante sem animação (nada é pintado), mede e volta.
+			// pelo conteúdo fechado a conta saía menor quando as ferramentas quebram em mais linhas com a folga da
+			// gaveta aberta: ela abria até ali, parava e só depois mostrava o resto
 			btn.style.setProperty('--btn-size', (v ? btn.offsetHeight : btn.offsetWidth) + 'px');
+			d.style.transition = 'none';
+			d.classList.add('is-open', 'is-settled');
+			d.style.setProperty('--drawer-size', (v ? d.offsetHeight : d.offsetWidth) + 'px');
+			d.classList.remove('is-open', 'is-settled');
+			void d.offsetWidth;
+			d.style.transition = '';
 		} else {
 			d.style.setProperty('--drawer-size', (v ? d.offsetHeight : d.offsetWidth) + 'px');
 		}
