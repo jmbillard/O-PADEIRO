@@ -683,6 +683,20 @@ projetos com o nome certo).
 		}), plan.projectsName);
 	}
 
+	// o nome do .aep e se ele já existe, sem perguntar ao After: o último nível (ou a atração) + o que é (a mesma
+	// conta do host); a lista dos .aep da pasta veio no plano. digitar o o que é não chama o host (ele lê a rede e
+	// travava a digitação)
+	function localFile(plan) {
+		var levels = String(flow.pick.quadro || '').split('/');
+		var base = aepName((levels[levels.length - 1].trim() || flow.pick.name) + ' ' + (flow.what || ''));
+
+		plan.fileBase = base;
+		plan.fileName = base + '.aep';
+		plan.exists = (plan.existing || []).some(function (f) {
+			return f.name === base;
+		});
+	}
+
 	function planArgs(extra) {
 		return Object.assign({ kind: 'program', atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.pick.out || '' }, extra || {});
 	}
@@ -701,6 +715,7 @@ projetos com o nome certo).
 
 				if (seq !== state.planSeq) return;
 				state.plan = plan;
+				localFile(plan);
 				renderPlan(plan);
 			} catch (err) {
 				if (seq === state.planSeq) status(err.message, 'error');
@@ -1562,8 +1577,11 @@ projetos com o nome certo).
 		$('arq-what').addEventListener('input', function () {
 			flow.what = this.value;
 			flow.mode = '';
-			planCriar();
-			if (state.outOpen) renderOut();
+			// só o nome do .aep muda: conta aqui, sem o host (o plano é refeito quando a pasta muda)
+			if (state.plan && flow.pick) {
+				localFile(state.plan);
+				renderPlan(state.plan);
+			}
 		});
 		onEnter('arq-what', function () {
 			create();
