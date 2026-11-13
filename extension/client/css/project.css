@@ -1197,3 +1197,126 @@ p.wz-exist b {
   padding-top: 16px;
   background: linear-gradient(to top, var(--surface) 72%, transparent);
 }
+
+/* =========================================================
+   o output escolhido, num cartão (sem cara de campo vazio): a pasta em destaque, o caminho embaixo e o "mudar";
+   apagado sem output. o clique abre o campo
+   ========================================================= */
+
+.out-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.out-card:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.out-card:focus-visible {
+  outline: 1px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.out-card:disabled {
+  cursor: default;
+}
+
+.out-card.is-muted {
+  border-color: var(--border);
+  background: transparent;
+}
+
+.out-card-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.out-card-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.out-card.is-muted .out-card-icon svg {
+  stroke: var(--text-tertiary);
+}
+
+.out-card-text {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 3px;
+}
+
+.out-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.out-card-title b {
+  overflow: hidden;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-card-title .wz-new {
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+
+.out-card.is-muted .out-card-title b {
+  color: var(--text-tertiary);
+}
+
+/* o caminho corta pelo começo (o fim é o que muda) */
+.out-card-text small {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  direction: rtl;
+  font-size: 0.66rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.out-card-edit {
+  flex: 0 0 auto;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.out-card:hover:not(:disabled) .out-card-edit {
+  color: var(--text-primary);
+}
+
+.out-card:disabled .out-card-edit {
+  visibility: hidden;
+}

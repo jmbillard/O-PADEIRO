@@ -32,7 +32,7 @@ async function projectTo(page, screen) {
 	await page.waitForTimeout(600);
 	await page.fill('#arq-what', 'vt');
 	await page.waitForTimeout(600);
-	await page.click('#out-in');
+	await page.click('#out-card');
 	await page.waitForTimeout(400);
 }
 

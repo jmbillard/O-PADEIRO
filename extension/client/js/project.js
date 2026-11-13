@@ -650,6 +650,8 @@ projetos com o nome certo).
 			state.outBaseFrom = pick.out || '';
 			state.outCustom = '';
 			state.outSkip = !pick.out;
+			state.outEditing = false;
+			state.outOpen = false;
 			$('out-in').value = '';
 			state.outWalk = null;
 		}
@@ -985,23 +987,66 @@ projetos com o nome certo).
 			}));
 			list.appendChild(ATR.row(SKIP_SVG, 'sem output', 'pular', state.outSkip, function () {
 				state.outSkip = true;
-				state.outOpen = false;
 				$('out-in').value = '';
-				$('out-in').blur();
-				renderOut();
+				state.outWalk = null;
+				outEdit(false);
 			}));
 		});
 		list.hidden = !open;
 		combo.classList.toggle('is-open', open);
 		if (open && hint) list.appendChild(el('p', 'combo-group', hint));
 
-		// a linha do destino
+		// mudando: o campo e a linha do destino; senão, o cartão com o escolhido
+		var editing = !!state.outEditing && !!flow.pick;
 		var dest = $('out-dest');
+		var segs = walk && (o.last || o.levels.length) ? walk.segs : [];
+
+		$('out-card').hidden = editing;
+		combo.hidden = !editing;
+		dest.hidden = !editing;
 
 		if (!flow.pick) hintLine(dest, '');
 		else if (state.outSkip) hintLine(dest, 'sem pasta de output (dá para escolher depois, no editor)');
 		else if (!base) hintLine(dest, 'a atração não tem pasta de output: escolha uma (outra pasta…) ou pule');
-		else destLine(dest, base, walk && (o.last || o.levels.length) ? walk.segs : []);
+		else destLine(dest, base, segs);
+
+		renderOutCard(base, segs);
+	}
+
+	// o cartão do output: a pasta escolhida (e as subpastas), o caminho embaixo e o "mudar"; apagado sem output
+	function renderOutCard(base, segs) {
+		var card = $('out-card');
+		var muted = !flow.pick || state.outSkip || !base;
+		var title = !flow.pick ? 'a pasta de output da atração' : state.outSkip ? 'sem output' : !base ? 'sem pasta de output' : [base.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop()].concat(segs.map(function (seg) {
+			return seg.name;
+		})).join(' / ');
+		var path = !flow.pick ? 'escolha o projeto acima' : state.outSkip ? 'dá para escolher depois, no editor' : !base ? 'a atração não tem: clique para escolher uma, ou pule' : String(base).replace(/\\/g, '/') + segs.map(function (seg) {
+			return '/' + seg.name;
+		}).join('');
+
+		card.classList.toggle('is-muted', muted);
+		card.disabled = !flow.pick;
+		$('out-card-icon').innerHTML = muted && flow.pick ? SKIP_SVG : OUTPUT_SVG;
+		$('out-card-title').textContent = title;
+		$('out-card-new').hidden = !segs.some(function (seg) {
+			return seg.isNew;
+		});
+		$('out-card-path').textContent = '\u200E' + path + '\u200E';
+		card.title = muted ? 'escolher a pasta de output' : path;
+	}
+
+	// abre o campo do output (com a lista) e fecha de volta para o cartão
+	function outEdit(on) {
+		state.outEditing = on;
+		state.outOpen = on;
+		renderOut();
+		if (on) {
+			var input = $('out-in');
+
+			input.focus();
+			input.setSelectionRange(input.value.length, input.value.length);
+			outLookup(true);
+		}
 	}
 
 	// o output que vai para o projeto: a pasta de partida + as subpastas (as novas são criadas)
@@ -1602,19 +1647,25 @@ projetos com o nome certo).
 			}
 			outLookup(true);
 		});
+		// saindo do campo (ou Enter, ou Esc): fica o digitado e volta o cartão
 		$('out-in').addEventListener('blur', function () {
 			setTimeout(function () {
-				if ($('out-combo').contains(document.activeElement)) return;
-				state.outOpen = false;
-				renderOut();
+				if ($('out-combo').contains(document.activeElement) || !state.outEditing) return;
+				outEdit(false);
 			}, 150);
 		});
 		onEnter('out-in', function () {
-			if (!state.outOpen) return create();
-
 			$('out-in').value = $('out-in').value.replace(/\/+\s*$/, '');
-			state.outOpen = false;
 			outLookup(false);
+			outEdit(false);
+		});
+		$('out-in').addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape') return;
+			e.preventDefault();
+			outEdit(false);
+		});
+		$('out-card').addEventListener('click', function () {
+			outEdit(true);
 		});
 
 		$('criar-go').addEventListener('click', function () {
