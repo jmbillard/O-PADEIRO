@@ -535,11 +535,12 @@ projetos com o nome certo).
 					});
 				} else {
 					list.appendChild(ATR.group('atração'));
-					// clicar na atração solta ela (para escolher outra)
+					// clicar na atração escolhida confirma: fica só com ela (sem pasta abaixo) e segue para o o que é.
+					// para trocar de atração: o × do campo, ou apagar o nome
 					list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.category || '', true, function () {
-						flow.attr = null;
-						$('claq').value = p.first;
-						lookup();
+						$('claq').value = flow.attr.name.toUpperCase();
+						flow.walk = null;
+						collapseClaq(true);
 					}, flow.attr.display));
 					list.appendChild(ATR.sep());
 					if (!flow.walk) list.appendChild(ATR.group('procurando as pastas…'));
@@ -1152,6 +1153,8 @@ projetos com o nome certo).
 			if (base && base.pattern) pref(PREF_BASE, base.label); // a categoria da atração nova fica lembrada
 		}
 
+		var done = false;
+
 		state.busy = true;
 		$('criar-go').disabled = true;
 		$('criar-go').textContent = 'Criando…';
@@ -1163,15 +1166,25 @@ projetos com o nome certo).
 
 			var res = await call('projectCreate', args || createArgs());
 
-			await refresh(true);
-			// depois da troca para o editor (ela limpa a linha de status): a confirmação fica à vista
+			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
+			// onde não dá para fechar (o navegador de teste), a janela vira o editor do projeto criado
+			done = true;
 			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
+			$('criar-go').textContent = res.opened ? 'Aberto' : 'Criado';
+			setTimeout(async function () {
+				PAD_BRIDGE.closePanel();
+				state.busy = false;
+				$('criar-go').textContent = 'Criar projeto';
+				await refresh(true);
+			}, 1300);
 		} catch (err) {
 			status(err.message, 'error');
 		} finally {
-			state.busy = false;
-			$('criar-go').disabled = !flow.pick;
-			$('criar-go').textContent = 'Criar projeto';
+			if (!done) {
+				state.busy = false;
+				$('criar-go').disabled = !flow.pick;
+				$('criar-go').textContent = 'Criar projeto';
+			}
 		}
 	}
 
@@ -1694,6 +1707,30 @@ projetos com o nome certo).
 			else return false;
 
 			return true;
+		});
+
+		// o caminho de cada linha da lista (a atração, a pasta) aparece na linha do destino, embaixo, enquanto o
+		// mouse está nela: sem balão por cima das outras linhas. roda antes do tooltip.js (que escuta no document)
+		$('atr-list').addEventListener('mouseover', function (e) {
+			var item = e.target.closest && e.target.closest('.combo-item');
+
+			if (!item) return;
+			if (item.hasAttribute('title')) {
+				item.setAttribute('data-path', item.getAttribute('title'));
+				item.removeAttribute('title');
+			}
+
+			var path = item.getAttribute('data-path');
+
+			if (path && state.hoverPath !== path) {
+				state.hoverPath = path;
+				hintLine($('claq-dest'), path.length > 58 ? '…' + path.slice(-57) : path); // o fim do caminho é a parte que muda
+			}
+		});
+		$('atr-list').addEventListener('mouseleave', function () {
+			if (!state.hoverPath) return;
+			state.hoverPath = '';
+			renderDest();
 		});
 
 		$('claq').addEventListener('input', lookup);

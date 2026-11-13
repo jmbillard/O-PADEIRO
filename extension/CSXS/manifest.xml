@@ -255,13 +255,15 @@
 					<Type>Modeless</Type>
 					<Menu>Projeto · A CLAQUETE</Menu>
 					<Geometry>
+						<!-- a altura cabe a tela inteira do projeto novo com a lista do output aberta; o mínimo, o caminho, o
+						     que é e o cartão do output sem nada atrás do rodapé -->
 						<Size>
 							<Width>440</Width>
-							<Height>640</Height>
+							<Height>780</Height>
 						</Size>
 						<MinSize>
-							<Width>320</Width>
-							<Height>300</Height>
+							<Width>380</Width>
+							<Height>580</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
