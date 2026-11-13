@@ -1362,12 +1362,28 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// resolver faltando: acha o arte_antiga.psd no VFX-1 (?mock=fail: não acha)
 		// a migração da pasta (O CATADOR): a pasta bagunçada de exemplo; depois de migrar, nada para mover e o
 		// registro para desfazer
-		migratePlan: function () {
+		// com todos os projetos (a: { all }): o que só os outros projetos usam sai dos externos
+		migratePlan: function (a) {
+			var all = !!(a && a.all);
 			var dests = [['01_PROJETOS', 0, 'projeto'], ['02_ARQUIVOS', 0, ''], ['02_ARQUIVOS/AUDIOS', 1, 'audio'], ['02_ARQUIVOS/DADOS', 1, 'dados'], ['02_ARQUIVOS/FONTS', 1, 'fontes'], ['02_ARQUIVOS/IMAGENS', 1, 'imagens'], ['02_ARQUIVOS/VÍDEOS', 1, 'videos'], ['03_SAIDA', 0, 'saidas'], ['03_SAIDA/PREVIEWS', 1, ''], ['04_REFS', 0, ''], ['05_EXTERNOS', 0, 'externos']];
-			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', 6], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', 36], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['', '05_EXTERNOS', 'externos', 16]];
+			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', all ? 2 : 6], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', all ? 4 : 0], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', all ? 24 : 36], ['03 EXTERNOS', '02_ARQUIVOS/IMAGENS', 'imagens', all ? 12 : 0], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['', '05_EXTERNOS', 'externos', 16]];
 			var sources = {};
 			var count = {};
 			var total = 0;
+
+			// as faixas do mesmo caminho e tipo somam (o exemplo de todos os projetos acrescenta a algumas)
+			links = links.filter(function (l) {
+				return l[3] > 0;
+			}).reduce(function (list, l) {
+				var same = list.filter(function (o) {
+					return o[0] === l[0] && o[1] === l[1] && o[2] === l[2];
+				})[0];
+
+				if (same) same[3] += l[3];
+				else list.push(l.slice());
+
+				return list;
+			}, []);
 
 			links.forEach(function (l) {
 				sources[l[0]] = (sources[l[0]] || 0) + l[3];
@@ -1376,7 +1392,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: 1, partial: false, undo: !!window.PAD_MOCK_MIGRATED,
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: 1, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED,
 				sources: Object.keys(sources).sort(function (a, b) {
 					return a === '' ? 1 : b === '' ? -1 : a.localeCompare(b);
 				}).map(function (k) {
@@ -1391,8 +1407,44 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			};
 		},
 
-		migrateBegin: function () {
+		// a leitura dos outros projetos (um por vez) e, depois de mover, o religar de cada um
+		migrateReadBegin: function () {
+			window.PAD_MOCK_READ_AT = 0;
+
+			return { total: 2 };
+		},
+
+		migrateReadStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 500);
+			});
+
+			return { done: ++window.PAD_MOCK_READ_AT, total: 2, failed: 0 };
+		},
+
+		migrateReadEnd: function () {
+			return { failed: [] };
+		},
+
+		migrateOthersStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 500);
+			});
+			window.PAD_MOCK_OTHERS_AT = (window.PAD_MOCK_OTHERS_AT || 0) + 1;
+
+			return { done: window.PAD_MOCK_OTHERS_AT, total: 2, failed: 0 };
+		},
+
+		migrateOthersEnd: function () {
+			window.PAD_MOCK_OTHERS_AT = 0;
+			window.PAD_MOCK_MIGRATED = true;
+
+			return { projects: 2, failed: [], folders: 6 };
+		},
+
+		migrateBegin: function (a) {
 			window.PAD_MOCK_MIG_AT = 0;
+			window.PAD_MOCK_ALL = !!(a && a.all);
 
 			return { total: 362 };
 		},
@@ -1407,9 +1459,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		migrateEnd: function () {
-			window.PAD_MOCK_MIGRATED = true;
+			var all = !!window.PAD_MOCK_ALL;
 
-			return { moved: 361, failed: [], relinked: 23, folders: 6, queue: 2, project: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL/01_PROJETOS/INTERPOL_ABERTURA.aep' };
+			if (!all) window.PAD_MOCK_MIGRATED = true;
+
+			return { moved: 361, failed: [], relinked: 23, folders: all ? 0 : 6, queue: 2, others: all ? 2 : 0, project: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL/01_PROJETOS/INTERPOL_ABERTURA.aep' };
 		},
 
 		migrateUndo: async function () {

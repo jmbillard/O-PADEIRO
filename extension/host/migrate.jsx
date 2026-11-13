@@ -23,6 +23,16 @@ Os arquivos usados que estão FORA da raiz não entram: é o coletar que copia e
                          que ficaram vazias e grava o registro (PAD_MIGRATION_LOG, na raiz)
   PADX.migrateUndo()   → desfaz pelo registro
 
+Todos os projetos da pasta (opcional; o padrão é só o aberto): para saber o que cada .aep usa e religar os arquivos
+dele, o After Effects precisa abrir cada um.
+
+  PADX.migrateReadBegin / Step / End   → abre cada outro projeto (sem salvar), anota o que ele usa e volta ao de antes:
+                                         'usado' passa a ser usado por qualquer projeto da pasta
+  PADX.migratePlan / Begin / Step / End, com { all: true }   → o mesmo plano, com esse uso somado
+  PADX.migrateOthersStep / End         → depois de mover: abre cada outro projeto, religa, salva e fecha (o original
+                                         de cada um fica guardado em PAD_MIGRATION_BACKUP, dentro dos externos); no fim
+                                         volta ao projeto de antes, apaga as pastas vazias e grava o registro
+
 Arquivo movido no disco não volta com o Ctrl+Z do After Effects: por isso o registro.
 
 */
@@ -34,7 +44,11 @@ var PAD_MIGRATION_FALLBACK = { projeto: '01_PROJETOS', saidas: '03_SAIDA', exter
 var PAD_FONT_EXT = /\.(otf|ttf|ttc|otc|woff2?|pfb|pfm|dfont)$/i;
 var PAD_PROJECT_EXT = /\.(aep|aet|aepx)$/i;
 
+var PAD_MIGRATION_BACKUP = '_originais_migracao'; // os .aep como eram antes de religar (dentro dos externos)
+
 var padMigration = null; // o plano da migração em andamento: { root, ops, done, failed, ... }
+var padMigrationRead = null; // a leitura dos outros projetos: { root, origin, list, at, used, failed }
+var padMigrationRest = null; // o que falta depois de mover, com todos os projetos: { plan, log, res, map, ... }
 
 function padSlash(path) {
 	return String(path).replace(/\\/g, '/');
@@ -131,7 +145,8 @@ function padIsFontsFolder(name) {
 
 // O plano: o que vai para onde. → { root, name, project, ops, stay, conflicts, others, outside, partial, sources, ... }
 // ops: [{ from, to (relativo à raiz), type, top, id (o item do After, se usado), first, project (o .aep aberto) }]
-function padMigrateBuild() {
+// all: soma o que os outros projetos da pasta usam (lido pelo migrateRead*)
+function padMigrateBuild(all) {
 	var file = app.project.file;
 
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
@@ -141,7 +156,17 @@ function padMigrateBuild() {
 	var rootKey = padPathKey(root.fsName);
 	var used = padMigrateUsed();
 	var state = { files: [], until: new Date().getTime() + PAD_MIGRATION_MS, partial: false };
-	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings };
+	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings, all: false };
+	var extra = all && padMigrationRead && padPathKey(padMigrationRead.root) == rootKey ? padMigrationRead.used : null;
+
+	// o que os outros projetos usam (o projeto aberto vem primeiro: os itens dele são os que este After religa agora)
+	if (extra) {
+		plan.all = true;
+
+		for (var e in extra) {
+			if (extra.hasOwnProperty(e) && !used[e]) used[e] = extra[e];
+		}
+	}
 	var taken = {};
 	var destSaidas = padMigrateDest(settings, 'saidas');
 	var destExt = padMigrateDest(settings, 'externos');
@@ -164,16 +189,21 @@ function padMigrateBuild() {
 		var u = used[key];
 		var op = { from: f.rel, to: '', type: 'externos', top: f.top, id: 0, first: false, project: false };
 
+		// os projetos mantêm a subpasta em que estavam (01 PROJETOS/versoes/x.aep → 01_PROJETOS/versoes/x.aep): só a
+		// pasta de cima muda
+		var below = f.top == '' ? name : f.rel.split('/').slice(1).join('/');
+
 		if (key == padPathKey(file.fsName)) {
 			op.type = 'projeto';
 			op.project = true;
-			op.to = padMigrateDest(settings, 'projeto') + '/' + name;
+			op.to = padMigrateDest(settings, 'projeto') + '/' + below;
 		} else if (padMigrateInJunk(f.rel)) {
 			// autosave, OLD, NÃO VALE…: não é do projeto de hoje; vai inteiro para os externos, com o caminho de antes
 			op.to = key.indexOf(extKey) == 0 ? f.rel : destExt + '/' + f.rel;
 		} else if (PAD_PROJECT_EXT.test(name)) {
 			op.type = 'projeto';
-			op.to = padMigrateDest(settings, 'projeto') + '/' + name;
+			op.other = true;
+			op.to = padMigrateDest(settings, 'projeto') + '/' + below;
 			plan.others++;
 		} else if (u && padCollectFolderPath(settings, u.kind) != null) {
 			op.type = u.kind;
@@ -229,10 +259,11 @@ function padMigrateBuild() {
 // → { root, name, total, stay, conflicts, others, outside, partial, undo (há um registro para desfazer),
 //     sources: [{ name ('' = soltos na raiz), count }], dests: [{ path, depth, type, count, extra (fora da árvore) }],
 //     links: [{ from, to, type, count }] }
-PADX.migratePlan = function () {
-	var plan = padMigrateBuild();
+// a: { all } (com o uso dos outros projetos, já lido)
+PADX.migratePlan = function (a) {
+	var plan = padMigrateBuild(a && a.all);
 	var folders = padStructureFolders(plan.settings);
-	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
+	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
 	var srcIndex = {};
 	var dstIndex = {};
 	var linkIndex = {};
@@ -431,9 +462,97 @@ function padMigrateQueue(prefixes) {
 	return changed;
 }
 
+/* ---------------------------------------------------------------
+   todos os projetos da pasta: a leitura do que cada um usa
+   --------------------------------------------------------------- */
+
+// Fecha o projeto aberto sem salvar e sem perguntar.
+function padMigrateClose() {
+	try {
+		app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);
+	} catch (err) { }
+}
+
+// Abre um projeto sem os avisos do After Effects (arquivos faltando, fontes…). → true se abriu
+function padMigrateOpen(path) {
+	var ok = false;
+
+	try {
+		app.beginSuppressDialogs();
+	} catch (err) { }
+
+	try {
+		app.open(new File(path));
+		ok = !!app.project.file && padPathKey(app.project.file.fsName) == padPathKey(path);
+	} catch (err) { }
+
+	try {
+		app.endSuppressDialogs(false);
+	} catch (err) { }
+
+	return ok;
+}
+
+// Começa a leitura: os outros projetos da pasta (os de autosave e OLD ficam de fora). → { total }
+PADX.migrateReadBegin = function () {
+	var file = app.project.file;
+
+	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
+	if (app.project.dirty) throw new Error('#PAD_109 - migrar todos os projetos: salve o projeto aberto antes (a migração fecha e abre cada projeto da pasta).');
+
+	var plan = padMigrateBuild(false);
+	var list = [];
+
+	for (var i = 0; i < plan.ops.length; i++) {
+		if (plan.ops[i].other) list.push(plan.root + '/' + plan.ops[i].from);
+	}
+
+	padMigrationRead = { root: plan.root, origin: file.fsName, list: list, at: 0, used: {}, failed: [] };
+
+	return { total: list.length };
+};
+
+// Lê um projeto: abre, anota o que ele usa e fecha sem salvar. → { done, total, failed }
+PADX.migrateReadStep = function () {
+	var read = padMigrationRead;
+
+	if (!read) throw new Error('#PAD_107 - migrar: a leitura dos projetos não foi começada.');
+
+	if (read.at < read.list.length) {
+		var path = read.list[read.at++];
+
+		if (padMigrateOpen(path)) {
+			var used = padMigrateUsed();
+
+			for (var k in used) {
+				if (used.hasOwnProperty(k) && !read.used[k]) read.used[k] = { id: 0, kind: used[k].kind, seq: used[k].seq, first: used[k].first };
+			}
+		} else read.failed.push(decodeURI(new File(path).name));
+
+		padMigrateClose();
+	}
+
+	return { done: read.at, total: read.list.length, failed: read.failed.length };
+};
+
+// Termina a leitura: volta ao projeto de antes. → { failed: [nome] } (os que não abriram: versão mais nova, corrompido…)
+PADX.migrateReadEnd = function () {
+	var read = padMigrationRead;
+
+	if (!read) throw new Error('#PAD_107 - migrar: a leitura dos projetos não foi começada.');
+
+	if (!app.project.file || padPathKey(app.project.file.fsName) != padPathKey(read.origin)) {
+		padMigrateClose();
+		padMigrateOpen(read.origin);
+	}
+
+	return { failed: read.failed };
+};
+
 // Começa: refaz o plano (a pasta pode ter mudado desde o desenho) e cria as pastas da estrutura. → { total }
-PADX.migrateBegin = function () {
-	var plan = padMigrateBuild();
+// a: { all } (com os outros projetos: o uso deles já foi lido)
+PADX.migrateBegin = function (a) {
+	var plan = padMigrateBuild(a && a.all);
 
 	if (plan.partial) throw new Error('#PAD_105 - migrar: a pasta é grande demais para ler de uma vez (mais de ' + PAD_MIGRATION_FILES + ' arquivos ou muito lenta). nada foi movido.');
 	if (new File(plan.root + '/' + PAD_MIGRATION_LOG).exists) throw new Error('#PAD_106 - migrar: esta pasta já foi migrada (há um registro nela). desfaça a migração antes de migrar de novo.');
@@ -471,7 +590,9 @@ PADX.migrateStep = function (a) {
 };
 
 // Termina: religa, salva o .aep no lugar novo, aponta a fila de render, apaga as pastas vazias e grava o registro.
-// → { moved, failed: [nome], relinked, folders (apagadas), queue, project }
+// → { moved, failed: [nome], relinked, folders (apagadas), queue, project, others }
+// com todos os projetos (o plano com all), as pastas vazias e o registro ficam para o migrateOthersEnd: 'others' diz
+// quantos projetos falta religar
 PADX.migrateEnd = function () {
 	var plan = padMigration;
 
@@ -482,8 +603,9 @@ PADX.migrateEnd = function () {
 	var map = {};
 	var tops = {};
 	var prefixes = [];
-	var log = { version: 1, date: new Date().getTime(), project: null, moves: [], queue: [] };
-	var res = { moved: plan.moved.length, failed: plan.failed, relinked: 0, folders: 0, queue: 0, project: '' };
+	var log = { version: 1, date: new Date().getTime(), project: null, moves: [], queue: [], backups: [] };
+	var res = { moved: plan.moved.length, failed: plan.failed, relinked: 0, folders: 0, queue: 0, project: '', others: 0 };
+	var others = [];
 	var destSaidas = padMigrateDest(plan.settings, 'saidas');
 	var saidasKey = padFolderKey(destSaidas.split('/')[0]);
 	var i;
@@ -492,8 +614,9 @@ PADX.migrateEnd = function () {
 		var op = plan.moved[i];
 
 		log.moves.push([op.from, op.to]);
-		if (op.id && op.first) map[padPathKey(plan.root + '/' + op.from)] = plan.root + '/' + op.to;
+		map[padPathKey(plan.root + '/' + op.from)] = plan.root + '/' + op.to;
 		if (op.top != '') tops[op.top] = true;
+		if (op.other) others.push(op);
 	}
 
 	padUndoBegin('PADEIRO - migrar a pasta do projeto');
@@ -536,13 +659,90 @@ PADX.migrateEnd = function () {
 
 	if (!res.project) app.project.save();
 
+	// com todos os projetos: falta religar cada um dos outros
+	if (plan.all && others.length) {
+		padMigrationRest = { plan: plan, log: log, res: res, map: map, tops: tops, prefixes: prefixes, list: others, at: 0, done: 0, failed: [], origin: app.project.file.fsName };
+		res.others = others.length;
+
+		return res;
+	}
+
+	padMigrateFinish(plan, log, tops, res);
+
+	return res;
+};
+
+// O fim de tudo: as pastas antigas que ficaram vazias saem e o registro é gravado.
+function padMigrateFinish(plan, log, tops, res) {
 	for (var t in tops) {
 		if (tops.hasOwnProperty(t)) res.folders += padRemoveEmpty(new Folder(plan.root + '/' + t));
 	}
 
 	saveTextFile(JSON.stringify(log), plan.root + '/' + PAD_MIGRATION_LOG);
+}
 
-	return res;
+// Religa um dos outros projetos (já no lugar novo): guarda o original, abre, religa os itens e a fila de render,
+// salva e fecha. → { done, total, failed }
+PADX.migrateOthersStep = function () {
+	var rest = padMigrationRest;
+
+	if (!rest) throw new Error('#PAD_107 - migrar: a migração não foi começada.');
+
+	if (rest.at < rest.list.length) {
+		var op = rest.list[rest.at++];
+		var path = rest.plan.root + '/' + op.to;
+		var backup = padMigrateDest(rest.plan.settings, 'externos') + '/' + PAD_MIGRATION_BACKUP + '/' + op.from;
+		var saved = false;
+
+		// o original, como estava (o After salva por cima: de uma versão mais velha, ele sai convertido)
+		padEnsureFolder(new File(rest.plan.root + '/' + backup).parent.fsName);
+
+		if (new File(path).copy(rest.plan.root + '/' + backup)) {
+			if (padMigrateOpen(path)) {
+				try {
+					padMigrateRelink(rest.map);
+					padMigrateQueue(rest.prefixes);
+					app.project.save();
+					saved = true;
+				} catch (err) { }
+			}
+
+			padMigrateClose();
+		}
+
+		if (saved) {
+			rest.log.backups.push([backup, op.to]);
+			rest.done++;
+		} else {
+			// não abriu (versão mais nova, corrompido): fica movido, sem religar, e a cópia não é precisa
+			try {
+				new File(rest.plan.root + '/' + backup).remove();
+			} catch (err) { }
+			rest.failed.push(op.to.replace(/^.*\//, ''));
+		}
+	}
+
+	return { done: rest.at, total: rest.list.length, failed: rest.failed.length };
+};
+
+// Termina com todos os projetos: volta ao de antes, apaga as pastas vazias e grava o registro.
+// → { projects (religados), failed: [nome], folders }
+PADX.migrateOthersEnd = function () {
+	var rest = padMigrationRest;
+
+	if (!rest) throw new Error('#PAD_107 - migrar: a migração não foi começada.');
+
+	padMigrationRest = null;
+	padMigrationRead = null;
+
+	if (!app.project.file || padPathKey(app.project.file.fsName) != padPathKey(rest.origin)) {
+		padMigrateClose();
+		padMigrateOpen(rest.origin);
+	}
+
+	padMigrateFinish(rest.plan, rest.log, rest.tops, rest.res);
+
+	return { projects: rest.done, failed: rest.failed, folders: rest.res.folders };
 };
 
 // Desfaz a última migração da pasta do projeto aberto, pelo registro: os arquivos voltam, os itens são religados,
@@ -573,6 +773,26 @@ PADX.migrateUndo = function () {
 			map[padPathKey(from)] = to;
 			dirs[log.moves[i][1].split('/')[0]] = true;
 		} else res.failed.push(log.moves[i][1]);
+	}
+
+	// os outros projetos: o original de cada um (guardado antes de religar) volta para o lugar de antes, por cima
+	// do religado
+	var backTo = {};
+
+	for (i = 0; i < log.moves.length; i++) backTo[log.moves[i][1]] = log.moves[i][0];
+
+	for (i = 0; i < (log.backups || []).length; i++) {
+		var original = new File(root + '/' + log.backups[i][0]);
+		var place = backTo[log.backups[i][1]] ? root + '/' + backTo[log.backups[i][1]] : '';
+
+		if (!place || !original.exists) continue;
+
+		try {
+			new File(place).remove();
+		} catch (err) { }
+
+		padMoveFile(original.fsName, place);
+		dirs[log.backups[i][0].split('/')[0]] = true;
 	}
 
 	padUndoBegin('PADEIRO - desfazer a migração');

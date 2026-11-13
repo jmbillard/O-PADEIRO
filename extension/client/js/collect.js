@@ -549,6 +549,25 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			legend.appendChild(chip);
 		});
 
+		// com outros projetos na pasta: religar todos (o After abre cada um) ou só o aberto (o padrão)
+		if (plan.others && !plan.undo) {
+			var all = el('label', 'cfg-switch mg-all');
+			var input = el('input');
+
+			input.type = 'checkbox';
+			input.id = 'mg-all';
+			input.checked = !!state.mig.all;
+			input.disabled = state.busy;
+			input.addEventListener('change', function () {
+				setAllProjects(input.checked);
+			});
+			all.title = 'ligado: o After Effects abre cada projeto da pasta para ler o que ele usa e, depois de mover, abre de novo para religar e salvar (o original de cada um fica guardado nos arquivos externos). demora mais.\ndesligado: só o projeto aberto é religado; os outros vão para a pasta dos projetos sem religar.';
+			all.appendChild(input);
+			all.appendChild(el('span', 'cfg-switch-track'));
+			all.appendChild(el('span', 'cfg-switch-label', 'religar também ' + (plan.others === 1 ? 'o outro projeto' : 'os outros ' + plan.others + ' projetos') + ' da pasta'));
+			box.appendChild(all);
+		}
+
 		grid.appendChild(oldCol);
 		grid.appendChild(el('div', 'mg-gap'));
 		grid.appendChild(newCol);
@@ -595,7 +614,9 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		else if (plan.undo) notes.push('esta pasta já foi migrada');
 		else if (plan.total) notes.push('nada foi movido ainda');
 		if (plan.conflicts) notes.push(plural(plan.conflicts, 'nome repetido ganha', 'nomes repetidos ganham') + ' _2');
-		if (plan.others) notes.push(plural(plan.others, 'outro .aep vai', 'outros .aep vão') + ' sem religar');
+		if (plan.others && !plan.all) notes.push(plural(plan.others, 'outro .aep vai', 'outros .aep vão') + ' sem religar');
+		if (plan.others && plan.all) notes.push(plural(plan.others, 'outro projeto é religado', 'outros projetos são religados') + ' (o After abre cada um)');
+		if (state.mig.unread && state.mig.unread.length) notes.push(plural(state.mig.unread.length, 'projeto não abriu', 'projetos não abriram') + ' (vão sem religar)');
 		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta fica', 'arquivos de fora da pasta ficam') + ' para o Coletar');
 		status(notes.join(' · ') + (notes.length ? '.' : ''), '');
 		$('fw-status').title = notes.join('\n');
@@ -610,7 +631,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		try {
 			var plan = await call('migratePlan');
 
-			state.mig = { plan: plan, note: '', done: false };
+			state.mig = { plan: plan, note: '', done: false, all: false, unread: [] };
 			state.finds = null;
 			$('fw-list').hidden = true;
 			$('fw-empty').hidden = true;
@@ -646,6 +667,44 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		load();
 	}
 
+	// todos os projetos: o After abre cada outro projeto da pasta para ler o que ele usa (o plano passa a contar
+	// como usado o que qualquer um usa); desligando, volta o plano só do projeto aberto
+	async function setAllProjects(on) {
+		if (state.busy) return;
+
+		state.busy = true;
+		state.mig.note = '';
+		migFooter();
+
+		try {
+			if (on) {
+				var begin = await call('migrateReadBegin');
+				var step = { done: 0, total: begin.total };
+
+				try {
+					while (step.done < step.total) {
+						status('lendo os projetos da pasta: ' + (step.done + 1) + '/' + step.total + '…');
+						step = await call('migrateReadStep');
+					}
+				} finally {
+					state.mig.unread = (await call('migrateReadEnd')).failed || [];
+				}
+			} else state.mig.unread = [];
+
+			state.mig.all = on;
+			state.mig.plan = await call('migratePlan', { all: on });
+		} catch (err) {
+			state.mig.all = false;
+			state.busy = false;
+			renderMigration();
+			status(err.message, 'error');
+			return;
+		}
+
+		state.busy = false;
+		renderMigration();
+	}
+
 	// migra em lotes (o After Effects fica livre entre um e outro) e conta no rodapé
 	async function migrate() {
 		if (state.busy) return;
@@ -655,7 +714,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		migFooter();
 
 		try {
-			var begin = await call('migrateBegin');
+			var begin = await call('migrateBegin', { all: !!state.mig.all });
 			var step = { done: 0, total: begin.total, failed: 0 };
 
 			while (step.done < step.total) {
@@ -672,6 +731,28 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			if (res.queue) parts.push(plural(res.queue, 'saída da fila apontada', 'saídas da fila apontadas') + ' para a pasta nova');
 			if (res.folders) parts.push(plural(res.folders, 'pasta vazia apagada', 'pastas vazias apagadas'));
 			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde ser movido', 'não puderam ser movidos'));
+
+			// todos os projetos: cada um dos outros é aberto, religado, salvo e fechado; no fim, volta o de antes
+			if (res.others) {
+				var others = { done: 0, total: res.others };
+				var after;
+
+				try {
+					while (others.done < others.total) {
+						status('religando os projetos da pasta: ' + (others.done + 1) + '/' + others.total + '…');
+						others = await call('migrateOthersStep');
+					}
+				} finally {
+					after = await call('migrateOthersEnd');
+				}
+
+				if (after.projects) parts.push(plural(after.projects, 'outro projeto religado', 'outros projetos religados'));
+				if (after.failed && after.failed.length) {
+					parts.push(plural(after.failed.length, 'projeto não abriu', 'projetos não abriram') + ' (movido sem religar)');
+					res.failed = (res.failed || []).concat(after.failed);
+				}
+				if (after.folders && !res.folders) parts.push(plural(after.folders, 'pasta vazia apagada', 'pastas vazias apagadas'));
+			}
 
 			// o desenho do que foi feito fica na tela (o plano de antes), agora com o desfazer
 			state.mig.plan.undo = true;

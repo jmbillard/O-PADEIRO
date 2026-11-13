@@ -129,6 +129,11 @@
   display: none;
 }
 
+/* a opção de religar todos os projetos da pasta, em cima do desenho */
+.mg-all {
+  margin: 0 0 12px 2px;
+}
+
 .mg-grid {
   position: relative; /* por cima das faixas: elas saem de trás das pastas */
   z-index: 1;
