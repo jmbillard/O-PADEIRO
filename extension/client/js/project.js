@@ -345,7 +345,7 @@ projetos com o nome certo).
 			flow.attr = null;
 			flow.walk = null;
 		}
-		if (flow.choice === 'new' && !state.novaEdited) $('nova-name').value = typedName();
+		if (flow.choice === 'new') $('nova-name').value = $('claq').value.trim();
 
 		if (!claq) {
 			flow.matches = [];
@@ -390,20 +390,11 @@ projetos com o nome certo).
 			if (!p.deep && !state.userChose) flow.choice = '';
 			if (flow.choice === 'new') {
 				await ensureBases();
-				if (!state.novaEdited) $('nova-name').value = typedName();
+				$('nova-name').value = $('claq').value.trim();
 			}
 			renderAttractions();
 			updatePick();
 		}, LOOKUP_MS);
-	}
-
-	// o nome da atração nova: o que foi digitado antes da barra, sem os números do fim (DOMINGÃO 9 11 → DOMINGÃO)
-	function typedName() {
-		return claqParts().first.split(/\s+/).filter(function (w, i, all) {
-			return !all.slice(i).every(function (x) {
-				return /^[\d\-.]+$/.test(x);
-			});
-		}).join(' ');
 	}
 
 	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta
@@ -437,7 +428,7 @@ projetos com o nome certo).
 		var p = claqParts();
 		var hint = '';
 		var novaOn = flow.choice === 'new' && !p.deep;
-		var novaLabel = aepName(typedName()) || 'o nome digitado';
+		var novaLabel = aepName(p.first) || 'o nome digitado';
 
 		// a atração nova toma o lugar do campo (o nome e a categoria); o × ou Esc volta para a busca
 		$('claq-combo').hidden = novaOn;
@@ -514,12 +505,17 @@ projetos com o nome certo).
 	}
 
 	// volta da atração nova para a busca (o que estava digitado fica)
+	// os dois campos são um só: o mesmo texto, o cursor no fim (sem seleção) e a busca refeita com o que está lá
 	function leaveNova() {
+		var input = $('claq');
+
 		flow.choice = '';
 		state.userChose = false;
+		input.value = $('nova-name').value;
 		renderAttractions();
-		updatePick();
-		$('claq').focus();
+		input.focus();
+		input.setSelectionRange(input.value.length, input.value.length);
+		lookup();
 	}
 
 	async function chooseAttraction(key) {
@@ -548,7 +544,7 @@ projetos com o nome certo).
 
 		if (key === 'new') {
 			await ensureBases();
-			if (!state.novaEdited) $('nova-name').value = typedName();
+			$('nova-name').value = $('claq').value.trim();
 		}
 		renderAttractions();
 		updatePick();
@@ -1434,7 +1430,6 @@ projetos com o nome certo).
 		flow.what = '';
 		flow.mode = '';
 		state.userChose = false;
-		state.novaEdited = false;
 		state.claqClosed = false;
 		state.pickKey = null;
 		state.plan = null;
@@ -1588,9 +1583,11 @@ projetos com o nome certo).
 			renderAttractions();
 		});
 
-		// nova atração: o nome (digitado à mão, para de seguir a busca) e a categoria
+		// nova atração: o nome é o mesmo texto do campo da busca (o que se digita num vale no outro) e a categoria
 		$('nova-name').addEventListener('input', function () {
-			state.novaEdited = true;
+			$('claq').value = this.value;
+			flow.claquete = this.value.trim();
+			if (!flow.claquete) return leaveNova(); // apagou tudo: volta para a busca, vazia
 			renderNova();
 		});
 		onEnter('nova-name', claqEnter);
