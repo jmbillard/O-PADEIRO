@@ -834,16 +834,18 @@ body.bar-page {
   }
 }
 
-/* gaveta na vertical em coluna (até 159 px): abre para baixo, o puxador em cima (o lado redondo), o separador
-   deitado e as ferramentas uma embaixo da outra; a seta aponta para cima */
-@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
+/* gaveta na vertical (qualquer largura): abre para baixo, do mesmo jeito. o puxador em cima, na largura toda (o lado
+   redondo), o separador deitado e as ferramentas embaixo: em linhas, no painel largo; uma embaixo da outra, no
+   estreito (até 159 px). a seta aponta para cima */
+@media (max-aspect-ratio: 1/1) {
   .bar-drawer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px; /* o espaço entre os botões, na coluna */
+    width: 100%;
     max-width: none;
     max-height: 0;
-    margin: -2px 0 0;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    margin: -4px 0 0;
     border-radius: var(--drawer-round) var(--drawer-round) var(--drawer-r) var(--drawer-r);
   }
 
@@ -853,22 +855,11 @@ body.bar-page {
     margin: 0;
   }
 
-  .bar-drawer-btn {
-    max-width: none;
-    max-height: 120px;
-  }
-
-  .bar-drawer-btn.is-folded {
-    max-width: none;
-    max-height: 0;
-    margin: -2px 0 0;
-    padding-block: 0;
-  }
-
   .drawer-handle {
     width: auto;
     height: max(30px, calc(var(--drawer-round) + 10px));
-    margin: 0;
+    flex: 0 0 100%;
+    align-self: auto;
     padding: 8px 0 1px;
     border-radius: calc(var(--drawer-round) - 3px) calc(var(--drawer-round) - 3px) 4px 4px;
   }
@@ -876,6 +867,8 @@ body.bar-page {
   .drawer-sep {
     width: auto;
     height: 1px;
+    flex: 0 0 calc(100% - 16px);
+    align-self: auto;
     margin: 0 8px;
   }
 
@@ -894,12 +887,37 @@ body.bar-page {
   }
 }
 
-/* vertical larga (as ferramentas em linhas): a gaveta quebra a linha se não couber */
+/* no painel largo, a gaveta não passa do tamanho de três ferramentas lado a lado (não estica até as bordas) */
 @media (max-aspect-ratio: 1/1) and (min-width: 160px) {
+  .bar-drawer,
   .bar-drawer.is-open {
-    max-width: 100%;
-    flex-wrap: wrap;
-    justify-content: center;
+    max-width: 240px;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
+  .bar-drawer {
+    flex-flow: column nowrap;
+    align-items: stretch;
+    gap: 2px; /* o espaço entre os botões, na coluna */
+    margin: -2px 0 0;
+  }
+
+  .drawer-handle,
+  .drawer-sep {
+    flex: 0 0 auto;
+  }
+
+  .bar-drawer-btn {
+    max-width: none;
+    max-height: 120px;
+  }
+
+  .bar-drawer-btn.is-folded {
+    max-width: none;
+    max-height: 0;
+    margin: -2px 0 0;
+    padding-block: 0;
   }
 }
 

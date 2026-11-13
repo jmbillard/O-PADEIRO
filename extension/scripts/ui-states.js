@@ -72,6 +72,13 @@ const CHECKS = [
 		await p.click('#drawer-organizar');
 		await p.waitForTimeout(700);
 	}],
+	// a vertical larga (as ferramentas em linhas): a gaveta abre para baixo do mesmo jeito
+	['barra: gaveta projeto, vertical larga 200 px', 'bar.html?mock=localfiles', async (p) => {
+		await p.setViewportSize({ width: 200, height: 720 });
+		await p.waitForTimeout(800);
+		await p.click('#drawer-projeto');
+		await p.waitForTimeout(700);
+	}],
 	['barra: gaveta templates, vertical 86 px', 'bar.html', async (p) => {
 		await p.setViewportSize({ width: 86, height: 720 });
 		await p.waitForTimeout(800);

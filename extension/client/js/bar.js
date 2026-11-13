@@ -685,12 +685,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return window.matchMedia('(max-aspect-ratio: 1/1)').matches;
 	}
 
-	// o lado do puxador é meio círculo: metade da altura da gaveta (na vertical, da largura)
+	// o lado do puxador é meio círculo: metade da altura da gaveta. na vertical ele fica em cima, com metade da
+	// largura, até 22 px (num painel largo a gaveta tem a largura toda: meio círculo ficaria enorme)
 	function roundDrawers() {
 		var v = vertical();
 
 		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer'), function (d) {
-			var size = v ? d.offsetWidth : d.offsetHeight;
+			var size = v ? Math.min(d.offsetWidth, 44) : d.offsetHeight;
 
 			if (size) d.style.setProperty('--drawer-round', Math.round(size / 2) + 'px');
 		});
@@ -760,6 +761,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		new MutationObserver(function () {
 			btn.setAttribute('aria-expanded', box.classList.contains('is-open') ? 'true' : 'false');
 		}).observe(box, { attributes: true, attributeFilter: ['class'] });
+
+		// o lado redondo acompanha o tamanho da gaveta a todo momento (abrindo, o painel mudando de tamanho ou de
+		// sentido): medir só ao abrir deixava o raio de um sentido valendo no outro
+		if (window.ResizeObserver) new ResizeObserver(roundDrawers).observe(box);
 
 		return [btn, box];
 	}
