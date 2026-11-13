@@ -44,6 +44,15 @@ async function openTemplate(page) {
 const CHECKS = [
 	['barra', 'bar.html'],
 	['tour', 'bar.html?mock=nosetup'],
+	// o painel da barra deitado e em pé, no mínimo (86 px no menor lado)
+	['barra: horizontal 86 px', 'bar.html', async (p) => {
+		await p.setViewportSize({ width: 900, height: 86 });
+		await p.waitForTimeout(500);
+	}],
+	['barra: vertical 86 px', 'bar.html', async (p) => {
+		await p.setViewportSize({ width: 86, height: 720 });
+		await p.waitForTimeout(500);
+	}],
 	['criador', 'maker.html', async (p) => {
 		await p.click('#btn-import-add');
 		await p.waitForTimeout(900); // o campo abre animado (motion.js): mede depois de aberto

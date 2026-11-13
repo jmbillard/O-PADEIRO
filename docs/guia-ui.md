@@ -127,6 +127,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 - **altura automática** → a janela cresce para caber a etapa (`fitHeight`) e volta ao tamanho padrão quando cabe.
 - **sempre no meio da tela** → toda janela (menos a barra) abre centralizada e, ao crescer ou encolher, se centraliza de novo. mude o tamanho só pelo `PAD_BRIDGE.resizeWindow` (`bridge.js`): ele limita o tamanho à área livre da tela (menos 24 px de margem), centraliza e, se o After Effects não deixar mover a janela, encolhe a altura até a parte de baixo caber na tela.
+- **a barra: horizontal e vertical, no mínimo 86 px** → o painel da barra pode ficar deitado ou em pé, e o menor lado dele tem 86 px. tudo o que é da barra (botões, bolinhas, dicas, gavetas) é testado nos dois sentidos, com 86 px: 900 × 86 e 86 × 720. as dicas ficam por cima da barra, dentro do painel (no After, nada sai dele).
 - **a ação final fecha a janela** (ex: **Salvar** no editor do projeto).
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
@@ -163,6 +164,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - [ ] **cantos concêntricos**: `node extension/scripts/check-corners.js` sem nenhum canto fora da conta;
 - [ ] **rodapés na mesma linha**: `node extension/scripts/check-footers.js` sem nenhum botão fora;
 - [ ] **sem halos** (nenhuma sombra ou anel em volta dos componentes) e **o foco aparece inteiro** ([acima](#-foco-um-contorno-fino-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
+- [ ] **a barra nos dois sentidos**, com 86 px (horizontal e vertical): as telas `barra: horizontal 86 px` e `barra: vertical 86 px` das checagens;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
 - [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
