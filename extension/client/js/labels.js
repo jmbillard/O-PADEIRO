@@ -220,7 +220,7 @@ After (Ctrl/Cmd+Z).
 			var res = await call('tagsClearAll');
 
 			replay(broom, 'is-sweeping');
-			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · Ctrl/Cmd+Z desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
+			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · ' + PAD_KEYS.undoKey + ' desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
 			await load();
 		});
 	}

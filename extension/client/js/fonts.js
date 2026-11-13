@@ -8,7 +8,7 @@ Uma linha por fonte usada no projeto: ✓ ok · ↑ enviando · ↓ falta instal
 Clicar numa linha abre a troca: a lista com busca (a mesma da atração) com as sugestões (a mesma família, a troca
 que a equipe já usou), as do banco e as instaladas, só os nomes, e embaixo a prévia da fonte marcada. A que não
 tem arquivo já abre assim, com a sugestão. Resolver instala as que faltam (e as escolhidas que estão só no
-banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
+banco) e troca as escolhidas no projeto inteiro (um Cmd/Ctrl+Z desfaz).
 
 */
 

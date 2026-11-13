@@ -156,7 +156,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 **a linha de status** → uma linha embaixo dos botões, que nunca cobre nenhum deles. três coisas aparecem nela, nesta ordem de vez:
 
-- **o resultado da última ação**: uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro), o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`) e o × para fechar. um clique no texto abre a mensagem inteira; uma ação que pede uma decisão traz os botões na própria linha.
+- **o resultado da última ação**: uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro), o texto com a contagem (`3 itens renomeados`), o botão **desfazer** quando dá para desfazer, e o × para fechar. um clique no texto abre a mensagem inteira; uma ação que pede uma decisão traz os botões na própria linha.
 - **a dica do botão sob o mouse**: o nome e os dois cliques, cada um com o mousezinho (no lugar do balão, que cobria os botões vizinhos).
 - **a conferência do projeto**, em repouso: o que as bolinhas sabem, por extenso (`projeto sem atração nem pasta`, `2 arquivos fora das pastas de projetos`, as fontes que faltam). clicar numa pendência leva à ferramenta dela, e com o mouse em cima o botão da ferramenta acende. sem pendências: `em ordem: projeto, fontes e arquivos`.
 
@@ -220,7 +220,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | ❹ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. |
 | ❺ | **✓** | já está na pasta do projeto. (**–** cinza: tipo fora da árvore do coletar.) |
 | ❻ | **outra pasta** | coleta numa pasta escolhida. |
-| ❼ | **resolver os que faltam** | procura cada arquivo faltando no volume certo (`VFX`, `VFX-1` … `VFX-5`), monta o share se precisar e relinka (desfaz com um Ctrl+Z). |
+| ❼ | **resolver os que faltam** | procura cada arquivo faltando no volume certo (`VFX`, `VFX-1` … `VFX-5`), monta o share se precisar e relinka (desfaz com um `Cmd+Z` no macOS, `Ctrl+Z` no Windows). |
 | ❽ | **Coletar** | copia o que falta para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto. |
 
 > 🚩 *obs:*\
@@ -336,7 +336,7 @@ o mesmo vocabulário em todos os painéis:
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
 | `Ctrl/Cmd+Enter` | preenche (templates) |
-| `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
+| `Cmd+Z` / `Cmd+Shift+Z` (macOS) · `Ctrl+Z` / `Ctrl+Shift+Z` (Windows) | num campo de texto, desfaz / refaz o texto; fora dele, com o foco em qualquer janela do padeiro, desfaz / refaz **no After Effects** (o atalho é repassado) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` abre as opções (`Esc` volta).

@@ -222,8 +222,20 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 
 	registerKeys();
 
+	// Cmd+Z (macOS) / Ctrl+Z (Windows) com o foco num painel do padeiro: o painel pede essas teclas (para editar
+	// texto), então o atalho não chega sozinho ao After Effects. fora de um campo de texto, o painel repassa:
+	// desfaz (com Shift, refaz) no After Effects, como se o foco estivesse lá
+	document.addEventListener('keydown', function (e) {
+		if (e.defaultPrevented || !isMod(e) || e.altKey || (e.key || '').toLowerCase() !== 'z') return;
+		if (isTyping(document.activeElement) || !window.PAD_BRIDGE) return;
+
+		e.preventDefault();
+		window.PAD_BRIDGE.call('undo', { redo: e.shiftKey }).catch(function () { });
+	});
+
 	window.PAD_KEYS = {
 		mac: MAC,
+		undoKey: MAC ? 'Cmd+Z' : 'Ctrl+Z', // o nome do atalho de desfazer neste sistema, para os textos
 		isMod: isMod,
 		isTyping: isTyping,
 		focusItem: focusItem,

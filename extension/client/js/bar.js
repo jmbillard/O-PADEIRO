@@ -55,7 +55,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return PAD_ICONS.svg(name, ''); // a barra tem uma cópia de cada: os ids das máscaras ficam sem sufixo
 	}
 
-	var UNDO_KEY = /Mac/i.test(navigator.platform || '') ? 'Cmd+Z' : 'Ctrl+Z';
 
 	// A linha de status da barra: o resultado da última ação, embaixo dos botões (não cobre nenhum). Com a barra
 	// baixa demais ou vertical, o CSS mostra como um aviso flutuante. Um clique no texto abre a mensagem inteira.
@@ -251,6 +250,23 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		else if (fine.length) box.appendChild(checkItem('ok', fine.join(', ').replace(/, ([^,]*)$/, ' e $1') + ' ok'));
 	}
 
+	// o "desfazer" do aviso: um botão de verdade (o atalho depende do sistema, Cmd+Z no macOS e Ctrl+Z no
+	// Windows, e com o foco na barra nem sempre chega ao After Effects). name: o nome do grupo de desfazer no host
+	function undoAction(name) {
+		return {
+			label: 'desfazer',
+			run: async function () {
+				try {
+					await call('undo', { name: name });
+					toast('success', 'desfeito.', 3000);
+					setTimeout(watchCollect, 300);
+				} catch (err) {
+					toast('error', err.message);
+				}
+			}
+		};
+	}
+
 	// "3 comps renomeadas", "1 comp renomeada": o número e o plural (um / vários)
 	function counted(n, one, many) {
 		return n + ' ' + (n === 1 ? one : many);
@@ -261,7 +277,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   ========================================================= */
 
 	// Resultado das ações do host: { messages, data }. Mensagens das libs viram o aviso.
-	function report(res, doneText) {
+	// action: o botão no fim do aviso (o "desfazer" das ações que dá para desfazer)
+	function report(res, doneText, action) {
 		var messages = res && res.messages ? res.messages : [];
 
 		if (messages.length) {
@@ -269,7 +286,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			toast(failed ? 'error' : 'success', (failed ? messages.map(PAD_UTIL.errorText) : messages).join('\n'));
 		}
-		if (!messages.length && doneText) toast('success', doneText);
+		if (!messages.length && doneText) toast('success', doneText, 0, action);
 	}
 
 	// O CATADOR e O TIPÓGRAFO trabalhando: o nome do botão vira a contagem e a linha embaixo enche.
@@ -432,7 +449,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var n = res && res.data ? res.data.count : null;
 
 			if (n === 0) report(res, 'nenhum nome mudou: as comps selecionadas já estavam no padrão.');
-			else report(res, (n ? counted(n, 'item renomeado', 'itens renomeados') : 'comps renomeadas') + ' · ' + UNDO_KEY + ' desfaz');
+			else report(res, n ? counted(n, 'item renomeado', 'itens renomeados') : 'comps renomeadas', undoAction('renomear comps'));
 		},
 
 		renameOutputs: async function () {
@@ -440,7 +457,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var n = res && res.data ? res.data.count : null;
 
 			if (n === 0) report(res, 'nenhuma saída mudou: a fila de render já estava no padrão.');
-			else report(res, (n ? counted(n, 'saída de render renomeada', 'saídas de render renomeadas') : 'saídas de render renomeadas') + ' · ' + UNDO_KEY + ' desfaz');
+			else report(res, n ? counted(n, 'saída de render renomeada', 'saídas de render renomeadas') : 'saídas de render renomeadas', undoAction('renomear outputs'));
 		},
 
 		// organizar: sem nenhuma comp selecionada nem com comentário, nada iria para as comps de render (tudo
@@ -471,7 +488,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var n = res && res.data ? res.data.count : null;
 
 			if (n === 0) report(res, 'projeto já organizado: nada mudou de lugar.');
-			else report(res, 'projeto organizado' + (n ? ': ' + counted(n, 'item mudou', 'itens mudaram') + ' de pasta' : '') + ' · ' + UNDO_KEY + ' desfaz');
+			else report(res, 'projeto organizado' + (n ? ': ' + counted(n, 'item mudou', 'itens mudaram') + ' de pasta' : ''), undoAction('organização automática do projeto'));
 		},
 
 		openLabels: function () {

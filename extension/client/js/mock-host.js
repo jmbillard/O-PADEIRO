@@ -542,6 +542,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: ['#PAD_033 - 1 saída(s) não foram renomeadas (já renderizadas ou bloqueadas).'] };
 		},
 
+		undo: function () {
+			return { done: true };
+		},
+
 		// ?mock=nosel: nenhuma comp selecionada nem com comentário (a barra pergunta antes de organizar)
 		organizeCheck: function () {
 			return mode === 'nosel' ? { comps: 6, selected: 0, tagged: 0 } : { comps: 6, selected: 2, tagged: 3 };

@@ -1947,6 +1947,33 @@ PADX.collectFonts = function (a) {
 	});
 };
 
+// Desfazer / refazer no After Effects, pedido por um painel (o botão "desfazer" do aviso da barra e o Cmd/Ctrl+Z
+// com o foco num painel: com o painel em foco, o atalho não chega sozinho ao After Effects).
+// a: { name, redo }. com o nome do grupo (o do padGroup), tenta primeiro o item de menu com esse nome ("Undo
+// renomear comps" / "Desfazer renomear comps"): só existe se a ação ainda é a última. sem ele, o desfazer comum.
+PADX.undo = function (a) {
+	var id = 0;
+
+	if (a && a.name && !a.redo) {
+		var prefixes = ['Undo ', 'Desfazer '];
+
+		for (var i = 0; i < prefixes.length && !id; i++) {
+			try {
+				id = app.findMenuCommandId(prefixes[i] + a.name);
+			} catch (err) { }
+		}
+	}
+
+	if (!id) {
+		if (a && a.redo) id = 2035; // Edit > Redo
+		else id = 16; // Edit > Undo
+	}
+
+	app.executeCommand(id);
+
+	return { done: true };
+};
+
 // O que cada item do projeto tem agora (nome ou pasta), pelo id: a barra conta o que mudou depois da ação.
 function padItemSnapshot(key) {
 	var snap = {};
