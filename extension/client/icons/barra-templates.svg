@@ -2,5 +2,5 @@
 	<g class="anim-tpl">
 	<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
 	<path class="tpl-head" d="M3.5 9.5h17" />
-	<path class="tpl-side" d="M9 9.5v10" /></g>
+	<path class="tpl-side" d="M9 9.5v10" transform="translate(11.5 0)" opacity="0" /></g>
 </svg>

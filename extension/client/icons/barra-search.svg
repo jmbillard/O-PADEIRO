@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+	<defs>
+	<clipPath id="search-lens{u}"><circle cx="10" cy="10" r="6.3" /></clipPath></defs>
 	<g class="anim-search">
 	<circle cx="10" cy="10" r="7.2" />
-	<path d="m15.300 15.300 5.200 5.200" /></g>
+	<path d="m15.300 15.300 5.200 5.200" />
+	<g clip-path="url(#search-lens{u})"><path class="search-glint" d="M2 14 14 2" stroke-width="2.2" opacity="0" /></g></g>
 </svg>

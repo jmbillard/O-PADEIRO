@@ -6,7 +6,7 @@
    nele); ao sair, volta. nada anima e volta sozinho com o mouse ainda em cima.
    ========================================================= */
 
-/* buscar: a lupa procura (vai para o lado e para cima, inclinada) */
+/* buscar: a lupa procura (vai para o lado e para cima, inclinada) e, ao levantar, um reflexo passa no vidro */
 .anim-search {
   transform-origin: 40% 40%;
   transition: transform 320ms var(--ease-soft);
@@ -17,21 +17,42 @@
   transform: translate(-1.5px, -1.5px) rotate(-8deg);
 }
 
-/* templates: a coluna da lista se abre e o título desce um pouco (a janela se arruma) */
-.anim-tpl .tpl-side,
-.anim-tpl .tpl-head {
+.anim-search .search-glint {
+  opacity: 0;
+  stroke-opacity: 0.85;
+}
+
+.bar-btn:hover:not(:disabled) .anim-search .search-glint,
+.tab:hover .anim-search .search-glint {
+  animation: search-glint 620ms ease-out 120ms;
+}
+
+@keyframes search-glint {
+  0% {
+    opacity: 1;
+    transform: translate(-7px, -7px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(9px, 9px);
+  }
+}
+
+/* templates: como na janela de fato, a divisão das colunas entra pela direita (a busca encolhe e a fila aparece) */
+.anim-tpl .tpl-side {
+  opacity: 0;
+  transform: translateX(11.5px);
   transform-box: view-box;
-  transition: transform 420ms var(--ease-soft);
+  transition:
+    transform 460ms var(--ease-soft),
+    opacity 200ms ease;
 }
 
 .bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
 .tab:hover .anim-tpl .tpl-side {
-  transform: translateX(4px);
-}
-
-.bar-btn:hover:not(:disabled) .anim-tpl .tpl-head,
-.tab:hover .anim-tpl .tpl-head {
-  transform: translateY(-1.5px);
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* pastas: a frente da pasta se abre */
@@ -93,9 +114,8 @@
   transform: translateY(-1.2px) rotate(5deg);
 }
 
-/* projeto: a claquete fica aberta (diferencia dos outros ícones); no hover ela bate e fica fechada */
+/* projeto: a claquete fechada; no hover ela abre (passa um pouco e assenta) e fica aberta */
 .anim-clap .clap-top {
-  transform: rotate(-15deg);
   transform-box: fill-box;
   transform-origin: 0 100%;
 }
@@ -107,15 +127,15 @@
 
 @keyframes clap {
   0% {
-    transform: rotate(-15deg);
+    transform: rotate(0);
   }
 
-  70% {
-    transform: rotate(1deg);
+  65% {
+    transform: rotate(-19deg);
   }
 
   100% {
-    transform: rotate(0);
+    transform: rotate(-15deg);
   }
 }
 

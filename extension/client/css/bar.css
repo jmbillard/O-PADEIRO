@@ -420,8 +420,7 @@ body.bar-page {
 
 /* ---------- animações dos ícones (a cada hover) ---------- */
 
-/* templates e apontamento: leve giro e zoom */
-.bar-btn[data-icon="templates"]:hover:not(:disabled) svg,
+/* os ícones pequenos (links, apontamento): leve giro e zoom */
 .bar-icon:hover:not(:disabled) svg {
   transform: scale(1.1) rotate(-4deg);
 }
