@@ -842,8 +842,8 @@ PADX.requestedConfigTab = function () {
 */
 
 var PAD_DEFAULT_APPEARANCE = {
-	mode: 'light',
-	background: 'gradient',
+	mode: 'dark',
+	background: 'neutral',
 	accent: '#5184f8',
 	gradientStart: '#67b7ff',
 	gradientEnd: '#5649e9',

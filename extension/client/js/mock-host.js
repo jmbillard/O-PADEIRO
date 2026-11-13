@@ -239,7 +239,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				fonts: JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/BANCO DE FONTES', upload: true },
 				bar: mockBar(),
 				personal: mockPrefs(),
-				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
+				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'dark', background: 'neutral', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
 				productions: window.PAD_MOCK_LIST.items.map(function (p) {
 					return Object.assign({}, p, { ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
 				}),
@@ -252,7 +252,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var stored = JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null');
 			var mine = mockPrefs().appearance;
 
-			return { stamp: (localStorage.getItem('pad.mock.appearance') || 'padrão') + '|' + localStorage.getItem('pad.mock.prefs'), appearance: mine || stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
+			return { stamp: (localStorage.getItem('pad.mock.appearance') || 'padrão') + '|' + localStorage.getItem('pad.mock.prefs'), appearance: mine || stored || { mode: 'dark', background: 'neutral', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
 		},
 
 		personalPrefs: function () {

@@ -19,7 +19,8 @@ o painel confere a configuração e acompanha as mudanças (a cada 5 s, com a ja
 	'use strict';
 
 	var KEY = 'pad.theme';
-	var DEFAULTS = { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' };
+	// o padrão: neutro escuro (a cor dos painéis do After Effects), com o destaque azul
+	var DEFAULTS = { mode: 'dark', background: 'neutral', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' };
 	var FONTS = {
 		inter: 'Inter',
 		system: 'system-ui, -apple-system',

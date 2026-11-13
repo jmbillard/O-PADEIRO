@@ -78,7 +78,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A FORMA</Menu>
+					<Menu>Templates · A FORMA</Menu>
 					<Geometry>
 						<Size>
 							<Width>1100</Width>
@@ -113,7 +113,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O ACESSORISTA</Menu>
+					<Menu>Buscar · O ACESSORISTA</Menu>
 					<Geometry>
 						<Size>
 							<Width>720</Width>
@@ -148,7 +148,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O ADAPTADOR</Menu>
+					<Menu>Caminhos · O ADAPTADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>800</Width>
@@ -183,7 +183,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O PRODUTOR</Menu>
+					<Menu>Configuração · O PRODUTOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>940</Width>
@@ -218,7 +218,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A FORMA · criar</Menu>
+					<Menu>Criar template · A FORMA</Menu>
 					<Geometry>
 						<Size>
 							<Width>1260</Width>
@@ -253,7 +253,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A CLAQUETE</Menu>
+					<Menu>Projeto · A CLAQUETE</Menu>
 					<Geometry>
 						<Size>
 							<Width>440</Width>
@@ -288,7 +288,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O TIPÓGRAFO</Menu>
+					<Menu>Fontes · O TIPÓGRAFO</Menu>
 					<Geometry>
 						<Size>
 							<Width>440</Width>
@@ -323,7 +323,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O CATADOR</Menu>
+					<Menu>Coletar · O CATADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>440</Width>
@@ -358,7 +358,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O VERSIONADOR</Menu>
+					<Menu>Versões · O VERSIONADOR</Menu>
 					<Geometry>
 						<Size>
 							<Width>560</Width>
@@ -393,7 +393,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>O CONTRARREGRA</Menu>
+					<Menu>Etiquetas · O CONTRARREGRA</Menu>
 					<Geometry>
 						<Size>
 							<Width>520</Width>

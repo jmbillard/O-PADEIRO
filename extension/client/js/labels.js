@@ -39,7 +39,7 @@ After (Ctrl/Cmd+Z).
 	var GROUPS = {
 		render: { title: 'render', color: 'var(--blue-500)', icon: 'comp', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render'); } },
 		edit: { title: 'editáveis', color: 'var(--waiting)', icon: 'edit', hint: function (f) { return f.edit ? 'comps · vão para ' + f.edit : 'comps · sem pasta de editáveis, ficam com as outras'; } },
-		types: { title: 'tipo de peça', color: 'var(--success)', icon: 'type', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render') + ' / tipo (os tipos do ETIQUETADOR)'; } },
+		types: { title: 'tipo de peça', color: 'var(--success)', icon: 'type', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render') + ' / tipo (os tipos do Renomear)'; } },
 		files: { title: 'arquivos', color: 'var(--danger)', icon: 'img', hint: function () { return 'footages · viram subpasta na pasta do tipo'; } }
 	};
 

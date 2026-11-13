@@ -11,41 +11,45 @@ o fluxo é simples, em 3 etapas:\
 
 > 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
-o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos. cada ferramenta tem **dois cliques** (`◖` esquerdo e `◗` direito) e as tarefas maiores abrem em **janelas** próprias, cada uma com um nome de ofício (ou objeto) da padaria e dos bastidores da TV: **a turma**.
+o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos. cada ferramenta tem **dois cliques**: o `◖` esquerdo faz a ação principal na hora e o `◗` direito abre **as opções** dela na própria barra, sem executar nada e as tarefas maiores abrem em **janelas** próprias, cada uma com um nome de ofício (ou objeto) da padaria e dos bastidores da TV: **a turma**.
 
 ### 🧑‍🍳 a turma
 
-| | ferramenta | `◖ clique esquerdo` | `◗ clique direito` |
+| | ferramenta | `◖ clique esquerdo`: faz na hora | `◗ clique direito`: as opções |
 | :---: | --- | --- | --- |
-| <img src="docs/images/icons/templates.png" width="40" alt="templates"> | **Templates** | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta |
-| <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
-| <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | **A CLAQUETE** salva o projeto na pasta dele |
-| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
-| <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
-| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
-| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
-| <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
-| <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
+| <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | salvar na pasta do projeto · categorias e pastas |
+| <img src="docs/images/icons/templates.png" width="40" alt="templates"> | **Templates** | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | **[criar um template](docs/criador.md)** · produções |
+| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | salvar em versão anterior |
+| <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** | **[O TIPÓGRAFO](docs/fontes.md)** instala as fontes que faltam | ver as fontes do projeto · banco de fontes |
+| <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | **O ETIQUETADOR** renomeia as comps selecionadas | saídas da fila de render · regras de nomes |
+| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | etiquetas · pastas do projeto |
+| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | ver os arquivos · pastas da coleta |
+| <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | **[converter caminhos](docs/conversor.md)** Windows ⇄ macOS |
+| <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | textos dos layers · fontes da busca |
 
 e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador](#-instalação)**.
 
 | janela | menu `Window` > `Extensions` | para que serve |
 | --- | --- | --- |
 | a barra | **O PADEIRO** | as ferramentas e os atalhos para as janelas ([abaixo](#-a-barra-principal)) |
-| 📄 [A FORMA](docs/templates.md) | **A FORMA** | os templates: buscar, selecionar e preencher, e criar a fila de render |
-| ✨ [A FORMA · criar](docs/criador.md) | **A FORMA · criar** | o criador de templates: transformar a comp aberta em um novo template |
-| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
-| 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
-| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
-| 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
-| 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
-| 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
-| 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
-| 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
+| 📄 [A FORMA](docs/templates.md) | **Templates · A FORMA** | os templates: buscar, selecionar e preencher, e criar a fila de render |
+| ✨ [A FORMA · criar](docs/criador.md) | **Criar template · A FORMA** | o criador de templates: transformar a comp aberta em um novo template |
+| 🎬 [A CLAQUETE](docs/projeto.md) | **Projeto · A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
+| 🔤 [O TIPÓGRAFO](docs/fontes.md) | **Fontes · O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
+| 📦 [O CATADOR](#coletar) | **Coletar · O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
+| 🏷️ [O CONTRARREGRA](#organizar) | **Etiquetas · O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
+| 🔎 [O ACESSORISTA](docs/acessorista.md) | **Buscar · O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
+| 🔁 [O ADAPTADOR](docs/conversor.md) | **Caminhos · O ADAPTADOR** | converter caminhos entre Windows e macOS |
+| 🕰️ [O VERSIONADOR](docs/versionador.md) | **Versões · O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
+| 🗂️ [O PRODUTOR](docs/producoes.md) | **Configuração · O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
+
+no menu e no título de cada janela, **a função vem na frente e a turma depois** (`Coletar · O CATADOR`): quem procura acha pelo que a janela faz. *(os nomes do menu vêm do manifest: valem depois de rodar o instalador de novo.)*
 
 cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
 ### 🎨 o visual
+
+o padrão é o fundo **neutro**: a barra e as janelas no cinza dos painéis do After Effects (a cor é lida do próprio aplicativo), com a cor de destaque só nos botões principais e no que está escolhido, para não competir com a composição. o **degradê** (o das imagens desta documentação) e o fundo sólido continuam na aba **aparência**, para quem preferir.
 
 todas as janelas falam a mesma língua: o **degradê** à esquerda, com as listas, as abas e os campos direto nele (só um contorno fino, sem caixas nem brilhos em volta), e a **folha branca** à direita. o escolhido ganha um contorno; os cantos arredondados são concêntricos; o respiro é de 16 px em volta; e os botões do rodapé ficam na mesma linha em todas as janelas, lado a lado. claro, escuro e as cores da equipe ficam na aba **aparência** d'[O PRODUTOR](docs/producoes.md#-aparência).
 
@@ -129,14 +133,12 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": o balão do botão diz o quê. |
 | ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as duas ações, cada uma numa linha com um mousezinho que mostra o botão (esquerdo ou direito); o estado da ferramenta, quando há, vem embaixo, mais apagado. o texto é este:
+cada botão tem **dois cliques**:
 
-```
-O ETIQUETADOR
+- `◖ clique esquerdo` → a ação principal, na hora (ou a janela da ferramenta, quando ela precisa de uma).
+- `◗ clique direito` → **as opções** (a gaveta): no lugar dos botões aparecem o nome da ferramenta, cada coisa que ela faz num botão com o nome por extenso (a do clique esquerdo em destaque), a configuração dela (tracejada) e o **×** para voltar. o clique direito nunca executa nada sozinho. a gaveta fecha ao escolher, no `Esc`, clicando fora ou um instante depois de o mouse sair da barra. na barra bem estreita (só ícones), o clique direito faz direto a segunda ação.
 
-◖  →  renomear as comps selecionadas
-◗  →  renomear todas as saídas da fila de render
-```
+com o mouse num botão, a linha de status mostra o nome e os dois cliques (na barra vertical ou baixa, um balão).
 
 ### primeira vez (o tour)
 
@@ -174,7 +176,7 @@ com a barra vertical ou bem baixa (menos de 76 px), valem o aviso flutuante e o 
 
 > 🚩 *obs:*\
 > • a versão do padeiro aparece embaixo do pãozinho.\
-> • a produção é escolhida no rodapé do painel de templates e vale para todos os painéis, que acompanham a troca na hora.
+> • a produção é o título da lista no painel de templates (clique nela para trocar) e vale para todos os painéis, que acompanham a troca na hora.
 
 <br>
 
@@ -183,6 +185,8 @@ com a barra vertical ou bem baixa (menos de 76 px), valem o aviso flutuante e o 
 <br>
 
 ## 📍 ferramentas da barra
+
+> 🚩 *nas seções abaixo, o que aparece em `◗ clique direito` é a opção de mesmo nome na gaveta da ferramenta (o clique direito abre as opções; um clique nela faz o que está descrito).*
 
 ### fontes
 
@@ -335,7 +339,7 @@ o mesmo vocabulário em todos os painéis:
 | `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
-- **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.
+- **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` abre as opções (`Esc` volta).
 - **listas suspensas** → com a lista aberta, digite para filtrar (útil com muitas produções).
 
 os atalhos de cada painel estão na documentação dele.

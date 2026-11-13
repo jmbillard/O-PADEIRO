@@ -71,6 +71,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - a chave (o nome do arquivo) é o que fica gravado na configuração: trocar o desenho de um arquivo troca em todo lugar; renomear o arquivo desfaz a escolha de quem usava a chave antiga.
   - **trocar por uma animação** → um `nome.json` (Lottie) passa à frente do `nome.svg` de mesmo nome: dá para testar uma animação sem apagar o desenho (vale para os da barra também, ex: `barra-project.json`).
   - **nome antigo** → `{ "key": "claquete", "same": "barra-project" }` no `icons.json` faz o nome antigo apontar para outro ícone (o que já foi escolhido com ele continua funcionando). assim os ícones da barra entraram no lugar das cópias que a biblioteca tinha (templates, fonte, camadas, renomear, lupa, link, claquete).
+- **estado não depende só da cor**: tudo certo é uma bolinha verde; "falta algo" é um losango laranja (`.bar-dot.is-missing`, `.is-warn .bar-status-dot`).
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
 - **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
 
@@ -114,6 +115,9 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **todo erro tem código**: no código, `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
 - **na tela, o texto vem primeiro e o código no fim** (`PAD_UTIL.errorText`: `texto curto · PAD_0xx`): a pessoa lê o que fazer, o suporte acha o código. o texto diz o que fazer (`selecione as comps…`), não só o que deu errado.
 - **o que deu certo diz o alcance**: a contagem (`3 itens renomeados`) e, se dá para desfazer, `· Ctrl+Z desfaz`. sem o nome da ferramenta na frase.
+- **na barra, clique esquerdo faz e clique direito mostra**: o direito abre a gaveta de opções da ferramenta (`menu` de cada ferramenta no `bar.js`) e nunca executa nada sozinho. uma ação nova de uma ferramenta entra como opção da gaveta, com o nome por extenso, não como um terceiro gesto.
+- **o que é da equipe abre só para ler**: nas abas da equipe da configuração, a parte da equipe fica travada até o '*editar*' da faixa de cima (`lockTeam`); a parte "neste computador" (depois do `.local-split`) fica sempre livre.
+- **o que decide o conteúdo de uma lista é o título dela** (a produção, na lista de templates), não um controle no rodapé.
 - **botões com contagem por extenso**: `Preencher 3 versões`, `Coletar 4 arquivos`, `Resolver 2 fontes` (nunca `Preencher: 3`). sem nada para contar, só o verbo.
 - **a linha de status da barra tem três camadas** (`bar.js`): o aviso da última ação, a dica do botão sob o mouse (`PAD_TIP.hook`, no lugar do balão) e, em repouso, a conferência do projeto. uma ferramenta nova com bolinha entra também na conferência (`paintCheck`).
 - **na barra, o resultado vai na linha de status** (embaixo dos botões, `toast` do `bar.js`), nunca por cima das ferramentas. uma ação que pede uma decisão ganha um botão na própria linha (ex: `organizar assim mesmo`).
