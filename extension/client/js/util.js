@@ -466,5 +466,9 @@
 		return res;
 	}
 
-	window.PAD_UTIL = { iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
+	// o atalho de desfazer do After Effects, como a pessoa usa: Cmd+Z no Mac (o Ctrl+Z não desfaz lá), Ctrl+Z no
+	// Windows. para os avisos ("· Cmd+Z desfaz")
+	var UNDO_KEY = /Mac/i.test((navigator.platform || '') + ' ' + (navigator.userAgent || '')) ? 'Cmd+Z' : 'Ctrl+Z';
+
+	window.PAD_UTIL = { undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
 })();

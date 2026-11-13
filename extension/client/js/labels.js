@@ -13,7 +13,7 @@ comentário vira subpasta; configuração > organizar > etiquetas dos arquivos).
 
 O campo de cima aplica um texto livre (Enter; vazio limpa). No rodapé, a vassourinha limpa o comentário de todos
 os itens do projeto e "Organizar" é o clique esquerdo do organizar na barra. Tudo fica num passo de desfazer do
-After (Ctrl/Cmd+Z).
+After (Cmd+Z no Mac, Ctrl+Z no Windows).
 
 */
 
@@ -220,7 +220,7 @@ After (Ctrl/Cmd+Z).
 			var res = await call('tagsClearAll');
 
 			replay(broom, 'is-sweeping');
-			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · Ctrl/Cmd+Z desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
+			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · ' + PAD_UTIL.undoKey + ' desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
 			await load();
 		});
 	}

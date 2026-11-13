@@ -1600,7 +1600,7 @@ PADX.fillUndo = function () {
 	var run = PADX_run;
 
 	if (!run || !run.snapshot) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
-	if (run.outputs) throw new Error('#PAD_049 - a fila de render já foi criada: use o Ctrl+Z do After Effects');
+	if (run.outputs) throw new Error('#PAD_049 - a fila de render já foi criada: use o ' + (appOs == 'Mac' ? 'Cmd+Z' : 'Ctrl+Z') + ' do After Effects');
 
 	var snap = run.snapshot;
 	var p = app.project;

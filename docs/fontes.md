@@ -47,7 +47,7 @@ a janela se chama **O TIPÓGRAFO** (como O ACESSORISTA e O CATADOR).
 | ❺ | **↓** | não está neste computador, mas está no banco: o Resolver instala (a seta desce enquanto instala). |
 | ❻ | **substituir por** | a troca, com a busca: as sugestões (mesma família e peso), o banco e as instaladas, com a prévia. |
 | ❼ | **copiar as fontes** | copia todas as fontes do projeto para uma pasta. |
-| ❽ | **Resolver** | instala o que está no banco e troca o que foi escolhido (desfaz com um Ctrl+Z). |
+| ❽ | **Resolver** | instala o que está no banco e troca o que foi escolhido (desfaz com um Cmd+Z, ou Ctrl+Z no Windows). |
 
 no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quantos layers usam, a amostra escrita na própria fonte e o estado (o ícone; o texto no balão):
 

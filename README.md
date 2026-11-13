@@ -152,7 +152,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 ### trabalhando na barra
 
-**o aviso** → o resultado de cada ação aparece num aviso flutuante, com uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro) e o texto com a contagem (`3 itens renomeados · Ctrl+Z desfaz`); o × fecha, e ele some sozinho.
+**o aviso** → o resultado de cada ação aparece num aviso flutuante, com uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro) e o texto com a contagem (`3 itens renomeados · Cmd+Z desfaz`, ou `Ctrl+Z` no Windows); o × fecha, e ele some sozinho.
 
 **organizar sem nada marcado** → sem nenhuma comp selecionada nem com comentário, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
 
@@ -279,7 +279,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
 - **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
-`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **vassourinha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Ctrl/Cmd+Z`.
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **vassourinha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 

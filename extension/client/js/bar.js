@@ -54,7 +54,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return PAD_ICONS.svg(name, ''); // a barra tem uma cópia de cada: os ids das máscaras ficam sem sufixo
 	}
 
-	var UNDO_KEY = /Mac/i.test(navigator.platform || '') ? 'Cmd+Z' : 'Ctrl+Z';
+	var UNDO_KEY = PAD_UTIL.undoKey; // Cmd+Z no Mac, Ctrl+Z no Windows
 
 	// O aviso flutuante da barra: o resultado da última ação, com a bolinha (deu certo, atenção, erro).
 	// kind: 'success' | 'error' | 'warn' | null; action: { label, run } (um botão no fim, ex: "organizar assim mesmo")
