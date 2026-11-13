@@ -548,12 +548,12 @@
   gap: 6px;
 }
 
-/* a legenda mostra o degradê da faixa (do tom claro, na saída, à cor do tipo, na chegada) */
+/* a legenda: uma bolinha com a cor do tipo, sólida (o degradê é só das faixas) */
 .mg-legend i {
-  width: 18px;
-  height: 6px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--type-soft), var(--type));
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--type);
 }
 
 /* o botão do rodapé da migração numa linha só (Desfazer a migração) */
