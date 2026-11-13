@@ -1127,7 +1127,7 @@ p.wz-exist b {
   padding-right: 52px;
 }
 
-/* o × dentro do campo: volta para a busca */
+/* a seta de voltar dentro do campo: volta para a busca */
 .claq-nova-back {
   position: absolute;
   top: 50%;
@@ -1160,12 +1160,22 @@ p.wz-exist b {
 }
 
 .claq-nova-back svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;
-  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+/* voltar: a seta (a mesma do voltar ao projeto) recua um pouco no hover */
+.claq-nova-back .back-arrow {
+  transition: transform 320ms var(--ease-soft);
+}
+
+.claq-nova-back:hover .back-arrow {
+  transform: translateX(-2px);
 }
 
 /* a tela não muda o tamanho da janela: o que não cabe rola, e o rodapé fica no lugar, com o degradê por cima */

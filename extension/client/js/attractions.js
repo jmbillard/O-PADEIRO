@@ -236,7 +236,14 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 					return k.f;
 				})
 			};
-		});
+		}).concat((data.filmes || []).filter(function (f) {
+			return f && f.name;
+		}).map(function (f) {
+			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela projeto)
+			return { name: f.name, cat: 'FILME', year: f.year ? String(f.year) : '', isFilm: true, path: '', out: full(f.out), depth: 1, keys: [wordKey(f.name)].filter(function (k) {
+				return k.f;
+			}) };
+		}));
 
 		return source.list;
 	}
@@ -304,14 +311,14 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		var matches = found.sort(function (a, b) {
 			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
 		}).filter(function (f) {
-			var key = local ? f.it.path : aepName(f.it.name);
+			var key = local ? f.it.path : (f.it.isFilm ? 'f|' : '') + aepName(f.it.name);
 
 			if (seen[key]) return false;
 
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '' };
 		});
 
 		return { claquete: aepName(claq), matches: matches };

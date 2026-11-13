@@ -29,6 +29,7 @@ projetos com o nome certo).
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
 	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
 	var CHEVRON_SVG = '<svg class="out-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>';
+	var FILM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
 	// o que foi escolhido até aqui
@@ -363,7 +364,8 @@ projetos com o nome certo).
 
 				if (seq !== state.lookupSeq) return;
 
-				flow.matches = res.matches;
+				flow.matches = await resolveFilms(res.matches);
+				if (seq !== state.lookupSeq) return;
 
 				if (p.deep) {
 					// a atração do caminho: a clicada (se ainda está na lista), a de nome igual ou a única achada
@@ -397,8 +399,43 @@ projetos com o nome certo).
 		}, LOOKUP_MS);
 	}
 
+	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
+	// configuração (aba PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
+	function filmBase() {
+		return state.bases.filter(function (b) {
+			return b.pattern && /^FILMES?( |$)/.test(aepName(b.label));
+		})[0] || null;
+	}
+
+	async function resolveFilms(matches) {
+		if (!matches.some(function (m) {
+			return m.isFilm && !m.path;
+		})) return matches;
+
+		await ensureBases();
+
+		var base = filmBase();
+
+		return matches.map(function (m) {
+			if (!m.isFilm || m.path || !base) return m;
+
+			var name = m.name.toUpperCase();
+			var path = fillPattern(base.pattern, name, base.label);
+
+			return Object.assign({}, m, { path: path, display: displayPath(path), out: m.out || (base.outPattern ? fillPattern(base.outPattern, name, base.label) : '') });
+		}).filter(function (m) {
+			return !m.isFilm || m.path;
+		});
+	}
+
 	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta
 	function matchIcon(m) {
+		if (m.isFilm) {
+			var film = filmBase();
+
+			return (film && PAD_UTIL.categoryIcon(film.icon)) || FILM_SVG;
+		}
+
 		var base = state.bases.filter(function (b) {
 			return b.label && m.category && aepName(b.label) === aepName(m.category);
 		})[0];
@@ -430,7 +467,7 @@ projetos com o nome certo).
 		var novaOn = flow.choice === 'new' && !p.deep;
 		var novaLabel = aepName(p.first) || 'o nome digitado';
 
-		// a atração nova toma o lugar do campo (o nome e a categoria); o × ou Esc volta para a busca
+		// a atração nova toma o lugar do campo (o nome e a categoria); a seta de voltar (ou Esc) volta para a busca
 		$('claq-combo').hidden = novaOn;
 		$('atr-nova').hidden = !novaOn;
 		if (novaOn) {
@@ -483,7 +520,13 @@ projetos com o nome certo).
 			// sem a barra: as atrações (o clique entra nela: a barra e as pastas dela), a nova e outra pasta
 			var m = flow.matches.slice(0, LIST_MAX);
 
-			list.appendChild(ATR.group(m.length ? (ATR.mode() === 'local' ? 'pastas' : 'atrações') : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração com esse nome')));
+			// o título diz o que veio: atrações, filmes ou os dois
+			var films = m.filter(function (x) {
+				return x.isFilm;
+			}).length;
+			var found = ATR.mode() === 'local' ? 'pastas' : !films ? 'atrações' : films === m.length ? 'filmes' : 'atrações e filmes';
+
+			list.appendChild(ATR.group(m.length ? found : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome')));
 			m.forEach(function (match) {
 				list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
 					enterAttraction(match);
@@ -1199,7 +1242,8 @@ projetos com o nome certo).
 
 			if (seq !== state.edSeq) return;
 
-			state.edMatches = res.matches;
+			state.edMatches = await resolveFilms(res.matches);
+			if (seq !== state.edSeq) return;
 
 			if (p && p.deep) {
 				var exact = res.matches.filter(function (m) {
