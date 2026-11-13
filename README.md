@@ -346,6 +346,8 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 
 o mesmo vocabulário em todos os painéis:
 
+> 🚩 *no macOS, use os atalhos com o **`Ctrl`**: o `Cmd` costuma ficar com o After Effects (vai para os menus dele) e não chega às janelas do padeiro. onde aparece `Ctrl/Cmd`, o `Ctrl` vale nos dois sistemas.*
+
 | tecla | o que faz |
 | --- | --- |
 | `↑` `↓` | andam nas listas. `↓` na busca vai para o primeiro item; `↑` no primeiro volta para a busca |
@@ -353,8 +355,8 @@ o mesmo vocabulário em todos os painéis:
 | `Esc` | limpa a busca ou volta um passo |
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
-| `Cmd+Enter` (macOS) · `Ctrl+Enter` (Windows) | o botão principal da janela: preenche e cria a fila (templates), resolve (fontes), coleta (coletar), salva (versões), organiza (etiquetas) |
-| `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
+| `Ctrl+Enter` | o botão principal da janela: preenche e cria a fila (templates), resolve (fontes), coleta (coletar), salva (versões), organiza (etiquetas) |
+| `Ctrl+Z` / `Ctrl+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.

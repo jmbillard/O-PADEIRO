@@ -1180,7 +1180,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 		animateDetails(document.querySelector('.maker-help'));
 		$('btn-save').addEventListener('click', save);
-		$('btn-save').title = (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+S';
+		$('btn-save').title = PAD_KEYS.modLabel + '+S';
 		// começar de novo apaga o formulário inteiro: pede um segundo clique (em até 4 s), como o descartar da
 		// configuração. o primeiro só avisa
 		$('btn-reset').addEventListener('click', function () {
