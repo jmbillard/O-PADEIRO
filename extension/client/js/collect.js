@@ -708,6 +708,25 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			box.appendChild(all);
 		}
 
+		// as pastas grandes de arquivos sem uso (banco de presets, stock footage…): ficam como estão, a não ser que a
+		// chave de cada uma seja desligada
+		(plan.undo ? [] : plan.bulk || []).forEach(function (bk) {
+			var keep = el('label', 'cfg-switch mg-all');
+			var check = el('input');
+
+			check.type = 'checkbox';
+			check.checked = bk.keep;
+			check.disabled = state.busy;
+			check.addEventListener('change', function () {
+				setBulk(bk.path, !check.checked);
+			});
+			keep.title = 'pasta grande de arquivos que o projeto não usa (um banco de presets, stock footage…).\nligado: fica como está, onde está.\ndesligado: vai inteira para a pasta dos arquivos externos, como o resto.' + (bk.deep ? '\ntem pastas além de 3 níveis, que só são lidas se ela for movida.' : '');
+			keep.appendChild(check);
+			keep.appendChild(el('span', 'cfg-switch-track'));
+			keep.appendChild(el('span', 'cfg-switch-label', 'manter como está: ' + bk.path + ' · ' + (bk.count ? bk.count + (bk.deep && bk.keep ? '+' : '') + ' arquivos sem uso' : 'pasta com muitos níveis')));
+			box.appendChild(keep);
+		});
+
 		grid.appendChild(oldCol);
 		grid.appendChild(el('div', 'mg-gap'));
 		grid.appendChild(newCol);
@@ -740,6 +759,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (state.mig.done) parts.push(plural(plan.total, 'arquivo migrado', 'arquivos migrados'));
 		else parts.push(plan.total ? plural(plan.total, 'arquivo para mover', 'arquivos para mover') : 'nada para mover');
 		if (plan.stay && !state.mig.done) parts.push(plan.stay + ' já no lugar');
+		if (plan.kept && !state.mig.done) parts.push(plural(plan.kept, 'fica como está', 'ficam como estão'));
 		$('fw-file').innerHTML = FILE_SVG;
 		$('fw-file').appendChild(el('span', null, parts.join(' · ')));
 
@@ -784,7 +804,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		try {
 			var plan = await call('migratePlan');
 
-			state.mig = { plan: plan, note: '', done: false, all: false, unread: [] };
+			state.mig = { plan: plan, note: '', done: false, all: false, unread: [], move: [] };
 			state.finds = null;
 			$('fw-list').hidden = true;
 			$('fw-empty').hidden = true;
@@ -846,9 +866,33 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			} else state.mig.unread = [];
 
 			state.mig.all = on;
-			state.mig.plan = await call('migratePlan', { all: on });
+			state.mig.plan = await call('migratePlan', { all: on, move: state.mig.move });
 		} catch (err) {
 			state.mig.all = false;
+			state.busy = false;
+			renderMigration();
+			status(err.message, 'error');
+			return;
+		}
+
+		state.busy = false;
+		renderMigration();
+	}
+
+	// uma pasta grande: mover também (ou voltar a manter como está); o plano é refeito
+	async function setBulk(path, move) {
+		if (state.busy) return;
+
+		state.busy = true;
+		state.mig.note = '';
+		state.mig.move = state.mig.move.filter(function (p) {
+			return p !== path;
+		}).concat(move ? [path] : []);
+		status('lendo a pasta do projeto…');
+
+		try {
+			state.mig.plan = await call('migratePlan', { all: !!state.mig.all, move: state.mig.move });
+		} catch (err) {
 			state.busy = false;
 			renderMigration();
 			status(err.message, 'error');
@@ -868,7 +912,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		migFooter();
 
 		try {
-			var begin = await call('migrateBegin', { all: !!state.mig.all });
+			var begin = await call('migrateBegin', { all: !!state.mig.all, move: state.mig.move });
 			var step = { done: 0, total: begin.total, failed: 0 };
 
 			while (step.done < step.total) {

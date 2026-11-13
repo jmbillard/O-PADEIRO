@@ -13,6 +13,10 @@ com outra grafia (02 ARQUIVOS, 02_ARQUIVOS) se juntam e nada fica solto.
   o que está numa pasta de saída               → a pasta do tipo 'saidas', com as subpastas
   as fontes de uma pasta de fontes             → a pasta do tipo 'fontes'
   todo o resto                                 → a pasta do tipo 'externos', com o caminho de antes dentro dela
+  as pastas grandes de arquivos sem uso        → FICAM COMO ESTÃO (banco de presets, stock footage…): a pasta de segundo
+                                                 nível (03 EXTERNOS/STOCK) com mais de PAD_MIGRATION_BULK arquivos sem
+                                                 uso, ou com pastas além de PAD_MIGRATION_DEPTH níveis (que nem são
+                                                 lidas). a janela mostra cada uma e deixa mover também ({ move })
   os arquivos usados que estão FORA da raiz    → COPIADOS (não movidos: outros projetos podem usar) para a pasta do
                                                  tipo de cada um, como o coletar faz
 
@@ -40,6 +44,8 @@ Arquivo movido no disco não volta com o Ctrl+Z do After Effects: por isso o reg
 var PAD_MIGRATION_LOG = '_migracao_padeiro.json';
 var PAD_MIGRATION_MS = 15000; // o tempo máximo da leitura da pasta
 var PAD_MIGRATION_FILES = 30000; // e o máximo de arquivos
+var PAD_MIGRATION_DEPTH = 3; // até quantas pastas para dentro a leitura vai (as de saída e as que o usuário manda mover, inteiras)
+var PAD_MIGRATION_BULK = 100; // mais arquivos sem uso do que isto numa pasta: é um banco, fica como está
 var PAD_MIGRATION_FALLBACK = { projeto: '01_PROJETOS', saidas: '03_SAIDA', externos: '05_EXTERNOS' };
 var PAD_FONT_EXT = /\.(otf|ttf|ttc|otc|woff2?|pfb|pfm|dfont)$/i;
 var PAD_PROJECT_EXT = /\.(aep|aet|aepx)$/i;
@@ -91,7 +97,17 @@ function padMigrateUsed() {
 	return used;
 }
 
-// Todos os arquivos da pasta (para dentro, até 10 níveis): [{ path, rel, top }]. pula os escondidos e o registro.
+// A pasta de segundo nível de um arquivo ('03 EXTERNOS/STOCK/a/b.png' → '03 EXTERNOS/STOCK'): a unidade das pastas grandes.
+function padMigrateGroup(rel) {
+	var dirs = rel.split('/');
+
+	dirs.pop();
+
+	return dirs.slice(0, 2).join('/');
+}
+
+// Todos os arquivos da pasta (para dentro, até 'depth' níveis): [{ path, rel, top }]. pula os escondidos e o registro.
+// as pastas além do limite não são lidas: ficam em state.deep [{ path, rel }]
 function padMigrateScan(folder, rel, depth, state) {
 	var list = [];
 
@@ -114,6 +130,7 @@ function padMigrateScan(folder, rel, depth, state) {
 
 		if (isFolder) {
 			if (depth > 0) padMigrateScan(new Folder(list[i].fsName), here, depth - 1, state);
+			else state.deep.push({ path: list[i].fsName, rel: here });
 			continue;
 		}
 
@@ -146,7 +163,8 @@ function padIsFontsFolder(name) {
 // O plano: o que vai para onde. → { root, name, project, ops, stay, conflicts, others, outside, partial, sources, ... }
 // ops: [{ from, to (relativo à raiz), type, top, id (o item do After, se usado), first, project (o .aep aberto) }]
 // all: soma o que os outros projetos da pasta usam (lido pelo migrateRead*)
-function padMigrateBuild(all) {
+// move: as pastas grandes que o usuário mandou mover também (as outras ficam como estão: plan.bulk, plan.kept)
+function padMigrateBuild(all, move) {
 	var file = app.project.file;
 
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
@@ -155,8 +173,14 @@ function padMigrateBuild(all) {
 	var root = new Folder(padCollectRoot(file, settings));
 	var rootKey = padPathKey(root.fsName);
 	var used = padMigrateUsed();
-	var state = { files: [], until: new Date().getTime() + PAD_MIGRATION_MS, partial: false };
-	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings, all: false };
+	var state = { files: [], deep: [], until: new Date().getTime() + PAD_MIGRATION_MS, partial: false };
+	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings, all: false, bulk: [], kept: 0 };
+	var moveSet = {};
+	var deepGroup = {};
+	var groupCount = {};
+	var m;
+
+	for (m = 0; move && m < move.length; m++) moveSet[move[m]] = true;
 	var extra = all && padMigrationRead && padPathKey(padMigrationRead.root) == rootKey ? padMigrationRead.used : null;
 
 	// o que os outros projetos usam (o projeto aberto vem primeiro: os itens dele são os que este After religa agora)
@@ -174,8 +198,35 @@ function padMigrateBuild(all) {
 	var extKey = padPathKey(root.fsName + '/' + destExt);
 	var k;
 
-	padMigrateScan(root, '', 10, state);
+	padMigrateScan(root, '', PAD_MIGRATION_DEPTH, state);
+
+	// as pastas fundas: as de saída e as das pastas que o usuário mandou mover são lidas inteiras; as outras marcam
+	// a pasta de segundo nível como grande (fica como está)
+	var deep = state.deep;
+
+	state.deep = [];
+	for (m = 0; m < deep.length; m++) {
+		var group = padMigrateGroup(deep[m].rel + '/x');
+
+		if (moveSet[group] || padIsOutputFolder(deep[m].rel.split('/')[0], saidasKey)) padMigrateScan(new Folder(deep[m].path), deep[m].rel, 10 - PAD_MIGRATION_DEPTH, state);
+		else deepGroup[group] = true;
+	}
 	plan.partial = state.partial;
+
+	// os usados que estão na raiz mas fundo demais para a leitura: entram pelo caminho do item do After
+	var scanned = {};
+
+	for (m = 0; m < state.files.length; m++) scanned[padPathKey(state.files[m].path)] = true;
+
+	for (k in used) {
+		if (!used.hasOwnProperty(k) || k.indexOf(rootKey) != 0 || scanned[k]) continue;
+
+		var deepRel = padSlash(used[k].path).substring(padSlash(root.fsName).length + 1);
+
+		if (padPathKey(root.fsName + '/' + deepRel) != k) continue;
+
+		state.files.push({ path: used[k].path, rel: deepRel, top: deepRel.indexOf('/') < 0 ? '' : deepRel.split('/')[0] });
+	}
 
 	// os usados que estão fora da raiz: copiados para a pasta do tipo (o original fica onde está). 'top' = '..' é a
 	// origem "fora da pasta" no desenho; 'from' é o caminho inteiro
@@ -238,8 +289,36 @@ function padMigrateBuild(all) {
 			continue;
 		}
 
+		// sem uso e dentro de uma pasta: conta para a pasta de segundo nível (as grandes ficam como estão)
+		if (op.type == 'externos' && !op.id && f.top != '') {
+			op.bulk = padMigrateGroup(f.rel);
+			groupCount[op.bulk] = (groupCount[op.bulk] || 0) + 1;
+		}
+
 		plan.ops.push(op);
 	}
+
+	// as pastas grandes (muitos arquivos sem uso, ou fundas demais): ficam como estão, a não ser as que o usuário
+	// mandou mover
+	var heavy = {};
+	var kept = [];
+
+	for (k in deepGroup) {
+		if (deepGroup.hasOwnProperty(k) && !groupCount[k]) groupCount[k] = 0;
+	}
+
+	for (k in groupCount) {
+		if (!groupCount.hasOwnProperty(k) || (groupCount[k] <= PAD_MIGRATION_BULK && !deepGroup[k])) continue;
+
+		heavy[k] = true;
+		plan.bulk.push({ path: k, count: groupCount[k], deep: !!deepGroup[k], keep: !moveSet[k] });
+	}
+
+	for (m = 0; m < plan.ops.length; m++) {
+		if (plan.ops[m].bulk && heavy[plan.ops[m].bulk] && !moveSet[plan.ops[m].bulk]) plan.kept++;
+		else kept.push(plan.ops[m]);
+	}
+	plan.ops = kept;
 
 	// nomes repetidos no destino (dois arquivos com o mesmo nome, ou um que já existe lá): o segundo ganha _2, _3…
 	for (var o = 0; o < plan.ops.length; o++) {
@@ -264,12 +343,13 @@ function padMigrateBuild(all) {
 // O plano para o desenho da janela: as pastas de hoje, a estrutura nova e os fluxos entre elas.
 // → { root, name, total, stay, conflicts, others, outside, partial, undo (há um registro para desfazer),
 //     sources: [{ name ('' = soltos na raiz), count }], dests: [{ path, depth, type, count, extra (fora da árvore) }],
-//     links: [{ from, to, type, count, names (os primeiros arquivos) }] }
-// a: { all } (com o uso dos outros projetos, já lido)
+//     links: [{ from, to, type, count, names (os primeiros arquivos) }],
+//     bulk: [{ path, count, deep (tem pastas que nem foram lidas), keep }] (as pastas grandes), kept (quantos ficam) }
+// a: { all } (com o uso dos outros projetos, já lido), { move } (as pastas grandes para mover também)
 PADX.migratePlan = function (a) {
-	var plan = padMigrateBuild(a && a.all);
+	var plan = padMigrateBuild(a && a.all, a && a.move);
 	var folders = padStructureFolders(plan.settings);
-	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
+	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, bulk: plan.bulk, kept: plan.kept, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
 	var srcIndex = {};
 	var dstIndex = {};
 	var linkIndex = {};
@@ -560,9 +640,9 @@ PADX.migrateReadEnd = function () {
 };
 
 // Começa: refaz o plano (a pasta pode ter mudado desde o desenho) e cria as pastas da estrutura. → { total }
-// a: { all } (com os outros projetos: o uso deles já foi lido)
+// a: { all } (com os outros projetos: o uso deles já foi lido), { move } (as pastas grandes para mover também)
 PADX.migrateBegin = function (a) {
-	var plan = padMigrateBuild(a && a.all);
+	var plan = padMigrateBuild(a && a.all, a && a.move);
 
 	if (plan.partial) throw new Error('#PAD_105 - migrar: a pasta é grande demais para ler de uma vez (mais de ' + PAD_MIGRATION_FILES + ' arquivos ou muito lenta). nada foi movido.');
 	if (new File(plan.root + '/' + PAD_MIGRATION_LOG).exists) throw new Error('#PAD_106 - migrar: esta pasta já foi migrada (há um registro nela). desfaça a migração antes de migrar de novo.');
