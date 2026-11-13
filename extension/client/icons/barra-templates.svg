@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
 	<g class="anim-tpl">
-	<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
-	<path class="tpl-head" d="M3.5 9.5h17" />
-	<path class="tpl-side" d="M9 9.5v10" transform="translate(11.5 0)" opacity="0" /></g>
+	<path class="tpl-back" d="M8 5.6V5a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 20 5v9a1.5 1.5 0 0 1-1.5 1.5h-.6" />
+	<g class="tpl-front">
+	<rect x="4" y="7.5" width="12" height="13" rx="2" />
+	<path d="M7 12h6M7 15.5h4" /></g></g>
 </svg>

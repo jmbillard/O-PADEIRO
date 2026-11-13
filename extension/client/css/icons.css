@@ -39,20 +39,22 @@
   }
 }
 
-/* templates: como na janela de fato, a divisão das colunas entra pela direita (a busca encolhe e a fila aparece) */
-.anim-tpl .tpl-side {
-  opacity: 0;
-  transform: translateX(11.5px);
+/* templates: duas folhas empilhadas (os modelos); no hover elas se separam (a de trás sobe para o lado, a da
+   frente desce) */
+.anim-tpl .tpl-back,
+.anim-tpl .tpl-front {
   transform-box: view-box;
-  transition:
-    transform 460ms var(--ease-soft),
-    opacity 200ms ease;
+  transition: transform 420ms var(--ease-soft);
 }
 
-.bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
-.tab:hover .anim-tpl .tpl-side {
-  opacity: 1;
-  transform: translateX(0);
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-back,
+.tab:hover .anim-tpl .tpl-back {
+  transform: translate(1.3px, -1.3px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-front,
+.tab:hover .anim-tpl .tpl-front {
+  transform: translate(-1px, 1px);
 }
 
 /* pastas: a frente da pasta se abre */

@@ -652,12 +652,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// o ícone parado no estado final do hover, desenhado assim (sem as classes que o css anima)
 	var STILL = {
 		templates: function (svg) {
-			var side = svg.querySelector('.tpl-side');
+			var back = svg.querySelector('.tpl-back');
+			var front = svg.querySelector('.tpl-front');
 
-			if (side) {
-				side.removeAttribute('transform');
-				side.removeAttribute('opacity');
-			}
+			if (back) back.setAttribute('transform', 'translate(1.3 -1.3)');
+			if (front) front.setAttribute('transform', 'translate(-1 1)');
 		},
 		organization: function (svg) {
 			var loose = svg.querySelector('.org-loose');
