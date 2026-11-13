@@ -72,7 +72,7 @@ body.finder-page {
 .finder-source {
   overflow: hidden;
   padding-left: 4px;
-  color: rgb(var(--on-brand) / 82%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.72rem;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -108,7 +108,7 @@ body.finder-page {
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
-  color: rgb(var(--on-brand) / 66%);
+  color: rgb(var(--on-brand) / 88%);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 750;
@@ -579,7 +579,7 @@ body.finder-page {
 
 .finder-pane.is-idle .finder-state {
   padding-top: 8px;
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .finder-pane.is-idle .finder-state strong {

@@ -54,8 +54,56 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return PAD_ICONS.svg(name, ''); // a barra tem uma cópia de cada: os ids das máscaras ficam sem sufixo
 	}
 
-	function toast(kind, text, ms) {
-		PAD_UTIL.toast($('toast'), 'bar-toast', kind, text, ms);
+	var UNDO_KEY = /Mac/i.test(navigator.platform || '') ? 'Cmd+Z' : 'Ctrl+Z';
+
+	// A linha de status da barra: o resultado da última ação, embaixo dos botões (não cobre nenhum). Com a barra
+	// baixa demais ou vertical, o CSS mostra como um aviso flutuante. Um clique no texto abre a mensagem inteira.
+	// kind: 'success' | 'error' | 'warn' | null; action: { label, run } (um botão no fim, ex: "organizar assim mesmo")
+	function toast(kind, text, ms, action) {
+		var box = $('toast');
+		var dot = el('i', 'bar-status-dot');
+		var body = el('span', 'toast-text', kind === 'error' ? PAD_UTIL.errorText(text) : text);
+		var close = el('button', 'toast-close', '×');
+
+		clearTimeout(box._timer);
+
+		function hide() {
+			clearTimeout(box._timer);
+			box.hidden = true;
+		}
+
+		body.addEventListener('click', function () {
+			box.classList.toggle('is-open');
+		});
+
+		close.type = 'button';
+		close.setAttribute('aria-label', 'fechar aviso');
+		close.addEventListener('click', hide);
+
+		box.className = 'bar-toast' + (kind ? ' is-' + kind : '');
+		box.textContent = '';
+		box.appendChild(dot);
+		box.appendChild(body);
+
+		if (action) {
+			var btn = el('button', 'bar-status-action', action.label);
+
+			btn.type = 'button';
+			btn.addEventListener('click', function () {
+				hide();
+				action.run();
+			});
+			box.appendChild(btn);
+		}
+
+		box.appendChild(close);
+		box.hidden = false;
+		box._timer = setTimeout(hide, ms || (kind === 'error' || action ? 20000 : 8000));
+	}
+
+	// "3 comps renomeadas", "1 comp renomeada": o número e o plural (um / vários)
+	function counted(n, one, many) {
+		return n + ' ' + (n === 1 ? one : many);
 	}
 
 	/* =========================================================
@@ -66,8 +114,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	function report(res, doneText) {
 		var messages = res && res.messages ? res.messages : [];
 
-		if (messages.length) toast(/^#PAD/.test(messages[0]) ? 'error' : 'success', messages.join('\n'));
-		else if (doneText) toast('success', doneText);
+		if (messages.length) {
+			var failed = /^#PAD/.test(messages[0]);
+
+			toast(failed ? 'error' : 'success', (failed ? messages.map(PAD_UTIL.errorText) : messages).join('\n'));
+		}
+		if (!messages.length && doneText) toast('success', doneText);
 	}
 
 	// O CATADOR e O TIPÓGRAFO trabalhando: o nome do botão vira a contagem e a linha embaixo enche.
@@ -226,15 +278,50 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 
 		renameComps: async function () {
-			report(await call('renameComps'), 'comps renomeadas.');
+			var res = await call('renameComps');
+			var n = res && res.data ? res.data.count : null;
+
+			if (n === 0) report(res, 'nenhum nome mudou: as comps selecionadas já estavam no padrão.');
+			else report(res, (n ? counted(n, 'item renomeado', 'itens renomeados') : 'comps renomeadas') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
 		renameOutputs: async function () {
-			report(await call('renameOutputs'), 'saídas de render renomeadas.');
+			var res = await call('renameOutputs');
+			var n = res && res.data ? res.data.count : null;
+
+			if (n === 0) report(res, 'nenhuma saída mudou: a fila de render já estava no padrão.');
+			else report(res, (n ? counted(n, 'saída de render renomeada', 'saídas de render renomeadas') : 'saídas de render renomeadas') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
-		organizeProject: async function () {
-			report(await call('organizeProject'), 'O CONTRARREGRA organizou o projeto.');
+		// organizar: sem nenhuma comp selecionada nem com comentário, nada iria para as comps de render (tudo
+		// cairia nas precomps). a barra avisa e deixa organizar assim mesmo; force pula a conferência
+		organizeProject: async function (force) {
+			if (force !== true) {
+				var check = null;
+
+				try {
+					check = await call('organizeCheck');
+				} catch (err) { } // host antigo (sem a conferência): organiza como antes
+
+				if (check && check.comps && !check.selected && !check.tagged) {
+					toast('warn', 'nenhuma comp marcada para o render: selecione no painel Project as comps que serão renderizadas e clique de novo.', 0, {
+						label: 'organizar assim mesmo',
+						run: function () {
+							run($('btn-organizar'), function () {
+								return actions.organizeProject(true);
+							});
+						}
+					});
+
+					return;
+				}
+			}
+
+			var res = await call('organizeProject');
+			var n = res && res.data ? res.data.count : null;
+
+			if (n === 0) report(res, 'projeto já organizado: nada mudou de lugar.');
+			else report(res, 'projeto organizado' + (n ? ': ' + counted(n, 'item mudou', 'itens mudaram') + ' de pasta' : '') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
 		openLabels: function () {
@@ -300,7 +387,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes');
 
-			report(res, parts.length ? 'O CATADOR coletou: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 			setTimeout(watchCollect, 300);
 		},
 
@@ -449,7 +536,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
 			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
-			left: actions.organizeProject,
+			left: function () {
+				return actions.organizeProject();
+			},
 			right: actions.openLabels
 		},
 		{
@@ -463,7 +552,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	// a ordem padrão segue o ciclo do projeto: começar | arrumar | entregar | achar
+	var DEFAULT_ITEMS = ['projeto', 'templates', 'importar', 'divider', 'fontes', 'renomear', 'organizar', 'divider', 'coletar', 'pastas', 'divider', 'buscar'];
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {

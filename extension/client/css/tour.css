@@ -164,7 +164,7 @@ body.is-touring .pad-tooltip {
 }
 
 .tour-kicker {
-  color: rgb(var(--on-brand) / 72%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -227,7 +227,7 @@ body.is-touring .pad-tooltip {
   width: 16px;
   flex: 0 0 auto;
   place-items: center;
-  color: rgb(var(--on-brand) / 70%);
+  color: rgb(var(--on-brand) / 88%);
   font-style: normal;
   transition:
     color 200ms ease,
@@ -472,7 +472,7 @@ body.is-touring .pad-tooltip {
   padding: 0 4px;
   border: 0;
   background: none;
-  color: rgb(var(--on-brand) / 70%);
+  color: rgb(var(--on-brand) / 88%);
   cursor: pointer;
   font: inherit;
   font-size: 0.72rem;

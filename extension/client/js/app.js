@@ -144,7 +144,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function errorText(text) {
 		text = String(text || '');
 
-		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+		return PAD_UTIL.errorText(text); // o texto primeiro, o código no fim (util.js)
 	}
 
 	function notify(kind, text) {

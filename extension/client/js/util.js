@@ -92,11 +92,16 @@
 		return 'file://' + encoded;
 	}
 
-	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados.
+	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados. Na tela, o texto vem
+	// primeiro (é o que a pessoa lê) e o código no fim (é o que o suporte procura): "texto · PAD_032".
 	function errorText(text) {
 		text = String(text || '');
 
-		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+		var m = /^#(PAD_[A-Z0-9_]+)\s*-\s*([\s\S]*)$/.exec(text);
+
+		if (!m) return /·\s*PAD_[A-Z0-9_]+$/.test(text) ? text : text.replace(/[\s.]+$/, '') + ' · PAD_099';
+
+		return m[2].replace(/[\s.]+$/, '') + ' · ' + m[1]; // sem o ponto final antes do código
 	}
 
 	// Aviso flutuante dos painéis (barra, acessorista, produções, criador): texto + botão de fechar.

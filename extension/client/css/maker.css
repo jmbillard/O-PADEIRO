@@ -53,7 +53,7 @@ body.maker-page {
   padding: 3px 2px;
   border: 0;
   background: transparent;
-  color: rgb(var(--on-brand) / 72%);
+  color: rgb(var(--on-brand) / 88%);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -140,7 +140,7 @@ body.maker-page {
 }
 
 .maker-glass .cfg-hint {
-  color: rgb(var(--on-brand) / 72%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .maker-glass .cfg-input {
@@ -207,7 +207,7 @@ body.maker-page {
 }
 
 .maker-glass .cfg-preview-label {
-  color: rgb(var(--on-brand) / 72%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .maker-glass .add-button {
@@ -234,7 +234,7 @@ body.maker-page {
 }
 
 .maker-glass .row-del {
-  color: rgb(var(--on-brand) / 80%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .maker-glass .wz-preview,

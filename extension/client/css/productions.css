@@ -72,7 +72,7 @@ body.prods-page {
   padding: 9px 12px;
   border: 1px solid transparent;
   border-radius: var(--radius-small);
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
   letter-spacing: 0.12em;
   text-align: left;
   transition:
@@ -1019,7 +1019,7 @@ body.prods-page {
 
 .org-root-label {
   flex: 1 1 auto;
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -1042,7 +1042,7 @@ body.prods-page {
 
 .org-folder:hover .org-remove,
 .org-remove:focus-visible {
-  color: rgb(var(--on-brand) / 75%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .org-remove:hover {
@@ -1110,7 +1110,7 @@ body.prods-page {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: rgb(var(--on-brand) / 75%);
+  color: rgb(var(--on-brand) / 88%);
   cursor: pointer;
 }
 
@@ -1726,7 +1726,7 @@ body.is-org-dragging * {
   border: 1px solid rgb(var(--on-brand) / 32%);
   border-radius: var(--radius-pill);
   background: rgb(var(--on-brand) / 6%);
-  color: rgb(var(--on-brand) / 80%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .pv-row {

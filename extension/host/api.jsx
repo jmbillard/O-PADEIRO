@@ -1947,21 +1947,88 @@ PADX.collectFonts = function (a) {
 	});
 };
 
+// O que cada item do projeto tem agora (nome ou pasta), pelo id: a barra conta o que mudou depois da ação.
+function padItemSnapshot(key) {
+	var snap = {};
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (key == 'parent') {
+			snap[item.id] = item.parentFolder ? item.parentFolder.id : 0;
+		} else {
+			snap[item.id] = item.name;
+		}
+	}
+
+	return snap;
+}
+
+// Quantos itens mudaram desde o retrato (os que não existiam ou sumiram não contam).
+function padItemChanges(before, key) {
+	var after = padItemSnapshot(key);
+	var count = 0;
+
+	for (var id in after) {
+		if (!after.hasOwnProperty(id) || !before.hasOwnProperty(id)) continue;
+		if (after[id] !== before[id]) count++;
+	}
+
+	return count;
+}
+
+// Os nomes dos arquivos de saída da fila de render, na ordem (item da fila / módulo de saída).
+function padOutputSnapshot() {
+	var names = [];
+	var rq = app.project.renderQueue;
+
+	for (var i = 1; i <= rq.numItems; i++) {
+		var item = rq.item(i);
+
+		for (var j = 1; j <= item.numOutputModules; j++) {
+			var name = '';
+
+			try {
+				if (item.outputModule(j).file) name = item.outputModule(j).file.name;
+			} catch (err) { }
+
+			names.push(name);
+		}
+	}
+
+	return names;
+}
+
 PADX.renameComps = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
+		var before = padItemSnapshot('name');
+
 		padGroup('renomear comps', function () {
 			renamePromoComps(app.project.selection);
 		});
+
+		return { count: padItemChanges(before, 'name') };
 	});
 };
 
 PADX.renameOutputs = function () {
 	return padCollect(function () {
+		var before = padOutputSnapshot();
+
 		padGroup('renomear outputs', function () {
 			renameOutputs();
 		});
+
+		var after = padOutputSnapshot();
+		var count = 0;
+
+		for (var i = 0; i < after.length && i < before.length; i++) {
+			if (after[i] !== before[i]) count++;
+		}
+
+		return { count: count };
 	});
 };
 
@@ -2094,10 +2161,36 @@ PADX.tagsClearAll = function () {
 	return { count: count };
 };
 
+// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm comentário. Sem nenhuma das
+// duas, nada iria para as comps de render: a barra pergunta antes.
+PADX.organizeCheck = function () {
+	var selected = 0;
+	var tagged = 0;
+	var comps = 0;
+	var sel = app.project.selection;
+
+	for (var s = 0; s < sel.length; s++) {
+		if (sel[s] instanceof CompItem) selected++;
+	}
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof CompItem)) continue;
+
+		comps++;
+		if (item.comment != '') tagged++;
+	}
+
+	return { comps: comps, selected: selected, tagged: tagged };
+};
+
 PADX.organizeProject = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
+		var before = padItemSnapshot('parent');
+
 		try {
 			padGroup('organização automática do projeto', function () {
 				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
@@ -2105,6 +2198,8 @@ PADX.organizeProject = function () {
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);
 		}
+
+		return { count: padItemChanges(before, 'parent') };
 	});
 };
 

@@ -138,7 +138,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 
 	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['projeto', 'templates', 'importar', 'divider', 'fontes', 'renomear', 'organizar', 'divider', 'coletar', 'pastas', 'divider', 'buscar'], hidden: [] };
 	}
 
 	var api = {
@@ -535,15 +535,20 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (mode === 'fail') throw new Error('#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
 
-			return { messages: [] };
+			return { messages: [], data: { count: 3 } };
 		},
 
 		renameOutputs: function () {
 			return { messages: ['#PAD_033 - 1 saída(s) não foram renomeadas (já renderizadas ou bloqueadas).'] };
 		},
 
+		// ?mock=nosel: nenhuma comp selecionada nem com comentário (a barra pergunta antes de organizar)
+		organizeCheck: function () {
+			return mode === 'nosel' ? { comps: 6, selected: 0, tagged: 0 } : { comps: 6, selected: 2, tagged: 3 };
+		},
+
 		organizeProject: function () {
-			return { messages: [] };
+			return { messages: [], data: { count: 14 } };
 		},
 
 		// etiquetas: 3 itens selecionados e alguns comentários no projeto

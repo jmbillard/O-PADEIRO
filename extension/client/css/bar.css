@@ -145,7 +145,7 @@ body.bar-page {
 }
 
 .bar-version {
-  color: rgb(var(--on-brand) / 72%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.58rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -286,8 +286,8 @@ body.bar-page {
 }
 
 .bar-label {
-  color: rgb(var(--on-brand) / 78%);
-  font-size: 0.6rem;
+  color: rgb(var(--on-brand) / 94%);
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -471,6 +471,150 @@ body.bar-page {
   border-color: #bde5d2;
   background: var(--success-bg);
   color: var(--success);
+}
+
+/* aviso: a bolinha do resultado, o botão de ação (ex: "organizar assim mesmo") e o texto que abre no clique */
+.bar-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.bar-toast[hidden] {
+  display: none;
+}
+
+.bar-toast.is-warn {
+  border-color: var(--warning-border, #f1d08a);
+  background: var(--warning-bg, #fff6df);
+  color: var(--warning, #8a5a00);
+}
+
+.bar-status-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin-top: 0.45em;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.bar-toast.is-success .bar-status-dot {
+  background: #2fbf71;
+}
+
+.bar-toast.is-warn .bar-status-dot {
+  background: #f5a524;
+}
+
+.bar-toast.is-error .bar-status-dot {
+  background: #f0524f;
+}
+
+.bar-toast .toast-text {
+  cursor: pointer;
+}
+
+.bar-status-action {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bar-status-action:focus-visible {
+  outline: 1px solid currentcolor;
+  outline-offset: 2px;
+}
+
+/* barra horizontal com altura para uma linha a mais: o aviso vira a LINHA DE STATUS, embaixo dos botões, na
+   tinta do degradê (não cobre nenhuma ferramenta). o espaço dela fica sempre reservado: nada pula quando ela
+   aparece. um clique no texto abre o aviso inteiro (.is-open: o cartão flutuante de sempre) */
+@media (min-aspect-ratio: 1001/1000) and (min-height: 76px) {
+  .bar {
+    padding-bottom: 24px;
+  }
+
+  .bar-toast:not(.is-open) {
+    right: 14px;
+    bottom: 5px;
+    left: 14px;
+    max-width: none;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: rgb(var(--on-brand));
+    font-size: 0.68rem;
+    line-height: 16px;
+    animation: status-enter 220ms var(--ease-soft) both;
+  }
+
+  .bar-toast:not(.is-open) .bar-status-dot {
+    margin-top: 0;
+    box-shadow: 0 0 0 1.5px var(--badge-ring);
+  }
+
+  .bar-toast:not(.is-open) .toast-text {
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bar-toast:not(.is-open) .toast-close {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    color: inherit;
+  }
+}
+
+@keyframes status-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+/* barra horizontal apertada (o tamanho padrão do painel, 800 px): botões e respiros menores e a versão só na
+   dica, para o pãozinho (ajuda e tour) caber sem rolar */
+@media (min-aspect-ratio: 1001/1000) and (max-width: 919px) {
+  .bar,
+  .bar-main {
+    gap: 6px;
+  }
+
+  .bar {
+    padding-inline: 8px;
+  }
+
+  .bar-main::before {
+    margin-right: -6px;
+  }
+
+  .bar-main::after {
+    margin-left: -6px;
+  }
+
+  .bar-btn {
+    min-width: 54px;
+    padding-inline: 3px;
+  }
+
+  .bar-version {
+    display: none;
+  }
 }
 
 /* painel estreito (mais alto que largo): vira uma coluna */
