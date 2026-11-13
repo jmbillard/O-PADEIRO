@@ -2745,14 +2745,17 @@ body.motion-ready .eyebrow {
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: 9px 8px;
+  padding: 9px 6px;
   border-radius: 12px;
   font-size: 10px;
   white-space: normal;
 }
 
 .pad-tooltip.is-bar-v .tip-name {
-  letter-spacing: 0.06em;
+  max-width: 100%;
+  font-size: 7.5px; /* um nome comprido (ORGANIZAÇÃO) cabe na coluna de 86 px */
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 /* na coluna estreita, o mouse fica na linha do texto (o texto quebra embaixo dele e usa a largura toda); os

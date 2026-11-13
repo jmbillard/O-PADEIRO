@@ -565,7 +565,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// (com 2 ou mais na barra; com uma só, ela fica solta). o botão do grupo abre a gaveta
 	var GROUPS = [
 		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: ['projeto', 'fontes', 'coletar'] },
-		{ key: 'organizar', label: 'Organizar', icon: 'organize', name: 'ORGANIZAR', members: ['renomear', 'organizar'] }
+		{ key: 'organizar', label: 'Organização', icon: 'organization', name: 'ORGANIZAÇÃO', members: ['renomear', 'organizar'] }
 	];
 
 	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
@@ -659,12 +659,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				side.removeAttribute('opacity');
 			}
 		},
-		organize: function (svg) {
-			var top = svg.querySelector('.layer-top');
-			var bottom = svg.querySelector('.layer-bottom');
+		organization: function (svg) {
+			var loose = svg.querySelector('.org-loose');
 
-			if (top) top.setAttribute('transform', 'translate(0 -3.2)');
-			if (bottom) bottom.setAttribute('transform', 'translate(0 3.2)');
+			if (loose) loose.removeAttribute('transform');
 		},
 		project: function (svg) {
 			var top = svg.querySelector('.clap-top');

@@ -424,7 +424,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'import', 'rename', 'organize', 'folders', 'search'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'organization', 'import', 'rename', 'organize', 'folders', 'search'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');

@@ -632,6 +632,7 @@ body.bar-page {
 .drawer-handle svg {
   width: 17px;
   height: 17px;
+  overflow: visible; /* um desenho que passa da caixa (ex: uma tampa aberta) não é cortado */
   fill: none;
   stroke: currentcolor;
   stroke-linecap: round;

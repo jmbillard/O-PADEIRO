@@ -2145,8 +2145,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta · na barra, na gaveta Projeto', 'collect'],
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
-		renomear: ['Renomear', 'renomear comps · renomear as saídas de render · na barra, na gaveta Organizar', 'rename'],
-		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas · na barra, na gaveta Organizar', 'organize'],
+		renomear: ['Renomear', 'renomear comps · renomear as saídas de render · na barra, na gaveta Organização', 'rename'],
+		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas · na barra, na gaveta Organização', 'organize'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search']
 	};
 

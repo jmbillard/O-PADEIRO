@@ -160,6 +160,10 @@
 		"label": "novo template"
 	},
 	{
+		"key": "barra-organization",
+		"label": "organização"
+	},
+	{
 		"key": "oscar",
 		"label": "oscar"
 	},
