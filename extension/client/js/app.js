@@ -837,7 +837,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				// Enter no template já selecionado vai para o campo de texto (não desmarca)
 				if (e.detail === 0 && state.selected && state.selected.uri === node.uri) return focusInput();
 
-				selectTemplate(node, { focusInput: e.detail === 0 });
+				// clique ou Enter: o foco vai para o texto (o exemplo vem selecionado: é só digitar por cima)
+				selectTemplate(node, { focusInput: true });
 			});
 			btn.addEventListener('dblclick', function () {
 				importTemplate(node);
