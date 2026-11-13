@@ -521,7 +521,13 @@ function padNewProjectPlan(a) {
 	var rootFolder = new Folder(root);
 	var rootExists = padListedFolder(root);
 
-	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) return { settings: settings, root: rootFolder.parent.fsName, rootExists: true, projectsSub: '', projects: rootFolder.fsName, projectsExists: rootExists, fileBase: fileBase };
+	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) {
+		// a de projetos pedida não existe, mas há outra com outra grafia ao lado (pediu …/PROJETOS e existe
+		// …/01_PROJETOS): é essa, pela estrutura da pasta de cima (nada de criar uma segunda pasta de projetos)
+		if (!rootExists) return { settings: settings, root: rootFolder.parent.fsName, rootExists: padListedFolder(rootFolder.parent.fsName), projectsSub: sub, projects: rootFolder.parent.fsName + '/' + sub, projectsExists: false, fileBase: fileBase };
+
+		return { settings: settings, root: rootFolder.parent.fsName, rootExists: true, projectsSub: '', projects: rootFolder.fsName, projectsExists: rootExists, fileBase: fileBase };
+	}
 
 	// a de projetos que já existir dentro dela (com outra grafia), sem criar nada aqui
 	var projects = root + '/' + sub;
@@ -691,7 +697,8 @@ function padCheckWritable(path) {
 
 	while (missing.parent && !missing.parent.exists) missing = missing.parent;
 
-	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.' + padFolderPeek(missing.parent));
+	// 'pedido': o caminho inteiro que o padeiro quis usar (para o diagnóstico: de onde veio o nome da pasta)
+	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.' + padFolderPeek(missing.parent) + ' [pedido: ' + padDisplayPath(path) + ']');
 }
 
 // Para o diagnóstico: o que o After Effects e o sistema veem dentro da pasta (até 8 nomes de cada)

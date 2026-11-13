@@ -2050,7 +2050,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['imagens', 'imagens', TYPES.filter(function (t) { return t[0] === 'imagens'; })[0][2]],
 		['audio', 'áudio', TYPES.filter(function (t) { return t[0] === 'audio'; })[0][2]],
 		['dados', 'dados', TYPES.filter(function (t) { return t[0] === 'dados'; })[0][2]],
-		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']]
+		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']],
+		// não são coletados: dizem para onde a migração do CATADOR leva os renders e o que o projeto não usa
+		['saidas', 'saídas (renders)', ['M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M10.5 8.5v4l3.5-2z', 'M8 20h8M12 16.5V20']],
+		['externos', 'arquivos externos', ['M4.5 8.5 12 4.5l7.5 4v7L12 19.5l-7.5-4z', 'M4.5 8.5 12 12.5l7.5-4M12 12.5v7']]
 	];
 
 	// a estrutura padrão (a mesma do host, PAD_DEFAULT_COLLECT): o .aep em 01, os arquivos em 02, as saídas em 03
@@ -2062,9 +2065,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
 		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
 		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
-		{ name: '03_SAIDA', parent: '', contents: [] },
+		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
 		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
-		{ name: '04_REFS', parent: '', contents: [] }
+		{ name: '04_REFS', parent: '', contents: [] },
+		{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 	];
 
 	function setCollect(c) {
@@ -2090,11 +2094,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rootLabel: 'pasta do projeto',
 		rootWhere: 'não é coletado',
 		removeTitle: 'tirar da pasta (não é coletado)',
+		whereFor: function (type) {
+			if (type === 'saidas') return 'sem pasta: a migração usa 03_SAIDA';
+			if (type === 'externos') return 'sem pasta: a migração usa 05_EXTERNOS';
+
+			return null;
+		},
 		rowHint: function (f, depth) {
 			var notes = [];
 
 			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: a janela projeto salva aqui');
 			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
+			if (f.contents.indexOf('saidas') >= 0) notes.push('a migração traz os renders para cá');
+			if (f.contents.indexOf('externos') >= 0) notes.push('a migração traz para cá o que o projeto não usa');
 			if (!notes.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -2121,7 +2133,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindCollect() {
 		colTree.bind();
 
-		// troca a árvore pela estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS); salvar grava
+		// troca a árvore pela estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS); salvar grava
 		$('btn-col-default').addEventListener('click', function () {
 			state.collect.folders = JSON.parse(JSON.stringify(DEFAULT_COLLECT_FOLDERS));
 			renderCollect();

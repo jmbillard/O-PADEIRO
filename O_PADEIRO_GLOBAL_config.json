@@ -390,7 +390,9 @@
 			{
 				"name": "03_SAIDA",
 				"parent": "",
-				"contents": []
+				"contents": [
+					"saidas"
+				]
 			},
 			{
 				"name": "PREVIEWS",
@@ -401,6 +403,13 @@
 				"name": "04_REFS",
 				"parent": "",
 				"contents": []
+			},
+			{
+				"name": "05_EXTERNOS",
+				"parent": "",
+				"contents": [
+					"externos"
+				]
 			}
 		]
 	},

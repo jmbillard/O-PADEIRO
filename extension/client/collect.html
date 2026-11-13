@@ -24,12 +24,18 @@
 		<div class="fw-list" id="fw-list"></div>
 		<p class="fw-empty" id="fw-empty" hidden></p>
 
+		<!-- a migração (menu ⋯): a pasta de hoje à esquerda, a estrutura da configuração à direita e as faixas, por tipo
+		     de arquivo, ligando o que vai para onde (collect.js) -->
+		<div class="mg" id="mg" hidden></div>
+
 		<div class="action-bar is-anchored fw-bar">
+			<button type="button" class="io-button" id="mg-back" title="voltar para a lista de arquivos" aria-label="voltar para a lista de arquivos" hidden><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
 			<button type="button" class="io-button io-output" id="cw-other" title="coletar em outra pasta…" aria-label="coletar em outra pasta"><svg viewBox="0 0 24 24" class="anim-folder"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h6.5A1.5 1.5 0 0 1 19 10v1.5" /><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
 			<button type="button" class="io-button cw-relink" id="cw-relink" title="procurar os arquivos faltando: nos volumes da rede (montando se precisar) e, pelo nome, nas pastas do projeto. mostra onde achou cada um, para relinkar" aria-label="resolver arquivos faltando" disabled><svg viewBox="0 0 24 24"><path class="relink-tri" d="M10.3 4.6a2 2 0 0 1 3.4 0l7.1 12.3a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" /><g class="relink-mark"><path d="M12 9.5v4.2" /><path d="M12 16.9v.1" /></g></svg></button>
 			<details class="actions-menu fw-menu" id="app-menu">
 				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 				<div class="menu-popover">
+					<button type="button" data-action="migrate">Migrar a pasta para a estrutura nova…</button>
 					<button type="button" data-action="folder">Abrir a pasta do projeto</button>
 					<button type="button" data-action="docs">Ajuda / documentação</button>
 					<button type="button" data-action="reload">Recarregar painel</button>

@@ -108,6 +108,13 @@ const CHECKS = [
 	}],
 	['fontes do projeto', 'fonts.html'],
 	['coletar', 'collect.html'],
+	['coletar: migração', 'collect.html', async (p) => {
+		await p.setViewportSize({ width: 780, height: 660 });
+		await p.click('#app-menu summary');
+		await p.waitForTimeout(300);
+		await p.click('[data-action="migrate"]');
+		await p.waitForTimeout(900);
+	}],
 	['versionador', 'versioner.html'],
 	['versionador: projeto não salvo', 'versioner.html?mock=unsaved'],
 	['etiquetas', 'labels.html'],

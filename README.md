@@ -247,6 +247,21 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 > • o projeto precisa estar salvo (os arquivos vão para a pasta dele), ou use o clique direito.\
 > • arquivos ausentes e fontes sem arquivo local (ex: Adobe Fonts) não são coletados: o padeiro avisa quais.
 
+#### migrar a pasta para a estrutura nova
+
+<p align="center"><img src="docs/images/catador-migracao.webp" alt="a migração: a pasta de hoje à esquerda, a estrutura nova à direita e as faixas por tipo de arquivo" width="760"></p>
+
+o coletar **copia** para a pasta do projeto o que está fora dela. a migração **arruma a pasta que já existe**: o que está nela vai para a estrutura da [configuração > coletar](docs/producoes.md#-coletar), as pastas com outra grafia (`02 ARQUIVOS`, `02_ARQUIVOS`) se juntam e nada fica solto. abra pelo **⋯** da janela do CATADOR: '*Migrar a pasta para a estrutura nova…*'.
+
+- **o desenho** → a pasta de **hoje** à esquerda, a **estrutura nova** à direita e uma faixa por tipo de arquivo ligando o que vai para onde: a seta na chegada, a largura pela quantidade e a cor do tipo (as mesmas da configuração), em degradê, do claro ao forte. o mouse numa pasta acende só as faixas dela, com a quantidade de cada uma. nada é movido até o **Migrar**.
+- **o que vai para onde** → o `.aep` aberto e os outros `.aep` da pasta, para a pasta do tipo **projeto** (os outros vão sem religar: o After pede os arquivos quando forem abertos); os arquivos usados pelo projeto, para a pasta do tipo de cada um; o que está numa pasta de saída (`SAIDA`, `OUTPUT`, `RENDER`…), para a do tipo **saídas**, com as subpastas; todo o resto (não usado, autosave, `OLD`, pastas sem par), para a do tipo **arquivos externos**, com o caminho de antes dentro dela.
+- **ao migrar** → os arquivos são movidos (na mesma unidade é só trocar o nome: rápido, mesmo com vídeo grande), os itens são religados, o `.aep` é salvo no lugar novo, as saídas da fila de render passam a apontar para a pasta nova e as pastas antigas que ficaram vazias são apagadas. nome repetido no destino não sobrescreve: o segundo ganha `_2`.
+- **desfazer** → arquivo movido no disco não volta com `Cmd+Z` / `Ctrl+Z`: a migração grava um registro na raiz (`_migracao_padeiro.json`) e o botão vira **Desfazer a migração**, que leva tudo de volta. com o registro na pasta, ela não migra de novo.
+
+> 🚩 *obs:*\
+> • os arquivos usados que estão **fora** da pasta do projeto não entram: é o Coletar que copia esses.\
+> • a pasta é lida até 10 níveis para dentro, 30 mil arquivos ou 15 segundos; passando disso, a migração avisa e não move nada.
+
 ### importar
 
 **O VERSIONADOR** ([a página dele](docs/versionador.md)):

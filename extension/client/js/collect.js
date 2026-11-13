@@ -40,7 +40,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 	// finds: o resultado da última busca dos arquivos faltando ({ id: { to, how, more } } e os não achados), até
 	// relinkar ou eles deixarem de faltar
-	var state = { data: null, busy: false, key: '', finds: null };
+	var state = { data: null, busy: false, key: '', finds: null, mig: null };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -83,6 +83,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	}
 
 	async function load() {
+		if (state.mig) return; // a migração está na tela: a lista espera
+
 		try {
 			state.data = await call('collectList');
 			render();
@@ -322,12 +324,380 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		await load();
 	}
 
+	/* =========================================================
+	   Migração: a pasta do projeto vai para a estrutura da configuração (host/migrate.jsx). a pasta de hoje à
+	   esquerda, a estrutura nova à direita e uma faixa por tipo de arquivo ligando o que vai para onde: a seta
+	   na chegada, a largura pela quantidade e o degradê da cor do tipo (styles.css), do claro ao forte
+	   ========================================================= */
+
+	var TYPE_NAMES = { projeto: 'projeto', videos: 'vídeos', imagens: 'imagens', sequencias: 'sequências', audio: 'áudio', dados: 'dados', fontes: 'fontes', saidas: 'saídas', externos: 'arquivos externos' };
+	var TYPE_ORDER = ['projeto', 'videos', 'imagens', 'sequencias', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
+	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
+	var NS = 'http://www.w3.org/2000/svg';
+	var LIST_SIZE = [460, 620]; // a janela da lista (o manifest) e a da migração, mais larga para os dois lados
+	var MIG_SIZE = [780, 660];
+
+	// as duas cores de um tipo (o tom claro e a cor), lidas do css
+	function typeColors(type) {
+		var probe = el('i');
+
+		probe.setAttribute('data-type', type);
+		probe.hidden = true;
+		document.body.appendChild(probe);
+
+		var cs = getComputedStyle(probe);
+		var colors = [cs.getPropertyValue('--type-soft').trim() || '#9aa3b5', cs.getPropertyValue('--type').trim() || '#6b7488'];
+
+		probe.remove();
+
+		return colors;
+	}
+
+	function svgNode(tag, attrs, parent) {
+		var node = document.createElementNS(NS, tag);
+
+		Object.keys(attrs).forEach(function (k) {
+			node.setAttribute(k, attrs[k]);
+		});
+		if (parent) parent.appendChild(node);
+
+		return node;
+	}
+
+	function migItem(id, name, count, opts) {
+		var node = el('div', 'mg-item' + (opts.sub ? ' is-sub' : '') + (opts.empty ? ' is-empty' : '') + (opts.loose ? ' is-loose' : ''));
+
+		node.dataset.key = id;
+		if (opts.type) node.setAttribute('data-type', opts.type);
+		if (opts.title) node.title = opts.title;
+		if (!opts.loose) node.insertAdjacentHTML('beforeend', FOLDER_SVG);
+		node.appendChild(el('span', null, name));
+		if (count) node.appendChild(el('b', opts.type ? 'is-type' : null, String(count)));
+
+		return node;
+	}
+
+	// as faixas: saem empilhadas no meio da altura da pasta antiga e chegam empilhadas na pasta nova
+	function drawWires() {
+		var box = $('mg');
+		var plan = state.mig && state.mig.plan;
+		var old = box.querySelector('.mg-wires');
+
+		if (old) old.remove();
+		if (!plan || !plan.links.length) return;
+
+		var svg = svgNode('svg', { 'class': 'mg-wires', 'aria-hidden': 'true' }, box);
+		var area = box.getBoundingClientRect();
+		var defs = svgNode('defs', {}, svg);
+		var colors = {};
+		var width = function (n) {
+			return Math.max(2.5, Math.min(14, Math.sqrt(n) * 2.2));
+		};
+		var find = function (side, key) {
+			return Array.prototype.filter.call(box.querySelectorAll('.mg-col.is-' + side + ' .mg-item'), function (n) {
+				return n.dataset.key === key;
+			})[0];
+		};
+		var sumOut = {};
+		var sumIn = {};
+		var offOut = {};
+		var offIn = {};
+		var first = box.querySelector('.mg-col.is-old .mg-item');
+		var firstNew = box.querySelector('.mg-col.is-new .mg-item');
+
+		if (!first || !firstNew) return;
+
+		var x0 = first.getBoundingClientRect().right - area.left;
+		var x9 = firstNew.getBoundingClientRect().left - area.left + 22;
+
+		plan.links.forEach(function (l) {
+			sumOut[l.from] = (sumOut[l.from] || 0) + width(l.count) + 2;
+			sumIn[l.to] = (sumIn[l.to] || 0) + width(l.count) + 2;
+
+			if (!colors[l.type]) {
+				colors[l.type] = typeColors(l.type);
+
+				var grad = svgNode('linearGradient', { id: 'mg-grad-' + l.type, gradientUnits: 'userSpaceOnUse', x1: x0, x2: x9, y1: 0, y2: 0 }, defs);
+
+				svgNode('stop', { offset: 0, 'stop-color': colors[l.type][0] }, grad);
+				svgNode('stop', { offset: 1, 'stop-color': colors[l.type][1] }, grad);
+			}
+		});
+
+		plan.links.forEach(function (l) {
+			var a = find('old', l.from);
+			var z = find('new', l.to);
+
+			if (!a || !z) return;
+
+			var ra = a.getBoundingClientRect();
+			var rz = z.getBoundingClientRect();
+			var w = width(l.count);
+			var y1 = ra.top - area.top + ra.height / 2 - (sumOut[l.from] - 2) / 2 + (offOut[l.from] || 0) + w / 2;
+			var y2 = rz.top - area.top + rz.height / 2 - (sumIn[l.to] - 2) / 2 + (offIn[l.to] || 0) + w / 2;
+			var x1 = ra.right - area.left + 6;
+			var x2 = rz.left - area.left - 12;
+			var mid = (x1 + x2) / 2;
+			var head = Math.max(4.5, w / 2 + 2.5);
+			var g = svgNode('g', { 'class': 'mg-wire' }, svg);
+
+			offOut[l.from] = (offOut[l.from] || 0) + w + 2;
+			offIn[l.to] = (offIn[l.to] || 0) + w + 2;
+			g.dataset.from = l.from;
+			g.dataset.to = l.to;
+			svgNode('path', { 'class': 'mg-band', d: 'M' + x1 + ' ' + y1 + 'C' + mid + ' ' + y1 + ' ' + mid + ' ' + y2 + ' ' + x2 + ' ' + y2, 'stroke-width': w, stroke: 'url(#mg-grad-' + l.type + ')' }, g);
+			svgNode('path', { d: 'M' + (x2 - 1) + ' ' + (y2 - head) + 'L' + (x2 + 8) + ' ' + y2 + 'L' + (x2 - 1) + ' ' + (y2 + head) + 'Z', fill: colors[l.type][1] }, g);
+			// a quantidade, no meio da faixa (ali cada faixa já se afastou das vizinhas)
+			svgNode('text', { x: mid, y: (y1 + y2) / 2 + 3.5, 'text-anchor': 'middle', fill: colors[l.type][1] }, g).textContent = l.count;
+		});
+	}
+
+	// o mouse numa pasta acende só as faixas dela (e as pastas do outro lado)
+	function migFocus(item) {
+		var box = $('mg');
+		var side = item.closest('.mg-col').classList.contains('is-old') ? 'from' : 'to';
+		var other = side === 'from' ? 'to' : 'from';
+		var on = {};
+
+		box.classList.add('is-focus');
+		Array.prototype.forEach.call(box.querySelectorAll('.mg-wire'), function (w) {
+			var hit = w.dataset[side] === item.dataset.key;
+
+			w.classList.toggle('is-on', hit);
+			if (hit) on[w.dataset[other]] = true;
+		});
+		Array.prototype.forEach.call(box.querySelectorAll('.mg-item'), function (n) {
+			var mine = n.closest('.mg-col').classList.contains(side === 'from' ? 'is-old' : 'is-new');
+
+			n.classList.toggle('is-on', n === item || (!mine && !!on[n.dataset.key]));
+		});
+	}
+
+	function renderMigration() {
+		var plan = state.mig.plan;
+		var box = $('mg');
+		var oldCol = el('div', 'mg-col is-old');
+		var newCol = el('div', 'mg-col is-new');
+		var legend = el('div', 'mg-legend');
+		var grid = el('div', 'mg-grid');
+		var seen = {};
+		var parts = [];
+
+		box.textContent = '';
+		oldCol.appendChild(el('p', 'mg-title', 'HOJE'));
+		newCol.appendChild(el('p', 'mg-title', 'ESTRUTURA NOVA'));
+
+		plan.sources.forEach(function (s) {
+			oldCol.appendChild(migItem(s.name, s.name || 'soltos na raiz', s.count, { loose: !s.name }));
+		});
+		// sem nada fora do lugar (já migrada, ou já arrumada): o lado de hoje diz isso
+		if (!plan.sources.length) oldCol.appendChild(migItem('', plan.undo ? 'tudo na estrutura nova' : 'nada fora do lugar', 0, { loose: true, empty: true }));
+
+		plan.dests.forEach(function (d) {
+			var name = d.path.split('/').pop();
+			// a pasta que só tem subpastas recebendo arquivos não fica apagada
+			var busy = d.count || plan.dests.some(function (o) {
+				return o.count && o.path.indexOf(d.path + '/') === 0;
+			});
+
+			newCol.appendChild(migItem(d.path, name, d.count, { sub: d.depth > 0, empty: !busy, type: d.count ? d.type : '', title: d.extra ? d.path + '\nnão está na árvore de configuração > coletar: a migração cria esta pasta' : d.path }));
+		});
+		plan.links.forEach(function (l) {
+			seen[l.type] = true;
+		});
+		TYPE_ORDER.forEach(function (t) {
+			if (!seen[t]) return;
+
+			var chip = el('span');
+			var mark = el('i');
+
+			mark.setAttribute('data-type', t);
+			chip.appendChild(mark);
+			chip.appendChild(document.createTextNode(TYPE_NAMES[t] || t));
+			legend.appendChild(chip);
+		});
+
+		grid.appendChild(oldCol);
+		grid.appendChild(el('div', 'mg-gap'));
+		grid.appendChild(newCol);
+		box.appendChild(grid);
+		if (legend.childNodes.length) box.appendChild(legend);
+
+		Array.prototype.forEach.call(box.querySelectorAll('.mg-item'), function (item) {
+			item.addEventListener('mouseenter', function () {
+				migFocus(item);
+			});
+			item.addEventListener('mouseleave', function () {
+				box.classList.remove('is-focus');
+			});
+		});
+
+		parts.push(plan.name);
+		if (state.mig.done) parts.push(plural(plan.total, 'arquivo migrado', 'arquivos migrados'));
+		else parts.push(plan.total ? plural(plan.total, 'arquivo para mover', 'arquivos para mover') : 'nada para mover');
+		if (plan.stay && !state.mig.done) parts.push(plan.stay + ' já no lugar');
+		$('fw-file').innerHTML = FILE_SVG;
+		$('fw-file').appendChild(el('span', null, parts.join(' · ')));
+
+		drawWires();
+		migFooter();
+	}
+
+	// o rodapé da migração: o voltar, o que vale saber antes e o botão (Migrar, ou Desfazer depois de migrada)
+	function migFooter() {
+		var plan = state.mig.plan;
+		var go = $('cw-go');
+		var notes = [];
+
+		go.classList.toggle('button-primary', !plan.undo);
+		go.disabled = state.busy || (!plan.undo && (!plan.total || plan.partial));
+		go.textContent = plan.undo ? 'Desfazer a migração' : plan.total ? 'Migrar: ' + plan.total : 'Migrar';
+
+		if (state.mig.note) return; // o resultado da última ação fica na tela
+		if (plan.undo && !plan.total) {
+			status('esta pasta já foi migrada: o registro na raiz dela desfaz.', '');
+			return;
+		}
+
+		if (plan.partial) notes.push('a pasta é grande demais para ler de uma vez: nada pode ser movido');
+		else if (plan.undo) notes.push('esta pasta já foi migrada');
+		else if (plan.total) notes.push('nada foi movido ainda');
+		if (plan.conflicts) notes.push(plural(plan.conflicts, 'nome repetido ganha', 'nomes repetidos ganham') + ' _2');
+		if (plan.others) notes.push(plural(plan.others, 'outro .aep vai', 'outros .aep vão') + ' sem religar');
+		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta fica', 'arquivos de fora da pasta ficam') + ' para o Coletar');
+		status(notes.join(' · ') + (notes.length ? '.' : ''), '');
+		$('fw-status').title = notes.join('\n');
+	}
+
+	async function openMigration() {
+		if (state.busy) return;
+
+		state.busy = true;
+		status('lendo a pasta do projeto…');
+
+		try {
+			var plan = await call('migratePlan');
+
+			state.mig = { plan: plan, note: '', done: false };
+			state.finds = null;
+			$('fw-list').hidden = true;
+			$('fw-empty').hidden = true;
+			$('cw-other').hidden = true;
+			$('cw-relink').hidden = true;
+			$('mg-back').hidden = false;
+			$('mg').hidden = false;
+			document.body.classList.add('is-migrating');
+			PAD_BRIDGE.resizeWindow(MIG_SIZE[0], MIG_SIZE[1]);
+			state.busy = false;
+			renderMigration();
+		} catch (err) {
+			state.busy = false;
+			status(err.message, 'error');
+		}
+	}
+
+	function closeMigration() {
+		if (state.busy) return;
+
+		state.mig = null;
+		state.key = '';
+		$('mg').hidden = true;
+		$('mg').textContent = '';
+		$('mg-back').hidden = true;
+		$('fw-list').hidden = false;
+		$('cw-other').hidden = false;
+		$('cw-relink').hidden = false;
+		$('cw-go').classList.add('button-primary');
+		document.body.classList.remove('is-migrating');
+		PAD_BRIDGE.resizeWindow(LIST_SIZE[0], LIST_SIZE[1]);
+		status('');
+		load();
+	}
+
+	// migra em lotes (o After Effects fica livre entre um e outro) e conta no rodapé
+	async function migrate() {
+		if (state.busy) return;
+
+		state.busy = true;
+		state.mig.note = '';
+		migFooter();
+
+		try {
+			var begin = await call('migrateBegin');
+			var step = { done: 0, total: begin.total, failed: 0 };
+
+			while (step.done < step.total) {
+				status('movendo ' + step.done + '/' + step.total + '…');
+				step = await call('migrateStep', { count: 8 });
+			}
+
+			status('religando e salvando o projeto…');
+
+			var res = await call('migrateEnd');
+			var parts = [plural(res.moved + (res.project ? 1 : 0), 'arquivo migrado', 'arquivos migrados')];
+
+			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
+			if (res.queue) parts.push(plural(res.queue, 'saída da fila apontada', 'saídas da fila apontadas') + ' para a pasta nova');
+			if (res.folders) parts.push(plural(res.folders, 'pasta vazia apagada', 'pastas vazias apagadas'));
+			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde ser movido', 'não puderam ser movidos'));
+
+			// o desenho do que foi feito fica na tela (o plano de antes), agora com o desfazer
+			state.mig.plan.undo = true;
+			state.mig.done = true;
+			state.mig.note = parts.join(' · ') + '.';
+			state.busy = false;
+			renderMigration();
+			status(state.mig.note, res.failed && res.failed.length ? 'error' : 'success');
+			$('fw-status').title = parts.concat(res.failed || []).join('\n');
+		} catch (err) {
+			state.busy = false;
+			migFooter();
+			status(err.message, 'error');
+		}
+	}
+
+	async function undoMigration() {
+		if (state.busy) return;
+
+		state.busy = true;
+		state.mig.note = '';
+		migFooter();
+		status('desfazendo a migração…');
+
+		try {
+			var res = await call('migrateUndo');
+			var parts = [plural(res.restored, 'arquivo de volta', 'arquivos de volta') + ' ao lugar de antes'];
+
+			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
+			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde voltar', 'não puderam voltar'));
+
+			state.mig.plan = await call('migratePlan');
+			state.mig.done = false;
+			state.mig.note = parts.join(' · ') + '.';
+			state.busy = false;
+			renderMigration();
+			status(state.mig.note, res.failed && res.failed.length ? 'error' : 'success');
+			$('fw-status').title = parts.concat(res.failed || []).join('\n');
+		} catch (err) {
+			state.busy = false;
+			migFooter();
+			status(err.message, 'error');
+		}
+	}
+
 	function init() {
 		$('cw-relink').addEventListener('click', findMissing);
 		PAD_KEYS.primary($('cw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('cw-go').addEventListener('click', function () {
-			if (found().length) relink();
+			if (state.mig) {
+				if (state.mig.plan.undo) undoMigration();
+				else migrate();
+			} else if (found().length) relink();
 			else collect('');
+		});
+		$('mg-back').addEventListener('click', closeMigration);
+		window.addEventListener('resize', function () {
+			if (state.mig) drawWires();
 		});
 		$('cw-other').addEventListener('click', function () {
 			var path = PAD_BRIDGE.pickFolder('Coletar em qual pasta', state.data && state.data.root);
@@ -347,6 +717,10 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			try {
 				if (btn.dataset.action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
 				if (btn.dataset.action === 'reload') location.reload();
+				if (btn.dataset.action === 'migrate') {
+					if (!state.data || !state.data.root) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
+					await openMigration();
+				}
 				if (btn.dataset.action === 'folder') {
 					if (!state.data || !state.data.root) throw new Error('#PAD_095 - o projeto ainda não foi salvo.');
 					await call('openFolder', { path: state.data.root });

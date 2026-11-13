@@ -131,15 +131,17 @@ a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botã
    VÍDEOS          ← vídeos
    AUDIOS          ← áudio
    DADOS           ← dados (json, csv, txt...)
-03_SAIDA           ← finais para avaliação (criada vazia)
+03_SAIDA           ← finais para avaliação (tipo saídas; criada vazia)
    PREVIEWS        ← previews (criada vazia)
 04_REFS            ← referências (criada vazia)
+05_EXTERNOS        ← o que não é usado pelo projeto (tipo arquivos externos; criada vazia)
 ```
 
-a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01_PROJETOS`). pastas sem tipo (como `02_ARQUIVOS`, `03_SAIDA` e `04_REFS`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
+a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01_PROJETOS`). pastas sem tipo (como `02_ARQUIVOS` e `04_REFS`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
 
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
-- **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
+- **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. cada tipo tem uma cor, a mesma da aba organizar e da migração.
+- **saídas e arquivos externos** → não são coletados: dizem para onde a [migração](../README.md#migrar-a-pasta-para-a-estrutura-nova) do CATADOR leva os renders (`03_SAIDA`) e o que o projeto não usa (`05_EXTERNOS`). a pasta deles é sempre criada com a estrutura. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
 - **sempre salva** → depois de copiar, os itens apontam para as cópias e o projeto é salvo.
 <br>

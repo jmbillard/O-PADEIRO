@@ -18,9 +18,13 @@ Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 
 */
 
-var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes'];
+// 'saidas' (os renders) e 'externos' (o que o projeto não usa) não são coletados: dizem para onde a migração leva
+// cada coisa (migrate.jsx), e a pasta deles é sempre criada com a estrutura
+var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
+var PAD_COLLECT_ALWAYS = ['saidas', 'externos'];
 
-// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo), as saídas em 03 (com os previews) e as referências em 04.
+// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo), as saídas em 03 (com os previews), as referências
+// em 04 e, em 05, o que não é do projeto (os arquivos externos).
 var PAD_DEFAULT_COLLECT = {
 	folders: [
 		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
@@ -30,9 +34,10 @@ var PAD_DEFAULT_COLLECT = {
 		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
 		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
 		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
-		{ name: '03_SAIDA', parent: '', contents: [] },
+		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
 		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
-		{ name: '04_REFS', parent: '', contents: [] }
+		{ name: '04_REFS', parent: '', contents: [] },
+		{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 	]
 };
 
@@ -168,6 +173,10 @@ function padIsProjectsFolderName(name) {
 // variações de PROJETOS). Cria com o nome da árvore se não houver.
 function padChildFolder(parent, name, isProjects) {
 	var key = padFolderKey(name);
+
+	// uma pasta com nome de pasta de projetos (PROJETOS, 01 PROJETOS…) vale como a de projetos, venha de onde vier:
+	// se já existe uma com outra grafia (01_PROJETOS), é ela, e nada novo é criado ao lado
+	if (padIsProjectsFolderName(name)) isProjects = true;
 	var items = new Folder(parent).exists ? new Folder(parent).getFiles() || [] : [];
 
 	for (var i = 0; i < items.length; i++) {
@@ -238,7 +247,7 @@ function padStructureFolders(settings, kinds) {
 		var f = settings.folders[i];
 		var ok = !kinds || f.contents.length == 0;
 
-		for (j = 0; kinds && !ok && j < f.contents.length; j++) if (padIndexOf(kinds, f.contents[j]) >= 0) ok = true;
+		for (j = 0; kinds && !ok && j < f.contents.length; j++) if (padIndexOf(kinds, f.contents[j]) >= 0 || padIndexOf(PAD_COLLECT_ALWAYS, f.contents[j]) >= 0) ok = true;
 		if (!ok) continue;
 
 		var parts = padCollectPathOf(settings, f).split('/');
@@ -762,7 +771,7 @@ PADX.collectStatus = function () {
 //   ok       já na pasta do projeto       local    fora das pastas de projetos (configuração > PROJETO)
 //   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
-// → { project, root, items: [{ id, name, file, kind, state, layers, frames }] }
+// → { project, root, migrated, items: [{ id, name, file, kind, state, layers, frames }] }
 PADX.collectList = function () {
 	var settings = padReadCollect();
 	var file = app.project.file;
@@ -799,7 +808,8 @@ PADX.collectList = function () {
 		items.push({ id: item.id, name: item.name, file: path, kind: kind, state: state, layers: layers });
 	}
 
-	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items };
+	// migrated: a pasta tem o registro de uma migração (migrate.jsx): dá para desfazer
+	return { project: file ? decodeURI(file.name) : '', root: root ? padDisplayPath(root) : '', items: items, migrated: !!root && new File(new Folder(root).fsName + '/' + PAD_MIGRATION_LOG).exists };
 };
 
 // O caminho do arquivo do item, também quando ele está faltando (o After Effects 2022+ guarda o caminho

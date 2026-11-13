@@ -205,9 +205,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
 							{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
 							{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
-							{ name: '03_SAIDA', parent: '', contents: [] },
+							{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
 							{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
-							{ name: '04_REFS', parent: '', contents: [] }
+							{ name: '04_REFS', parent: '', contents: [] },
+							{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 						]
 					},
 					items: [
@@ -500,9 +501,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'FONTS', depth: 1, contents: ['fontes'] },
 				{ name: 'IMAGENS', depth: 1, contents: ['imagens', 'sequencias'] },
 				{ name: 'VÍDEOS', depth: 1, contents: ['videos'] },
-				{ name: '03_SAIDA', depth: 0, contents: [] },
+				{ name: '03_SAIDA', depth: 0, contents: ['saidas'] },
 				{ name: 'PREVIEWS', depth: 1, contents: [] },
-				{ name: '04_REFS', depth: 0, contents: [] }
+				{ name: '04_REFS', depth: 0, contents: [] },
+				{ name: '05_EXTERNOS', depth: 0, contents: ['externos'] }
 			] };
 		},
 
@@ -1358,6 +1360,67 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// resolver faltando: acha o arte_antiga.psd no VFX-1 (?mock=fail: não acha)
+		// a migração da pasta (O CATADOR): a pasta bagunçada de exemplo; depois de migrar, nada para mover e o
+		// registro para desfazer
+		migratePlan: function () {
+			var dests = [['01_PROJETOS', 0, 'projeto'], ['02_ARQUIVOS', 0, ''], ['02_ARQUIVOS/AUDIOS', 1, 'audio'], ['02_ARQUIVOS/DADOS', 1, 'dados'], ['02_ARQUIVOS/FONTS', 1, 'fontes'], ['02_ARQUIVOS/IMAGENS', 1, 'imagens'], ['02_ARQUIVOS/VÍDEOS', 1, 'videos'], ['03_SAIDA', 0, 'saidas'], ['03_SAIDA/PREVIEWS', 1, ''], ['04_REFS', 0, ''], ['05_EXTERNOS', 0, 'externos']];
+			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', 6], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', 36], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['', '05_EXTERNOS', 'externos', 16]];
+			var sources = {};
+			var count = {};
+			var total = 0;
+
+			links.forEach(function (l) {
+				sources[l[0]] = (sources[l[0]] || 0) + l[3];
+				count[l[1]] = (count[l[1]] || 0) + l[3];
+				total += l[3];
+			});
+
+			return {
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: 1, partial: false, undo: !!window.PAD_MOCK_MIGRATED,
+				sources: Object.keys(sources).sort(function (a, b) {
+					return a === '' ? 1 : b === '' ? -1 : a.localeCompare(b);
+				}).map(function (k) {
+					return { name: k, count: sources[k] };
+				}),
+				dests: dests.map(function (d) {
+					return { path: d[0], depth: d[1], type: d[2], count: count[d[0]] || 0, extra: false };
+				}),
+				links: links.map(function (l) {
+					return { from: l[0], to: l[1], type: l[2], count: l[3] };
+				})
+			};
+		},
+
+		migrateBegin: function () {
+			window.PAD_MOCK_MIG_AT = 0;
+
+			return { total: 362 };
+		},
+
+		migrateStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 90);
+			});
+			window.PAD_MOCK_MIG_AT = Math.min(362, window.PAD_MOCK_MIG_AT + 60);
+
+			return { done: window.PAD_MOCK_MIG_AT, total: 362, failed: 0 };
+		},
+
+		migrateEnd: function () {
+			window.PAD_MOCK_MIGRATED = true;
+
+			return { moved: 361, failed: [], relinked: 23, folders: 6, queue: 2, project: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL/01_PROJETOS/INTERPOL_ABERTURA.aep' };
+		},
+
+		migrateUndo: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 600);
+			});
+			window.PAD_MOCK_MIGRATED = false;
+
+			return { restored: 361, failed: [], relinked: 23 };
+		},
+
 		// a busca dos faltando: acha um (com outro de mesmo nome) e não acha o outro; ?mock=fail: nenhum
 		collectRelinkFind: async function () {
 			await new Promise(function (r) {

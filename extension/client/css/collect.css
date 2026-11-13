@@ -114,3 +114,194 @@
     animation: none !important;
   }
 }
+
+/* ---------- a migração: a pasta de hoje, a estrutura nova e as faixas entre elas ---------- */
+.mg {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin: -4px; /* a folga do contorno do foco, compensada */
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.mg[hidden] {
+  display: none;
+}
+
+.mg-grid {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 170px minmax(0, 1fr); /* o meio é o caminho das faixas */
+}
+
+.mg-col {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.mg-title {
+  margin: 0 0 4px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mg-item {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 7px 0 12px; /* a pílula da contagem com o mesmo respiro em cima, embaixo e do lado */
+  border: 1px solid var(--border);
+  border-radius: 18px; /* concêntrico com a pílula: o raio dela (10) + o respiro (7) + a borda (1) */
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  transition: opacity 160ms ease;
+}
+
+.mg-item svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  opacity: 0.6;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.mg-item span {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* a contagem: neutra na pasta de hoje; na cor do tipo (styles.css) na pasta nova. todas do mesmo tamanho, com o
+   número no centro */
+.mg-item b {
+  display: grid;
+  width: 36px;
+  height: 20px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+}
+
+.mg-item b.is-type {
+  background: var(--type, var(--blue-500));
+  color: white;
+}
+
+.mg-item.is-sub {
+  margin-left: 22px;
+}
+
+/* a pasta da estrutura que não recebe nada, e os arquivos soltos na raiz (não são uma pasta) */
+.mg-item.is-empty {
+  border-style: dashed;
+  font-weight: 600;
+  opacity: 0.45;
+}
+
+.mg-item.is-loose {
+  border-style: dashed;
+}
+
+.mg-wires {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mg-wire {
+  transition: opacity 160ms ease;
+}
+
+.mg-band {
+  fill: none;
+}
+
+.mg-wire text {
+  font-size: 9.5px;
+  font-weight: 800;
+  opacity: 0;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  transition: opacity 160ms ease;
+}
+
+/* o mouse numa pasta: só as faixas dela ficam acesas, com a quantidade de cada uma */
+.mg.is-focus .mg-wire {
+  opacity: 0.12;
+}
+
+.mg.is-focus .mg-wire.is-on {
+  opacity: 1;
+}
+
+.mg.is-focus .mg-wire.is-on text {
+  opacity: 1;
+}
+
+.mg.is-focus .mg-item {
+  opacity: 0.4;
+}
+
+.mg.is-focus .mg-item.is-on {
+  opacity: 1;
+}
+
+.mg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 14px 2px 0;
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.mg-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* a legenda mostra o degradê da faixa (do tom claro, na saída, à cor do tipo, na chegada) */
+.mg-legend i {
+  width: 18px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--type-soft), var(--type));
+}
+
+/* o botão do rodapé da migração numa linha só (Desfazer a migração) */
+.is-migrating .fw-bar .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-item,
+  .mg-wire,
+  .mg-wire text {
+    transition: none;
+  }
+}
