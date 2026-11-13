@@ -494,7 +494,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	// as faixas: saem empilhadas no meio da altura da pasta antiga e chegam empilhadas na pasta nova
 	function drawWires() {
 		var box = $('mg');
-		var plan = state.mig && state.mig.plan;
+		var plan = state.mig ? state.mig.plan : state.reading ? READING : null;
 		var old = box.querySelector('.mg-wires');
 
 		if (old) old.remove();
@@ -576,8 +576,15 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			offIn[l.to] = (offIn[l.to] || 0) + w + 2;
 			g.dataset.from = l.from;
 			g.dataset.to = l.to;
-			svgNode('path', { 'class': 'mg-band', d: 'M' + x1 + ' ' + y1 + 'C' + mid + ' ' + y1 + ' ' + mid + ' ' + y2 + ' ' + x2 + ' ' + y2, 'stroke-width': w, stroke: 'url(#mg-grad-' + l.type + ')' }, g);
-			svgNode('path', { d: 'M' + (x2 - 1) + ' ' + (y2 - head) + 'L' + (x2 + 8) + ' ' + y2 + 'L' + (x2 - 1) + ' ' + (y2 + head) + 'Z', fill: colors[l.type][1] }, g);
+			var curve = 'M' + x1 + ' ' + y1 + 'C' + mid + ' ' + y1 + ' ' + mid + ' ' + y2 + ' ' + x2 + ' ' + y2;
+
+			svgNode('path', { 'class': 'mg-band', d: curve, 'stroke-width': w, stroke: 'url(#mg-grad-' + l.type + ')' }, g);
+			// as esperas (o css mostra cada uma no seu momento): a faixa que enche enquanto os arquivos são movidos e a
+			// luz que percorre a faixa enquanto o plano é refeito
+			svgNode('path', { 'class': 'mg-fill', d: curve, 'stroke-width': w, stroke: 'url(#mg-grad-' + l.type + ')', pathLength: 100, 'stroke-dasharray': '0 100' }, g);
+			svgNode('path', { 'class': 'mg-lit', d: curve, 'stroke-width': w, pathLength: 100, style: 'animation-delay:-' + (plan.links.indexOf(l) * 0.17) + 's' }, g);
+			g.firstChild.style.animationDelay = '-' + (plan.links.indexOf(l) * 0.09) + 's';
+			svgNode('path', { 'class': 'mg-head', d: 'M' + (x2 - 1) + ' ' + (y2 - head) + 'L' + (x2 + 8) + ' ' + y2 + 'L' + (x2 - 1) + ' ' + (y2 + head) + 'Z', fill: colors[l.type][1] }, g);
 			// o ponto da quantidade na curva: de 30% a 70% do caminho, conforme a posição da faixa na pasta
 			var i = iOut[l.from] || 0;
 			var t = nOut[l.from] > 1 ? 0.3 + 0.4 * i / (nOut[l.from] - 1) : 0.5;
@@ -620,6 +627,59 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		});
 	}
 
+	// a espera da migração, nas próprias faixas: 'reading' (lendo a pasta: esqueleto e traços correndo), 'replanning'
+	// (refazendo o plano: uma luz percorre cada faixa), 'moving' (cada faixa enche conforme os arquivos dela são
+	// movidos) ou '' (nenhuma)
+	function migWait(mode) {
+		['reading', 'replanning', 'moving'].forEach(function (m) {
+			$('mg').classList.toggle('is-' + m, m === mode);
+		});
+	}
+
+	// movendo: os arquivos vão na ordem das faixas, então as primeiras 'done' unidades enchem uma faixa de cada vez
+	function migProgress(done) {
+		var links = state.mig.plan.links;
+
+		Array.prototype.forEach.call($('mg').querySelectorAll('.mg-wire'), function (g) {
+			var count = links[Number(g.dataset.i)].count;
+			var part = Math.min(count, done);
+
+			done -= part;
+			g.querySelector('.mg-fill').setAttribute('stroke-dasharray', (100 * part / count) + ' 100');
+			g.classList.toggle('is-done', part === count);
+		});
+	}
+
+	// lendo a pasta: o esqueleto do desenho (as pastas sem nome e faixas sem cor), até o plano chegar
+	var READING = { links: [['s0', 'd0'], ['s1', 'd2'], ['s1', 'd3'], ['s1', 'd1'], ['s2', 'd5'], ['s2', 'd3'], ['s3', 'd4'], ['s4', 'd5']].map(function (l) {
+		return { from: l[0], to: l[1], type: '', count: 3 };
+	}) };
+
+	function renderReading() {
+		var box = $('mg');
+		var grid = el('div', 'mg-grid');
+
+		box.textContent = '';
+		[['is-old', 'HOJE', 's', 5], ['is-new', 'ESTRUTURA NOVA', 'd', 6]].forEach(function (c, side) {
+			var col = el('div', 'mg-col ' + c[0]);
+
+			col.appendChild(el('p', 'mg-title', c[1]));
+			for (var i = 0; i < c[3]; i++) {
+				var item = migItem(c[2] + i, '', 0, {});
+
+				item.classList.add('is-skel');
+				item.lastChild.style.width = (70 + ((i + side * 2) * 37) % 70) + 'px';
+				item.lastChild.style.animationDelay = (i * 0.12) + 's';
+				col.appendChild(item);
+			}
+			grid.appendChild(col);
+			if (!side) grid.appendChild(el('div', 'mg-gap'));
+		});
+		box.appendChild(grid);
+		migWait('reading');
+		drawWires();
+	}
+
 	// o mouse numa pasta acende só as faixas dela (e as pastas do outro lado)
 	function migFocus(item) {
 		var box = $('mg');
@@ -652,6 +712,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var parts = [];
 
 		box.textContent = '';
+		migWait('');
 		oldCol.appendChild(el('p', 'mg-title', 'HOJE'));
 		newCol.appendChild(el('p', 'mg-title', 'ESTRUTURA NOVA'));
 
@@ -798,27 +859,35 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	async function openMigration() {
 		if (state.busy) return;
 
+		// a janela já abre no desenho, com o esqueleto: ler a pasta pode demorar (pasta grande, rede lenta)
 		state.busy = true;
+		state.reading = true;
+		state.finds = null;
+		$('fw-list').hidden = true;
+		$('fw-empty').hidden = true;
+		$('cw-filter').hidden = true;
+		$('cw-other').hidden = true;
+		$('cw-relink').hidden = true;
+		$('mg-back').hidden = false;
+		$('mg').hidden = false;
+		$('cw-go').disabled = true;
+		$('cw-go').textContent = 'Migrar';
+		document.body.classList.add('is-migrating');
+		PAD_BRIDGE.resizeWindow(MIG_SIZE[0], MIG_SIZE[1]);
+		renderReading();
 		status('lendo a pasta do projeto…');
 
 		try {
 			var plan = await call('migratePlan');
 
 			state.mig = { plan: plan, note: '', done: false, all: false, unread: [], move: [] };
-			state.finds = null;
-			$('fw-list').hidden = true;
-			$('fw-empty').hidden = true;
-			$('cw-filter').hidden = true;
-			$('cw-other').hidden = true;
-			$('cw-relink').hidden = true;
-			$('mg-back').hidden = false;
-			$('mg').hidden = false;
-			document.body.classList.add('is-migrating');
-			PAD_BRIDGE.resizeWindow(MIG_SIZE[0], MIG_SIZE[1]);
+			state.reading = false;
 			state.busy = false;
 			renderMigration();
 		} catch (err) {
+			state.reading = false;
 			state.busy = false;
+			await closeMigration();
 			status(err.message, 'error');
 		}
 	}
@@ -836,9 +905,11 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('cw-relink').hidden = false;
 		$('cw-go').classList.add('button-primary');
 		document.body.classList.remove('is-migrating');
+		migWait('');
 		PAD_BRIDGE.resizeWindow(LIST_SIZE[0], LIST_SIZE[1]);
 		status('');
-		load();
+
+		return load();
 	}
 
 	// todos os projetos: o After abre cada outro projeto da pasta para ler o que ele usa (o plano passa a contar
@@ -848,6 +919,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		state.busy = true;
 		state.mig.note = '';
+		migWait('replanning');
 		migFooter();
 
 		try {
@@ -885,6 +957,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		state.busy = true;
 		state.mig.note = '';
+		migWait('replanning');
 		state.mig.move = state.mig.move.filter(function (p) {
 			return p !== path;
 		}).concat(move ? [path] : []);
@@ -915,9 +988,11 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var begin = await call('migrateBegin', { all: !!state.mig.all, move: state.mig.move });
 			var step = { done: 0, total: begin.total, failed: 0 };
 
+			migWait('moving');
 			while (step.done < step.total) {
 				status('movendo ' + step.done + '/' + step.total + '…');
 				step = await call('migrateStep', { count: 8 });
+				migProgress(step.done);
 			}
 
 			status('religando e salvando o projeto…');
@@ -962,6 +1037,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			$('fw-status').title = parts.concat(res.failed || []).join('\n');
 		} catch (err) {
 			state.busy = false;
+			migWait('');
 			migFooter();
 			status(err.message, 'error');
 		}
@@ -991,6 +1067,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			$('fw-status').title = parts.concat(res.failed || []).join('\n');
 		} catch (err) {
 			state.busy = false;
+			migWait('');
 			migFooter();
 			status(err.message, 'error');
 		}
@@ -1008,7 +1085,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		});
 		$('mg-back').addEventListener('click', closeMigration);
 		window.addEventListener('resize', function () {
-			if (state.mig) drawWires();
+			if (state.mig || state.reading) drawWires();
 		});
 		$('cw-other').addEventListener('click', function () {
 			var path = PAD_BRIDGE.pickFolder('Coletar em qual pasta', state.data && state.data.root);

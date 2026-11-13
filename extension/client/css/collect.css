@@ -408,8 +408,91 @@
   transition: opacity 160ms ease;
 }
 
-.mg-band {
+.mg-band,
+.mg-fill,
+.mg-lit {
   fill: none;
+}
+
+/* as esperas, nas próprias faixas (collect.js: migWait) */
+.mg-fill,
+.mg-lit {
+  display: none;
+}
+
+/* lendo a pasta: as pastas sem nome e as faixas sem cor, com os traços correndo para a pasta nova */
+.mg-item.is-skel span {
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  animation: mg-breathe 1.4s ease-in-out infinite alternate;
+  background: var(--border-strong);
+}
+
+.mg.is-reading .mg-band {
+  animation: mg-run 0.7s linear infinite;
+  stroke: var(--border-strong);
+  stroke-dasharray: 9 7;
+}
+
+.mg.is-reading .mg-head {
+  fill: var(--border-strong);
+}
+
+.mg.is-reading .mg-count {
+  display: none;
+}
+
+/* refazendo o plano: o desenho fica, as pastas apagam um pouco e uma luz percorre cada faixa */
+.mg.is-replanning .mg-lit {
+  display: inline;
+  animation: mg-sweep 1.3s linear infinite;
+  stroke: rgb(var(--on-brand) / 70%);
+  stroke-dasharray: 16 84;
+}
+
+.mg.is-replanning .mg-item {
+  opacity: 0.55;
+}
+
+/* movendo: cada faixa enche conforme os arquivos dela são movidos; a ponta acende quando a faixa termina */
+.mg.is-moving .mg-band,
+.mg.is-moving .mg-head {
+  opacity: 0.2;
+}
+
+.mg.is-moving .mg-fill {
+  display: inline;
+}
+
+.mg.is-moving .mg-wire.is-done .mg-head {
+  opacity: 1;
+}
+
+@keyframes mg-run {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+@keyframes mg-sweep {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mg-breathe {
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* a quantidade de cada faixa, sempre à vista: o mouse nela acende a faixa e lista os arquivos na dica */
@@ -484,5 +567,11 @@
   .mg-wire,
   .mg-count {
     transition: none;
+  }
+
+  .mg-band,
+  .mg-lit,
+  .mg-item.is-skel span {
+    animation: none !important;
   }
 }

@@ -1364,8 +1364,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// a migração da pasta (O CATADOR): a pasta bagunçada de exemplo; depois de migrar, nada para mover e o
 		// registro para desfazer
 		// com todos os projetos (a: { all }): o que só os outros projetos usam sai dos externos
-		migratePlan: function (a) {
+		migratePlan: async function (a) {
 			var all = !!(a && a.all);
+
+			// PAD_MOCK_SLOW (ms): a rede lenta de mentira, para ver as esperas da janela
+			if (window.PAD_MOCK_SLOW) {
+				await new Promise(function (r) {
+					setTimeout(r, window.PAD_MOCK_SLOW);
+				});
+			}
 			// a pasta grande de exemplo (um banco de stock): fica como está, a não ser que mandem mover
 			var moveStock = !!(a && a.move && a.move.indexOf('03 EXTERNOS/STOCK') >= 0);
 			var dests = [['01_PROJETOS', 0, 'projeto'], ['02_ARQUIVOS', 0, ''], ['02_ARQUIVOS/AUDIOS', 1, 'audio'], ['02_ARQUIVOS/DADOS', 1, 'dados'], ['02_ARQUIVOS/FONTS', 1, 'fontes'], ['02_ARQUIVOS/IMAGENS', 1, 'imagens'], ['02_ARQUIVOS/VÍDEOS', 1, 'videos'], ['03_SAIDA', 0, 'saidas'], ['03_SAIDA/PREVIEWS', 1, ''], ['04_REFS', 0, ''], ['05_EXTERNOS', 0, 'externos']];
@@ -1456,7 +1463,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		migrateStep: async function () {
 			await new Promise(function (r) {
-				setTimeout(r, 90);
+				setTimeout(r, window.PAD_MOCK_SLOW || 90);
 			});
 			window.PAD_MOCK_MIG_AT = Math.min(362, window.PAD_MOCK_MIG_AT + 60);
 

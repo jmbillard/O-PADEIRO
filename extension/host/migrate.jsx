@@ -337,6 +337,36 @@ function padMigrateBuild(all, move) {
 		taken[padPathKey(root.fsName + '/' + to)] = true;
 	}
 
+	// a pasta de destino de cada arquivo no desenho (a mais funda da árvore que o contém, ou a primeira parte do
+	// caminho) e os arquivos de uma mesma faixa juntos, na ordem das faixas: a janela enche uma faixa por vez
+	var tree = padStructureFolders(settings);
+	var inTree = {};
+	var order = [];
+	var groups = {};
+
+	for (m = 0; m < tree.length; m++) inTree[tree[m].path] = true;
+
+	for (o = 0; o < plan.ops.length; o++) {
+		var parts = plan.ops[o].to.split('/');
+		var dest = '';
+
+		for (var p = parts.length - 1; p >= 1 && dest == ''; p--) {
+			if (inTree[parts.slice(0, p).join('/')]) dest = parts.slice(0, p).join('/');
+		}
+		plan.ops[o].dest = dest == '' ? parts[0] : dest;
+
+		var lk = plan.ops[o].top + '>' + plan.ops[o].dest + '>' + plan.ops[o].type;
+
+		if (!groups[lk]) {
+			groups[lk] = [];
+			order.push(lk);
+		}
+		groups[lk].push(plan.ops[o]);
+	}
+
+	plan.ops = [];
+	for (o = 0; o < order.length; o++) plan.ops = plan.ops.concat(groups[order[o]]);
+
 	return plan;
 }
 
@@ -370,16 +400,10 @@ PADX.migratePlan = function (a) {
 
 	for (i = 0; i < plan.ops.length; i++) {
 		var op = plan.ops[i];
-		var parts = op.to.split('/');
-		var dest = '';
+		var dest = op.dest;
 
-		// a pasta de destino no desenho: a mais funda da árvore que contém o arquivo (ou a primeira parte do caminho)
-		for (var p = parts.length - 1; p >= 1 && dest == ''; p--) {
-			if (dstIndex[parts.slice(0, p).join('/')] != null) dest = parts.slice(0, p).join('/');
-		}
-
-		if (dest == '') {
-			dest = parts[0];
+		// fora da árvore de configuração: a pasta entra no desenho
+		if (dstIndex[dest] == null) {
 			dstIndex[dest] = res.dests.length;
 			res.dests.push({ path: dest, depth: 0, type: op.type, count: 0, extra: true });
 		}
