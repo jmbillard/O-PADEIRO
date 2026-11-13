@@ -45,6 +45,22 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 
 no menu e no título de cada janela, **a função vem na frente e a turma depois** (`Coletar · O CATADOR`): quem procura acha pelo que a janela faz. *(os nomes do menu vêm do manifest: valem depois de rodar o instalador de novo.)*
 
+**tamanhos das janelas** (do manifest: valem depois de rodar o instalador de novo). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo.
+
+| janela | abre com | mínimo |
+| --- | --- | --- |
+| a barra | 800 × 84 | 86 × 56 (o After Effects não deixa um painel mais estreito que 86) |
+| Templates | 1100 × 1160 | 340 × 480 (uma coluna, com o rodapé preso) |
+| Criar template | 1260 × 960 | 1150 × 820 |
+| Projeto | 440 × 780 | 380 × 580 |
+| Configuração | 940 × 800 | 940 × 700 |
+| Fontes | 460 × 520 | 380 × 420 |
+| Coletar | 460 × 620 | 380 × 440 |
+| Etiquetas | 520 × 680 | 440 × 640 |
+| Versões | 560 × 580 | 420 × 300 |
+| Buscar | 720 × 280 | 420 × 150 |
+| Caminhos | 800 × 190 | 420 × 190 |
+
 cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
 ### 🎨 o visual

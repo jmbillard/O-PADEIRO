@@ -24,7 +24,7 @@ o painel de templates mostra os templates da **produção**, que é o título da
 
 1. `◖ clique esquerdo` em **templates**, na barra.
 2. busque ou navegue pelas pastas.
-3. selecione o template.
+3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
 5. clique em '*Preencher*' (ou `Cmd+Enter` no macOS, `Ctrl+Enter` no Windows). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
 6. escolha o template de output e clique em '*Criar fila de render*' (o mesmo atalho, `Cmd/Ctrl+Enter`, cria a fila).

@@ -45,7 +45,7 @@ um template do padeiro é um conjunto de arquivos:
 >
 > ![checklist do criador](images/criador-checklist.webp)
 
-o topo do criador, antes do **⋯**, mostra o que falta: **atração**, **o que é**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele (o foco vai para o campo ou, sem campo livre, para o botão do item). um aviso de erro some sozinho assim que o que faltava muda. a janela abre com o foco na atração e não encolhe abaixo de 1000 × 700 px (as três colunas precisam disso; o tamanho vem do manifest e vale depois de rodar o instalador de novo). o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
+o topo do criador, antes do **⋯**, mostra o que falta: **atração**, **o que é**, **preview**, **layers**, **exemplo** e **output**. clique em um item para ir até ele (o foco vai para o campo ou, sem campo livre, para o botão do item). um aviso de erro some sozinho assim que o que faltava muda. a janela abre com o foco na atração e não encolhe abaixo de 1150 × 820 px (as três colunas precisam disso; o tamanho vem do manifest e vale depois de rodar o instalador de novo). o item **exemplo** avisa quando o número de informações do exemplo não bate com o número de layers.
 
 ao salvar, o padeiro:
 
