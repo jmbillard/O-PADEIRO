@@ -429,6 +429,16 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			}
 		});
 
+		// as quantidades ficam numa camada por cima de todas as faixas (uma faixa grossa não esconde o número da
+		// vizinha) e cada uma num ponto diferente da sua faixa: as de uma mesma pasta, escalonadas ao longo do caminho
+		var labels = [];
+		var nOut = {};
+		var iOut = {};
+
+		plan.links.forEach(function (l) {
+			nOut[l.from] = (nOut[l.from] || 0) + 1;
+		});
+
 		plan.links.forEach(function (l) {
 			var a = find('old', l.from);
 			var z = find('new', l.to);
@@ -452,8 +462,25 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			g.dataset.to = l.to;
 			svgNode('path', { 'class': 'mg-band', d: 'M' + x1 + ' ' + y1 + 'C' + mid + ' ' + y1 + ' ' + mid + ' ' + y2 + ' ' + x2 + ' ' + y2, 'stroke-width': w, stroke: 'url(#mg-grad-' + l.type + ')' }, g);
 			svgNode('path', { d: 'M' + (x2 - 1) + ' ' + (y2 - head) + 'L' + (x2 + 8) + ' ' + y2 + 'L' + (x2 - 1) + ' ' + (y2 + head) + 'Z', fill: colors[l.type][1] }, g);
-			// a quantidade, no meio da faixa (ali cada faixa já se afastou das vizinhas)
-			svgNode('text', { x: mid, y: (y1 + y2) / 2 + 3.5, 'text-anchor': 'middle', fill: colors[l.type][1] }, g).textContent = l.count;
+			// o ponto da quantidade na curva: de 30% a 70% do caminho, conforme a posição da faixa na pasta
+			var i = iOut[l.from] || 0;
+			var t = nOut[l.from] > 1 ? 0.3 + 0.4 * i / (nOut[l.from] - 1) : 0.5;
+			var u = 1 - t;
+
+			iOut[l.from] = i + 1;
+			labels.push({
+				x: u * u * u * x1 + 3 * u * u * t * mid + 3 * u * t * t * mid + t * t * t * x2,
+				y: u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2,
+				link: l
+			});
+		});
+
+		labels.forEach(function (lb) {
+			var text = svgNode('text', { 'class': 'mg-count', x: lb.x, y: lb.y + 3.5, 'text-anchor': 'middle', fill: colors[lb.link.type][1] }, svg);
+
+			text.dataset.from = lb.link.from;
+			text.dataset.to = lb.link.to;
+			text.textContent = lb.link.count;
 		});
 	}
 
@@ -465,7 +492,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var on = {};
 
 		box.classList.add('is-focus');
-		Array.prototype.forEach.call(box.querySelectorAll('.mg-wire'), function (w) {
+		Array.prototype.forEach.call(box.querySelectorAll('.mg-wire, .mg-count'), function (w) {
 			var hit = w.dataset[side] === item.dataset.key;
 
 			w.classList.toggle('is-on', hit);
