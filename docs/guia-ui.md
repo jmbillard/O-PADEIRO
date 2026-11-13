@@ -72,6 +72,8 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - **nome antigo** → `{ "key": "claquete", "same": "barra-project" }` no `icons.json` faz o nome antigo apontar para outro ícone (o que já foi escolhido com ele continua funcionando). assim os ícones da barra entraram no lugar das cópias que a biblioteca tinha (templates, fonte, camadas, renomear, lupa, link, claquete).
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
 - **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
+  - **a bolinha fica por dentro do ícone** → os 7 px dela cabem na caixa do ícone (24 x 24), a 1 px da borda de baixo e da direita (o canto de cima à esquerda da bolinha fica 8 px antes do canto do ícone). nunca para fora da caixa.
+  - **presa ao ícone** → a bolinha anda junto com o ícone em toda animação (gaveta abrindo, barra virando): nada de posição calculada uma vez e corrigida depois, que faz a bolinha pular.
 
 ### desenhar um ícone
 
