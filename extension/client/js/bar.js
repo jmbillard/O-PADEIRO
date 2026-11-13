@@ -123,6 +123,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var btn = $('btn-' + key);
 
 		if (!btn) return;
+		if (btn.dataset.group && $('drawer-' + btn.dataset.group)) progressOn($('drawer-' + btn.dataset.group), text, p);
+		progressOn(btn, text, p);
+	}
+
+	function progressOn(btn, text, p) {
 
 		var label = btn.querySelector('.bar-label');
 		var line = btn.querySelector('.bar-progress');
@@ -147,7 +152,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	function progressEnd(key, ok) {
 		var btn = $('btn-' + key);
 
-		if (!btn || !btn.classList.contains('is-running')) return;
+		if (!btn) return;
+		if (btn.dataset.group && $('drawer-' + btn.dataset.group)) progressOff($('drawer-' + btn.dataset.group), ok);
+		progressOff(btn, ok);
+	}
+
+	function progressOff(btn, ok) {
+		if (!btn.classList.contains('is-running')) return;
 
 		var label = btn.querySelector('.bar-label');
 		var line = btn.querySelector('.bar-progress');
@@ -463,9 +474,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Templates',
 			icon: 'templates',
 			name: 'A FORMA',
-			tips: [L_CLICK + 'preencher um template e criar a fila de render', R_CLICK + 'criar um template a partir da comp aberta'],
-			left: actions.templates,
-			right: actions.createTemplate
+			tips: [L_CLICK + 'abrir a gaveta: preencher e criar'],
+			// uma gaveta com os dois cliques de antes, cada um num botão
+			drawer: [
+				{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
+				{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate }
+			]
 		},
 		{
 			key: 'fontes',
@@ -478,10 +492,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'projeto',
-			label: 'Projeto',
-			icon: 'project',
+			label: 'Criar', // Alterar quando o projeto aberto já tem os dados do padeiro (paintProjectDot)
+			icon: 'form',
 			name: 'A CLAQUETE',
-			tips: [L_CLICK + 'criar um projeto novo pela atração (ou editar o atual)', R_CLICK + 'salvar o projeto na pasta dele'],
+			tips: [L_CLICK + 'criar o projeto pela atração', R_CLICK + 'salvar o projeto na pasta dele'],
 			left: actions.project,
 			right: actions.saveProject
 		},
@@ -547,6 +561,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
+	// as gavetas de grupo: as ferramentas de members ficam juntas numa gaveta, no lugar da primeira delas na barra
+	// (com 2 ou mais na barra; com uma só, ela fica solta). o botão do grupo abre a gaveta
+	var GROUPS = [
+		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', what: 'criar, fontes e coletar', members: ['projeto', 'fontes', 'coletar'] }
+	];
+
 	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 	function toolDef(key) {
@@ -596,8 +616,169 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	var toolsLayout = ''; // a ordem e as escondidas desenhadas agora (só redesenha quando mudam)
 
+	// o botão de uma ferramenta: o ícone numa caixa (a bolinha fica presa nela, no canto de baixo à direita, e anda
+	// junto com o ícone em toda animação) e o nome
+	function toolButton(def, id) {
+		var btn = el('button', 'bar-btn');
+		var ico = el('span', 'bar-ico');
+
+		btn.type = 'button';
+		btn.id = id || 'btn-' + def.key;
+		btn.dataset.icon = def.icon;
+		btn.dataset.baseTip = def.name + '\n\n' + def.tips.join('\n'); // NOME, uma linha em branco e os cliques
+		btn.title = btn.dataset.baseTip;
+		btn.setAttribute('aria-label', def.label);
+		ico.appendChild(svgIcon(def.icon));
+		btn.appendChild(ico);
+		btn.appendChild(el('span', 'bar-label', def.label));
+
+		return btn;
+	}
+
+	// a caixa do ícone (onde fica a bolinha)
+	function iconBox(btn) {
+		return btn.querySelector('.bar-ico') || btn;
+	}
+
+	/* ---------------------------------------------------------------
+	   gavetas: o botão abre, ao lado (embaixo, na vertical), um contorno fino com o puxador (o ícone do grupo
+	   parado no estado final do hover; no hover, a seta de recolher) e as ferramentas. uma aberta por vez;
+	   fecham no puxador, no clique fora e no Esc
+	   --------------------------------------------------------------- */
+
+	var ARROW = '<path d="M19 12H5M11 6l-6 6 6 6"/>';
+
+	// o ícone parado no estado final do hover, desenhado assim (sem as classes que o css anima)
+	var STILL = {
+		templates: function (svg) {
+			var side = svg.querySelector('.tpl-side');
+
+			if (side) {
+				side.removeAttribute('transform');
+				side.removeAttribute('opacity');
+			}
+		},
+		project: function (svg) {
+			var top = svg.querySelector('.clap-top');
+
+			if (top) top.setAttribute('transform', 'rotate(-15 3.5 10)');
+		}
+	};
+
+	function stillIcon(name) {
+		var svg = svgIcon(name);
+
+		if (STILL[name]) STILL[name](svg);
+		Array.prototype.forEach.call(svg.querySelectorAll('[class]'), function (n) {
+			n.removeAttribute('class');
+		});
+
+		return svg;
+	}
+
+	function vertical() {
+		return window.matchMedia('(max-aspect-ratio: 1/1)').matches;
+	}
+
+	// o lado do puxador é meio círculo: metade da altura da gaveta (na vertical, da largura)
+	function roundDrawers() {
+		var v = vertical();
+
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer'), function (d) {
+			var size = v ? d.offsetWidth : d.offsetHeight;
+
+			if (size) d.style.setProperty('--drawer-round', Math.round(size / 2) + 'px');
+		});
+	}
+
+	function closeDrawers(except) {
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer.is-open'), function (d) {
+			if (d === except) return;
+
+			clearTimeout(d.settle);
+			d.classList.remove('is-open', 'is-settled');
+			if (d.previousSibling) d.previousSibling.classList.remove('is-folded');
+		});
+	}
+
+	function openDrawer(d) {
+		if (!d || d.classList.contains('is-open')) return;
+
+		closeDrawers(d);
+		d.classList.add('is-open');
+		d.previousSibling.classList.add('is-folded');
+		roundDrawers();
+		// aberta: o contorno do foco dos botões pode sair da gaveta (fechando, ela recolhe com o resto escondido)
+		d.settle = setTimeout(function () {
+			d.classList.add('is-settled');
+		}, 400);
+	}
+
+	// key: o id (drawer-<key>); icon: o ícone do grupo; members: os botões que vão dentro
+	function drawer(key, def, members) {
+		var btn = toolButton(def, 'drawer-' + key);
+		var box = el('span', 'bar-drawer');
+		var handle = el('button', 'drawer-handle');
+		var still = el('span', 'drawer-still');
+		var arrow = el('span', 'drawer-arrow');
+
+		btn.classList.add('bar-drawer-btn');
+		btn.setAttribute('aria-expanded', 'false');
+		btn.addEventListener('click', function () {
+			openDrawer(box);
+			handle.focus({ preventScroll: true });
+		});
+		btn.addEventListener('contextmenu', function (e) {
+			e.preventDefault(); // o clique direito no grupo não faz nada (por enquanto)
+		});
+
+		handle.type = 'button';
+		handle.setAttribute('aria-label', 'recolher a gaveta ' + def.label);
+		still.appendChild(stillIcon(def.icon));
+		arrow.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ARROW + '</svg>';
+		handle.appendChild(still);
+		handle.appendChild(arrow);
+		handle.addEventListener('click', function () {
+			closeDrawers();
+			btn.focus({ preventScroll: true });
+		});
+
+		box.id = 'drawer-' + key + '-box';
+		box.appendChild(handle);
+		box.appendChild(el('i', 'drawer-sep'));
+		members.forEach(function (m) {
+			m.dataset.group = key;
+			box.appendChild(m);
+		});
+
+		new MutationObserver(function () {
+			btn.setAttribute('aria-expanded', box.classList.contains('is-open') ? 'true' : 'false');
+		}).observe(box, { attributes: true, attributeFilter: ['class'] });
+
+		return [btn, box];
+	}
+
+	document.addEventListener('click', function (e) {
+		if (!e.target.closest || !e.target.closest('.bar-drawer, .bar-drawer-btn')) closeDrawers();
+	});
+
+	// o tour: mostra a ferramenta (abre a gaveta dela; fora de uma, fecha as gavetas)
+	window.PAD_BAR = {
+		showTool: function (id) {
+			var btn = id && $(id);
+			var box = btn && btn.closest('.bar-drawer');
+
+			if (box) openDrawer(box);
+			else closeDrawers();
+		}
+	};
+	document.addEventListener('keydown', function (e) {
+		if (e.key === 'Escape' && document.querySelector('.bar-drawer.is-open')) closeDrawers();
+	});
+
 	// Monta a barra na ordem da configuração: 'divider' separa os grupos; as escondidas ficam de fora e
-	// um grupo sem nenhuma ferramenta não aparece (nem a divisória dele).
+	// um grupo sem nenhuma ferramenta não aparece (nem a divisória dele). as ferramentas de uma gaveta de grupo
+	// (GROUPS) vão juntas para o lugar da primeira delas
 	function buildTools(items, hidden) {
 		var key = items.join() + '|' + hidden.join();
 
@@ -607,41 +788,140 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		collectSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
 
 		var tools = $('tools');
-		var groups = [[]];
+		var sections = [[]];
+		var shown = items.filter(function (item) {
+			return item !== 'divider' && hidden.indexOf(item) < 0 && toolDef(item);
+		});
+		var groupOf = {};
+
+		GROUPS.forEach(function (g) {
+			var members = g.members.filter(function (m) {
+				return shown.indexOf(m) >= 0;
+			});
+
+			if (members.length > 1) members.forEach(function (m) {
+				groupOf[m] = { group: g, members: members };
+			});
+		});
 
 		tools.textContent = '';
 
 		items.forEach(function (item) {
-			if (item === 'divider') groups.push([]);
-			else if (hidden.indexOf(item) < 0 && toolDef(item)) groups[groups.length - 1].push(toolDef(item));
+			if (item === 'divider') sections.push([]);
+			else if (shown.indexOf(item) >= 0) {
+				var g = groupOf[item];
+
+				if (!g) sections[sections.length - 1].push({ tool: toolDef(item) });
+				else if (g.members[0] === item) sections[sections.length - 1].push({ group: g });
+			}
 		});
 
-		groups.filter(function (g) {
-			return g.length;
+		sections.filter(function (s) {
+			return s.length;
 		}).forEach(function (section, i) {
 			if (i > 0) tools.appendChild(el('span', 'bar-divider'));
 
-			var group = el('div', 'bar-section');
+			var box = el('div', 'bar-section');
 
-			section.forEach(function (def) {
-				var btn = el('button', 'bar-btn');
+			section.forEach(function (entry) {
+				if (entry.group) {
+					var g = entry.group.group;
+					var parts = drawer(g.key, { key: g.key, label: g.label, icon: g.icon, name: g.name, tips: [L_CLICK + 'abrir a gaveta: ' + g.what] }, entry.group.members.map(function (m) {
+						var def = toolDef(m);
+						var b = toolButton(def);
 
-				btn.type = 'button';
-				btn.id = 'btn-' + def.key;
-				btn.dataset.icon = def.icon;
-				btn.title = def.name + '\n\n' + def.tips.join('\n'); // NOME, uma linha em branco e os 2 cliques
-				btn.setAttribute('aria-label', def.label);
-				btn.appendChild(svgIcon(def.icon));
-				btn.appendChild(el('span', 'bar-label', def.label));
+						bind(b, def.left, def.right);
+
+						return b;
+					}));
+
+					box.appendChild(parts[0]);
+					box.appendChild(parts[1]);
+					return;
+				}
+
+				var def = entry.tool;
+
+				if (def.drawer) {
+					var tparts = drawer(def.key, def, def.drawer.map(function (d) {
+						var b = toolButton(d);
+
+						bind(b, d.left, d.right);
+
+						return b;
+					}));
+
+					box.appendChild(tparts[0]);
+					box.appendChild(tparts[1]);
+					return;
+				}
+
+				var btn = toolButton(def);
+
 				bind(btn, def.left, def.right);
-
-				group.appendChild(btn);
+				box.appendChild(btn);
 			});
 
-			tools.appendChild(group);
+			tools.appendChild(box);
 		});
 
 		paintProjectDot(); // a barra montada de novo: a bolinha volta
+		paintGroupDots();
+		roundDrawers();
+	}
+
+	/* ---------------------------------------------------------------
+	   as bolinhas: presas à caixa do ícone (css). a do grupo mostra a pior das de dentro (laranja na frente do
+	   verde) e a dica do grupo junta os avisos das de dentro
+	   --------------------------------------------------------------- */
+
+	function setDot(btn, state) {
+		var box = iconBox(btn);
+		var dot = box.querySelector('.bar-dot');
+
+		if (!state) {
+			if (dot) dot.remove();
+			return null;
+		}
+
+		if (!dot) dot = box.appendChild(el('span', 'bar-dot'));
+		dot.className = 'bar-dot is-' + state;
+
+		return dot;
+	}
+
+	// as linhas de aviso de uma dica (as que começam com '! ')
+	function warnings(btn) {
+		return (btn.dataset.tip || btn.title || btn.getAttribute('data-tip') || '').split('\n').filter(function (line) {
+			return /^! /.test(line);
+		});
+	}
+
+	// a dica de uma ferramenta: a base (nome e cliques) e, depois de uma linha em branco, o estado
+	function setTip(btn, note) {
+		var text = btn.dataset.baseTip + (note ? '\n\n' + note : '');
+
+		btn.dataset.tip = text;
+		btn.title = text;
+	}
+
+	function paintGroupDots() {
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer-btn'), function (gbtn) {
+			var box = gbtn.nextSibling;
+
+			if (!box || !box.classList.contains('bar-drawer')) return;
+
+			var states = Array.prototype.map.call(box.querySelectorAll('.bar-dot'), function (d) {
+				return /is-(missing|out)/.test(d.className) ? 'missing' : /is-ok/.test(d.className) ? 'ok' : '';
+			});
+			var warn = [];
+
+			Array.prototype.forEach.call(box.querySelectorAll('.bar-btn'), function (m) {
+				warn = warn.concat(warnings(m));
+			});
+			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
+			setTip(gbtn, warn.join('\n'));
+		});
 	}
 
 	/* ---------------------------------------------------------------
@@ -651,38 +931,23 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	var projectState = '';
 
+	// Criar (o projeto aberto não tem os dados do padeiro) ou Alterar (já tem): o nome, a dica e a bolinha
 	function paintProjectDot() {
 		var btn = $('btn-projeto');
 
 		if (!btn) return;
 
-		var dot = btn.querySelector('.bar-dot');
+		var has = projectState === 'ok';
+		var label = btn.querySelector('.bar-label');
 
-		if (!projectState) {
-			if (dot) dot.remove();
-			btn.removeAttribute('data-project');
-			return;
-		}
-
-		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
-		dot.className = 'bar-dot is-' + projectState;
-		placeProjectDot(btn, dot);
-		btn.setAttribute('data-project', projectState);
-		dot.title = projectState === 'ok' ? 'projeto salvo com os dados do padeiro' : 'projeto sem os dados do padeiro (atração, o que é, pastas): abra a janela PROJETO';
-	}
-
-	// a bolinha fica no canto de baixo, à direita, do ícone (na horizontal, com o rótulo embaixo, e na vertical,
-	// com o rótulo ao lado)
-	function placeProjectDot(btn, dot) {
-		var icon = btn.querySelector('svg');
-
-		if (!icon || !icon.getBoundingClientRect().width) return;
-
-		var b = btn.getBoundingClientRect();
-		var r = icon.getBoundingClientRect();
-
-		dot.style.left = Math.round(r.right - b.left - 8) + 'px';
-		dot.style.top = Math.round(r.bottom - b.top - 8) + 'px';
+		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
+		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
+		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
+		setTip(btn, projectState === 'missing' ? '! projeto sem os dados do padeiro (atração, o que é, pastas)' : '');
+		setDot(btn, projectState);
+		if (projectState) btn.setAttribute('data-project', projectState);
+		else btn.removeAttribute('data-project');
+		paintGroupDots();
 	}
 
 	/* =========================================================
@@ -700,19 +965,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (!btn) return;
 
-		var dot = btn.querySelector('.bar-dot');
-
-		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
-		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
-
-		if (!state) {
-			if (dot) dot.remove();
-			return;
-		}
-
-		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
-		dot.className = 'bar-dot is-' + state;
-		placeProjectDot(btn, dot);
+		setTip(btn, tip ? (state === 'missing' ? '! ' : '') + tip : '');
+		setDot(btn, state);
+		paintGroupDots();
 	}
 
 	function fontsSummary(checked, info) {
@@ -802,23 +1057,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var btn = $('btn-coletar');
 
 		if (!btn) return;
-		if (!btn.dataset.baseTip) btn.dataset.baseTip = btn.title;
-
-		var dot = btn.querySelector('.bar-dot');
 		var tip = '';
 
 		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
-		if (res && res.state === 'out') tip = 'arquivos: ' + res.local + ' fora das pastas de projetos' + (res.names.length ? ' (' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') + ')' : '') + ': colete para levar para a pasta do projeto';
-		btn.title = btn.dataset.baseTip + (tip ? '\n\n' + tip : '');
-
-		if (!res || !res.state) {
-			if (dot) dot.remove();
-			return;
-		}
-
-		if (!dot) dot = btn.appendChild(el('span', 'bar-dot'));
-		dot.className = 'bar-dot is-' + res.state;
-		placeProjectDot(btn, dot);
+		if (res && res.state === 'out') tip = '! ' + (res.local === 1 ? '1 arquivo fora' : res.local + ' arquivos fora') + ' das pastas de projetos' + (res.names.length ? ': ' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') : '');
+		setTip(btn, tip);
+		setDot(btn, res && res.state);
+		paintGroupDots();
 	}
 
 	async function watchCollect() {
@@ -1043,13 +1288,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
 		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
-		// as bolinhas (projeto, fontes, coletar) acompanham o ícone ao virar a barra
-		window.addEventListener('resize', function () {
-			paintProjectDot();
-			Array.prototype.forEach.call(document.querySelectorAll('.bar-btn .bar-dot'), function (dot) {
-				placeProjectDot(dot.parentElement, dot);
-			});
-		});
+		// as bolinhas ficam presas ao ícone (css); ao virar a barra, o lado redondo das gavetas é medido de novo
+		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
 		syncFonts(); // o banco de fontes (a bolinha das fontes)

@@ -22,7 +22,7 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 
 **as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse, até o tamanho das dos cartões; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. prévias com transparência ficam sobre um quadriculado. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
-1. `◖ clique esquerdo` em **templates**, na barra.
+1. `◖ clique esquerdo` em **templates**, na barra, e em **preencher**, na gaveta que abre.
 2. busque ou navegue pelas pastas.
 3. selecione o template.
 4. preencha o **input** seguindo as **dicas**.

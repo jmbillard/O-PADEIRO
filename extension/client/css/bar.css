@@ -531,6 +531,143 @@ body.bar-page {
 
 /* barra horizontal apertada (o tamanho padrão do painel, 800 px): botões e respiros menores e a versão só na
    dica, para o pãozinho (ajuda e tour) caber sem rolar */
+/* ---------- gavetas (Templates e o grupo Projeto) ----------
+   o botão do grupo some e, no lugar dele, abre um contorno fino: o puxador (o ícone do grupo parado no estado
+   final do hover, mais perto do separador; no hover, a seta de recolher), o separador e as ferramentas. raio 16;
+   o lado do puxador é meio círculo (--drawer-round, medido pelo bar.js). na vertical, abre para baixo */
+.bar-drawer {
+  --drawer-r: 16px;
+  --drawer-round: var(--drawer-r);
+
+  display: inline-flex;
+  align-items: center;
+  max-width: 0;
+  margin-left: -4px; /* fechada, não soma o espaço entre os botões */
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: var(--drawer-round) var(--drawer-r) var(--drawer-r) var(--drawer-round);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    max-width 380ms var(--ease-soft),
+    max-height 380ms var(--ease-soft),
+    margin 380ms var(--ease-soft),
+    padding 380ms var(--ease-soft),
+    opacity 220ms ease,
+    border-color 220ms ease,
+    visibility 0s linear 380ms;
+}
+
+.bar-drawer.is-open {
+  max-width: 480px;
+  margin-left: 0;
+  padding: 2px;
+  border-color: rgb(var(--on-brand) / 55%);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* aberta: o contorno do foco dos botões pode sair da gaveta */
+.bar-drawer.is-settled {
+  overflow: visible;
+}
+
+.bar-drawer-btn {
+  max-width: 120px;
+  transition:
+    max-width 380ms var(--ease-soft),
+    max-height 380ms var(--ease-soft),
+    min-width 380ms var(--ease-soft),
+    padding 380ms var(--ease-soft),
+    margin 380ms var(--ease-soft),
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.bar-drawer-btn.is-folded {
+  max-width: 0;
+  min-width: 0;
+  margin-left: -4px;
+  padding-inline: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.drawer-handle {
+  display: grid;
+  width: 34px;
+  align-self: stretch;
+  place-items: center;
+  margin-right: 2px;
+  padding: 0 1px 0 9px; /* o ícone perto do separador; a folga fica no lado redondo */
+  border: 0;
+  border-radius: calc(var(--drawer-round) - 3px) 4px 4px calc(var(--drawer-round) - 3px);
+  background: transparent;
+  color: rgb(var(--on-brand) / 94%);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.drawer-handle:hover {
+  background: rgb(var(--on-brand) / 16%);
+}
+
+.drawer-handle:focus-visible {
+  outline: 1px solid rgb(var(--on-brand) / 80%);
+  outline-offset: 2px;
+}
+
+.drawer-handle > span {
+  display: grid;
+  grid-area: 1 / 1;
+  place-items: center;
+  transition:
+    opacity 180ms ease,
+    transform 260ms var(--ease-soft);
+}
+
+.drawer-handle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+/* no hover, o ícone dá lugar à seta de recolher (e fica assim enquanto o mouse está em cima) */
+.drawer-arrow {
+  opacity: 0;
+  transform: translateX(4px);
+}
+
+.drawer-handle:hover .drawer-still,
+.drawer-handle:focus-visible .drawer-still {
+  opacity: 0;
+  transform: translateX(-4px);
+}
+
+.drawer-handle:hover .drawer-arrow,
+.drawer-handle:focus-visible .drawer-arrow {
+  opacity: 1;
+  transform: none;
+}
+
+.drawer-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 8px 2px;
+  background: rgb(var(--on-brand) / 35%);
+}
+
+.bar-drawer .bar-btn {
+  border-radius: calc(var(--drawer-r) - 3px); /* concêntrico: o raio da gaveta menos o respiro (2 de folga e 1 do contorno) */
+}
+
 @media (min-aspect-ratio: 1001/1000) and (max-width: 919px) {
   .bar,
   .bar-main {
@@ -696,6 +833,74 @@ body.bar-page {
   }
 }
 
+/* gaveta na vertical em coluna (até 159 px): abre para baixo, o puxador em cima (o lado redondo), o separador
+   deitado e as ferramentas uma embaixo da outra; a seta aponta para cima */
+@media (max-aspect-ratio: 1/1) and (max-width: 159px) {
+  .bar-drawer {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+    max-height: 0;
+    margin: -2px 0 0;
+    border-radius: var(--drawer-round) var(--drawer-round) var(--drawer-r) var(--drawer-r);
+  }
+
+  .bar-drawer.is-open {
+    max-width: none;
+    max-height: 480px;
+    margin: 0;
+  }
+
+  .bar-drawer-btn {
+    max-width: none;
+    max-height: 120px;
+  }
+
+  .bar-drawer-btn.is-folded {
+    max-width: none;
+    max-height: 0;
+    margin: -2px 0 0;
+    padding-block: 0;
+  }
+
+  .drawer-handle {
+    width: auto;
+    height: max(30px, calc(var(--drawer-round) + 10px));
+    margin: 0 0 2px;
+    padding: 8px 0 1px;
+    border-radius: calc(var(--drawer-round) - 3px) calc(var(--drawer-round) - 3px) 4px 4px;
+  }
+
+  .drawer-sep {
+    width: auto;
+    height: 1px;
+    margin: 2px 8px;
+  }
+
+  .drawer-arrow {
+    transform: translateY(4px) rotate(90deg);
+  }
+
+  .drawer-handle:hover .drawer-still,
+  .drawer-handle:focus-visible .drawer-still {
+    transform: translateY(-4px);
+  }
+
+  .drawer-handle:hover .drawer-arrow,
+  .drawer-handle:focus-visible .drawer-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* vertical larga (as ferramentas em linhas): a gaveta quebra a linha se não couber */
+@media (max-aspect-ratio: 1/1) and (min-width: 160px) {
+  .bar-drawer.is-open {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 /* 100% vertical e bem estreita: só os ícones, e os links em coluna única (até aqui os nomes vão cortando com …) */
 @media (max-aspect-ratio: 1/1) and (max-width: 99px) {
   .bar-btn {
@@ -807,10 +1012,18 @@ body.bar-page {
   position: relative;
 }
 
+/* a caixa do ícone: a bolinha fica presa nela, por dentro, a 1 px do canto de baixo à direita (os 7 px cabem nos
+   24 do ícone) e anda junto com ele em toda animação (gaveta abrindo, barra virando) */
+.bar-ico {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
 .bar-dot {
   position: absolute;
-  top: 5px;
-  left: calc(50% + 7px); /* o bar.js põe no canto de baixo do ícone, como os selos dos links e da rede */
+  right: 1px;
+  bottom: 1px;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -823,12 +1036,12 @@ body.bar-page {
 }
 
 .bar-dot.is-missing {
-  background: #f5a524;
+  background: var(--attention);
 }
 
 /* coletar: algum arquivo fora das pastas de projetos. a mesma cor de atenção das outras bolinhas (o balão diz o
    que falta) */
 .bar-dot.is-out {
-  background: #f5a524;
+  background: var(--attention);
 }
 

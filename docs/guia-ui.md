@@ -71,9 +71,20 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - **trocar por uma animação** → um `nome.json` (Lottie) passa à frente do `nome.svg` de mesmo nome: dá para testar uma animação sem apagar o desenho (vale para os da barra também, ex: `barra-project.json`).
   - **nome antigo** → `{ "key": "claquete", "same": "barra-project" }` no `icons.json` faz o nome antigo apontar para outro ícone (o que já foi escolhido com ele continua funcionando). assim os ícones da barra entraram no lugar das cópias que a biblioteca tinha (templates, fonte, camadas, renomear, lupa, link, claquete).
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
-- **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
+- **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`. a cor de atenção (laranja) é `--attention`; o texto de um aviso nas dicas, `--attention-text`.
   - **a bolinha fica por dentro do ícone** → os 7 px dela cabem na caixa do ícone (24 x 24), a 1 px da borda de baixo e da direita (o canto de cima à esquerda da bolinha fica 8 px antes do canto do ícone). nunca para fora da caixa.
-  - **presa ao ícone** → a bolinha anda junto com o ícone em toda animação (gaveta abrindo, barra virando): nada de posição calculada uma vez e corrigida depois, que faz a bolinha pular.
+  - **presa ao ícone** → a bolinha anda junto com o ícone em toda animação (gaveta abrindo, barra virando): nada de posição calculada uma vez e corrigida depois, que faz a bolinha pular. na barra, o ícone fica numa caixa (`.bar-ico`) e a bolinha vai dentro dela, só com CSS.
+
+- **parado no estado final** → onde um ícone de ferramenta aparece parado e representa o grupo (o puxador das gavetas da barra), ele mostra o estado final do hover, desenhado assim (`STILL` no `bar.js`), não o primeiro quadro: a claquete aberta, a divisão da janela de templates no lugar.
+
+## 📍 gavetas da barra
+
+- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Criar / Alterar, Fontes e Coletar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
+- **forma** → raio 16, com o lado do puxador em meio círculo (metade da altura; na vertical, da largura). os de dentro ficam concêntricos: o raio menos o respiro de 3 px (2 de folga e 1 do contorno).
+- **o puxador** → só o ícone do grupo, menor (17 px), parado no estado final do hover e perto do separador (a folga fica no lado redondo). no hover, vira uma seta simples no sentido de recolher (← na horizontal, ↑ na vertical) e fica assim.
+- **na vertical** → abre para baixo: o puxador em cima, o separador deitado e as ferramentas em coluna.
+- **fechada** → o botão do grupo mostra a pior bolinha de dentro (laranja na frente do verde), a dica junta os avisos de dentro e o andamento (coletar, fontes) aparece nele também.
+- **uma ferramenta nova numa gaveta** → um item no `GROUPS` do `bar.js` (ou um `drawer` na ferramenta); o tour abre a gaveta sozinho.
 
 ### desenhar um ícone
 
@@ -129,7 +140,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 - **altura automática** → a janela cresce para caber a etapa (`fitHeight`) e volta ao tamanho padrão quando cabe.
 - **sempre no meio da tela** → toda janela (menos a barra) abre centralizada e, ao crescer ou encolher, se centraliza de novo. mude o tamanho só pelo `PAD_BRIDGE.resizeWindow` (`bridge.js`): ele limita o tamanho à área livre da tela (menos 24 px de margem), centraliza e, se o After Effects não deixar mover a janela, encolhe a altura até a parte de baixo caber na tela.
-- **a barra: horizontal e vertical, no mínimo 86 px** → o painel da barra pode ficar deitado ou em pé, e o menor lado dele tem 86 px. tudo o que é da barra (botões, bolinhas, dicas, gavetas) é testado nos dois sentidos, com 86 px: 900 × 86 e 86 × 720. as dicas ficam por cima da barra, dentro do painel (no After, nada sai dele).
+- **a barra: horizontal e vertical, no mínimo 86 px** → o painel da barra pode ficar deitado ou em pé, e o menor lado dele tem 86 px. tudo o que é da barra (botões, bolinhas, dicas, gavetas) é testado nos dois sentidos, com 86 px: 900 × 86 e 86 × 720. as dicas ficam por cima da barra, dentro do painel (no After, nada sai dele): na horizontal, ao lado do botão (nunca por cima dele), com a altura da barra e em colunas (o nome · os cliques · os avisos, que encolhem com … se faltar lugar); na vertical, embaixo do botão (ou em cima), com a largura do painel e empilhadas. linhas de aviso começam com `! ` e saem em laranja.
 - **a ação final fecha a janela** (ex: **Salvar** no editor do projeto).
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.

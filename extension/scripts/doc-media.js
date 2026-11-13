@@ -220,9 +220,18 @@ async function selectTemplate(p) {
 
 const SHOTS = {
 	barra: { w: 1100, h: 110, url: 'bar.html?mock=localfiles', marks: [
-		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#btn-coletar .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
+		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#drawer-projeto .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
 	] },
 	'barra-vertical': { w: 170, h: 640, url: 'bar.html' },
+	// as gavetas abertas: Projeto (Criar, Fontes, Coletar) e Templates (Preencher, Criar)
+	'barra-gaveta-projeto': { w: 1100, h: 110, url: 'bar.html?mock=localfiles', async run(p) {
+		await p.click('#drawer-projeto');
+		await p.waitForTimeout(700);
+	} },
+	'barra-gaveta-templates': { w: 1100, h: 110, url: 'bar.html', async run(p) {
+		await p.click('#drawer-templates');
+		await p.waitForTimeout(700);
+	} },
 	'forninho-lista': { w: 560, h: 800, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
 		await p.locator('.tree-row', { hasText: 'RECENTES' }).first().click(); // recolhe os recentes: cabem os fixados e a pasta aberta
 		await p.waitForTimeout(400);
@@ -308,6 +317,7 @@ const SCENES = {
 	progresso: { w: 760, h: 110, url: 'bar.html', fps: 20, async run(p) {
 		mouse = [740, 100];
 		await p.waitForTimeout(600);
+		await tap(p, '#drawer-projeto', { wait: 700 }); // a gaveta Projeto abre
 		await tap(p, '#btn-coletar', { wait: 6800 });
 	} },
 
@@ -410,7 +420,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fonts', 'project', 'collect', 'import', 'rename', 'organize', 'folders', 'search'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'import', 'rename', 'organize', 'folders', 'search'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');

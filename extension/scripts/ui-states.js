@@ -53,6 +53,25 @@ const CHECKS = [
 		await p.setViewportSize({ width: 86, height: 720 });
 		await p.waitForTimeout(500);
 	}],
+	// as gavetas abertas (Projeto e Templates), nos dois sentidos
+	['barra: gaveta projeto, horizontal 86 px', 'bar.html?mock=localfiles', async (p) => {
+		await p.setViewportSize({ width: 900, height: 86 });
+		await p.waitForTimeout(800);
+		await p.click('#drawer-projeto');
+		await p.waitForTimeout(700);
+	}],
+	['barra: gaveta projeto, vertical 86 px', 'bar.html?mock=localfiles', async (p) => {
+		await p.setViewportSize({ width: 86, height: 720 });
+		await p.waitForTimeout(800);
+		await p.click('#drawer-projeto');
+		await p.waitForTimeout(700);
+	}],
+	['barra: gaveta templates, vertical 86 px', 'bar.html', async (p) => {
+		await p.setViewportSize({ width: 86, height: 720 });
+		await p.waitForTimeout(800);
+		await p.click('#drawer-templates');
+		await p.waitForTimeout(700);
+	}],
 	['criador', 'maker.html', async (p) => {
 		await p.click('#btn-import-add');
 		await p.waitForTimeout(900); // o campo abre animado (motion.js): mede depois de aberto

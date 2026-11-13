@@ -6,7 +6,7 @@ a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a a
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
-abra pelo botão **projeto** da barra (`◖`). o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
+abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
 <p align="center"><img src="images/anim/claquete.webp" alt="A CLAQUETE: a atração pela busca, o que é e o nome do .aep" width="480"></p>
 
@@ -92,7 +92,7 @@ abrir outro projeto troca os dados da janela.
 
 ### bolinha na barra
 
-o botão **projeto** da barra mostra uma bolinha:
+o botão **criar / alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
 
 - 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro, dentro da pasta dele.
 - 🟠 **laranja** → o projeto aberto não tem os dados (ainda não foi salvo, ou foi salvo sem a janela projeto) ou está salvo fora da pasta dele (ex: um "salvar como" na Área de Trabalho). nesse caso, o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta.

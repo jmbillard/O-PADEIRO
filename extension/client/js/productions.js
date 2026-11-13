@@ -2139,10 +2139,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
-		templates: ['Templates', 'preencher templates · criar novo template', 'templates'],
-		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
-		projeto: ['Projeto', 'novo projeto pela claquete · salvar o projeto', 'project'],
-		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		templates: ['Templates', 'uma gaveta: preencher templates · criar novo template', 'templates'],
+		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes · na barra, na gaveta Projeto', 'fonts'],
+		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto · na barra, na gaveta Projeto', 'form'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta · na barra, na gaveta Projeto', 'collect'],
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],

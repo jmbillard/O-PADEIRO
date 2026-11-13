@@ -30,6 +30,8 @@
   --fold-on-brand: rgb(0 0 0 / 26%);
   /* contorno dos indicadores sobre o degradê (no escuro, cinza escuro: theme.css) */
   --badge-ring: rgb(var(--on-brand));
+  --attention: #f5a524; /* a cor de atenção (as bolinhas laranja e os avisos das dicas) */
+  --attention-text: #ffd28a; /* o texto de um aviso, sobre o fundo escuro da dica */
 
   --white: #ffffff;
   --surface: #ffffff;

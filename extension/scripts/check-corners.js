@@ -29,8 +29,23 @@ const TOLERANCE = 2.5; // px de folga na conta
 function findCorners(opts) {
 	const INTERACTIVE = 'button, summary, a, [role="tab"], .tree-row, .dropdown-item, .combo-item';
 
-	function radius(e, rect) {
-		return Math.min(parseFloat(getComputedStyle(e).borderTopLeftRadius) || 0, rect.height / 2, rect.width / 2);
+	// o raio de um canto (0: em cima à esquerda, 1: em cima à direita, 2: embaixo à esquerda, 3: embaixo à direita):
+	// cada canto conta por si (ex: a gaveta da barra, com o lado do puxador redondo)
+	const CORNERS = ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius'];
+
+	// como o navegador desenha: raios que não cabem num lado encolhem todos na mesma proporção
+	function radius(e, rect, corner) {
+		const cs = getComputedStyle(e);
+		const r = CORNERS.map(function (k) {
+			return parseFloat(cs[k]) || 0;
+		});
+		const f = Math.min(1, rect.width / (r[0] + r[1] || 1), rect.width / (r[2] + r[3] || 1), rect.height / (r[0] + r[2] || 1), rect.height / (r[1] + r[3] || 1));
+
+		return r[corner || 0] * f;
+	}
+
+	function rounded(e, rect) {
+		return Math.max(radius(e, rect, 0), radius(e, rect, 1), radius(e, rect, 2), radius(e, rect, 3));
 	}
 
 	function shows(e) {
@@ -62,9 +77,7 @@ function findCorners(opts) {
 
 		if (er.width < 16 || er.height < 16) return;
 
-		const r = radius(e, er);
-
-		if (r < 3 || !shows(e)) return;
+		if (rounded(e, er) < 3 || !shows(e)) return;
 
 		// o primeiro de fora que também aparece arredondado
 		let a = e.parentElement;
@@ -72,14 +85,13 @@ function findCorners(opts) {
 		while (a && a !== document.body) {
 			const ar0 = a.getBoundingClientRect();
 
-			if (radius(a, ar0) >= 3 && shows(a)) break;
+			if (rounded(a, ar0) >= 3 && shows(a)) break;
 			a = a.parentElement;
 		}
 
 		if (!a || a === document.body) return;
 
 		const ar = a.getBoundingClientRect();
-		const R = radius(a, ar);
 		const corners = [
 			[er.left - ar.left, er.top - ar.top],
 			[ar.right - er.right, er.top - ar.top],
@@ -92,6 +104,11 @@ function findCorners(opts) {
 			const dy = corners[i][1];
 
 			if (dx < 0 || dy < 0 || dx > opts.maxGap || dy > opts.maxGap || Math.abs(dx - dy) > opts.skew) continue;
+
+			const r = radius(e, er, i);
+			const R = radius(a, ar, i);
+
+			if (r < 3 && R < 3) continue;
 
 			const want = r + (dx + dy) / 2;
 

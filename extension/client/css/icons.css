@@ -236,3 +236,54 @@
     transform: skewX(-14deg);
   }
 }
+
+/* criar / alterar projeto (a ferramenta do projeto, na gaveta Projeto): a folha sobe um pouco e a última linha
+   termina de ser escrita, e fica */
+.anim-form .form-sheet {
+  transition: transform 360ms var(--ease-soft);
+}
+
+.anim-form .form-line {
+  transition: stroke-dasharray 420ms var(--ease-soft) 120ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-form .form-sheet,
+.tab:hover .anim-form .form-sheet {
+  transform: translateY(-1.5px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-form .form-line,
+.tab:hover .anim-form .form-line {
+  stroke-dasharray: 7 20;
+}
+
+/* preencher (gaveta Templates): o lápis sobe até a segunda linha e escreve; ela cresce até ele */
+.anim-fill .fill-line {
+  transition: stroke-dasharray 520ms var(--ease-soft) 80ms;
+}
+
+.anim-fill .fill-pen {
+  transition: transform 520ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-fill .fill-line,
+.tab:hover .anim-fill .fill-line {
+  stroke-dasharray: 8.5 20;
+}
+
+.bar-btn:hover:not(:disabled) .anim-fill .fill-pen,
+.tab:hover .anim-fill .fill-pen {
+  transform: translate(1px, -4.5px);
+}
+
+/* criar template (gaveta Templates): o + gira um quarto de volta e fica maior */
+.anim-new .new-plus {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 420ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-new .new-plus,
+.tab:hover .anim-new .new-plus {
+  transform: rotate(90deg) scale(1.3);
+}

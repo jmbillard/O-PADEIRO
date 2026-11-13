@@ -148,6 +148,18 @@
 		"label": "importar"
 	},
 	{
+		"key": "barra-form",
+		"label": "formulário"
+	},
+	{
+		"key": "barra-fill",
+		"label": "preencher"
+	},
+	{
+		"key": "barra-template-new",
+		"label": "novo template"
+	},
+	{
 		"key": "oscar",
 		"label": "oscar"
 	},

@@ -2606,6 +2606,142 @@ body.motion-ready .eyebrow {
   font-size: 8.5px;
 }
 
+/* os avisos (as linhas com '! '): em laranja, com a bolinha da barra */
+.pad-tooltip .tip-warns {
+  margin-top: 7px;
+}
+
+.pad-tooltip .tip-warn {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: var(--attention-text);
+}
+
+.pad-tooltip .tip-warn + .tip-warn {
+  margin-top: 4px !important;
+}
+
+.pad-tooltip .tip-warn i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--attention);
+  transform: translateY(-1px);
+}
+
+/* na barra: por cima dela (tooltip.js), em colunas na horizontal (o nome | os cliques | os avisos), com a altura
+   da barra; na vertical, empilhada, com a largura do painel */
+.pad-tooltip.is-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+.pad-tooltip.is-bar .tip-name {
+  flex: 0 0 auto;
+  margin: 0 !important;
+}
+
+.pad-tooltip.is-bar .tip-clicks {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.pad-tooltip.is-bar .tip-click + .tip-click {
+  margin-top: 0 !important;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.pad-tooltip.is-bar .tip-clicks,
+.pad-tooltip.is-bar .tip-warns {
+  flex: 0 1 auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* os cliques vêm primeiro: sem lugar para tudo, quem encolhe (…) são os avisos */
+.pad-tooltip.is-bar .tip-clicks {
+  flex-shrink: 0;
+}
+
+.pad-tooltip.is-bar .tip-click,
+.pad-tooltip.is-bar .tip-warn {
+  min-width: 0;
+}
+
+.pad-tooltip.is-bar .tip-click span,
+.pad-tooltip.is-bar .tip-warn span {
+  min-width: 0;
+}
+
+.pad-tooltip.is-bar .tip-click span,
+.pad-tooltip.is-bar .tip-warn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pad-tooltip.is-bar .tip-warn + .tip-warn {
+  margin-top: 0 !important;
+}
+
+.pad-tooltip.is-bar .tip-warns,
+.pad-tooltip.is-bar .tip-note {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  flex: 0 1 auto;
+  margin: 0 !important;
+  padding-left: 14px;
+  border-left: 1px solid rgb(255 255 255 / 12%);
+}
+
+.pad-tooltip.is-bar.is-bar-v {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  white-space: normal;
+}
+
+.pad-tooltip.is-bar-v .tip-name {
+  letter-spacing: 0.06em;
+}
+
+/* na coluna estreita, o mouse e a bolinha ficam na linha do texto (o texto quebra embaixo deles e usa a largura
+   toda) */
+.pad-tooltip.is-bar-v .tip-click,
+.pad-tooltip.is-bar-v .tip-warn {
+  display: block;
+}
+
+.pad-tooltip.is-bar-v .tip-click span,
+.pad-tooltip.is-bar-v .tip-warn span {
+  overflow: visible;
+  overflow-wrap: break-word;
+}
+
+.pad-tooltip.is-bar-v .tip-mouse,
+.pad-tooltip.is-bar-v .tip-warn i {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.pad-tooltip.is-bar-v .tip-warns,
+.pad-tooltip.is-bar-v .tip-note {
+  align-self: stretch;
+  padding: 8px 0 0;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-left: 0;
+}
+
 .pad-tooltip.is-visible {
   visibility: visible;
   opacity: 1;

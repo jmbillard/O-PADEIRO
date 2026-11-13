@@ -28,7 +28,7 @@ um template do padeiro é um conjunto de arquivos:
 
 
 1. limpe o projeto: remova tudo o que não for necessário para a comp principal.
-2. abra a comp principal e `◗ clique direito` em **templates**, na barra.
+2. abra a comp principal e, na barra, `◖` em **templates** e em **criar**, na gaveta que abre.
 3. escolha a '*atração*' e preencha o '*o que é*' (os primeiros campos, no topo), o '*exemplo de preenchimento*' e as '*dicas*'.
 4. posicione a agulha da timeline em um frame de referência e clique no preview ('*capturar preview*' aparece sobre ele no hover, ou direto quando ainda não há preview).
 5. escolha a '*caixa de texto*', o '*prefixo*' e o '*separador*'.

@@ -21,6 +21,8 @@ a pasta do banco fica na [configuração > fontes](producoes.md). nela, cada fon
 
 ## 📍 o botão fontes (barra)
 
+fica na gaveta **projeto** da barra (com criar / alterar e coletar).
+
 a bolinha no botão:
 
 - 🟠 **laranja** → falta algo: uma fonte que não está neste computador, ou que ainda não está no banco ou na pasta do projeto (o envio está a caminho). o balão diz quantas e o quê.

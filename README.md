@@ -11,16 +11,17 @@ o fluxo é simples, em 3 etapas:\
 
 > 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
-o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos. cada ferramenta tem **dois cliques** (`◖` esquerdo e `◗` direito) e as tarefas maiores abrem em **janelas** próprias, cada uma com um nome de ofício (ou objeto) da padaria e dos bastidores da TV: **a turma**.
+o padeiro é uma **extensão** do After Effects: a **barra** é um painel que pode ser acoplado em qualquer lugar da interface, como os painéis nativos. cada ferramenta tem **dois cliques** (`◖` esquerdo e `◗` direito), algumas ficam juntas em **gavetas** e as tarefas maiores abrem em **janelas** próprias, cada uma com um nome de ofício (ou objeto) da padaria e dos bastidores da TV: **a turma**.
 
 ### 🧑‍🍳 a turma
 
 | | ferramenta | `◖ clique esquerdo` | `◗ clique direito` |
 | :---: | --- | --- | --- |
-| <img src="docs/images/icons/templates.png" width="40" alt="templates"> | **Templates** | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta |
-| <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
-| <img src="docs/images/icons/project.png" width="40" alt="projeto"> | **Projeto** | abre **[A CLAQUETE](docs/projeto.md)**: projeto novo pela atração, ou o editor | **A CLAQUETE** salva o projeto na pasta dele |
-| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
+| <img src="docs/images/icons/fill.png" width="40" alt="preencher"> | **Preencher** (gaveta **Templates**) | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | |
+| <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta | |
+| <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Criar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Criar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
+| <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
+| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
@@ -125,11 +126,11 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | :---: | --- | --- |
 | ❶ | **rede / local** | **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro usa as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > rede](docs/producoes.md#-rede) (no notebook, [meu usuário](docs/producoes.md#-meu-usuário)). |
 | ❷ | **links** | os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site ([configuração > links](docs/producoes.md#-links)). |
-| ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos. a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
-| ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": o balão do botão diz o quê. |
+| ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos, e as **[gavetas](#as-gavetas)** (Templates e Projeto). a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
+| ❹ | **bolinhas** | o estado de cada uma: no **criar / alterar**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": a dica do botão diz o quê. o botão da gaveta **Projeto** mostra a pior das de dentro (🟠 na frente do 🟢), com a gaveta fechada. a bolinha fica por dentro do ícone, no canto de baixo à direita. |
 | ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as duas ações, cada uma numa linha com um mousezinho que mostra o botão (esquerdo ou direito); o estado da ferramenta, quando há, vem embaixo, mais apagado. o texto é este:
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as ações, cada uma com um mousezinho que mostra o botão (esquerdo ou direito), e os **avisos** em laranja (ex: quais arquivos estão fora das pastas). ela abre **por cima da barra**, dentro do painel: na horizontal, ao lado do botão, em colunas (o nome · os cliques · os avisos); na vertical, embaixo do botão, empilhada. o texto é este:
 
 ```
 O ETIQUETADOR
@@ -137,6 +138,21 @@ O ETIQUETADOR
 ◖  →  renomear as comps selecionadas
 ◗  →  renomear todas as saídas da fila de render
 ```
+
+### as gavetas
+
+| ![a gaveta Projeto aberta](docs/images/barra-gaveta-projeto.webp) |
+| :---: |
+| ![a gaveta Templates aberta](docs/images/barra-gaveta-templates.webp) |
+
+**Templates** e **Projeto** são gavetas: o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez.
+
+- **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
+- **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) e **Coletar** ([O CATADOR](#coletar)), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro. o `◗` no botão Projeto não faz nada (por enquanto).
+- **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, a janela com a divisão); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
+- **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica junta os avisos e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
+
+> 🚩 *na configuração, Criar / Alterar, Fontes e Coletar continuam como ferramentas separadas (a ordem e quais aparecem): na barra, as que aparecem vão juntas para a gaveta Projeto, no lugar da primeira delas. com só uma delas na barra, ela fica solta.*
 
 ### primeira vez (o tour)
 
@@ -146,7 +162,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 1. **onde fica a configuração da equipe?** → **achar na rede** (escolha o `O_PADEIRO_GLOBAL_config.json`; o caminho fica gravado, como faz o instalador) · **criar uma nova** (numa pasta da rede, com os padrões; se já houver uma lá, vale ela) · **só aqui** (modo local, com os padrões).
 2. **quem é você?** → a sigla do designer (a mesma de configuração > meu usuário).
-3. **a turma** → cada ferramenta acende, com o nome e o que fazem os dois cliques. experimente `◖` e `◗` na ferramenta acesa: durante o tour, os cliques só acendem a linha do clique, não rodam nada.
+3. **a turma** → cada ferramenta acende, com o nome e o que fazem os dois cliques (as de dentro das gavetas também: a gaveta abre sozinha). experimente `◖` e `◗` na ferramenta acesa: durante o tour, os cliques só acendem a linha do clique, não rodam nada.
 
 `◗` no pãozinho refaz o tour da turma a qualquer hora.
 
@@ -158,7 +174,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 <p align="center"><img src="docs/images/anim/progresso.webp" alt="O CATADOR coletando: a contagem e a linha embaixo do botão" width="760"></p>
 
-**O CATADOR** (coletar) e **O TIPÓGRAFO** (fontes) mostram o andamento no próprio botão: o nome vira a contagem (`5/12`), uma linha fina enche embaixo e o ícone repete a animação; no fim, um brilho verde. o coletar vai arquivo por arquivo (o After Effects fica livre entre um e outro); as fontes contam as etapas do resolver (projeto → banco → conferindo) e o envio ao banco em segundo plano.
+**O CATADOR** (coletar) e **O TIPÓGRAFO** (fontes) mostram o andamento no próprio botão (e no da gaveta Projeto, quando ela está fechada): o nome vira a contagem (`5/12`), uma linha fina enche embaixo e o ícone repete a animação; no fim, um brilho verde. o coletar vai arquivo por arquivo (o After Effects fica livre entre um e outro); as fontes contam as etapas do resolver (projeto → banco → conferindo) e o envio ao banco em segundo plano.
 
 <br clear="right">
 
