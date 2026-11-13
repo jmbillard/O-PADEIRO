@@ -190,7 +190,7 @@ function padProdFoldersDialog(prodArray) {
 	setBgColor(PAD_CONFIG_w, bgColor1); // Cor de fundo da janela
 
 	infoBtn.leftClick.onClick = function () {
-		var siteUrl = repoURL + '/blob/main/README.md#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
+		var siteUrl = readmeURL + '#-adicionando-pastas-de-produ%C3%A7%C3%A3o'; // Define o URL do site de documentação.
 		openWebSite(siteUrl); // Abre o site de documentação em um navegador web.
 	};
 

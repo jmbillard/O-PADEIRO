@@ -36,7 +36,7 @@ function findDialog() {
 	var accentCkb = options.add('IGNORAR ACENTOS', true, '"amazonia" também encontra "Amazônia"');
 	var invertCkb = options.add('INVERTER', false, 'apenas textos que NÃO possuem o termo buscado');
 
-	options.addHelp(repoURL + '/blob/main/README.md#busca');
+	options.addHelp(readmeURL + '#busca');
 
 	var findProgressBar = findW.add('progressbar', [0, 0, contentWidth, 1], undefined);
 	findProgressBar.value = 100;

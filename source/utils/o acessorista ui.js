@@ -443,7 +443,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 
 function pathSearchDialog() {
 	var scriptName = 'O ACESSORISTA';
-	var scriptVersion = 'v3.11';
+	var scriptVersion = 'v3.12';
 
 	if (!netAccess()) {
 		alert(lol + '#PAD_PATH_003 - sem acesso a rede...');
@@ -479,7 +479,7 @@ function pathSearchDialog() {
 	filterGrp.spacing = 20;
 	filterGrp.margins = 0;
 
-	options.addHelp(repoURL + '/blob/main/README.md#busca');
+	options.addHelp(readmeURL + '#busca');
 
 	// separa a busca dos resultados: mesma linha (barra de progresso de 1 px) da busca de textos
 	var searchDiv = pathW.add('progressbar', [0, 0, contentWidth, 1], undefined);
@@ -658,12 +658,16 @@ function pathSearchDialog() {
 		}
 
 		try {
-			index = psBuildIndex(psReadJSON(cacheFile));
+			var data = psReadJSON(cacheFile);
+
+			index = psBuildIndex(data);
 			indexReady = true;
 			buildCategoryFilters();
 			options.grp.layout.layout(true);
 
-			statusTxt.text = downloaded ? 'índice atualizado. digite um termo para pesquisar.' : 'sem conexão com o workflow - usando o último índice salvo.';
+			if (downloaded) statusTxt.text = 'índice atualizado. digite um termo para pesquisar.';
+			else if (data != null) statusTxt.text = 'sem conexão com o workflow - usando o último índice salvo.';
+			else statusTxt.text = 'sem conexão com o workflow - apenas os caminhos fixos estão disponíveis.';
 		} catch (err) {
 			indexReady = false;
 			statusTxt.text = 'não foi possível carregar o índice. verifique a conexão e o workflow.';

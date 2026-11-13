@@ -4,7 +4,7 @@
 function O_PADEIRO_UTL(thisObj) {
 	// Declaração da versão do script 'O Padeiro'
 	var scriptName = 'O PADEIRO';
-	var scriptVersion = 'v1.98';
+	var scriptVersion = 'v1.99';
 
 	try {
 		scriptMainPath = scriptMainPath;
@@ -41,12 +41,12 @@ o script funcionará normalmente, mas você não terá:\n\
 	#include 'source/libraries/functions/project lib.js';   // Organização das pastas do projeto
 
 	// utilidades com interface
-	#include 'source/Utils/o padeiro templates ui.js'; // Sistema de templates
-	#include 'source/Utils/o padeiro maker ui.js';     // Editor de templates
-	#include 'source/Utils/o padeiro folders ui.js';   // Lista de pastas de produção
-	#include 'source/Utils/find ui.js';                 // Busca em layers de texto
-	#include 'source/Utils/path ui.js';                 // Conversor de caminhos Windows / MacOS
-	#include 'source/Utils/o acessorista ui.js';          // O Acessorista: busca de caminhos de atrações
+	#include 'source/utils/o padeiro templates ui.js'; // Sistema de templates
+	#include 'source/utils/o padeiro maker ui.js';     // Editor de templates
+	#include 'source/utils/o padeiro folders ui.js';   // Lista de pastas de produção
+	#include 'source/utils/find ui.js';                 // Busca em layers de texto
+	#include 'source/utils/path ui.js';                 // Conversor de caminhos Windows / MacOS
+	#include 'source/utils/o acessorista ui.js';          // O Acessorista: busca de caminhos de atrações
 	#include 'source/layout/main ui functions.js';  // Inclui funções para criar a interface do usuário
 
 	// Estrutura da ui principal: cada botão declara rótulo, ícone, dicas e as ações

@@ -430,7 +430,7 @@ function padeiroTemplateDialog() {
 		inputTxt.enabled = hasInputLayers;
 
 		var count = inputTxt.text.split(/[\n\r]{2,}/).length;
-		processBtn.text = 'preencher: ' + count;
+		processBtn.label.text = 'preencher: ' + count;
 	};
 
 	templateTree.onActivate = function () {
@@ -461,12 +461,13 @@ function padeiroTemplateDialog() {
 	//---------------------------------------------------------
 
 	processBtn.leftClick.onClick = function () {
-		isRunning = true;
-
 		// Verificações Iniciais
 		if (inputTxt.text.trim() == '') return; // Aborta se não houver texto de entrada
 		if (!projectFile.exists) return; // Aborta se o arquivo do template não existir
 		if (!configFile.exists) return; // Aborta se o arquivo de configuração não existir
+
+		// só a partir daqui o script externo do template pode rodar ao fechar a janela
+		isRunning = true;
 
 		var logCount = 0; // Contador de templates processados
 		var templateComp; // Comp original
@@ -519,6 +520,15 @@ function padeiroTemplateDialog() {
 			templateComp = comp;
 
 			break;
+		}
+
+		// Sem a comp original não há o que preencher (nome diferente do 'compName' da configuração
+		// ou comp sem o comentário 'TEMPLATE')
+		if (templateComp == undefined) {
+			alert(lol + '#PAD_040 - a comp "' + templateData.compName + '" com o comentário "TEMPLATE" não foi encontrada no projeto do template.\n\no projeto foi importado, mas nada foi preenchido.');
+			isRunning = false;
+			PAD_TEMPLATES_w.close();
+			return;
 		}
 
 		PAD_TEMPLATES_w.text = 'EXTRAINDO TEMPLATES RENDER...';
@@ -907,7 +917,7 @@ function padeiroTemplateDialog() {
 	};
 
 	infoBtn.leftClick.onClick = function () {
-		openWebSite(repoURL + '/blob/main/README.md#-preenchendo-templates');
+		openWebSite(readmeURL + '#-preenchendo-templates');
 	};
 
 	// Exibe a janela

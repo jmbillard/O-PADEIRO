@@ -813,7 +813,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 		tempConfigObj.exemple = exempleText.text;
 		tempConfigObj.tip = tipsText.text;
 		tempConfigObj.compName = templateComp.name;
-		tempConfigObj.prefix = prefixTxt.text.trim();
+		tempConfigObj.prefix = prefixTxt.text.trim().toUpperCase().replaceSpecialCharacters(); // o onChange do campo só roda ao sair dele
 		tempConfigObj.refTime = infoText1.properties.ref_time;
 		tempConfigObj.separator = getSeparator();
 		tempConfigObj.textCase = TEXT_CASES[caseDrop.selection.index];
@@ -868,7 +868,7 @@ em caso de dúvidas, problemas ou sugestões, mande uma mensagem pelo teams...\n
 	};
 
 	infoBtn.leftClick.onClick = function () {
-		openWebSite(repoURL + '/blob/main/README.md#-criando-um-novo-template');
+		openWebSite(readmeURL + '#-criando-um-novo-template');
 	};
 
 	PAD_MAKER_w.show();

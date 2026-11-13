@@ -432,7 +432,7 @@ function PAD_LAYOUT(uiObj) {
 function PAD_UI_EVENTS(uiObj) {
 	// Rótulo da versão abre a documentação
 	uiObj.vLab.addEventListener('mousedown', function () {
-		openWebSite(repoURL + '/blob/main/README.md#-o-padeiro-script');
+		openWebSite(readmeURL + '#-o-padeiro-script');
 	});
 
 	uiObj.prodDrop.onChange = function () {
