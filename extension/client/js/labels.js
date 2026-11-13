@@ -235,7 +235,11 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 				var messages = res && res.messages ? res.messages : [];
 
 				if (messages.length) status(messages.join(' · '), /^#PAD/.test(messages[0]) ? 'error' : '');
-				else status('O CONTRARREGRA organizou o projeto.', 'success');
+				else {
+					var moved = res && res.data ? res.data.count : null;
+
+					status(moved === 0 ? 'projeto já organizado: nada mudou de lugar.' : 'projeto organizado' + (moved ? ': ' + plural(moved, 'item mudou', 'itens mudaram') + ' de pasta' : '') + ' · ' + PAD_UTIL.undoKey + ' desfaz.', 'success');
+				}
 				await load();
 			} finally {
 				btn.disabled = false;
@@ -253,7 +257,29 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			applyFree();
 		});
 		$('lb-free-go').addEventListener('click', applyFree);
-		$('lb-clear').addEventListener('click', clearAll);
+		// a borracha limpa o comentário de TODOS os itens do projeto: pede um segundo clique (em até 4 s)
+		$('lb-clear').addEventListener('click', function () {
+			var eraser = $('lb-clear');
+
+			if (eraser.classList.contains('is-confirm')) {
+				clearTimeout(state.clearTimer);
+				eraser.classList.remove('is-confirm');
+				return clearAll();
+			}
+
+			eraser.classList.add('is-confirm');
+			status('limpar o comentário de todos os itens do projeto? clique de novo na borracha.', '');
+			state.clearTimer = setTimeout(function () {
+				eraser.classList.remove('is-confirm');
+				status('', '');
+			}, 4000);
+		});
+
+		// a janela abre com o foco na etiqueta livre: é só digitar e Enter
+		setTimeout(function () {
+			if (document.activeElement === document.body) $('lb-free').focus();
+		}, 60);
+		PAD_KEYS.primary($('lb-organize')); // Cmd/Ctrl+Enter faz o botão principal
 		$('lb-organize').addEventListener('click', organize);
 
 		var menu = $('app-menu');

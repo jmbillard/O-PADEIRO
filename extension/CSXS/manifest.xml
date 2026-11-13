@@ -53,7 +53,7 @@
 							<Height>84</Height>
 						</Size>
 						<MinSize>
-							<Width>56</Width>
+							<Width>86</Width>
 							<Height>56</Height>
 						</MinSize>
 					</Geometry>
@@ -120,7 +120,7 @@
 							<Height>280</Height>
 						</Size>
 						<MinSize>
-							<Width>300</Width>
+							<Width>420</Width>
 							<Height>150</Height>
 						</MinSize>
 						<MaxSize>
@@ -152,15 +152,15 @@
 					<Geometry>
 						<Size>
 							<Width>800</Width>
-							<Height>170</Height>
+							<Height>190</Height>
 						</Size>
 						<MinSize>
-							<Width>300</Width>
-							<Height>170</Height>
+							<Width>420</Width>
+							<Height>190</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
-							<Height>170</Height>
+							<Height>200</Height>
 						</MaxSize>
 					</Geometry>
 				</UI>
@@ -191,7 +191,7 @@
 						</Size>
 						<MinSize>
 							<Width>940</Width>
-							<Height>600</Height>
+							<Height>700</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -224,9 +224,11 @@
 							<Width>1260</Width>
 							<Height>960</Height>
 						</Size>
+						<!-- as três colunas (formulário, projeto e layers) precisam de 1000 px: abaixo disso a folha da direita, com o
+						     Testar e o Salvar, ficava cortada -->
 						<MinSize>
-							<Width>340</Width>
-							<Height>420</Height>
+							<Width>1150</Width>
+							<Height>820</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -255,13 +257,15 @@
 					<Type>Modeless</Type>
 					<Menu>A CLAQUETE</Menu>
 					<Geometry>
+						<!-- a altura cabe a tela inteira do projeto novo com a lista do output aberta; o mínimo, o caminho, o
+						     que é e o cartão do output sem nada atrás do rodapé -->
 						<Size>
 							<Width>440</Width>
-							<Height>640</Height>
+							<Height>780</Height>
 						</Size>
 						<MinSize>
-							<Width>320</Width>
-							<Height>300</Height>
+							<Width>380</Width>
+							<Height>580</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -291,12 +295,12 @@
 					<Menu>O TIPÓGRAFO</Menu>
 					<Geometry>
 						<Size>
-							<Width>440</Width>
-							<Height>420</Height>
+							<Width>460</Width>
+							<Height>520</Height>
 						</Size>
 						<MinSize>
-							<Width>340</Width>
-							<Height>260</Height>
+							<Width>380</Width>
+							<Height>420</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -326,12 +330,12 @@
 					<Menu>O CATADOR</Menu>
 					<Geometry>
 						<Size>
-							<Width>440</Width>
-							<Height>480</Height>
+							<Width>460</Width>
+							<Height>620</Height>
 						</Size>
 						<MinSize>
-							<Width>340</Width>
-							<Height>260</Height>
+							<Width>380</Width>
+							<Height>440</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -362,11 +366,11 @@
 					<Geometry>
 						<Size>
 							<Width>560</Width>
-							<Height>460</Height>
+							<Height>580</Height>
 						</Size>
 						<MinSize>
-							<Width>340</Width>
-							<Height>260</Height>
+							<Width>420</Width>
+							<Height>300</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>
@@ -397,11 +401,11 @@
 					<Geometry>
 						<Size>
 							<Width>520</Width>
-							<Height>640</Height>
+							<Height>680</Height>
 						</Size>
 						<MinSize>
-							<Width>340</Width>
-							<Height>260</Height>
+							<Width>440</Width>
+							<Height>640</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

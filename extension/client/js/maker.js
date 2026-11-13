@@ -375,6 +375,14 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		box.textContent = '';
 
+		// o que faltava mudou (um item ficou pronto, ou deixou de estar): o aviso de erro de antes não vale mais
+		var sig = checks().filter(Boolean).map(function (item) {
+			return item.key + (item.ok ? 1 : 0);
+		}).join();
+
+		if (state.checkSig && sig !== state.checkSig && $('toast') && $('toast').classList.contains('is-error')) $('toast').hidden = true;
+		state.checkSig = sig;
+
 		checks().filter(Boolean).forEach(function (item) {
 			var chip = el('button', 'check-chip' + (item.ok ? ' is-ok' : ''));
 
@@ -393,7 +401,14 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	function goTo(id) {
 		var target = $(id);
 		var card = target.closest('.cfg-card') || target;
-		var field = target.matches('input, textarea') ? target : card.querySelector('input:not([disabled]), textarea');
+		// o primeiro campo à vista dentro do próprio item (não o primeiro do cartão, que pode ser de outra seção ou
+		// estar escondido); sem campo livre, o primeiro botão dele
+		var firstVisible = function (root, selector) {
+			return Array.prototype.filter.call(root.querySelectorAll(selector), function (node) {
+				return node.getClientRects().length;
+			})[0] || null;
+		};
+		var field = target.matches('input, textarea') ? target : firstVisible(target, 'input:not([disabled]):not([readonly]), textarea') || firstVisible(target, 'button:not([disabled])') || firstVisible(card, 'input:not([disabled]):not([readonly]), textarea');
 
 		card.scrollIntoView({ block: 'center', behavior: 'smooth' });
 		card.classList.remove('is-pulse');
@@ -609,6 +624,8 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var btn = $('btn-test');
 
 		btn.disabled = true;
+		btn.textContent = 'Testando…';
+		$('toast').hidden = true; // o aviso de antes sai: o resultado deste teste vem no lugar
 
 		try {
 			var res = await call('makerTest', {
@@ -622,10 +639,12 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			state.comp = { id: res.compId, name: res.compName, time: res.time, fps: res.frameRate };
 			showComp();
 			showPreview(res.preview);
+			toast('success', 'teste feito: o preview mostra a comp preenchida com o exemplo. confira antes de salvar.');
 		} catch (err) {
 			toast('error', '#PAD_027 - ' + err.message.replace(/^#PAD_027 - /, ''));
 		} finally {
 			btn.disabled = false;
+			btn.textContent = 'Testar agora';
 		}
 	}
 
@@ -1032,6 +1051,11 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			var res = await capture(true);
 
 			addLayerInfos(res.selected);
+
+			// a janela abre pronta para o primeiro campo que falta: a atração
+			var first = $('atr-picker').querySelector('input');
+
+			if (first && !state.atr && document.activeElement === document.body) first.focus();
 		} catch (err) {
 			showForm(false);
 		}
@@ -1156,7 +1180,25 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		});
 		animateDetails(document.querySelector('.maker-help'));
 		$('btn-save').addEventListener('click', save);
-		$('btn-reset').addEventListener('click', resetForm);
+		$('btn-save').title = PAD_KEYS.modLabel + '+S';
+		// começar de novo apaga o formulário inteiro: pede um segundo clique (em até 4 s), como o descartar da
+		// configuração. o primeiro só avisa
+		$('btn-reset').addEventListener('click', function () {
+			var btn = $('btn-reset');
+
+			if (btn.classList.contains('is-confirm')) {
+				clearTimeout(state.resetTimer);
+				btn.classList.remove('is-confirm');
+				$('toast').hidden = true;
+				return resetForm();
+			}
+
+			btn.classList.add('is-confirm');
+			toast(null, 'limpar o formulário inteiro? clique de novo no ↻ para confirmar.');
+			state.resetTimer = setTimeout(function () {
+				btn.classList.remove('is-confirm');
+			}, 4000);
+		});
 		$('btn-retry').addEventListener('click', start);
 		PAD_UTIL.bindMenu($('app-menu'), DOCS_URL);
 

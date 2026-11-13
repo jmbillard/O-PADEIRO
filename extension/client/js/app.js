@@ -837,7 +837,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				// Enter no template já selecionado vai para o campo de texto (não desmarca)
 				if (e.detail === 0 && state.selected && state.selected.uri === node.uri) return focusInput();
 
-				selectTemplate(node, { focusInput: e.detail === 0 });
+				// clique ou Enter: o foco vai para o texto (o exemplo vem selecionado: é só digitar por cima)
+				selectTemplate(node, { focusInput: true });
 			});
 			btn.addEventListener('dblclick', function () {
 				importTemplate(node);
@@ -1409,7 +1410,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var n = countInputs();
 
 		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'item', 'itens');
-		$('btn-fill').textContent = 'Preencher: ' + n;
+		// o texto ainda é o exemplo do template (ninguém digitou): o botão avisa o que vai ser preenchido
+		var sample = n && state.example && $('input').value === state.example;
+
+		$('btn-fill').textContent = sample ? 'Preencher o exemplo' : 'Preencher: ' + n;
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
 	}
 
@@ -2267,6 +2271,29 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			}
 		});
 
+		// a janela abre pronta para buscar: o foco na busca. e, com o foco em lugar nenhum (depois de um clique no
+		// fundo, por exemplo), digitar leva a letra para a busca e ↓ vai para o primeiro item da lista
+		setTimeout(function () {
+			if (document.activeElement === document.body && !state.selected) search.focus();
+		}, 60);
+		document.addEventListener('keydown', function (e) {
+			if (document.activeElement !== document.body || e.defaultPrevented || runIsOpen()) return;
+			if (PAD_KEYS.isMod(e) || e.altKey) return;
+
+			if (e.key === 'ArrowDown') {
+				var first = Array.prototype.filter.call($('tree').querySelectorAll('.tree-row'), function (row) {
+					return row.getClientRects().length;
+				})[0];
+
+				if (first) {
+					e.preventDefault();
+					PAD_KEYS.focusItem(first);
+				}
+			} else if (e.key.length === 1 && e.key !== ' ') {
+				search.focus(); // o foco muda antes de a letra entrar: ela cai na busca
+			}
+		});
+
 		$('search-clear').addEventListener('click', function () {
 			search.value = '';
 			search.dispatchEvent(new Event('input'));
@@ -2344,6 +2371,18 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
+		$('btn-queue').title = $('btn-fill').title = PAD_KEYS.modLabel + '+Enter'; // o atalho com o nome do sistema
+		// o mesmo atalho do Preencher segue o fluxo: Ctrl/Cmd+Enter na etapa da fila cria a fila de render
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter' || !PAD_KEYS.isMod(e) || e.defaultPrevented) return;
+
+			var btn = $('btn-queue');
+
+			if (btn.getClientRects().length && !btn.disabled && !$('queue-footer').hidden) {
+				e.preventDefault();
+				createQueue();
+			}
+		});
 		$('btn-undo-fill').addEventListener('click', undoFill);
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {

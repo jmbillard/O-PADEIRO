@@ -44,6 +44,22 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
 | 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
 
+**tamanhos das janelas** (do manifest: valem depois de rodar o instalador de novo). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo.
+
+| janela | abre com | mínimo |
+| --- | --- | --- |
+| a barra | 800 × 84 | 86 × 56 (o After Effects não deixa um painel mais estreito que 86) |
+| Templates | 1100 × 1160 | 340 × 480 (uma coluna, com o rodapé preso) |
+| Criar template | 1260 × 960 | 1150 × 820 |
+| Projeto | 440 × 780 | 380 × 580 |
+| Configuração | 940 × 800 | 940 × 700 |
+| Fontes | 460 × 520 | 380 × 420 |
+| Coletar | 460 × 620 | 380 × 440 |
+| Etiquetas | 520 × 680 | 440 × 640 |
+| Versões | 560 × 580 | 420 × 300 |
+| Buscar | 720 × 280 | 420 × 150 |
+| Caminhos | 800 × 190 | 420 × 190 |
+
 cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
 ### 🎨 o visual
@@ -297,7 +313,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
 - **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
-`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **borracha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
@@ -332,6 +348,8 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 
 o mesmo vocabulário em todos os painéis:
 
+> 🚩 *no macOS, use os atalhos com o **`Ctrl`**: o `Cmd` costuma ficar com o After Effects (vai para os menus dele) e não chega às janelas do padeiro. onde aparece `Ctrl/Cmd`, o `Ctrl` vale nos dois sistemas.*
+
 | tecla | o que faz |
 | --- | --- |
 | `↑` `↓` | andam nas listas. `↓` na busca vai para o primeiro item; `↑` no primeiro volta para a busca |
@@ -339,8 +357,8 @@ o mesmo vocabulário em todos os painéis:
 | `Esc` | limpa a busca ou volta um passo |
 | `Ctrl/Cmd+F` | foca a busca do painel |
 | `Ctrl/Cmd+S` | salva (produções, criador de templates) |
-| `Ctrl/Cmd+Enter` | preenche (templates) |
-| `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z` | desfaz / refaz no texto do input (templates) |
+| `Ctrl+Enter` | o botão principal da janela: preenche e cria a fila (templates), resolve (fontes), coleta (coletar), salva (versões), organiza (etiquetas) |
+| `Ctrl+Z` / `Ctrl+Shift+Z` | desfaz / refaz no texto do input (templates) |
 | `Ctrl/Cmd+C` | copia o caminho ou o texto do resultado em foco (O ACESSORISTA) |
 
 - **barra** → `←` `→` andam pelos botões; `Enter` faz a ação do clique esquerdo e `Shift+Enter` a do direito.

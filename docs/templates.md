@@ -4,7 +4,7 @@
 
 o painel **A FORMA**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre com o foco na busca: é só digitar. a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
 
 <p align="center"><img src="images/anim/forninho.webp" alt="A FORMA: busca, escolhe o template e preenche" width="900"></p>
 
@@ -24,14 +24,14 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 
 1. `◖ clique esquerdo` em **templates**, na barra, e em **preencher**, na gaveta que abre.
 2. busque ou navegue pelas pastas.
-3. selecione o template.
+3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
-5. clique em '*Preencher*' (ou `Ctrl/Cmd+Enter`).
-6. escolha o template de output e clique em '*Criar fila de render*'.
+5. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
+6. escolha o template de output e clique em '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`, cria a fila).
 
 ### a lista
 
-- **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. `Enter` seleciona o primeiro template encontrado.
+- **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. com o foco em lugar nenhum (depois de um clique no fundo), digitar leva a letra para a busca e `↓` vai para a lista. `Enter` seleciona o primeiro template encontrado.
 - **★ fixados / recentes** → atalhos no topo da lista (veja [fixados e recentes](#fixados-e-recentes)).
 - **atualizar** → lê a pasta de templates de novo (com o loader).
 - **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
