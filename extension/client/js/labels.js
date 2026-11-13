@@ -11,7 +11,7 @@ comentário vira subpasta; configuração > organizar > etiquetas dos arquivos).
   ◖ → aplica nos itens selecionados no painel Project
   ◗ → limpa o comentário dos selecionados
 
-O campo de cima aplica um texto livre (Enter; vazio limpa). No rodapé, a vassourinha limpa o comentário de todos
+O campo de cima aplica um texto livre (Enter; vazio limpa). No rodapé, a borracha limpa o comentário de todos
 os itens do projeto e "Organizar" é o clique esquerdo do organizar na barra. Tudo fica num passo de desfazer do
 After (Cmd+Z no Mac, Ctrl+Z no Windows).
 
@@ -214,12 +214,12 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 	}
 
 	function clearAll() {
-		var broom = $('lb-clear');
+		var eraser = $('lb-clear');
 
 		return run(async function () {
 			var res = await call('tagsClearAll');
 
-			replay(broom, 'is-sweeping');
+			replay(eraser, 'is-sweeping');
 			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · ' + PAD_UTIL.undoKey + ' desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
 			await load();
 		});

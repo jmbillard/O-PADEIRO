@@ -916,16 +916,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			});
 			var warn = [];
 
-			// um aviso por ferramenta, numa linha: o título e os itens dela juntos ('fontes: 2 para instalar')
+			// só o nome de cada ferramenta com pendência (o que falta, na dica dela, dentro da gaveta)
 			Array.prototype.forEach.call(box.querySelectorAll('.bar-btn'), function (m) {
-				var head = '';
-				var items = [];
-
-				warnings(m).forEach(function (line) {
-					if (/^!# /.test(line)) head = line.replace(/^!# /, '').replace(/:$/, '');
-					else items.push(line.replace(/^! /, ''));
-				});
-				if (items.length) warn.push('! ' + (head ? head.toLowerCase() + ': ' : '') + items.join(', '));
+				if (warnings(m).length) warn.push('! ' + m.getAttribute('aria-label'));
 			});
 			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
 			setTip(gbtn, warn.join('\n'));

@@ -216,67 +216,54 @@
   }
 }
 
-/* a vassourinha (limpa todos os comentários): no hover varre; ao limpar, varre e levanta a poeira */
-.lb-broom {
+/* a borracha (limpa todos os comentários): no hover ela desce um pouco, como quem apaga, e a linha embaixo encolhe
+   (e fica assim); ao limpar, esfrega duas vezes e a linha some e volta */
+.lb-eraser {
   flex: 0 0 auto;
 }
 
-.lb-broom .lb-broom-body {
-  transform-box: view-box;
-  transform-origin: 20.5px 3.5px;
+.lb-eraser .lb-eraser-body {
+  transition: transform 320ms var(--ease-soft);
 }
 
-.lb-broom .lb-dust {
-  opacity: 0;
+.lb-eraser .lb-eraser-line {
+  stroke-dasharray: 8 20;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 420ms var(--ease-soft);
 }
 
-.lb-broom:hover:not(:disabled) .lb-broom-body {
-  animation: lb-broom-sweep 700ms var(--ease-soft);
+.lb-eraser:hover:not(:disabled) .lb-eraser-body {
+  transform: translate(-1.5px, 1.5px);
 }
 
-.lb-broom.is-sweeping .lb-broom-body {
-  animation: lb-broom-sweep 420ms ease-in-out 2;
+.lb-eraser:hover:not(:disabled) .lb-eraser-line {
+  stroke-dashoffset: -4;
 }
 
-.lb-broom.is-sweeping .lb-dust {
-  animation: lb-dust 840ms ease-out;
+.lb-eraser.is-sweeping .lb-eraser-body {
+  animation: lb-eraser-rub 300ms ease-in-out 2;
 }
 
-@keyframes lb-broom-sweep {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
+.lb-eraser.is-sweeping .lb-eraser-line {
+  animation: lb-eraser-line 640ms ease-in-out;
+}
 
-  35% {
-    transform: rotate(14deg);
-  }
-
-  70% {
-    transform: rotate(-8deg);
+@keyframes lb-eraser-rub {
+  50% {
+    transform: translate(-3px, 3px);
   }
 }
 
-@keyframes lb-dust {
-  0% {
-    opacity: 0;
-    transform: translate(2px, 2px);
-  }
-
-  40% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-2px, -3px);
+@keyframes lb-eraser-line {
+  50% {
+    stroke-dashoffset: -8;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lb-tag.is-done::after,
-  .lb-broom .lb-broom-body,
-  .lb-broom .lb-dust {
+  .lb-eraser .lb-eraser-body,
+  .lb-eraser .lb-eraser-line {
     animation: none !important;
   }
 }

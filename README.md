@@ -150,7 +150,7 @@ O ETIQUETADOR
 - **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
 - **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) e **Coletar** ([O CATADOR](#coletar)), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro. o `◗` no botão Projeto não faz nada (por enquanto).
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, a janela com a divisão); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
-- **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica junta os avisos e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
+- **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica diz só quais ferramentas têm pendência (o que falta, na dica de cada uma) e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
 
 > 🚩 *na configuração, Criar / Alterar, Fontes e Coletar continuam como ferramentas separadas (a ordem e quais aparecem): na barra, as que aparecem vão juntas para a gaveta Projeto, no lugar da primeira delas. com só uma delas na barra, ela fica solta.*
 
@@ -295,7 +295,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
 - **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
-`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **vassourinha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). no rodapé, a **borracha** limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
