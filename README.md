@@ -129,7 +129,7 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | ❹ | **bolinhas** | o estado de cada uma: no **projeto**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": o balão do botão diz o quê. |
 | ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as duas ações:
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as duas ações, cada uma numa linha com um mousezinho que mostra o botão (esquerdo ou direito); o estado da ferramenta, quando há, vem embaixo, mais apagado. o texto é este:
 
 ```
 O ETIQUETADOR

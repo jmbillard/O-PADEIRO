@@ -33,6 +33,81 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		return tip;
 	}
 
+	// o mouse pequeno com o botão do clique aceso (l: esquerdo, r: direito)
+	function mouse(side) {
+		var ns = 'http://www.w3.org/2000/svg';
+		var svg = document.createElementNS(ns, 'svg');
+		var parts = [
+			['path', { class: 'tip-mouse-btn', d: side === 'l' ? 'M6.5 1.2A5.3 5.3 0 0 0 1.2 6.5V7.5H6.5Z' : 'M6.5 1.2A5.3 5.3 0 0 1 11.8 6.5V7.5H6.5Z' }],
+			['rect', { class: 'tip-mouse-body', x: '0.65', y: '0.65', width: '11.7', height: '15.7', rx: '5.85' }],
+			['path', { class: 'tip-mouse-body', d: 'M6.5 0.8V7.5M0.8 7.5H12.2' }]
+		];
+
+		svg.setAttribute('viewBox', '0 0 13 17');
+		svg.setAttribute('class', 'tip-mouse');
+		svg.setAttribute('aria-hidden', 'true');
+		parts.forEach(function (part) {
+			var node = document.createElementNS(ns, part[0]);
+
+			Object.keys(part[1]).forEach(function (k) {
+				node.setAttribute(k, part[1][k]);
+			});
+			svg.appendChild(node);
+		});
+
+		return svg;
+	}
+
+	// a dica das ferramentas (NOME, uma linha em branco, ◖ → … e ◗ → …, e o estado depois): o nome em cima, cada
+	// clique numa linha com o mouse e o botão aceso, e o estado embaixo, mais apagado. as outras: o texto como está
+	function fill(t, text) {
+		var lines = String(text).split('\n');
+		var clicks = lines.filter(function (line) {
+			return /^\s*[◖◗]\s*→/.test(line);
+		});
+
+		t.textContent = '';
+		t.classList.toggle('is-rich', clicks.length > 0);
+		if (!clicks.length) {
+			t.textContent = text;
+			return;
+		}
+
+		var notes = [];
+		var named = false;
+
+		lines.forEach(function (line, i) {
+			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
+
+			if (m) {
+				var row = document.createElement('p');
+				var body = document.createElement('span');
+
+				row.className = 'tip-click';
+				body.textContent = m[2];
+				row.appendChild(mouse(m[1] === '◖' ? 'l' : 'r'));
+				row.appendChild(body);
+				t.appendChild(row);
+			} else if (line.trim() && i === 0) {
+				var name = document.createElement('p');
+
+				name.className = 'tip-name';
+				name.textContent = line.trim();
+				t.appendChild(name);
+				named = true;
+			} else if (line.trim()) notes.push(line.trim());
+		});
+
+		if (notes.length) {
+			var note = document.createElement('p');
+
+			note.className = 'tip-note';
+			note.textContent = notes.join('\n');
+			t.appendChild(note);
+		}
+		t.classList.toggle('has-name', named);
+	}
+
 	function hide() {
 		clearTimeout(timer);
 		target = null;
@@ -74,7 +149,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		// menu ⋯ aberto: a dica do botão ficaria por cima do menu
 		if (el.matches('summary') && el.parentElement && el.parentElement.open) return;
 
-		balloon().textContent = text;
+		fill(balloon(), text);
 		place(el);
 		tip.classList.add('is-visible');
 	}
