@@ -320,8 +320,8 @@ PADX.migratePlan = function (a) {
 			res.links.push({ from: op.top, to: dest, type: op.type, count: 0, names: [] });
 		}
 		res.links[linkIndex[lk]].count++;
-		// os primeiros nomes de cada faixa, para a dica dizer quais arquivos são
-		if (res.links[linkIndex[lk]].names.length < 6) res.links[linkIndex[lk]].names.push(padSlash(op.from).replace(/^.*\//, ''));
+		// os primeiros 15 nomes de cada faixa (só o nome, com a extensão), para a dica do número dizer quais são
+		if (res.links[linkIndex[lk]].names.length < 15) res.links[linkIndex[lk]].names.push(padSlash(op.from).replace(/^.*\//, ''));
 	}
 
 	// as pastas, por nome; os soltos na raiz e os de fora da pasta ('..') por último

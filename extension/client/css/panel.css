@@ -376,12 +376,13 @@ body {
   mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
 }
 
-.picker-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.picker-list::-webkit-scrollbar-thumb {
-  border-radius: var(--radius-pill);
+/* as barras de rolagem sobre o degradê: na cor do texto dele, semitransparentes (o padrão, sobre a folha, está no
+   styles.css) */
+.picker-list::-webkit-scrollbar-thumb,
+.org-tree::-webkit-scrollbar-thumb,
+.tools-bar::-webkit-scrollbar-thumb,
+.maker-glass-body::-webkit-scrollbar-thumb,
+.wz-screen::-webkit-scrollbar-thumb {
   background: rgb(var(--on-brand) / 34%);
 }
 

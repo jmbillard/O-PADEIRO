@@ -1405,7 +1405,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					return { path: d[0], depth: d[1], type: d[2], count: count[d[0]] || 0, extra: false };
 				}),
 				links: links.map(function (l) {
-					return { from: l[0], to: l[1], type: l[2], count: l[3], names: l[2] === 'externos' ? ['moodboard.pdf', 'print_site.png', 'referencia_01.jpg'].slice(0, l[3]) : [] };
+					return { from: l[0], to: l[1], type: l[2], count: l[3], names: (l[2] === 'externos' ? ['moodboard.pdf', 'print_site.png', 'referencia_01.jpg', 'roteiro_v2.docx', 'briefing.pdf', 'paleta.ase', 'storyboard.pdf', 'print_02.png', 'print_03.png', 'email_cliente.pdf', 'ref_tipografia.jpg', 'ref_cor.jpg', 'ideias.txt', 'logo_antigo.ai', 'teste_export.mov', 'outro.png'] : ['arquivo_01.' + (l[2] === 'videos' ? 'mxf' : l[2] === 'audio' ? 'wav' : 'png'), 'arquivo_02.' + (l[2] === 'videos' ? 'mxf' : l[2] === 'audio' ? 'wav' : 'png')]).slice(0, Math.min(15, l[3])) };
 				})
 			};
 		},

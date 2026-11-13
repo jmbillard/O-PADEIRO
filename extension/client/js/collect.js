@@ -570,6 +570,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var head = Math.max(4.5, w / 2 + 2.5);
 			var g = svgNode('g', { 'class': 'mg-wire' }, svg);
 
+			g.dataset.i = plan.links.indexOf(l);
+
 			offOut[l.from] = (offOut[l.from] || 0) + w + 2;
 			offIn[l.to] = (offIn[l.to] || 0) + w + 2;
 			g.dataset.from = l.from;
@@ -592,9 +594,29 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		labels.forEach(function (lb) {
 			var text = svgNode('text', { 'class': 'mg-count', x: lb.x, y: lb.y + 3.5, 'text-anchor': 'middle', fill: colors[lb.link.type][1] }, svg);
 
+			var names = lb.link.names || [];
+
 			text.dataset.from = lb.link.from;
 			text.dataset.to = lb.link.to;
+			text.dataset.i = plan.links.indexOf(lb.link);
 			text.textContent = lb.link.count;
+
+			// o mouse no número: a faixa dele acende sozinha e a dica lista os arquivos (até 15 nomes)
+			if (names.length) text.setAttribute('data-tip', names.join('\n') + (lb.link.count > names.length ? '\n… e mais ' + (lb.link.count - names.length) : ''));
+			text.addEventListener('mouseenter', function () {
+				box.classList.add('is-focus');
+				Array.prototype.forEach.call(box.querySelectorAll('.mg-wire, .mg-count'), function (w) {
+					w.classList.toggle('is-on', w.dataset.i === text.dataset.i);
+				});
+				Array.prototype.forEach.call(box.querySelectorAll('.mg-item'), function (n) {
+					var old = n.closest('.mg-col').classList.contains('is-old');
+
+					n.classList.toggle('is-on', n.dataset.key === (old ? lb.link.from : lb.link.to));
+				});
+			});
+			text.addEventListener('mouseleave', function () {
+				box.classList.remove('is-focus');
+			});
 		});
 	}
 
@@ -699,9 +721,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 				return (old ? l.from : l.to) === item.dataset.key;
 			}).map(function (l) {
 				var other = old ? l.to : l.from === '..' ? 'fora da pasta' : l.from || 'soltos na raiz';
-				var names = l.names && l.names.length ? l.names.join(', ') + (l.count > l.names.length ? '…' : '') : '';
-
-				return (old ? '→ ' : '← ') + other + ' · ' + plural(l.count, TYPE_SINGLE[l.type] || 'arquivo', TYPE_MANY[l.type] || 'arquivos') + (names ? ': ' + names : '');
+				return (old ? '→ ' : '← ') + other + ' · ' + plural(l.count, TYPE_SINGLE[l.type] || 'arquivo', TYPE_MANY[l.type] || 'arquivos');
 			});
 
 			if (lines.length) item.title = (item.title ? item.title + '\n' : '') + lines.join('\n');

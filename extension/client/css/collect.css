@@ -296,6 +296,7 @@
 .mg-grid {
   position: relative; /* por cima das faixas: elas saem de trás das pastas */
   z-index: 1;
+  pointer-events: none; /* o meio é das faixas: o mouse chega nos números delas */
   display: grid;
   align-items: start;
   grid-template-columns: minmax(0, 1fr) 170px minmax(0, 1fr); /* o meio é o caminho das faixas */
@@ -303,6 +304,7 @@
 
 .mg-col {
   display: grid;
+  pointer-events: auto;
   align-content: start;
   gap: 6px;
 }
@@ -410,10 +412,12 @@
   fill: none;
 }
 
+/* a quantidade de cada faixa, sempre à vista: o mouse nela acende a faixa e lista os arquivos na dica */
 .mg-count {
+  cursor: default;
   font-size: 9.5px;
   font-weight: 800;
-  opacity: 0;
+  pointer-events: auto;
   paint-order: stroke;
   stroke: var(--surface);
   stroke-width: 3px;
@@ -427,6 +431,10 @@
 
 .mg.is-focus .mg-wire.is-on {
   opacity: 1;
+}
+
+.mg.is-focus .mg-count {
+  opacity: 0.12;
 }
 
 .mg.is-focus .mg-count.is-on {
