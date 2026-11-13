@@ -485,9 +485,9 @@ body.bar-page {
 }
 
 .bar-toast.is-warn {
-  border-color: var(--warning-border, #f1d08a);
-  background: var(--warning-bg, #fff6df);
-  color: var(--warning, #8a5a00);
+  border-color: var(--waiting);
+  background: var(--waiting-bg);
+  color: var(--waiting);
 }
 
 .bar-status-dot {
@@ -1047,3 +1047,60 @@ body.bar-page {
   background: var(--attention);
 }
 
+
+/* =========================================================
+   barra vertical (acoplada na lateral, 86 px: é como a equipe usa): o aviso é um cartão da largura da barra,
+   embaixo, acima do pãozinho. em cima, a bolinha do resultado e o ×; o texto na largura toda, quebrando por
+   palavra (em linha com a bolinha e o ×, sobrava 1 px para o texto e ele saía uma letra por linha); as ações,
+   uma por linha
+   ========================================================= */
+@media (max-aspect-ratio: 1/1) {
+  .bar-toast {
+    right: 8px;
+    bottom: 62px;
+    left: 8px;
+    display: grid;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 7px 10px 9px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 620;
+    gap: 4px 4px;
+    hyphens: auto;
+    line-height: 1.32;
+    overflow-wrap: break-word;
+  }
+
+  .bar-toast .bar-status-dot {
+    margin: 0 0 0 2px;
+    grid-area: 1 / 1;
+  }
+
+  .bar-toast .toast-close {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    grid-area: 1 / 2;
+  }
+
+  .bar-toast .toast-text {
+    grid-column: 1 / -1;
+  }
+
+  .bar-toast .bar-status-action {
+    padding: 2px 0;
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 119px) {
+  .bar-toast {
+    right: 4px;
+    left: 4px;
+    padding: 6px 7px 8px;
+    font-size: 0.62rem;
+  }
+}
