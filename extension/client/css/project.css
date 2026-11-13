@@ -1190,7 +1190,7 @@ p.wz-exist b {
 .claq-clear {
   position: absolute;
   top: 50%;
-  right: 12px;
+  right: 8px; /* fora da conta dos cantos (não é concêntrico com o campo) */
   display: grid;
   width: 32px;
   height: 32px;
