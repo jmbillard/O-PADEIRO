@@ -697,12 +697,118 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 	}
 
+	/* o resto da barra não sai do lugar quando uma gaveta abre ou fecha: o conteúdo da barra é centralizado, então
+	   a gaveta crescendo empurraria tudo para os dois lados (na vertical, para cima e para baixo). o botão clicado
+	   fica preso onde está na tela e só o que vem depois dele anda: a cada quadro da animação, o conteúdo é
+	   deslocado (transform) o quanto o botão saiu do lugar, até onde há espaço na barra */
+	var pin = { btn: null, x: 0, y: 0, tx: 0, ty: 0, raf: 0, until: 0, release: false };
+
+	function pinStep() {
+		var main = document.querySelector('.bar-main');
+		var tools = $('tools');
+		var links = $('links');
+
+		if (!pin.btn || !document.contains(pin.btn)) {
+			main.style.transform = '';
+			pin.btn = null;
+			pin.tx = pin.ty = 0;
+			return;
+		}
+
+		var v = vertical();
+		var r = pin.btn.getBoundingClientRect();
+		// o espaço livre: entre o ícone da rede (a ponta de cima / da esquerda) e o pãozinho (a outra ponta)
+		var before = document.querySelector('.bar-status').getBoundingClientRect();
+		var after = document.querySelector('.bar-info').getBoundingClientRect();
+		var first = (links && !links.hidden && links.offsetParent ? links : tools).getBoundingClientRect();
+		var last = tools.getBoundingClientRect();
+		var want;
+		var lo;
+		var hi;
+
+		if (v) {
+			want = pin.y - (r.top - pin.ty);
+			lo = Math.min(0, before.bottom - (first.top - pin.ty));
+			hi = Math.max(0, after.top - (last.bottom - pin.ty));
+			pin.ty = Math.round(Math.max(lo, Math.min(hi, want)));
+			pin.tx = 0;
+		} else {
+			want = pin.x - (r.left - pin.tx);
+			lo = Math.min(0, before.right - (first.left - pin.tx));
+			hi = Math.max(0, after.left - (last.right - pin.tx));
+			pin.tx = Math.round(Math.max(lo, Math.min(hi, want)));
+			pin.ty = 0;
+		}
+
+		main.style.transform = pin.tx || pin.ty ? 'translate(' + pin.tx + 'px, ' + pin.ty + 'px)' : '';
+
+		if (Date.now() < pin.until) pin.raf = requestAnimationFrame(pinStep);
+		else if (pin.release) {
+			// fechada: a barra voltou ao lugar de antes; o que sobrar de deslocamento (faltou espaço na barra ao
+			// abrir, ou trocou de gaveta) sai devagar, sem pulo
+			if (pin.tx || pin.ty) {
+				main.style.transition = 'transform 320ms cubic-bezier(0.16, 1, 0.3, 1)';
+				main.style.transform = '';
+				setTimeout(function () {
+					main.style.transition = '';
+				}, 340);
+			}
+			pin.btn = null;
+			pin.tx = pin.ty = 0;
+		}
+	}
+
+	// prende o botão onde ele está agora, pela duração da animação (release: no fim, solta)
+	function pinTo(btn, release) {
+		// a referência é o começo do grupo do botão (o botão some com margem negativa: ele mesmo anda uns pixels)
+		btn = btn.closest('.bar-section') || btn;
+
+		var r = btn.getBoundingClientRect();
+
+		cancelAnimationFrame(pin.raf);
+		document.querySelector('.bar-main').style.transition = '';
+		pin.btn = btn;
+		pin.x = r.left;
+		pin.y = r.top;
+		pin.until = Date.now() + 520;
+		pin.release = !!release;
+		pin.raf = requestAnimationFrame(pinStep);
+	}
+
+	// o painel mudou de tamanho ou de sentido: o conteúdo volta ao centro
+	window.addEventListener('resize', function () {
+		cancelAnimationFrame(pin.raf);
+		pin.btn = null;
+		pin.tx = pin.ty = 0;
+		document.querySelector('.bar-main').style.transform = '';
+	});
+
+	// a gaveta e o botão dela animam com o tamanho exato de cada um (--drawer-size e --btn-size, medidos na hora),
+	// no mesmo tempo: um encolhe enquanto o outro cresce, sem um instante com os dois ocupando espaço
+	function sizeDrawer(d, open) {
+		var v = vertical();
+		var btn = d.previousSibling;
+
+		if (open) {
+			// fechada, o conteúdo já está montado (só escondido): o tamanho dele, mais a folga e o contorno
+			d.style.setProperty('--drawer-size', (v ? d.scrollHeight : d.scrollWidth) + 6 + 'px');
+			btn.style.setProperty('--btn-size', (v ? btn.offsetHeight : btn.offsetWidth) + 'px');
+		} else {
+			d.style.setProperty('--drawer-size', (v ? d.offsetHeight : d.offsetWidth) + 'px');
+		}
+
+		void d.offsetWidth; // o tamanho de partida vale antes de a classe mudar (senão a animação sai do limite antigo)
+	}
+
 	function closeDrawers(except) {
 		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer.is-open'), function (d) {
 			if (d === except) return;
 
+			if (!except && d.previousSibling) pinTo(d.previousSibling, true);
 			clearTimeout(d.settle);
-			d.classList.remove('is-open', 'is-settled');
+			d.classList.remove('is-settled');
+			sizeDrawer(d, false);
+			d.classList.remove('is-open');
 			if (d.previousSibling) d.previousSibling.classList.remove('is-folded');
 		});
 	}
@@ -710,11 +816,18 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	function openDrawer(d) {
 		if (!d || d.classList.contains('is-open')) return;
 
+		// trocando de gaveta, fica preso o botão que vem primeiro na barra (o que está antes dele não anda)
+		var open = document.querySelector('.bar-drawer.is-open');
+		var first = open && (open.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING) ? open.previousSibling : d.previousSibling;
+
+		pinTo(first);
 		closeDrawers(d);
+		sizeDrawer(d, true);
 		d.classList.add('is-open');
 		d.previousSibling.classList.add('is-folded');
 		roundDrawers();
-		// aberta: o contorno do foco dos botões pode sair da gaveta (fechando, ela recolhe com o resto escondido)
+		// aberta: o contorno do foco dos botões pode sair da gaveta e ela acompanha o painel (sem o limite de
+		// tamanho da animação); fechando, ela recolhe com o resto escondido
 		d.settle = setTimeout(function () {
 			d.classList.add('is-settled');
 		}, 400);

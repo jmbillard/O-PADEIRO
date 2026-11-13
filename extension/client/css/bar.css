@@ -561,7 +561,7 @@ body.bar-page {
 }
 
 .bar-drawer.is-open {
-  max-width: 480px;
+  max-width: var(--drawer-size, 480px); /* o tamanho exato, medido pelo bar.js: anima no ritmo do botão */
   margin-left: 0;
   padding: 2px;
   border-color: rgb(var(--on-brand) / 55%);
@@ -570,13 +570,15 @@ body.bar-page {
   transition-delay: 0s;
 }
 
-/* aberta: o contorno do foco dos botões pode sair da gaveta */
+/* aberta: o contorno do foco dos botões pode sair da gaveta, e ela acompanha o painel (sem o limite da animação) */
 .bar-drawer.is-settled {
+  max-width: none;
+  max-height: none;
   overflow: visible;
 }
 
 .bar-drawer-btn {
-  max-width: 120px;
+  max-width: var(--btn-size, 120px);
   transition:
     max-width 380ms var(--ease-soft),
     max-height 380ms var(--ease-soft),
@@ -851,8 +853,12 @@ body.bar-page {
 
   .bar-drawer.is-open {
     max-width: none;
-    max-height: 480px;
+    max-height: var(--drawer-size, 480px);
     margin: 0;
+  }
+
+  .bar-drawer.is-settled {
+    max-height: none;
   }
 
   .drawer-handle {
@@ -870,6 +876,18 @@ body.bar-page {
     flex: 0 0 calc(100% - 16px);
     align-self: auto;
     margin: 0 8px;
+  }
+
+  /* o botão do grupo some por inteiro (largura e altura): não sobra uma linha vazia em cima da gaveta */
+  .bar-drawer-btn {
+    max-height: var(--btn-size, 120px);
+  }
+
+  .bar-drawer-btn.is-folded {
+    max-height: 0;
+    align-self: flex-start; /* no topo da linha da gaveta: é a referência do que fica parado ao abrir */
+    margin-top: -4px;
+    padding-block: 0;
   }
 
   .drawer-arrow {
@@ -910,7 +928,6 @@ body.bar-page {
 
   .bar-drawer-btn {
     max-width: none;
-    max-height: 120px;
   }
 
   .bar-drawer-btn.is-folded {
