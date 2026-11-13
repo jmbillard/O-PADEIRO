@@ -257,6 +257,7 @@ para trás", e valem em qualquer versão do After.
 	}
 
 	function init() {
+		PAD_KEYS.primary($('vs-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('vs-go').addEventListener('click', save);
 		$('vs-save').addEventListener('change', function () {
 			state.saved.save = this.checked;

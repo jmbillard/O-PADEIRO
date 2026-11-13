@@ -280,3 +280,9 @@
     animation: none !important;
   }
 }
+
+/* a vassourinha esperando o segundo clique: marcada na cor de atenção até confirmar ou passar */
+#lb-clear.is-confirm {
+  border-color: var(--waiting);
+  color: var(--waiting);
+}

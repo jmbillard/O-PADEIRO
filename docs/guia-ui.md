@@ -119,6 +119,9 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **na barra, clique esquerdo faz e clique direito mostra**: o direito abre a gaveta de opções da ferramenta (`menu` de cada ferramenta no `bar.js`) e nunca executa nada sozinho. uma ação nova de uma ferramenta entra como opção da gaveta, com o nome por extenso, não como um terceiro gesto.
 - **o que é da equipe abre só para ler**: nas abas da equipe da configuração, a parte da equipe fica travada até o '*editar*' da faixa de cima (`lockTeam`); a parte "neste computador" (depois do `.local-split`) fica sempre livre.
 - **o que decide o conteúdo de uma lista é o título dela** (a produção, na lista de templates), não um controle no rodapé.
+- **toda janela abre com o foco no primeiro campo que a pessoa vai usar** (a busca, a atração, a etiqueta livre): digitar funciona sem clicar antes.
+- **o botão principal responde a `Cmd/Ctrl+Enter`** (`PAD_KEYS.primary(botão)`, que também põe o atalho na dica com o nome do sistema).
+- **o que apaga muita coisa de uma vez pede um segundo clique** (o ↻ do criador, a vassourinha das etiquetas): o primeiro clique marca o botão e avisa; o segundo, em até 4 s, faz.
 - **botões com contagem por extenso**: `Preencher 3 versões`, `Coletar 4 arquivos`, `Resolver 2 fontes` (nunca `Preencher: 3`). sem nada para contar, só o verbo.
 - **a linha de status da barra tem três camadas** (`bar.js`): o aviso da última ação, a dica do botão sob o mouse (`PAD_TIP.hook`, no lugar do balão) e, em repouso, a conferência do projeto. uma ferramenta nova com bolinha entra também na conferência (`paintCheck`).
 - **na barra, o resultado vai na linha de status** (embaixo dos botões, `toast` do `bar.js`), nunca por cima das ferramentas. uma ação que pede uma decisão ganha um botão na própria linha (ex: `organizar assim mesmo`).

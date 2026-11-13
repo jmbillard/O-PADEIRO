@@ -220,6 +220,21 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 		input.select();
 	}
 
+	// O botão principal de uma janela (Resolver, Coletar, Salvar, Organizar…): Cmd+Enter (macOS) / Ctrl+Enter (Windows)
+	// em qualquer lugar da janela faz o mesmo que o clique nele, e a dica do botão mostra o atalho com o nome do sistema
+	function primary(button) {
+		if (!button) return;
+
+		button.title = (button.title ? button.title + ' · ' : '') + (MAC ? 'Cmd' : 'Ctrl') + '+Enter';
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter' || !isMod(e) || e.defaultPrevented) return;
+			if (button.disabled || !button.getClientRects().length) return;
+
+			e.preventDefault();
+			button.click();
+		});
+	}
+
 	registerKeys();
 
 	// Cmd+Z (macOS) / Ctrl+Z (Windows) com o foco num painel do padeiro: o painel pede essas teclas (para editar
@@ -235,6 +250,7 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 
 	window.PAD_KEYS = {
 		mac: MAC,
+		primary: primary,
 		undoKey: MAC ? 'Cmd+Z' : 'Ctrl+Z', // o nome do atalho de desfazer neste sistema, para os textos
 		isMod: isMod,
 		isTyping: isTyping,

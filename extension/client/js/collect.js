@@ -256,6 +256,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 	function init() {
 		$('cw-relink').addEventListener('click', relink);
+		PAD_KEYS.primary($('cw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('cw-go').addEventListener('click', function () {
 			collect('');
 		});
