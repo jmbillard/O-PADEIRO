@@ -13,7 +13,8 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 Na barra (o painel tem uns 86 px no menor lado e, no After, nada sai dele), a dica das ferramentas fica por cima
 da barra: na horizontal, ao lado do botão (à direita, ou à esquerda sem espaço), com a altura da barra e em
 colunas (o nome | os cliques | os avisos); na vertical, embaixo do botão (ou em cima), com a largura do painel e
-empilhada. As linhas que começam com '! ' são avisos: em laranja, com a bolinha.
+empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! linha' é um item dele, com a bolinha
+(os grupos lado a lado na horizontal, um embaixo do outro na vertical).
 
 */
 
@@ -88,7 +89,7 @@ empilhada. As linhas que começam com '! ' são avisos: em laranja, com a bolinh
 
 		lines.forEach(function (line, i) {
 			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
-			var w = /^! (.*)$/.exec(line.trim());
+			var w = /^!(#?) (.*)$/.exec(line.trim());
 
 			if (m) {
 				var row = document.createElement('p');
@@ -104,11 +105,19 @@ empilhada. As linhas que começam com '! ' são avisos: em laranja, com a bolinh
 				var warn = document.createElement('p');
 				var text = document.createElement('span');
 
-				warn.className = 'tip-warn';
-				text.textContent = w[1];
-				warn.appendChild(document.createElement('i'));
+				// um título abre um grupo novo; um item sem título entra no último grupo (ou num grupo novo)
+				if (w[1] || !warnBox.lastChild) {
+					var group = document.createElement('div');
+
+					group.className = 'tip-wgroup';
+					warnBox.appendChild(group);
+				}
+
+				warn.className = w[1] ? 'tip-whead' : 'tip-warn';
+				text.textContent = w[2];
+				if (!w[1]) warn.appendChild(document.createElement('i'));
 				warn.appendChild(text);
-				warnBox.appendChild(warn);
+				warnBox.lastChild.appendChild(warn);
 			} else if (line.trim() && i === 0) {
 				var name = document.createElement('p');
 

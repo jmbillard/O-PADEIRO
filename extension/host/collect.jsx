@@ -712,11 +712,12 @@ function padInProjects(path, roots) {
 
 // Os arquivos do projeto fora das pastas de projetos (configuração > PROJETO; VFX-1 … vale como VFX). leve: só
 // os caminhos dos itens. → { state: '' (sem arquivos) | 'ok' (tudo nas pastas) | 'out' (algum fora), total,
-//   local (quantos fora), names }
+//   local (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
 PADX.collectStatus = function () {
 	var total = 0;
 	var local = 0;
 	var names = [];
+	var kinds = {};
 	var roots = padProjectsRoots();
 
 	// o mapa de drives (as letras de rede no Windows) já vem da configuração (padApplyConfig, a cada chamada)
@@ -735,10 +736,18 @@ PADX.collectStatus = function () {
 		if (!padInProjects(file.fsName, roots)) {
 			local++;
 			if (names.length < 3) names.push(decodeURI(file.name));
+
+			var kind = 'videos';
+
+			try {
+				kind = padCollectKind(item);
+			} catch (err) { }
+
+			kinds[kind] = (kinds[kind] || 0) + 1;
 		}
 	}
 
-	return { state: total ? (local ? 'out' : 'ok') : '', total: total, local: local, names: names };
+	return { state: total ? (local ? 'out' : 'ok') : '', total: total, local: local, names: names, kinds: kinds };
 };
 
 /*

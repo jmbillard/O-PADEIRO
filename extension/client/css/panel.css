@@ -2606,29 +2606,41 @@ body.motion-ready .eyebrow {
   font-size: 8.5px;
 }
 
-/* os avisos (as linhas com '! '): em laranja, com a bolinha da barra */
+/* os avisos: grupos (o título e os itens, cada um com a bolinha, centralizada na linha dele), em laranja */
 .pad-tooltip .tip-warns {
+  display: grid;
+  gap: 6px;
   margin-top: 7px;
+}
+
+.pad-tooltip .tip-wgroup {
+  display: grid;
+  gap: 2px;
+}
+
+.pad-tooltip .tip-whead {
+  color: var(--attention-text);
+  font-size: 9.5px;
+  font-weight: 800;
+  opacity: 0.8;
 }
 
 .pad-tooltip .tip-warn {
   display: flex;
-  align-items: baseline;
-  gap: 7px;
+  align-items: flex-start;
+  gap: 6px;
   color: var(--attention-text);
+  line-height: 1.35;
 }
 
-.pad-tooltip .tip-warn + .tip-warn {
-  margin-top: 4px !important;
-}
-
+/* a bolinha no centro da (primeira) linha do texto dela */
 .pad-tooltip .tip-warn i {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   flex: 0 0 auto;
+  margin-top: calc((1.35em - 6px) / 2);
   border-radius: 50%;
   background: var(--attention);
-  transform: translateY(-1px);
 }
 
 /* na barra: por cima dela (tooltip.js), em colunas na horizontal (o nome | os cliques | os avisos), com a altura
@@ -2665,9 +2677,13 @@ body.motion-ready .eyebrow {
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* os cliques vêm primeiro: sem lugar para tudo, quem encolhe (…) são os avisos */
-.pad-tooltip.is-bar .tip-clicks {
+/* os avisos são curtos e ficam inteiros: sem lugar para tudo, quem encolhe (…) são os cliques */
+.pad-tooltip.is-bar:not(.is-bar-v) .tip-warns {
   flex-shrink: 0;
+}
+
+.pad-tooltip.is-bar {
+  overflow: hidden;
 }
 
 .pad-tooltip.is-bar .tip-click,
@@ -2686,16 +2702,26 @@ body.motion-ready .eyebrow {
   text-overflow: ellipsis;
 }
 
-.pad-tooltip.is-bar .tip-warn + .tip-warn {
-  margin-top: 0 !important;
-}
-
 .pad-tooltip.is-bar .tip-warns,
 .pad-tooltip.is-bar .tip-note {
   display: grid;
   min-width: 0;
   gap: 4px;
   flex: 0 1 auto;
+}
+
+.pad-tooltip.is-bar:not(.is-bar-v) .tip-warns {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pad-tooltip.is-bar .tip-wgroup {
+  min-width: 0;
+}
+
+.pad-tooltip.is-bar .tip-warns,
+.pad-tooltip.is-bar .tip-note {
   margin: 0 !important;
   padding-left: 14px;
   border-left: 1px solid rgb(255 255 255 / 12%);
@@ -2715,10 +2741,9 @@ body.motion-ready .eyebrow {
   letter-spacing: 0.06em;
 }
 
-/* na coluna estreita, o mouse e a bolinha ficam na linha do texto (o texto quebra embaixo deles e usa a largura
-   toda) */
-.pad-tooltip.is-bar-v .tip-click,
-.pad-tooltip.is-bar-v .tip-warn {
+/* na coluna estreita, o mouse fica na linha do texto (o texto quebra embaixo dele e usa a largura toda); os
+   avisos são curtos e ficam com a bolinha ao lado, no centro da linha */
+.pad-tooltip.is-bar-v .tip-click {
   display: block;
 }
 
@@ -2728,8 +2753,7 @@ body.motion-ready .eyebrow {
   overflow-wrap: break-word;
 }
 
-.pad-tooltip.is-bar-v .tip-mouse,
-.pad-tooltip.is-bar-v .tip-warn i {
+.pad-tooltip.is-bar-v .tip-mouse {
   display: inline-block;
   margin-right: 5px;
 }

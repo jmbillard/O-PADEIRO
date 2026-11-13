@@ -893,7 +893,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// as linhas de aviso de uma dica (as que começam com '! ')
 	function warnings(btn) {
 		return (btn.dataset.tip || btn.title || btn.getAttribute('data-tip') || '').split('\n').filter(function (line) {
-			return /^! /.test(line);
+			return /^!#? /.test(line);
 		});
 	}
 
@@ -916,8 +916,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			});
 			var warn = [];
 
+			// um aviso por ferramenta, numa linha: o título e os itens dela juntos ('fontes: 2 para instalar')
 			Array.prototype.forEach.call(box.querySelectorAll('.bar-btn'), function (m) {
-				warn = warn.concat(warnings(m));
+				var head = '';
+				var items = [];
+
+				warnings(m).forEach(function (line) {
+					if (/^!# /.test(line)) head = line.replace(/^!# /, '').replace(/:$/, '');
+					else items.push(line.replace(/^! /, ''));
+				});
+				if (items.length) warn.push('! ' + (head ? head.toLowerCase() + ': ' : '') + items.join(', '));
 			});
 			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
 			setTip(gbtn, warn.join('\n'));
@@ -943,7 +951,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
 		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
-		setTip(btn, projectState === 'missing' ? '! projeto sem os dados do padeiro (atração, o que é, pastas)' : '');
+		setTip(btn, projectState === 'missing' ? '!# Projeto:\n! sem os dados do padeiro' : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
 		else btn.removeAttribute('data-project');
@@ -965,7 +973,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (!btn) return;
 
-		setTip(btn, tip ? (state === 'missing' ? '! ' : '') + tip : '');
+		setTip(btn, state === 'missing' ? tip : '');
 		setDot(btn, state);
 		paintGroupDots();
 	}
@@ -980,10 +988,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		Object.keys(FONT_LABELS).forEach(function (k) {
 			if (count[k]) parts.push(count[k] + ' ' + FONT_LABELS[k]);
 		});
-		if (info.bank && !checked.bankOk) parts.push('banco de fontes inacessível');
-		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado (configuração > fontes)');
+		if (info.bank && !checked.bankOk) parts.push('banco fora do ar');
+		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado');
 
-		return parts.length ? 'fontes: ' + parts.join(' · ') : 'fontes ok: ' + checked.fonts.length + (checked.fonts.length === 1 ? ' fonte instalada e no banco' : ' fontes instaladas e no banco');
+		return parts.length ? '!# Fontes:\n' + parts.map(function (p) {
+			return '! ' + p;
+		}).join('\n') : '';
 	}
 
 	async function syncFonts() {
@@ -1059,11 +1069,23 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!btn) return;
 		var tip = '';
 
-		if (res && res.state === 'ok') tip = 'arquivos: ' + (res.total === 1 ? 'o arquivo do projeto está nas pastas de projetos' : 'os ' + res.total + ' arquivos do projeto estão nas pastas de projetos');
-		if (res && res.state === 'out') tip = '! ' + (res.local === 1 ? '1 arquivo fora' : res.local + ' arquivos fora') + ' das pastas de projetos' + (res.names.length ? ': ' + res.names.join(', ') + (res.local > res.names.length ? '…' : '') : '');
+		if (res && res.state === 'out') tip = '!# Arquivos fora:\n' + kindLines(res);
 		setTip(btn, tip);
 		setDot(btn, res && res.state);
 		paintGroupDots();
+	}
+
+	// os arquivos fora, por tipo: '! 1 imagem', '! 2 áudios'… (sem os tipos, só o total)
+	var KIND_NAMES = { imagens: ['imagem', 'imagens'], videos: ['vídeo', 'vídeos'], audio: ['áudio', 'áudios'], sequencias: ['sequência', 'sequências'], dados: ['dado', 'dados'] };
+
+	function kindLines(res) {
+		var lines = Object.keys(KIND_NAMES).filter(function (k) {
+			return res.kinds && res.kinds[k];
+		}).map(function (k) {
+			return '! ' + counted(res.kinds[k], KIND_NAMES[k][0], KIND_NAMES[k][1]);
+		});
+
+		return lines.length ? lines.join('\n') : '! ' + counted(res.local, 'arquivo', 'arquivos');
 	}
 
 	async function watchCollect() {
