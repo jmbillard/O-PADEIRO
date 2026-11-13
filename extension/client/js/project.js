@@ -338,12 +338,13 @@ projetos com o nome certo).
 		flow.claquete = claq;
 		state.claqClosed = false;
 
-		// com a barra: a atração escolhida fica (a que foi clicada); sem a barra, volta a busca das atrações
+		// a atração escolhida fica enquanto o começo do campo for o nome dela (com ou sem a barra); com a barra, as
+		// pastas dela. outro texto: volta a busca das atrações
 		if (p.deep) {
 			if (!flow.attr && /^m\d+$/.test(flow.choice)) flow.attr = flow.matches[+flow.choice.slice(1)] || null;
 			if (flow.choice !== 'new') flow.choice = '';
 		} else {
-			flow.attr = null;
+			if (!(flow.attr && aepName(flow.attr.name) === aepName(p.first))) flow.attr = null;
 			flow.walk = null;
 		}
 		if (flow.choice === 'new') $('nova-name').value = $('claq').value.trim();
@@ -381,6 +382,12 @@ projetos com o nome certo).
 					}))) flow.attr = exact.length === 1 ? exact[0] : flow.matches.length === 1 ? flow.matches[0] : null;
 					flow.walk = flow.attr ? await walkPath(flow.attr.path, p.levels, p.last, false) : null;
 					if (seq !== state.lookupSeq) return;
+
+					// escolhida na lista: sem pastas dentro, não há o que mostrar (recolhe)
+					if (state.autoSettle) {
+						state.autoSettle = false;
+						if (flow.attr && flow.walk && !p.last && !(flow.walk.info && flow.walk.info.folders.length)) return collapseClaq(true);
+					}
 				}
 			} catch (err) {
 				if (seq !== state.lookupSeq) return;
@@ -444,20 +451,39 @@ projetos com o nome certo).
 	}
 
 	// troca o fim do campo (o nível sendo digitado) por uma pasta e abre o nível de dentro dela
-	function enterLevel(name) {
+	// escolher na lista (clique ou Enter): entra nela (o nome e a barra) e, com pastas dentro, a lista mostra o nível de
+	// dentro para seguir no clique; sem pastas, a barra sai e o campo recolhe (segue para o o que é). Tab (keepOpen):
+	// completa com a barra e fica aberto
+	function enterLevel(name, keepOpen) {
 		var p = claqParts();
 
 		$('claq').value = p.parts.slice(0, -1).join('/') + '/' + name + '/';
+		enter(keepOpen);
+	}
+
+	function enterAttraction(match, keepOpen) {
+		flow.attr = match;
+		flow.choice = '';
+		$('claq').value = match.name.toUpperCase() + '/';
+		enter(keepOpen);
+	}
+
+	function enter(keepOpen) {
+		state.autoSettle = !keepOpen;
 		$('claq').focus();
 		lookup();
 	}
 
-	function enterAttraction(match) {
-		flow.attr = match;
-		flow.choice = '';
-		$('claq').value = match.name.toUpperCase() + '/';
-		$('claq').focus();
-		lookup();
+	// recolhe o campo: a lista fecha e a barra do fim sai (o caminho fica como está). next: segue para o o que é
+	function collapseClaq(next) {
+		var input = $('claq');
+
+		input.value = input.value.replace(/\/+\s*$/, '');
+		flow.claquete = input.value.trim();
+		state.claqClosed = true;
+		renderAttractions();
+		updatePick();
+		if (next) $('arq-what').focus();
 	}
 
 	function renderAttractions() {
@@ -579,10 +605,7 @@ projetos com o nome certo).
 
 			flow.choice = '';
 			state.userChose = false;
-			flow.attr = { name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true };
-			$('claq').value = name.toUpperCase() + '/';
-			$('claq').focus();
-			return lookup();
+			return enterAttraction({ name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true });
 		}
 
 		if (key === 'new') {
@@ -661,6 +684,8 @@ projetos com o nome certo).
 				return s.name;
 			}).join('/'), segs: segs, base: flow.walk.base };
 		}
+		// a atração escolhida, sem pastas abaixo (o campo só com o nome dela)
+		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [] };
 		if (!p.deep && flow.choice === 'new' && novaReady()) return novaTarget();
 
 		return null;
@@ -972,15 +997,27 @@ projetos com o nome certo).
 
 			if (seq !== state.outSeq) return;
 			state.outWalk = walk;
+
+			// escolhida na lista: sem pastas dentro, a barra sai e volta o cartão
+			if (state.outAutoSettle) {
+				state.outAutoSettle = false;
+				if (!o.last && !(walk.info && walk.info.folders.length)) {
+					$('out-in').value = $('out-in').value.replace(/\/+\s*$/, '');
+					return outEdit(false);
+				}
+			}
 			renderOut();
 		}, 60);
 	}
 
-	function outEnterLevel(name) {
+	// uma pasta da lista (clique ou Enter): entra nela e, com pastas dentro, mostra o nível de dentro; sem pastas, volta
+	// o cartão. Tab (keepOpen): completa com a barra e fica aberto
+	function outEnterLevel(name, keepOpen) {
 		var o = outParts();
 
 		$('out-in').value = (o.levels.length ? o.parts.slice(0, -1).join('/') + '/' : '') + name + '/';
 		$('out-in').focus();
+		state.outAutoSettle = !keepOpen;
 		outLookup(true);
 	}
 
@@ -1255,6 +1292,10 @@ projetos com o nome certo).
 				})) state.edAttr = exact.length === 1 ? exact[0] : res.matches.length === 1 ? res.matches[0] : null;
 				state.edWalk = state.edAttr ? await walkPath(state.edAttr.path, p.levels, p.last, false) : null;
 				if (seq !== state.edSeq) return;
+				if (state.edAutoSettle) {
+					state.edAutoSettle = false;
+					if (!p.last && !(state.edWalk && state.edWalk.info && state.edWalk.info.folders.length) && edAcceptLevels()) return;
+				}
 			}
 
 			if (auto && res.matches.length) edPick(0, text);
@@ -1310,13 +1351,15 @@ projetos com o nome certo).
 		$('ed-combo').classList.toggle('is-open', open);
 	}
 
-	// uma pasta da lista: entra nela (o campo ganha o nome e a barra) e abre o nível de dentro
-	function edEnterLevel(name) {
+	// uma pasta da lista (clique ou Enter): entra nela e, com pastas dentro, mostra o nível de dentro; sem pastas, a
+	// barra sai e a lista recolhe. Tab (keepOpen): completa com a barra e fica aberto
+	function edEnterLevel(name, keepOpen) {
 		var p = edParts();
 
 		$('ed-atracao').value = p.parts.slice(0, -1).join('/') + '/' + name + '/';
 		$('ed-atracao').focus();
 		state.edLevelsDone = false;
+		state.edAutoSettle = !keepOpen; // decide quando as pastas do caminho novo forem lidas
 		edLookup($('ed-atracao').value, false);
 		edFile();
 	}
@@ -1588,22 +1631,22 @@ projetos com o nome certo).
 		comboKeys('claq', 'atr-list', function () {
 			var p = claqParts();
 
-			if (p.deep && flow.attr && flow.walk && flow.walk.shown.length) enterLevel(flow.walk.shown[0].name);
-			else if (!p.deep && flow.matches.length) enterAttraction(flow.matches[0]);
+			if (p.deep && flow.attr && flow.walk && flow.walk.shown.length) enterLevel(flow.walk.shown[0].name, true);
+			else if (!p.deep && flow.matches.length) enterAttraction(flow.matches[0], true);
 			else return false;
 
 			return true;
 		});
 		comboKeys('out-in', 'out-list', function () {
 			if (!state.outWalk || !state.outWalk.shown.length) return false;
-			outEnterLevel(state.outWalk.shown[0].name);
+			outEnterLevel(state.outWalk.shown[0].name, true);
 
 			return true;
 		});
 		comboKeys('ed-atracao', 'ed-atr-list', function () {
 			var p = edParts();
 
-			if (p.deep && state.edAttr && state.edWalk && state.edWalk.shown.length) edEnterLevel(state.edWalk.shown[0].name);
+			if (p.deep && state.edAttr && state.edWalk && state.edWalk.shown.length) edEnterLevel(state.edWalk.shown[0].name, true);
 			else if (!p.deep && state.edMatches.length) edPick(0);
 			else return false;
 
@@ -1613,6 +1656,13 @@ projetos com o nome certo).
 		$('claq').addEventListener('input', lookup);
 		$('claq-back').addEventListener('click', leaveManualNew);
 		onEnter('claq', claqEnter);
+		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
+		$('claq').addEventListener('blur', function () {
+			setTimeout(function () {
+				if ($('claq-combo').contains(document.activeElement) || $('claq-combo').hidden || state.claqClosed || !flow.claquete) return;
+				collapseClaq(false);
+			}, 150);
+		});
 		// voltando ao campo: a lista abre de novo
 		$('claq').addEventListener('focus', function () {
 			if (!state.claqClosed || !flow.claquete) return;
