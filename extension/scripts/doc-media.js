@@ -265,7 +265,7 @@ const SHOTS = {
 		await p.waitForTimeout(300);
 	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
 	catador: { w: 540, h: 640, url: 'collect.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '.cw-row:nth-child(1) .fw-state', round: true }, { sel: '.cw-row:nth-child(2) .fw-state', round: true }, { sel: '.cw-row:nth-child(4) .fw-state', round: true }, { sel: '.cw-row:nth-child(6) .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+		{ sel: '#fw-file', pad: 3 }, { sel: '.cw-row:nth-child(1) .fw-state', round: true }, { sel: '.cw-row:nth-child(3) .fw-state', round: true }, { sel: '.cw-row:nth-child(5) .fw-state', round: true }, { sel: '.cw-row:nth-child(7) .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
 	versionador: { w: 560, h: 540, url: 'versioner.html', async run(p) {
 		await p.locator('.vs-row').nth(1).locator('.fw-head').click();
@@ -386,8 +386,9 @@ const SCENES = {
 		mouse = [500, 600];
 		await p.waitForTimeout(900);
 		await hover(p, '.cw-row:nth-child(1) .fw-head', 500);
-		await tap(p, '#cw-relink', { wait: 2600 });
-		await tap(p, '#cw-go', { wait: 2200 });
+		await tap(p, '#cw-relink', { wait: 2600 }); // procura: o achado vira →
+		await tap(p, '#cw-go', { wait: 2000 }); // Relinkar
+		await tap(p, '#cw-go', { wait: 2200 }); // Coletar
 	} },
 
 	// O ACESSORISTA: busca de caminhos

@@ -1297,7 +1297,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ id: 12, name: 'trilha_abertura.wav', file: '/Users/jmbillard/Desktop/trilha_abertura.wav', kind: 'audio', state: 'local', layers: 1 },
 					{ id: 13, name: 'fundo_estudio.mov', file: '/Volumes/EDIT_IN_PLACE/PROMO/BRUTOS/fundo_estudio.mov', kind: 'videos', state: 'net', layers: 3 },
 					{ id: 14, name: 'textura_[0000-0120].png', file: D + 'ae-menu-output-module.png', kind: 'sequencias', state: 'net', layers: 1 },
-					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'net' : 'missing', layers: 1 },
+					{ id: 15, name: 'arte_antiga.psd', file: window.PAD_MOCK_RELINKED ? R + '/IMAGENS/arte_antiga.psd' : '/Volumes/VFX/ANTIGO/02 ARQUIVOS/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'ok' : 'missing', layers: 1 },
+					{ id: 18, name: 'vinheta_2019.mov', file: '/Volumes/VFX/ANTIGO/vinheta_2019.mov', kind: 'videos', state: 'missing', layers: 1 },
 					{ id: 16, name: 'placar.csv', file: R + '/DADOS/placar.csv', kind: 'dados', state: 'ok', layers: 1 },
 					{ id: 17, name: 'barra.webp', file: D + 'barra-vertical.webp', kind: 'imagens', state: 'ok', layers: 0 }
 				]
@@ -1357,6 +1358,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// resolver faltando: acha o arte_antiga.psd no VFX-1 (?mock=fail: não acha)
+		// a busca dos faltando: acha um (com outro de mesmo nome) e não acha o outro; ?mock=fail: nenhum
+		collectRelinkFind: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 1200);
+			});
+
+			var still = [{ id: 18, name: 'vinheta_2019.mov' }];
+
+			if (mode === 'fail' || window.PAD_MOCK_RELINKED) return { found: [], still: window.PAD_MOCK_RELINKED ? still : still.concat([{ id: 15, name: 'arte_antiga.psd' }]), partial: false };
+
+			return { found: [{ id: 15, name: 'arte_antiga.psd', from: '/Volumes/VFX/ANTIGO/02 ARQUIVOS/arte_antiga.psd', to: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/02 ARQUIVOS/IMAGENS/arte_antiga.psd', how: 'busca', more: 1 }], still: still, partial: false };
+		},
+
 		collectRelink: async function () {
 			await new Promise(function (r) {
 				setTimeout(r, 1400);

@@ -235,12 +235,12 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | | | |
 | :---: | --- | --- |
 | ❶ | **o projeto** | o `.aep`, quantos arquivos e quantos estão fora do lugar. |
-| ❷ | **✕ faltando** | o arquivo não existe (ou está num volume desmontado: o ❼ resolve). |
+| ❷ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❼ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
 | ❸ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
 | ❹ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. |
 | ❺ | **✓** | já está na pasta do projeto. (**–** cinza: tipo fora da árvore do coletar.) |
 | ❻ | **outra pasta** | coleta numa pasta escolhida. |
-| ❼ | **resolver os que faltam** | procura cada arquivo faltando no volume certo (`VFX`, `VFX-1` … `VFX-5`), monta o share se precisar e relinka (desfaz com um Ctrl+Z). |
+| ❼ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
 | ❽ | **Coletar** | copia o que falta para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto. |
 
 > 🚩 *obs:*\

@@ -38,7 +38,9 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		dados: '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.5" /><path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" /></svg>'
 	};
 
-	var state = { data: null, busy: false, key: '' };
+	// finds: o resultado da última busca dos arquivos faltando ({ id: { to, how, more } } e os não achados), até
+	// relinkar ou eles deixarem de faltar
+	var state = { data: null, busy: false, key: '', finds: null };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -71,6 +73,15 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		});
 	}
 
+	// os faltando que a busca achou (e ainda estão faltando)
+	function found() {
+		if (!state.finds || !state.data) return [];
+
+		return state.data.items.filter(function (it) {
+			return it.state === 'missing' && state.finds.to[it.id];
+		});
+	}
+
 	async function load() {
 		try {
 			state.data = await call('collectList');
@@ -88,7 +99,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var count = {};
 		var parts = [];
 		var key = JSON.stringify(items.map(function (it) {
-			return it.id + ':' + it.state;
+			return it.id + ':' + it.state + (state.finds && it.state === 'missing' ? ':' + (state.finds.to[it.id] ? state.finds.to[it.id].to : '?') : '');
 		}));
 
 		items.forEach(function (it) {
@@ -104,9 +115,11 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('fw-empty').textContent = 'o projeto não tem arquivos (só comps, sólidos ou textos).';
 
 		var n = pending().length;
+		var hits = found().length;
 
-		$('cw-go').disabled = !n || state.busy;
-		$('cw-go').textContent = n ? 'Coletar: ' + n : 'Coletar';
+		// com arquivos achados pela busca, o botão principal relinka; sem, coleta
+		$('cw-go').disabled = (!n && !hits) || state.busy;
+		$('cw-go').textContent = hits ? 'Relinkar: ' + hits : n ? 'Coletar: ' + n : 'Coletar';
 		$('cw-relink').disabled = !count.missing || state.busy;
 
 		if (key === state.key) return; // nada mudou: as miniaturas não recarregam
@@ -158,14 +171,20 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var head = el('button', 'fw-head');
 		var text = el('span', 'fw-text');
 		var st = STATES[it.state] || STATES.net;
-		var dot = el('span', 'fw-state is-' + (it.state === 'local' ? 'install' : it.state === 'net' ? 'up' : it.state === 'missing' ? 'nofile' : it.state === 'skip' ? 'skip' : 'ok'));
-		var folder = it.file.replace(/\\/g, '/').replace(/\/[^\/]*$/, '');
+		var hit = it.state === 'missing' && state.finds ? state.finds.to[it.id] : null;
+		var searched = it.state === 'missing' && state.finds && !hit;
+		var dot = el('span', 'fw-state is-' + (hit ? 'found' : it.state === 'local' ? 'install' : it.state === 'net' ? 'up' : it.state === 'missing' ? 'nofile' : it.state === 'skip' ? 'skip' : 'ok'));
+		var folder = (hit ? hit.to : it.file).replace(/\\/g, '/').replace(/\/[^\/]*$/, '');
+
+		// achado pela busca: a linha mostra onde (o relinkar leva para lá); procurado e não achado: avisa
+		if (hit) st = ['→', 'achado em ' + hit.to + (hit.more ? '\n(há mais ' + plural(hit.more, 'arquivo', 'arquivos') + ' com esse nome: este é o do caminho mais parecido)' : '') + '\nRelinkar aponta o item para ele'];
+		if (searched) st = [st[0], 'o arquivo não existe e a busca não achou outro com esse nome nas pastas do projeto'];
 
 		head.type = 'button';
 		head.title = it.file + '\n' + st[1] + '\n(clique: mostra no painel Project)';
 		head.appendChild(thumb(it));
 		text.appendChild(el('b', 'cw-name', it.name));
-		text.appendChild(el('span', 'fw-name', (KINDS[it.kind] || it.kind) + (it.layers ? ' · ' + plural(it.layers, 'comp', 'comps') : ' · sem uso') + ' · …/' + folder.split('/').slice(-2).join('/')));
+		text.appendChild(el('span', 'fw-name', (KINDS[it.kind] || it.kind) + (it.layers ? ' · ' + plural(it.layers, 'comp', 'comps') : ' · sem uso') + ' · ' + (hit ? 'achado em ' : '') + '…/' + folder.split('/').slice(-2).join('/')));
 		head.appendChild(text);
 		dot.appendChild(el('i', null, st[0]));
 		dot.dataset.id = it.id;
@@ -217,15 +236,17 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		await load();
 	}
 
-	// resolver arquivos faltando: o host procura cada um no volume certo (montando o share, se precisar) e relinka
-	async function relink() {
+	// resolver arquivos faltando, em dois passos: o triângulo procura (no volume certo, montando o share se
+	// precisar, e pelo nome nas pastas do projeto e na pasta antiga que ainda existe) e mostra onde achou cada um;
+	// o botão principal vira Relinkar e aponta os itens para os achados
+	async function findMissing() {
 		if (state.busy) return;
 
 		state.busy = true;
 		render();
 
 		var button = $('cw-relink');
-		var searching = Array.prototype.slice.call(document.querySelectorAll('.fw-state.is-nofile'));
+		var searching = Array.prototype.slice.call(document.querySelectorAll('.fw-state.is-nofile, .fw-state.is-found'));
 
 		button.classList.add('is-working');
 		searching.forEach(function (dot) {
@@ -234,13 +255,25 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		status('procurando os arquivos faltando…');
 
 		try {
-			var res = await call('collectRelink', {});
+			var res = await call('collectRelinkFind', {});
+			var to = {};
+
+			(res.found || []).forEach(function (f) {
+				to[f.id] = f;
+			});
+			state.finds = { to: to };
+
 			var parts = [];
 
-			if (res.relinked) parts.push(plural(res.relinked, 'arquivo relinkado', 'arquivos relinkados'));
-			if (res.still && res.still.length) parts.push(plural(res.still.length, 'ainda faltando', 'ainda faltando'));
+			if (res.found && res.found.length) parts.push(plural(res.found.length, 'achado', 'achados'));
+			if (res.still && res.still.length) parts.push(plural(res.still.length, 'não achado', 'não achados'));
+			if (res.partial) parts.push('a busca parou antes do fim (pastas grandes)');
 			status((parts.join(' · ') || 'nada para relinkar') + '.', '');
-			if (res.still && res.still.length) $('fw-status').title = res.still.join('\n');
+			if (res.still && res.still.length) {
+				$('fw-status').title = res.still.map(function (s) {
+					return s.name;
+				}).join('\n');
+			}
 		} catch (err) {
 			status(err.message, 'error');
 		}
@@ -254,11 +287,47 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		await load();
 	}
 
+	async function relink() {
+		var hits = found();
+
+		if (state.busy || !hits.length) return;
+
+		state.busy = true;
+		render();
+		status('relinkando…');
+
+		try {
+			var to = {};
+
+			hits.forEach(function (it) {
+				to[it.id] = state.finds.to[it.id].to;
+			});
+
+			var res = await call('collectRelink', { ids: hits.map(function (it) {
+				return it.id;
+			}), to: to });
+			var parts = [];
+
+			if (res.relinked) parts.push(plural(res.relinked, 'arquivo relinkado', 'arquivos relinkados') + ' · ' + PAD_UTIL.undoKey + ' desfaz');
+			if (res.still && res.still.length) parts.push(plural(res.still.length, 'ainda faltando', 'ainda faltando'));
+			status((parts.join(' · ') || 'nada para relinkar') + '.', '');
+			if (res.still && res.still.length) $('fw-status').title = res.still.join('\n');
+		} catch (err) {
+			status(err.message, 'error');
+		}
+
+		state.finds = null;
+		state.busy = false;
+		state.key = '';
+		await load();
+	}
+
 	function init() {
-		$('cw-relink').addEventListener('click', relink);
+		$('cw-relink').addEventListener('click', findMissing);
 		PAD_KEYS.primary($('cw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('cw-go').addEventListener('click', function () {
-			collect('');
+			if (found().length) relink();
+			else collect('');
 		});
 		$('cw-other').addEventListener('click', function () {
 			var path = PAD_BRIDGE.pickFolder('Coletar em qual pasta', state.data && state.data.root);

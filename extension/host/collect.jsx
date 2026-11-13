@@ -876,8 +876,165 @@ function padRelinkCandidate(path, tried) {
 	return file.exists ? file : null;
 }
 
+/* ---------------------------------------------------------------
+   a busca dos arquivos faltando: pelo nome, em algumas pastas e alguns níveis para dentro
+   --------------------------------------------------------------- */
+
+var PAD_RELINK_MS = 9000; // o tempo máximo da busca (a rede pode ser lenta): passou, devolve o que achou
+var PAD_RELINK_FILES = 40000; // e o máximo de arquivos lidos
+
+// Os arquivos de 'folder', até 'depth' níveis para dentro, no índice { nome em minúsculas: [caminhos] }. pula as
+// pastas que não interessam (autosave, OLD…) e as escondidas. state: { byName, files, until, partial, seen }
+function padRelinkScan(folder, depth, state) {
+	var key = padPathKey(folder.fsName);
+
+	if (state.seen[key]) return;
+	state.seen[key] = true;
+
+	var list = [];
+
+	try {
+		list = folder.getFiles() || [];
+	} catch (err) { }
+
+	for (var i = 0; i < list.length; i++) {
+		if (state.files >= PAD_RELINK_FILES || new Date().getTime() > state.until) {
+			state.partial = true;
+			return;
+		}
+
+		var name = decodeURI(list[i].name);
+
+		if (name.charAt(0) == '.') continue;
+
+		// na rede, uma pasta pode vir como File: sem extensão, confere pelo caminho
+		var isFolder = list[i] instanceof Folder || (!/\.[A-Za-z0-9]{1,5}$/.test(name) && new Folder(list[i].fsName).exists);
+
+		if (isFolder) {
+			if (depth > 0 && !padIsJunkFolder(name)) padRelinkScan(new Folder(list[i].fsName), depth - 1, state);
+			continue;
+		}
+
+		var low = name.toLowerCase();
+
+		if (!state.byName[low]) state.byName[low] = [];
+		state.byName[low].push(list[i].fsName);
+		state.files++;
+	}
+}
+
+// A pasta mais próxima do caminho antigo que ainda existe (subindo até 6 níveis), sem chegar na raiz de um volume
+// ou perto dela (vasculhar o servidor inteiro não dá). → Folder ou null
+function padRelinkAncestor(path) {
+	var clean = String(padPath(padNoVolumeSuffix(path)) || path).replace(/\\/g, '/');
+	var parts = clean.split('/');
+	// as partes do volume: /Volumes/VFX (3, com a vazia do começo), //servidor/share (4), L: (1); a busca fica pelo
+	// menos 2 pastas para dentro dele
+	var base = 1;
+
+	if (/^\/Volumes\//.test(clean)) base = 3;
+	else if (/^\/\//.test(clean)) base = 4;
+
+	for (var up = 1; up <= 6 && parts.length - up >= base + 2; up++) {
+		var folder = new Folder(parts.slice(0, parts.length - up).join('/'));
+
+		if (folder.exists) return folder;
+	}
+
+	return null;
+}
+
+// Quantas pastas do fim dos dois caminhos são as mesmas (…/02 ARQUIVOS/IMAGENS = …/02_ARQUIVOS/IMAGENS).
+function padRelinkAlike(a, b) {
+	var x = String(a).replace(/\\/g, '/').split('/');
+	var y = String(b).replace(/\\/g, '/').split('/');
+	var n = 0;
+
+	x.pop();
+	y.pop();
+
+	while (x.length && y.length && padFolderKey(x.pop()) == padFolderKey(y.pop())) n++;
+
+	return n;
+}
+
+// O melhor candidato da lista para o caminho antigo: o que tem mais pastas iguais no fim do caminho; no empate,
+// o caminho mais curto. → { path, more (quantos outros com o mesmo nome) } ou null
+function padRelinkBest(list, old) {
+	if (!list || !list.length) return null;
+
+	var best = list[0];
+	var score = padRelinkAlike(best, old);
+
+	for (var i = 1; i < list.length; i++) {
+		var s = padRelinkAlike(list[i], old);
+
+		if (s > score || (s == score && list[i].length < best.length)) {
+			best = list[i];
+			score = s;
+		}
+	}
+
+	return { path: best, more: list.length - 1 };
+}
+
+// Procura os arquivos faltando, sem mexer no projeto: primeiro no volume certo (outro sufixo, share não montado);
+// depois pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda
+// existe (3 níveis). a: { ids } (opcional: só esses)
+// → { found: [{ id, name, from, to, how: 'volume' | 'busca', more }], still: [{ id, name }], partial }
+PADX.collectRelinkFind = function (a) {
+	var only = {};
+	var tried = {};
+	var missing = [];
+	var res = { found: [], still: [], partial: false };
+	var i;
+
+	for (i = 0; a && a.ids && i < a.ids.length; i++) only[a.ids[i]] = true;
+
+	for (i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof FootageItem) || (a && a.ids && !only[item.id]) || !padFootageMissing(item)) continue;
+
+		var path = padFootagePath(item);
+
+		if (!path) continue;
+
+		var file = padRelinkCandidate(path, tried);
+
+		if (file) res.found.push({ id: item.id, name: item.name, from: padDisplayPath(path), to: file.fsName, how: 'volume', more: 0 });
+		else missing.push({ id: item.id, name: item.name, path: path });
+	}
+
+	if (!missing.length) return res;
+
+	var state = { byName: {}, files: 0, until: new Date().getTime() + PAD_RELINK_MS, partial: false, seen: {} };
+	var projectFile = app.project.file;
+
+	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padReadCollect())), 5, state);
+
+	for (i = 0; i < missing.length && !state.partial; i++) {
+		var near = padRelinkAncestor(missing[i].path);
+
+		if (near) padRelinkScan(near, 3, state);
+	}
+
+	for (i = 0; i < missing.length; i++) {
+		var fileName = String(missing[i].path).replace(/\\/g, '/').replace(/^.*\//, '').toLowerCase();
+		var best = padRelinkBest(state.byName[fileName], missing[i].path);
+
+		if (best) res.found.push({ id: missing[i].id, name: missing[i].name, from: padDisplayPath(missing[i].path), to: best.path, how: 'busca', more: best.more });
+		else res.still.push({ id: missing[i].id, name: missing[i].name });
+	}
+
+	res.partial = state.partial;
+
+	return res;
+};
+
 // Resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (VFX-1 …): cata o
-// caminho certo e relinka (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses) → { relinked, still: [nome] }
+// caminho certo e relinka (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses), to: { id: caminho } (opcional:
+// o lugar novo de cada um, achado pelo collectRelinkFind) → { relinked, still: [nome] }
 PADX.collectRelink = function (a) {
 	var only = {};
 	var tried = {};
@@ -898,7 +1055,15 @@ PADX.collectRelink = function (a) {
 
 			if (!path) continue;
 
-			var file = padRelinkCandidate(path, tried);
+			var file = null;
+
+			// o lugar achado pela busca (confere de novo: a pasta pode ter mudado desde então)
+			if (a && a.to && a.to[item.id]) {
+				file = new File(a.to[item.id]);
+				if (!file.exists) file = null;
+			}
+
+			if (!file) file = padRelinkCandidate(path, tried);
 
 			if (!file) {
 				res.still.push(item.name);
