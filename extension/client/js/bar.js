@@ -474,7 +474,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Templates',
 			icon: 'templates',
 			name: 'A FORMA',
-			tips: [L_CLICK + 'abrir a gaveta: preencher e criar'],
+			tips: [], // a dica do botão da gaveta: as ferramentas de dentro (paintGroupDots)
 			// uma gaveta com os dois cliques de antes, cada um num botão
 			drawer: [
 				{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
@@ -564,7 +564,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// as gavetas de grupo: as ferramentas de members ficam juntas numa gaveta, no lugar da primeira delas na barra
 	// (com 2 ou mais na barra; com uma só, ela fica solta). o botão do grupo abre a gaveta
 	var GROUPS = [
-		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', what: 'criar, fontes e coletar', members: ['projeto', 'fontes', 'coletar'] }
+		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: ['projeto', 'fontes', 'coletar'] }
 	];
 
 	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
@@ -723,6 +723,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var arrow = el('span', 'drawer-arrow');
 
 		btn.classList.add('bar-drawer-btn');
+		btn.dataset.name = def.key === 'templates' ? 'TEMPLATES' : def.name;
 		btn.setAttribute('aria-expanded', 'false');
 		btn.addEventListener('click', function () {
 			openDrawer(box);
@@ -826,7 +827,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			section.forEach(function (entry) {
 				if (entry.group) {
 					var g = entry.group.group;
-					var parts = drawer(g.key, { key: g.key, label: g.label, icon: g.icon, name: g.name, tips: [L_CLICK + 'abrir a gaveta: ' + g.what] }, entry.group.members.map(function (m) {
+					var parts = drawer(g.key, { key: g.key, label: g.label, icon: g.icon, name: g.name, tips: [] }, entry.group.members.map(function (m) {
 						var def = toolDef(m);
 						var b = toolButton(def);
 
@@ -914,14 +915,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var states = Array.prototype.map.call(box.querySelectorAll('.bar-dot'), function (d) {
 				return /is-(missing|out)/.test(d.className) ? 'missing' : /is-ok/.test(d.className) ? 'ok' : '';
 			});
-			var warn = [];
-
-			// só o nome de cada ferramenta com pendência (o que falta, na dica dela, dentro da gaveta)
-			Array.prototype.forEach.call(box.querySelectorAll('.bar-btn'), function (m) {
-				if (warnings(m).length) warn.push('! ' + m.getAttribute('aria-label'));
+			// a dica: o nome do grupo e as ferramentas de dentro, uma por linha; a que tem pendência, com a bolinha
+			// laranja (o que falta fica na dica dela, dentro da gaveta)
+			var list = Array.prototype.map.call(box.querySelectorAll('.bar-btn'), function (m) {
+				return (warnings(m).length ? '! ' : '· ') + m.getAttribute('aria-label');
 			});
+			var text = gbtn.dataset.name + '\n\n' + list.join('\n');
+
 			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
-			setTip(gbtn, warn.join('\n'));
+			gbtn.dataset.baseTip = text;
+			gbtn.dataset.tip = text;
+			gbtn.title = text;
 		});
 	}
 

@@ -2634,6 +2634,19 @@ body.motion-ready .eyebrow {
 }
 
 /* a bolinha no centro da (primeira) linha do texto dela */
+.pad-tooltip .tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+/* o item sem pendência: o lugar da bolinha fica vazio (os nomes alinham) */
+.pad-tooltip .tip-item i {
+  width: 6px;
+  flex: 0 0 auto;
+}
+
 .pad-tooltip .tip-warn i {
   width: 6px;
   height: 6px;

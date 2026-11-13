@@ -68,8 +68,10 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 	// clique numa linha com o mouse e o botão aceso, e o estado embaixo, mais apagado. as outras: o texto como está
 	function fill(t, text) {
 		var lines = String(text).split('\n');
+		// os cliques, os avisos ('!# título', '! item') e os itens de uma lista ('· item', ex: as ferramentas de
+		// uma gaveta)
 		var clicks = lines.filter(function (line) {
-			return /^\s*[◖◗]\s*→/.test(line);
+			return /^\s*[◖◗]\s*→/.test(line) || /^!#? |^· /.test(line.trim());
 		});
 
 		t.textContent = '';
@@ -89,7 +91,7 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 
 		lines.forEach(function (line, i) {
 			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
-			var w = /^!(#?) (.*)$/.exec(line.trim());
+			var w = /^(!#?|·) (.*)$/.exec(line.trim());
 
 			if (m) {
 				var row = document.createElement('p');
@@ -106,16 +108,16 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 				var text = document.createElement('span');
 
 				// um título abre um grupo novo; um item sem título entra no último grupo (ou num grupo novo)
-				if (w[1] || !warnBox.lastChild) {
+				if (w[1] === '!#' || !warnBox.lastChild) {
 					var group = document.createElement('div');
 
 					group.className = 'tip-wgroup';
 					warnBox.appendChild(group);
 				}
 
-				warn.className = w[1] ? 'tip-whead' : 'tip-warn';
+				warn.className = w[1] === '!#' ? 'tip-whead' : w[1] === '!' ? 'tip-warn' : 'tip-item';
 				text.textContent = w[2];
-				if (!w[1]) warn.appendChild(document.createElement('i'));
+				if (w[1] !== '!#') warn.appendChild(document.createElement('i'));
 				warn.appendChild(text);
 				warnBox.lastChild.appendChild(warn);
 			} else if (line.trim() && i === 0) {
