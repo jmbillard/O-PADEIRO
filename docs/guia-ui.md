@@ -83,7 +83,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 - **forma** → raio 16, com o lado do puxador em meio círculo (metade da altura; na vertical, da largura). os de dentro ficam concêntricos: o raio menos o respiro de 3 px (2 de folga e 1 do contorno).
 - **o puxador** → só o ícone do grupo, menor (17 px), parado no estado final do hover e perto do separador (a folga fica no lado redondo). no hover, vira uma seta simples no sentido de recolher (← na horizontal, ↑ na vertical) e fica assim.
 - **na vertical** → abre para baixo: o puxador em cima, o separador deitado e as ferramentas em coluna.
-- **fechada** → o botão do grupo mostra a pior bolinha de dentro (laranja na frente do verde), a dica mostra o mouse do clique e, ao lado, só a lista das ferramentas de dentro (sem "abrir a gaveta" nem texto repetido; na vertical, a lista embaixo do mouse), com a bolinha laranja nas que têm pendência; o detalhe fica na dica de cada uma e o andamento (coletar, fontes) aparece nele também.
+- **fechada** → o botão do grupo mostra a pior bolinha de dentro (laranja na frente do verde), a dica só lista as ferramentas de dentro (sem "abrir a gaveta" nem texto repetido), com a bolinha laranja nas que têm pendência; o detalhe fica na dica de cada uma e o andamento (coletar, fontes) aparece nele também.
 - **uma ferramenta nova numa gaveta** → um item no `GROUPS` do `bar.js` (ou um `drawer` na ferramenta); o tour abre a gaveta sozinho.
 
 ### desenhar um ícone

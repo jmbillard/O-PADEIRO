@@ -2634,26 +2634,6 @@ body.motion-ready .eyebrow {
 }
 
 /* a bolinha no centro da (primeira) linha do texto dela */
-/* o clique que abre uma lista (o botão de uma gaveta): o mouse e, ao lado, as ferramentas de dentro */
-.pad-tooltip .tip-click.is-list {
-  align-items: flex-start;
-}
-
-.pad-tooltip .tip-click.is-list .tip-mouse {
-  margin-top: calc((1.35em - 9px) / 2);
-  transform: none;
-}
-
-.pad-tooltip .tip-list {
-  display: grid;
-  gap: 2px;
-}
-
-/* sem nenhuma pendência na lista, os nomes não precisam do lugar da bolinha */
-.pad-tooltip .tip-list:not(.has-warn) .tip-item i {
-  display: none;
-}
-
 .pad-tooltip .tip-item {
   display: flex;
   align-items: flex-start;
@@ -2778,12 +2758,6 @@ body.motion-ready .eyebrow {
    avisos são curtos e ficam com a bolinha ao lado, no centro da linha */
 .pad-tooltip.is-bar-v .tip-click {
   display: block;
-}
-
-.pad-tooltip.is-bar-v .tip-click.is-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .pad-tooltip.is-bar-v .tip-click span,

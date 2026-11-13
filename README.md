@@ -150,7 +150,7 @@ O ETIQUETADOR
 - **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
 - **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) e **Coletar** ([O CATADOR](#coletar)), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro. o `◗` no botão Projeto não faz nada (por enquanto).
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, a janela com a divisão); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
-- **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica mostra o `◖` e as ferramentas de dentro, com a bolinha laranja nas que têm pendência (o que falta fica na dica de cada uma) e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
+- **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica lista as ferramentas de dentro, com a bolinha laranja nas que têm pendência (o que falta fica na dica de cada uma) e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
 
 > 🚩 *na configuração, Criar / Alterar, Fontes e Coletar continuam como ferramentas separadas (a ordem e quais aparecem): na barra, as que aparecem vão juntas para a gaveta Projeto, no lugar da primeira delas. com só uma delas na barra, ela fica solta.*
 
