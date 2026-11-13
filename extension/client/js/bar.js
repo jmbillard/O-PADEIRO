@@ -552,8 +552,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	// a ordem padrão segue o ciclo do projeto: começar | arrumar | entregar | achar
-	var DEFAULT_ITEMS = ['projeto', 'templates', 'importar', 'divider', 'fontes', 'renomear', 'organizar', 'divider', 'coletar', 'pastas', 'divider', 'buscar'];
+	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {

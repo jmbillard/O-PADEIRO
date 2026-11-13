@@ -406,17 +406,17 @@
 	},
 	"BAR": {
 		"items": [
-			"projeto",
 			"templates",
-			"importar",
 			"divider",
 			"fontes",
+			"projeto",
+			"coletar",
+			"divider",
 			"renomear",
 			"organizar",
+			"importar",
 			"divider",
-			"coletar",
 			"pastas",
-			"divider",
 			"buscar"
 		],
 		"hidden": []

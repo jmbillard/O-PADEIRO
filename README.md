@@ -156,8 +156,6 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 **organizar sem nada marcado** → sem nenhuma comp selecionada nem com comentário, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
 
-**a ordem padrão** segue o ciclo do projeto: **começar** (projeto, templates, importar) · **arrumar** (fontes, renomear, organizar) · **entregar** (coletar, pastas) · **achar** (buscar). cada pessoa continua montando a sua na aba [layout](docs/producoes.md#-layout).
-
 <p align="center"><img src="docs/images/anim/progresso.webp" alt="O CATADOR coletando: a contagem e a linha embaixo do botão" width="760"></p>
 
 **O CATADOR** (coletar) e **O TIPÓGRAFO** (fontes) mostram o andamento no próprio botão: o nome vira a contagem (`5/12`), uma linha fina enche embaixo e o ícone repete a animação; no fim, um brilho verde. o coletar vai arquivo por arquivo (o After Effects fica livre entre um e outro); as fontes contam as etapas do resolver (projeto → banco → conferindo) e o envio ao banco em segundo plano.
