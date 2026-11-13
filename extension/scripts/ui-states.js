@@ -66,6 +66,12 @@ const CHECKS = [
 		await p.click('#drawer-projeto');
 		await p.waitForTimeout(700);
 	}],
+	['barra: gaveta organizar, horizontal 86 px', 'bar.html', async (p) => {
+		await p.setViewportSize({ width: 900, height: 86 });
+		await p.waitForTimeout(800);
+		await p.click('#drawer-organizar');
+		await p.waitForTimeout(700);
+	}],
 	['barra: gaveta templates, vertical 86 px', 'bar.html', async (p) => {
 		await p.setViewportSize({ width: 86, height: 720 });
 		await p.waitForTimeout(800);

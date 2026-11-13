@@ -79,7 +79,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 ## 📍 gavetas da barra
 
-- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Criar / Alterar, Fontes e Coletar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
+- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Criar / Alterar, Fontes e Coletar; Organizar: Renomear e Organizar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
 - **forma** → raio 16, com o lado do puxador em meio círculo (metade da altura; na vertical, da largura). os de dentro ficam concêntricos: o raio menos o respiro de 3 px (2 de folga e 1 do contorno).
 - **o puxador** → só o ícone do grupo, menor (17 px), parado no estado final do hover e perto do separador (a folga fica no lado redondo). no hover, vira uma seta simples no sentido de recolher (← na horizontal, ↑ na vertical) e fica assim.
 - **na vertical** → abre para baixo: o puxador em cima, o separador deitado e as ferramentas em coluna.

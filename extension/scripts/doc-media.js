@@ -228,6 +228,10 @@ const SHOTS = {
 		await p.click('#drawer-projeto');
 		await p.waitForTimeout(700);
 	} },
+	'barra-gaveta-organizar': { w: 1100, h: 110, url: 'bar.html', async run(p) {
+		await p.click('#drawer-organizar');
+		await p.waitForTimeout(700);
+	} },
 	'barra-gaveta-templates': { w: 1100, h: 110, url: 'bar.html', async run(p) {
 		await p.click('#drawer-templates');
 		await p.waitForTimeout(700);

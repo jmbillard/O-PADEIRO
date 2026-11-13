@@ -541,6 +541,7 @@ body.bar-page {
 
   display: inline-flex;
   align-items: center;
+  gap: 4px; /* o mesmo espaço entre os botões da barra */
   max-width: 0;
   margin-left: -4px; /* fechada, não soma o espaço entre os botões */
   padding: 0;
@@ -601,7 +602,6 @@ body.bar-page {
   width: 34px;
   align-self: stretch;
   place-items: center;
-  margin-right: 2px;
   padding: 0 1px 0 9px; /* o ícone perto do separador; a folga fica no lado redondo */
   border: 0;
   border-radius: calc(var(--drawer-round) - 3px) 4px 4px calc(var(--drawer-round) - 3px);
@@ -660,7 +660,7 @@ body.bar-page {
 .drawer-sep {
   width: 1px;
   align-self: stretch;
-  margin: 8px 2px;
+  margin: 8px 0;
   background: rgb(var(--on-brand) / 35%);
 }
 
@@ -839,6 +839,7 @@ body.bar-page {
   .bar-drawer {
     flex-direction: column;
     align-items: stretch;
+    gap: 2px; /* o espaço entre os botões, na coluna */
     max-width: none;
     max-height: 0;
     margin: -2px 0 0;
@@ -866,7 +867,7 @@ body.bar-page {
   .drawer-handle {
     width: auto;
     height: max(30px, calc(var(--drawer-round) + 10px));
-    margin: 0 0 2px;
+    margin: 0;
     padding: 8px 0 1px;
     border-radius: calc(var(--drawer-round) - 3px) calc(var(--drawer-round) - 3px) 4px 4px;
   }
@@ -874,7 +875,7 @@ body.bar-page {
   .drawer-sep {
     width: auto;
     height: 1px;
-    margin: 2px 8px;
+    margin: 0 8px;
   }
 
   .drawer-arrow {
