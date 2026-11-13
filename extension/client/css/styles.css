@@ -90,8 +90,8 @@
 }
 
 /* as cores dos tipos de item e de arquivo: uma por tipo, a mesma na configuração (organizar e coletar) e na migração
-   do CATADOR. --type-soft é o tom claro (o começo de um degradê) e --type o forte. quem tem data-type="<tipo>" recebe
-   as duas */
+   do CATADOR. --type é a cor, usada sólida em todo lugar; --type-soft é o tom claro, só para o começo do degradê das
+   faixas da migração (de onde o arquivo sai → para onde vai). quem tem data-type="<tipo>" recebe as duas */
 [data-type="render"] {
   --type-soft: #ffa39b; /* comps de render */
   --type: #e5483a;

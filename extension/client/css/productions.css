@@ -1092,10 +1092,10 @@ body.prods-page {
   align-items: center;
   gap: 5px;
   padding: 2px 3px 2px 7px;
-  /* a cor do tipo (styles.css), em degradê, com um contorno claro fino que a separa do fundo azul */
+  /* a cor do tipo (styles.css), sólida, com um contorno claro fino que a separa do fundo azul */
   border: 1px solid rgb(var(--on-brand) / 85%);
   border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--type-soft, rgb(var(--on-brand) / 20%)), var(--type, rgb(var(--on-brand) / 20%)));
+  background: var(--type, rgb(var(--on-brand) / 20%));
   color: rgb(var(--on-brand));
   cursor: grab;
   font-size: 0.66rem;
@@ -1200,7 +1200,8 @@ body.prods-page {
   background: var(--blue-50);
 }
 
-/* a cor do tipo: uma pílula em pé, com a mesma margem em cima e embaixo (como a amostra aberta da aparência) */
+/* a cor do tipo, sólida: uma pílula em pé, com a mesma margem em cima e embaixo (como a amostra aberta da
+   aparência) */
 .org-type::before {
   position: absolute;
   top: 8px;
@@ -1208,7 +1209,7 @@ body.prods-page {
   left: 8px;
   width: 8px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--type-soft, var(--blue-200)), var(--type, var(--blue-500)));
+  background: var(--type, var(--blue-500));
   content: "";
 }
 
