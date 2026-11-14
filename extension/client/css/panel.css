@@ -3293,3 +3293,8 @@ body.motion-ready .eyebrow {
   align-items: center;
   justify-content: center;
 }
+
+/* o que o clique faz tem pendência (a primeira ferramenta de uma gaveta): a cor de atenção, como os avisos */
+.pad-tooltip .tip-click.is-warn span {
+  color: var(--attention-text);
+}

@@ -97,8 +97,9 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 				var row = document.createElement('p');
 				var body = document.createElement('span');
 
-				row.className = 'tip-click';
-				body.textContent = m[2];
+				// '! ' no começo do texto: o que o clique faz tem pendência (a cor de atenção, como os avisos)
+				row.className = 'tip-click' + (/^! /.test(m[2]) ? ' is-warn' : '');
+				body.textContent = m[2].replace(/^! /, '');
 				row.appendChild(mouse(m[1] === '◖' ? 'l' : 'r'));
 				row.appendChild(body);
 				clicksBox.appendChild(row);

@@ -1102,11 +1102,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			});
 			// a dica: o nome do grupo e as ferramentas de dentro, uma por linha; a que tem pendência, com a bolinha
 			// laranja (o que falta fica na dica dela, dentro da gaveta)
-			// a primeira leva o mouse do clique direito (o clique direito na gaveta faz ela)
-			var list = Array.prototype.map.call(box.querySelectorAll('.bar-btn'), function (m, i) {
-				return (warnings(m).length ? '! ' : i === 0 ? R_CLICK : '· ') + m.getAttribute('aria-label');
+			// de um lado, o que o clique direito na gaveta faz (a primeira de dentro); do outro, as que precisam abrir
+			// a gaveta. a que tem pendência fica na cor de atenção (as da lista, com a bolinha laranja)
+			var tools = Array.prototype.slice.call(box.querySelectorAll('.bar-btn'));
+			var list = tools.slice(1).map(function (m) {
+				return (warnings(m).length ? '! ' : '· ') + m.getAttribute('aria-label');
 			});
-			var text = gbtn.dataset.name + '\n\n' + list.join('\n');
+			var text = gbtn.dataset.name + (tools[0] ? '\n\n' + R_CLICK + (warnings(tools[0]).length ? '! ' : '') + tools[0].getAttribute('aria-label') : '') + (list.length ? '\n' + list.join('\n') : '');
 
 			setDot(gbtn, states.indexOf('missing') >= 0 ? 'missing' : states.indexOf('ok') >= 0 ? 'ok' : '');
 			gbtn.dataset.baseTip = text;
