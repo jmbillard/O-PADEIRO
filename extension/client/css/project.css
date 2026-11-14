@@ -1399,3 +1399,42 @@ p.wz-exist b {
 .combo-claq .combo-field .cfg-input {
   padding-right: 52px;
 }
+
+/* o ano do projeto (na linha do título, antes do designer): um clique troca; outro ano que não o de agora, em destaque */
+.wz-year {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.wz-year svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-year:hover {
+  background: var(--surface-muted);
+}
+
+.wz-year.is-on {
+  background: var(--blue-50);
+  color: var(--blue-500);
+}

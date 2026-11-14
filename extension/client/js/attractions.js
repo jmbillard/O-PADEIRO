@@ -355,9 +355,32 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
+	// o ano do projeto: o de agora, ou o escolhido na claquete (o BBB do ano que vem começa antes)
+	var yearOverride = 0;
+
+	function projectYear() {
+		return yearOverride || new Date().getFullYear();
+	}
+
+	function setYear(y) {
+		yearOverride = y && +y !== new Date().getFullYear() ? +y : 0;
+	}
+
+	// um caminho que já existe (o do índice) no ano escolhido: 2026 → 2027 e, num nome de pasta, 26 → 27 (BBB 26)
+	function shiftYear(path) {
+		var now = new Date().getFullYear();
+		var to = projectYear();
+
+		if (!path || to === now) return path;
+
+		return String(path).split(/([\\\/])/).map(function (seg) {
+			return seg.replace(new RegExp('(^|[^0-9])' + now + '(?![0-9])', 'g'), '$1' + to).replace(new RegExp('(^|[\\s_\\-])' + String(now).slice(2) + '(?![0-9A-Za-z])', 'g'), '$1' + String(to).slice(2));
+		}).join('');
+	}
+
 	function fillPattern(pattern, name, category) {
 		var d = new Date();
-		var values = { atracao: aepName(name), ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: aepName(category), letra: letterOf(name) };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: aepName(category), letra: letterOf(name) };
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -806,6 +829,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		candidates: candidates,
 		categories: newBases,
 		fillPattern: fillPattern,
+		projectYear: projectYear,
+		setYear: setYear,
+		shiftYear: shiftYear,
 		letterOf: letterOf,
 		resolveNew: resolveNew,
 		iconFor: iconFor,

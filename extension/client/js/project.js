@@ -551,6 +551,15 @@ projetos com o nome certo).
 			var base = baseForMatch(m);
 			var name = m.name.toUpperCase();
 
+			// a atração que já tem pasta de projeto no índice: a pasta dela, como está (BBB/BBB 2026), no ano do
+			// projeto; a categoria só dá o ícone e, sem output no índice, o output
+			if (m.path && m.path !== m.out) {
+				var here = ATR.shiftYear(m.path);
+				var outHere = m.out ? ATR.shiftYear(m.out) : base && base.outPattern ? fillPattern(base.outPattern, name, base.label) : '';
+
+				return Object.assign({}, m, { oldPath: m.path, path: here, display: displayPath(here), out: outHere, base: base, category: base ? base.label : m.category, fromIndex: true });
+			}
+
 			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha a categoria', noBase: true });
 
 			var path = fillPattern(base.pattern, name, base.label);
@@ -589,7 +598,7 @@ projetos com o nome certo).
 	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem
 	// pastas depois da atração ({atracao}/{ano}); as pastas antigas da atração ficam de fora
 	async function quadroExamples(attr, current) {
-		if (!attr || !attr.base) return [];
+		if (!attr || !attr.base || attr.fromIndex) return [];
 
 		var pattern = attr.base.pattern;
 		var at = pattern.indexOf('{atracao}');
@@ -1098,6 +1107,7 @@ projetos com o nome certo).
 		else if (!flow.mode) flow.mode = 'increment';
 
 		meta.textContent = '';
+		meta.appendChild(yearChip());
 		user.innerHTML = USER_SVG;
 		user.appendChild(document.createTextNode(plan.user));
 		meta.appendChild(user);
@@ -1107,6 +1117,39 @@ projetos com o nome certo).
 		renderExisting(plan);
 		renderOut();
 		$('criar-go').textContent = plan.exists && flow.mode === 'open' ? 'Abrir projeto' : 'Criar projeto';
+	}
+
+	// o ano do projeto: um clique passa para o próximo (o de agora, o que vem, o anterior). o BBB do ano que vem
+	// começa antes: o {ano} das categorias e o ano das pastas que já existem (BBB 2026 → BBB 2027) mudam juntos
+	var CAL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" /><path d="M8 3.5v4M16 3.5v4M4 10h16" /></svg>';
+
+	function yearChip() {
+		var now = new Date().getFullYear();
+		var y = ATR.projectYear();
+		var chip = el('button', 'wz-year' + (y !== now ? ' is-on' : ''));
+
+		chip.type = 'button';
+		chip.innerHTML = CAL_SVG;
+		chip.appendChild(document.createTextNode(String(y)));
+		chip.title = 'o ano do projeto' + (y !== now ? ' (não é o de agora)' : '') + ': clique para trocar';
+		chip.addEventListener('click', function () {
+			var order = [now, now + 1, now - 1];
+
+			changeYear(order[(order.indexOf(y) + 1) % order.length]);
+		});
+
+		return chip;
+	}
+
+	function changeYear(y) {
+		ATR.setYear(y);
+		state.folderCache = {}; // as pastas do ano novo
+		// a atração nova (dos chips) é refeita no ano novo; a do índice volta pela busca
+		if (flow.attr && flow.attr.isNewAttr && flow.attr.base) flow.attr = novaAttr(flow.attr.name, flow.attr.base);
+		else if (flow.attr && flow.attr.fromIndex) flow.attr = null;
+		state.pickKey = null;
+		lookup();
+		updatePick();
 	}
 
 	// o nome do .aep (o último nível, ou a atração, + o que é)
