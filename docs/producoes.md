@@ -96,7 +96,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
   | token | vira |
   | --- | --- |
-  | `{atracao}` | o nome da atração nova (obrigatório), sem acentos, em maiúsculas |
+  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, a categoria é a própria atração (MOOD MENSAL: digitar *mood* na claquete já leva para a pasta do mês) |
   | `{ano}` | o ano atual (`2026`) |
   | `{mes}` | o mês atual (`01` a `12`) |
   | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |

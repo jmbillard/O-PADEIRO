@@ -12,7 +12,7 @@ arquivos é do botão COLETAR (collect.jsx).
 'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
-               {atracao} (obrigatório) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
+               {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
                {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes). icon: um ícone do seletor (js/util.js)
 Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
@@ -53,7 +53,6 @@ function padCleanProject(o) {
 			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
 		}
 
-		if (path.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + name + ' precisa do {atracao} (a pasta da atração nova).');
 
 		seen[key] = true;
 		clean.categories.push({ name: name, path: path, output: output, icon: icon });

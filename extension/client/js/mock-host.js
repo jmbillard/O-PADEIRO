@@ -377,7 +377,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					if (seenCat[key]) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' aparece mais de uma vez.');
 					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' precisa de um caminho.');
 					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
-					if (String(c.path).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + key + ' precisa do {atracao} (a pasta da atração nova).');
 					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|categoria|letra)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
 					seenCat[key] = true;
 				});

@@ -407,7 +407,7 @@ projetos com o nome certo).
 
 				if (seq !== state.lookupSeq) return;
 
-				flow.matches = await toNewOrg(await resolveFilms(res.matches));
+				flow.matches = withFixed(p.first, await toNewOrg(await resolveFilms(res.matches)));
 				if (seq !== state.lookupSeq) return;
 
 				if (p.deep) {
@@ -417,7 +417,7 @@ projetos com o nome certo).
 					});
 
 					// a outra pasta (do navegador) fica enquanto o começo do campo for o nome dela
-					var custom = flow.attr && (flow.attr.isCustom || flow.attr.isNewAttr) && aepName(flow.attr.name) === aepName(p.first);
+					var custom = flow.attr && (flow.attr.isCustom || flow.attr.isNewAttr || flow.attr.isFixed) && aepName(flow.attr.name) === aepName(p.first);
 
 					if (!custom && (!flow.attr || !flow.matches.some(function (m) {
 						return m.path === flow.attr.path;
@@ -812,6 +812,41 @@ projetos com o nome certo).
 		return { name: raw.toUpperCase(), base: null };
 	}
 
+	// a categoria sem {atracao} no caminho é a própria atração (MOOD MENSAL → …/MOOD MENSAL/2026/12 DEZEMBRO): entra
+	// na busca quando o digitado bate com o nome dela (cada palavra é o começo de uma palavra do nome), antes das
+	// achadas e no lugar da de mesmo nome do índice
+	function fixedBases() {
+		return state.bases.filter(function (b) {
+			return b.pattern && b.pattern.indexOf('{atracao}') < 0;
+		});
+	}
+
+	function withFixed(text, matches) {
+		var words = aepName(text).split(' ').filter(Boolean);
+
+		if (!words.length) return matches;
+
+		var fixed = fixedBases().filter(function (b) {
+			var label = aepName(b.label).split(' ');
+
+			return words.every(function (w) {
+				return label.some(function (l) {
+					return l.indexOf(w) === 0;
+				});
+			});
+		}).map(function (b) {
+			return Object.assign(novaAttr(b.label, b), { isNewAttr: false, isFixed: true });
+		});
+
+		if (!fixed.length) return matches;
+
+		return fixed.concat(matches.filter(function (m) {
+			return !fixed.some(function (f) {
+				return aepName(f.name) === aepName(m.name);
+			});
+		}));
+	}
+
 	// a atração nova numa categoria, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
 	// barra fica dentro dele (ATRAÇÃO/2026/QUADRO)
 	function novaAttr(name, base) {
@@ -830,6 +865,13 @@ projetos com o nome certo).
 
 		var name = aepName(nova.name) || '…';
 		var full = displayPath(fillPattern(base.pattern, name, base.label));
+
+		if (base.pattern.indexOf('{atracao}') < 0) {
+			node.appendChild(el('span', null, full.slice(0, full.lastIndexOf('/') + 1)));
+			node.appendChild(el('b', null, full.slice(full.lastIndexOf('/') + 1)));
+			return;
+		}
+
 		var head = displayPath(fillPattern(base.pattern.slice(0, base.pattern.indexOf('{atracao}')), name, base.label));
 		var cut = full.indexOf(head) === 0 ? head.length : full.lastIndexOf('/') + 1;
 
@@ -876,6 +918,8 @@ projetos com o nome certo).
 
 	// escolher a categoria: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
 	function pickNovaCategory(nova, base) {
+		if (base.pattern.indexOf('{atracao}') < 0) return enterAttraction(Object.assign(novaAttr(base.label, base), { isNewAttr: false, isFixed: true }));
+
 		var name = aepName(nova.name);
 
 		if (!name) return $('claq').focus();
@@ -1153,6 +1197,7 @@ projetos com o nome certo).
 		state.folderCache = {}; // as pastas do ano novo
 		// a atração nova (dos chips) é refeita no ano novo; a do índice volta pela busca
 		if (flow.attr && flow.attr.isNewAttr && flow.attr.base) flow.attr = novaAttr(flow.attr.name, flow.attr.base);
+		else if (flow.attr && flow.attr.isFixed) flow.attr = Object.assign(novaAttr(flow.attr.base.label, flow.attr.base), { isNewAttr: false, isFixed: true });
 		else if (flow.attr && flow.attr.fromIndex) flow.attr = null;
 		state.pickKey = null;
 		lookup();
