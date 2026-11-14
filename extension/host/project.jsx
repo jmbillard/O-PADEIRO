@@ -854,11 +854,19 @@ function padInRoot(file) {
 		return padDisplayPath(path).replace(/\\/g, '/').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').replace(/\/+$/, '').toLowerCase() + '/';
 	};
 
-	return key(file.fsName).indexOf(key(padPath(root))) == 0;
+	if (key(file.fsName).indexOf(key(padPath(root))) == 0) return true;
+
+	// o mesmo lugar escrito de outro jeito (\\servidor\… x /Volumes/…, a letra do drive): a chave da rede do coletar
+	try {
+		return padPathKey(file.fsName).indexOf(padPathKey(padPath(root) || root)) == 0;
+	} catch (err) {
+		return false;
+	}
 }
 
 // O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro, na
-// pasta dele), 'missing' (sem eles: salvo sem a atração, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// pasta dele), 'out' (com eles, mas salvo fora da pasta dele), 'missing' (sem eles: salvo sem a atração, ou com
+// itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
 // state: a bolinha do Projeto. key: muda quando o projeto muda (outro projeto, ou salvo de novo): a barra confere
 // as fontes só nessa hora (fontsCheck: a chave deste computador)
 PADX.projectStatus = function () {
@@ -869,7 +877,9 @@ PADX.projectStatus = function () {
 		key = file ? file.fsName + '|' + file.modified.getTime() : 'novo';
 	} catch (err) { }
 
-	var state = file && padMetaRead().atracao && padInRoot(file) ? 'ok' : file || app.project.numItems > 0 ? 'missing' : '';
+	var hasData = !!(file && padMetaRead().atracao);
+	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
+	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
 
 	return { state: state, key: key, fontsCheck: padMachineFontsCheck() };
 };

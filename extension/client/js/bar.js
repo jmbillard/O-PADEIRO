@@ -1134,13 +1134,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (!btn) return;
 
-		var has = projectState === 'ok';
+		var has = projectState === 'ok' || projectState === 'out';
 		var label = btn.querySelector('.bar-label');
 
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
 		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
-		setTip(btn, projectState === 'missing' ? '!# Projeto:\n! sem os dados do padeiro' : '');
+		setTip(btn, projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' : projectState === 'out' ? '!# Projeto:\n! salvo fora da pasta dele: clique e Salvar leva o .aep de volta' : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
 		else btn.removeAttribute('data-project');
