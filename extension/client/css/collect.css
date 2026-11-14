@@ -217,6 +217,12 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2.2;
+  transform: translateY(-1.3px); /* o centro do triângulo (das três pontas) no centro do círculo, não o da caixa dele */
+}
+
+/* o mesmo no botão do triângulo, no rodapé */
+.cw-relink svg {
+  transform: translateY(-1.5px);
 }
 
 .fw-state.is-found {
