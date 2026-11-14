@@ -3298,3 +3298,11 @@ body.motion-ready .eyebrow {
 .pad-tooltip .tip-click.is-warn span {
   color: var(--attention-text);
 }
+
+/* o ícone de antes de uma produção (uma imagem PNG, não um desenho da biblioteca) */
+.dropdown-img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}

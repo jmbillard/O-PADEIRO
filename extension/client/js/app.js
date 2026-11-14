@@ -2460,7 +2460,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				return p.name === value;
 			})[0];
 
-			return prod && prod.icon && !/^['"]/.test(prod.icon) ? PAD_UTIL.iconMarkup(prod.icon) : '';
+			if (!prod || !prod.icon) return '';
+
+			// o ícone de antes (a imagem PNG da configuração antiga, gravada como texto): a imagem, como na configuração
+			if (/^['"]/.test(prod.icon)) {
+				var src = PAD_UTIL.decodeIcon(prod.icon);
+
+				return src ? '<img class="dropdown-img" src="' + src + '" alt="">' : '';
+			}
+
+			return PAD_UTIL.iconMarkup(prod.icon);
 		});
 		$('production').addEventListener('change', onProductionChange);
 
