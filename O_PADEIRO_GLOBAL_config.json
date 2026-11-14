@@ -26,7 +26,7 @@
 			},
 			{
 				"name": "NOVELA",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/NOVELAS/{atracao}",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/NOVELAS/{atracao}/{ano}",
 				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/NOVELAS/{atracao}",
 				"icon": "mascaras"
 			},
