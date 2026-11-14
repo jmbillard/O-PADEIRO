@@ -457,3 +457,17 @@
 .maker-glass .combo-panel .has-field-icon:focus-within > .field-icon {
   stroke: var(--blue-500);
 }
+
+/* os exemplos de quadros (os de outros anos): mais apagados que os que já existem; o hover traz a cor */
+.combo-item.is-example .combo-title {
+  color: var(--text-tertiary);
+}
+
+.combo-item.is-example svg {
+  opacity: 0.45;
+}
+
+.combo-item.is-example:hover .combo-title,
+.combo-item.is-example.is-on .combo-title {
+  color: var(--text-control);
+}

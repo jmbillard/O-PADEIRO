@@ -1184,7 +1184,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				'DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS/FINAL': ['2025'],
 				'CHEF DE ALTO NIVEL': ['REPESCAGEM'],
 				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026': ['CHAMADAS', 'DANÇA DOS FAMOSOS', 'VIRADA'],
-				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['SEMANA 1', 'SEMANA 2']
+				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['SEMANA 1', 'SEMANA 2'],
+				// a organização nova (PROJETOS/…/{atracao}/{ano}): os quadros de outro ano viram exemplos
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK': ['2025', '2026'],
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2025': ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'],
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL']
 			};
 			var names = [];
 

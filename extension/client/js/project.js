@@ -276,6 +276,44 @@ projetos com o nome certo).
 		var info = walk.info;
 		var hereName = (walk.hereName || '').toUpperCase();
 
+		// o nível dos quadros (logo abaixo da atração, com os exemplos de outros anos): sem falar de ano nem de pasta
+		// vazia; os quadros que já existem e, embaixo, os exemplos (escolher cria o quadro com o mesmo nome)
+		if (walk.examples) {
+			var examples = matchFolders(walk.examples, last).filter(function (f) {
+				return !walk.shown.some(function (s) {
+					return aepName(s.name) === f.name;
+				});
+			});
+			var room = LEVEL_MAX + 2;
+
+			if (walk.shown.length) list.appendChild(ATR.group('quadros'));
+			walk.shown.slice(0, room).forEach(function (f) {
+				list.appendChild(ATR.row(FOLDER_SVG, f.name.toUpperCase(), '', false, function () {
+					onPick(f.name);
+				}, f.path));
+			});
+			room -= Math.min(room, walk.shown.length);
+			if (examples.length && room) {
+				list.appendChild(ATR.group('exemplos do que já existe'));
+				examples.slice(0, room).forEach(function (f) {
+					var row = ATR.row(FOLDER_SVG, f.name, '', false, function () {
+						onPick(f.name);
+					}, 'já existe em outro ano: escolher cria o quadro com o mesmo nome');
+
+					row.classList.add('is-example');
+					list.appendChild(row);
+				});
+			}
+			list.appendChild(ATR.sep());
+			list.appendChild(ATR.row(PLUS_SVG, 'nova pasta', last ? folderName(last) : 'digite depois da /', false, function () {
+				if (last) onNew(folderName(last));
+			}));
+
+			var rest = walk.shown.length + examples.length - (LEVEL_MAX + 2);
+
+			return rest > 0 ? '+ ' + rest + (rest === 1 ? ' outro: continue digitando' : ' outros: continue digitando') : '';
+		}
+
 		if (!info) list.appendChild(ATR.group('dentro da pasta nova ' + hereName));
 		else {
 			list.appendChild(ATR.group(!info.folders.length ? 'nenhuma pasta em ' + hereName : walk.shown.length ? 'pastas em ' + hereName : 'nenhuma pasta com esse nome'));
@@ -369,7 +407,7 @@ projetos com o nome certo).
 
 				if (seq !== state.lookupSeq) return;
 
-				flow.matches = await resolveFilms(res.matches);
+				flow.matches = await toNewOrg(await resolveFilms(res.matches));
 				if (seq !== state.lookupSeq) return;
 
 				if (p.deep) {
@@ -384,7 +422,10 @@ projetos com o nome certo).
 					if (!custom && (!flow.attr || !flow.matches.some(function (m) {
 						return m.path === flow.attr.path;
 					}))) flow.attr = exact.length === 1 ? exact[0] : flow.matches.length === 1 ? flow.matches[0] : null;
+					if (flow.attr && flow.attr.noBase) flow.attr = null; // sem categoria: escolher na lista (vira atração nova)
 					flow.walk = flow.attr ? await walkPath(flow.attr.path, p.levels, p.last, false) : null;
+					// o primeiro nível abaixo da atração: os quadros de outros anos, como exemplos
+					if (flow.walk && !p.levels.length) flow.walk.examples = await quadroExamples(flow.attr, flow.walk.info ? flow.walk.info.folders : []);
 					if (seq !== state.lookupSeq) return;
 
 					// escolhida na lista: sem pastas dentro, não há o que mostrar (recolhe)
@@ -440,6 +481,145 @@ projetos com o nome certo).
 		});
 	}
 
+	/* ---------- a organização nova: a atração que já existe dá o nome, a pasta vem da categoria ---------- */
+
+	// as pastas fixas do caminho da categoria, depois da raiz (PROJETOS ou o Fileserver): …/PROJETOS/ESPORTES/FUTEBOL/
+	// {atracao}/{ano} → ['ESPORTES', 'FUTEBOL']. é por elas que a pasta antiga de uma atração diz de que categoria ela é
+	function baseSegments(base) {
+		var head = String(base.pattern || '').split('{atracao}')[0].replace(/\\/g, '/').split('/');
+		var out = [];
+
+		for (var i = 0; i < head.length; i++) {
+			var seg = head[i].trim();
+
+			if (/^(PROJETOS|FILESERVER_?\d+)$/i.test(seg)) out = [];
+			else if (seg && seg.indexOf('{') < 0 && !/^\/\/|:$/.test(seg)) out.push(aepName(seg));
+		}
+
+		return out;
+	}
+
+	// a categoria de uma atração achada no índice: a que tem as pastas fixas mais parecidas com o caminho antigo
+	// (…/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2026/… → FUTEBOL); sem nenhuma, pelo nome da categoria do índice
+	function baseForMatch(m) {
+		var parts = String(m.path || '').replace(/\\/g, '/').split('/').map(aepName);
+		var best = null;
+		var score = 0;
+
+		state.bases.forEach(function (b) {
+			if (b.offline || !b.pattern) return;
+
+			var segs = baseSegments(b);
+
+			if (!segs.length) return;
+			for (var i = 0; i + segs.length <= parts.length; i++) {
+				var hit = segs.every(function (s, k) {
+					// a pasta do índice pode estar no singular ou no plural (NOVELA, NOVELAS)
+					return parts[i + k] === s || parts[i + k] + 'S' === s || parts[i + k] === s + 'S';
+				});
+
+				if (hit && segs.length > score) {
+					best = b;
+					score = segs.length;
+				}
+			}
+		});
+
+		if (best) return best;
+
+		return state.bases.filter(function (b) {
+			var label = aepName(b.label);
+			var cat = aepName(m.category);
+
+			return !b.offline && b.pattern && cat && (label === cat || label + 'S' === cat || label === cat + 'S');
+		})[0] || null;
+	}
+
+	// as atrações achadas, com a pasta da organização nova: o caminho da categoria com os tokens (a pasta antiga fica
+	// em oldPath, para os exemplos de quadros). sem categoria que sirva: noBase (escolher a categoria, como uma nova)
+	async function toNewOrg(matches) {
+		if (!matches.length) return matches;
+
+		await ensureBases();
+		if (!state.bases.length) return matches; // sem categorias na configuração: o jeito de antes (a pasta do índice)
+
+		return matches.map(function (m) {
+			if (m.isCustom || m.newOrg) return m;
+
+			var base = baseForMatch(m);
+			var name = m.name.toUpperCase();
+
+			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha a categoria', noBase: true });
+
+			var path = fillPattern(base.pattern, name, base.label);
+
+			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true });
+		});
+	}
+
+	// a atração sem categoria que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe a categoria)
+	function asNew(match) {
+		$('claq').value = match.name.toUpperCase();
+		flow.attr = null;
+		chooseAttraction('new');
+	}
+
+	// os exemplos de quadros: os que já existem na organização nova em outros anos (o nível do {ano} da categoria,
+	// qualquer valor), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem pastas depois da
+	// atração ({atracao}/{ano}); a organização antiga fica de fora
+	async function quadroExamples(attr, current) {
+		if (!attr || !attr.base) return [];
+
+		var pattern = attr.base.pattern;
+		var at = pattern.indexOf('{atracao}');
+		var tail = pattern.slice(at + '{atracao}'.length).split(/[\\\/]/).filter(Boolean);
+
+		if (at < 0 || !tail.length) return [];
+
+		var root = fillPattern(pattern.slice(0, at + '{atracao}'.length), attr.name.toUpperCase(), attr.base.label);
+		var level = [root];
+
+		for (var d = 0; d < tail.length && level.length; d++) {
+			var next = [];
+
+			for (var i = 0; i < level.length && i < 40; i++) {
+				var info = await listFolders(level[i], false);
+
+				info.folders.forEach(function (f) {
+					next.push(f.path);
+				});
+			}
+			level = next;
+		}
+
+		var seen = {};
+		var out = [];
+		var here = aepName(attr.path);
+
+		(current || []).forEach(function (f) {
+			seen[aepName(f.name)] = true;
+		});
+
+		for (var y = 0; y < level.length && y < 40; y++) {
+			if (aepName(level[y]) === here) continue;
+
+			var names = (await listFolders(level[y], false)).folders;
+
+			names.forEach(function (f) {
+				var key = aepName(f.name);
+
+				if (key && !seen[key]) {
+					seen[key] = true;
+					out.push({ name: key, path: '', example: true });
+				}
+			});
+		}
+
+		return out.sort(function (x, y2) {
+			return x.name < y2.name ? -1 : 1;
+		});
+	}
+
 	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta
 	function matchIcon(m) {
 		if (m.isFilm) {
@@ -467,6 +647,7 @@ projetos com o nome certo).
 	}
 
 	function enterAttraction(match, keepOpen) {
+		if (match.noBase) return asNew(match);
 		flow.attr = match;
 		flow.choice = '';
 		$('claq').value = match.name.toUpperCase() + '/';
@@ -528,6 +709,7 @@ projetos com o nome certo).
 					list.appendChild(ATR.group(found.length ? 'escolha a atração' : 'nenhuma atração com esse nome'));
 					found.forEach(function (match) {
 						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+							if (match.noBase) return asNew(match);
 							$('claq').value = match.name.toUpperCase() + '/' + p.parts.slice(1).join('/');
 							flow.attr = match;
 							lookup();
@@ -1298,7 +1480,7 @@ projetos com o nome certo).
 
 			if (seq !== state.edSeq) return;
 
-			state.edMatches = await resolveFilms(res.matches);
+			state.edMatches = await toNewOrg(await resolveFilms(res.matches));
 			if (seq !== state.edSeq) return;
 
 			if (p && p.deep) {
