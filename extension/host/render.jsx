@@ -126,7 +126,7 @@ PADX.renderQueue = function (a) {
 		if (sel[i] instanceof CompItem) comps.push(sel[i]);
 	}
 	if (!comps.length && app.project.activeItem instanceof CompItem) comps.push(app.project.activeItem);
-	if (!comps.length) throw new Error('#PAD_111 - render: selecione as comps no painel de projeto (ou abra uma comp).');
+	if (!comps.length) throw new Error('#PAD_113 - render: selecione as comps no painel de projeto (ou abra uma comp).');
 
 	var machine = padMachineData();
 	var preset = padMachineRender(machine)[preview ? 'preview' : 'final'];

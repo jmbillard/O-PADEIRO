@@ -864,6 +864,30 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}, 400);
 	}
 
+	// a gaveta que a pessoa deixou aberta fica lembrada (neste computador): ao reabrir o painel ela volta aberta.
+	// só o que a pessoa faz conta (abrir no botão, recolher no puxador, clicar fora, Esc); o tour abre e fecha sem mexer
+	var DRAWER_KEY = 'pad.bar.drawer';
+	var drawerOpenedAt = 0; // quando a última gaveta foi aberta pelo botão (o clique de reflexo logo depois não fecha)
+
+	function rememberDrawer(id) {
+		try {
+			if (id) localStorage.setItem(DRAWER_KEY, id);
+			else localStorage.removeItem(DRAWER_KEY);
+		} catch (err) { }
+	}
+
+	function restoreDrawer() {
+		var id = '';
+
+		try {
+			id = localStorage.getItem(DRAWER_KEY) || '';
+		} catch (err) { }
+
+		var box = id && $(id);
+
+		if (box && box.classList.contains('bar-drawer') && !document.body.classList.contains('is-touring')) openDrawer(box);
+	}
+
 	// key: o id (drawer-<key>); icon: o ícone do grupo; members: os botões que vão dentro
 	function drawer(key, def, members) {
 		var btn = toolButton(def, 'drawer-' + key);
@@ -876,7 +900,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		btn.dataset.name = def.key === 'templates' ? 'TEMPLATES' : def.name;
 		btn.setAttribute('aria-expanded', 'false');
 		btn.addEventListener('click', function () {
+			box.openedAt = drawerOpenedAt = Date.now();
 			openDrawer(box);
+			rememberDrawer(box.id);
 			handle.focus({ preventScroll: true });
 		});
 		btn.addEventListener('contextmenu', function (e) {
@@ -890,7 +916,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		handle.appendChild(still);
 		handle.appendChild(arrow);
 		handle.addEventListener('click', function () {
+			// o puxador aparece onde estava o botão: o segundo clique de um duplo clique (reflexo) cairia nele e a
+			// gaveta abriria e fecharia. logo depois de abrir, ele não recolhe
+			if (Date.now() - (box.openedAt || 0) < 500) return;
+
 			closeDrawers();
+			rememberDrawer('');
 			btn.focus({ preventScroll: true });
 		});
 
@@ -914,7 +945,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	document.addEventListener('click', function (e) {
-		if (!e.target.closest || !e.target.closest('.bar-drawer, .bar-drawer-btn')) closeDrawers();
+		// o segundo clique de um duplo clique cai onde o botão estava (ele já recolheu e o puxador ainda está
+		// chegando): logo depois de abrir, um clique "fora" não fecha
+		if (Date.now() - drawerOpenedAt < 500) return;
+
+		if (!e.target.closest || !e.target.closest('.bar-drawer, .bar-drawer-btn')) {
+			if (document.querySelector('.bar-drawer.is-open') && !document.body.classList.contains('is-touring')) rememberDrawer('');
+			closeDrawers();
+		}
 	});
 
 	// o tour: mostra a ferramenta (abre a gaveta dela; fora de uma, fecha as gavetas)
@@ -928,7 +966,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	};
 	document.addEventListener('keydown', function (e) {
-		if (e.key === 'Escape' && document.querySelector('.bar-drawer.is-open')) closeDrawers();
+		if (e.key === 'Escape' && document.querySelector('.bar-drawer.is-open')) {
+			if (!document.body.classList.contains('is-touring')) rememberDrawer('');
+			closeDrawers();
+		}
 	});
 
 	// Monta a barra na ordem da configuração: 'divider' separa os grupos; as escondidas ficam de fora e
@@ -1023,6 +1064,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		paintProjectDot(); // a barra montada de novo: a bolinha volta
 		paintGroupDots();
 		roundDrawers();
+		restoreDrawer(); // a gaveta que estava aberta da última vez
 	}
 
 	/* ---------------------------------------------------------------

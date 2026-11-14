@@ -499,7 +499,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		renderQueue: async function (a) {
 			await wait(delay);
 
-			if (mode === 'fail') throw new Error('#PAD_111 - render: selecione as comps no painel de projeto (ou abra uma comp).');
+			if (mode === 'fail') throw new Error('#PAD_113 - render: selecione as comps no painel de projeto (ou abra uma comp).');
 
 			return a && a.preview
 				? { count: 2, folder: 'T:/PROGRAMAS/INTERPOL/03_SAIDA/PREVIEWS', local: false, preview: true, names: ['ABERTURA_prev_v03', 'VINHETA_prev_v01'], warnings: [] }
@@ -1420,7 +1420,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, foreign: window.PAD_MOCK_FOREIGN ? ['01 PROJETOS/3D/vinheta.c4d', '01 PROJETOS/3D/logo.max'] : [], foreignCount: window.PAD_MOCK_FOREIGN ? 2 : 0, all: all, undo: !!window.PAD_MOCK_MIGRATED, kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
+				blocked: mode === 'blocked' ? 'o .aep está salvo direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), e a migração arruma a pasta inteira onde ele está. leve o projeto para a pasta dele (Projeto > Criar / Alterar) e use o Coletar: ele copia para lá os arquivos usados, estejam onde estiverem' : '', loose: mode === 'loose', interrupted: mode === 'interrupted' && !window.PAD_MOCK_MIGRATED && !window.PAD_MOCK_UNDONE, interruptedCount: 120,
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED || (mode === 'interrupted' && !window.PAD_MOCK_UNDONE), kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
 				sources: Object.keys(sources).sort(function (a, b) {
 					if (a === '..' || b === '..') return a === '..' ? 1 : -1;
 
@@ -1438,6 +1439,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// a leitura dos outros projetos (um por vez) e, depois de mover, o religar de cada um
+		// ?mock=interrupted: uma migração que parou no meio (o diário na pasta)
+		migrateState: function () {
+			return { interrupted: mode === 'interrupted' && !window.PAD_MOCK_UNDONE, undo: (mode === 'interrupted' && !window.PAD_MOCK_UNDONE) || !!window.PAD_MOCK_MIGRATED };
+		},
+
 		migrateReadBegin: function () {
 			window.PAD_MOCK_READ_AT = 0;
 
@@ -1501,8 +1507,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				setTimeout(r, 600);
 			});
 			window.PAD_MOCK_MIGRATED = false;
+			window.PAD_MOCK_UNDONE = true; // a interrompida (?mock=interrupted) também fica desfeita
 
-			return { restored: 361, failed: [], relinked: 23 };
+			return { restored: 361, failed: [], relinked: 23, newer: mode === 'newer' ? ['INTERPOL VINHETA.aep'] : [] };
 		},
 
 		// a busca dos faltando: acha um (com outro de mesmo nome) e não acha o outro; ?mock=fail: nenhum
