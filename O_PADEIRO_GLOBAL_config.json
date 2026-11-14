@@ -20,63 +20,51 @@
 		"categories": [
 			{
 				"name": "PROGRAMA",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/PROGRAMAS/{atracao}",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/PROGRAMAS/{atracao}/{ano}",
+				"output": "",
 				"icon": "tv"
 			},
 			{
-				"name": "ON-AIR",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/ON-AIR/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ON-AIR/{atracao}",
-				"icon": "sinal"
-			},
-			{
-				"name": "FUTEBOL",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/{ano}/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/{atracao}",
-				"icon": "bola"
-			},
-			{
-				"name": "SHOW",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SHOWS/{atracao}/{ano}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/SHOWS/{atracao}",
-				"icon": "microfone"
-			},
-			{
 				"name": "NOVELA",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/NOVELAS/{atracao}",
 				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/NOVELAS/{atracao}",
 				"icon": "mascaras"
 			},
 			{
-				"name": "SERIE",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/SERIES/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/SERIES/{atracao}",
-				"icon": "episodios"
+				"name": "SHOW",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/SHOWS/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/SHOWS/{atracao}/{ano}",
+				"icon": "microfone"
+			},
+			{
+				"name": "FUTEBOL",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/ESPORTES/FUTEBOL/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/FUTEBOL/{atracao}/{ano}",
+				"icon": "bola"
+			},
+			{
+				"name": "ESPORTE",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/ESPORTES/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/{atracao}/{ano}",
+				"icon": "medalha"
 			},
 			{
 				"name": "JORNALISMO",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/JORNALISMO/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/JORNALISMO/{atracao}",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/JORNALISMO/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/JORNALISMO/{atracao}/{ano}",
 				"icon": "jornal"
+			},
+			{
+				"name": "INSTITUCIONAL",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/INSTITUCIONAL/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/{atracao}/{ano}",
+				"icon": "estrela"
 			},
 			{
 				"name": "FILME",
 				"path": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_{letra}_/{atracao}",
 				"output": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}",
 				"icon": "pelicula"
-			},
-			{
-				"name": "INSTITUCIONAL",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/{atracao}",
-				"icon": "estrela"
-			},
-			{
-				"name": "MARKETING",
-				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/MARKETING/{atracao}",
-				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/MARKETING/{atracao}",
-				"icon": "megafone"
 			}
 		]
 	},
@@ -367,7 +355,7 @@
 				]
 			},
 			{
-				"name": "VÍDEOS",
+				"name": "VIDEOS",
 				"parent": "02_ARQUIVOS",
 				"contents": [
 					"videos"

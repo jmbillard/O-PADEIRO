@@ -1670,6 +1670,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				name.disabled = !state.available;
 				name.setAttribute('aria-label', 'nome da pasta');
 				name.addEventListener('input', function () {
+					// as pastas da estrutura do projeto (aba coletar) seguem o padrão da promo: só maiúsculas, números,
+					// _ e -, sem acento nem cedilha (VÍDEOS → VIDEOS)
+					if (cfg.cleanNames) {
+						var at = name.selectionStart;
+						var clean = name.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '');
+
+						if (clean !== name.value) {
+							name.value = clean;
+							name.setSelectionRange(Math.min(at, clean.length), Math.min(at, clean.length));
+						}
+					}
 					// renomear leva as subpastas junto
 					o.folders.forEach(function (child) {
 						if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = name.value.trim();
@@ -2062,7 +2073,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		{ name: '02_ARQUIVOS', parent: '', contents: [] },
 		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
 		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+		{ name: 'VIDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
 		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
 		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
 		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
@@ -2092,6 +2103,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		paneId: 'pane-collect',
 		newBtnId: 'btn-new-col-folder',
 		rootLabel: 'pasta do projeto',
+		cleanNames: true,
 		rootWhere: 'não é coletado',
 		removeTitle: 'tirar da pasta (não é coletado)',
 		whereFor: function (type) {

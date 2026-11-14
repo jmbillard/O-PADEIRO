@@ -31,7 +31,7 @@ var PAD_DEFAULT_COLLECT = {
 		{ name: '02_ARQUIVOS', parent: '', contents: [] },
 		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
 		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+		{ name: 'VIDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
 		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
 		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
 		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
@@ -214,7 +214,7 @@ function padProjectsVariant(parent, name) {
 	return null;
 }
 
-// Caminho da árvore ('02 ARQUIVOS/VÍDEOS') dentro da raiz, usando as pastas que já existem.
+// Caminho da árvore ('02 ARQUIVOS/VIDEOS') dentro da raiz, usando as pastas que já existem.
 function padCollectResolve(root, relPath, isProjects) {
 	var folder = padEnsureFolder(root);
 	var parts = String(relPath || '').split('/');
