@@ -10,7 +10,7 @@ o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto abert
 
 ## 📍 banco de fontes
 
-a pasta do banco fica na [configuração > fontes](producoes.md). nela, cada fonte é guardada pelo nome PostScript (`GloboSans-Bold.otf`), com um `.json` ao lado: família, estilo e as versões (quem enviou, de que computador e projeto, quando).
+a pasta do banco fica na [configuração > fontes](producoes.md). com o campo vazio, vale a pasta **padrão**: `BANCO DE FONTES`, no mesmo nível da pasta `extension` do padeiro na rede (ao lado do código e da configuração da equipe); ela é criada no primeiro envio. nela, cada fonte é guardada pelo nome PostScript (`GloboSans-Bold.otf`), com um `.json` ao lado: família, estilo e as versões (quem enviou, de que computador e projeto, quando).
 
 - **o envio** → enquanto a barra está aberta, as fontes usadas no projeto aberto que ainda não estão no banco (ou na pasta de fontes do projeto) são copiadas, uma por vez. vale para todas: as instaladas, as do sistema e as do Adobe Fonts.
 - **outra versão** → um arquivo diferente com o mesmo nome PostScript vai ao lado, com a data no nome (`GloboSans-Bold@20261106-1402.otf`): nada é sobrescrito, e a mais recente é a que instala.

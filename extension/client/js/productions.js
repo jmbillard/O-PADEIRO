@@ -3554,12 +3554,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function setFonts(f) {
 		f = f || {};
 		state.fonts = { bank: f.bank || '', upload: f.upload !== false };
+		state.defaultBank = f.defaultBank || '';
 		renderFonts();
 	}
 
 	function renderFonts() {
 		if (document.activeElement !== $('fonts-bank')) $('fonts-bank').value = state.fonts.bank;
-		$('fonts-bank').title = state.fonts.bank;
+		// vazio: o banco padrão, a pasta BANCO DE FONTES ao lado da extensão na rede
+		$('fonts-bank').placeholder = state.defaultBank ? state.defaultBank + ' (padrão)' : 'pasta do banco na rede';
+		$('fonts-bank').title = state.fonts.bank || (state.defaultBank ? 'vazio: o padrão, ' + state.defaultBank : '');
 		$('fonts-upload').checked = state.fonts.upload;
 		countBank();
 	}
@@ -3573,11 +3576,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fs = typeof require === 'function' ? require('fs') : null;
 		} catch (err) { }
 
+		var bank = state.fonts.bank.trim() || state.defaultBank;
+
 		box.textContent = '';
-		if (!fs || !state.fonts.bank) return;
+		if (!fs || !bank) return;
 
 		// no volume realmente montado (o caminho é guardado sem o sufixo -1 … -5)
-		fs.readdir(PAD_BRIDGE.mountedPath(state.fonts.bank.replace(/^~(?=\/)/, require('os').homedir())), function (err, names) {
+		fs.readdir(PAD_BRIDGE.mountedPath(bank.replace(/^~(?=\/)/, require('os').homedir())), function (err, names) {
 			if (err) {
 				box.textContent = 'a pasta do banco não está acessível agora.';
 				return;

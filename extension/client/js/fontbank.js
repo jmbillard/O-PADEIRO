@@ -305,6 +305,15 @@ Estado de cada fonte (check):
 			await copy(font.location, nodePath.join(projectFonts, projectName(font, font.ext)));
 		}
 
+		// o banco ainda não existe (o padrão, BANCO DE FONTES ao lado da extensão, na primeira vez): é criado no primeiro
+		// envio, só se a pasta de cima existe (a rede está lá; nunca uma pasta solta num volume desmontado)
+		if (bank && !checked.bankOk && !font.inBank && fs.existsSync(nodePath.dirname(bank))) {
+			try {
+				await mkdirs(bank);
+				checked.bankOk = fs.existsSync(bank);
+			} catch (err) { }
+		}
+
 		if (bank && checked.bankOk && !font.inBank) {
 			var file = entryFile(bank, font.name);
 			var entry = (await readJson(file)) || { name: font.name, family: font.family, style: font.style, versions: [] };

@@ -10,7 +10,8 @@ barra (o Node, sem travar o After Effects): o host só diz quais fontes o projet
 e onde fica a pasta de fontes do projeto; instala as que faltam (do banco) e troca uma fonte por outra no
 projeto inteiro.
 
-'FONTS' no O_PADEIRO_GLOBAL_config.json: { bank: '<pasta>', upload: true }. neste computador (meu usuário):
+'FONTS' no O_PADEIRO_GLOBAL_config.json: { bank: '<pasta>', upload: true }. sem 'bank', o banco é a pasta
+BANCO DE FONTES no mesmo nível da pasta 'extension' na rede (ao lado do código do padeiro e da configuração). neste computador (meu usuário):
 fontsUpload (false: as fontes deste computador não vão para o banco).
 
 Requer o After Effects 2024 (24.0) ou mais novo (Project.usedFonts, replaceFont e app.fonts).
@@ -25,14 +26,37 @@ function padCleanFonts(o) {
 	return { bank: padProjectPath(o.bank || ''), upload: o.upload !== false };
 }
 
+// O banco padrão: a pasta BANCO DE FONTES ao lado da pasta 'extension' na rede (a do código que está rodando).
+var PAD_FONT_BANK_NAME = 'BANCO DE FONTES';
+
+function padDefaultFontBank() {
+	try {
+		return padProjectPath(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/' + PAD_FONT_BANK_NAME);
+	} catch (err) {
+		return '';
+	}
+}
+
+// → { bank (o da configuração, '' = o padrão), upload, defaultBank }
 function padReadFonts() {
+	var out;
+
 	try {
 		var data = padConfigData();
 
-		return data.FONTS ? padCleanFonts(data.FONTS) : PAD_DEFAULT_FONTS;
+		out = data.FONTS ? padCleanFonts(data.FONTS) : padCleanFonts(PAD_DEFAULT_FONTS);
 	} catch (err) {
-		return PAD_DEFAULT_FONTS;
+		out = padCleanFonts(PAD_DEFAULT_FONTS);
 	}
+
+	out.defaultBank = padDefaultFontBank();
+
+	return out;
+}
+
+// A pasta do banco em uso: a da configuração ou, sem ela, a padrão.
+function padFontBankPath(cfg) {
+	return cfg.bank || cfg.defaultBank || '';
 }
 
 // As fontes deste computador vão para o banco? (configuração > FONTES, neste computador)
@@ -71,8 +95,8 @@ PADX.fontsProject = function () {
 	var out = {
 		supported: padFontsSupported(),
 		fonts: [],
-		bank: cfg.bank ? padResolvedPath(padPath(cfg.bank)) : '', // a barra lê de tempos em tempos: nunca monta
-		bankDisplay: cfg.bank,
+		bank: padFontBankPath(cfg) ? padResolvedPath(padPath(padFontBankPath(cfg))) : '', // a barra lê de tempos em tempos: nunca monta
+		bankDisplay: padFontBankPath(cfg),
 		upload: cfg.upload,
 		machineUpload: padMachineFontsUpload(),
 		projectFonts: '',
