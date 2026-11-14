@@ -2819,6 +2819,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 			select.value = chosen;
 			select.disabled = !state.renderTemplates;
+			// a mesma lista com ícones do preset da fila de render, no painel de templates
+			PAD_DROPDOWN.enhance(select, 'renderTemplate');
 		});
 	}
 
