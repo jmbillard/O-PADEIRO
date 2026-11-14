@@ -259,7 +259,7 @@ function padRegisterTemplateUse(info) {
 		var path = padDisplayPath(String(info.path || ''));
 		var kept = [];
 
-		for (var i = 0; i < list.length; i++) if (padDisplayPath(list[i].path).toLowerCase() != path.toLowerCase()) kept.push(list[i]);
+		for (var i = 0; i < list.length; i++) if (!padSamePath(padDisplayPath(list[i].path), path)) kept.push(list[i]);
 		if (path) kept.push({ name: info.name || '', path: path });
 
 		var fields = { templates: padTemplatesText(kept) };
@@ -935,10 +935,7 @@ PADX.projectSave = function (a) {
 	// só a pasta de projetos (para o .aep): as outras da estrutura o coletar cria quando precisar
 	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : padEnsureFolder(plan.projects).fsName;
 	var dest = new File(projects + '/' + plan.fileBase + '.aep');
-	var key = function (f) {
-		return padDisplayPath(f.fsName).replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').toLowerCase();
-	};
-	var same = !!file && key(file) == key(dest);
+	var same = !!file && padSamePath(file.fsName, dest.fsName);
 
 	padCheckWritable(projects);
 	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + '.');

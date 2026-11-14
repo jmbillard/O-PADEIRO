@@ -776,6 +776,16 @@ function padProjectsRoots() {
 }
 
 // O arquivo está nas pastas de projetos? sem categorias na configuração, vale estar na rede.
+// O mesmo lugar (ou dentro dele), qualquer que seja a forma do caminho: \\servidor\…, //servidor/…, L:\… (o mapa de
+// drives), /Volumes/VFX e /Volumes/VFX-1 a VFX-5. inside: o caminho a está dentro de b (ou é b)
+function padSamePath(a, b) {
+	return !!a && !!b && padPathKey(a) == padPathKey(b);
+}
+
+function padPathInside(a, b) {
+	return !!a && !!b && padPathKey(a).indexOf(padPathKey(b)) == 0;
+}
+
 function padInProjects(path, roots) {
 	if (!roots.length) return padIsNetworkPath(path);
 
@@ -791,7 +801,31 @@ function padInProjects(path, roots) {
 // Os arquivos do projeto fora das pastas de projetos (configuração > PROJETO; VFX-1 … vale como VFX). leve: só
 // os caminhos dos itens. → { state: '' (sem arquivos) | 'ok' (tudo nas pastas) | 'out' (algum fora), total,
 //   local (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
-PADX.collectStatus = function () {
+// a conta passa por todas as mídias do projeto: com o projeto igual (o mesmo número de itens, o mesmo arquivo salvo)
+// vale a da última vez por até 30 s. force: refaz (depois de uma ferramenta, ou ao voltar para o After)
+var PAD_COLLECT_STATUS = { key: '', at: 0, res: null };
+
+PADX.collectStatus = function (a) {
+	var file0 = app.project.file;
+	var key = app.project.numItems + '|';
+
+	try {
+		key += file0 ? file0.fsName + '|' + file0.modified.getTime() : 'novo';
+	} catch (err) { }
+
+	var now = new Date().getTime();
+	var cache = PAD_COLLECT_STATUS;
+
+	if (!(a && a.force) && cache.res && cache.key == key && now - cache.at < 30000) return cache.res;
+
+	cache.res = padCollectStatusNow();
+	cache.key = key;
+	cache.at = now;
+
+	return cache.res;
+};
+
+function padCollectStatusNow() {
 	var total = 0;
 	var local = 0;
 	var names = [];
@@ -826,7 +860,7 @@ PADX.collectStatus = function () {
 	}
 
 	return { state: total ? (local ? 'out' : 'ok') : '', total: total, local: local, names: names, kinds: kinds };
-};
+}
 
 /*
 

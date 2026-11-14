@@ -409,7 +409,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (d.fonts) parts.push('fontes');
 
 			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
-			setTimeout(watchCollect, 300);
+			setTimeout(function () {
+				watchCollect(true);
+			}, 300);
 		},
 
 		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
@@ -1276,12 +1278,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return lines.length ? lines.join('\n') : '! ' + counted(res.local, 'arquivo', 'arquivos');
 	}
 
-	async function watchCollect() {
+	// force: refaz a conta (depois de uma ferramenta, ou ao voltar para o After); de tempos em tempos, o host só
+	// refaz quando o projeto mudou (ou a cada 30 s)
+	async function watchCollect(force) {
 		clearTimeout(collectSync.timer);
 
 		if (!document.hidden) {
 			try {
-				var res = await call('collectStatus');
+				var res = await call('collectStatus', { force: !!force });
 				var key = JSON.stringify(res);
 
 				if (key !== collectSync.state) {
@@ -1512,7 +1516,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
 		window.addEventListener('focus', syncFonts);
-		watchCollect(); // os arquivos fora da rede (a bolinha do coletar)
+		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', watchCollect);
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
