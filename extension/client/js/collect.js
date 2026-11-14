@@ -279,10 +279,10 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		// de onde → para onde: o que vai ser coletado mostra a pasta da estrutura que o recebe
 		if (hit) {
-			where.appendChild(el('span', null, 'era ' + tail(it.file)));
+			where.appendChild(el('span', null, it.file ? 'era ' + tail(it.file) : 'sem caminho'));
 			where.appendChild(el('i', null, '→'));
 			where.appendChild(el('b', null, tail(hit.to)));
-		} else if (it.state === 'missing') where.appendChild(el('span', null, 'era ' + tail(it.file)));
+		} else if (it.state === 'missing') where.appendChild(el('span', null, it.file ? 'era ' + tail(it.file) : 'sem caminho guardado no projeto'));
 		else if ((it.state === 'local' || it.state === 'net') && dest) {
 			where.appendChild(el('span', null, tail(it.file)));
 			where.appendChild(el('i', null, '→'));

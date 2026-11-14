@@ -797,8 +797,10 @@ PADX.collectList = function () {
 		if (!(item instanceof FootageItem)) continue;
 
 		var path = padFootagePath(item);
+		var lost = !path && padFootageLost(item);
 
-		if (!path) continue; // sólidos e placeholders não têm arquivo
+		if (lost) path = item.name; // sem caminho guardado: só o nome
+		if (!path) continue; // sólidos não têm arquivo
 
 		var missing = padFootageMissing(item);
 		var kind = missing ? padPathKind(item, path) : padCollectKind(item);
@@ -816,7 +818,7 @@ PADX.collectList = function () {
 			layers = item.usedIn.length;
 		} catch (err) { }
 
-		items.push({ id: item.id, name: item.name, file: path, kind: kind, state: state, layers: layers });
+		items.push({ id: item.id, name: item.name, file: lost ? '' : path, kind: kind, state: state, layers: layers });
 	}
 
 	// dests: a pasta da estrutura que recebe cada tipo ({ imagens: '02_ARQUIVOS/IMAGENS' …}), para a janela dizer para
@@ -846,6 +848,16 @@ function padFootagePath(item) {
 	} catch (err) { }
 
 	return '';
+}
+
+// O item está faltando e o After não guarda o caminho dele (um placeholder, ou um footage que veio assim de outro
+// projeto)? aparece na lista como faltando, sem o 'era…', e a busca procura pelo nome do item.
+function padFootageLost(item) {
+	try {
+		return !!item.footageMissing && !(item.mainSource instanceof SolidSource) && padFootagePath(item) == '';
+	} catch (err) {
+		return false;
+	}
 }
 
 function padFootageMissing(item) {
@@ -1029,7 +1041,13 @@ PADX.collectRelinkFind = function (a) {
 		if (!(item instanceof FootageItem) || (a && a.ids && !only[item.id]) || !padFootageMissing(item)) continue;
 
 		var path = padFootagePath(item);
+		var lost = !path && padFootageLost(item);
 
+		// sem caminho guardado (placeholder): a busca é só pelo nome do item, nas pastas do projeto
+		if (lost) {
+			missing.push({ id: item.id, name: item.name, path: item.name, lost: true });
+			continue;
+		}
 		if (!path) continue;
 
 		var file = padRelinkCandidate(path, tried);
@@ -1046,7 +1064,7 @@ PADX.collectRelinkFind = function (a) {
 	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padReadCollect())), 5, state);
 
 	for (i = 0; i < missing.length && !state.partial; i++) {
-		var near = padRelinkAncestor(missing[i].path);
+		var near = missing[i].lost ? null : padRelinkAncestor(missing[i].path);
 
 		if (near) padRelinkScan(near, 3, state);
 	}
@@ -1084,7 +1102,9 @@ PADX.collectRelink = function (a) {
 			if (!(item instanceof FootageItem) || (a && a.ids && !only[item.id]) || !padFootageMissing(item)) continue;
 
 			var path = padFootagePath(item);
+			var lost = !path && padFootageLost(item);
 
+			if (lost) path = item.name;
 			if (!path) continue;
 
 			var file = null;
@@ -1095,7 +1115,7 @@ PADX.collectRelink = function (a) {
 				if (!file.exists) file = null;
 			}
 
-			if (!file) file = padRelinkCandidate(path, tried);
+			if (!file && !lost) file = padRelinkCandidate(path, tried);
 
 			if (!file) {
 				res.still.push(item.name);
