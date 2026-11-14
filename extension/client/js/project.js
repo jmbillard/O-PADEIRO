@@ -2196,7 +2196,8 @@ projetos com o nome certo).
 
 			if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
 			if (action === 'reload') location.reload();
-			if (action === 'new') startWizard();
+			// o projeto novo pelo menu: como o começado à mão (o refresh não volta para o editor; '‹ voltar' volta)
+			if (action === 'new') startManualNew('');
 
 			if (action === 'open') {
 				try {

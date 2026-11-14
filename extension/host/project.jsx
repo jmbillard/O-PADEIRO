@@ -858,7 +858,9 @@ function padInRoot(file) {
 
 	// o mesmo lugar escrito de outro jeito (\\servidor\… x /Volumes/…, a letra do drive): a chave da rede do coletar
 	try {
-		return padPathKey(file.fsName).indexOf(padPathKey(padPath(root) || root)) == 0;
+		var here = padPathKey(file.fsName);
+
+		return here.indexOf(padPathKey(root)) == 0 || here.indexOf(padPathKey(padPath(root) || root)) == 0;
 	} catch (err) {
 		return false;
 	}

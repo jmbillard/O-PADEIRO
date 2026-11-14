@@ -155,6 +155,24 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return 0;
 	}
 
+	// Pelo começo do nome (scoreKey) ou, sem ele, a partir de uma palavra do meio ('brasileiro' acha CAMPEONATO
+	// BRASILEIRO MASCULINO): esses vêm depois dos que começam com o digitado e nunca contam como a claquete inteira
+	function scoreAny(key, words) {
+		var score = scoreKey(key, words);
+
+		if (score || !words.length || words.join('').length < 3) return score;
+
+		for (var i = 1; i < key.s.length; i++) {
+			if (key.s.charAt(i) !== '1') continue;
+
+			var mid = scoreKey({ f: key.f.slice(i), s: key.s.slice(i) }, words);
+
+			if (mid) return 1 + (mid % 1000) / 100;
+		}
+
+		return 0;
+	}
+
 	// as pastas do índice local
 	function localCandidates() {
 		var L = window.PAD_LOCAL_INDEX;
@@ -292,7 +310,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			var score = 0;
 
 			it.keys.forEach(function (k) {
-				score = Math.max(score, scoreKey(k, words));
+				score = Math.max(score, scoreAny(k, words));
 			});
 
 			if (score) found.push({ it: it, score: score });
