@@ -789,18 +789,25 @@ projetos com o nome certo).
 	// mais alguma depois). sem categoria no começo: o texto todo é o nome
 	function novaFromText(text) {
 		var raw = String(text || '').trim();
-		var m = /^(\S+)\s+(\S.*)$/.exec(raw);
+		var words = raw.split(/\s+/);
+		var best = null;
 
-		if (m) {
-			var w = aepName(m[1]);
-			var base = state.bases.filter(function (b) {
-				var n = aepName(b.label);
+		// o nome da categoria (uma ou mais palavras: MOOD MENSAL; a última pode vir no plural) e mais alguma depois
+		state.bases.forEach(function (b) {
+			var label = aepName(b.label).split(' ');
 
-				return b.pattern && (w === n || w === n + 'S' || w + 'S' === n);
-			})[0];
+			if (!b.pattern || words.length <= label.length || (best && best.size >= label.length)) return;
 
-			if (base) return { name: m[2].trim().toUpperCase(), base: base };
-		}
+			var ok = label.every(function (w, i) {
+				var typed = aepName(words[i]);
+
+				return typed === w || (i === label.length - 1 && (typed === w + 'S' || typed + 'S' === w));
+			});
+
+			if (ok) best = { base: b, size: label.length };
+		});
+
+		if (best) return { name: words.slice(best.size).join(' ').toUpperCase(), base: best.base };
 
 		return { name: raw.toUpperCase(), base: null };
 	}

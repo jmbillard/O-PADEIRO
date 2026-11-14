@@ -101,6 +101,8 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   | `{mes}` | o mês atual (`01` a `12`) |
   | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |
   | `{proximo_mes}` | o próximo mês por extenso (`DEZEMBRO`; em dezembro, `JANEIRO`) |
+  | `{proximo_mes_num}` | o número do próximo mês (`12`; em dezembro, `01`) |
+  | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
   | `{categoria}` | o nome da categoria |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
 

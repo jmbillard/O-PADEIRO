@@ -67,6 +67,12 @@
 				"icon": "fita"
 			},
 			{
+				"name": "MOOD MENSAL",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/MOOD MENSAL/{ano_proximo_mes}/{proximo_mes_num} {proximo_mes}/{atracao}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/MOOD MENSAL/{ano_proximo_mes}/{proximo_mes_num} {proximo_mes}",
+				"icon": "calendario"
+			},
+			{
 				"name": "FILME",
 				"path": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_{letra}_/{atracao}",
 				"output": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}",

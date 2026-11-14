@@ -351,7 +351,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
-	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {categoria}
+	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
+	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido na claquete) {categoria}
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
@@ -380,7 +381,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	function fillPattern(pattern, name, category) {
 		var d = new Date();
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: aepName(category), letra: letterOf(name) };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: aepName(category), letra: letterOf(name) };
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
