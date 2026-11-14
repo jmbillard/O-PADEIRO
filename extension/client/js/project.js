@@ -286,7 +286,7 @@ projetos com o nome certo).
 			});
 			var room = LEVEL_MAX + 2;
 
-			if (walk.shown.length) list.appendChild(ATR.group('quadros'));
+			if (walk.shown.length) list.appendChild(ATR.group('pastas'));
 			walk.shown.slice(0, room).forEach(function (f) {
 				list.appendChild(ATR.row(FOLDER_SVG, f.name.toUpperCase(), '', false, function () {
 					onPick(f.name);
