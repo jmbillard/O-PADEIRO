@@ -264,16 +264,17 @@ PADX.machinePrefs = function () {
 		localMode: padLocalForced(),
 		search: padMachineSearch(d.search),
 		fontsUpload: padMachineFontsUpload(),
+		fontsCheck: padMachineFontsCheck(),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck() };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
@@ -308,6 +309,7 @@ PADX.saveMachinePrefs = function (a) {
 	if (a.localMode != null) data.localMode = a.localMode === true;
 	if (a.search != null) data.search = padMachineSearch(a.search);
 	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
+	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí

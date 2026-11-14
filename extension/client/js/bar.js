@@ -1153,8 +1153,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   (neste computador, no banco ou na pasta do projeto), verde quando está tudo certo.
 	   ========================================================= */
 
-	var FONTS_EVERY = 10000; // ms entre as leituras do projeto
-	var fontsSync = { busy: false, timer: null, state: '', tip: '' };
+	// a conferência das fontes: quando o projeto muda (watchProject: key) e no clique em Fontes, nunca de tempos em
+	// tempos. auto: a chave deste computador (configuração > fontes)
+	var fontsSync = { busy: false, timer: null, state: '', tip: '', key: null, auto: true };
 	var FONT_LABELS = { up: 'enviando', install: 'para instalar', nofile: 'sem arquivo' };
 
 	function paintFontsDot(state, tip) {
@@ -1191,8 +1192,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		// sem a rede (caiu ou modo local): o banco fica na rede, nem tenta (tocar num volume que sumiu faz o macOS
 		// avisar a cada vez). volta sozinho quando a rede voltar
 		if (netState === 'offline' || netState === 'forced') {
-			clearTimeout(fontsSync.timer);
-			fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
+			fontsSync.key = ''; // confere de novo quando a rede voltar (o próximo olhar no projeto)
 			return;
 		}
 
@@ -1241,7 +1241,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		} catch (err) { }
 
 		fontsSync.busy = false;
-		fontsSync.timer = setTimeout(syncFonts, FONTS_EVERY);
 	}
 
 	/* =========================================================
@@ -1304,6 +1303,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (res.state !== projectState) {
 				projectState = res.state;
 				paintProjectDot();
+			}
+
+			// as fontes: conferidas só quando o projeto muda (abrir, salvar, trocar), e só com a chave ligada
+			// (configuração > fontes, neste computador). quem anima uma comp sem texto não paga nada
+			fontsSync.auto = res.fontsCheck !== false;
+			if (!fontsSync.auto) paintFontsDot('', '');
+			if (fontsSync.auto && res.key !== fontsSync.key) {
+				fontsSync.key = res.key;
+				syncFonts();
 			}
 		} catch (err) { }
 	}
@@ -1503,7 +1511,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);
 		window.addEventListener('focus', loadLinks);
-		syncFonts(); // o banco de fontes (a bolinha das fontes)
 		window.addEventListener('focus', syncFonts);
 		watchCollect(); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', watchCollect);

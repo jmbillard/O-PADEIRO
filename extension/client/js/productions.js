@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
+		machine: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, fontsCheck: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
 		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
 		machineSnapshot: '',
 		defaultUser: '',
@@ -509,7 +509,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false };
 	}
 
 	function personalDirty() {
@@ -2748,6 +2748,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			log: m.log !== false,
 			localMode: !!m.localMode,
 			fontsUpload: m.fontsUpload !== false,
+			fontsCheck: m.fontsCheck !== false,
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
 		state.localIndexFile = m.localIndex || '';
@@ -2769,6 +2770,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('machine-local').checked = m.localMode;
 		$('machine-log').checked = m.log;
 		$('machine-fonts').checked = m.fontsUpload !== false;
+		$('machine-fonts-check').checked = m.fontsCheck !== false;
 		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
 		renderMachineIndex();
@@ -3003,6 +3005,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('machine-fonts').addEventListener('change', function () {
 			state.machine.fontsUpload = this.checked;
+			updateDirty();
+		});
+		$('machine-fonts-check').addEventListener('change', function () {
+			state.machine.fontsCheck = this.checked;
 			updateDirty();
 		});
 

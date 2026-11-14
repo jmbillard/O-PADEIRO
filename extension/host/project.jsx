@@ -859,12 +859,19 @@ function padInRoot(file) {
 
 // O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro, na
 // pasta dele), 'missing' (sem eles: salvo sem a atração, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// state: a bolinha do Projeto. key: muda quando o projeto muda (outro projeto, ou salvo de novo): a barra confere
+// as fontes só nessa hora (fontsCheck: a chave deste computador)
 PADX.projectStatus = function () {
 	var file = app.project.file;
+	var key = '';
 
-	if (file && padMetaRead().atracao && padInRoot(file)) return { state: 'ok' };
+	try {
+		key = file ? file.fsName + '|' + file.modified.getTime() : 'novo';
+	} catch (err) { }
 
-	return { state: file || app.project.numItems > 0 ? 'missing' : '' };
+	var state = file && padMetaRead().atracao && padInRoot(file) ? 'ok' : file || app.project.numItems > 0 ? 'missing' : '';
+
+	return { state: state, key: key, fontsCheck: padMachineFontsCheck() };
 };
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.

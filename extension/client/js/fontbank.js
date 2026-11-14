@@ -343,24 +343,49 @@ Estado de cada fonte (check):
 	}
 
 	// as fontes do banco (para a troca): uma por nome, a versão mais recente
+	// as fontes do banco (para a troca): uma por nome, a versão mais recente. a lista fica guardada neste computador
+	// (localStorage) com a data da pasta do banco: só é relida quando o banco muda (fonte nova ou versão nova); a
+	// leitura relê os .json em lotes, não um por vez (com milhares de fontes numa rede lenta faz diferença)
+	var BANK_CACHE = 'pad.fontbank.list';
+
 	async function bankFonts(bankPath) {
 		var bank = expand(bankPath);
+		var info = await stat(bank);
+
+		if (!info) return [];
+
+		var mark = bank + '|' + info.mtimeMs;
+		var cached = null;
+
+		try {
+			cached = JSON.parse(localStorage.getItem(BANK_CACHE) || 'null');
+		} catch (err) { }
+
+		if (cached && cached.mark === mark && cached.list) return cached.list;
+
 		var names = await p(function (cb) {
 			fs.readdir(bank, cb);
 		}).catch(function () {
 			return [];
 		});
+		var files = names.filter(function (n) {
+			return /\.json$/i.test(n) && n.charAt(0) !== '_';
+		});
 		var out = [];
 
-		for (var i = 0; i < names.length; i++) {
-			if (!/\.json$/i.test(names[i]) || names[i].charAt(0) === '_') continue;
+		for (var i = 0; i < files.length; i += 24) {
+			var entries = await Promise.all(files.slice(i, i + 24).map(function (n) {
+				return readJson(nodePath.join(bank, n));
+			}));
 
-			var entry = await readJson(nodePath.join(bank, names[i]));
-
-			if (!entry || !entry.name) continue;
-
-			out.push({ name: entry.name, family: entry.family || '', style: entry.style || '', file: newestFile(bank, entry) });
+			entries.forEach(function (entry) {
+				if (entry && entry.name) out.push({ name: entry.name, family: entry.family || '', style: entry.style || '', file: newestFile(bank, entry) });
+			});
 		}
+
+		try {
+			localStorage.setItem(BANK_CACHE, JSON.stringify({ mark: mark, list: out }));
+		} catch (err) { } // muito grande para o localStorage: fica sem guardar (lê de novo na próxima)
 
 		return out;
 	}

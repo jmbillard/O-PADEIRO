@@ -64,6 +64,12 @@ function padMachineFontsUpload() {
 	return padMachineData().fontsUpload !== false;
 }
 
+// A barra confere as fontes sozinha (a bolinha e o envio) quando o projeto muda? (configuração > FONTES, neste
+// computador). desligado: só no clique em Fontes
+function padMachineFontsCheck() {
+	return padMachineData().fontsCheck !== false;
+}
+
 function padFontsSupported() {
 	try {
 		return !!(app.project && app.project.usedFonts !== undefined && app.fonts);

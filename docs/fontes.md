@@ -4,6 +4,8 @@
 
 o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02_ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
 
+**quando ele confere** → só quando o projeto **muda** (abrir, salvar, trocar de projeto) e no clique em **Fontes**, nunca de tempos em tempos: quem está animando uma comp sem texto não espera nada. o tamanho do banco não pesa nessa conferência (o padeiro olha só as fontes do projeto, uma a uma, pelo nome). para desligar de vez neste computador, a chave '*conferir as fontes sozinho*' (configuração > fontes, neste computador): aí tudo fica só no clique em Fontes. a janela de fontes guarda a lista do banco neste computador e só relê quando o banco muda.
+
 > requer o After Effects 2024 ou mais novo.
 
 <br>
