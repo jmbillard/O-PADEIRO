@@ -516,8 +516,31 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot || (state.machineSnapshot !== '' && JSON.stringify(machineForSave()) !== state.machineSnapshot);
 	}
 
+	// o que é só desta pessoa (meu usuário, presets, links pessoais, aparência e layout pessoais) salva sozinho, um
+	// instante depois da última mudança, separado da equipe: um erro numa aba da equipe não segura o ajuste pessoal.
+	// um erro aqui (um campo ainda pela metade) fica calado: o ponto no disquete continua e o Salvar diz o que é
+	var AUTOSAVE_MS = 900;
+
+	function autosavePersonal() {
+		clearTimeout(state.autosaveTimer);
+		state.autosaveTimer = setTimeout(async function () {
+			if (state.saving || !personalDirty()) return;
+
+			state.autosaving = true;
+
+			try {
+				await savePersonal();
+			} catch (err) { }
+
+			state.autosaving = false;
+			updateDirty();
+		}, AUTOSAVE_MS);
+	}
+
 	function updateDirty() {
 		markCustom();
+
+		if (personalDirty() && !state.autosaving) autosavePersonal();
 
 		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 

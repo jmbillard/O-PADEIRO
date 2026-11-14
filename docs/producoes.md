@@ -45,6 +45,8 @@ uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na
 
 > 🚩 é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
 
+> 🚩 o que é **só seu** (meu usuário, presets de render, links pessoais, aparência e layout personalizados, as partes '*neste computador*') salva **sozinho**, um instante depois de cada mudança, separado do padrão da equipe: um problema numa aba da equipe não segura o seu ajuste. se um campo seu ainda estiver pela metade (uma produção local sem a pasta, por exemplo), o ponto no disquete continua e o **Salvar** diz o que falta.
+
 ## 📍 templates
 
 a aba **templates** é a lista de produções. uma **produção** é uma pasta que contém (ou vai conter) templates do padeiro, organizados em subpastas como a equipe preferir.
