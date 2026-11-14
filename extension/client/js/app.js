@@ -1413,7 +1413,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// o texto ainda é o exemplo do template (ninguém digitou): o botão avisa o que vai ser preenchido
 		var sample = n && state.example && $('input').value === state.example;
 
-		$('btn-fill').textContent = sample ? 'Preencher o exemplo' : 'Preencher: ' + n;
+		// sem a revisão da fila (o padrão), o mesmo botão preenche e já põe na fila de render
+		$('btn-fill').textContent = (sample ? 'Preencher o exemplo' : 'Preencher: ' + n) + (reviewQueue() ? '' : ' e pôr na fila');
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
 	}
 
@@ -1846,6 +1847,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
+
+		// sem a revisão (o padrão): a fila sai direto, com o preset lembrado (o do template, o último ou o H.264).
+		// a tela de ordem e preset só aparece com 'Revisar a fila antes de criar' ligado (menu ⋯) ou sem preset
+		if (!reviewQueue() && select.value) {
+			createQueue();
+			return;
+		}
+
 		setStage('4 · render', null, 'selecione o template de output para continuar');
 		$('render-options').hidden = false;
 		$('queue-footer').hidden = false;
@@ -2107,7 +2116,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		await loadTree(true);
 	}
 
+	// revisar a fila (a ordem, o que fica de fora e o preset) antes de criar: desligado por padrão (neste computador)
+	function reviewQueue() {
+		return store.get('reviewQueue') === '1';
+	}
+
+	function paintReviewItem() {
+		var item = document.querySelector('#app-menu [data-action="review-queue"]');
+
+		if (item) item.textContent = (reviewQueue() ? '✓ ' : '') + 'Revisar a fila antes de criar';
+	}
+
 	async function menuAction(action) {
+		if (action === 'review-queue') {
+			store.set('reviewQueue', reviewQueue() ? '0' : '1');
+			paintReviewItem();
+			updateInputCount();
+			notify('success', reviewQueue() ? 'a fila aparece para revisar antes de ser criada.' : 'o Preencher já põe na fila, com o preset lembrado.');
+		}
 		if (action === 'refresh') await refreshTree();
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
@@ -2396,6 +2422,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// menu ⋯
 		var menu = $('app-menu');
 
+		paintReviewItem();
 		menu.addEventListener('click', function (e) {
 			var btn = e.target.closest('button[data-action]');
 

@@ -27,7 +27,7 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
 5. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
-6. escolha o template de output e clique em '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`, cria a fila).
+6. o botão '*Preencher… e pôr na fila*' preenche e já cria a fila de render, com o preset lembrado (o do template, o último usado ou o H.264). para revisar antes a ordem, o que fica de fora e o preset, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila pede o template de output e '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). sem preset nenhum, a tela da fila aparece mesmo desligada.
 
 ### a lista
 
