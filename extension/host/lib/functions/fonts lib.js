@@ -91,7 +91,7 @@ function fontCollect(savePath) {
 	var copiedFiles = {};
 	var failArray = [];
 
-	if (!saveFolder.exists) saveFolder.create();
+	if (!saveFolder.exists) padEnsureFolder(saveFolder.fsName); // na rede: com os planos B e C do padeiro
 
 	for (var f = 0; f < fonts.length; f++) {
 		var fontSrcFile = new File(fonts[f].location);

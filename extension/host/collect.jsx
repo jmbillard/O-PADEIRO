@@ -423,7 +423,65 @@ function padEnsureFolder(path) {
 		folder = padWaitFolder(folder.fsName, 4000);
 	}
 
+	// plano C: a pasta nasce neste computador e é levada para a rede (há compartilhamento que recusa criar a pasta
+	// mas aceita receber uma pronta)
+	if (!folder.exists) {
+		padStageFolder(folder.fsName);
+		folder = padWaitFolder(folder.fsName, 4000);
+	}
+
 	return folder;
+}
+
+// Cria neste computador (na pasta temporária) as pastas que faltam do caminho e leva a primeira delas, com as de
+// dentro, para a pasta de cima que já existe: move; se não der, copia. Só dentro de um compartilhamento acessível
+// (nunca uma pasta solta em /Volumes, que esconderia o volume da próxima vez que ele montar).
+function padStageFolder(path) {
+	var parts = [];
+	var above = new Folder(path);
+
+	try {
+		if (!padShareReachable(path)) return;
+	} catch (err) { }
+
+	while (above && !above.exists && above.parent && parts.length < 30) {
+		parts.unshift(decodeURI(above.name));
+		above = above.parent;
+	}
+	if (!above || !above.exists || !parts.length) return;
+
+	var stage = new Folder(tempPath + '/pad_pastas_' + new Date().getTime());
+	var local = stage;
+
+	stage.create();
+	for (var i = 0; i < parts.length; i++) {
+		local = new Folder(local.fsName + '/' + parts[i]);
+		local.create();
+	}
+	if (!local.exists) return;
+
+	var from = new Folder(stage.fsName + '/' + parts[0]).fsName;
+	var to = new Folder(above.fsName + '/' + parts[0]).fsName;
+	var said = '';
+
+	try {
+		if (appOs == 'Win') {
+			said = String(system.callSystem('cmd.exe /c move "' + from.replace(/"/g, '') + '" "' + to.replace(/"/g, '') + '" 2>&1'));
+			if (!new Folder(to).exists) said = String(system.callSystem('cmd.exe /c xcopy "' + from.replace(/"/g, '') + '" "' + to.replace(/"/g, '') + '" /E /I /Y 2>&1'));
+		} else {
+			said = String(system.callSystem('mv -n ' + psShellQuote(from) + ' ' + psShellQuote(to) + ' 2>&1'));
+			if (!new Folder(to).exists) said = String(system.callSystem('cp -R ' + psShellQuote(from) + ' ' + psShellQuote(above.fsName + '/') + ' 2>&1'));
+		}
+	} catch (err) {
+		said = err.message;
+	}
+
+	if (said.replace(/^\s+|\s+$/g, '')) padLastMkdir = said.replace(/^\s+|\s+$/g, '');
+
+	// a pasta de passagem sai (o que sobrou dela, se foi copiada em vez de movida)
+	try {
+		system.callSystem(appOs == 'Win' ? 'cmd.exe /c rmdir /S /Q "' + stage.fsName.replace(/"/g, '') + '" 2>&1' : 'rm -rf ' + psShellQuote(stage.fsName) + ' 2>&1');
+	} catch (err) { }
 }
 
 // Espera a pasta aparecer: no compartilhamento de rede do macOS, uma pasta recém-criada pode demorar uns segundos

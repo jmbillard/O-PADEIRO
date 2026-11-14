@@ -119,6 +119,58 @@ Estado de cada fonte (check):
 			fs.mkdir(dir, { recursive: true }, function (err) {
 				cb(err && err.code !== 'EEXIST' ? err : null);
 			});
+		}).catch(function (err) {
+			// a rede recusou criar a pasta: ela nasce neste computador e é levada para lá (como no host)
+			return stageDir(dir).then(function (ok) {
+				if (!ok) throw err;
+			});
+		});
+	}
+
+	// cria na pasta temporária as pastas que faltam e leva a primeira delas (com as de dentro) para a pasta de cima
+	// que já existe: move; se não der, copia. → true se a pasta passou a existir
+	function stageDir(dir) {
+		var path = require('path');
+		var os = require('os');
+		var exec = require('child_process').exec;
+		var parts = [];
+		var above = path.resolve(dir);
+
+		while (!fs.existsSync(above) && path.dirname(above) !== above && parts.length < 30) {
+			parts.unshift(path.basename(above));
+			above = path.dirname(above);
+		}
+		// nunca uma pasta solta em /Volumes (esconderia o volume) nem na raiz de um servidor
+		if (!parts.length || !fs.existsSync(above) || /^\/Volumes\/?$/.test(above) || /^\\\\[^\\]+\\?$/.test(above)) return Promise.resolve(false);
+
+		var stage = path.join(os.tmpdir(), 'pad_pastas_' + Date.now());
+		var from = path.join(stage, parts[0]);
+		var to = path.join(above, parts[0]);
+		var q = function (s) {
+			return '"' + String(s).replace(/"/g, '') + '"';
+		};
+		var run = function (cmd) {
+			return new Promise(function (resolve) {
+				exec(cmd, function () {
+					resolve();
+				});
+			});
+		};
+
+		return p(function (cb) {
+			fs.mkdir(path.join.apply(path, [stage].concat(parts)), { recursive: true }, cb);
+		}).then(function () {
+			return run(process.platform === 'win32' ? 'move ' + q(from) + ' ' + q(to) : 'mv -n ' + q(from) + ' ' + q(to));
+		}).then(function () {
+			if (fs.existsSync(to)) return null;
+
+			return run(process.platform === 'win32' ? 'xcopy ' + q(from) + ' ' + q(to) + ' /E /I /Y' : 'cp -R ' + q(from) + ' ' + q(above + path.sep));
+		}).then(function () {
+			return run(process.platform === 'win32' ? 'rmdir /S /Q ' + q(stage) : 'rm -rf ' + q(stage));
+		}).then(function () {
+			return fs.existsSync(dir);
+		}).catch(function () {
+			return false;
 		});
 	}
 

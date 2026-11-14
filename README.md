@@ -444,7 +444,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
 | `#PAD_089` | configuração > projeto: categoria sem nome ou sem caminho, repetida, com token desconhecido ou sem `{atracao}` |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
-| `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada |
+| `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada (o padeiro tenta três jeitos: criar direto, pelo sistema e, por último, criar neste computador e levar para a rede) |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |
 | `#PAD_093` | coletar: itens que não puderam ser coletados (sem permissão, arquivo ausente) |
 | `#PAD_094` | configuração: árvore do coletar inválida (nome vazio, repetido ou com `\ / : * ? " < > \|`, pasta pai inexistente, ciclo, tipo em duas pastas) ou sem nenhum tipo |
