@@ -258,6 +258,7 @@ PADX.machinePrefs = function () {
 		defaultUser: padDefaultUser(),
 		projects: padMachinePath(d.projects),
 		outputs: padMachinePath(d.outputs),
+		render: padMachineRender(d),
 		productions: padMachineProductions(d),
 		log: padMachineLog(),
 		localMode: padLocalForced(),
@@ -269,14 +270,15 @@ PADX.machinePrefs = function () {
 	};
 };
 
-// a: { user, projects, outputs, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
+	if (a.render != null) data.render = padMachineRender({ render: a.render });
 	if (a.log != null) data.log = a.log !== false;
 
 	if (a.productions != null) {

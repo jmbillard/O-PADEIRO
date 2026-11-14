@@ -301,7 +301,7 @@ const SCENES = {
 	// a barra: o mouse passa pelas ferramentas (cada ícone anima, a dica conta os dois cliques)
 	barra: { w: 1000, h: 110, url: 'bar.html', async run(p) {
 		mouse = [990, 100];
-		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
+		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
 		await hover(p, '#logo', 700);
 	} },
 
@@ -433,7 +433,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'organization', 'import', 'rename', 'organize', 'folders', 'search'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');

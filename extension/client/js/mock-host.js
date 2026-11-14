@@ -138,7 +138,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 
 	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
 	}
 
 	var api = {
@@ -276,7 +276,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', render: a.render || { 'final': '', preview: '' }, productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
@@ -486,6 +486,24 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			window.PAD_MOCK_PRODUCTION = a.name;
 
 			return { name: a.name };
+		},
+
+		// O FORNO: os presets de render do After e as comps na fila
+		renderPresets: function () {
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+			var r = m.render || {};
+
+			return { templates: ['H.264 - Match Render Settings - 15 Mbps', 'H.264 metade', 'High Quality', 'High Quality with Alpha', 'Lossless', 'ProRes 422 HQ', 'ProRes 4444 + alpha', 'XDCAM HD 50', 'Sequência PNG'], 'final': r['final'] || '', preview: r.preview || '' };
+		},
+
+		renderQueue: async function (a) {
+			await wait(delay);
+
+			if (mode === 'fail') throw new Error('#PAD_111 - render: selecione as comps no painel de projeto (ou abra uma comp).');
+
+			return a && a.preview
+				? { count: 2, folder: 'T:/PROGRAMAS/INTERPOL/03_SAIDA/PREVIEWS', local: false, preview: true, names: ['ABERTURA_prev_v03', 'VINHETA_prev_v01'], warnings: [] }
+				: { count: 2, folder: 'O:/OUTPUT/INTERPOL/2026/SERVICO', local: false, preview: false, names: ['ABERTURA', 'VINHETA'], warnings: [] };
 		},
 
 		openLastOutput: function () {

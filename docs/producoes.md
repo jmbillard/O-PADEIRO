@@ -110,6 +110,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
 **👤 neste computador** (embaixo):
 
+- **presets de render** → os dois templates de output do **seu** After Effects que o botão **Render** da barra (O FORNO) usa: **render final** (o clique: na pasta de output do projeto, com o nome da comp) e **preview** (o clique direito: na pasta de previews das saídas, `COMP_prev_v01`, `_v02`…, sem substituir o anterior). cada pessoa tem a sua lista de presets, por isso ficam só neste computador. sem preset escolhido, a fila usa o padrão do After. se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para a [pasta de saída](#-produções) deste computador (vazia: a Área de Trabalho). a lista é lida do After quando a aba abre.
 - **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.
 
 > 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.

@@ -291,6 +291,36 @@
 }
 
 /* organização (a gaveta de renomear e organizar): um bloco torto, fora do lugar; no hover ele encaixa na grade */
+/* render: a fila anda (entra mais uma linha embaixo) e o play avança */
+.anim-render .render-lines,
+.anim-render .render-play,
+.anim-render .render-last {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 420ms var(--ease-soft),
+    opacity 300ms ease;
+}
+
+.anim-render .render-last {
+  opacity: 0;
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-lines,
+.tab:hover .anim-render .render-lines {
+  transform: translateY(-2.5px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-last,
+.tab:hover .anim-render .render-last {
+  opacity: 1;
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-play,
+.tab:hover .anim-render .render-play {
+  transform: translateX(2px) scale(1.12);
+}
+
 .anim-org .org-loose {
   transform: translate(1.2px, 1.4px) rotate(24deg);
   transform-box: fill-box;

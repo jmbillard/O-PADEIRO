@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+	<g class="anim-render">
+	<g class="render-lines">
+	<path d="M4 7h7" />
+	<path d="M4 12h7" />
+	<path d="M4 17h7" />
+	<path class="render-last" d="M4 22h7" /></g>
+	<path class="render-play" d="m14.5 8 6 4-6 4z" /></g>
+</svg>

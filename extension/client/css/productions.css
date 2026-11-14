@@ -2816,3 +2816,31 @@ body.is-org-dragging * {
 .fonts-switch {
   margin-top: 14px;
 }
+
+/* os presets de render (aba projeto, neste computador): os dois lado a lado; estreito, um embaixo do outro */
+.render-presets {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.render-presets .select select {
+  width: 100%;
+}
+
+/* o mouse do clique ao lado do nome de cada preset (o mesmo desenho das dicas: o botão do clique aceso) */
+.click-ico {
+  display: inline-block;
+  width: 10px;
+  height: 13px;
+  margin: -2px 7px 0 0;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.3;
+  vertical-align: middle;
+}
+
+.click-ico .click-ico-btn {
+  fill: currentcolor;
+  stroke: none;
+}

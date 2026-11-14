@@ -160,6 +160,10 @@
 		"label": "novo template"
 	},
 	{
+		"key": "barra-render",
+		"label": "render"
+	},
+	{
 		"key": "barra-organization",
 		"label": "organização"
 	},

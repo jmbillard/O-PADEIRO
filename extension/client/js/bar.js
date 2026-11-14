@@ -278,6 +278,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FONTS_PANEL_ID);
 		},
 
+		// O FORNO: as comps selecionadas (ou a aberta) na fila de render. o final, na pasta de output do projeto; o
+		// preview, na pasta de previews das saídas, com a versão no nome. só põe na fila
+		render: async function (preview) {
+			var res = await call('renderQueue', { preview: !!preview });
+			var what = preview ? counted(res.count, 'preview', 'previews') : counted(res.count, 'render final', 'renders finais');
+			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz', res.folder];
+
+			if (preview) lines.push(res.names.join(' · '));
+			toast(res.warnings.length ? 'error' : 'success', lines.concat(res.warnings.map(PAD_UTIL.errorText)).join('\n'));
+		},
+
 		openLastOutput: async function () {
 			await requireNetwork('PAD_007');
 			await call('openLastOutput');
@@ -511,6 +522,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			right: actions.openCollect
 		},
 		{
+			key: 'render',
+			label: 'Render',
+			icon: 'render',
+			name: 'O FORNO',
+			tips: [L_CLICK + 'pôr o render final das comps na fila, na pasta de output', R_CLICK + 'pôr um preview das comps na fila, na pasta de previews'],
+			left: function () {
+				return actions.render(false);
+			},
+			right: function () {
+				return actions.render(true);
+			}
+		},
+		{
 			key: 'importar',
 			label: 'Importar',
 			icon: 'import',
@@ -564,7 +588,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// as gavetas de grupo: as ferramentas de members ficam juntas numa gaveta, no lugar da primeira delas na barra
 	// (com 2 ou mais na barra; com uma só, ela fica solta). o botão do grupo abre a gaveta
 	var GROUPS = [
-		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: ['projeto', 'fontes', 'coletar'] },
+		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: ['projeto', 'fontes', 'coletar', 'render'] },
 		{ key: 'organizar', label: 'Organização', icon: 'organization', name: 'ORGANIZAÇÃO', members: ['renomear', 'organizar'] }
 	];
 

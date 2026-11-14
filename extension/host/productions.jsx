@@ -719,13 +719,13 @@ PADX.savePersonalLinks = function (a) {
 
 'BAR' no O_PADEIRO_GLOBAL_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
   items  → a ordem das ferramentas na barra; 'divider' separa os grupos. ferramentas: templates, fontes,
-           projeto, coletar, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
+           projeto, coletar, render, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
   hidden → as escondidas da barra (as mesmas chaves, e 'links' para o bloco de links)
 
 */
 
-var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'pastas', 'renomear', 'organizar', 'importar', 'buscar'];
-var PAD_BAR_DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'render', 'pastas', 'renomear', 'organizar', 'importar', 'buscar'];
+var PAD_BAR_DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 function padCleanBar(o) {
 	var items = [];

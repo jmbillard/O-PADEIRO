@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', productions: [], log: true, localMode: false, fontsUpload: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
+		machine: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
 		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
 		machineSnapshot: '',
 		defaultUser: '',
@@ -509,7 +509,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false };
 	}
 
 	function personalDirty() {
@@ -2147,7 +2147,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   e separadores entre os grupos
 	   ========================================================= */
 
-	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
@@ -2155,6 +2155,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes · na barra, na gaveta Projeto', 'fonts'],
 		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto · na barra, na gaveta Projeto', 'form'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta · na barra, na gaveta Projeto', 'collect'],
+		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews · na barra, na gaveta Projeto', 'render'],
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render · na barra, na gaveta Organização', 'rename'],
@@ -2604,6 +2605,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			user: m.user || '',
 			projects: m.projects || '',
 			outputs: m.outputs || '',
+			render: { 'final': (m.render && m.render['final']) || '', preview: (m.render && m.render.preview) || '' },
 			productions: (m.productions || []).map(function (p) {
 				return { name: p.name || '', path: p.path || '' };
 			}),
@@ -2625,6 +2627,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
 		});
+		renderPresets();
 		$('machine-user').placeholder = state.defaultUser;
 		$('machine-projects').placeholder = '~/Desktop';
 		$('machine-local').checked = m.localMode;
@@ -2794,7 +2797,54 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		updateDirty();
 	}
 
+	// os presets de render (aba PROJETO, neste computador): os templates de output deste After, lidos na primeira
+	// vez que a aba aparece (ler mexe na fila de render do projeto aberto, por um instante)
+	var RENDER_KEYS = [['machine-render-final', 'final'], ['machine-render-preview', 'preview']];
+
+	function renderPresets() {
+		RENDER_KEYS.forEach(function (k) {
+			var select = $(k[0]);
+			var chosen = state.machine.render[k[1]];
+			var list = (state.renderTemplates || []).slice();
+
+			// o escolhido que não está (mais) na lista deste After continua à vista
+			if (chosen && list.indexOf(chosen) < 0) list.unshift(chosen);
+
+			select.textContent = '';
+			[''].concat(list).forEach(function (name) {
+				var option = el('option', null, name || (state.renderTemplates ? 'o padrão do After' : 'lendo os presets do After…'));
+
+				option.value = name;
+				select.appendChild(option);
+			});
+			select.value = chosen;
+			select.disabled = !state.renderTemplates;
+		});
+	}
+
+	async function loadRenderPresets() {
+		if (state.renderTemplates || state.renderLoading) return;
+
+		state.renderLoading = true;
+
+		try {
+			state.renderTemplates = (await call('renderPresets')).templates || [];
+		} catch (err) {
+			state.renderTemplates = [];
+		}
+
+		state.renderLoading = false;
+		renderPresets();
+	}
+
 	function bindMachine() {
+		RENDER_KEYS.forEach(function (k) {
+			$(k[0]).addEventListener('change', function () {
+				state.machine.render[k[1]] = this.value;
+				updateDirty();
+			});
+		});
+
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
@@ -3876,6 +3926,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.tab = name;
 		renderScope();
+		if (name === 'project') loadRenderPresets();
 
 
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {
