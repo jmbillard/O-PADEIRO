@@ -457,6 +457,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |
 | `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_111` | render: nenhuma comp selecionada no painel Project nem aberta |
+| `#PAD_112` | migrar: a pasta tem projetos de outros programas (Cinema 4D, Max, Premiere…): nada é movido, para não quebrar esses projetos. use o Coletar, que copia |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 
 <br>

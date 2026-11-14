@@ -846,7 +846,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var notes = [];
 
 		go.classList.toggle('button-primary', !plan.undo);
-		go.disabled = state.busy || (!plan.undo && (!plan.total || plan.partial));
+		go.disabled = state.busy || (!plan.undo && (!plan.total || plan.partial || plan.foreignCount > 0));
 		go.textContent = plan.undo ? 'Desfazer a migração' : plan.total ? 'Migrar: ' + plan.total : 'Migrar';
 
 		if (state.mig.note) return; // o resultado da última ação fica na tela
@@ -855,7 +855,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			return;
 		}
 
-		if (plan.partial) notes.push('a pasta é grande demais para ler de uma vez: nada pode ser movido');
+		if (plan.foreignCount) notes.push(plural(plan.foreignCount, 'projeto de outro programa', 'projetos de outros programas') + ' na pasta: nada pode ser movido (use o Coletar, que copia)');
+		else if (plan.partial) notes.push('a pasta é grande demais para ler de uma vez: nada pode ser movido');
 		else if (plan.undo) notes.push('esta pasta já foi migrada');
 		else if (plan.total) notes.push('nada foi movido ainda');
 		if (plan.conflicts) notes.push(plural(plan.conflicts, 'nome repetido ganha', 'nomes repetidos ganham') + ' _2');
@@ -863,8 +864,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (plan.others && plan.all) notes.push(plural(plan.others, 'outro projeto é religado', 'outros projetos são religados') + ' (o After abre cada um)');
 		if (state.mig.unread && state.mig.unread.length) notes.push(plural(state.mig.unread.length, 'projeto não abriu', 'projetos não abriram') + ' (vão sem religar)');
 		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta é copiado', 'arquivos de fora da pasta são copiados'));
-		status(notes.join(' · ') + (notes.length ? '.' : ''), '');
-		$('fw-status').title = notes.join('\n');
+		status(notes.join(' · ') + (notes.length ? '.' : ''), plan.foreignCount ? 'error' : '');
+		$('fw-status').title = notes.join('\n') + (plan.foreignCount ? '\n\n' + plan.foreign.join('\n') + (plan.foreignCount > plan.foreign.length ? '\n… e mais ' + (plan.foreignCount - plan.foreign.length) : '') : '');
 	}
 
 	async function openMigration() {

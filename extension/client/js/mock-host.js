@@ -1420,7 +1420,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED, kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, foreign: window.PAD_MOCK_FOREIGN ? ['01 PROJETOS/3D/vinheta.c4d', '01 PROJETOS/3D/logo.max'] : [], foreignCount: window.PAD_MOCK_FOREIGN ? 2 : 0, all: all, undo: !!window.PAD_MOCK_MIGRATED, kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
 				sources: Object.keys(sources).sort(function (a, b) {
 					if (a === '..' || b === '..') return a === '..' ? 1 : -1;
 

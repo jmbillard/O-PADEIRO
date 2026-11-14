@@ -49,6 +49,9 @@ var PAD_MIGRATION_BULK = 100; // mais arquivos sem uso do que isto numa pasta: �
 var PAD_MIGRATION_FALLBACK = { projeto: '01_PROJETOS', saidas: '03_SAIDA', externos: '05_EXTERNOS' };
 var PAD_FONT_EXT = /\.(otf|ttf|ttc|otc|woff2?|pfb|pfm|dfont)$/i;
 var PAD_PROJECT_EXT = /\.(aep|aet|aepx)$/i;
+// os projetos de outros programas: com um deles na pasta, a migração não move nada (o padeiro só religa os projetos do
+// After; o Cinema 4D, o Max, o Premiere… perderiam os arquivos). o caminho é o Coletar, que copia
+var PAD_FOREIGN_EXT = /\.(c4d|max|blend|ma|mb|hip|hiplc|hipnc|prproj|nk|drp|spp|sbs|ztl|zpr|uproject|indd)$/i;
 
 var PAD_MIGRATION_BACKUP = '_originais_migracao'; // os .aep como eram antes de religar (dentro dos externos)
 
@@ -212,6 +215,12 @@ function padMigrateBuild(all, move) {
 		else deepGroup[group] = true;
 	}
 	plan.partial = state.partial;
+
+	// os projetos de outros programas (até o fim da leitura): com um, nada é movido
+	plan.foreign = [];
+	for (m = 0; m < state.files.length; m++) {
+		if (PAD_FOREIGN_EXT.test(state.files[m].rel)) plan.foreign.push(state.files[m].rel);
+	}
 
 	// os usados que estão na raiz mas fundo demais para a leitura: entram pelo caminho do item do After
 	var scanned = {};
@@ -379,7 +388,7 @@ function padMigrateBuild(all, move) {
 PADX.migratePlan = function (a) {
 	var plan = padMigrateBuild(a && a.all, a && a.move);
 	var folders = padStructureFolders(plan.settings);
-	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, bulk: plan.bulk, kept: plan.kept, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
+	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, foreign: plan.foreign.slice(0, 15), foreignCount: plan.foreign.length, all: plan.all, bulk: plan.bulk, kept: plan.kept, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
 	var srcIndex = {};
 	var dstIndex = {};
 	var linkIndex = {};
@@ -668,6 +677,7 @@ PADX.migrateReadEnd = function () {
 PADX.migrateBegin = function (a) {
 	var plan = padMigrateBuild(a && a.all, a && a.move);
 
+	if (plan.foreign.length) throw new Error('#PAD_112 - migrar: a pasta tem projetos de outros programas (' + plan.foreign.length + ', ex: ' + plan.foreign[0] + '). mover os arquivos quebraria esses projetos: nada foi movido. use o Coletar para copiar o projeto do After para a pasta nova.');
 	if (plan.partial) throw new Error('#PAD_105 - migrar: a pasta é grande demais para ler de uma vez (mais de ' + PAD_MIGRATION_FILES + ' arquivos ou muito lenta). nada foi movido.');
 	if (new File(plan.root + '/' + PAD_MIGRATION_LOG).exists) throw new Error('#PAD_106 - migrar: esta pasta já foi migrada (há um registro nela). desfaça a migração antes de migrar de novo.');
 
