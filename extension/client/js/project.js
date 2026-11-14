@@ -543,7 +543,9 @@ projetos com o nome certo).
 		await ensureBases();
 		if (!state.bases.length) return matches; // sem categorias na configuração: o jeito de antes (a pasta do índice)
 
-		return matches.map(function (m) {
+		return matches.filter(function (m) {
+			return m.isCustom || m.newOrg || !isCategoryFolder(m);
+		}).map(function (m) {
 			if (m.isCustom || m.newOrg) return m;
 
 			var base = baseForMatch(m);
@@ -554,6 +556,25 @@ projetos com o nome certo).
 			var path = fillPattern(base.pattern, name, base.label);
 
 			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true });
+		});
+	}
+
+	// a pasta achada é a pasta de uma categoria, não uma atração: a que guarda as atrações dela (INSTITUCIONAL/VTs é a
+	// categoria VT; a pasta VTs, onde todos os VTs ficavam juntos, não vira a atração VTS)
+	function isCategoryFolder(m) {
+		var parts = String(m.path || '').replace(/\\/g, '/').replace(/\/+$/, '').split('/').map(aepName);
+
+		return state.bases.some(function (b) {
+			if (b.offline || !b.pattern) return false;
+
+			var segs = baseSegments(b);
+			var tail = parts.slice(-segs.length);
+			var root = parts[parts.length - segs.length - 1] || '';
+
+			// logo depois da raiz (PROJETOS ou o Fileserver), como no caminho da categoria
+			return segs.length && tail.length === segs.length && /^(PROJETOS|FILESERVER ?\d+)$/.test(root) && segs.every(function (s, k) {
+				return tail[k] === s || tail[k] + 'S' === s || tail[k] === s + 'S';
+			});
 		});
 	}
 
