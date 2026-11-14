@@ -471,3 +471,76 @@
 .combo-item.is-example.is-on .combo-title {
   color: var(--text-control);
 }
+
+/* a atração nova: as categorias à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
+.cat-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px 12px 6px;
+}
+
+.cat-chip {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: none;
+  color: var(--text-control);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.cat-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-chip svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.cat-chip:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-soft);
+}
+
+.cat-chip.is-on {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.cat-path {
+  margin: 0;
+  padding: 2px 14px 6px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-path b {
+  color: var(--text-secondary);
+  font-weight: 800;
+}

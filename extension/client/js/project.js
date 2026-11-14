@@ -417,7 +417,7 @@ projetos com o nome certo).
 					});
 
 					// a outra pasta (do navegador) fica enquanto o começo do campo for o nome dela
-					var custom = flow.attr && flow.attr.isCustom && aepName(flow.attr.name) === aepName(p.first);
+					var custom = flow.attr && (flow.attr.isCustom || flow.attr.isNewAttr) && aepName(flow.attr.name) === aepName(p.first);
 
 					if (!custom && (!flow.attr || !flow.matches.some(function (m) {
 						return m.path === flow.attr.path;
@@ -538,9 +538,9 @@ projetos com o nome certo).
 	// as atrações achadas, com a pasta da organização nova: o caminho da categoria com os tokens (a pasta antiga fica
 	// em oldPath, para os exemplos de quadros). sem categoria que sirva: noBase (escolher a categoria, como uma nova)
 	async function toNewOrg(matches) {
+		await ensureBases(); // também para os chips da atração nova (com ou sem atrações achadas)
 		if (!matches.length) return matches;
 
-		await ensureBases();
 		if (!state.bases.length) return matches; // sem categorias na configuração: o jeito de antes (a pasta do índice)
 
 		return matches.filter(function (m) {
@@ -751,9 +751,18 @@ projetos com o nome certo).
 				}, match.display));
 			});
 			list.appendChild(ATR.sep());
-			list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
-				chooseAttraction('new');
-			}));
+			if (state.bases.length) {
+				// a atração nova: as categorias à vista (um clique cria nela); a digitada no começo (vt …) vem marcada
+				var nova = novaFromText(p.first);
+
+				list.appendChild(ATR.group('nova atração · ' + (aepName(nova.name) || 'o nome digitado')));
+				catChips(list, nova);
+				list.appendChild(ATR.sep());
+			} else {
+				list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
+					chooseAttraction('new');
+				}));
+			}
 			list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', flow.choice === 'folder', function () {
 				chooseAttraction('folder');
 			}));
@@ -763,6 +772,104 @@ projetos com o nome certo).
 		});
 		list.hidden = false;
 		$('claq-hint').textContent = hint;
+	}
+
+	/* ---------- a atração nova direto na categoria (os chips embaixo da lista) ---------- */
+
+	// "vt interpol" → a categoria VT e o nome INTERPOL (o nome ou o plural da categoria, como primeira palavra e com
+	// mais alguma depois). sem categoria no começo: o texto todo é o nome
+	function novaFromText(text) {
+		var raw = String(text || '').trim();
+		var m = /^(\S+)\s+(\S.*)$/.exec(raw);
+
+		if (m) {
+			var w = aepName(m[1]);
+			var base = state.bases.filter(function (b) {
+				var n = aepName(b.label);
+
+				return b.pattern && (w === n || w === n + 'S' || w + 'S' === n);
+			})[0];
+
+			if (base) return { name: m[2].trim().toUpperCase(), base: base };
+		}
+
+		return { name: raw.toUpperCase(), base: null };
+	}
+
+	// a atração nova numa categoria, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
+	// barra fica dentro dele (ATRAÇÃO/2026/QUADRO)
+	function novaAttr(name, base) {
+		var path = fillPattern(base.pattern, name, base.label);
+
+		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true, isNewAttr: true };
+	}
+
+	// o caminho de uma categoria para a atração nova, com a pasta da atração em diante em destaque
+	function novaPathLine(node, nova, base) {
+		node.textContent = '';
+		if (!base) {
+			node.textContent = 'escolha a categoria da atração nova';
+			return;
+		}
+
+		var name = aepName(nova.name) || '…';
+		var full = displayPath(fillPattern(base.pattern, name, base.label));
+		var head = displayPath(fillPattern(base.pattern.slice(0, base.pattern.indexOf('{atracao}')), name, base.label));
+		var cut = full.indexOf(head) === 0 ? head.length : full.lastIndexOf('/') + 1;
+
+		node.appendChild(el('span', null, full.slice(0, cut)));
+		node.appendChild(el('b', null, full.slice(cut)));
+	}
+
+	function catChips(list, nova) {
+		var grid = el('div', 'cat-chips');
+		var line = el('p', 'cat-path');
+		var bases = state.bases.filter(function (b) {
+			return b.pattern;
+		});
+
+		// a digitada vem primeiro
+		if (nova.base) bases = [nova.base].concat(bases.filter(function (b) {
+			return b !== nova.base;
+		}));
+		bases.forEach(function (b) {
+			var chip = el('button', 'cat-chip' + (b === nova.base ? ' is-on' : ''));
+
+			chip.type = 'button';
+			chip.innerHTML = (PAD_UTIL.categoryIcon(b.icon) || FOLDER_SVG) + '<span></span>';
+			chip.lastChild.textContent = b.label;
+			chip.title = b.offline ? 'a pasta da categoria não está acessível: vai para a pasta deste computador' : '';
+			chip.addEventListener('mousedown', function (e) {
+				e.preventDefault(); // o campo não perde o foco
+			});
+			chip.addEventListener('mouseenter', function () {
+				novaPathLine(line, nova, b);
+			});
+			chip.addEventListener('mouseleave', function () {
+				novaPathLine(line, nova, nova.base);
+			});
+			chip.addEventListener('click', function () {
+				pickNovaCategory(nova, b);
+			});
+			grid.appendChild(chip);
+		});
+		novaPathLine(line, nova, nova.base);
+		list.appendChild(grid);
+		list.appendChild(line);
+	}
+
+	// escolher a categoria: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
+	function pickNovaCategory(nova, base) {
+		var name = aepName(nova.name);
+
+		if (!name) return $('claq').focus();
+		pref(PREF_BASE, base.label); // a categoria da atração nova fica lembrada
+		enterAttraction(novaAttr(name, base));
+
+		var input = $('claq');
+
+		input.focus();
+		input.setSelectionRange(input.value.length, input.value.length);
 	}
 
 	// volta da atração nova para a busca (o que estava digitado fica)
@@ -843,6 +950,10 @@ projetos com o nome certo).
 		});
 
 		if (exact.length === 1) return enterAttraction(exact[0]);
+
+		var typed = state.bases.length ? novaFromText(p.first) : null;
+
+		if (typed && typed.base && aepName(typed.name)) return pickNovaCategory(typed, typed.base);
 		if (flow.choice !== 'new') return chooseAttraction('new');
 		if (novaReady()) {
 			state.claqClosed = true;
@@ -921,7 +1032,7 @@ projetos com o nome certo).
 		var plan = state.plan;
 
 		if (!flow.claquete) return hintLine(node, '');
-		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) · Enter: atração nova');
+		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou a categoria da nova');
 		if (!plan) return hintLine(node, 'conferindo a pasta…');
 
 		// a pasta da estrutura (a do projeto) com os níveis em destaque, e a de projetos dentro dela
