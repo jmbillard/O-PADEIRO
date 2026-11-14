@@ -61,6 +61,12 @@
 				"icon": "estrela"
 			},
 			{
+				"name": "VT",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{atracao}/{ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/VT/VT PARA ARTE/{atracao}",
+				"icon": "fita"
+			},
+			{
 				"name": "FILME",
 				"path": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_{letra}_/{atracao}",
 				"output": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}",
