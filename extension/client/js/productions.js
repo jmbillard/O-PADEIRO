@@ -2159,61 +2159,98 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   e separadores entre os grupos
 	   ========================================================= */
 
-	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_BAR = PAD_UTIL.barDefault;
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
-		templates: ['Templates', 'uma gaveta: preencher templates · criar novo template', 'templates'],
-		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes · na barra, na gaveta Projeto', 'fonts'],
-		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto · na barra, na gaveta Projeto', 'form'],
-		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta · na barra, na gaveta Projeto', 'collect'],
-		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews · na barra, na gaveta Projeto', 'render'],
+		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
+		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
+		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
+		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
+		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
+		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
-		renomear: ['Renomear', 'renomear comps · renomear as saídas de render · na barra, na gaveta Organização', 'rename'],
-		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas · na barra, na gaveta Organização', 'organize'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search']
 	};
 
+	// as gavetas: o nome e o ícone (as de dentro: PAD_UTIL.barGroups)
+	var GROUP_INFO = { templates: ['Templates', 'templates'], projeto: ['Projeto', 'project'], organizar: ['Organização', 'organization'] };
+
 	// o padrão da equipe (rede)
 	function setBar(b) {
-		var data = b || {};
-
-		state.team.bar = {
-			items: (data.items && data.items.length ? data.items : DEFAULT_BAR).slice(),
-			hidden: (data.hidden || []).slice()
-		};
+		state.team.bar = PAD_UTIL.barLayout(b || {}); // o formato de antes vira o de agora
 		activatePrefs();
 	}
 
-	function toggleHidden(key, show) {
+	function isHidden(key) {
+		return state.bar.hidden.indexOf(key) >= 0;
+	}
+
+	function setHidden(key, hide) {
 		state.bar.hidden = state.bar.hidden.filter(function (k) {
 			return k !== key;
 		});
-
-		if (!show) state.bar.hidden.push(key);
+		if (hide) state.bar.hidden.push(key);
 	}
 
 	function svgTool(key) {
 		return PAD_ICONS.svg(key === 'links' ? 'link' : (TOOL_INFO[key] || [key, '', ''])[2]);
 	}
 
-	// a barra (esquerda): só as que aparecem, na ordem, com os separadores
-	function visibleItems() {
-		return state.bar.items.filter(function (k) {
-			return k === 'divider' || state.bar.hidden.indexOf(k) < 0;
+	// a barra em blocos, na ordem: { divider } | { tool } | { group, members (na ordem de dentro) }
+	function barEntries() {
+		var out = [];
+		var seen = {};
+
+		state.bar.items.forEach(function (k) {
+			if (k === 'divider') return out.push({ divider: true });
+
+			var g = PAD_UTIL.barGroupOf(k);
+
+			if (!g) return out.push({ tool: k });
+			if (seen[g]) return;
+			seen[g] = true;
+			out.push({
+				group: g,
+				members: state.bar.items.filter(function (m) {
+					return PAD_UTIL.barGroupOf(m) === g;
+				})
+			});
 		});
+
+		return out;
 	}
 
-	// a ferramenta (ou os links) sai da barra: vira um bloco no lado branco
-	function removeFromBar(key) {
-		toggleHidden(key, false);
+	// um bloco aparece na barra (à esquerda)? o separador sempre; a ferramenta e a gaveta, se não estão escondidas
+	function entryShown(e) {
+		if (e.divider) return true;
+		if (e.tool) return !isHidden(e.tool);
+
+		return !isHidden('gaveta:' + e.group);
+	}
+
+	// os blocos de volta na lista plana (as de uma gaveta juntas)
+	function setEntries(entries) {
+		var items = [];
+
+		entries.forEach(function (e) {
+			if (e.divider) items.push('divider');
+			else if (e.tool) items.push(e.tool);
+			else items = items.concat(e.members);
+		});
+		state.bar.items = PAD_UTIL.barLayout({ items: items, hidden: [] }).items;
+	}
+
+	function changed() {
 		renderTools();
 		updateDirty();
 	}
 
 	// as abas das ferramentas seguem a ordem da barra (a do layout em uso: muda junto ao arrastar)
-	var BAR_TABS = { templates: 'prods', fontes: 'fonts', projeto: 'project', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
+	var BAR_TABS = { preencher: 'prods', fontes: 'fonts', projeto: 'project', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
 
 	function orderToolTabs() {
 		var nav = $('tabs');
@@ -2241,7 +2278,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		var disabled = !state.available;
 		var cards = $('tool-cards');
-		var linksShown = state.bar.hidden.indexOf('links') < 0;
+		var entries = barEntries();
 
 		list.textContent = '';
 		cards.textContent = '';
@@ -2255,85 +2292,150 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return btn;
 		}
 
+		function toolRow(key, cls, title, onHide) {
+			var row = el('div', 'bar-row' + (cls ? ' ' + cls : ''));
+
+			row.appendChild(PAD_SORT.handle());
+			row.appendChild(svgTool(key));
+			row.appendChild(el('span', 'bar-row-label', TOOL_INFO[key][0]));
+			row.appendChild(removeButton(title, onHide));
+
+			return row;
+		}
+
 		// os links, no começo (não se arrastam; o × tira)
-		if (linksShown) {
+		if (!isHidden('links')) {
 			var links = el('div', 'bar-row is-links');
+
 			links.appendChild(svgTool('links'));
 			links.appendChild(el('span', 'bar-row-label', 'links'));
 			links.appendChild(removeButton('tirar os links da barra', function () {
-				removeFromBar('links');
+				setHidden('links', true);
+				changed();
 			}));
 			list.appendChild(links);
 			list.appendChild(el('div', 'bar-row-rule'));
 		}
 
-		visibleItems().forEach(function (key, i) {
-			var row = el('div', 'bar-row');
+		entries.forEach(function (e, at) {
+			if (!entryShown(e)) return;
 
-			row.setAttribute('data-index', i);
-			row.appendChild(PAD_SORT.handle());
+			var row;
 
-			if (key === 'divider') {
-				row.classList.add('is-divider');
+			if (e.divider) {
+				row = el('div', 'bar-row bar-top is-divider');
+				row.appendChild(PAD_SORT.handle());
 				row.appendChild(el('span', 'bar-row-line'));
 				row.appendChild(removeButton('tirar o separador', function () {
-					var at = -1;
-					var seen = -1;
-
-					// o i-ésimo item visível, na lista completa
-					state.bar.items.forEach(function (k, j) {
-						if (k === 'divider' || state.bar.hidden.indexOf(k) < 0) seen++;
-						if (seen === i && at < 0) at = j;
-					});
-					if (at >= 0) state.bar.items.splice(at, 1);
-					renderTools();
-					updateDirty();
+					entries.splice(at, 1);
+					setEntries(entries);
+					changed();
 				}));
+			} else if (e.tool) {
+				row = toolRow(e.tool, 'bar-top', 'tirar ' + TOOL_INFO[e.tool][0] + ' da barra', function () {
+					setHidden(e.tool, true);
+					changed();
+				});
 			} else {
-				row.appendChild(svgTool(key));
-				row.appendChild(el('span', 'bar-row-label', (TOOL_INFO[key] || [key])[0]));
-				row.appendChild(removeButton('tirar ' + (TOOL_INFO[key] || [key])[0] + ' da barra', function () {
-					removeFromBar(key);
+				// a gaveta: um bloco que anda inteiro; dentro, as ferramentas mudam de ordem (só dentro dela)
+				var info = GROUP_INFO[e.group];
+				var shown = e.members.filter(function (m) {
+					return !isHidden(m);
+				});
+				var head = el('div', 'bar-row bar-drawer-head');
+				var label = el('span', 'bar-row-label', info[0]);
+				var inner = el('div', 'bar-drawer-list');
+
+				row = el('div', 'bar-top bar-drawer-cfg');
+				head.appendChild(PAD_SORT.handle());
+				head.appendChild(PAD_ICONS.svg(info[1]));
+				label.appendChild(el('span', 'bar-drawer-count', shown.length === e.members.length ? String(shown.length) : shown.length + ' de ' + e.members.length));
+				head.appendChild(label);
+				head.appendChild(removeButton('esconder ' + info[0] + ' (a gaveta inteira)', function () {
+					setHidden('gaveta:' + e.group, true);
+					changed();
 				}));
+				row.appendChild(head);
+
+				shown.forEach(function (m) {
+					inner.appendChild(toolRow(m, 'is-member', 'esconder ' + TOOL_INFO[m][0] + ' (sai da gaveta ' + info[0] + ')', function () {
+						setHidden(m, true);
+						changed();
+					}));
+				});
+				row.appendChild(inner);
+
+				// a ordem de dentro: as à mostra na ordem nova, as escondidas no fim da gaveta
+				PAD_SORT.enable(inner, '.bar-row', function (from, to) {
+					var moved = shown.splice(from, 1)[0];
+
+					shown.splice(to, 0, moved);
+					e.members = shown.concat(e.members.filter(isHidden));
+					setEntries(entries);
+					changed();
+				});
 			}
 
+			row.setAttribute('data-entry', at);
 			list.appendChild(row);
 		});
 
-		// fora da barra (direita): um bloco por ferramenta tirada; o + põe de volta, no fim da barra
-		var out = Object.keys(TOOL_INFO).filter(function (key) {
-			return state.bar.hidden.indexOf(key) >= 0;
+		// fora da barra (direita): o que foi escondido; o + põe de volta no mesmo lugar (a ferramenta de uma gaveta, no
+		// fim dela; a gaveta e a ferramenta solta, no fim da barra)
+		var out = [];
+
+		if (isHidden('links')) out.push({ key: 'links', name: 'Links', text: 'os links da equipe e os seus, no começo da barra', icon: 'link' });
+		entries.forEach(function (e) {
+			if (e.tool && isHidden(e.tool)) out.push({ key: e.tool, name: TOOL_INFO[e.tool][0], text: TOOL_INFO[e.tool][1], icon: TOOL_INFO[e.tool][2] });
+			if (!e.group) return;
+
+			var info = GROUP_INFO[e.group];
+
+			if (isHidden('gaveta:' + e.group)) {
+				out.push({ key: 'gaveta:' + e.group, name: info[0], text: e.members.map(function (m) {
+					return TOOL_INFO[m][0];
+				}).join(' · '), icon: info[1] });
+				return;
+			}
+			e.members.filter(isHidden).forEach(function (m) {
+				out.push({ key: m, from: info[0], group: e, name: TOOL_INFO[m][0], text: TOOL_INFO[m][1], icon: TOOL_INFO[m][2] });
+			});
 		});
 
-		if (!linksShown) out.unshift('links');
-
-		out.forEach(function (key) {
-			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', 'link'] : TOOL_INFO[key];
+		out.forEach(function (o) {
 			var card = el('div', 'org-type tool-card');
 			var text = el('span', 'org-type-text');
-			var icon = svgTool(key);
 			var add = miniButton('add', '', function () { });
 
-			card.appendChild(icon);
-			text.appendChild(el('strong', null, info[0]));
-			text.appendChild(el('span', null, info[1]));
+			card.appendChild(PAD_ICONS.svg(o.icon));
+			if (o.from) text.appendChild(el('span', 'tool-card-from', o.from));
+			text.appendChild(el('strong', null, o.name));
+			text.appendChild(el('span', null, o.text));
 			card.appendChild(text);
 			add.classList.add('tool-add');
-			add.title = 'pôr ' + info[0] + ' de volta na barra' + (key === 'links' ? '' : ' (no fim)');
+			add.title = o.from ? 'pôr ' + o.name + ' de volta em ' + o.from + ' (no fim)' : 'pôr ' + o.name + ' de volta na barra' + (o.key === 'links' ? '' : ' (no fim)');
 			add.setAttribute('aria-label', add.title);
 			add.disabled = disabled;
 			add.addEventListener('click', function () {
-				toggleHidden(key, true);
+				setHidden(o.key, false);
 
-				// volta no fim da barra
-				if (key !== 'links') {
-					state.bar.items = state.bar.items.filter(function (k) {
-						return k !== key;
-					}).concat([key]);
+				if (o.group) {
+					// no fim da gaveta
+					o.group.members = o.group.members.filter(function (m) {
+						return m !== o.key;
+					}).concat([o.key]);
+					setEntries(entries);
+				} else if (o.key !== 'links') {
+					// no fim da barra
+					var back = entries.filter(function (e) {
+						return (e.tool || (e.group && 'gaveta:' + e.group)) === o.key;
+					})[0];
+
+					setEntries(entries.filter(function (e) {
+						return e !== back;
+					}).concat([back]));
 				}
-
-				renderTools();
-				updateDirty();
+				changed();
 			});
 			card.appendChild(add);
 			cards.appendChild(card);
@@ -2346,22 +2448,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		// um separador novo entra no fim; arraste para o lugar
 		$('btn-new-divider').addEventListener('click', function () {
 			state.bar.items.push('divider');
-			renderTools();
-			updateDirty();
+			changed();
 			$('tool-list').lastChild.scrollIntoView({ block: 'nearest' });
 		});
 
-		// reordena as visíveis; as escondidas ficam no fim da lista completa (voltam no fim da barra)
-		PAD_SORT.enable($('tool-list'), '.bar-row:not(.is-links)', function (from, to) {
-			var visible = visibleItems();
-			var moved = visible.splice(from, 1)[0];
+		// a ordem da barra: os blocos à mostra (gavetas, ferramentas soltas, separadores); os escondidos vão para o fim
+		PAD_SORT.enable($('tool-list'), '.bar-top', function (from, to) {
+			var entries = barEntries();
+			var shown = entries.filter(entryShown);
+			var moved = shown.splice(from, 1)[0];
 
-			visible.splice(to, 0, moved);
-			state.bar.items = visible.concat(state.bar.items.filter(function (k) {
-				return k !== 'divider' && state.bar.hidden.indexOf(k) >= 0;
-			}));
-			renderTools();
-			updateDirty();
+			shown.splice(to, 0, moved);
+			setEntries(shown.concat(entries.filter(function (e) {
+				return !entryShown(e);
+			})));
+			changed();
 		});
 	}
 
@@ -3009,7 +3110,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.custom = { appearance: !!data.appearance, bar: !!data.bar };
 		state.mine.appearance = Object.assign({}, PAD_THEME.defaults, data.appearance || state.team.appearance || {});
-		state.mine.bar = JSON.parse(JSON.stringify(data.bar || state.team.bar || { items: DEFAULT_BAR.slice(), hidden: [] }));
+		state.mine.bar = PAD_UTIL.barLayout(JSON.parse(JSON.stringify(data.bar || state.team.bar || { items: DEFAULT_BAR.slice(), hidden: [] })));
 		state.prefsSnapshot = JSON.stringify(prefsForSave());
 		activatePrefs();
 	}

@@ -480,18 +480,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba LAYOUT).
 	var TOOLS = [
-		{
-			key: 'templates',
-			label: 'Templates',
-			icon: 'templates',
-			name: 'A FORMA',
-			tips: [], // a dica do botão da gaveta: as ferramentas de dentro (paintGroupDots)
-			// uma gaveta com os dois cliques de antes, cada um num botão
-			drawer: [
-				{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
-				{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate }
-			]
-		},
+		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
+		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
+		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
 		{
 			key: 'fontes',
 			label: 'Fontes',
@@ -585,14 +576,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 	];
 
-	// as gavetas de grupo: as ferramentas de members ficam juntas numa gaveta, no lugar da primeira delas na barra
-	// (com 2 ou mais na barra; com uma só, ela fica solta). o botão do grupo abre a gaveta
+	// as gavetas: as ferramentas de cada uma ficam juntas, na ordem da configuração (aba LAYOUT: arrastar dentro da
+	// gaveta), com 2 ou mais à mostra; com uma só, ela fica solta; com nenhuma (ou 'gaveta:<chave>' escondida), a
+	// gaveta some. o clique abre a gaveta; o clique direito faz a primeira ferramenta dela
 	var GROUPS = [
-		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: ['projeto', 'fontes', 'coletar', 'render'] },
-		{ key: 'organizar', label: 'Organização', icon: 'organization', name: 'ORGANIZAÇÃO', members: ['renomear', 'organizar'] }
+		{ key: 'templates', label: 'Templates', icon: 'templates', name: 'TEMPLATES', members: PAD_UTIL.barGroups.templates },
+		{ key: 'projeto', label: 'Projeto', icon: 'project', name: 'PROJETO', members: PAD_UTIL.barGroups.projeto },
+		{ key: 'organizar', label: 'Organização', icon: 'organization', name: 'ORGANIZAÇÃO', members: PAD_UTIL.barGroups.organizar }
 	];
 
-	var DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_ITEMS = PAD_UTIL.barDefault;
 
 	function toolDef(key) {
 		return TOOLS.filter(function (t) {
@@ -897,7 +890,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var arrow = el('span', 'drawer-arrow');
 
 		btn.classList.add('bar-drawer-btn');
-		btn.dataset.name = def.key === 'templates' ? 'TEMPLATES' : def.name;
+		btn.dataset.name = def.name;
 		btn.setAttribute('aria-expanded', 'false');
 		btn.addEventListener('click', function () {
 			box.openedAt = drawerOpenedAt = Date.now();
@@ -905,8 +898,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			rememberDrawer(box.id);
 			handle.focus({ preventScroll: true });
 		});
+		// o clique direito faz a primeira ferramenta da gaveta (sem abrir): o atalho de antes das gavetas
 		btn.addEventListener('contextmenu', function (e) {
-			e.preventDefault(); // o clique direito no grupo não faz nada (por enquanto)
+			e.preventDefault();
+			if (members[0]) members[0].click();
 		});
 
 		handle.type = 'button';
@@ -975,7 +970,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// Monta a barra na ordem da configuração: 'divider' separa os grupos; as escondidas ficam de fora e
 	// um grupo sem nenhuma ferramenta não aparece (nem a divisória dele). as ferramentas de uma gaveta de grupo
 	// (GROUPS) vão juntas para o lugar da primeira delas
-	function buildTools(items, hidden) {
+	function buildTools(rawItems, rawHidden) {
+		var layout = PAD_UTIL.barLayout({ items: rawItems, hidden: rawHidden }); // o formato de antes vira o de agora
+		var items = layout.items;
+		var hidden = layout.hidden;
 		var key = items.join() + '|' + hidden.join();
 
 		if (key === toolsLayout) return;
@@ -991,8 +989,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var groupOf = {};
 
 		GROUPS.forEach(function (g) {
-			var members = g.members.filter(function (m) {
-				return shown.indexOf(m) >= 0;
+			// na ordem da barra (a de dentro da gaveta); a gaveta escondida inteira: nenhuma
+			var members = hidden.indexOf('gaveta:' + g.key) >= 0 ? [] : shown.filter(function (m) {
+				return g.members.indexOf(m) >= 0;
+			});
+
+			if (!members.length) shown = shown.filter(function (m) {
+				return g.members.indexOf(m) < 0;
 			});
 
 			if (members.length > 1) members.forEach(function (m) {
@@ -1037,20 +1040,6 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				}
 
 				var def = entry.tool;
-
-				if (def.drawer) {
-					var tparts = drawer(def.key, def, def.drawer.map(function (d) {
-						var b = toolButton(d);
-
-						bind(b, d.left, d.right);
-
-						return b;
-					}));
-
-					box.appendChild(tparts[0]);
-					box.appendChild(tparts[1]);
-					return;
-				}
 
 				var btn = toolButton(def);
 
@@ -1113,8 +1102,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			});
 			// a dica: o nome do grupo e as ferramentas de dentro, uma por linha; a que tem pendência, com a bolinha
 			// laranja (o que falta fica na dica dela, dentro da gaveta)
-			var list = Array.prototype.map.call(box.querySelectorAll('.bar-btn'), function (m) {
-				return (warnings(m).length ? '! ' : '· ') + m.getAttribute('aria-label');
+			// a primeira leva o mouse do clique direito (o clique direito na gaveta faz ela)
+			var list = Array.prototype.map.call(box.querySelectorAll('.bar-btn'), function (m, i) {
+				return (warnings(m).length ? '! ' : i === 0 ? R_CLICK : '· ') + m.getAttribute('aria-label');
 			});
 			var text = gbtn.dataset.name + '\n\n' + list.join('\n');
 

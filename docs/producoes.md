@@ -302,10 +302,12 @@ a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro
 
 a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
-- **ordem padrão** → links | templates | fontes, projeto, coletar | renomear, organizar | pastas, buscar (`|` é um separador).
-- **ordem** → arraste cada ferramenta da barra pelos pontinhos.
-- **tirar** → o **×** de uma ferramenta (ou dos links, no topo) tira ela da barra; passe o mouse para ver o ×.
-- **fora da barra** → cada ferramenta tirada vira um bloco à direita, com o que ela faz; o **+** põe de volta, no fim da barra (os links voltam ao começo).
+- **ordem padrão** → links | Templates | Projeto (Criar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar), Importar | Pastas, Buscar (`|` é um separador).
+- **gavetas** → cada gaveta é um bloco com contorno, com o nome e quantas ferramentas mostra (`3`, ou `3 de 4` com alguma escondida). os pontinhos do título movem a gaveta inteira pela barra; os de uma ferramenta de dentro mudam a ordem **só dentro da gaveta** (uma ferramenta não sai da gaveta dela). a primeira de dentro é a do `◗` no botão da gaveta.
+- **ordem** → arraste as gavetas, as ferramentas soltas e os separadores pelos pontinhos.
+- **esconder** → o **×** (passe o mouse para ver) esconde uma ferramenta, a gaveta inteira (o × do título) ou os links (no topo). uma gaveta com uma ferramenta só à mostra aparece solta na barra; com nenhuma, some.
+- **fora da barra** → o que foi escondido vira um bloco à direita, com o que faz (a ferramenta de uma gaveta leva o nome dela em cima); o **+** põe de volta no mesmo lugar: a ferramenta no fim da gaveta dela, a gaveta e a ferramenta solta no fim da barra (os links voltam ao começo).
+- **o formato de antes** → a barra salva antes das gavetas continua valendo: cada gaveta fica no lugar da primeira ferramenta dela, com a ordem de dentro padrão.
 - **separadores** → '*+ separador*' (à direita, abaixo dos blocos) acrescenta um no fim da barra; arraste para o lugar. cada separador vira uma divisória na barra; o **×** tira. um grupo sem nenhuma ferramenta some junto com a divisória.
 
 > 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.

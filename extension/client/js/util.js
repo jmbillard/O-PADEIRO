@@ -470,5 +470,89 @@
 	// Windows. para os avisos ("· Cmd+Z desfaz")
 	var UNDO_KEY = /Mac/i.test((navigator.platform || '') + ' ' + (navigator.userAgent || '')) ? 'Cmd+Z' : 'Ctrl+Z';
 
-	window.PAD_UTIL = { undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
+	/* ---------------------------------------------------------------
+	   a barra: as gavetas e as ferramentas soltas (a mesma regra do host, productions.jsx: padCleanBar)
+	   items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
+	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
+	   --------------------------------------------------------------- */
+	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
+	var BAR_LOOSE = ['importar', 'pastas', 'buscar'];
+	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+
+	function barGroupOf(key) {
+		for (var g in BAR_GROUPS) {
+			if (BAR_GROUPS[g].indexOf(key) >= 0) return g;
+		}
+
+		return '';
+	}
+
+	// o formato de antes (com 'templates' e as gavetas montadas pela primeira ferramenta) vira o de agora: cada
+	// gaveta no lugar da primeira ferramenta dela, com a ordem de dentro padrão
+	function barLayout(o) {
+		var list = o && o.items && o.items.length ? o.items : BAR_DEFAULT;
+		var old = list.indexOf('templates') >= 0;
+		var items = [];
+		var seen = {};
+		var hidden = [];
+
+		list.forEach(function (raw) {
+			var key = String(raw).toLowerCase();
+
+			if (key === 'divider') {
+				if (items.length && items[items.length - 1] !== 'divider') items.push(key);
+				return;
+			}
+
+			var group = key === 'templates' ? 'templates' : barGroupOf(key);
+
+			if (group) {
+				if (seen['gaveta:' + group]) return;
+				seen['gaveta:' + group] = true;
+
+				// as de dentro: na ordem da lista (as que faltam, no fim da gaveta); no formato de antes, a padrão
+				var mine = old ? [] : list.filter(function (k) {
+					return BAR_GROUPS[group].indexOf(k) >= 0;
+				});
+
+				BAR_GROUPS[group].forEach(function (m) {
+					if (mine.indexOf(m) < 0) mine.push(m);
+				});
+				mine.forEach(function (m) {
+					if (!seen[m]) {
+						seen[m] = true;
+						items.push(m);
+					}
+				});
+				return;
+			}
+
+			if (BAR_LOOSE.indexOf(key) >= 0 && !seen[key]) {
+				seen[key] = true;
+				items.push(key);
+			}
+		});
+
+		// gaveta ou ferramenta nova (ou esquecida): no fim
+		Object.keys(BAR_GROUPS).forEach(function (g) {
+			if (!seen['gaveta:' + g]) BAR_GROUPS[g].forEach(function (m) {
+				items.push(m);
+			});
+		});
+		BAR_LOOSE.forEach(function (k) {
+			if (!seen[k]) items.push(k);
+		});
+		while (items.length && items[items.length - 1] === 'divider') items.pop();
+
+		((o && o.hidden) || []).forEach(function (raw) {
+			var k = String(raw).toLowerCase();
+
+			if (k === 'templates') k = 'gaveta:templates';
+			if ((k === 'links' || items.indexOf(k) >= 0 || (k.indexOf('gaveta:') === 0 && BAR_GROUPS[k.slice(7)])) && hidden.indexOf(k) < 0) hidden.push(k);
+		});
+
+		return { items: items, hidden: hidden };
+	}
+
+	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
 })();

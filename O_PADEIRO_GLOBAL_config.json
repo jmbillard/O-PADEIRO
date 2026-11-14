@@ -46,7 +46,7 @@
 				"name": "ESPORTE",
 				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/PROJETOS/ESPORTES/{atracao}/{ano}",
 				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/ESPORTES/{atracao}/{ano}",
-				"icon": "medalha"
+				"icon": "podio"
 			},
 			{
 				"name": "JORNALISMO",
@@ -403,10 +403,11 @@
 	},
 	"BAR": {
 		"items": [
-			"templates",
+			"preencher",
+			"criar-template",
 			"divider",
-			"fontes",
 			"projeto",
+			"fontes",
 			"coletar",
 			"render",
 			"divider",

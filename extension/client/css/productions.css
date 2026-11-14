@@ -2151,6 +2151,69 @@ body.is-org-dragging * {
   color: rgb(var(--on-brand));
 }
 
+/* a gaveta: um bloco com contorno (anda inteiro); dentro, as ferramentas dela (mudam de ordem só ali dentro).
+   o raio do bloco é o da linha (12) + o respiro (4) + a borda (1) */
+.bar-drawer-cfg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid rgb(var(--on-brand) / 30%);
+  border-radius: 17px;
+  background: rgb(var(--on-brand) / 7%);
+}
+
+.bar-drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bar-drawer-head .bar-row-label {
+  font-weight: 800;
+}
+
+/* quantas ferramentas a gaveta mostra (3, ou 3 de 4 com alguma escondida) */
+.bar-drawer-count {
+  margin-left: 8px;
+  color: rgb(var(--on-brand) / 70%);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bar-row.is-member {
+  min-height: 38px;
+  padding-left: 24px;
+}
+
+.bar-row.is-member > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bar-row.is-member .bar-row-label {
+  font-weight: 620;
+}
+
+/* a gaveta de onde veio a ferramenta escondida (fora da barra) */
+.tool-card-from {
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.is-sorting > .bar-drawer-cfg {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting > .bar-drawer-cfg.is-dragging {
+  position: relative;
+  z-index: 2;
+  transition: none;
+}
+
 .is-sorting > .bar-row {
   transition: transform 180ms var(--ease-soft);
 }

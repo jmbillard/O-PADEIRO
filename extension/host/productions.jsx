@@ -718,35 +718,101 @@ PADX.savePersonalLinks = function (a) {
 ---------------------------------------------------------------
 
 'BAR' no O_PADEIRO_GLOBAL_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
-  items  → a ordem das ferramentas na barra; 'divider' separa os grupos. ferramentas: templates, fontes,
-           projeto, coletar, render, pastas, renomear, organizar e buscar (as que faltarem entram no fim)
-  hidden → as escondidas da barra (as mesmas chaves, e 'links' para o bloco de links)
+  items  → a ordem da barra, plana; 'divider' separa os grupos. as gavetas: templates (preencher, criar-template),
+           projeto (projeto, fontes, coletar, render) e organizar (renomear, organizar), cada uma com as de dentro
+           juntas, na ordem de dentro; as soltas: importar, pastas e buscar (as que faltarem entram no fim)
+  hidden → as escondidas: as ferramentas, 'gaveta:<chave>' (a gaveta inteira) e 'links' (o bloco de links)
 
 */
 
-var PAD_BAR_TOOLS = ['templates', 'fontes', 'projeto', 'coletar', 'render', 'pastas', 'renomear', 'organizar', 'importar', 'buscar'];
-var PAD_BAR_DEFAULT_ITEMS = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+// as gavetas e as de dentro (a ordem padrão de dentro) e as soltas; a mesma regra do painel (js/util.js: barLayout)
+var PAD_BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
+var PAD_BAR_LOOSE = ['importar', 'pastas', 'buscar'];
+var PAD_BAR_TOOLS = ['preencher', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar'];
+var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
 
+function padBarGroupOf(key) {
+	for (var g in PAD_BAR_GROUPS) {
+		if (PAD_BAR_GROUPS.hasOwnProperty(g) && padIndexOf(PAD_BAR_GROUPS[g], key) >= 0) return g;
+	}
+
+	return '';
+}
+
+function padIndexOf(list, value) {
+	for (var i = 0; i < list.length; i++) {
+		if (list[i] == value) return i;
+	}
+
+	return -1;
+}
+
+// items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
+// hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'. o formato de antes (com 'templates'
+// e as gavetas montadas pela primeira ferramenta) vira o de agora: cada gaveta no lugar da primeira ferramenta dela,
+// com a ordem de dentro padrão
 function padCleanBar(o) {
+	var list = o && o.items instanceof Array && o.items.length ? o.items : PAD_BAR_DEFAULT_ITEMS;
+	var old = false;
 	var items = [];
 	var hidden = [];
 	var seen = {};
-	var list = o && o.items instanceof Array && o.items.length ? o.items : PAD_BAR_DEFAULT_ITEMS;
 	var i;
+	var g;
+	var m;
+
+	for (i = 0; i < list.length; i++) {
+		if (padTrim(list[i]).toLowerCase() == 'templates') old = true;
+	}
 
 	for (i = 0; i < list.length; i++) {
 		var key = padTrim(list[i]).toLowerCase();
 
 		if (key == 'divider') {
 			if (items.length && items[items.length - 1] != 'divider') items.push(key); // sem separador no começo nem dois seguidos
-		} else if (PAD_BAR_TOOLS.indexOf(key) >= 0 && !seen[key]) {
+			continue;
+		}
+
+		var group = key == 'templates' ? 'templates' : padBarGroupOf(key);
+
+		if (group) {
+			if (seen['gaveta:' + group]) continue;
+			seen['gaveta:' + group] = true;
+
+			// as de dentro: na ordem da lista (as que faltam, no fim da gaveta); no formato de antes, a padrão
+			var mine = [];
+
+			for (m = 0; !old && m < list.length; m++) {
+				var k2 = padTrim(list[m]).toLowerCase();
+
+				if (padIndexOf(PAD_BAR_GROUPS[group], k2) >= 0 && padIndexOf(mine, k2) < 0) mine.push(k2);
+			}
+			for (m = 0; m < PAD_BAR_GROUPS[group].length; m++) {
+				if (padIndexOf(mine, PAD_BAR_GROUPS[group][m]) < 0) mine.push(PAD_BAR_GROUPS[group][m]);
+			}
+			for (m = 0; m < mine.length; m++) {
+				if (!seen[mine[m]]) {
+					seen[mine[m]] = true;
+					items.push(mine[m]);
+				}
+			}
+			continue;
+		}
+
+		if (padIndexOf(PAD_BAR_LOOSE, key) >= 0 && !seen[key]) {
 			seen[key] = true;
 			items.push(key);
 		}
 	}
 
-	for (i = 0; i < PAD_BAR_TOOLS.length; i++) {
-		if (!seen[PAD_BAR_TOOLS[i]]) items.push(PAD_BAR_TOOLS[i]); // ferramenta nova (ou esquecida): no fim
+	// gaveta ou ferramenta nova (ou esquecida): no fim
+	for (g in PAD_BAR_GROUPS) {
+		if (PAD_BAR_GROUPS.hasOwnProperty(g) && !seen['gaveta:' + g]) {
+			for (m = 0; m < PAD_BAR_GROUPS[g].length; m++) items.push(PAD_BAR_GROUPS[g][m]);
+		}
+	}
+	for (i = 0; i < PAD_BAR_LOOSE.length; i++) {
+		if (!seen[PAD_BAR_LOOSE[i]]) items.push(PAD_BAR_LOOSE[i]);
 	}
 
 	while (items.length && items[items.length - 1] == 'divider') items.pop();
@@ -754,9 +820,13 @@ function padCleanBar(o) {
 	var h = o && o.hidden instanceof Array ? o.hidden : [];
 
 	for (i = 0; i < h.length; i++) {
-		var k = padTrim(h[i]).toLowerCase();
+		var hk = padTrim(h[i]).toLowerCase();
 
-		if ((PAD_BAR_TOOLS.indexOf(k) >= 0 || k == 'links') && hidden.indexOf(k) < 0) hidden.push(k);
+		if (hk == 'templates') hk = 'gaveta:templates';
+
+		var ok = hk == 'links' || padIndexOf(items, hk) >= 0 || (hk.indexOf('gaveta:') == 0 && PAD_BAR_GROUPS.hasOwnProperty(hk.substring(7)));
+
+		if (ok && padIndexOf(hidden, hk) < 0) hidden.push(hk);
 	}
 
 	return { items: items, hidden: hidden };

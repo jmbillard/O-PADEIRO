@@ -34,6 +34,7 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 		if (list._sortable) return;
 
 		list._sortable = true;
+		list.setAttribute('data-sortable', '');
 
 		function rows() {
 			return Array.prototype.filter.call(list.children, function (node) {
@@ -47,6 +48,9 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			if (!grip || e.button !== 0) return;
 
 			var all = rows();
+			// numa lista dentro de outra (a gaveta na aba LAYOUT), o puxador é só da lista mais de dentro
+			if (grip.closest('[data-sortable]') !== list) return;
+
 			var row = grip.closest(rowSelector);
 			var from = all.indexOf(row);
 
@@ -58,7 +62,10 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 			var boxes = all.map(function (r) {
 				return r.getBoundingClientRect();
 			});
-			var step = boxes.length > 1 ? boxes[1].top - boxes[0].top : boxes[0].height;
+			// o quanto as outras andam: a altura da que se arrasta e o vão entre as linhas (as linhas podem ter alturas
+			// diferentes: uma gaveta inteira, na aba LAYOUT)
+			var gap = boxes.length > 1 ? Math.max(0, boxes[1].top - boxes[0].bottom) : 0;
+			var step = boxes[from].height + gap;
 			var to = from;
 
 			grip.focus();
@@ -119,7 +126,7 @@ e, ao soltar, onMove(de, para) recebe os índices e redesenha a lista.
 		list.addEventListener('keydown', function (e) {
 			var grip = e.target.closest && e.target.closest('.drag-handle');
 
-			if (!grip || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+			if (!grip || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') || grip.closest('[data-sortable]') !== list) return;
 
 			var all = rows();
 			var from = all.indexOf(grip.closest(rowSelector));

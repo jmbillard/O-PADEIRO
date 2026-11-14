@@ -164,10 +164,10 @@ O ETIQUETADOR
 | ![a gaveta Templates aberta](docs/images/barra-gaveta-templates.webp) |
 | ![a gaveta Organização aberta](docs/images/barra-gaveta-organizar.webp) |
 
-**Templates**, **Projeto** e **Organização** são gavetas: o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez.
+**Templates**, **Projeto** e **Organização** são gavetas: o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
 
 - **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
-- **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro. o `◗` no botão Projeto não faz nada (por enquanto).
+- **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
 - **Organização** → **Renomear** (O ETIQUETADOR) e **Organizar** (O CONTRARREGRA), cada uma com os seus dois cliques.
 - **a gaveta lembrada** → a que você deixou aberta volta aberta ao reabrir o painel (neste computador). um duplo clique no botão só abre: o segundo clique, de reflexo, não recolhe.
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, as folhas dos templates separadas, os blocos encaixados); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
