@@ -169,10 +169,10 @@ PADX.renderQueue = function (a) {
 		padEnsureFolder(folder);
 	}
 
-	if (!preset) warnings.push('sem preset de ' + (preview ? 'preview' : 'render final') + ' escolhido (configuração > projeto > neste computador): a fila usa o padrão do After.');
-
 	var names = [];
 	var badPreset = false;
+	var auto = !preset; // sem preset escolhido: o H.264 da fila dos templates (o mesmo padrão de A FORMA)
+	var used = {};
 
 	padUndoBegin(preview ? 'O PADEIRO: preview na fila de render' : 'O PADEIRO: render final na fila de render');
 
@@ -180,16 +180,31 @@ PADX.renderQueue = function (a) {
 		for (i = 0; i < comps.length; i++) {
 			var item = app.project.renderQueue.items.add(comps[i]);
 			var om = item.outputModule(1);
-			var name = '[compName]';
+			// o nome padronizado da saída (a mesma regra do Renomear > saídas): a camada de nome do template ou o
+			// nome da comp no padrão da promo
+			var nameLayer = getTemplateNameLayer(comps[i]);
+			var base = sanitizeFileName(nameLayer ? templateNameValue(nameLayer) : getPromoRename(comps[i]).name) || sanitizeFileName(comps[i].name);
+			var name = base;
+
+			if (auto && !preset) {
+				try {
+					preset = padPreferredH264(om.templates);
+				} catch (err) { }
+			}
 
 			if (preview) {
-				var base = sanitizeFileName(comps[i].name);
 				var version = padRenderNextVersion(folder, base);
 
 				name = base + '_prev_v' + (version < 10 ? '0' : '') + version;
+			} else {
+				// duas comps com o mesmo nome na mesma ida: a segunda ganha _2 (um render não apaga o outro)
+				for (var n = 2; used[name.toLowerCase()]; n++) name = base + '_' + n;
 			}
+			used[name.toLowerCase()] = true;
 
-			var file = new File(folder + '/' + name + '.[fileextension]');
+			// sequência de imagens (pelo nome do preset): o número do quadro no nome, como no Renomear > saídas
+			var seq = /sequ|seq\b|png|tiff?|tga|exr|dpx|jpe?g|psd/i.test(preset || '');
+			var file = new File(folder + '/' + name + (seq ? '_[#####]' : '') + '.[fileextension]');
 
 			om.file = file;
 
@@ -202,7 +217,7 @@ PADX.renderQueue = function (a) {
 				om.file = file; // o template não pode trocar a pasta
 			}
 
-			names.push(preview ? name : comps[i].name);
+			names.push(name);
 		}
 	} finally {
 		padUndoEnd();
@@ -210,5 +225,7 @@ PADX.renderQueue = function (a) {
 
 	if (badPreset) warnings.push('o preset "' + preset + '" não existe mais no After: escolha outro em configuração > projeto > neste computador.');
 
-	return { count: comps.length, folder: padDisplayPath(folder), local: local, preview: preview, names: names, warnings: warnings };
+	if (auto) warnings.push(preset ? 'preset: ' + preset + ' (escolha o seu em configuração > projeto > neste computador)' : 'sem preset escolhido nem H.264 no After: a fila usa o padrão do After.');
+
+	return { count: comps.length, folder: padDisplayPath(folder), local: local, preview: preview, names: names, warnings: warnings, preset: preset };
 };

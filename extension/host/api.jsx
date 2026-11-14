@@ -1868,24 +1868,100 @@ function padRequireNetwork(code) {
 	if (!netAccess()) throw new Error('#' + code + ' - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" nas preferências');
 }
 
-// Abre a pasta do último item da fila de render (ou a mais próxima que existe).
+// A pasta do caminho, mesmo que alguém tenha renomeado uma das pastas no meio (SERVICO → _SERVICO, 03 SAIDA →
+// 03_SAIDA): da pasta mais funda que existe para baixo, cada nível que falta é procurado entre as pastas de lá pelo
+// nome sem símbolos, espaços e acentos (padFolderKey) e, sem nenhuma, também sem o número da frente (03 SAIDA → SAIDA).
+// → Folder, ou null (algum nível não foi achado)
+function padResolveRenamed(path) {
+	var parts = padSlash(path).replace(/\/+$/, '').split('/');
+	var at = parts.length;
+	var folder = new Folder(path);
+
+	while (at > 1 && !folder.exists) {
+		at--;
+		folder = new Folder(parts.slice(0, at).join('/'));
+	}
+	if (!folder.exists) return null;
+
+	for (var i = at; i < parts.length; i++) {
+		var want = padFolderKey(parts[i]);
+		var bare = want.replace(/^\d+/, '');
+		var list = [];
+		var hit = null;
+		var loose = null;
+
+		try {
+			list = folder.getFiles() || [];
+		} catch (err) { }
+
+		for (var j = 0; j < list.length && !hit; j++) {
+			if (!(list[j] instanceof Folder)) continue;
+
+			var key = padFolderKey(decodeURI(list[j].name));
+
+			if (key == want) hit = list[j];
+			else if (!loose && bare && key.replace(/^\d+/, '') == bare) loose = list[j];
+		}
+
+		folder = hit || loose;
+		if (!folder) return null;
+	}
+
+	return folder;
+}
+
+// Abre a pasta do output da fila de render: a do último item; se ela não existe (nem renomeada), a do item de antes,
+// e assim por diante. nenhuma achada: a pasta mais próxima que existe da do último item.
 PADX.openLastOutput = function () {
 	padRequireNetwork('PAD_007');
 
-	var outputFile = getLastOutputFile();
+	var rq = app.project.renderQueue;
+	var first = '';
+	var tried = {};
 
-	if (outputFile == null) throw new Error('#PAD_008 - a fila de render está vazia...');
+	for (var i = rq.numItems; i >= 1; i--) {
+		var item = rq.item(i);
 
-	// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA & INTER);
-	// padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
-	var outputPath = padPath(outputFile.parent.fsName);
-	var folder = nearestExistingFolder(outputPath);
+		for (var m = 1; m <= item.numOutputModules; m++) {
+			var file = null;
 
-	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));
+			try {
+				file = item.outputModule(m).file;
+			} catch (err) { }
+			if (!file) continue;
 
-	openFolder(folder.fsName);
+			// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA &
+			// INTER); padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
+			var outputPath = padPath(file.parent.fsName);
 
-	return { messages: [], data: { path: folder.fsName } };
+			if (!first) first = outputPath;
+			if (tried[outputPath]) continue;
+			tried[outputPath] = true;
+
+			var folder = padResolveRenamed(outputPath);
+
+			if (folder) {
+				openFolder(folder.fsName);
+
+				var notes = [];
+
+				if (padPathKey(folder.fsName) != padPathKey(outputPath)) notes.push('a pasta foi renomeada: abri ' + padDisplayPath(folder.fsName));
+				if (outputPath != first) notes.push('a pasta do último item não existe mais: abri a de um item anterior da fila');
+
+				return { messages: [], data: { path: folder.fsName, note: notes.join('\n') } };
+			}
+		}
+	}
+
+	if (!first) throw new Error('#PAD_008 - a fila de render está vazia...');
+
+	var near = nearestExistingFolder(first);
+
+	if (near == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(first));
+
+	openFolder(near.fsName);
+
+	return { messages: [], data: { path: near.fsName, note: 'nenhuma pasta de output da fila existe: abri a mais próxima de ' + padDisplayPath(first) } };
 };
 
 // Instala as fontes do projeto: as da pasta de fontes dele (o coletar junta lá) ou, sem ela, as da pasta FONTS

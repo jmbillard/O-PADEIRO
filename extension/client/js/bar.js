@@ -285,13 +285,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var what = preview ? counted(res.count, 'preview', 'previews') : counted(res.count, 'render final', 'renders finais');
 			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz', res.folder];
 
-			if (preview) lines.push(res.names.join(' · '));
-			toast(res.warnings.length ? 'error' : 'success', lines.concat(res.warnings.map(PAD_UTIL.errorText)).join('\n'));
+			lines.push(res.names.join(' · '));
+			// os avisos (pasta deste computador, o preset padrão) não são erro: o render está na fila
+			toast(res.warnings.length ? 'warn' : 'success', lines.concat(res.warnings.map(PAD_UTIL.errorText)).join('\n'));
 		},
 
 		openLastOutput: async function () {
 			await requireNetwork('PAD_007');
-			await call('openLastOutput');
+
+			var res = await call('openLastOutput');
+
+			if (res && res.data && res.data.note) toast('warn', res.data.note);
 		},
 
 		renameComps: async function () {
