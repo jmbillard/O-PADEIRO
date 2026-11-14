@@ -12,6 +12,8 @@ o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto abert
 
 ## 📍 banco de fontes
 
+> 🧪 *teste:* `extension/scripts/teste-banco-de-fontes.jsx` (Arquivo > Scripts > Executar arquivo de script…) instala as fontes de uma pasta, cria a comp TESTE BANCO DE FONTES com um layer de texto por fonte e salva o projeto: a barra envia as fontes para o banco.
+
 a pasta do banco fica na [configuração > fontes](producoes.md). com o campo vazio, vale a pasta **padrão**: `BANCO DE FONTES`, no mesmo nível da pasta `extension` do padeiro na rede (ao lado do código e da configuração da equipe); ela é criada no primeiro envio. nela, cada fonte é guardada pelo nome PostScript (`GloboSans-Bold.otf`), com um `.json` ao lado: família, estilo e as versões (quem enviou, de que computador e projeto, quando).
 
 - **o envio** → enquanto a barra está aberta, as fontes usadas no projeto aberto que ainda não estão no banco (ou na pasta de fontes do projeto) são copiadas, uma por vez. vale para todas: as instaladas, as do sistema e as do Adobe Fonts.
