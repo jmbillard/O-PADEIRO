@@ -1103,10 +1103,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			// a dica: o nome do grupo e as ferramentas de dentro, uma por linha; a que tem pendência, com a bolinha
 			// laranja (o que falta fica na dica dela, dentro da gaveta)
 			// de um lado, o que o clique direito na gaveta faz (a primeira de dentro); do outro, as que precisam abrir
-			// a gaveta. a que tem pendência fica na cor de atenção (as da lista, com a bolinha laranja)
+			// a gaveta. a que tem pendência fica só na cor de atenção, sem bolinha (a bolinha fica na dica dela)
 			var tools = Array.prototype.slice.call(box.querySelectorAll('.bar-btn'));
 			var list = tools.slice(1).map(function (m) {
-				return (warnings(m).length ? '! ' : '· ') + m.getAttribute('aria-label');
+				return (warnings(m).length ? '~! ' : '~ ') + m.getAttribute('aria-label');
 			});
 			var text = gbtn.dataset.name + (tools[0] ? '\n\n' + R_CLICK + (warnings(tools[0]).length ? '! ' : '') + tools[0].getAttribute('aria-label') : '') + (list.length ? '\n' + list.join('\n') : '');
 

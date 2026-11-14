@@ -91,7 +91,7 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 
 		lines.forEach(function (line, i) {
 			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
-			var w = /^(!#?|·) (.*)$/.exec(line.trim());
+			var w = /^(!#?|·|~!?) (.*)$/.exec(line.trim());
 
 			if (m) {
 				var row = document.createElement('p');
@@ -116,9 +116,12 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 					warnBox.appendChild(group);
 				}
 
-				warn.className = w[1] === '!#' ? 'tip-whead' : w[1] === '!' ? 'tip-warn' : 'tip-item';
+				// '~ ' e '~! ': o item só com o texto, sem a bolinha nem o lugar dela (a lista da gaveta: a pendência é
+				// a cor do texto; a bolinha fica na dica da própria ferramenta)
+				warn.className = w[1] === '!#' ? 'tip-whead' : w[1] === '!' || w[1] === '~!' ? 'tip-warn' : 'tip-item';
+				if (w[1].charAt(0) === '~') warn.classList.add('is-plain');
 				text.textContent = w[2];
-				if (w[1] !== '!#') warn.appendChild(document.createElement('i'));
+				if (w[1] !== '!#' && w[1].charAt(0) !== '~') warn.appendChild(document.createElement('i'));
 				warn.appendChild(text);
 				warnBox.lastChild.appendChild(warn);
 			} else if (line.trim() && i === 0) {
