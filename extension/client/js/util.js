@@ -554,5 +554,48 @@
 		return { items: items, hidden: hidden };
 	}
 
-	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts };
+	// A barra de tokens das pastas de output de template: um clique põe o token no último campo de output usado (no
+	// cursor), ou no primeiro. list: o elemento com os campos. onInput(input): avisa a mudança (o input dispara)
+	var OUT_TOKENS = [['ano', 'o ano atual (2026)'], ['mes', 'o mês atual (01 a 12)'], ['mes_extenso', 'o mês atual por extenso (NOVEMBRO)'], ['proximo_mes', 'o próximo mês por extenso (DEZEMBRO)'], ['proximo_mes_num', 'o número do próximo mês (12)'], ['ano_proximo_mes', 'o ano do próximo mês (em dezembro, o que vem)'], ['atracao', 'a atração do template']];
+
+	function outputTokens(list) {
+		var bar = document.createElement('div');
+		var last = null;
+
+		bar.className = 'out-tokens';
+		list.addEventListener('focusin', function (e) {
+			if (e.target.tagName === 'INPUT') last = e.target;
+		});
+		bar.appendChild(Object.assign(document.createElement('span'), { className: 'out-tokens-label', textContent: 'tokens (o caminho vale todo ano):' }));
+		OUT_TOKENS.forEach(function (t) {
+			var b = document.createElement('button');
+
+			b.type = 'button';
+			b.className = 'out-token';
+			b.textContent = '{' + t[0] + '}';
+			b.title = t[1];
+			b.addEventListener('mousedown', function (e) {
+				e.preventDefault(); // o campo continua com o foco (e o cursor)
+			});
+			b.addEventListener('click', function () {
+				var input = last && last.isConnected ? last : list.querySelector('input');
+
+				if (!input) return;
+
+				var at = typeof input.selectionStart === 'number' && document.activeElement === input ? input.selectionStart : input.value.length;
+				var end = typeof input.selectionEnd === 'number' && document.activeElement === input ? input.selectionEnd : at;
+				var tok = '{' + t[0] + '}';
+
+				input.value = input.value.slice(0, at) + tok + input.value.slice(end);
+				input.focus();
+				input.setSelectionRange(at + tok.length, at + tok.length);
+				input.dispatchEvent(new Event('input', { bubbles: true }));
+			});
+			bar.appendChild(b);
+		});
+
+		return bar;
+	}
+
+	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
 })();

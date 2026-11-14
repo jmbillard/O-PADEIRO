@@ -1109,6 +1109,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	function init() {
 		openBig();
+		$('output-tokens').appendChild(PAD_UTIL.outputTokens($('outputs')));
 		PAD_DROPDOWN.enhance($('f-case'), 'textCase');
 
 		['f-example', 'f-prefix', 'f-separator'].forEach(function (id) {

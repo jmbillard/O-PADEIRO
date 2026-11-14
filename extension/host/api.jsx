@@ -1287,6 +1287,11 @@ PADX.fillBegin = function (a) {
 	var templateData = padReadTemplateConfig(files.config);
 	var text = padComposeAccents(String(a.text));
 
+	// os tokens das pastas de output ({ano}, {mes}…): trocados aqui, valem para a fila, o abrir pasta e o _script.js
+	if (templateData.outputPath instanceof Array) {
+		for (var op = 0; op < templateData.outputPath.length; op++) templateData.outputPath[op] = padFillDateTokens(templateData.outputPath[op], templateData.atracao && templateData.atracao.name);
+	}
+
 	if (text.trim() == '') throw new Error('#PAD_046 - o texto de input está vazio');
 
 	// Ajusta a caixa do texto
@@ -1826,7 +1831,7 @@ PADX.openOutputs = function (a) {
 	for (var o = 0; o < paths.length; o++) {
 		// no volume realmente montado (EDIT_IN_PLACE-1 … -5; monta o share se não estiver): o caminho gravado
 		// fica sem o sufixo
-		var folder = new Folder(padMountedPath(padPath(paths[o])));
+		var folder = new Folder(padMountedPath(padPath(padFillDateTokens(paths[o], a.atracao))));
 		var near = folder.exists ? folder : nearestExistingFolder(folder.fsName);
 
 		// a pasta ainda não existe (o render cria): abre a mais perto que existir, dentro do volume

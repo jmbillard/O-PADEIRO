@@ -2084,7 +2084,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!paths.length) return notify('warning', 'Esse template não define uma pasta de output.');
 
 		try {
-			var res = await call('openOutputs', { paths: paths });
+			var res = await call('openOutputs', { paths: paths, atracao: info && info.config && info.config.atracao ? info.config.atracao.name : '' });
 
 			res.missing.forEach(function (path) {
 				notify('error', '#PAD_019 - output não pode ser acessado: ' + path);

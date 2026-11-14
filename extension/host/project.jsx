@@ -310,6 +310,32 @@ etapa CRIAR: pular não grava).
 */
 
 // Para nomes de arquivo e pastas: sem acentos e símbolos, em maiúsculas (NÃO! NÃO OLHE! → NAO NAO OLHE).
+// Os tokens de data num caminho de output de template ({ano}, {mes}, {mes_extenso}, {proximo_mes},
+// {proximo_mes_num}, {ano_proximo_mes}) e o {atracao} (a atração do template): …/BBB/BBB {ano} vale todo ano. o
+// que não é token fica como está.
+var PAD_MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+
+function padFillDateTokens(path, atracao) {
+	var d = new Date();
+	var m = d.getMonth();
+	var two = function (n) {
+		return (n < 10 ? '0' : '') + n;
+	};
+	var values = {
+		ano: String(d.getFullYear()),
+		mes: two(m + 1),
+		mes_extenso: PAD_MONTHS[m],
+		proximo_mes: PAD_MONTHS[(m + 1) % 12],
+		proximo_mes_num: two((m + 1) % 12 + 1),
+		ano_proximo_mes: String(d.getFullYear() + (m == 11 ? 1 : 0)),
+		atracao: atracao ? padAepName(atracao) : null
+	};
+
+	return String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
+		return values[key] != null ? values[key] : all;
+	});
+}
+
 function padAepName(text) {
 	return String(text == null ? '' : text).replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]+/g, ' ').replace(/^\s+|\s+$/g, '');
 }

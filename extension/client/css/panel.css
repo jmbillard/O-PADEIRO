@@ -3306,3 +3306,40 @@ body.motion-ready .eyebrow {
   height: 18px;
   object-fit: contain;
 }
+
+/* os tokens das pastas de output do template (config e criador): um clique põe no campo de output em uso */
+.out-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.out-tokens-label {
+  margin-right: 2px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.out-token {
+  padding: 2px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: none;
+  color: var(--blue-500);
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.62rem;
+  font-weight: 650;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.out-token:hover {
+  border-color: var(--blue-300);
+  background: var(--blue-50);
+}

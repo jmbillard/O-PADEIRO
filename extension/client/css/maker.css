@@ -999,3 +999,18 @@ body.maker-page {
   border-color: var(--waiting);
   color: var(--waiting);
 }
+
+/* os tokens das pastas de output, sobre o vidro */
+.maker-glass .out-tokens-label {
+  color: rgb(var(--on-brand) / 88%);
+}
+
+.maker-glass .out-token {
+  border-color: rgb(var(--on-brand) / 40%);
+  color: rgb(var(--on-brand));
+}
+
+.maker-glass .out-token:hover {
+  border-color: rgb(var(--on-brand) / 75%);
+  background: rgb(var(--on-brand) / 10%);
+}
