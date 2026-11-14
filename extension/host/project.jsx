@@ -632,6 +632,66 @@ PADX.projectFolders = function (a) {
 	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, folders: folders };
 };
 
+// Os quadros da organização nova numa atração, para os exemplos da janela: as pastas 'depth' níveis abaixo da
+// atração (o {ano}: qualquer ano) que têm dentro a pasta dos projetos da estrutura (01_PROJETOS), ou seja, as que o
+// padeiro criou. as pastas antigas da mesma atração ficam de fora. a: { root, depth, here (a do ano de agora) }
+// → { names: [nome] }
+PADX.projectQuadros = function (a) {
+	var settings = padReadCollect();
+	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
+	var level = [new Folder(padMountedPath(padPath(a.root)))];
+	var depth = Math.max(1, Math.min(3, a.depth || 1));
+	var hereKey = a.here ? padPathKey(new Folder(padMountedPath(padPath(a.here))).fsName) : '';
+	var names = [];
+	var seen = {};
+	var reads = 0;
+	var i;
+	var j;
+
+	var folders = function (f) {
+		var out = [];
+		var items = [];
+
+		if (++reads > 120) return out; // pasta enorme: para (os exemplos são um atalho, não uma lista completa)
+
+		try {
+			items = f.getFiles() || [];
+		} catch (err) { }
+
+		for (var k = 0; k < items.length; k++) {
+			var n = decodeURI(items[k].name);
+
+			if (items[k] instanceof Folder && !/^\./.test(n) && !padIsJunkFolder(n)) out.push(items[k]);
+		}
+
+		return out;
+	};
+
+	for (var d = 0; d < depth; d++) {
+		var next = [];
+
+		for (i = 0; i < level.length; i++) next = next.concat(folders(level[i]));
+		level = next;
+	}
+
+	for (i = 0; i < level.length; i++) {
+		if (padPathKey(level[i].fsName) == hereKey) continue;
+
+		var kids = folders(level[i]);
+
+		for (j = 0; j < kids.length; j++) {
+			var name = decodeURI(kids[j].name);
+			var key = padAepName(name);
+
+			if (!key || seen[key] || !new Folder(kids[j].fsName + '/' + sub).exists) continue;
+			seen[key] = true;
+			names.push(name);
+		}
+	}
+
+	return { names: names };
+};
+
 PADX.projectShape = function () {
 	var settings = padReadCollect();
 	var list = padStructureFolders(settings, null);

@@ -1173,6 +1173,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// as pastas de um nível (ATRAÇÃO/PASTA/… e o output): uma árvore de exemplo pelo fim do caminho
+		// os quadros com a estrutura do padeiro em outros anos (o exemplo: os de 2025 na organização nova)
+		projectQuadros: function (a) {
+			return { names: /DOMINGAO COM HUCK$/.test(String(a.root || '')) ? ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'] : [] };
+		},
+
 		projectFolders: function (a) {
 			var root = String(a.path || '').replace(/\/+$/, '');
 

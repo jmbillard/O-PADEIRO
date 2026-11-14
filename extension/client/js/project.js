@@ -564,9 +564,9 @@ projetos com o nome certo).
 		chooseAttraction('new');
 	}
 
-	// os exemplos de quadros: os que já existem na organização nova em outros anos (o nível do {ano} da categoria,
-	// qualquer valor), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem pastas depois da
-	// atração ({atracao}/{ano}); a organização antiga fica de fora
+	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} da categoria, qualquer valor:
+	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem
+	// pastas depois da atração ({atracao}/{ano}); as pastas antigas da atração ficam de fora
 	async function quadroExamples(attr, current) {
 		if (!attr || !attr.base) return [];
 
@@ -577,43 +577,26 @@ projetos com o nome certo).
 		if (at < 0 || !tail.length) return [];
 
 		var root = fillPattern(pattern.slice(0, at + '{atracao}'.length), attr.name.toUpperCase(), attr.base.label);
-		var level = [root];
-
-		for (var d = 0; d < tail.length && level.length; d++) {
-			var next = [];
-
-			for (var i = 0; i < level.length && i < 40; i++) {
-				var info = await listFolders(level[i], false);
-
-				info.folders.forEach(function (f) {
-					next.push(f.path);
-				});
-			}
-			level = next;
-		}
-
+		var res = { names: [] };
 		var seen = {};
 		var out = [];
-		var here = aepName(attr.path);
+
+		// o host lê as pastas e fica só com as que têm a estrutura do padeiro dentro (as antigas da atração ficam de fora)
+		try {
+			res = await call('projectQuadros', { root: root, depth: tail.length, here: attr.path });
+		} catch (err) { }
 
 		(current || []).forEach(function (f) {
 			seen[aepName(f.name)] = true;
 		});
+		(res.names || []).forEach(function (n) {
+			var key = aepName(n);
 
-		for (var y = 0; y < level.length && y < 40; y++) {
-			if (aepName(level[y]) === here) continue;
-
-			var names = (await listFolders(level[y], false)).folders;
-
-			names.forEach(function (f) {
-				var key = aepName(f.name);
-
-				if (key && !seen[key]) {
-					seen[key] = true;
-					out.push({ name: key, path: '', example: true });
-				}
-			});
-		}
+			if (key && !seen[key]) {
+				seen[key] = true;
+				out.push({ name: key, path: '', example: true });
+			}
+		});
 
 		return out.sort(function (x, y2) {
 			return x.name < y2.name ? -1 : 1;
