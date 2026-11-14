@@ -801,22 +801,22 @@ function padInProjects(path, roots) {
 // Os arquivos do projeto fora das pastas de projetos (configuração > PROJETO; VFX-1 … vale como VFX). leve: só
 // os caminhos dos itens. → { state: '' (sem arquivos) | 'ok' (tudo nas pastas) | 'out' (algum fora), total,
 //   local (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
-// a conta passa por todas as mídias do projeto: com o projeto igual (o mesmo número de itens, o mesmo arquivo salvo)
-// vale a da última vez por até 30 s. force: refaz (depois de uma ferramenta, ou ao voltar para o After)
+// a conta passa por todas as mídias do projeto: só é refeita quando o projeto é salvo (ou aberto outro). force:
+// refaz (ao abrir a barra e depois do coletar)
 var PAD_COLLECT_STATUS = { key: '', at: 0, res: null };
 
 PADX.collectStatus = function (a) {
 	var file0 = app.project.file;
-	var key = app.project.numItems + '|';
+	var key = 'novo';
 
 	try {
-		key += file0 ? file0.fsName + '|' + file0.modified.getTime() : 'novo';
+		if (file0) key = file0.fsName + '|' + file0.modified.getTime();
 	} catch (err) { }
 
 	var now = new Date().getTime();
 	var cache = PAD_COLLECT_STATUS;
 
-	if (!(a && a.force) && cache.res && cache.key == key && now - cache.at < 30000) return cache.res;
+	if (!(a && a.force) && cache.res && cache.key == key) return cache.res;
 
 	cache.res = padCollectStatusNow();
 	cache.key = key;

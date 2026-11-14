@@ -1278,8 +1278,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		return lines.length ? lines.join('\n') : '! ' + counted(res.local, 'arquivo', 'arquivos');
 	}
 
-	// force: refaz a conta (depois de uma ferramenta, ou ao voltar para o After); de tempos em tempos, o host só
-	// refaz quando o projeto mudou (ou a cada 30 s)
+	// force: refaz a conta (ao abrir a barra e depois do coletar); de tempos em tempos, o host só refaz quando o
+	// projeto foi salvo (ou trocado): a conta passa por todas as mídias e não roda enquanto se trabalha
 	async function watchCollect(force) {
 		clearTimeout(collectSync.timer);
 
@@ -1517,7 +1517,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		window.addEventListener('focus', loadLinks);
 		window.addEventListener('focus', syncFonts);
 		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
-		window.addEventListener('focus', watchCollect);
+		window.addEventListener('focus', function () {
+			watchCollect(false);
+		});
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
 		$('net-status').addEventListener('click', function () {
