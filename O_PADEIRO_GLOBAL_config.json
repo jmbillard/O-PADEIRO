@@ -73,6 +73,24 @@
 				"icon": "calendario"
 			},
 			{
+				"name": "FIM DE ANO",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/FIM DE ANO/{ano}/{atracao}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/FIM DE ANO/{ano}",
+				"icon": "presente"
+			},
+			{
+				"name": "VERTICAL",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VERTICAL/{ano}/{atracao}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/VERTICAIS/{atracao}",
+				"icon": "camera"
+			},
+			{
+				"name": "CARNAVAL",
+				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/CARNAVAL/CARNAVAL {ano}",
+				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/CARNAVAL/CARNAVAL {ano}",
+				"icon": "musica"
+			},
+			{
 				"name": "FILME",
 				"path": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_{letra}_/{atracao}",
 				"output": "//vfx-ml-hp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_{letra}_/{atracao}",
