@@ -160,6 +160,9 @@ const CHECKS = [
 // prepara o contexto do navegador: as categorias do projeto e, com ?lists, os fixados e recentes
 async function prepareContext(context) {
 	await context.addInitScript((data) => {
+		// cada tela começa com as gavetas fechadas (a barra lembra a que ficou aberta: sem isto, a de uma tela
+		// viria aberta na seguinte)
+		localStorage.removeItem('pad.bar.drawer');
 		localStorage.setItem('pad.mock.project', JSON.stringify(data.categories));
 		if (/[?&]lists/.test(location.search)) sessionStorage.setItem('mock.templateLists', JSON.stringify(data.lists));
 	}, { categories: CATEGORIES, lists: LISTS });

@@ -234,6 +234,7 @@ o Enter e os atalhos com Ctrl/Cmd podem ir direto para o After Effects (mover a 
 		document.addEventListener('keydown', function (e) {
 			if (e.key !== 'Enter' || !isMod(e) || e.defaultPrevented) return;
 			if (button.disabled || !button.getClientRects().length) return;
+			if (button.hasAttribute('data-no-shortcut')) return; // o botão está numa ação que só vale no clique (ex: migrar)
 
 			e.preventDefault();
 			button.click();

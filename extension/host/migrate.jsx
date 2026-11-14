@@ -25,7 +25,8 @@ com outra grafia (02 ARQUIVOS, 02_ARQUIVOS) se juntam e nada fica solto.
   PADX.migrateStep()   → move um lote
   PADX.migrateEnd()    → religa os itens, salva o .aep no lugar novo, aponta a fila de render, apaga as pastas antigas
                          que ficaram vazias e grava o registro (PAD_MIGRATION_LOG, na raiz)
-  PADX.migrateUndo()   → desfaz pelo registro
+  PADX.migrateUndo()   → desfaz pelo registro (ou, parada no meio, pelo diário: PAD_MIGRATION_JOURNAL)
+  PADX.migrateState()  → { interrupted, undo }: há uma migração parada no meio / um registro, na pasta do projeto
 
 Todos os projetos da pasta (opcional; o padrão é só o aberto): para saber o que cada .aep usa e religar os arquivos
 dele, o After Effects precisa abrir cada um.
@@ -52,12 +53,112 @@ var PAD_PROJECT_EXT = /\.(aep|aet|aepx)$/i;
 
 var PAD_MIGRATION_BACKUP = '_originais_migracao'; // os .aep como eram antes de religar (dentro dos externos)
 
+// o diário: o registro EM ANDAMENTO, gravado a cada lote (uma linha por arquivo movido). se a migração parar no
+// meio (a janela fechada, o After travou, a rede caiu, o .aep não salvou), o que já foi movido está nele e o
+// desfazer leva de volta. no fim, vira o registro (PAD_MIGRATION_LOG) e o diário sai
+var PAD_MIGRATION_JOURNAL = '_migracao_padeiro.andamento';
+
 var padMigration = null; // o plano da migração em andamento: { root, ops, done, failed, ... }
 var padMigrationRead = null; // a leitura dos outros projetos: { root, origin, list, at, used, failed }
 var padMigrationRest = null; // o que falta depois de mover, com todos os projetos: { plan, log, res, map, ... }
 
 function padSlash(path) {
 	return String(path).replace(/\\/g, '/');
+}
+
+// Acrescenta linhas ao diário (cada uma, um array em JSON: ['m', de, para] movido, ['c', de, para] copiado de
+// fora, ['p', de, para] o .aep aberto, ['q', de, para] saída da fila, ['b', cópia, projeto] original guardado,
+// ['v', versão, data] o começo). → true se gravou
+function padJournalAdd(root, lines) {
+	var file = new File(root + '/' + PAD_MIGRATION_JOURNAL);
+	var ok = false;
+
+	file.encoding = 'UTF-8';
+
+	try {
+		if (file.open('a')) {
+			ok = true;
+			for (var i = 0; i < lines.length; i++) {
+				if (!file.writeln(JSON.stringify(lines[i]))) ok = false;
+			}
+			file.close();
+		}
+	} catch (err) {
+		ok = false;
+	}
+
+	return ok;
+}
+
+// Lê o diário como um registro: { version, date, project, moves, copies, queue, backups, journal: true } | null
+function padJournalRead(root) {
+	var file = new File(root + '/' + PAD_MIGRATION_JOURNAL);
+
+	if (!file.exists) return null;
+
+	var log = { version: 1, date: 0, project: null, moves: [], copies: [], queue: [], backups: [], journal: true };
+	var lines = String(readFileContent(file) || '').split(/\r\n|\r|\n/);
+
+	for (var i = 0; i < lines.length; i++) {
+		if (!lines[i]) continue;
+
+		var row;
+
+		try {
+			row = JSON.parse(lines[i]);
+		} catch (err) {
+			continue; // uma linha cortada (parou no meio da gravação): o arquivo dela não chegou a ser movido
+		}
+
+		if (row[0] == 'v') log.date = row[2];
+		else if (row[0] == 'm') log.moves.push([row[1], row[2]]);
+		else if (row[0] == 'c') log.copies.push([row[1], row[2]]);
+		else if (row[0] == 'p') log.project = [row[1], row[2]];
+		else if (row[0] == 'q') log.queue.push([row[1], row[2]]);
+		else if (row[0] == 'b') log.backups.push([row[1], row[2]]);
+	}
+
+	return log;
+}
+
+// A pasta pode ser migrada? a migração arruma a pasta INTEIRA: tem que ser a pasta de um projeto, dentro das pastas
+// de projetos da configuração (aba PROJETO), nunca uma pasta do sistema nem a pasta de uma categoria inteira.
+// → '' (pode) | o motivo
+function padMigrateBlocked(rootPath) {
+	var key = padPathKey(rootPath);
+	// quantas pastas abaixo do volume: /Volumes/VFX/PROGRAMAS → 1; L:/PROGRAMAS → 1; //servidor/share/PROGRAMAS → 1;
+	// /Users/fulano/Projetos → 1 (abaixo da pasta do usuário)
+	var full = padSlash(new Folder(rootPath).fsName).replace(/\/+$/, '');
+	var parts = full.split('/');
+	var names = [];
+
+	for (var s = 0; s < parts.length; s++) {
+		if (parts[s] != '') names.push(parts[s]);
+	}
+
+	var below = /^[A-Za-z]:$/.test(names[0] || '') ? names.length - 1 : names.length - 2;
+	var system = [Folder.desktop, Folder.myDocuments, new Folder('~'), new Folder('~/Downloads'), new Folder('~/Documents'), new Folder('~/Desktop'), Folder.temp, Folder.userData];
+	var i;
+
+	for (i = 0; i < system.length; i++) {
+		try {
+			if (system[i] && padPathKey(system[i].fsName) == key) return 'o projeto está salvo numa pasta do sistema (Área de Trabalho, Documentos, Downloads…): salve numa pasta só dele antes de migrar';
+		} catch (err) { }
+	}
+
+	// a raiz de um volume ou a primeira pasta dele (/Volumes/VFX, L:\, //servidor/share)
+	if (below <= 1) return 'a pasta do projeto é a raiz de um volume (ou a primeira pasta dele): a migração arrumaria tudo o que está nela';
+
+	var roots = padProjectsRoots();
+
+	for (i = 0; i < roots.length; i++) {
+		// a própria pasta de uma categoria (…/PROGRAMAS), ou uma acima dela: lá dentro estão as atrações todas
+		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de uma categoria inteira (configuração > projeto): a migração arrumaria todas as atrações dela';
+	}
+
+	if (roots.length && !padInProjects(rootPath, roots)) return 'a pasta do projeto está fora das pastas de projetos da configuração (aba PROJETO): a migração só arruma pastas que estão nelas';
+
+	return '';
 }
 
 // A pasta (relativa à raiz) que recebe o tipo; sem pasta na árvore, o padrão do tipo (ou a dos externos).
@@ -123,7 +224,7 @@ function padMigrateScan(folder, rel, depth, state) {
 
 		var name = decodeURI(list[i].name);
 
-		if (name.charAt(0) == '.' || /^(thumbs\.db|desktop\.ini)$/i.test(name) || (rel == '' && name == PAD_MIGRATION_LOG)) continue;
+		if (name.charAt(0) == '.' || /^(thumbs\.db|desktop\.ini)$/i.test(name) || (rel == '' && (name == PAD_MIGRATION_LOG || name == PAD_MIGRATION_JOURNAL))) continue;
 
 		var here = rel == '' ? name : rel + '/' + name;
 		var isFolder = list[i] instanceof Folder || (!/\.[A-Za-z0-9]{1,5}$/.test(name) && new Folder(list[i].fsName).exists);
@@ -174,7 +275,13 @@ function padMigrateBuild(all, move) {
 	var rootKey = padPathKey(root.fsName);
 	var used = padMigrateUsed();
 	var state = { files: [], deep: [], until: new Date().getTime() + PAD_MIGRATION_MS, partial: false };
-	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings, all: false, bulk: [], kept: 0 };
+	var plan = { root: root.fsName, name: decodeURI(root.name), project: file.fsName, ops: [], stay: 0, conflicts: 0, others: 0, outside: 0, partial: false, settings: settings, all: false, bulk: [], kept: 0, blocked: '', loose: false };
+
+	// a pasta que não pode ser migrada nem é lida (pode ser enorme): o plano volta vazio, com o motivo
+	plan.blocked = padMigrateBlocked(root.fsName);
+	plan.loose = padPathKey(root.fsName) == padPathKey(file.parent.fsName); // o .aep fora de uma pasta de projetos: a raiz é a pasta onde ele está
+	if (plan.blocked) return plan;
+
 	var moveSet = {};
 	var deepGroup = {};
 	var groupCount = {};
@@ -379,7 +486,11 @@ function padMigrateBuild(all, move) {
 PADX.migratePlan = function (a) {
 	var plan = padMigrateBuild(a && a.all, a && a.move);
 	var folders = padStructureFolders(plan.settings);
-	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, bulk: plan.bulk, kept: plan.kept, undo: new File(plan.root + '/' + PAD_MIGRATION_LOG).exists, sources: [], dests: [], links: [] };
+	var hasLog = new File(plan.root + '/' + PAD_MIGRATION_LOG).exists;
+	var journal = hasLog ? null : padJournalRead(plan.root);
+	// undo: há o que desfazer (o registro, ou o diário de uma migração que parou no meio: interrupted, com quantos
+	// arquivos já tinham sido movidos); blocked: o motivo de a pasta não poder ser migrada; loose: o .aep está solto
+	var res = { root: padDisplayPath(plan.root), name: plan.name, total: plan.ops.length, stay: plan.stay, conflicts: plan.conflicts, others: plan.others, outside: plan.outside, partial: plan.partial, all: plan.all, bulk: plan.bulk, kept: plan.kept, undo: hasLog || !!journal, interrupted: !!journal, interruptedCount: journal ? journal.moves.length + journal.copies.length : 0, blocked: plan.blocked, loose: plan.loose, sources: [], dests: [], links: [] };
 	var srcIndex = {};
 	var dstIndex = {};
 	var linkIndex = {};
@@ -669,7 +780,11 @@ PADX.migrateBegin = function (a) {
 	var plan = padMigrateBuild(a && a.all, a && a.move);
 
 	if (plan.partial) throw new Error('#PAD_105 - migrar: a pasta é grande demais para ler de uma vez (mais de ' + PAD_MIGRATION_FILES + ' arquivos ou muito lenta). nada foi movido.');
+	if (plan.blocked) throw new Error('#PAD_111 - migrar: ' + plan.blocked + '. nada foi movido.');
 	if (new File(plan.root + '/' + PAD_MIGRATION_LOG).exists) throw new Error('#PAD_106 - migrar: esta pasta já foi migrada (há um registro nela). desfaça a migração antes de migrar de novo.');
+	if (new File(plan.root + '/' + PAD_MIGRATION_JOURNAL).exists) throw new Error('#PAD_106 - migrar: uma migração desta pasta parou no meio (há um registro em andamento nela). desfaça antes de migrar de novo.');
+	// o diário primeiro: sem conseguir gravar o registro, nada é movido (não haveria como desfazer)
+	if (!padJournalAdd(plan.root, [['v', 1, new Date().getTime()]])) throw new Error('#PAD_110 - migrar: não foi possível gravar o registro na pasta do projeto (sem permissão de escrita?). nada foi movido.');
 
 	var folders = padStructureFolders(plan.settings);
 
@@ -690,6 +805,7 @@ PADX.migrateStep = function (a) {
 	if (!plan) throw new Error('#PAD_107 - migrar: a migração não foi começada.');
 
 	var end = Math.min(plan.ops.length, plan.at + Math.max(1, (a && a.count) || 10));
+	var lines = [];
 
 	for (; plan.at < end; plan.at++) {
 		var op = plan.ops[plan.at];
@@ -702,14 +818,22 @@ PADX.migrateStep = function (a) {
 			var dst = new File(plan.root + '/' + op.to);
 
 			padEnsureFolder(dst.parent.fsName);
-			if (src.exists && !dst.exists && src.copy(dst.fsName) && new File(dst.fsName).length == src.length) plan.moved.push(op);
-			else plan.failed.push(padSlash(op.from).replace(/^.*\//, ''));
+			if (src.exists && !dst.exists && src.copy(dst.fsName) && new File(dst.fsName).length == src.length) {
+				plan.moved.push(op);
+				lines.push(['c', padSlash(op.from), op.to]);
+			} else plan.failed.push(padSlash(op.from).replace(/^.*\//, ''));
 			continue;
 		}
 
-		if (padMoveFile(plan.root + '/' + op.from, plan.root + '/' + op.to)) plan.moved.push(op);
-		else plan.failed.push(op.from);
+		if (padMoveFile(plan.root + '/' + op.from, plan.root + '/' + op.to)) {
+			plan.moved.push(op);
+			lines.push(['m', op.from, op.to]);
+		} else plan.failed.push(op.from);
 	}
+
+	// o lote vai para o diário antes de a chamada voltar: o que foi movido até aqui sempre tem como voltar. sem
+	// conseguir gravar (a rede caiu?), a migração para aqui, com o que o diário já tem
+	if (lines.length && !padJournalAdd(plan.root, lines)) throw new Error('#PAD_110 - migrar: o registro parou de gravar no meio (a rede caiu?). a migração parou: abra a migração de novo e desfaça para voltar o que foi movido.');
 
 	return { done: plan.at, total: plan.ops.length, failed: plan.failed.length };
 };
@@ -786,7 +910,15 @@ PADX.migrateEnd = function () {
 			} catch (err) { }
 			log.project = [plan.ops[i].from, plan.ops[i].to];
 			res.project = padDisplayPath(next.fsName);
+			padJournalAdd(plan.root, [['p', plan.ops[i].from, plan.ops[i].to]]);
 		}
+	}
+
+	if (log.queue.length) {
+		var qlines = [];
+
+		for (i = 0; i < log.queue.length; i++) qlines.push(['q', log.queue[i][0], log.queue[i][1]]);
+		padJournalAdd(plan.root, qlines);
 	}
 
 	if (!res.project) app.project.save();
@@ -806,11 +938,18 @@ PADX.migrateEnd = function () {
 
 // O fim de tudo: as pastas antigas que ficaram vazias saem e o registro é gravado.
 function padMigrateFinish(plan, log, tops, res) {
+	// o registro primeiro (o diário só sai com ele gravado); as pastas vazias, depois
+	saveTextFile(JSON.stringify(log), plan.root + '/' + PAD_MIGRATION_LOG);
+
+	if (new File(plan.root + '/' + PAD_MIGRATION_LOG).exists) {
+		try {
+			new File(plan.root + '/' + PAD_MIGRATION_JOURNAL).remove();
+		} catch (err) { }
+	}
+
 	for (var t in tops) {
 		if (tops.hasOwnProperty(t)) res.folders += padRemoveEmpty(new Folder(plan.root + '/' + t));
 	}
-
-	saveTextFile(JSON.stringify(log), plan.root + '/' + PAD_MIGRATION_LOG);
 }
 
 // Religa um dos outros projetos (já no lugar novo): guarda o original, abre, religa os itens e a fila de render,
@@ -844,6 +983,7 @@ PADX.migrateOthersStep = function () {
 
 		if (saved) {
 			rest.log.backups.push([backup, op.to]);
+			padJournalAdd(rest.plan.root, [['b', backup, op.to]]);
 			rest.done++;
 		} else {
 			// não abriu (versão mais nova, corrompido): fica movido, sem religar, e a cópia não é precisa
@@ -877,8 +1017,23 @@ PADX.migrateOthersEnd = function () {
 	return { projects: rest.done, failed: rest.failed, folders: rest.res.folders };
 };
 
+// A pasta do projeto aberto tem uma migração parada no meio (o diário) ou já feita (o registro)? leve: só confere
+// os dois arquivos. → { interrupted, undo }
+PADX.migrateState = function () {
+	var file = app.project.file;
+
+	if (!file) return { interrupted: false, undo: false };
+
+	var root = new Folder(padCollectRoot(file, padReadCollect())).fsName;
+	var hasLog = new File(root + '/' + PAD_MIGRATION_LOG).exists;
+	var hasJournal = new File(root + '/' + PAD_MIGRATION_JOURNAL).exists;
+
+	return { interrupted: hasJournal && !hasLog, undo: hasLog || hasJournal };
+};
+
 // Desfaz a última migração da pasta do projeto aberto, pelo registro: os arquivos voltam, os itens são religados,
-// o .aep volta para o lugar de antes e a fila de render também. → { restored, failed: [nome], relinked }
+// o .aep volta para o lugar de antes e a fila de render também. → { restored, failed: [nome], relinked,
+// newer: [nome] (outros projetos salvos de novo depois da migração: ficam como estão, sem o original por cima) }
 PADX.migrateUndo = function () {
 	var file = app.project.file;
 
@@ -888,10 +1043,13 @@ PADX.migrateUndo = function () {
 	var root = new Folder(padCollectRoot(file, settings)).fsName;
 	var logFile = new File(root + '/' + PAD_MIGRATION_LOG);
 
-	if (!logFile.exists) throw new Error('#PAD_108 - migrar: não há um registro de migração nesta pasta para desfazer.');
+	var journalFile = new File(root + '/' + PAD_MIGRATION_JOURNAL);
+	// o registro ou, se a migração parou no meio, o diário (o que foi movido até ali)
+	var log = logFile.exists ? JSON.parse(readFileContent(logFile)) : padJournalRead(root);
 
-	var log = JSON.parse(readFileContent(logFile));
-	var res = { restored: 0, failed: [], relinked: 0 };
+	if (!log) throw new Error('#PAD_108 - migrar: não há um registro de migração nesta pasta para desfazer.');
+
+	var res = { restored: 0, failed: [], relinked: 0, newer: [] };
 	var map = {};
 	var dirs = {};
 	var i;
@@ -929,6 +1087,15 @@ PADX.migrateUndo = function () {
 		var place = backTo[log.backups[i][1]] ? root + '/' + backTo[log.backups[i][1]] : '';
 
 		if (!place || !original.exists) continue;
+
+		// o projeto religado foi salvo de novo depois da migração (alguém trabalhou nele): não passa por cima. ele
+		// volta para o lugar de antes como está, e o original fica guardado onde estava (nos externos)
+		var relinked = new File(place);
+
+		if (relinked.exists && log.date && relinked.modified && relinked.modified.getTime() > log.date + 10 * 60 * 1000) {
+			res.newer.push(decodeURI(relinked.name));
+			continue;
+		}
 
 		try {
 			new File(place).remove();
@@ -986,7 +1153,14 @@ PADX.migrateUndo = function () {
 		if (dirs.hasOwnProperty(d)) padRemoveEmpty(new Folder(root + '/' + d));
 	}
 
-	if (!res.failed.length) logFile.remove();
+	if (!res.failed.length) {
+		try {
+			logFile.remove();
+		} catch (err) { }
+		try {
+			journalFile.remove();
+		} catch (err) { }
+	}
 
 	return res;
 };

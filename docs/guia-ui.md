@@ -143,6 +143,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - **toda janela abre com o foco no primeiro campo que a pessoa vai usar** (a busca, a atração, a etiqueta livre): digitar funciona sem clicar antes.
 - **o botão principal responde a `Ctrl+Enter`** (`PAD_KEYS.primary(botão)`, que também põe o atalho na dica).
 - **atalhos sempre com o `Ctrl`, nos dois sistemas**: no macOS o `Cmd` costuma ficar com o After Effects e não chega ao painel. `PAD_KEYS.isMod` aceita os dois no macOS, mas os textos mostram `Ctrl` (`PAD_KEYS.modLabel`). a exceção é o desfazer: `Cmd+Z` no macOS, porque quem desfaz é o próprio After Effects.
+- **o que move arquivos na rede** (a migração) mostra o caminho inteiro da pasta, recusa as pastas erradas com o motivo, pede um segundo clique, fica fora do `Ctrl+Enter` (`data-no-shortcut` no botão) e grava o registro para desfazer **antes** de cada lote, nunca só no fim.
 - **o que apaga muita coisa de uma vez pede um segundo clique** (o ↻ do criador, a borracha das etiquetas): o primeiro clique marca o botão e avisa; o segundo, em até 4 s, faz.
 - **na barra, o resultado vai no aviso** (`toast` do `bar.js`): a bolinha (deu certo, atenção, erro) e o texto. uma ação que pede uma decisão ganha um botão no próprio aviso (ex: `organizar assim mesmo`).
 - **validação** (campo vazio, escolha faltando) também tem código e aparece na linha de status da janela, sem alert.

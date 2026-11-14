@@ -311,6 +311,74 @@
   margin: 0 0 12px 2px;
 }
 
+/* a pasta da migração, por extenso: o rótulo e o caminho (corta pelo começo: o fim é a parte que identifica) */
+.mg-root {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 10px 2px;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.mg-root span {
+  flex: 0 0 auto;
+}
+
+.mg-root b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  direction: rtl; /* o caminho corta pelo começo */
+  font-weight: 650;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o que precisa ser lido antes de migrar: uma linha por aviso, com a marca na frente. atenção (laranja) e trava
+   (vermelho: a pasta não pode ser migrada, ou uma migração parou no meio) */
+.mg-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--waiting);
+  border-radius: var(--radius-small);
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.mg-warn.is-block {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.mg-warn-mark {
+  width: 12px;
+  flex: 0 0 auto;
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* migrar / desfazer esperando o segundo clique: o botão na cor de atenção, com o que vai fazer escrito */
+#cw-go.is-confirm,
+#cw-go.is-confirm.button-primary {
+  border-color: var(--waiting);
+  background: var(--waiting-bg);
+  box-shadow: none;
+  color: var(--waiting);
+}
+
 .mg-grid {
   position: relative; /* por cima das faixas: elas saem de trás das pastas */
   z-index: 1;

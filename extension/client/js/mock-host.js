@@ -1420,7 +1420,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED, kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
+				blocked: mode === 'blocked' ? 'o projeto está salvo numa pasta do sistema (Área de Trabalho, Documentos, Downloads…): salve numa pasta só dele antes de migrar' : '', loose: mode === 'loose', interrupted: mode === 'interrupted' && !window.PAD_MOCK_MIGRATED && !window.PAD_MOCK_UNDONE, interruptedCount: 120,
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED || (mode === 'interrupted' && !window.PAD_MOCK_UNDONE), kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
 				sources: Object.keys(sources).sort(function (a, b) {
 					if (a === '..' || b === '..') return a === '..' ? 1 : -1;
 
@@ -1438,6 +1439,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// a leitura dos outros projetos (um por vez) e, depois de mover, o religar de cada um
+		// ?mock=interrupted: uma migração que parou no meio (o diário na pasta)
+		migrateState: function () {
+			return { interrupted: mode === 'interrupted' && !window.PAD_MOCK_UNDONE, undo: (mode === 'interrupted' && !window.PAD_MOCK_UNDONE) || !!window.PAD_MOCK_MIGRATED };
+		},
+
 		migrateReadBegin: function () {
 			window.PAD_MOCK_READ_AT = 0;
 
@@ -1501,8 +1507,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				setTimeout(r, 600);
 			});
 			window.PAD_MOCK_MIGRATED = false;
+			window.PAD_MOCK_UNDONE = true; // a interrompida (?mock=interrupted) também fica desfeita
 
-			return { restored: 361, failed: [], relinked: 23 };
+			return { restored: 361, failed: [], relinked: 23, newer: mode === 'newer' ? ['INTERPOL VINHETA.aep'] : [] };
 		},
 
 		// a busca dos faltando: acha um (com outro de mesmo nome) e não acha o outro; ?mock=fail: nenhum

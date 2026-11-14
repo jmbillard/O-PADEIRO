@@ -114,7 +114,16 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			render();
 		} catch (err) {
 			status(err.message, 'error');
+			return;
 		}
+
+		// uma migração desta pasta parou no meio (a janela fechou, o After travou, a rede caiu): avisa aqui, onde a
+		// pessoa chega, e diz onde desfazer
+		try {
+			var mig = await call('migrateState');
+
+			if (mig && mig.interrupted && !state.mig) status('uma migração desta pasta parou no meio: abra ⋯ > Migrar a pasta… para desfazer e voltar o que foi movido.', '');
+		} catch (err) { }
 	}
 
 	// o resumo no topo: quantos arquivos em cada situação; cada etiqueta liga e desliga a situação na lista
@@ -460,7 +469,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var NS = 'http://www.w3.org/2000/svg';
 	var LIST_SIZE = [460, 620]; // a janela da lista (o manifest) e a da migração, mais larga para os dois lados
-	var MIG_SIZE = [780, 660];
+	var MIG_SIZE = [780, 740]; // a altura cabe a pasta, os avisos, as chaves e o desenho
 
 	// as duas cores de um tipo (o tom claro e a cor), lidas do css
 	function typeColors(type) {
@@ -761,6 +770,28 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			legend.appendChild(chip);
 		});
 
+		// a pasta, por extenso: a migração arruma a pasta INTEIRA, então o caminho dela fica à vista o tempo todo
+		var where = el('p', 'mg-root');
+
+		where.appendChild(el('span', null, plan.interrupted ? 'migração interrompida em' : plan.undo ? 'pasta migrada' : 'pasta que será arrumada'));
+		where.appendChild(el('b', null, '\u200E' + plan.root + '\u200E')); // as marcas LTR seguram as barras (o texto corta pelo começo)
+		where.title = plan.root;
+		box.appendChild(where);
+
+		// o que precisa ser lido antes de migrar fica aqui em cima, por extenso (não numa nota do rodapé)
+		var warn = function (kind, text) {
+			var note = el('p', 'mg-warn is-' + kind);
+
+			note.appendChild(el('i', 'mg-warn-mark', kind === 'block' ? '×' : '!'));
+			note.appendChild(el('span', null, text));
+			box.appendChild(note);
+		};
+
+		if (plan.blocked) warn('block', 'esta pasta não pode ser migrada: ' + plan.blocked + '.');
+		if (plan.interrupted) warn('block', 'uma migração desta pasta parou no meio: ' + plural(plan.interruptedCount, 'arquivo já tinha sido movido', 'arquivos já tinham sido movidos') + '. desfaça para levar tudo de volta ao lugar de antes; depois dá para migrar de novo.');
+		if (plan.loose && !plan.blocked && !plan.undo) warn('warn', 'o projeto não está numa pasta de projetos (01_PROJETOS): a migração vai arrumar a pasta inteira onde ele está salvo. confira o caminho acima.');
+		if (plan.others && !plan.undo && !plan.blocked && !state.mig.all) warn('warn', (plan.others === 1 ? 'o outro projeto desta pasta vai' : 'os outros ' + plan.others + ' projetos desta pasta vão') + ' para a pasta nova sem religar: quem abrir vai encontrar os arquivos faltando, e o que só ' + (plan.others === 1 ? 'ele usa' : 'eles usam') + ' vai para os arquivos externos. ligue a chave abaixo para religar também.');
+
 		// com outros projetos na pasta: religar todos (o After abre cada um) ou só o aberto (o padrão)
 		if (plan.others && !plan.undo) {
 			var all = el('label', 'cfg-switch mg-all');
@@ -845,9 +876,20 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var go = $('cw-go');
 		var notes = [];
 
+		var held = state.mig.holdUntil && Date.now() < state.mig.holdUntil; // logo depois de migrar: o clique de reflexo não desfaz
+
 		go.classList.toggle('button-primary', !plan.undo);
-		go.disabled = state.busy || (!plan.undo && (!plan.total || plan.partial));
+		go.setAttribute('data-no-shortcut', ''); // migrar e desfazer mexem nos arquivos da rede: só no clique, nunca no atalho
+		go.disabled = state.busy || held || (!plan.undo && (!plan.total || plan.partial || !!plan.blocked));
 		go.textContent = plan.undo ? 'Desfazer a migração' : plan.total ? 'Migrar: ' + plan.total : 'Migrar';
+		go.classList.toggle('is-confirm', !!state.confirm);
+
+		// esperando o segundo clique: o botão diz o que vai fazer e a linha explica
+		if (state.confirm) {
+			go.textContent = state.confirm.label;
+			status(state.confirm.text, '');
+			return;
+		}
 
 		if (state.mig.note) return; // o resultado da última ação fica na tela
 		if (plan.undo && !plan.total) {
@@ -856,10 +898,10 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		}
 
 		if (plan.partial) notes.push('a pasta é grande demais para ler de uma vez: nada pode ser movido');
+		else if (plan.interrupted) notes.push('desfazer leva de volta o que já foi movido');
 		else if (plan.undo) notes.push('esta pasta já foi migrada');
 		else if (plan.total) notes.push('nada foi movido ainda');
 		if (plan.conflicts) notes.push(plural(plan.conflicts, 'nome repetido ganha', 'nomes repetidos ganham') + ' _2');
-		if (plan.others && !plan.all) notes.push(plural(plan.others, 'outro .aep vai', 'outros .aep vão') + ' sem religar');
 		if (plan.others && plan.all) notes.push(plural(plan.others, 'outro projeto é religado', 'outros projetos são religados') + ' (o After abre cada um)');
 		if (state.mig.unread && state.mig.unread.length) notes.push(plural(state.mig.unread.length, 'projeto não abriu', 'projetos não abriram') + ' (vão sem religar)');
 		if (plan.outside) notes.push(plural(plan.outside, 'arquivo de fora da pasta é copiado', 'arquivos de fora da pasta são copiados'));
@@ -908,6 +950,10 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		state.mig = null;
 		state.key = '';
+		clearTimeout(state.confirmTimer);
+		state.confirm = null;
+		$('cw-go').classList.remove('is-confirm');
+		$('cw-go').removeAttribute('data-no-shortcut');
 		$('mg').hidden = true;
 		$('mg').textContent = '';
 		$('mg-back').hidden = true;
@@ -1043,6 +1089,11 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			state.mig.done = true;
 			state.mig.note = parts.join(' · ') + '.';
 			state.busy = false;
+			// o botão vira Desfazer no mesmo lugar: por 2 s ele não responde (um clique de reflexo não desfaz)
+			state.mig.holdUntil = Date.now() + 2000;
+			setTimeout(function () {
+				if (state.mig && !state.busy) migFooter();
+			}, 2050);
 			renderMigration();
 			status(state.mig.note, res.failed && res.failed.length ? 'error' : 'success');
 			$('fw-status').title = parts.concat(res.failed || []).join('\n');
@@ -1068,6 +1119,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
 			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde voltar', 'não puderam voltar'));
+			if (res.newer && res.newer.length) parts.push(plural(res.newer.length, 'projeto salvo depois da migração ficou como está', 'projetos salvos depois da migração ficaram como estão') + ' (' + res.newer.join(', ') + '; o original de antes continua guardado nos arquivos externos)');
 
 			state.mig.plan = await call('migratePlan');
 			state.mig.done = false;
@@ -1089,7 +1141,27 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		PAD_KEYS.primary($('cw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('cw-go').addEventListener('click', function () {
 			if (state.mig) {
-				if (state.mig.plan.undo) undoMigration();
+				if (state.busy || (state.mig.holdUntil && Date.now() < state.mig.holdUntil)) return;
+
+				var plan = state.mig.plan;
+
+				// migrar e desfazer movem os arquivos na rede: o primeiro clique só pergunta, o segundo (em até 6 s) faz
+				if (!state.confirm) {
+					state.confirm = plan.undo
+						? { label: 'Confirmar: desfazer', text: 'tudo o que a migração moveu volta para o lugar de antes. clique de novo para confirmar.' }
+						: { label: 'Confirmar: mover ' + plan.total, text: plural(plan.total, 'arquivo será movido', 'arquivos serão movidos') + ' na pasta acima, agora. clique de novo para confirmar.' };
+					state.confirmTimer = setTimeout(function () {
+						state.confirm = null;
+						if (state.mig && !state.busy) migFooter();
+					}, 6000);
+					migFooter();
+					return;
+				}
+
+				clearTimeout(state.confirmTimer);
+				state.confirm = null;
+
+				if (plan.undo) undoMigration();
 				else migrate();
 			} else if (found().length) relink();
 			else collect('');
