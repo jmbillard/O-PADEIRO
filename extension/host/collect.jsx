@@ -929,6 +929,44 @@ var PAD_RELINK_FILES = 40000; // e o máximo de arquivos lidos
 
 // Os arquivos de 'folder', até 'depth' níveis para dentro, no índice { nome em minúsculas: [caminhos] }. pula as
 // pastas que não interessam (autosave, OLD…) e as escondidas. state: { byName, files, until, partial, seen }
+// As pastas onde o projeto renderiza: a de output gravada no projeto e as das saídas da fila de render (as que
+// existem, sem repetir). → [Folder]
+function padRelinkOutputs() {
+	var list = [];
+	var seen = {};
+	var add = function (path) {
+		if (!path) return;
+
+		var folder = new Folder(path);
+		var key = padPathKey(folder.fsName);
+
+		if (seen[key] || !folder.exists) return;
+
+		seen[key] = true;
+		list.push(folder);
+	};
+
+	try {
+		var output = padMetaRead().output;
+
+		if (output) add(padMountedPath(padPath(output)));
+	} catch (err) { }
+
+	try {
+		for (var i = 1; i <= app.project.renderQueue.numItems; i++) {
+			var item = app.project.renderQueue.item(i);
+
+			for (var m = 1; m <= item.numOutputModules; m++) {
+				try {
+					if (item.outputModule(m).file) add(item.outputModule(m).file.parent.fsName);
+				} catch (err) { }
+			}
+		}
+	} catch (err) { }
+
+	return list;
+}
+
 function padRelinkScan(folder, depth, state) {
 	var key = padPathKey(folder.fsName);
 
@@ -1062,6 +1100,12 @@ PADX.collectRelinkFind = function (a) {
 	var projectFile = app.project.file;
 
 	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padReadCollect())), 5, state);
+
+	// a pasta de output do projeto e as pastas das saídas da fila de render: o que foi renderizado e voltou para o
+	// projeto (um lettering, um pré-render) costuma estar lá
+	var outs = padRelinkOutputs();
+
+	for (i = 0; i < outs.length && !state.partial; i++) padRelinkScan(outs[i], 3, state);
 
 	for (i = 0; i < missing.length && !state.partial; i++) {
 		var near = missing[i].lost ? null : padRelinkAncestor(missing[i].path);

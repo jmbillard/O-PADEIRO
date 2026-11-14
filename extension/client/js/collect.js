@@ -22,7 +22,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		ok: ['✓', 'na pasta do projeto'],
 		net: ['↑', 'nas pastas de projetos, fora da pasta deste projeto: o coletar copia'],
 		local: ['↑', 'fora das pastas de projetos (configuração > projeto): o coletar copia'],
-		missing: ['✕', 'o arquivo não existe'],
+		missing: ['!', 'o arquivo não existe'],
 		skip: ['–', 'tipo fora da árvore do coletar (configuração > coletar)']
 	};
 	var KINDS = { videos: 'vídeo', imagens: 'imagem', sequencias: 'sequência', audio: 'áudio', dados: 'dados' };
@@ -43,7 +43,18 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	// filter: as situações que aparecem na lista (e que o Coletar e a busca dos faltando levam em conta). a janela
 	// abre mostrando só o que precisa de atenção; o que já está no lugar fica escondido
 	var state = { data: null, busy: false, key: '', finds: null, mig: null, filter: { missing: true, local: true, net: true, ok: false } };
-	var FILTERS = [['missing', 'nofile', '✕', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'locais', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
+	// o sinal de cada estado; o do arquivo que falta é o triângulo de atenção (um X pareceria "excluir")
+	var WARN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 4.6a2 2 0 0 1 3.4 0l7.1 12.3a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" /><path d="M12 9.5v4.2M12 16.9v.1" /></svg>';
+
+	function mark(sign) {
+		var node = el('i', null, sign === '!' ? '' : sign);
+
+		if (sign === '!') node.innerHTML = WARN_SVG;
+
+		return node;
+	}
+
+	var FILTERS = [['missing', 'nofile', '!', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'locais', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
 
 	// a situação do arquivo para o filtro: os de tipo fora da árvore (não coletados) contam como no lugar
 	function group(it) {
@@ -122,7 +133,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			chip.disabled = !n;
 			chip.setAttribute('aria-pressed', state.filter[f[0]] ? 'true' : 'false');
 			chip.title = f[4] + (n ? '\n(clique: ' + (state.filter[f[0]] ? 'esconde' : 'mostra') + ' na lista; o Coletar só copia o que aparece)' : '');
-			dot.appendChild(el('i', null, f[2]));
+			dot.appendChild(mark(f[2]));
 			chip.appendChild(dot);
 			chip.appendChild(el('b', null, String(n)));
 			chip.appendChild(document.createTextNode(' ' + f[3]));
@@ -258,7 +269,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		// achado pela busca: a linha mostra onde (o relinkar leva para lá); procurado e não achado: avisa
 		if (hit) st = ['→', 'achado em ' + hit.to + (hit.more ? '\n(há mais ' + plural(hit.more, 'arquivo', 'arquivos') + ' com esse nome: este é o do caminho mais parecido)' : '') + '\nRelinkar aponta o item para ele'];
-		if (searched) st = [st[0], 'o arquivo não existe e a busca não achou outro com esse nome nas pastas do projeto'];
+		if (searched) st = [st[0], 'o arquivo não existe e a busca não achou outro com esse nome nas pastas do projeto, do output e da fila de render'];
 
 		box.setAttribute('data-type', it.kind); // a cor do tipo (styles.css)
 		box.dataset.state = it.state;
@@ -291,7 +302,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		text.appendChild(where);
 
 		head.appendChild(text);
-		dot.appendChild(el('i', null, st[0]));
+		dot.appendChild(mark(st[0]));
 		dot.dataset.id = it.id;
 		dot.title = st[1];
 		head.appendChild(dot);

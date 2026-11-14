@@ -207,6 +207,18 @@
 
 /* fora da árvore do coletar: neutro */
 /* faltando, mas achado pela busca: a seta para o lugar novo (o Relinkar leva para lá) */
+/* o triângulo de atenção do arquivo que falta */
+.fw-state i svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
 .fw-state.is-found {
   background: var(--processing-bg);
   color: var(--processing);
