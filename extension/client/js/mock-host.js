@@ -1420,7 +1420,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			return {
-				blocked: mode === 'blocked' ? 'o projeto está salvo numa pasta do sistema (Área de Trabalho, Documentos, Downloads…): salve numa pasta só dele antes de migrar' : '', loose: mode === 'loose', interrupted: mode === 'interrupted' && !window.PAD_MOCK_MIGRATED && !window.PAD_MOCK_UNDONE, interruptedCount: 120,
+				blocked: mode === 'blocked' ? 'o .aep está salvo direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), e a migração arruma a pasta inteira onde ele está. leve o projeto para a pasta dele (Projeto > Criar / Alterar) e use o Coletar: ele copia para lá os arquivos usados, estejam onde estiverem' : '', loose: mode === 'loose', interrupted: mode === 'interrupted' && !window.PAD_MOCK_MIGRATED && !window.PAD_MOCK_UNDONE, interruptedCount: 120,
 				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED || (mode === 'interrupted' && !window.PAD_MOCK_UNDONE), kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
 				sources: Object.keys(sources).sort(function (a, b) {
 					if (a === '..' || b === '..') return a === '..' ? 1 : -1;

@@ -121,8 +121,10 @@ function padJournalRead(root) {
 	return log;
 }
 
-// A pasta pode ser migrada? a migração arruma a pasta INTEIRA: tem que ser a pasta de um projeto, dentro das pastas
-// de projetos da configuração (aba PROJETO), nunca uma pasta do sistema nem a pasta de uma categoria inteira.
+// A pasta pode ser migrada? a migração arruma a pasta INTEIRA onde o .aep está: tem que ser a pasta de um projeto,
+// dentro das pastas de projetos da configuração (aba PROJETO), nunca uma pasta do sistema nem a pasta de uma
+// categoria inteira. isto é só sobre ONDE O .AEP ESTÁ SALVO: os arquivos que o projeto usa e estão espalhados por
+// aí (a Área de Trabalho de alguém, outra pasta da rede) continuam sendo copiados para a estrutura, como sempre.
 // → '' (pode) | o motivo
 function padMigrateBlocked(rootPath) {
 	var key = padPathKey(rootPath);
@@ -142,7 +144,7 @@ function padMigrateBlocked(rootPath) {
 
 	for (i = 0; i < system.length; i++) {
 		try {
-			if (system[i] && padPathKey(system[i].fsName) == key) return 'o projeto está salvo numa pasta do sistema (Área de Trabalho, Documentos, Downloads…): salve numa pasta só dele antes de migrar';
+			if (system[i] && padPathKey(system[i].fsName) == key) return 'o .aep está salvo direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), e a migração arruma a pasta inteira onde ele está. leve o projeto para a pasta dele (Projeto > Criar / Alterar) e use o Coletar: ele copia para lá os arquivos usados, estejam onde estiverem';
 		} catch (err) { }
 	}
 
