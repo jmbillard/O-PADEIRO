@@ -3594,11 +3594,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				return;
 			}
 
-			var total = names.filter(function (n) {
+			var legacy = names.filter(function (n) {
 				return /\.json$/i.test(n) && n.charAt(0) !== '_';
-			}).length;
+			});
 
-			box.textContent = total ? total + (total === 1 ? ' fonte no banco.' : ' fontes no banco.') : 'o banco ainda está vazio.';
+			// os registros ficam na subpasta _registro (os de antes, ao lado das fontes, ainda contam)
+			fs.readdir(require('path').join(PAD_BRIDGE.mountedPath(bank.replace(/^~(?=\/)/, require('os').homedir())), '_registro'), function (err2, reg) {
+				var inReg = (err2 ? [] : reg).filter(function (n) {
+					return /\.json$/i.test(n) && n.charAt(0) !== '_';
+				});
+				var total = inReg.length + legacy.filter(function (n) {
+					return inReg.indexOf(n) < 0;
+				}).length;
+
+				box.textContent = total ? total + (total === 1 ? ' fonte no banco.' : ' fontes no banco.') : 'o banco ainda está vazio.';
+			});
 		});
 	}
 

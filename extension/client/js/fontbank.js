@@ -8,8 +8,10 @@ O host diz quais fontes o projeto usa (PADX.fontsProject); aqui, pelo Node do pa
 Effects), cada fonte é conferida e copiada para os dois lugares: o banco (a pasta da configuração > FONTES)
 e a pasta de fontes do projeto (02 ARQUIVOS/FONTS).
 
-No banco, cada fonte fica pelo nome PostScript: '<nome>.<ext>' e '<nome>.json' (família, estilo e as versões:
-arquivo, md5, tamanho, data, quem enviou, de que máquina e projeto). Um arquivo diferente com o mesmo nome
+No banco, cada fonte fica pelo nome PostScript: '<nome>.<ext>' na pasta do banco e o registro dela,
+'_registro/<nome>.json', numa subpasta à parte (família, estilo e as versões: arquivo, md5, tamanho, data, quem
+enviou, de que máquina e projeto): quem mexe no banco pelo Finder vê só as fontes. Os registros de antes, ao lado
+das fontes, continuam valendo e vão para a subpasta no próximo envio daquela fonte. Um arquivo diferente com o mesmo nome
 (outra versão) vai ao lado, com a data no nome ('<nome>@20261106-1402.otf'); a mais recente é a que instala.
 As cópias usam um nome temporário e são renomeadas no fim: ninguém vê um arquivo pela metade.
 
@@ -227,8 +229,19 @@ Estado de cada fonte (check):
 		return base.charAt(0) === '.' || FONT_EXT.indexOf((nodePath.extname(base).slice(1) || '').toLowerCase()) < 0 ? keyOf(font.name) + '.' + ext : base;
 	}
 
+	// o registro de cada fonte, na subpasta _registro (o de antes, ao lado da fonte, ainda é lido)
+	var REGISTRY = '_registro';
+
 	function entryFile(bank, name) {
+		return nodePath.join(bank, REGISTRY, keyOf(name) + '.json');
+	}
+
+	function legacyEntryFile(bank, name) {
 		return nodePath.join(bank, keyOf(name) + '.json');
+	}
+
+	async function readEntry(bank, name) {
+		return (await readJson(entryFile(bank, name))) || readJson(legacyEntryFile(bank, name));
 	}
 
 	// a versão que instala: a mais recente que existir
@@ -252,7 +265,7 @@ Estado de cada fonte (check):
 
 		for (var i = 0; i < info.fonts.length; i++) {
 			var font = Object.assign({}, info.fonts[i]);
-			var entry = bankOk ? await readJson(entryFile(bank, font.name)) : null;
+			var entry = bankOk ? await readEntry(bank, font.name) : null;
 
 			font.bankFile = entry ? newestFile(bank, entry) : '';
 			font.inBank = false;
@@ -316,7 +329,7 @@ Estado de cada fonte (check):
 
 		if (bank && checked.bankOk && !font.inBank) {
 			var file = entryFile(bank, font.name);
-			var entry = (await readJson(file)) || { name: font.name, family: font.family, style: font.style, versions: [] };
+			var entry = (await readEntry(bank, font.name)) || { name: font.name, family: font.family, style: font.style, versions: [] };
 			var has = function (e) {
 				return (e.versions || []).some(function (v) {
 					return v.md5 === font.md5;
@@ -330,7 +343,7 @@ Estado de cada fonte (check):
 			await copy(font.location, nodePath.join(bank, name));
 
 			// relê antes de gravar (outra pessoa pode ter enviado outra versão no meio)
-			entry = (await readJson(file)) || entry;
+			entry = (await readEntry(bank, font.name)) || entry;
 			if (has(entry)) {
 				fs.unlink(nodePath.join(bank, name), function () { }); // a mesma chegou antes: a cópia sobra
 				return;
@@ -338,7 +351,10 @@ Estado de cada fonte (check):
 			entry.family = font.family || entry.family;
 			entry.style = font.style || entry.style;
 			entry.versions = (entry.versions || []).concat([{ file: name, md5: font.md5, size: (md5Cache[font.location] || {}).size || 0, date: now.toISOString(), user: info.user, machine: info.machine, project: info.project }]);
+			await mkdirs(nodePath.join(bank, REGISTRY));
 			await writeJson(file, entry);
+			// o registro de antes, ao lado da fonte, sai (agora ele está na subpasta)
+			fs.unlink(legacyEntryFile(bank, font.name), function () { });
 		}
 	}
 
@@ -354,7 +370,8 @@ Estado de cada fonte (check):
 
 		if (!info) return [];
 
-		var mark = bank + '|' + info.mtimeMs;
+		var reg = await stat(nodePath.join(bank, REGISTRY));
+		var mark = bank + '|' + info.mtimeMs + '|' + (reg ? reg.mtimeMs : 0);
 		var cached = null;
 
 		try {
@@ -363,14 +380,25 @@ Estado de cada fonte (check):
 
 		if (cached && cached.mark === mark && cached.list) return cached.list;
 
-		var names = await p(function (cb) {
-			fs.readdir(bank, cb);
-		}).catch(function () {
-			return [];
+		var list = function (dir) {
+			return p(function (cb) {
+				fs.readdir(dir, cb);
+			}).catch(function () {
+				return [];
+			}).then(function (names) {
+				return names.filter(function (n) {
+					return /\.json$/i.test(n) && n.charAt(0) !== '_' && !/\.part$/i.test(n);
+				});
+			});
+		};
+		// os da subpasta e os de antes, ao lado das fontes (o mesmo nome conta uma vez)
+		var inRegistry = await list(nodePath.join(bank, REGISTRY));
+		var legacy = (await list(bank)).filter(function (n) {
+			return inRegistry.indexOf(n) < 0;
 		});
-		var files = names.filter(function (n) {
-			return /\.json$/i.test(n) && n.charAt(0) !== '_';
-		});
+		var files = inRegistry.map(function (n) {
+			return nodePath.join(REGISTRY, n);
+		}).concat(legacy);
 		var out = [];
 
 		for (var i = 0; i < files.length; i += 24) {
@@ -392,13 +420,17 @@ Estado de cada fonte (check):
 
 	// as trocas que a equipe já fez (fonte que faltava → a que entrou no lugar), para a sugestão
 	function swapsFile(bank) {
-		return nodePath.join(expand(bank), '_trocas.json');
+		return nodePath.join(expand(bank), REGISTRY, '_trocas.json');
 	}
 
 	function readSwaps(bank) {
-		return bank ? readJson(swapsFile(bank)).then(function (d) {
+		if (!bank) return Promise.resolve({});
+
+		return readJson(swapsFile(bank)).then(function (d) {
+			return d || readJson(nodePath.join(expand(bank), '_trocas.json')); // o de antes, ao lado das fontes
+		}).then(function (d) {
 			return d || {};
-		}) : Promise.resolve({});
+		});
 	}
 
 	async function rememberSwaps(bank, swaps) {
@@ -410,7 +442,11 @@ Estado de cada fonte (check):
 			data[s.from] = s.to;
 		});
 
-		await writeJson(swapsFile(bank), data).catch(function () { });
+		try {
+			await mkdirs(nodePath.join(expand(bank), REGISTRY));
+			await writeJson(swapsFile(bank), data);
+			fs.unlink(nodePath.join(expand(bank), '_trocas.json'), function () { });
+		} catch (err) { }
 	}
 
 	window.PAD_FONTBANK = {
