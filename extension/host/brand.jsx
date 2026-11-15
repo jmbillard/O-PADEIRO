@@ -5,7 +5,8 @@
 ---------------------------------------------------------------
 
 O desenho e a animação vêm do script do PROMO (layers lib.js: LOGO_GLOBO): uma shape layer com o corpo, a janela e
-a bolinha, branca, com a escala de 740% a 115% (até 0,58 s) e a 80% (até 5,46 s). no meio da comp aberta, acima do
+a bolinha, branca, com a escala de 740% a 115% (até 0,58 s) e a 80% (até 5,46 s), com a suavização (ease) do
+original (apagada do PROMO no commit 7efa515, refeita aqui pelos valores de lá). no meio da comp aberta, acima do
 layer selecionado (ou no topo).
 
 */
@@ -51,7 +52,7 @@ function padLogoGloboLayer(comp, animated) {
 	shp.closed = true;
 	shp.vertices = [[0, 100], [-100, 0], [0, -100], [100, 0]];
 	shp.inTangents = [[55, 0], [0, 55], [-55, 0], [0, -55]];
-	shp.outTangents = [[-55, 0], [0, -55], [55, 0], [0, 55]];
+	shp.outTangents = [[-55, 0], [0, -55], [55, 0], [0, 50]]; // como no original
 	path.property('ADBE Vector Shape').setValue(shp);
 
 	// a janela
@@ -97,20 +98,21 @@ function padLogoGloboLayer(comp, animated) {
 		scale.setValueAtTime(0.5839, [115, 115]);
 		scale.setValueAtTime(5.4638, [80, 80]);
 
-		// o mesmo número de eases que a escala tem de dimensões (2 numa shape)
-		var ease = function (influence) {
+		// a suavização do script original do PROMO (apagada de lá no commit 7efa515): bézier nas três chaves, com a
+		// velocidade e a influência de cada uma (uma por dimensão da escala)
+		var ease = function (speed, influence) {
 			var list = [];
 
-			for (var d = 0; d < scale.value.length; d++) list.push(new KeyframeEase(0, influence));
+			for (var d = 0; d < scale.value.length; d++) list.push(new KeyframeEase(speed, influence));
 
 			return list;
 		};
+		var keys = [[[0, 16.6667], [-14330, 2]], [[-130, 55], [-130, 5]], [[0, 30], [0, 16.6667]]];
 
-		try {
-			scale.setTemporalEaseAtKey(1, ease(0.1), ease(75));
-			scale.setTemporalEaseAtKey(2, ease(33), ease(33));
-			scale.setTemporalEaseAtKey(3, ease(75), ease(0.1));
-		} catch (err) { }
+		for (var k = 0; k < keys.length; k++) {
+			scale.setInterpolationTypeAtKey(k + 1, KeyframeInterpolationType.BEZIER, KeyframeInterpolationType.BEZIER);
+			scale.setTemporalEaseAtKey(k + 1, ease(keys[k][0][0], keys[k][0][1]), ease(keys[k][1][0], keys[k][1][1]));
+		}
 	} else {
 		scale.setValue([80, 80]);
 	}
