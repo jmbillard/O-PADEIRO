@@ -32,7 +32,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '../..');
 const CLIENT = 'file://' + path.join(ROOT, 'extension/client') + '/';
-const OUT = path.join(ROOT, 'docs/images');
+const OUT = process.env.PAD_DOC_OUT || path.join(ROOT, 'docs/images'); // PAD_DOC_OUT: grava em outra pasta (ex: para uma apresentação)
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'pad-doc-'));
 
 /* =========================================================
@@ -206,6 +206,7 @@ const DOC_PREVIEWS = `(() => {
 const CATEGORIES = { categories: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
+	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
 	{ name: 'FUTEBOL', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/{ano}/{atracao}', output: '', icon: 'bola' }
 ] };
 
@@ -369,6 +370,36 @@ const SCENES = {
 		await hover(p, '#criar-go', 900);
 	} },
 
+	// A CLAQUETE, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
+	'claquete-nova': { w: 480, h: 680, url: 'project.html', async run(p) {
+		mouse = [450, 640];
+		await p.waitForTimeout(500);
+		await tap(p, '#claq', { wait: 200 });
+		await type(p, 'vt interpol', 120);
+		await p.waitForTimeout(1100);
+		await hover(p, p.locator('.cat-chip', { hasText: 'NOVELA' }).first(), 700);
+		await hover(p, p.locator('.cat-chip.is-on').first(), 800);
+		await tap(p, p.locator('.cat-chip.is-on').first(), { wait: 1100 });
+		await tap(p, '#arq-what', { wait: 200 });
+		await type(p, 'abertura', 120);
+		await p.waitForTimeout(1300);
+		await hover(p, '#criar-go', 900);
+	} },
+
+	// O criador de templates: captura a comp, puxa os layers, dá o nome e salva
+	criador: { w: 1000, h: 700, url: 'maker.html', fps: 12, quality: 45, async run(p) {
+		mouse = [960, 660];
+		await p.waitForTimeout(700);
+		await tap(p, '#btn-capture', { wait: 1200 });
+		await tap(p, '#btn-layers', { wait: 1100 });
+		await tap(p, '#f-config', { wait: 200 });
+		await type(p, 'SERVICO', 120);
+		await p.waitForTimeout(700);
+		await tap(p, '#btn-example', { wait: 1100 });
+		await hover(p, '#btn-test', 800);
+		await hover(p, '#btn-save', 1100);
+	} },
+
 	// O TIPÓGRAFO: troca a fonte que falta pela busca, com a prévia
 	tipografo: { w: 480, h: 600, url: 'fonts.html', init: DOC_FONTS, async run(p) {
 		mouse = [450, 560];
@@ -408,6 +439,17 @@ const SCENES = {
 		await p.waitForTimeout(1800);
 		await hover(p, '#results-paths > *:first-child', 1200);
 		await tap(p, '#tab-texts', { wait: 1400 });
+	} },
+
+	// O ACESSORISTA, só os caminhos: digita e os resultados aparecem (atrações, Teams, Trello)
+	busca: { w: 720, h: 560, url: 'finder.html', async run(p) {
+		mouse = [520, 520];
+		await p.waitForTimeout(700);
+		await tap(p, '#q-paths', { wait: 200 });
+		await type(p, 'reporter', 130);
+		await p.waitForTimeout(1600);
+		await hover(p, '#results-paths > *:first-child', 1300);
+		await hover(p, '#results-paths > *:nth-child(2)', 1300);
 	} },
 
 	// O ADAPTADOR: cola o caminho do Mac e sai o do Windows (a altura do conteúdo, como a janela)
