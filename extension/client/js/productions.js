@@ -947,7 +947,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// campo de termos em chips: a vírgula (ou Enter) fecha o termo; backspace no campo vazio apaga o último.
 	// o valor continua o texto "A, B, C" (o mesmo que a configuração guarda)
-	function tagField(value, placeholder, label, icon, onInput, onRemove) {
+	function tagField(value, placeholder, label, icon, onInput, onRemove, clean) {
 		var line = el('div', 'cfg-path has-field-icon tag-field no-btn');
 		var box = el('div', 'cfg-input tag-box');
 		var input = el('input', 'tag-input');
@@ -974,8 +974,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		function commit() {
 			split(input.value).forEach(function (term) {
-				term = term.toUpperCase(); // como os outros campos do tipo
-				if (!has(term)) tags.push(term);
+				term = clean ? clean(term) : term.toUpperCase(); // como os outros campos do tipo
+				if (term && !has(term)) tags.push(term);
 			});
 			input.value = '';
 			draw();
@@ -2041,6 +2041,49 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		orgTree.render();
 	}
 
+	// os campos de termos da aba ORGANIZAR em chips (o mesmo campo dos termos do renomear). o campo de texto do
+	// HTML fica escondido; o chip é refeito só quando o valor muda de fora (abrir, recarregar)
+	var ORG_CHIPS = [
+		['org-render', 'renderComments', 'EXPORT, TEMPLATE', TAG_ICON],
+		['org-edit', 'editComments', 'EDIT', TAG_ICON],
+		['org-data', 'dataExtensions', '.csv, .json, .txt', ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'], function (t) {
+			var ext = t.toLowerCase().replace(/^\*?\.*/, '').replace(/[^a-z0-9]/g, '');
+
+			return ext ? '.' + ext : '';
+		}],
+		['org-files', 'fileTags', 'FUNDO, LOGO, FOTO, TRILHA, LOC', TAG_ICON]
+	];
+
+	function organizeChips() {
+		var o = state.organize;
+
+		ORG_CHIPS.forEach(function (c) {
+			var input = $(c[0]);
+			var wrap = input.closest('.has-field-icon');
+			var holder = wrap.nextElementSibling && wrap.nextElementSibling.classList.contains('org-terms') ? wrap.nextElementSibling : null;
+			var key = (state.available ? '1|' : '0|') + o[c[1]];
+
+			if (!holder) {
+				holder = el('div', 'org-terms');
+				wrap.parentNode.insertBefore(holder, wrap.nextSibling);
+				wrap.hidden = true;
+			}
+			if (holder.dataset.key === key) return;
+
+			var field = tagField(o[c[1]], c[2], input.getAttribute('aria-label') || c[2], c[3], function (v) {
+				o[c[1]] = v;
+				input.value = v;
+				holder.dataset.key = (state.available ? '1|' : '0|') + v;
+			}, function () { }, c[4]);
+			var del = field.querySelector('.row-del');
+
+			if (del) del.remove(); // um campo só, sem a lixeira
+			holder.textContent = '';
+			holder.dataset.key = key;
+			holder.appendChild(field);
+		});
+	}
+
 	// os campos à direita (comentários de render, extensões...)
 	function organizeFields() {
 		var o = state.organize;
@@ -2050,6 +2093,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if ($(id).value !== o[fields[id]]) $(id).value = o[fields[id]];
 			$(id).disabled = !state.available;
 		});
+		organizeChips();
 		$('org-sub').checked = o.commentSubfolders;
 		$('org-sub').disabled = !state.available;
 		$('btn-new-folder').disabled = !state.available;

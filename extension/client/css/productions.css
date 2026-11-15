@@ -677,6 +677,14 @@ body.prods-page {
   overflow-y: auto;
 }
 
+/* as barras de rolagem das abas, um padrão só: a 4 px da borda da janela, com o lugar dela sempre guardado (o
+   conteúdo termina a 16 px da borda, rolando ou não) */
+.drives-pane {
+  margin-right: 4px;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
 .drives-pane .prods-section-title {
   margin-top: 10px;
   padding: 16px 0 0;
@@ -1151,10 +1159,12 @@ body.prods-page {
   min-height: 0;
   flex-direction: column;
   gap: 8px;
-  /* a coluna rola: 4 px de folga (compensados na margem) para o brilho do foco dos campos não ser cortado */
-  margin: -4px;
+  /* a coluna rola: 4 px de folga (compensados na margem) para o brilho do foco dos campos não ser cortado. à
+     direita, a barra vai até 4 px da borda da janela, como nas outras abas */
+  margin: -4px -12px -4px -4px;
   padding: 4px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .org-side .prods-section-title {
