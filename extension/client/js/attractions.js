@@ -91,6 +91,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
 	function unwrapIndex(data) {
+		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
+
 		var item = data instanceof Array ? data[0] : data;
 
 		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);

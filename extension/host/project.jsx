@@ -377,6 +377,7 @@ function padIndexGroups() {
 
 	try {
 		data = JSON.parse(text);
+		if (typeof data == 'string') data = JSON.parse(data); // o JSON mandado como texto
 		// embrulhado pelo n8n: [{ indice: '<o JSON em texto>' }]
 		if (data instanceof Array && data[0] && typeof data[0].indice == 'string') data = JSON.parse(data[0].indice);
 	} catch (err) { }
