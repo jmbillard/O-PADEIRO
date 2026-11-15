@@ -290,6 +290,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			toast(res.warnings.length ? 'warn' : 'success', lines.concat(res.warnings.map(PAD_UTIL.errorText)).join('\n'));
 		},
 
+		// o logo da Globo como shape layer na comp aberta (o mesmo do PROMO): animado ou parado
+		logoGlobo: async function (animated) {
+			var res = await call('logoGlobo', { animated: animated });
+
+			if (res && res.data) toast('success', 'logo Globo ' + (animated ? 'animado' : 'parado') + ' em ' + res.data.comp + ' · ' + UNDO_KEY + ' desfaz');
+		},
+
 		openLastOutput: async function () {
 			await requireNetwork('PAD_007');
 
@@ -579,6 +586,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			tips: [L_CLICK + 'buscar caminhos de atrações, filmes, Teams e Trello', R_CLICK + 'buscar nos textos dos layers do projeto'],
 			left: actions.searchPaths,
 			right: actions.searchTexts
+		},
+		{
+			key: 'logo-globo',
+			label: 'Logo Globo',
+			icon: 'logo-globo',
+			name: 'LOGO GLOBO',
+			tips: [L_CLICK + 'o logo da Globo animado na comp aberta (shape layer)', R_CLICK + 'o logo parado (sem animação)'],
+			left: function () {
+				return actions.logoGlobo(true);
+			},
+			right: function () {
+				return actions.logoGlobo(false);
+			}
 		}
 	];
 

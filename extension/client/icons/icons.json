@@ -144,6 +144,10 @@
 		"label": "pastas"
 	},
 	{
+		"key": "barra-logo-globo",
+		"label": "logo Globo"
+	},
+	{
 		"key": "barra-collect",
 		"label": "coletar"
 	},

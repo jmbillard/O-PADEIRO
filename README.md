@@ -28,6 +28,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
+| <img src="extension/client/icons/barra-logo-globo.svg" width="40" alt="logo Globo"> | **Logo Globo** | o logo da Globo animado na comp aberta (shape layer, a animação do PROMO) | o logo parado |
 
 e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador](#-instalação)**.
 

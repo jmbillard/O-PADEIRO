@@ -720,16 +720,16 @@ PADX.savePersonalLinks = function (a) {
 'BAR' no O_PADEIRO_GLOBAL_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
   items  → a ordem da barra, plana; 'divider' separa os grupos. as gavetas: templates (preencher, criar-template),
            projeto (projeto, fontes, coletar, render) e organizar (renomear, organizar), cada uma com as de dentro
-           juntas, na ordem de dentro; as soltas: importar, pastas e buscar (as que faltarem entram no fim)
+           juntas, na ordem de dentro; as soltas: importar, pastas, buscar e logo-globo (as que faltarem entram no fim)
   hidden → as escondidas: as ferramentas, 'gaveta:<chave>' (a gaveta inteira) e 'links' (o bloco de links)
 
 */
 
 // as gavetas e as de dentro (a ordem padrão de dentro) e as soltas; a mesma regra do painel (js/util.js: barLayout)
 var PAD_BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
-var PAD_BAR_LOOSE = ['importar', 'pastas', 'buscar'];
-var PAD_BAR_TOOLS = ['preencher', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar'];
-var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+var PAD_BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
+var PAD_BAR_TOOLS = ['preencher', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar', 'logo-globo'];
+var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
 
 function padBarGroupOf(key) {
 	for (var g in PAD_BAR_GROUPS) {

@@ -494,6 +494,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { templates: ['H.264 - Match Render Settings - 15 Mbps', 'H.264 metade', 'High Quality', 'High Quality with Alpha', 'Lossless', 'ProRes 422 HQ', 'ProRes 4444 + alpha', 'XDCAM HD 50', 'Sequência PNG'], 'final': r['final'] || '', preview: r.preview || '' };
 		},
 
+		logoGlobo: async function (a) {
+			await wait(200);
+
+			return { name: 'LOGO GLOBO', comp: 'PROMO_LOGO' };
+		},
+
 		renderQueue: async function (a) {
 			await wait(delay);
 

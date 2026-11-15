@@ -476,8 +476,8 @@
 	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
 	   --------------------------------------------------------------- */
 	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
-	var BAR_LOOSE = ['importar', 'pastas', 'buscar'];
-	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	var BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
+	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
 
 	function barGroupOf(key) {
 		for (var g in BAR_GROUPS) {

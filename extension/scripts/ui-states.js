@@ -20,10 +20,11 @@ const LISTS = { 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/m
 const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'film' }] };
 
 async function projectTo(page, screen) {
-	// o campo do projeto: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
+	// o campo do projeto: digita e Enter sem categoria abre a atração nova (o nome e a categoria embaixo; os chips das
+	// categorias ficam na lista)
 	await page.fill('#claq', 'TESTE NOVO');
 	await page.waitForTimeout(800);
-	await page.locator('#atr-list .combo-item:has-text("nova atração")').click();
+	await page.press('#claq', 'Enter');
 	await page.waitForTimeout(500);
 	if (screen === 'nova') return;
 
