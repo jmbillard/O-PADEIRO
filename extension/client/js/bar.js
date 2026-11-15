@@ -592,7 +592,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Logo Globo',
 			icon: 'logo-globo',
 			name: 'LOGO GLOBO',
-			tips: [L_CLICK + 'o logo da Globo animado na comp aberta (shape layer)', R_CLICK + 'o logo parado (sem animação)'],
+			tips: [L_CLICK + 'logo animado', R_CLICK + 'logo parado'],
 			left: function () {
 				return actions.logoGlobo(true);
 			},

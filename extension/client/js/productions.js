@@ -2241,7 +2241,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search'],
-		'logo-globo': ['Logo Globo', 'o logo da Globo animado na comp aberta · o logo parado', 'logo-globo']
+		'logo-globo': ['Logo Globo', 'logo animado · logo parado', 'logo-globo']
 	};
 
 	// as gavetas: o nome e o ícone (as de dentro: PAD_UTIL.barGroups)
