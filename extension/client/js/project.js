@@ -361,8 +361,22 @@ projetos com o nome certo).
 
 	/* ---------- o campo do projeto: a atração e as pastas ---------- */
 
+	// as barras do campo separam as pastas, menos a de uma data da claquete (QUEM AMA 17/11: o 17/11 fica junto)
+	function splitLevels(text) {
+		var parts = [''];
+
+		for (var i = 0; i < text.length; i++) {
+			var ch = text.charAt(i);
+
+			if (ch === '/' && !(/\d/.test(text.charAt(i - 1)) && /\d/.test(text.charAt(i + 1)))) parts.push('');
+			else parts[parts.length - 1] += ch;
+		}
+
+		return parts;
+	}
+
 	function claqParts() {
-		var parts = $('claq').value.split('/');
+		var parts = splitLevels($('claq').value);
 
 		return { first: parts[0].trim(), deep: parts.length > 1, levels: parts.slice(1, -1), last: parts[parts.length - 1].trim(), parts: parts };
 	}
@@ -833,6 +847,8 @@ projetos com o nome certo).
 				return label.some(function (l) {
 					return l.indexOf(w) === 0;
 				});
+			}) || matches.some(function (m) {
+				return aepName(m.name) === aepName(b.label);
 			});
 		}).map(function (b) {
 			return Object.assign(novaAttr(b.label, b), { isNewAttr: false, isFixed: true });

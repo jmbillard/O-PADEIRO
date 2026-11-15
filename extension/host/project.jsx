@@ -377,6 +377,8 @@ function padIndexGroups() {
 
 	try {
 		data = JSON.parse(text);
+		// embrulhado pelo n8n: [{ indice: '<o JSON em texto>' }]
+		if (data instanceof Array && data[0] && typeof data[0].indice == 'string') data = JSON.parse(data[0].indice);
 	} catch (err) { }
 
 	if (!data || data.v != 2) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');

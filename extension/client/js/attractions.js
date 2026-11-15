@@ -68,7 +68,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 					try {
 						var text = Buffer.concat(chunks).toString('utf8');
 
-						JSON.parse(text); // confere antes de trocar a cópia
+						unwrapIndex(JSON.parse(text)); // confere antes de trocar a cópia
 						fs.writeFileSync(file + '.part', text, 'utf8');
 						fs.renameSync(file + '.part', file);
 						resolve();
@@ -87,6 +87,29 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		});
 
 		return source.refreshing;
+	}
+
+	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
+	function unwrapIndex(data) {
+		var item = data instanceof Array ? data[0] : data;
+
+		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
+		if (item && item.indice && typeof item.indice === 'object') return item.indice;
+
+		return data;
+	}
+
+	// a pasta da atração no caminho do projeto, como mais um nome de busca: …/PROGRAMAS/BBB/BBB 2026/01 PROJETOS →
+	// BBB 2026 (sem a pasta de projetos; só ano, a de cima). BBB acha o BIG BROTHER BRASIL
+	function folderKeys(path) {
+		var parts = String(path || '').replace(/\\/g, '/').split('/').filter(Boolean);
+
+		while (parts.length && /^\d*[\s_-]*PROJETOS?$/i.test(aepName(parts[parts.length - 1]).replace(/^(\d+)\s*/, '$1'))) parts.pop();
+		while (parts.length && /^[\d\s_-]+$/.test(parts[parts.length - 1])) parts.pop();
+
+		var last = parts[parts.length - 1] || '';
+
+		return last && !/^(FILESERVER|PROGRAMAS|NOVELAS|SHOWS|ESPORTES|JORNALISMO|INSTITUCIONAL|FILMES|TITULOS)/i.test(aepName(last)) ? [wordKey(last)] : [];
 	}
 
 	function keyOf(text) {
@@ -232,7 +255,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 		}
 
-		var data = JSON.parse(text);
+		var data = unwrapIndex(JSON.parse(text));
 		var roots = data.roots || {};
 		var full = function (p) {
 			var m = /^([a-z]+):(.*)$/.exec(p || '');
@@ -250,7 +273,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				path: full(a.proj) || full(a.out),
 				out: full(a.out),
 				depth: 0,
-				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey)).filter(function (k) {
+				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey), folderKeys(full(a.proj))).filter(function (k) {
 					return k.f;
 				})
 			};

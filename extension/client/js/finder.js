@@ -392,9 +392,19 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		} catch (err) { }
 	}
 
+	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
+	function unwrapIndex(data) {
+		var item = data instanceof Array ? data[0] : data;
+
+		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
+		if (item && item.indice && typeof item.indice === 'object') return item.indice;
+
+		return data;
+	}
+
 	// texto do webhook → { stamp, cats: { teams: [...], ... } } com o texto de busca de cada item
 	function parseV2(text, info) {
-		var data = JSON.parse(text);
+		var data = unwrapIndex(JSON.parse(text));
 
 		if (!data || data.v !== 2) throw new Error('formato inesperado');
 
