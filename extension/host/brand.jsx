@@ -5,7 +5,7 @@
 ---------------------------------------------------------------
 
 LOGO_GLOBO: o script do PROMO exatamente como está lá (source/libraries/functions/layers lib.js, na versão com a
-suavização dos keyframes: commit dbffcd3). parado (clique direito): o mesmo logo, sem os keyframes, em 80%.
+suavização dos keyframes: commit dbffcd3). parado (clique direito): o mesmo logo, sem os keyframes, em 100%.
 
 */
 
@@ -26,7 +26,7 @@ PADX.logoGlobo = function (a) {
 			var scale = layer.property('ADBE Root Vectors Group').property('logo').property('ADBE Vector Transform Group').property('ADBE Vector Scale');
 
 			while (scale.numKeys) scale.removeKey(1);
-			scale.setValue([80, 80]);
+			scale.setValue([100, 100]);
 		}
 	} finally {
 		padUndoEnd();
