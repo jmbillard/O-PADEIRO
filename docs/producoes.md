@@ -107,6 +107,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
+- **arquivo** → opcional: o nome do `.aep` da atração criada pela categoria, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.

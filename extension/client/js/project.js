@@ -1045,13 +1045,21 @@ projetos com o nome certo).
 
 			return { name: flow.attr.name, path: segs.length ? flow.walk.path : flow.attr.path, display: displayPath(segs.length ? flow.walk.path : flow.attr.path), out: flow.attr.out || '', quadro: segs.map(function (s) {
 				return s.name;
-			}).join('/'), segs: segs, base: flow.walk.base };
+			}).join('/'), segs: segs, base: flow.walk.base, fileName: attrFileName(flow.attr) };
 		}
 		// a atração escolhida, sem pastas abaixo (o campo só com o nome dela)
-		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [] };
+		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [], fileName: attrFileName(flow.attr) };
 		if (!p.deep && flow.choice === 'new' && novaReady()) return novaTarget();
 
 		return null;
+	}
+
+	// o nome do .aep da categoria (aba PROJETO > ARQUIVO, com tokens): na atração criada pela categoria (a fixa, a
+	// nova dos chips); a que já existe no índice fica com o nome dela
+	function attrFileName(attr) {
+		if (!attr || !attr.base || !attr.base.filePattern || attr.fromIndex) return '';
+
+		return aepName(fillPattern(attr.base.filePattern, attr.name, attr.base.label));
 	}
 
 	// o destino mudou: o plano (o nome do .aep, o que já existe, o output) é refeito
@@ -1114,7 +1122,7 @@ projetos com o nome certo).
 	// travava a digitação)
 	function localFile(plan) {
 		var levels = String(flow.pick.quadro || '').split('/');
-		var base = aepName((levels[levels.length - 1].trim() || flow.pick.name) + ' ' + (flow.what || ''));
+		var base = aepName((levels[levels.length - 1].trim() || flow.pick.fileName || flow.pick.name) + ' ' + (flow.what || ''));
 
 		plan.fileBase = base;
 		plan.fileName = base + '.aep';
@@ -1124,7 +1132,7 @@ projetos com o nome certo).
 	}
 
 	function planArgs(extra) {
-		return Object.assign({ kind: 'program', atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.pick.out || '' }, extra || {});
+		return Object.assign({ kind: 'program', atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.pick.out || '', fileName: flow.pick.fileName || '' }, extra || {});
 	}
 
 	function planCriar() {

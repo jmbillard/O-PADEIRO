@@ -40,6 +40,8 @@ function padCleanProject(o) {
 		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
 		var path = padProjectPath(c.path);
 		var output = padProjectPath(c.output);
+		// o nome do .aep da categoria (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
+		var fileName = padTrim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
 		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
 		var key = padAepName(name);
 		var re = /\{([^}]*)\}/g;
@@ -49,13 +51,13 @@ function padCleanProject(o) {
 		if (seen[key]) throw new Error('#PAD_089 - projeto: a categoria ' + name + ' aparece mais de uma vez.');
 		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
 
-		while ((m = re.exec(path + ' ' + output)) != null) {
+		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
 			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
 		}
 
 
 		seen[key] = true;
-		clean.categories.push({ name: name, path: path, output: output, icon: icon });
+		clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
 	}
 
 	return clean;
@@ -85,7 +87,7 @@ PADX.projectCategories = function () {
 
 		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(resolveMacVolumePath(padPath(fixed))).exists; // VFX-1… também vale
 
-		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, icon: list[i].icon, reachable: checked[fixed] });
+		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, reachable: checked[fixed] });
 	}
 
 	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
@@ -536,7 +538,7 @@ function padNewProjectPlan(a) {
 	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
 	var levels = padTrim(a.quadro).split('/');
 
-	fileBase = padAepName((padTrim(levels[levels.length - 1]) || a.atracao) + ' ' + (a.what || ''));
+	fileBase = padAepName((padTrim(levels[levels.length - 1]) || padTrim(a.fileName) || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 

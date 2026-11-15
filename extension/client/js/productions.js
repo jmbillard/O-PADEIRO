@@ -436,7 +436,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function projectForSave() {
 		return {
 			categories: state.project.categories.map(function (c) {
-				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), icon: c.icon || '' };
+				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '' };
 			})
 		};
 	}
@@ -3648,7 +3648,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.project = {
 			categories: (data.categories || []).map(function (c) {
-				return { name: c.name || '', path: c.path || '', output: c.output || '', icon: c.icon || '' };
+				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '' };
 			})
 		};
 		renderProject();
@@ -3779,6 +3779,33 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				previews[k[0]] = preview;
 				body.appendChild(preview);
 			});
+
+			// o nome do .aep (opcional, com tokens): sem ele, a atração (ou o último nível) + o que é
+			var fileLine = el('div', 'cat-line');
+			var fileBox = el('div', 'cfg-path');
+			var fileInput = el('input', 'cfg-input');
+			var filePreview = el('p', 'cat-preview');
+
+			fileInput.type = 'text';
+			fileInput.value = row.file || '';
+			fileInput.placeholder = 'opcional: o nome do .aep, ex: {proximo_mes} NA GLOBO';
+			fileInput.spellcheck = false;
+			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'categoria ' + (i + 1)));
+			fileInput.addEventListener('input', function () {
+				row.file = fileInput.value;
+				filePreview.innerHTML = catPreview(row, 'file');
+				updateDirty();
+			});
+			fileInput.addEventListener('focus', function () {
+				state.catInput = { input: fileInput, row: row, key: 'file', preview: filePreview };
+			});
+			fileBox.appendChild(fileInput);
+			fileLine.appendChild(el('span', 'cat-label', 'ARQUIVO'));
+			fileLine.appendChild(fileBox);
+			fileLine.appendChild(el('span'));
+			body.appendChild(fileLine);
+			filePreview.innerHTML = catPreview(row, 'file') && catPreview(row, 'file') + '<b>.aep</b>';
+			body.appendChild(filePreview);
 
 			card.appendChild(body);
 			list.appendChild(card);
