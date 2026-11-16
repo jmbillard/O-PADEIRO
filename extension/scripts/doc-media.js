@@ -306,20 +306,12 @@ const SCENES = {
 		await hover(p, '#logo', 700);
 	} },
 
-	// as gavetas: o clique abre a gaveta; o clique direito nela já faz a primeira ferramenta de dentro
+	// as gavetas: só o clique abrindo cada uma, sem parar em nenhuma ferramenta (as dicas levam 2 s para aparecer)
 	gavetas: { w: 1000, h: 110, hires: true, width: 1664, fps: 14, quality: 72, url: 'bar.html?mock=localfiles', async run(p) {
-		await p.waitForTimeout(600);
-		await hover(p, '#drawer-templates', 1300);
-		await tap(p, '#drawer-templates', { wait: 900 });
-		await hover(p, '#btn-preencher', 1100);
-		await hover(p, '#btn-criar-template', 1100);
-		await tap(p, '#drawer-projeto', { wait: 900 });
-		for (const id of ['projeto', 'fontes', 'coletar', 'render']) await hover(p, '#btn-' + id, 1000);
-		await hover(p, '#drawer-organizar', 1300);
-		await tap(p, '#drawer-organizar', { right: true, wait: 1900 }); // o clique direito: a primeira de dentro (renomear)
-		await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.hidden = true; });
-		await hover(p, '#btn-buscar', 1100);
-		await hover(p, '#btn-logo-globo', 1200);
+		await p.waitForTimeout(500);
+		for (const id of ['templates', 'projeto', 'organizar']) await tap(p, '#drawer-' + id, { ms: 200, wait: 800 });
+		await glide(p, [980, 100], 200); // sai de cima dos botões: o mouse parado chamaria a dica
+		await p.waitForTimeout(300);
 	} },
 
 	// a primeira vez: sem a configuração, o tour (a configuração, a sigla e a turma)
