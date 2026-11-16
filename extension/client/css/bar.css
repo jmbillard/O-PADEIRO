@@ -589,6 +589,17 @@ body.bar-page {
     transform 200ms ease;
 }
 
+/* o botão que é gaveta tem um contorno fino (o mesmo traço da gaveta aberta, mais leve): diferencia das ferramentas
+   soltas. por dentro (inset), para o botão não mudar de tamanho */
+.bar-drawer-btn {
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 32%);
+}
+
+.bar-drawer-btn:hover,
+.bar-drawer-btn:focus-visible {
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 55%);
+}
+
 .bar-drawer-btn.is-folded {
   max-width: 0;
   min-width: 0;

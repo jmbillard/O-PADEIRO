@@ -165,7 +165,7 @@ O ETIQUETADOR
 | ![a gaveta Templates aberta](docs/images/barra-gaveta-templates.webp) |
 | ![a gaveta Organização aberta](docs/images/barra-gaveta-organizar.webp) |
 
-**Templates**, **Projeto** e **Organização** são gavetas: o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
+**Templates**, **Projeto** e **Organização** são gavetas, e por isso têm um **contorno fino** em volta do botão (as ferramentas soltas não têm): o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
 
 - **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
 - **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
