@@ -23,6 +23,8 @@
 				<p class="wz-title">PROJETO</p>
 				<div class="wz-meta" id="criar-meta"></div>
 			</div>
+			<!-- a pasta do projeto em cima: o destino, logo abaixo do título -->
+			<p class="wz-preview wz-dest" id="claq-dest"></p>
 			<!-- a busca e a lista na mesma caixa (a lista com busca, js/attractions.js) -->
 			<div class="combo combo-claq" id="claq-combo">
 			<div class="has-field-icon wz-claq combo-field">
@@ -47,7 +49,6 @@
 				<p class="wz-hint" id="nova-free" hidden>sem categorias na configuração (aba PROJETO): escolha a pasta onde a atração nova vai ficar.</p>
 				<p class="wz-preview" id="nova-preview" hidden></p>
 			</div>
-			<p class="wz-preview wz-dest" id="claq-dest"></p>
 			<p class="wz-hint" id="claq-hint"></p>
 			<!-- o resto aparece quando há algo digitado (com o campo vazio, a estrutura animada ocupa o lugar) -->
 			<div class="wz-rest" id="claq-rest" hidden>
@@ -93,6 +94,9 @@
 
 		<!-- depois de criado: o editor -->
 		<section class="wz-screen" id="sc-editor" hidden>
+			<!-- as pastas: o caminho e a pastinha no campo (o nosso padrão), como na configuração -->
+			<p class="wz-title">PASTA</p>
+			<div class="cfg-path ed-path"><input type="text" class="cfg-input" id="ed-root" readonly aria-label="Pasta do projeto"><button type="button" class="mini-button" id="ed-move" title="trocar a pasta (leva o .aep e a estrutura para outra pasta)" aria-label="trocar a pasta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 			<!-- a atração (buscada como na etapa ATRAÇÃO) e o designer; o que é; embaixo, o nome do .aep (a atração + o que é) -->
 			<p class="wz-title">ATRAÇÃO</p>
 			<div class="ed-row">
@@ -118,9 +122,6 @@
 			<p class="wz-preview" id="ed-file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><span></span></p>
 			<!-- quem já salvou o projeto (os dados do padeiro: editores), o mais recente primeiro -->
 			<p class="wz-hint" id="ed-editors" hidden></p>
-			<!-- as pastas: o caminho e a pastinha no campo (o nosso padrão), como na configuração -->
-			<p class="wz-title">PASTA</p>
-			<div class="cfg-path ed-path"><input type="text" class="cfg-input" id="ed-root" readonly aria-label="Pasta do projeto"><button type="button" class="mini-button" id="ed-move" title="trocar a pasta (leva o .aep e a estrutura para outra pasta)" aria-label="trocar a pasta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 			<!-- o output embaixo, logo acima do rodapé, como no projeto novo -->
 			<div class="wz-rest wz-out">
 			<p class="wz-title">OUTPUT</p>
