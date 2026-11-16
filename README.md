@@ -37,7 +37,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | a barra | **O PADEIRO** | as ferramentas e os atalhos para as janelas ([abaixo](#-a-barra-principal)) |
 | 📄 [A FORMA](docs/templates.md) | **A FORMA** | os templates: buscar, selecionar e preencher, e criar a fila de render |
 | ✨ [A FORMA · criar](docs/criador.md) | **A FORMA · criar** | o criador de templates: transformar a comp aberta em um novo template |
-| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
+| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura, salva o `.aep` e guarda quem criou e quem salvou |
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
 | 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
@@ -146,10 +146,10 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | ❶ | **rede / local** | **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro usa as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > rede](docs/producoes.md#-rede) (no notebook, [meu usuário](docs/producoes.md#-meu-usuário)). |
 | ❷ | **links** | os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site ([configuração > links](docs/producoes.md#-links)). |
 | ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos, e as **[gavetas](#as-gavetas)** (Templates, Projeto e Organização). a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
-| ❹ | **bolinhas** | o estado de cada uma: no **criar / alterar**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": a dica do botão diz o quê. o botão da gaveta **Projeto** mostra a pior das de dentro (🟠 na frente do 🟢), com a gaveta fechada. a bolinha fica por dentro do ícone, no canto de baixo à direita. |
+| ❹ | **bolinhas** | o estado de cada uma: no **criar / alterar**, 🟢 com a atração e salvo na pasta dele, 🟠 ainda sem atração ou salvo fora da pasta; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": a dica do botão diz o quê. o botão da gaveta **Projeto** mostra a pior das de dentro (🟠 na frente do 🟢), com a gaveta fechada. a bolinha fica por dentro do ícone, no canto de baixo à direita. |
 | ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as ações, cada uma com um mousezinho que mostra o botão (esquerdo ou direito), e os **avisos** em laranja (ex: quais arquivos estão fora das pastas). ela abre **por cima da barra**, dentro do painel: na horizontal, ao lado do botão, em colunas (o nome · os cliques · os avisos); na vertical, embaixo do botão, empilhada. o texto é este:
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (pare o mouse em cima por 2 s) traz o nome da ferramenta e as ações, cada uma com um mousezinho que mostra o botão (esquerdo ou direito), e os **avisos** em laranja (ex: quais arquivos estão fora das pastas). ela abre **por cima da barra**, dentro do painel: na horizontal, ao lado do botão, em colunas (o nome · os cliques · os avisos); na vertical, embaixo do botão, empilhada. o texto é este:
 
 ```
 O ETIQUETADOR
@@ -159,6 +159,8 @@ O ETIQUETADOR
 ```
 
 ### as gavetas
+
+<p align="center"><img src="docs/images/anim/gavetas.webp" alt="as três gavetas abrindo: Templates, Projeto e Organização" width="1000"></p>
 
 | ![a gaveta Projeto aberta](docs/images/barra-gaveta-projeto.webp) |
 | :---: |
@@ -338,7 +340,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 - **render** (EXPORTAR, TEMPLATE, LOGO GLOBO) e **editáveis** (EDIT): os comentários da configuração > organizar.
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
-- **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
+- **arquivos** (FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
 `◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
@@ -358,7 +360,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 | [📄 A FORMA](docs/templates.md) | templates: buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ A FORMA](docs/criador.md) | criar template: formulário, nomenclatura, layers editáveis e arquivo de configuração |
 | [🔤 O TIPÓGRAFO](docs/fontes.md) | fontes: banco de fontes, o botão fontes e a janela de fontes do projeto |
-| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração, estrutura de pastas e editor |
+| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração (categorias em chips, ano do projeto), estrutura de pastas, editor e os dados de quem criou e salvou |
 | [🗂️ O PRODUTOR](docs/producoes.md) | configuração: produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto, outra pasta e os que faltam |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |

@@ -45,7 +45,7 @@ em vez do webhook, cada computador pode ter o seu **índice local** ([configura�
 - a janela [PROJETO](projeto.md) procura a claquete pelo nome das pastas: vale a pasta cujo nome é o começo da claquete (*MAIS VOCE* para *MAIS VOCE 30 10*). acerta menos que as atrações do webhook (sem os *patterns*).
 
 > 🚩 *obs:*\
-> • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva.\
+> • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva. a resposta pode vir como o JSON do índice, como o JSON em texto ou embrulhada pelo n8n (`[{ "indice": "…" }]`): o painel entende as três.\
 > • o endereço do workflow e os caminhos fixos do servidor ficam na [configuração > buscar](producoes.md#-buscar).\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
 > • aparecem no máximo 20 itens por categoria (24 cards do Trello): refine o termo para ver os demais.

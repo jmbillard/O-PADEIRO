@@ -84,14 +84,14 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 
 ## 📍 projeto
 
-a aba **projeto** define as **categorias** da atração nova: a lista **dentro de** da [janela PROJETO](projeto.md) (etapa NOVA).
+a aba **projeto** define as **categorias** da atração nova: os **chips** que aparecem embaixo da busca da [janela PROJETO](projeto.md#-projeto-novo-numa-tela).
 
 - **categorias** → cada categoria num cartão:
   - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui a categoria;
   - **PROJETO** → o caminho da pasta da atração nova, com tokens;
-  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a etapa CRIAR não propõe a pasta de output).
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
 
-  embaixo de cada caminho, a prévia; a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a do dentro de).
+  embaixo de cada caminho, a prévia; a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a dos chips).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
 
   | token | vira |
@@ -109,8 +109,8 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **arquivo** → opcional: o nome do `.aep` da atração criada pela categoria, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
-- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
-- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
+- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela PROJETO. a categoria nova começa com a pasta.
+- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip da categoria; se nenhuma serve, **outra pasta…** (livre). sem categorias na configuração, só o livre.
 
 
 **👤 neste computador** (embaixo):
@@ -188,7 +188,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
-- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, TRILHA, LOC).
+- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC). os campos de termos desta aba mostram cada termo como um **chip**.
 - **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\
