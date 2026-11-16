@@ -2,19 +2,111 @@
    COLETAR — as mídias do projeto (as linhas são as da janela de fontes: css/fonts.css)
    ========================================================= */
 
-.cw-row {
-  padding: 8px 12px 8px 8px;
+/* o resumo no topo: quantos arquivos em cada situação. cada etiqueta liga e desliga a situação na lista (ligada,
+   cheia; desligada, só o contorno, apagada); o Coletar e a busca dos faltando só veem o que aparece */
+.cw-filter {
+  display: flex;
+  gap: 6px;
 }
 
-/* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo */
+.cw-filter[hidden] {
+  display: none;
+}
+
+.cw-chip {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.cw-chip .fw-state {
+  width: 18px;
+  height: 18px;
+  font-size: 0.58rem;
+}
+
+.cw-chip b {
+  font-weight: 800;
+}
+
+.cw-chip:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.cw-chip:focus-visible {
+  outline: 1px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.cw-chip.is-off,
+.cw-chip:disabled {
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.cw-chip.is-off .fw-state,
+.cw-chip:disabled .fw-state {
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+}
+
+.cw-chip:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* as seções da lista: a situação, quantos e o que acontece com eles */
+.cw-sec {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 2px 0;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.cw-sec:first-child {
+  margin-top: 0;
+}
+
+.cw-sec small {
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.cw-row {
+  padding: 8px 12px 8px 8px;
+  border-radius: 19px; /* concêntrico com a miniatura: raio (10) + respiro (8) + borda (1) */
+}
+
+/* a miniatura: a imagem ou o primeiro quadro; sem prévia, o ícone do tipo. ocupa a altura da linha, com a mesma
+   margem em cima, embaixo e à esquerda */
 .cw-thumb {
   display: grid;
-  width: 56px;
-  height: 38px;
+  width: 92px;
+  height: 60px;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 9px;
+  border-radius: 10px;
   background: var(--surface-soft);
   color: var(--text-tertiary);
 }
@@ -36,6 +128,74 @@
   stroke-width: 1.7;
 }
 
+/* o tipo, na linha do meio: o ícone na cor do tipo (styles.css) e o nome, com as comps que usam o arquivo */
+.cw-kind,
+.cw-where {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  font-weight: 650;
+}
+
+.cw-kind svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--type, currentcolor);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.cw-kind b,
+.cw-where b {
+  color: var(--text-secondary);
+  font-weight: 750;
+}
+
+/* de onde → para onde */
+.cw-where span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cw-where b,
+.cw-where i {
+  flex: 0 0 auto;
+}
+
+.cw-where i {
+  color: var(--type, var(--text-tertiary));
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* sem uso em nenhuma comp */
+.cw-row.is-unused .cw-name {
+  color: var(--text-secondary);
+  font-weight: 650;
+}
+
+.cw-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  font-weight: 750;
+  vertical-align: 1px;
+}
+
+.cw-row .fw-text {
+  gap: 3px;
+}
+
 .cw-name {
   overflow: hidden;
   color: var(--text-primary);
@@ -46,6 +206,30 @@
 }
 
 /* fora da árvore do coletar: neutro */
+/* faltando, mas achado pela busca: a seta para o lugar novo (o Relinkar leva para lá) */
+/* o triângulo de atenção do arquivo que falta */
+.fw-state i svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+  transform: translateY(-1.3px); /* o centro do triângulo (das três pontas) no centro do círculo, não o da caixa dele */
+}
+
+/* o mesmo no botão do triângulo, no rodapé */
+.cw-relink svg {
+  transform: translateY(-1.5px);
+}
+
+.fw-state.is-found {
+  background: var(--processing-bg);
+  color: var(--processing);
+}
+
 .fw-state.is-skip {
   background: var(--surface-soft);
   color: var(--text-tertiary);
@@ -104,6 +288,376 @@
   .cw-relink .relink-tri,
   .cw-relink .relink-mark,
   .fw-state.is-searching i {
+    animation: none !important;
+  }
+}
+
+/* ---------- a migração: a pasta de hoje, a estrutura nova e as faixas entre elas ---------- */
+.mg {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin: -4px; /* a folga do contorno do foco, compensada */
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.mg[hidden] {
+  display: none;
+}
+
+/* a opção de religar todos os projetos da pasta, em cima do desenho */
+.mg-all {
+  margin: 0 0 12px 2px;
+}
+
+/* a pasta da migração, por extenso: o rótulo e o caminho (corta pelo começo: o fim é a parte que identifica) */
+.mg-root {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 10px 2px;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.mg-root span {
+  flex: 0 0 auto;
+}
+
+.mg-root b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  direction: rtl; /* o caminho corta pelo começo */
+  font-weight: 650;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o que precisa ser lido antes de migrar: uma linha por aviso, com a marca na frente. atenção (laranja) e trava
+   (vermelho: a pasta não pode ser migrada, ou uma migração parou no meio) */
+.mg-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--waiting);
+  border-radius: var(--radius-small);
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.mg-warn.is-block {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.mg-warn-mark {
+  width: 12px;
+  flex: 0 0 auto;
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* migrar / desfazer esperando o segundo clique: o botão na cor de atenção, com o que vai fazer escrito */
+#cw-go.is-confirm,
+#cw-go.is-confirm.button-primary {
+  border-color: var(--waiting);
+  background: var(--waiting-bg);
+  box-shadow: none;
+  color: var(--waiting);
+}
+
+.mg-grid {
+  position: relative; /* por cima das faixas: elas saem de trás das pastas */
+  z-index: 1;
+  pointer-events: none; /* o meio é das faixas: o mouse chega nos números delas */
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 170px minmax(0, 1fr); /* o meio é o caminho das faixas */
+}
+
+.mg-col {
+  display: grid;
+  pointer-events: auto;
+  align-content: start;
+  gap: 6px;
+}
+
+.mg-title {
+  margin: 0 0 4px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mg-item {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 7px 0 12px; /* a pílula da contagem com o mesmo respiro em cima, embaixo e do lado */
+  border: 1px solid var(--border);
+  border-radius: 18px; /* concêntrico com a pílula: o raio dela (10) + o respiro (7) + a borda (1) */
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  transition: opacity 160ms ease;
+}
+
+.mg-item svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  opacity: 0.6;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.mg-item span {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* a contagem: neutra na pasta de hoje; na cor do tipo (styles.css) na pasta nova. todas do mesmo tamanho, com o
+   número no centro */
+.mg-item b {
+  display: grid;
+  width: 36px;
+  height: 20px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+}
+
+.mg-item b.is-type {
+  background: var(--type, var(--blue-500));
+  color: white;
+}
+
+/* a pasta de hoje: um anel da cor do fundo em volta dela separa o contorno das faixas que saem de trás, num arco
+   concêntrico com a ponta redonda */
+.mg-col.is-old .mg-item {
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.mg-item.is-sub {
+  margin-left: 22px;
+}
+
+/* a pasta da estrutura que não recebe nada, e os arquivos soltos na raiz (não são uma pasta) */
+.mg-item.is-empty {
+  border-style: dashed;
+  font-weight: 600;
+  opacity: 0.45;
+}
+
+.mg-item.is-loose {
+  border-style: dashed;
+}
+
+.mg-wires {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mg-wire {
+  transition: opacity 160ms ease;
+}
+
+.mg-band,
+.mg-fill,
+.mg-lit {
+  fill: none;
+}
+
+/* as esperas, nas próprias faixas (collect.js: migWait) */
+.mg-fill,
+.mg-lit {
+  display: none;
+}
+
+/* lendo a pasta: as pastas sem nome e as faixas sem cor, com os traços correndo para a pasta nova */
+.mg-item.is-skel span {
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  animation: mg-breathe 1.4s ease-in-out infinite alternate;
+  background: var(--border-strong);
+}
+
+.mg.is-reading .mg-band {
+  animation: mg-run 0.7s linear infinite;
+  stroke: var(--border-strong);
+  stroke-dasharray: 9 7;
+}
+
+.mg.is-reading .mg-head {
+  fill: var(--border-strong);
+}
+
+.mg.is-reading .mg-count {
+  display: none;
+}
+
+/* refazendo o plano: o desenho fica, as pastas apagam um pouco e uma luz percorre cada faixa */
+.mg.is-replanning .mg-lit {
+  display: inline;
+  animation: mg-sweep 1.3s linear infinite;
+  stroke: rgb(var(--on-brand) / 70%);
+  stroke-dasharray: 16 84;
+}
+
+.mg.is-replanning .mg-item {
+  opacity: 0.55;
+}
+
+/* movendo: cada faixa enche conforme os arquivos dela são movidos; a ponta acende quando a faixa termina */
+.mg.is-moving .mg-band,
+.mg.is-moving .mg-head {
+  opacity: 0.2;
+}
+
+.mg.is-moving .mg-fill {
+  display: inline;
+}
+
+.mg.is-moving .mg-wire.is-done .mg-head {
+  opacity: 1;
+}
+
+@keyframes mg-run {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+@keyframes mg-sweep {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mg-breathe {
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* a quantidade de cada faixa, sempre à vista: o mouse nela acende a faixa e lista os arquivos na dica */
+.mg-count {
+  cursor: default;
+  font-size: 9.5px;
+  font-weight: 800;
+  pointer-events: auto;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+  transition: opacity 160ms ease;
+}
+
+/* o mouse numa pasta: só as faixas dela ficam acesas, com a quantidade de cada uma */
+.mg.is-focus .mg-wire {
+  opacity: 0.12;
+}
+
+.mg.is-focus .mg-wire.is-on {
+  opacity: 1;
+}
+
+.mg.is-focus .mg-count {
+  opacity: 0.12;
+}
+
+.mg.is-focus .mg-count.is-on {
+  opacity: 1;
+}
+
+.mg.is-focus .mg-item {
+  opacity: 0.4;
+}
+
+.mg.is-focus .mg-item.is-on {
+  opacity: 1;
+}
+
+.mg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 14px 2px 0;
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.mg-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* a legenda: uma bolinha com a cor do tipo, sólida (o degradê é só das faixas) */
+.mg-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--type);
+}
+
+/* o botão do rodapé da migração numa linha só (Desfazer a migração) */
+.is-migrating .fw-bar .button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-item,
+  .mg-wire,
+  .mg-count {
+    transition: none;
+  }
+
+  .mg-band,
+  .mg-lit,
+  .mg-item.is-skel span {
     animation: none !important;
   }
 }

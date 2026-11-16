@@ -49,51 +49,13 @@
 		}
 	}
 
-	// Loader temático (css/loader.css): um roteiro (doc do Word) cai na boca do forno, o forno trabalha e
-	// sai um vídeo pulando para a esteira, que leva até a pasta. Um SVG só, animado por CSS (transform e
-	// opacity). Os ids das máscaras e recortes são únicos por loader (pode haver mais de um na página).
-	var ovenSeq = 0;
-	var PAGE = 'M4 2.5h11l5.5 5.5v19.5H4z';
+	// Loader temático (css/loader.css): o forninho assando pãezinhos, que pulam na esteira e caem na cesta (o
+	// desenho da equipe, canvas "O Padeiro — Loader"). Uma cena de 480 × 216, animada só por CSS (transform e
+	// opacity); o título e a dica ficam embaixo, fora dela.
+	var BAKERY = '<div style="position: absolute; left: 30px; top: 196px; width: 172px; height: 20px; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0) 70%)"></div><div style="position: absolute; left: 176px; top: 200px; width: 178px; height: 12px; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 70%)"></div><div style="position: absolute; left: 348px; top: 197px; width: 116px; height: 18px; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0) 70%)"></div><div class="bk-steam" style="position: absolute; left: 72px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: #D4D4D4; animation-delay: calc(var(--dur, 4.8s) * -0.00)"></div><div class="bk-steam" style="position: absolute; left: 78px; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #D4D4D4; animation-delay: calc(var(--dur, 4.8s) * -0.17)"></div><div class="bk-steam" style="position: absolute; left: 68px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: #D4D4D4; animation-delay: calc(var(--dur, 4.8s) * -0.34)"></div><div style="position: absolute; left: 193.5px; top: 136px; width: 11px; height: 70px; border-radius: 0 0 5px 5px; background: #2D2D2D"></div><div style="position: absolute; left: 327.5px; top: 136px; width: 11px; height: 70px; border-radius: 0 0 5px 5px; background: #2D2D2D"></div><div style="position: absolute; left: 172px; top: 112px; width: 178px; height: 26px; box-sizing: border-box; border: 5px solid #2D2D2D; border-radius: 13px; background: #F1F1F1"></div><div class="bk-ticks" style="position: absolute; z-index: 1; left: 186px; top: 112px; width: 150px; height: 5px; background-image: repeating-linear-gradient(90deg, #9A9A9A 0, #9A9A9A 3px, transparent 3px, transparent 17.5px)"></div><div class="bk-spin" style="position: absolute; z-index: 1; left: 179px; top: 119px; width: 12px; height: 12px; border-radius: 50%; background: #8A8A8A; display: flex; align-items: center; justify-content: center"><div style="width: 2px; height: 8px; border-radius: 1px; background: #F1F1F1"></div></div><div class="bk-spin" style="position: absolute; z-index: 1; left: 255px; top: 119px; width: 12px; height: 12px; border-radius: 50%; background: #8A8A8A; display: flex; align-items: center; justify-content: center"><div style="width: 2px; height: 8px; border-radius: 1px; background: #F1F1F1"></div></div><div class="bk-spin" style="position: absolute; z-index: 1; left: 331px; top: 119px; width: 12px; height: 12px; border-radius: 50%; background: #8A8A8A; display: flex; align-items: center; justify-content: center"><div style="width: 2px; height: 8px; border-radius: 1px; background: #F1F1F1"></div></div><div class="bk-bun" style="position: absolute; z-index: 1; left: 140px; top: 86px; width: 40px; height: 26px; animation-delay: 0s"><div class="bk-wfade" aria-hidden="true" style="position: absolute; inset: 0; animation-delay: 0s"><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 10px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 19px; top: -15px; width: 3px; height: 11px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.08)"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 28px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.16)"></div></div><div class="bk-hop" style="position: relative; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); animation-delay: 0s"><div style="position: absolute; left: 10px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 18px; top: 4px; width: 3px; height: 10px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 26px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div></div></div><div class="bk-bun" style="position: absolute; z-index: 1; left: 140px; top: 86px; width: 40px; height: 26px; animation-delay: calc(var(--dur, 4.8s) * -0.25)"><div class="bk-wfade" aria-hidden="true" style="position: absolute; inset: 0; animation-delay: calc(var(--dur, 4.8s) * -0.25)"><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 10px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 19px; top: -15px; width: 3px; height: 11px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.08)"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 28px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.16)"></div></div><div class="bk-hop" style="position: relative; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); animation-delay: calc(var(--dur, 4.8s) * -0.25)"><div style="position: absolute; left: 10px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 18px; top: 4px; width: 3px; height: 10px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 26px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div></div></div><div class="bk-bun" style="position: absolute; z-index: 1; left: 140px; top: 86px; width: 40px; height: 26px; animation-delay: calc(var(--dur, 4.8s) * -0.5)"><div class="bk-wfade" aria-hidden="true" style="position: absolute; inset: 0; animation-delay: calc(var(--dur, 4.8s) * -0.5)"><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 10px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 19px; top: -15px; width: 3px; height: 11px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.08)"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 28px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.16)"></div></div><div class="bk-hop" style="position: relative; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); animation-delay: calc(var(--dur, 4.8s) * -0.5)"><div style="position: absolute; left: 10px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 18px; top: 4px; width: 3px; height: 10px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 26px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div></div></div><div class="bk-bun" style="position: absolute; z-index: 1; left: 140px; top: 86px; width: 40px; height: 26px; animation-delay: calc(var(--dur, 4.8s) * -0.75)"><div class="bk-wfade" aria-hidden="true" style="position: absolute; inset: 0; animation-delay: calc(var(--dur, 4.8s) * -0.75)"><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 10px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 19px; top: -15px; width: 3px; height: 11px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.08)"></div><div class="bk-wisp" aria-hidden="true" style="position: absolute; left: 28px; top: -12px; width: 3px; height: 9px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.16)"></div></div><div class="bk-hop" style="position: relative; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); animation-delay: calc(var(--dur, 4.8s) * -0.75)"><div style="position: absolute; left: 10px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 18px; top: 4px; width: 3px; height: 10px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div><div style="position: absolute; left: 26px; top: 6px; width: 3px; height: 9px; border-radius: 2px; background: #B9742F; transform: rotate(24deg)"></div></div></div><div style="position: absolute; z-index: 0; left: 368px; top: 158px; width: 76px; height: 20px; border-radius: 4px; background: #6E421B"></div><div class="bk-pile" style="position: absolute; z-index: 1; left: 366px; top: 144px; width: 80px; height: 40px"><div style="position: absolute; left: 2px; top: 6px; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); transform: rotate(-12deg)"></div><div style="position: absolute; left: 38px; top: 7px; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); transform: rotate(14deg)"></div><div style="position: absolute; left: 20px; top: 1px; width: 40px; height: 26px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28); transform: rotate(4deg)"></div></div><div class="bk-wisp2" aria-hidden="true" style="position: absolute; z-index: 1; left: 392px; top: 130px; width: 3px; height: 13px; border-radius: 2px; background: #BDBDBD"></div><div class="bk-wisp2" aria-hidden="true" style="position: absolute; z-index: 1; left: 414px; top: 132px; width: 3px; height: 12px; border-radius: 2px; background: #BDBDBD; animation-delay: calc(var(--dur, 4.8s) * -0.2)"></div><div style="position: absolute; z-index: 3; left: 366px; top: 162px; width: 80px; height: 44px; border-radius: 4px 4px 16px 16px; background-color: #C98A4B; background-image: repeating-linear-gradient(90deg, rgba(110, 66, 27, 0.35) 0, rgba(110, 66, 27, 0.35) 2px, transparent 2px, transparent 10px); overflow: hidden; display: flex; flex-direction: column; justify-content: space-evenly"><div style="height: 3px; background: #A9692F"></div><div style="height: 3px; background: #A9692F"></div><div style="height: 3px; background: #A9692F"></div></div><div style="position: absolute; z-index: 3; left: 361px; top: 157px; width: 90px; height: 9px; border-radius: 5px; background: #B5763A"></div><div class="bk-oven" style="position: absolute; z-index: 2; left: 48px; top: 36px; width: 136px; height: 158px"><div style="position: absolute; left: 22px; top: -12px; width: 16px; height: 14px; border-radius: 3px 3px 0 0; background: #AD4223"></div><div style="position: absolute; left: 14px; bottom: -12px; width: 12px; height: 13px; border-radius: 0 0 4px 4px; background: #AD4223"></div><div style="position: absolute; right: 14px; bottom: -12px; width: 12px; height: 13px; border-radius: 0 0 4px 4px; background: #AD4223"></div><div style="position: absolute; right: -4px; top: 44px; width: 10px; height: 44px; border-radius: 3px; background: #2A1A14"></div><div style="position: absolute; inset: 0; border-radius: 18px; background: linear-gradient(165deg, #E76B47 0%, #E4572E 45%, #C04927 100%); box-shadow: inset 0 -8px 12px rgba(0, 0, 0, 0.1)"></div><div style="position: absolute; left: 16px; top: 12px; right: 16px; height: 10px; display: flex; align-items: center; gap: 8px"><div style="width: 10px; height: 10px; border-radius: 50%; background: #FFF3E0"></div><div style="width: 10px; height: 10px; border-radius: 50%; background: #FFF3E0"></div><div style="width: 10px; height: 10px; border-radius: 50%; background: #FFF3E0"></div><div style="flex: 1"></div><div class="bk-glow" style="width: 8px; height: 8px; border-radius: 50%; background: #FFD25E"></div></div><div style="position: absolute; left: 16px; top: 34px; width: 104px; height: 72px; border-radius: 12px; background: #2A1A14; overflow: hidden; box-shadow: 0 0 0 4px #FFF3E0, 0 0 0 5.5px rgba(0, 0, 0, 0.14); display: flex; align-items: flex-end; justify-content: center"><div class="bk-glow" style="position: absolute; inset: 0; background: #FF8A3D"></div><div class="bk-rise" style="position: relative; width: 46px; height: 30px; margin-bottom: 12px; border-radius: 20px 20px 7px 7px / 19px 19px 7px 7px; background: #E9A857; box-shadow: inset 0 -5px 0 rgba(150, 84, 24, 0.28)"></div><div style="position: absolute; left: 12px; right: 12px; bottom: 9px; height: 3px; border-radius: 2px; background: #2A1A14"></div><div class="bk-glint" aria-hidden="true" style="position: absolute; left: -50px; top: -30px; width: 40px; height: 140px; transform: rotate(24deg)"><div style="position: absolute; left: 0; top: 0; width: 16px; height: 140px; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0))"></div><div style="position: absolute; left: 24px; top: 0; width: 6px; height: 140px; background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0))"></div></div></div><div style="position: absolute; left: 38px; top: 117px; width: 60px; height: 7px; border-radius: 4px; background: #FFF3E0"></div><div style="position: absolute; left: 16px; top: 136px; width: 104px; height: 4px; border-radius: 2px; background: #AD4223"></div><div style="position: absolute; left: 16px; top: 144px; width: 104px; height: 4px; border-radius: 2px; background: #AD4223"></div></div>';
 
 	function ovenArt() {
-		var n = ++ovenSeq;
-		var gap = 'ov-gap-' + n;
-		var hide = 'ov-hide-' + n;
-		var file = function (kind, silhouette) {
-			var inner = silhouette
-				? '<path d="' + PAGE + '" fill="black" stroke="black" stroke-width="5" />'
-				: '<path class="o" d="' + PAGE + '" /><path class="d" d="M15 2.5V8h5.5" />' +
-				  (kind === 'doc'
-					? '<path class="d" d="M12 12.5h5.5M12 16h5.5M8 19.5h9.5M8 23h9.5" /><rect class="f" x="1.5" y="9.5" width="9" height="8" rx="1.5" />'
-					: '<path class="f" d="M10 13.5v8l6-4z" />');
-
-			// 24 x 30 → 38,4 x 48 (escala 1,6; o traço é compensado no CSS para ficar igual ao resto)
-			return '<g class="ov-' + kind + '"><g class="ov-file" transform="translate(30.8 66) scale(1.6)">' + inner + '</g></g>';
-		};
-
-		return '<svg class="oven-art" viewBox="0 0 300 120">' +
-			'<defs>' +
-			// onde os arquivos aparecem: acima da porta (que abre), entre o forno e a pasta, e dentro do fundo da pasta
-			'<clipPath id="' + gap + '"><rect class="ov-gap" x="-20" y="-80" width="116" height="144" /><rect x="96" y="-80" width="118" height="168" /><rect x="214" y="-80" width="90" height="138" />' +
-			'<path d="M214 88V60.5a2.5 2.5 0 0 1 2.5-2.5H236l5 5h48.5a2.5 2.5 0 0 1 2.5 2.5V88z" /></clipPath>' +
-			// os arquivos passam na frente do forno: as linhas do forno somem atrás deles
-			'<mask id="' + hide + '" maskUnits="userSpaceOnUse" x="-20" y="-80" width="340" height="220"><rect x="-20" y="-80" width="340" height="220" fill="white" />' + file('doc', true) + file('vid', true) + '</mask>' +
-			'</defs>' +
-			'<g class="ov-shake">' +
-			'<g mask="url(#' + hide + ')"><rect class="o" x="6" y="32" width="88" height="84" rx="14" /><path class="m" d="M6 56h88" />' +
-			'<circle class="b" cx="23.5" cy="43.5" r="5.5" /><circle class="b" cx="46.5" cy="43.5" r="5.5" /><circle class="b" cx="69.5" cy="43.5" r="5.5" />' +
-			'<path class="b ov-knob" d="M20.5 45l6-3" /><path class="b ov-knob" d="M43.5 43.5h6" /><path class="b ov-knob" d="M66.8 41.5l5.4 4" />' +
-			'<rect class="b" x="19" y="67" width="62" height="36" rx="7" clip-path="url(#' + gap + ')" /></g>' +
-			'</g>' +
-			'<rect class="o ov-belt" x="102" y="88" width="104" height="20" rx="10" /><rect class="m" x="105.5" y="91.5" width="97" height="13" rx="6.5" />' +
-			['112', '154', '196'].map(function (x) {
-				return '<g class="ov-wheel"><circle class="b" cx="' + x + '" cy="98" r="4.2" /><circle class="f" cx="' + (+x + 1.9) + '" cy="96.6" r="1" /></g>';
-			}).join('') +
-			'<g class="ov-folder"><path class="o" mask="url(#' + hide + ')" d="M214 116V60.5a2.5 2.5 0 0 1 2.5-2.5H236l5 5h48.5a2.5 2.5 0 0 1 2.5 2.5V88" /></g>' +
-			'<g clip-path="url(#' + gap + ')">' + file('doc') + file('vid') + '</g>' +
-			'<g class="ov-shake"><g class="ov-door"><rect class="b" x="16" y="64" width="68" height="42" rx="10" /><rect class="d" x="33" y="69" width="30" height="5" rx="2.5" /><rect class="d" x="22" y="81" width="56" height="20" rx="6" /></g></g>' +
-			'<g class="ov-folder"><g class="ov-flap"><path class="o" d="M214 116h78l6-28H220z" /></g></g>' +
-			'</svg>';
+		return '<div class="bakery">' + BAKERY + '</div>';
 	}
 
 	// Os loaders escritos direto no HTML (<div class="oven"></div>) recebem o desenho aqui.
@@ -130,11 +92,16 @@
 		return 'file://' + encoded;
 	}
 
-	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados.
+	// Todo erro mostrado tem um código #PAD_: os que chegam sem código são inesperados. Na tela, o texto vem
+	// primeiro (é o que a pessoa lê) e o código no fim (é o que o suporte procura): "texto · PAD_032".
 	function errorText(text) {
 		text = String(text || '');
 
-		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+		var m = /^#(PAD_[A-Z0-9_]+)\s*-\s*([\s\S]*)$/.exec(text);
+
+		if (!m) return /·\s*PAD_[A-Z0-9_]+$/.test(text) ? text : text.replace(/[\s.]+$/, '') + ' · PAD_099';
+
+		return m[2].replace(/[\s.]+$/, '') + ' · ' + m[1]; // sem o ponto final antes do código
 	}
 
 	// Aviso flutuante dos painéis (barra, acessorista, produções, criador): texto + botão de fechar.
@@ -469,5 +436,166 @@
 		};
 	}
 
-	window.PAD_UTIL = { iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary };
+	// Depois de instalar fontes: pede ao After Effects que enxergue as novas e passe as camadas com fonte substituída
+	// para a de verdade (host: fontsSync), de segundo em segundo, até não faltar nada (ou 'tries' vezes). 'done'
+	// (opcional): outra condição para parar (ex: a conferência das fontes do template). → a última resposta do host
+	async function syncFonts(call, tries, done) {
+		var res = { supported: false, replaced: 0, missing: [] };
+		var replaced = 0;
+
+		for (var t = 0; t < (tries || 15); t++) {
+			try {
+				res = await call('fontsSync');
+			} catch (err) {
+				return res;
+			}
+
+			replaced += res.replaced || 0;
+
+			var ok = done ? await done() : !res.missing.length;
+
+			if (ok || (!res.supported && !done)) break;
+
+			await new Promise(function (r) {
+				setTimeout(r, 1000);
+			});
+		}
+
+		res.replaced = replaced;
+
+		return res;
+	}
+
+	// o atalho de desfazer do After Effects, como a pessoa usa: Cmd+Z no Mac (o Ctrl+Z não desfaz lá), Ctrl+Z no
+	// Windows. para os avisos ("· Cmd+Z desfaz")
+	var UNDO_KEY = /Mac/i.test((navigator.platform || '') + ' ' + (navigator.userAgent || '')) ? 'Cmd+Z' : 'Ctrl+Z';
+
+	/* ---------------------------------------------------------------
+	   a barra: as gavetas e as ferramentas soltas (a mesma regra do host, productions.jsx: padCleanBar)
+	   items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
+	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
+	   --------------------------------------------------------------- */
+	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
+	var BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
+	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
+
+	function barGroupOf(key) {
+		for (var g in BAR_GROUPS) {
+			if (BAR_GROUPS[g].indexOf(key) >= 0) return g;
+		}
+
+		return '';
+	}
+
+	// o formato de antes (com 'templates' e as gavetas montadas pela primeira ferramenta) vira o de agora: cada
+	// gaveta no lugar da primeira ferramenta dela, com a ordem de dentro padrão
+	function barLayout(o) {
+		var list = o && o.items && o.items.length ? o.items : BAR_DEFAULT;
+		var old = list.indexOf('templates') >= 0;
+		var items = [];
+		var seen = {};
+		var hidden = [];
+
+		list.forEach(function (raw) {
+			var key = String(raw).toLowerCase();
+
+			if (key === 'divider') {
+				if (items.length && items[items.length - 1] !== 'divider') items.push(key);
+				return;
+			}
+
+			var group = key === 'templates' ? 'templates' : barGroupOf(key);
+
+			if (group) {
+				if (seen['gaveta:' + group]) return;
+				seen['gaveta:' + group] = true;
+
+				// as de dentro: na ordem da lista (as que faltam, no fim da gaveta); no formato de antes, a padrão
+				var mine = old ? [] : list.filter(function (k) {
+					return BAR_GROUPS[group].indexOf(k) >= 0;
+				});
+
+				BAR_GROUPS[group].forEach(function (m) {
+					if (mine.indexOf(m) < 0) mine.push(m);
+				});
+				mine.forEach(function (m) {
+					if (!seen[m]) {
+						seen[m] = true;
+						items.push(m);
+					}
+				});
+				return;
+			}
+
+			if (BAR_LOOSE.indexOf(key) >= 0 && !seen[key]) {
+				seen[key] = true;
+				items.push(key);
+			}
+		});
+
+		// gaveta ou ferramenta nova (ou esquecida): no fim
+		Object.keys(BAR_GROUPS).forEach(function (g) {
+			if (!seen['gaveta:' + g]) BAR_GROUPS[g].forEach(function (m) {
+				items.push(m);
+			});
+		});
+		BAR_LOOSE.forEach(function (k) {
+			if (!seen[k]) items.push(k);
+		});
+		while (items.length && items[items.length - 1] === 'divider') items.pop();
+
+		((o && o.hidden) || []).forEach(function (raw) {
+			var k = String(raw).toLowerCase();
+
+			if (k === 'templates') k = 'gaveta:templates';
+			if ((k === 'links' || items.indexOf(k) >= 0 || (k.indexOf('gaveta:') === 0 && BAR_GROUPS[k.slice(7)])) && hidden.indexOf(k) < 0) hidden.push(k);
+		});
+
+		return { items: items, hidden: hidden };
+	}
+
+	// A barra de tokens das pastas de output de template: um clique põe o token no último campo de output usado (no
+	// cursor), ou no primeiro. list: o elemento com os campos. onInput(input): avisa a mudança (o input dispara)
+	var OUT_TOKENS = [['ano', 'o ano atual (2026)'], ['mes', 'o mês atual (01 a 12)'], ['mes_extenso', 'o mês atual por extenso (NOVEMBRO)'], ['proximo_mes', 'o próximo mês por extenso (DEZEMBRO)'], ['proximo_mes_num', 'o número do próximo mês (12)'], ['ano_proximo_mes', 'o ano do próximo mês (em dezembro, o que vem)'], ['atracao', 'a atração do template']];
+
+	function outputTokens(list) {
+		var bar = document.createElement('div');
+		var last = null;
+
+		bar.className = 'out-tokens';
+		list.addEventListener('focusin', function (e) {
+			if (e.target.tagName === 'INPUT') last = e.target;
+		});
+		bar.appendChild(Object.assign(document.createElement('span'), { className: 'out-tokens-label', textContent: 'tokens (o caminho vale todo ano):' }));
+		OUT_TOKENS.forEach(function (t) {
+			var b = document.createElement('button');
+
+			b.type = 'button';
+			b.className = 'out-token';
+			b.textContent = '{' + t[0] + '}';
+			b.title = t[1];
+			b.addEventListener('mousedown', function (e) {
+				e.preventDefault(); // o campo continua com o foco (e o cursor)
+			});
+			b.addEventListener('click', function () {
+				var input = last && last.isConnected ? last : list.querySelector('input');
+
+				if (!input) return;
+
+				var at = typeof input.selectionStart === 'number' && document.activeElement === input ? input.selectionStart : input.value.length;
+				var end = typeof input.selectionEnd === 'number' && document.activeElement === input ? input.selectionEnd : at;
+				var tok = '{' + t[0] + '}';
+
+				input.value = input.value.slice(0, at) + tok + input.value.slice(end);
+				input.focus();
+				input.setSelectionRange(at + tok.length, at + tok.length);
+				input.dispatchEvent(new Event('input', { bubbles: true }));
+			});
+			bar.appendChild(b);
+		});
+
+		return bar;
+	}
+
+	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
 })();

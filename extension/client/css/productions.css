@@ -22,19 +22,19 @@ body.prods-page {
   grid-template-columns: auto minmax(0, 1fr);
 }
 
-/* a coluna azul, como a busca do painel de templates: título no degradê e o cartão de vidro */
+/* a coluna azul, como a busca do painel de templates: as abas direto no degradê */
 .prods-side {
   display: flex;
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: 14px;
+  padding: 16px 16px calc(var(--footer-center) - 19px); /* 19 = meio botão do rodapé: o centro na mesma linha das outras janelas */
 }
 
 .prods-card {
   min-width: 0;
   min-height: 0;
-  border-radius: 26px 26px 34px 34px; /* em cima, concêntrico com a aba (raio 12, 14 de respiro); embaixo, com os botões */
+  /* sem vidro: as abas ficam direto no degradê */
 }
 
 .prods-card-body {
@@ -45,10 +45,10 @@ body.prods-page {
 }
 
 .prods-nav {
-  width: 214px;
+  width: 200px;
   flex: 0 0 auto;
   min-height: 0;
-  padding: 14px;
+  padding: 0;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -72,7 +72,7 @@ body.prods-page {
   padding: 9px 12px;
   border: 1px solid transparent;
   border-radius: var(--radius-small);
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
   letter-spacing: 0.12em;
   text-align: left;
   transition:
@@ -88,10 +88,9 @@ body.prods-page {
 }
 
 .prods-nav .tab[aria-selected="true"] {
-  border-color: rgb(var(--on-brand));
-  background: var(--surface);
-  box-shadow: 0 8px 20px rgb(24 43 113 / 20%);
-  color: var(--blue-500); /* texto e ícone na cor dos ícones dos cartões */
+  border-color: rgb(var(--on-brand) / 85%);
+  background: rgb(var(--on-brand) / 12%);
+  color: rgb(var(--on-brand)); /* contorno fino e fundo translúcido, como o template escolhido */
 }
 
 /* o ícone no lugar da bolinha */
@@ -362,7 +361,7 @@ body.prods-page {
 }
 
 .prods-section-title {
-  padding: 16px 20px 6px;
+  padding: 12px 16px 4px;
 }
 
 .prods-file {
@@ -408,7 +407,7 @@ body.prods-page {
 .prods-list {
   min-height: 0;
   flex: 1;
-  padding: 0 20px 6px;
+  padding: 0 16px 4px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
@@ -430,7 +429,7 @@ body.prods-page {
   grid-template-columns: 22px minmax(150px, 230px) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  padding: 7px 0;
+  padding: 4px 0;
   animation: file-enter 320ms var(--ease-enter) both;
 }
 
@@ -475,12 +474,10 @@ body.prods-page {
 
 .prod-dot.is-ok {
   background: #27a874;
-  box-shadow: 0 0 0 4px rgb(39 168 116 / 12%);
 }
 
 .prod-dot.is-missing {
   background: #dd5656;
-  box-shadow: 0 0 0 4px rgb(221 86 86 / 12%);
 }
 
 .prod-path-actions {
@@ -507,7 +504,6 @@ body.prods-page {
 
 .prod-row.has-error .cfg-input {
   border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgb(194 59 59 / 12%);
 }
 
 .prods-empty {
@@ -570,7 +566,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px 6px;
+  padding: 8px 16px 4px;
 }
 
 .prods-list-head .cfg-title {
@@ -582,7 +578,7 @@ body.prods-page {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 16px 20px 4px;
+  margin: 12px 16px 4px;
 }
 
 .prods-filter {
@@ -612,7 +608,6 @@ body.prods-page {
 .prods-filter input:focus {
   border-color: var(--blue-500);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
 }
 
 .prods-filter>svg {
@@ -678,8 +673,16 @@ body.prods-page {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 20px 18px;
+  padding: 0 16px 14px;
   overflow-y: auto;
+}
+
+/* as barras de rolagem das abas, um padrão só: a 4 px da borda da janela, com o lugar dela sempre guardado (o
+   conteúdo termina a 16 px da borda, rolando ou não) */
+.drives-pane {
+  margin-right: 4px;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .drives-pane .prods-section-title {
@@ -795,9 +798,7 @@ body.prods-page {
   color: var(--text-primary);
 }
 
-.log-radio input:focus-visible+.log-radio-dot {
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 18%);
-}
+.log-radio input:focus-visible+.log-radio-dot {}
 
 .log-radio input:disabled~* {
   opacity: 0.45;
@@ -925,7 +926,7 @@ body.prods-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
-  padding: 16px 20px 18px;
+  padding: 12px 16px 14px;
 }
 
 .organize-pane[hidden] {
@@ -1026,7 +1027,7 @@ body.prods-page {
 
 .org-root-label {
   flex: 1 1 auto;
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.12em;
@@ -1049,7 +1050,7 @@ body.prods-page {
 
 .org-folder:hover .org-remove,
 .org-remove:focus-visible {
-  color: rgb(var(--on-brand) / 75%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .org-remove:hover {
@@ -1098,9 +1099,11 @@ body.prods-page {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 4px 3px 8px;
+  padding: 2px 3px 2px 7px;
+  /* a cor do tipo (styles.css), sólida, com um contorno claro fino que a separa do fundo azul */
+  border: 1px solid rgb(var(--on-brand) / 85%);
   border-radius: var(--radius-pill);
-  background: rgb(var(--on-brand) / 20%);
+  background: var(--type, rgb(var(--on-brand) / 20%));
   color: rgb(var(--on-brand));
   cursor: grab;
   font-size: 0.66rem;
@@ -1117,7 +1120,7 @@ body.prods-page {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: rgb(var(--on-brand) / 75%);
+  color: rgb(var(--on-brand) / 88%);
   cursor: pointer;
 }
 
@@ -1156,10 +1159,12 @@ body.prods-page {
   min-height: 0;
   flex-direction: column;
   gap: 8px;
-  /* a coluna rola: 4 px de folga (compensados na margem) para o brilho do foco dos campos não ser cortado */
-  margin: -4px;
+  /* a coluna rola: 4 px de folga (compensados na margem) para o brilho do foco dos campos não ser cortado. à
+     direita, a barra vai até 4 px da borda da janela, como nas outras abas */
+  margin: -4px -12px -4px -4px;
   padding: 4px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .org-side .prods-section-title {
@@ -1185,10 +1190,11 @@ body.prods-page {
 }
 
 .org-type {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 8px 10px 8px 26px; /* a pílula da cor fica à esquerda, fora do fluxo */
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
@@ -1204,11 +1210,24 @@ body.prods-page {
   background: var(--blue-50);
 }
 
+/* a cor do tipo, sólida: uma pílula em pé, com a mesma margem em cima e embaixo (como a amostra aberta da
+   aparência) */
+.org-type::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 8px;
+  width: 8px;
+  border-radius: 999px;
+  background: var(--type, var(--blue-500));
+  content: "";
+}
+
 .org-type>svg {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
-  color: var(--blue-500);
+  color: var(--type, var(--blue-500));
   stroke-width: 1.7;
 }
 
@@ -1592,7 +1611,9 @@ body.is-org-dragging * {
 }
 
 .swatch-head:focus-visible {
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 22%);
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+
+  outline-offset: 2px;
 }
 
 .swatch-mini {
@@ -1695,7 +1716,7 @@ body.is-org-dragging * {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
   margin-top: 4px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 28px; /* concêntrico: a busca e o botão (pílulas de ~14) + respiro (13) + borda (1) */
   background: var(--surface);
   font-size: 0.66rem;
   font-weight: 700;
@@ -1728,10 +1749,10 @@ body.is-org-dragging * {
   gap: 6px;
   margin-bottom: 4px;
   padding: 6px 10px;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 32%);
   border-radius: var(--radius-pill);
-  background: rgb(var(--on-brand) / 12%);
-  color: rgb(var(--on-brand) / 80%);
+  background: rgb(var(--on-brand) / 6%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .pv-row {
@@ -1739,6 +1760,7 @@ body.is-org-dragging * {
   align-items: center;
   gap: 7px;
   padding: 5px 9px;
+  border: 1px solid transparent;
   border-radius: 9px;
   letter-spacing: 0.06em;
 }
@@ -1752,15 +1774,10 @@ body.is-org-dragging * {
   stroke: var(--fold-on-brand);
 }
 
-.pv-row.is-on .pv-solid path:nth-child(2) {
-  stroke: var(--fold);
-}
-
-/* a pílula do escolhido: superfície e destaque, como as abas */
+/* o escolhido: contorno fino e fundo translúcido, como o template escolhido e as abas */
 .pv-row.is-on {
-  background: var(--surface);
-  box-shadow: 0 6px 14px rgb(24 43 113 / 18%);
-  color: var(--blue-500);
+  border-color: rgb(var(--on-brand) / 80%);
+  background: rgb(var(--on-brand) / 14%);
 }
 
 /* os rodapés dos dois lados: embaixo, na mesma altura */
@@ -1781,9 +1798,8 @@ body.is-org-dragging * {
   width: 24px;
   height: 24px;
   place-items: center;
-  border: 1px solid rgb(var(--on-brand) / 30%);
+  border: 1px solid rgb(var(--on-brand) / 35%);
   border-radius: 50%;
-  background: rgb(var(--on-brand) / 12%);
 }
 
 .pv-dd {
@@ -1791,11 +1807,9 @@ body.is-org-dragging * {
   align-items: center;
   gap: 5px;
   margin-left: auto;
-  padding: 4px 8px 4px 9px;
+  padding: 3px 7px 3px 8px;
+  border: 1px solid rgb(var(--on-brand) / 35%); /* como a produção no rodapé dos templates: só o contorno */
   border-radius: var(--radius-pill);
-  background: var(--surface);
-  box-shadow: 0 4px 12px rgb(24 43 113 / 16%);
-  color: var(--blue-500);
   font-size: 0.6rem;
 }
 
@@ -1891,7 +1905,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px 16px;
+  padding: 12px 13px 13px 14px; /* o botão no canto de baixo: respiro 13 + borda, concêntrico com a moldura */
   color: var(--text-primary);
 }
 
@@ -1908,7 +1922,6 @@ body.is-org-dragging * {
   border: 1px solid var(--blue-500);
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 14%);
   color: var(--text-secondary);
   font-weight: 600;
 }
@@ -1956,7 +1969,6 @@ body.is-org-dragging * {
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
-  box-shadow: 0 6px 14px rgb(var(--button-glow-rgb) / 30%);
   color: rgb(var(--on-brand));
 }
 
@@ -2149,6 +2161,69 @@ body.is-org-dragging * {
   color: rgb(var(--on-brand));
 }
 
+/* a gaveta: um bloco com contorno (anda inteiro); dentro, as ferramentas dela (mudam de ordem só ali dentro).
+   o raio do bloco é o da linha (12) + o respiro (4) + a borda (1) */
+.bar-drawer-cfg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid rgb(var(--on-brand) / 30%);
+  border-radius: 17px;
+  background: rgb(var(--on-brand) / 7%);
+}
+
+.bar-drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bar-drawer-head .bar-row-label {
+  font-weight: 800;
+}
+
+/* quantas ferramentas a gaveta mostra (3, ou 3 de 4 com alguma escondida) */
+.bar-drawer-count {
+  margin-left: 8px;
+  color: rgb(var(--on-brand) / 70%);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bar-row.is-member {
+  min-height: 38px;
+  padding-left: 24px;
+}
+
+.bar-row.is-member > svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bar-row.is-member .bar-row-label {
+  font-weight: 620;
+}
+
+/* a gaveta de onde veio a ferramenta escondida (fora da barra) */
+.tool-card-from {
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.is-sorting > .bar-drawer-cfg {
+  transition: transform 180ms var(--ease-soft);
+}
+
+.is-sorting > .bar-drawer-cfg.is-dragging {
+  position: relative;
+  z-index: 2;
+  transition: none;
+}
+
 .is-sorting > .bar-row {
   transition: transform 180ms var(--ease-soft);
 }
@@ -2160,6 +2235,15 @@ body.is-org-dragging * {
 }
 
 /* fora da barra (direita): blocos como os tipos de item do organizar, em 2 colunas; o + como os botões dentro dos campos */
+/* os cartões das ferramentas (layout) não são tipos: sem a pílula da cor */
+.org-type.tool-card {
+  padding-left: 10px;
+}
+
+.org-type.tool-card::before {
+  display: none;
+}
+
 .org-type.tool-card {
   cursor: default;
 }
@@ -2263,7 +2347,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 20px 20px;
+  padding: 0 16px 14px;
 }
 
 .prods-local .prods-section-title {
@@ -2282,7 +2366,7 @@ body.is-org-dragging * {
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
-  padding: 6px 20px;
+  padding: 6px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-soft);
   color: var(--text-secondary);
@@ -2804,4 +2888,15 @@ body.is-org-dragging * {
 /* aba FONTES: o interruptor logo abaixo da pasta do banco */
 .fonts-switch {
   margin-top: 14px;
+}
+
+/* os presets de render (aba projeto, neste computador): os dois lado a lado; estreito, um embaixo do outro */
+.render-presets {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.render-presets .select select {
+  width: 100%;
 }

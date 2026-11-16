@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>O FORNINHO</title>
+	<title>A FORMA</title>
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/panel.css">
 	<link rel="stylesheet" href="css/attractions.css">
@@ -95,6 +95,7 @@
 								<details class="actions-menu picker-menu" id="app-menu">
 									<summary class="icon-button" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 									<div class="menu-popover">
+										<button type="button" data-action="review-queue">Revisar a fila antes de criar</button>
 										<button type="button" data-action="config">Configuração (O PRODUTOR)</button>
 										<button type="button" data-action="docs">Ajuda / documentação</button>
 										<button type="button" data-action="reload">Recarregar painel</button>
@@ -161,11 +162,6 @@
 						<ul class="tip-list" id="tip"></ul>
 					</div>
 
-					<div class="action-bar is-anchored">
-						<button type="button" class="io-button" id="btn-import" title="Importar o template para o projeto, sem preencher" aria-label="Importar o template para o projeto, sem preencher"><svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg></button>
-						<button type="button" class="io-button io-output" id="btn-output" title="Abrir a pasta de output do template" aria-label="Abrir a pasta de output do template"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
-						<button type="button" class="button button-primary" id="btn-fill">Preencher: 1</button>
-					</div>
 				</div>
 
 				<!-- lendo o template -->
@@ -193,9 +189,9 @@
 					</div>
 
 					<div class="render-options" id="render-options" hidden>
-						<div>
-							<h3>Fila de render</h3>
-							<p>Escolha o template de output para criar a fila de render.</p>
+						<div class="rq-head">
+							<p class="cfg-title">fila de render</p>
+							<p class="cfg-hint">o template de output vale para todas as comps</p>
 						</div>
 						<span class="select select-large">
 							<select id="render-template" aria-label="Template de output"></select>
@@ -203,20 +199,36 @@
 						<ul class="render-outputs" id="render-outputs"></ul>
 					</div>
 
+					<!-- antes de criar a fila: a ordem (puxador) e o que fica de fora (lixeira: sai só da fila) -->
+					<div class="rq-head rq-list-head" id="queue-list-head" hidden>
+						<p class="cfg-title">comps criadas <span class="rq-count" id="queue-count"></span></p>
+						<p class="cfg-hint">arraste pelo puxador para mudar a ordem da fila · a lixeira tira da fila (a comp fica no projeto)</p>
+					</div>
+
 					<div class="queue-content">
 						<ul class="file-list" id="file-list"></ul>
+						<p class="rq-note" id="queue-note" hidden></p>
 					</div>
 
 					<!-- as ações da fila ficam no rodapé, como nas outras telas -->
 					<div class="run-footer action-bar is-anchored" id="queue-footer" hidden>
+						<button type="button" class="io-button rq-undo" id="btn-undo-fill" title="voltar e desfazer: tira do projeto o template importado e as comps criadas e volta para o input, com o texto" aria-label="voltar e desfazer o preenchimento"><svg viewBox="0 0 24 24"><path class="undo-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
 						<button type="button" class="button button-secondary" id="btn-skip-queue">Concluir sem fila</button>
-						<button type="button" class="button button-primary" id="btn-queue">Criar fila de render</button>
+						<button type="button" class="button button-primary" id="btn-queue" title="Ctrl/Cmd+Enter">Criar fila de render</button>
 					</div>
 
 					<div class="run-footer action-bar is-anchored" id="run-footer" hidden>
 						<button type="button" class="io-button io-output" id="btn-output-run" title="Abrir a pasta de output" aria-label="Abrir a pasta de output"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
 						<button type="button" class="button button-primary" id="btn-again">Novo preenchimento</button>
 					</div>
+				</div>
+
+				<!-- o rodapé do preenchimento: fora das telas (não entra animado com elas a cada template); fica no
+				     lugar enquanto o template carrega, com os botões desligados -->
+				<div class="action-bar is-anchored" id="input-footer" hidden>
+					<button type="button" class="io-button" id="btn-import" title="Importar o template para o projeto, sem preencher" aria-label="Importar o template para o projeto, sem preencher"><svg viewBox="0 0 24 24"><path class="io-arrow" d="M12 4v10M8 10.500l4 4 4-4" /><path d="M5 18.500h14" /></svg></button>
+					<button type="button" class="io-button io-output" id="btn-output" title="Abrir a pasta de output do template" aria-label="Abrir a pasta de output do template"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h7.5A1.5 1.5 0 0 1 20 10v1.5" /><g class="folder-content"><rect x="7" y="4.5" width="10" height="8" rx="1" /><path d="M9.5 4.5v8M14.5 4.5v8" /></g><path class="folder-front" d="M3.5 11.5h17V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
+					<button type="button" class="button button-primary" id="btn-fill" title="Ctrl/Cmd+Enter">Preencher</button>
 				</div>
 			</section>
 		</div>

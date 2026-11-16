@@ -2,7 +2,9 @@
 
 [← O PADEIRO](../README.md)
 
-o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02 ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
+o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto aberto vão para um **banco de fontes** na rede e para a **pasta de fontes do projeto** (`02_ARQUIVOS/FONTS`), em segundo plano, sem travar o After Effects. quando falta uma fonte, o botão **fontes** da barra resolve.
+
+**quando ele confere** → só quando o projeto **muda** (abrir, salvar, trocar de projeto) e no clique em **Fontes**, nunca de tempos em tempos: quem está animando uma comp sem texto não espera nada. o tamanho do banco não pesa nessa conferência (o padeiro olha só as fontes do projeto, uma a uma, pelo nome). para desligar de vez neste computador, a chave '*conferir as fontes sozinho*' (configuração > fontes, neste computador): aí tudo fica só no clique em Fontes. a janela de fontes guarda a lista do banco neste computador e só relê quando o banco muda.
 
 > requer o After Effects 2024 ou mais novo.
 
@@ -10,7 +12,9 @@ o padeiro cuida das fontes dos projetos sozinho: as fontes de cada projeto abert
 
 ## 📍 banco de fontes
 
-a pasta do banco fica na [configuração > fontes](producoes.md). nela, cada fonte é guardada pelo nome PostScript (`GloboSans-Bold.otf`), com um `.json` ao lado: família, estilo e as versões (quem enviou, de que computador e projeto, quando).
+> 🧪 *teste:* `extension/scripts/teste-banco-de-fontes.jsx` (Arquivo > Scripts > Executar arquivo de script…) instala as fontes de uma pasta, cria a comp TESTE BANCO DE FONTES com um layer de texto por fonte e salva o projeto: a barra envia as fontes para o banco.
+
+a pasta do banco fica na [configuração > fontes](producoes.md). com o campo vazio, vale a pasta **padrão**: `BANCO DE FONTES`, no mesmo nível da pasta `extension` do padeiro na rede (ao lado do código e da configuração da equipe); ela é criada no primeiro envio. **não mexa na subpasta `_registro`**: é por ela que o padeiro acha cada fonte, as versões e as trocas. os bancos de antes (o `.json` ao lado da fonte) continuam valendo e vão para a subpasta aos poucos, no próximo envio de cada fonte. nela, cada fonte é guardada pelo nome PostScript (`GloboSans-Bold.otf`), com um registro `.json` na subpasta `_registro` (assim quem mexe no banco pelo Finder vê só as fontes): família, estilo e as versões (quem enviou, de que computador e projeto, quando).
 
 - **o envio** → enquanto a barra está aberta, as fontes usadas no projeto aberto que ainda não estão no banco (ou na pasta de fontes do projeto) são copiadas, uma por vez. vale para todas: as instaladas, as do sistema e as do Adobe Fonts.
 - **outra versão** → um arquivo diferente com o mesmo nome PostScript vai ao lado, com a data no nome (`GloboSans-Bold@20261106-1402.otf`): nada é sobrescrito, e a mais recente é a que instala.
@@ -21,12 +25,14 @@ a pasta do banco fica na [configuração > fontes](producoes.md). nela, cada fon
 
 ## 📍 o botão fontes (barra)
 
+fica na gaveta **projeto** da barra (com criar / alterar e coletar).
+
 a bolinha no botão:
 
 - 🟠 **laranja** → falta algo: uma fonte que não está neste computador, ou que ainda não está no banco ou na pasta do projeto (o envio está a caminho). o balão diz quantas e o quê.
 - 🟢 **verde** → todas instaladas, no banco e na pasta do projeto.
 
-`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar.
+`◖ clique esquerdo` → **resolver**. com todas as fontes instaladas, só avisa que está tudo ok (sem erro, mesmo sem banco ou sem pasta de fontes). faltando alguma: instala primeiro da pasta de fontes do projeto (poucas e perto, o mais rápido) e, o que ainda faltar, do banco; a que não for achada em nenhum dos dois abre a janela de fontes, para trocar. depois de instalar, o padeiro espera o After Effects enxergar as fontes novas (até uns 15 segundos) e passa os textos que estavam com a fonte substituída para a de verdade: o desenho atualiza na hora, sem reiniciar.
 
 `◗ clique direito` → **O TIPÓGRAFO**, a janela de **fontes do projeto**.
 
@@ -47,7 +53,7 @@ a janela se chama **O TIPÓGRAFO** (como O ACESSORISTA e O CATADOR).
 | ❺ | **↓** | não está neste computador, mas está no banco: o Resolver instala (a seta desce enquanto instala). |
 | ❻ | **substituir por** | a troca, com a busca: as sugestões (mesma família e peso), o banco e as instaladas, com a prévia. |
 | ❼ | **copiar as fontes** | copia todas as fontes do projeto para uma pasta. |
-| ❽ | **Resolver** | instala o que está no banco e troca o que foi escolhido (desfaz com um Ctrl+Z). |
+| ❽ | **Resolver** | instala o que está no banco e troca o que foi escolhido (desfaz com um Cmd+Z, ou Ctrl+Z no Windows). |
 
 no topo, o projeto e quantas fontes e layers. uma linha por fonte: o nome, quantos layers usam, a amostra escrita na própria fonte e o estado (o ícone; o texto no balão):
 

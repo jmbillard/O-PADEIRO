@@ -28,7 +28,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
-		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true }, // aba ORGANIZAR (folders: { name, parent, contents })
+		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
@@ -45,7 +45,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		prefsSnapshot: '',
 		personal: [], // aba LINKS: os do usuário, só neste computador (gravados à parte, fora do arquivo da rede)
 		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', productions: [], log: true, localMode: false, fontsUpload: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
+		machine: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, fontsCheck: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba MEU USUÁRIO (só neste computador)
 		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
 		machineSnapshot: '',
 		defaultUser: '',
@@ -407,7 +407,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			editComments: commaList(o.editComments),
 			autoComment: o.autoComment.trim(),
 			dataExtensions: commaList(o.dataExtensions),
-			commentSubfolders: o.commentSubfolders
+			commentSubfolders: o.commentSubfolders,
+			fileTags: commaList(o.fileTags)
 		};
 	}
 
@@ -435,7 +436,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function projectForSave() {
 		return {
 			categories: state.project.categories.map(function (c) {
-				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), icon: c.icon || '' };
+				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '' };
 			})
 		};
 	}
@@ -508,15 +509,38 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false };
 	}
 
 	function personalDirty() {
 		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot || (state.machineSnapshot !== '' && JSON.stringify(machineForSave()) !== state.machineSnapshot);
 	}
 
+	// o que é só desta pessoa (meu usuário, presets, links pessoais, aparência e layout pessoais) salva sozinho, um
+	// instante depois da última mudança, separado da equipe: um erro numa aba da equipe não segura o ajuste pessoal.
+	// um erro aqui (um campo ainda pela metade) fica calado: o ponto no disquete continua e o Salvar diz o que é
+	var AUTOSAVE_MS = 900;
+
+	function autosavePersonal() {
+		clearTimeout(state.autosaveTimer);
+		state.autosaveTimer = setTimeout(async function () {
+			if (state.saving || !personalDirty()) return;
+
+			state.autosaving = true;
+
+			try {
+				await savePersonal();
+			} catch (err) { }
+
+			state.autosaving = false;
+			updateDirty();
+		}, AUTOSAVE_MS);
+	}
+
 	function updateDirty() {
 		markCustom();
+
+		if (personalDirty() && !state.autosaving) autosavePersonal();
 
 		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
 
@@ -923,7 +947,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// campo de termos em chips: a vírgula (ou Enter) fecha o termo; backspace no campo vazio apaga o último.
 	// o valor continua o texto "A, B, C" (o mesmo que a configuração guarda)
-	function tagField(value, placeholder, label, icon, onInput, onRemove) {
+	function tagField(value, placeholder, label, icon, onInput, onRemove, clean) {
 		var line = el('div', 'cfg-path has-field-icon tag-field no-btn');
 		var box = el('div', 'cfg-input tag-box');
 		var input = el('input', 'tag-input');
@@ -950,8 +974,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		function commit() {
 			split(input.value).forEach(function (term) {
-				term = term.toUpperCase(); // como os outros campos do tipo
-				if (!has(term)) tags.push(term);
+				term = clean ? clean(term) : term.toUpperCase(); // como os outros campos do tipo
+				if (term && !has(term)) tags.push(term);
 			});
 			input.value = '';
 			draw();
@@ -1455,7 +1479,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			editComments: (data.editComments || ['EDIT']).join(', '),
 			autoComment: data.autoComment || '',
 			dataExtensions: (data.dataExtensions || []).join(', '),
-			commentSubfolders: data.commentSubfolders !== false
+			commentSubfolders: data.commentSubfolders !== false,
+			fileTags: (data.fileTags || ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']).join(', ')
 		};
 		renderOrganize();
 	}
@@ -1668,6 +1693,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				name.disabled = !state.available;
 				name.setAttribute('aria-label', 'nome da pasta');
 				name.addEventListener('input', function () {
+					// as pastas da estrutura do projeto (aba coletar) seguem o padrão da promo: só maiúsculas, números,
+					// _ e -, sem acento nem cedilha (VÍDEOS → VIDEOS)
+					if (cfg.cleanNames) {
+						var at = name.selectionStart;
+						var clean = name.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '');
+
+						if (clean !== name.value) {
+							name.value = clean;
+							name.setSelectionRange(Math.min(at, clean.length), Math.min(at, clean.length));
+						}
+					}
 					// renomear leva as subpastas junto
 					o.folders.forEach(function (child) {
 						if (child !== f && child.parent && sameName(child.parent, f.name)) child.parent = name.value.trim();
@@ -1675,6 +1711,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					f.name = name.value;
 					renderTypes();
 					updateDirty();
+				});
+				// Enter aplica o nome: sai do campo
+				name.addEventListener('keydown', function (e) {
+					if (e.key !== 'Enter') return;
+
+					e.preventDefault();
+					name.blur();
 				});
 				row.appendChild(name);
 
@@ -1998,15 +2041,59 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		orgTree.render();
 	}
 
+	// os campos de termos da aba ORGANIZAR em chips (o mesmo campo dos termos do renomear). o campo de texto do
+	// HTML fica escondido; o chip é refeito só quando o valor muda de fora (abrir, recarregar)
+	var ORG_CHIPS = [
+		['org-render', 'renderComments', 'EXPORT, TEMPLATE', TAG_ICON],
+		['org-edit', 'editComments', 'EDIT', TAG_ICON],
+		['org-data', 'dataExtensions', '.csv, .json, .txt', ['M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z'], function (t) {
+			var ext = t.toLowerCase().replace(/^\*?\.*/, '').replace(/[^a-z0-9]/g, '');
+
+			return ext ? '.' + ext : '';
+		}],
+		['org-files', 'fileTags', 'FUNDO, LOGO, FOTO, TRILHA, LOC', TAG_ICON]
+	];
+
+	function organizeChips() {
+		var o = state.organize;
+
+		ORG_CHIPS.forEach(function (c) {
+			var input = $(c[0]);
+			var wrap = input.closest('.has-field-icon');
+			var holder = wrap.nextElementSibling && wrap.nextElementSibling.classList.contains('org-terms') ? wrap.nextElementSibling : null;
+			var key = (state.available ? '1|' : '0|') + o[c[1]];
+
+			if (!holder) {
+				holder = el('div', 'org-terms');
+				wrap.parentNode.insertBefore(holder, wrap.nextSibling);
+				wrap.hidden = true;
+			}
+			if (holder.dataset.key === key) return;
+
+			var field = tagField(o[c[1]], c[2], input.getAttribute('aria-label') || c[2], c[3], function (v) {
+				o[c[1]] = v;
+				input.value = v;
+				holder.dataset.key = (state.available ? '1|' : '0|') + v;
+			}, function () { }, c[4]);
+			var del = field.querySelector('.row-del');
+
+			if (del) del.remove(); // um campo só, sem a lixeira
+			holder.textContent = '';
+			holder.dataset.key = key;
+			holder.appendChild(field);
+		});
+	}
+
 	// os campos à direita (comentários de render, extensões...)
 	function organizeFields() {
 		var o = state.organize;
-		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions' };
+		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions', 'org-files': 'fileTags' };
 
 		Object.keys(fields).forEach(function (id) {
 			if ($(id).value !== o[fields[id]]) $(id).value = o[fields[id]];
 			$(id).disabled = !state.available;
 		});
+		organizeChips();
 		$('org-sub').checked = o.commentSubfolders;
 		$('org-sub').disabled = !state.available;
 		$('btn-new-folder').disabled = !state.available;
@@ -2015,7 +2102,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindOrganize() {
 		orgTree.bind();
 
-		[['org-render', 'renderComments'], ['org-edit', 'editComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions']].forEach(function (pair) {
+		[['org-render', 'renderComments'], ['org-edit', 'editComments'], ['org-auto', 'autoComment'], ['org-data', 'dataExtensions'], ['org-files', 'fileTags']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				state.organize[pair[1]] = this.value;
 				updateDirty();
@@ -2041,19 +2128,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['imagens', 'imagens', TYPES.filter(function (t) { return t[0] === 'imagens'; })[0][2]],
 		['audio', 'áudio', TYPES.filter(function (t) { return t[0] === 'audio'; })[0][2]],
 		['dados', 'dados', TYPES.filter(function (t) { return t[0] === 'dados'; })[0][2]],
-		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']]
+		['fontes', 'fontes', ['M5 8V5.5h14V8M12 5.5v13M9 18.5h6']],
+		// não são coletados: dizem para onde a migração do CATADOR leva os renders e o que o projeto não usa
+		['saidas', 'saídas (renders)', ['M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'M10.5 8.5v4l3.5-2z', 'M8 20h8M12 16.5V20']],
+		['externos', 'arquivos externos', ['M4.5 8.5 12 4.5l7.5 4v7L12 19.5l-7.5-4z', 'M4.5 8.5 12 12.5l7.5-4M12 12.5v7']]
 	];
 
 	// a estrutura padrão (a mesma do host, PAD_DEFAULT_COLLECT): o .aep em 01, os arquivos em 02, as saídas em 03
 	var DEFAULT_COLLECT_FOLDERS = [
-		{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
-		{ name: '02 ARQUIVOS', parent: '', contents: [] },
-		{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
-		{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
-		{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
-		{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
-		{ name: '03 SAIDA', parent: '', contents: [] }
+		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+		{ name: '02_ARQUIVOS', parent: '', contents: [] },
+		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+		{ name: 'VIDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
+		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+		{ name: '04_REFS', parent: '', contents: [] },
+		{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 	];
 
 	function setCollect(c) {
@@ -2077,13 +2170,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		paneId: 'pane-collect',
 		newBtnId: 'btn-new-col-folder',
 		rootLabel: 'pasta do projeto',
+		cleanNames: true,
 		rootWhere: 'não é coletado',
 		removeTitle: 'tirar da pasta (não é coletado)',
+		whereFor: function (type) {
+			if (type === 'saidas') return 'sem pasta: a migração usa 03_SAIDA';
+			if (type === 'externos') return 'sem pasta: a migração usa 05_EXTERNOS';
+
+			return null;
+		},
 		rowHint: function (f, depth) {
 			var notes = [];
 
 			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: a janela projeto salva aqui');
 			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
+			if (f.contents.indexOf('saidas') >= 0) notes.push('a migração traz os renders para cá');
+			if (f.contents.indexOf('externos') >= 0) notes.push('a migração traz para cá o que o projeto não usa');
 			if (!notes.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -2110,7 +2212,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindCollect() {
 		colTree.bind();
 
-		// troca a árvore pela estrutura padrão (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA); salvar grava
+		// troca a árvore pela estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS); salvar grava
 		$('btn-col-default').addEventListener('click', function () {
 			state.collect.folders = JSON.parse(JSON.stringify(DEFAULT_COLLECT_FOLDERS));
 			renderCollect();
@@ -2124,60 +2226,99 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   e separadores entre os grupos
 	   ========================================================= */
 
-	var DEFAULT_BAR = ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'];
+	var DEFAULT_BAR = PAD_UTIL.barDefault;
 
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
-		templates: ['Templates', 'preencher templates · criar novo template', 'templates'],
+		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
+		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
+		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
-		projeto: ['Projeto', 'novo projeto pela claquete · salvar o projeto', 'project'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
-		importar: ['Importar', 'importar um .aep (converte o de versão mais nova) · abrir convertido', 'import'],
-		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
+		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
-		organizar: ['Organizar', 'organizar o projeto · criar as pastas', 'organize'],
-		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search']
+		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
+		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
+		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
+		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search'],
+		'logo-globo': ['Logo Globo', 'logo animado · logo parado', 'logo-globo']
 	};
+
+	// as gavetas: o nome e o ícone (as de dentro: PAD_UTIL.barGroups)
+	var GROUP_INFO = { templates: ['Templates', 'templates'], projeto: ['Projeto', 'project'], organizar: ['Organização', 'organization'] };
 
 	// o padrão da equipe (rede)
 	function setBar(b) {
-		var data = b || {};
-
-		state.team.bar = {
-			items: (data.items && data.items.length ? data.items : DEFAULT_BAR).slice(),
-			hidden: (data.hidden || []).slice()
-		};
+		state.team.bar = PAD_UTIL.barLayout(b || {}); // o formato de antes vira o de agora
 		activatePrefs();
 	}
 
-	function toggleHidden(key, show) {
+	function isHidden(key) {
+		return state.bar.hidden.indexOf(key) >= 0;
+	}
+
+	function setHidden(key, hide) {
 		state.bar.hidden = state.bar.hidden.filter(function (k) {
 			return k !== key;
 		});
-
-		if (!show) state.bar.hidden.push(key);
+		if (hide) state.bar.hidden.push(key);
 	}
 
 	function svgTool(key) {
 		return PAD_ICONS.svg(key === 'links' ? 'link' : (TOOL_INFO[key] || [key, '', ''])[2]);
 	}
 
-	// a barra (esquerda): só as que aparecem, na ordem, com os separadores
-	function visibleItems() {
-		return state.bar.items.filter(function (k) {
-			return k === 'divider' || state.bar.hidden.indexOf(k) < 0;
+	// a barra em blocos, na ordem: { divider } | { tool } | { group, members (na ordem de dentro) }
+	function barEntries() {
+		var out = [];
+		var seen = {};
+
+		state.bar.items.forEach(function (k) {
+			if (k === 'divider') return out.push({ divider: true });
+
+			var g = PAD_UTIL.barGroupOf(k);
+
+			if (!g) return out.push({ tool: k });
+			if (seen[g]) return;
+			seen[g] = true;
+			out.push({
+				group: g,
+				members: state.bar.items.filter(function (m) {
+					return PAD_UTIL.barGroupOf(m) === g;
+				})
+			});
 		});
+
+		return out;
 	}
 
-	// a ferramenta (ou os links) sai da barra: vira um bloco no lado branco
-	function removeFromBar(key) {
-		toggleHidden(key, false);
+	// um bloco aparece na barra (à esquerda)? o separador sempre; a ferramenta e a gaveta, se não estão escondidas
+	function entryShown(e) {
+		if (e.divider) return true;
+		if (e.tool) return !isHidden(e.tool);
+
+		return !isHidden('gaveta:' + e.group);
+	}
+
+	// os blocos de volta na lista plana (as de uma gaveta juntas)
+	function setEntries(entries) {
+		var items = [];
+
+		entries.forEach(function (e) {
+			if (e.divider) items.push('divider');
+			else if (e.tool) items.push(e.tool);
+			else items = items.concat(e.members);
+		});
+		state.bar.items = PAD_UTIL.barLayout({ items: items, hidden: [] }).items;
+	}
+
+	function changed() {
 		renderTools();
 		updateDirty();
 	}
 
 	// as abas das ferramentas seguem a ordem da barra (a do layout em uso: muda junto ao arrastar)
-	var BAR_TABS = { templates: 'prods', fontes: 'fonts', projeto: 'project', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
+	var BAR_TABS = { preencher: 'prods', fontes: 'fonts', projeto: 'project', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
 
 	function orderToolTabs() {
 		var nav = $('tabs');
@@ -2205,7 +2346,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		var disabled = !state.available;
 		var cards = $('tool-cards');
-		var linksShown = state.bar.hidden.indexOf('links') < 0;
+		var entries = barEntries();
 
 		list.textContent = '';
 		cards.textContent = '';
@@ -2219,85 +2360,150 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return btn;
 		}
 
+		function toolRow(key, cls, title, onHide) {
+			var row = el('div', 'bar-row' + (cls ? ' ' + cls : ''));
+
+			row.appendChild(PAD_SORT.handle());
+			row.appendChild(svgTool(key));
+			row.appendChild(el('span', 'bar-row-label', TOOL_INFO[key][0]));
+			row.appendChild(removeButton(title, onHide));
+
+			return row;
+		}
+
 		// os links, no começo (não se arrastam; o × tira)
-		if (linksShown) {
+		if (!isHidden('links')) {
 			var links = el('div', 'bar-row is-links');
+
 			links.appendChild(svgTool('links'));
 			links.appendChild(el('span', 'bar-row-label', 'links'));
 			links.appendChild(removeButton('tirar os links da barra', function () {
-				removeFromBar('links');
+				setHidden('links', true);
+				changed();
 			}));
 			list.appendChild(links);
 			list.appendChild(el('div', 'bar-row-rule'));
 		}
 
-		visibleItems().forEach(function (key, i) {
-			var row = el('div', 'bar-row');
+		entries.forEach(function (e, at) {
+			if (!entryShown(e)) return;
 
-			row.setAttribute('data-index', i);
-			row.appendChild(PAD_SORT.handle());
+			var row;
 
-			if (key === 'divider') {
-				row.classList.add('is-divider');
+			if (e.divider) {
+				row = el('div', 'bar-row bar-top is-divider');
+				row.appendChild(PAD_SORT.handle());
 				row.appendChild(el('span', 'bar-row-line'));
 				row.appendChild(removeButton('tirar o separador', function () {
-					var at = -1;
-					var seen = -1;
-
-					// o i-ésimo item visível, na lista completa
-					state.bar.items.forEach(function (k, j) {
-						if (k === 'divider' || state.bar.hidden.indexOf(k) < 0) seen++;
-						if (seen === i && at < 0) at = j;
-					});
-					if (at >= 0) state.bar.items.splice(at, 1);
-					renderTools();
-					updateDirty();
+					entries.splice(at, 1);
+					setEntries(entries);
+					changed();
 				}));
+			} else if (e.tool) {
+				row = toolRow(e.tool, 'bar-top', 'tirar ' + TOOL_INFO[e.tool][0] + ' da barra', function () {
+					setHidden(e.tool, true);
+					changed();
+				});
 			} else {
-				row.appendChild(svgTool(key));
-				row.appendChild(el('span', 'bar-row-label', (TOOL_INFO[key] || [key])[0]));
-				row.appendChild(removeButton('tirar ' + (TOOL_INFO[key] || [key])[0] + ' da barra', function () {
-					removeFromBar(key);
+				// a gaveta: um bloco que anda inteiro; dentro, as ferramentas mudam de ordem (só dentro dela)
+				var info = GROUP_INFO[e.group];
+				var shown = e.members.filter(function (m) {
+					return !isHidden(m);
+				});
+				var head = el('div', 'bar-row bar-drawer-head');
+				var label = el('span', 'bar-row-label', info[0]);
+				var inner = el('div', 'bar-drawer-list');
+
+				row = el('div', 'bar-top bar-drawer-cfg');
+				head.appendChild(PAD_SORT.handle());
+				head.appendChild(PAD_ICONS.svg(info[1]));
+				label.appendChild(el('span', 'bar-drawer-count', shown.length === e.members.length ? String(shown.length) : shown.length + ' de ' + e.members.length));
+				head.appendChild(label);
+				head.appendChild(removeButton('esconder ' + info[0] + ' (a gaveta inteira)', function () {
+					setHidden('gaveta:' + e.group, true);
+					changed();
 				}));
+				row.appendChild(head);
+
+				shown.forEach(function (m) {
+					inner.appendChild(toolRow(m, 'is-member', 'esconder ' + TOOL_INFO[m][0] + ' (sai da gaveta ' + info[0] + ')', function () {
+						setHidden(m, true);
+						changed();
+					}));
+				});
+				row.appendChild(inner);
+
+				// a ordem de dentro: as à mostra na ordem nova, as escondidas no fim da gaveta
+				PAD_SORT.enable(inner, '.bar-row', function (from, to) {
+					var moved = shown.splice(from, 1)[0];
+
+					shown.splice(to, 0, moved);
+					e.members = shown.concat(e.members.filter(isHidden));
+					setEntries(entries);
+					changed();
+				});
 			}
 
+			row.setAttribute('data-entry', at);
 			list.appendChild(row);
 		});
 
-		// fora da barra (direita): um bloco por ferramenta tirada; o + põe de volta, no fim da barra
-		var out = Object.keys(TOOL_INFO).filter(function (key) {
-			return state.bar.hidden.indexOf(key) >= 0;
+		// fora da barra (direita): o que foi escondido; o + põe de volta no mesmo lugar (a ferramenta de uma gaveta, no
+		// fim dela; a gaveta e a ferramenta solta, no fim da barra)
+		var out = [];
+
+		if (isHidden('links')) out.push({ key: 'links', name: 'Links', text: 'os links da equipe e os seus, no começo da barra', icon: 'link' });
+		entries.forEach(function (e) {
+			if (e.tool && isHidden(e.tool)) out.push({ key: e.tool, name: TOOL_INFO[e.tool][0], text: TOOL_INFO[e.tool][1], icon: TOOL_INFO[e.tool][2] });
+			if (!e.group) return;
+
+			var info = GROUP_INFO[e.group];
+
+			if (isHidden('gaveta:' + e.group)) {
+				out.push({ key: 'gaveta:' + e.group, name: info[0], text: e.members.map(function (m) {
+					return TOOL_INFO[m][0];
+				}).join(' · '), icon: info[1] });
+				return;
+			}
+			e.members.filter(isHidden).forEach(function (m) {
+				out.push({ key: m, from: info[0], group: e, name: TOOL_INFO[m][0], text: TOOL_INFO[m][1], icon: TOOL_INFO[m][2] });
+			});
 		});
 
-		if (!linksShown) out.unshift('links');
-
-		out.forEach(function (key) {
-			var info = key === 'links' ? ['Links', 'os links da equipe e os seus, no começo da barra', 'link'] : TOOL_INFO[key];
+		out.forEach(function (o) {
 			var card = el('div', 'org-type tool-card');
 			var text = el('span', 'org-type-text');
-			var icon = svgTool(key);
 			var add = miniButton('add', '', function () { });
 
-			card.appendChild(icon);
-			text.appendChild(el('strong', null, info[0]));
-			text.appendChild(el('span', null, info[1]));
+			card.appendChild(PAD_ICONS.svg(o.icon));
+			if (o.from) text.appendChild(el('span', 'tool-card-from', o.from));
+			text.appendChild(el('strong', null, o.name));
+			text.appendChild(el('span', null, o.text));
 			card.appendChild(text);
 			add.classList.add('tool-add');
-			add.title = 'pôr ' + info[0] + ' de volta na barra' + (key === 'links' ? '' : ' (no fim)');
+			add.title = o.from ? 'pôr ' + o.name + ' de volta em ' + o.from + ' (no fim)' : 'pôr ' + o.name + ' de volta na barra' + (o.key === 'links' ? '' : ' (no fim)');
 			add.setAttribute('aria-label', add.title);
 			add.disabled = disabled;
 			add.addEventListener('click', function () {
-				toggleHidden(key, true);
+				setHidden(o.key, false);
 
-				// volta no fim da barra
-				if (key !== 'links') {
-					state.bar.items = state.bar.items.filter(function (k) {
-						return k !== key;
-					}).concat([key]);
+				if (o.group) {
+					// no fim da gaveta
+					o.group.members = o.group.members.filter(function (m) {
+						return m !== o.key;
+					}).concat([o.key]);
+					setEntries(entries);
+				} else if (o.key !== 'links') {
+					// no fim da barra
+					var back = entries.filter(function (e) {
+						return (e.tool || (e.group && 'gaveta:' + e.group)) === o.key;
+					})[0];
+
+					setEntries(entries.filter(function (e) {
+						return e !== back;
+					}).concat([back]));
 				}
-
-				renderTools();
-				updateDirty();
+				changed();
 			});
 			card.appendChild(add);
 			cards.appendChild(card);
@@ -2310,22 +2516,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		// um separador novo entra no fim; arraste para o lugar
 		$('btn-new-divider').addEventListener('click', function () {
 			state.bar.items.push('divider');
-			renderTools();
-			updateDirty();
+			changed();
 			$('tool-list').lastChild.scrollIntoView({ block: 'nearest' });
 		});
 
-		// reordena as visíveis; as escondidas ficam no fim da lista completa (voltam no fim da barra)
-		PAD_SORT.enable($('tool-list'), '.bar-row:not(.is-links)', function (from, to) {
-			var visible = visibleItems();
-			var moved = visible.splice(from, 1)[0];
+		// a ordem da barra: os blocos à mostra (gavetas, ferramentas soltas, separadores); os escondidos vão para o fim
+		PAD_SORT.enable($('tool-list'), '.bar-top', function (from, to) {
+			var entries = barEntries();
+			var shown = entries.filter(entryShown);
+			var moved = shown.splice(from, 1)[0];
 
-			visible.splice(to, 0, moved);
-			state.bar.items = visible.concat(state.bar.items.filter(function (k) {
-				return k !== 'divider' && state.bar.hidden.indexOf(k) >= 0;
-			}));
-			renderTools();
-			updateDirty();
+			shown.splice(to, 0, moved);
+			setEntries(shown.concat(entries.filter(function (e) {
+				return !entryShown(e);
+			})));
+			changed();
 		});
 	}
 
@@ -2581,12 +2786,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			user: m.user || '',
 			projects: m.projects || '',
 			outputs: m.outputs || '',
+			render: { 'final': (m.render && m.render['final']) || '', preview: (m.render && m.render.preview) || '' },
 			productions: (m.productions || []).map(function (p) {
 				return { name: p.name || '', path: p.path || '' };
 			}),
 			log: m.log !== false,
 			localMode: !!m.localMode,
 			fontsUpload: m.fontsUpload !== false,
+			fontsCheck: m.fontsCheck !== false,
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
 		state.localIndexFile = m.localIndex || '';
@@ -2602,11 +2809,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
 		});
+		renderPresets();
 		$('machine-user').placeholder = state.defaultUser;
 		$('machine-projects').placeholder = '~/Desktop';
 		$('machine-local').checked = m.localMode;
 		$('machine-log').checked = m.log;
 		$('machine-fonts').checked = m.fontsUpload !== false;
+		$('machine-fonts-check').checked = m.fontsCheck !== false;
 		$('machine-offline').hidden = !state.offline;
 		renderMachineTemplates();
 		renderMachineIndex();
@@ -2771,7 +2980,56 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		updateDirty();
 	}
 
+	// os presets de render (aba PROJETO, neste computador): os templates de output deste After, lidos na primeira
+	// vez que a aba aparece (ler mexe na fila de render do projeto aberto, por um instante)
+	var RENDER_KEYS = [['machine-render-final', 'final'], ['machine-render-preview', 'preview']];
+
+	function renderPresets() {
+		RENDER_KEYS.forEach(function (k) {
+			var select = $(k[0]);
+			var chosen = state.machine.render[k[1]];
+			var list = (state.renderTemplates || []).slice();
+
+			// o escolhido que não está (mais) na lista deste After continua à vista
+			if (chosen && list.indexOf(chosen) < 0) list.unshift(chosen);
+
+			select.textContent = '';
+			[''].concat(list).forEach(function (name) {
+				var option = el('option', null, name || (state.renderTemplates ? 'o padrão do After' : 'lendo os presets do After…'));
+
+				option.value = name;
+				select.appendChild(option);
+			});
+			select.value = chosen;
+			select.disabled = !state.renderTemplates;
+			// a mesma lista com ícones do preset da fila de render, no painel de templates
+			PAD_DROPDOWN.enhance(select, 'renderTemplate');
+		});
+	}
+
+	async function loadRenderPresets() {
+		if (state.renderTemplates || state.renderLoading) return;
+
+		state.renderLoading = true;
+
+		try {
+			state.renderTemplates = (await call('renderPresets')).templates || [];
+		} catch (err) {
+			state.renderTemplates = [];
+		}
+
+		state.renderLoading = false;
+		renderPresets();
+	}
+
 	function bindMachine() {
+		RENDER_KEYS.forEach(function (k) {
+			$(k[0]).addEventListener('change', function () {
+				state.machine.render[k[1]] = this.value;
+				updateDirty();
+			});
+		});
+
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
@@ -2792,6 +3050,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		$('machine-fonts').addEventListener('change', function () {
 			state.machine.fontsUpload = this.checked;
+			updateDirty();
+		});
+		$('machine-fonts-check').addEventListener('change', function () {
+			state.machine.fontsCheck = this.checked;
 			updateDirty();
 		});
 
@@ -2922,7 +3184,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.custom = { appearance: !!data.appearance, bar: !!data.bar };
 		state.mine.appearance = Object.assign({}, PAD_THEME.defaults, data.appearance || state.team.appearance || {});
-		state.mine.bar = JSON.parse(JSON.stringify(data.bar || state.team.bar || { items: DEFAULT_BAR.slice(), hidden: [] }));
+		state.mine.bar = PAD_UTIL.barLayout(JSON.parse(JSON.stringify(data.bar || state.team.bar || { items: DEFAULT_BAR.slice(), hidden: [] })));
 		state.prefsSnapshot = JSON.stringify(prefsForSave());
 		activatePrefs();
 	}
@@ -3343,12 +3605,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function setFonts(f) {
 		f = f || {};
 		state.fonts = { bank: f.bank || '', upload: f.upload !== false };
+		state.defaultBank = f.defaultBank || '';
 		renderFonts();
 	}
 
 	function renderFonts() {
 		if (document.activeElement !== $('fonts-bank')) $('fonts-bank').value = state.fonts.bank;
-		$('fonts-bank').title = state.fonts.bank;
+		// vazio: o banco padrão, a pasta BANCO DE FONTES ao lado da extensão na rede
+		$('fonts-bank').placeholder = state.defaultBank ? state.defaultBank + ' (padrão)' : 'pasta do banco na rede';
+		$('fonts-bank').title = state.fonts.bank || (state.defaultBank ? 'vazio: o padrão, ' + state.defaultBank : '');
 		$('fonts-upload').checked = state.fonts.upload;
 		countBank();
 	}
@@ -3362,21 +3627,33 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fs = typeof require === 'function' ? require('fs') : null;
 		} catch (err) { }
 
+		var bank = state.fonts.bank.trim() || state.defaultBank;
+
 		box.textContent = '';
-		if (!fs || !state.fonts.bank) return;
+		if (!fs || !bank) return;
 
 		// no volume realmente montado (o caminho é guardado sem o sufixo -1 … -5)
-		fs.readdir(PAD_BRIDGE.mountedPath(state.fonts.bank.replace(/^~(?=\/)/, require('os').homedir())), function (err, names) {
+		fs.readdir(PAD_BRIDGE.mountedPath(bank.replace(/^~(?=\/)/, require('os').homedir())), function (err, names) {
 			if (err) {
 				box.textContent = 'a pasta do banco não está acessível agora.';
 				return;
 			}
 
-			var total = names.filter(function (n) {
+			var legacy = names.filter(function (n) {
 				return /\.json$/i.test(n) && n.charAt(0) !== '_';
-			}).length;
+			});
 
-			box.textContent = total ? total + (total === 1 ? ' fonte no banco.' : ' fontes no banco.') : 'o banco ainda está vazio.';
+			// os registros ficam na subpasta _registro (os de antes, ao lado das fontes, ainda contam)
+			fs.readdir(require('path').join(PAD_BRIDGE.mountedPath(bank.replace(/^~(?=\/)/, require('os').homedir())), '_registro'), function (err2, reg) {
+				var inReg = (err2 ? [] : reg).filter(function (n) {
+					return /\.json$/i.test(n) && n.charAt(0) !== '_';
+				});
+				var total = inReg.length + legacy.filter(function (n) {
+					return inReg.indexOf(n) < 0;
+				}).length;
+
+				box.textContent = total ? total + (total === 1 ? ' fonte no banco.' : ' fontes no banco.') : 'o banco ainda está vazio.';
+			});
 		});
 	}
 
@@ -3407,7 +3684,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'categoria', 'letra'];
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'categoria', 'letra'];
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
@@ -3416,7 +3693,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.project = {
 			categories: (data.categories || []).map(function (c) {
-				return { name: c.name || '', path: c.path || '', output: c.output || '', icon: c.icon || '' };
+				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '' };
 			})
 		};
 		renderProject();
@@ -3432,7 +3709,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3547,6 +3824,33 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				previews[k[0]] = preview;
 				body.appendChild(preview);
 			});
+
+			// o nome do .aep (opcional, com tokens): sem ele, a atração (ou o último nível) + o que é
+			var fileLine = el('div', 'cat-line');
+			var fileBox = el('div', 'cfg-path');
+			var fileInput = el('input', 'cfg-input');
+			var filePreview = el('p', 'cat-preview');
+
+			fileInput.type = 'text';
+			fileInput.value = row.file || '';
+			fileInput.placeholder = 'opcional: o nome do .aep, ex: {proximo_mes} NA GLOBO';
+			fileInput.spellcheck = false;
+			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'categoria ' + (i + 1)));
+			fileInput.addEventListener('input', function () {
+				row.file = fileInput.value;
+				filePreview.innerHTML = catPreview(row, 'file');
+				updateDirty();
+			});
+			fileInput.addEventListener('focus', function () {
+				state.catInput = { input: fileInput, row: row, key: 'file', preview: filePreview };
+			});
+			fileBox.appendChild(fileInput);
+			fileLine.appendChild(el('span', 'cat-label', 'ARQUIVO'));
+			fileLine.appendChild(fileBox);
+			fileLine.appendChild(el('span'));
+			body.appendChild(fileLine);
+			filePreview.innerHTML = catPreview(row, 'file') && catPreview(row, 'file') + '<b>.aep</b>';
+			body.appendChild(filePreview);
 
 			card.appendChild(body);
 			list.appendChild(card);
@@ -3853,6 +4157,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.tab = name;
 		renderScope();
+		if (name === 'project') loadRenderPresets();
 
 
 		Array.prototype.forEach.call($('tabs').querySelectorAll('.tab'), function (tab) {

@@ -177,14 +177,57 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	// Redimensiona a própria janela (só janelas Modeless; painéis acoplados ignoram). O After Effects
-	// pode ignorar um pedido (por exemplo, logo que a janela abre): confere um instante depois e pede
-	// de novo, até 4 vezes. Os limites do manifest (tamanho mínimo e máximo) continuam valendo.
+	// A área livre da tela onde a janela está (sem o menu e o dock / a barra de tarefas) e a moldura da janela
+	// (o título do sistema: a diferença entre o tamanho de fora e o de dentro)
+	var SCREEN_MARGIN = 24;
+
+	function screenArea() {
+		var sc = window.screen || {};
+
+		return {
+			left: sc.availLeft || 0,
+			top: sc.availTop || 0,
+			width: sc.availWidth || window.outerWidth || 1280,
+			height: sc.availHeight || window.outerHeight || 800
+		};
+	}
+
+	function frame() {
+		return { w: Math.max(0, window.outerWidth - window.innerWidth), h: Math.max(0, window.outerHeight - window.innerHeight) };
+	}
+
+	// Centraliza a janela na tela em que ela está (com o tamanho de dentro w × h). O After Effects pode não deixar
+	// mover: aí nada acontece (o resizeWindow encolhe o que passar da tela).
+	function centerWindow(w, h) {
+		if (!cep || isDocked()) return;
+
+		var a = screenArea();
+		var f = frame();
+		var x = a.left + Math.max(0, (a.width - (w || window.innerWidth) - f.w) / 2);
+		var y = a.top + Math.max(0, (a.height - (h || window.innerHeight) - f.h) / 2);
+
+		try {
+			window.moveTo(Math.round(x), Math.round(y));
+		} catch (e) { }
+	}
+
+	// a barra é o único painel acoplável (Panel no manifest): ela não se move nem centraliza
+	function isDocked() {
+		return document.body && document.body.classList.contains('bar-page');
+	}
+
+	// Redimensiona a própria janela (só janelas Modeless; painéis acoplados ignoram) e a centraliza na tela: abre
+	// e cresce sempre no meio, nunca com a parte de baixo fora da tela. O tamanho nunca passa da área livre da
+	// tela (menos uma margem). O After Effects pode ignorar um pedido (por exemplo, logo que a janela abre):
+	// confere um instante depois e pede de novo, até 4 vezes. Os limites do manifest (tamanho mínimo e máximo)
+	// continuam valendo. Se ele não deixar mover a janela, a altura encolhe até a parte de baixo caber na tela.
 	var resizeTimer = null;
 
 	function resizeWindow(width, height) {
-		var w = Math.round(width);
-		var h = Math.round(height);
+		var a = screenArea();
+		var f = frame();
+		var w = Math.round(Math.min(width, a.width - f.w - SCREEN_MARGIN * 2));
+		var h = Math.round(Math.min(height, a.height - f.h - SCREEN_MARGIN * 2));
 		var tries = 0;
 
 		clearTimeout(resizeTimer);
@@ -192,14 +235,31 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		if (!cep || !cep.resizeContent) return console.log('[mock] redimensionar janela', w, h);
 
 		(function attempt() {
+			// crescendo, centraliza antes (para não passar da tela no meio do caminho); encolhendo, depois
+			if (h > window.innerHeight || w > window.innerWidth) centerWindow(w, h);
 			cep.resizeContent(w, h);
-
-			if (++tries >= 4) return;
+			centerWindow(w, h);
 
 			resizeTimer = setTimeout(function () {
-				if (Math.abs(window.innerWidth - w) > 2 || Math.abs(window.innerHeight - h) > 2) attempt();
+				// não deu para mover: a parte de baixo não pode ficar fora da tela
+				var bottom = a.top + a.height - SCREEN_MARGIN;
+				var over = window.screenY + window.outerHeight - bottom;
+
+				if (over > 2 && h - over >= 200) {
+					h = Math.round(h - over);
+					cep.resizeContent(w, h);
+				}
+
+				if (++tries < 4 && (Math.abs(window.innerWidth - w) > 2 || Math.abs(window.innerHeight - h) > 2)) attempt();
 			}, 350);
 		})();
+	}
+
+	// ao abrir, toda janela (menos a barra) aparece no meio da tela
+	if (cep) {
+		window.addEventListener('load', function () {
+			centerWindow();
+		});
 	}
 
 	// Fecha o próprio painel.
@@ -220,5 +280,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
 })();

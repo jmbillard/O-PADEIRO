@@ -1,30 +1,28 @@
 /*
 
 ---------------------------------------------------------------
-> checagem do brilho do foco (guia de UI)
+> checagem do foco: nada cortado (guia de UI)
 ---------------------------------------------------------------
 
 Abre as janelas no navegador (modo de teste, mock-host.js), foca cada campo (input, textarea, seletor) e confere
-se o brilho azul do foco (4 px em volta) cabe inteiro no primeiro bloco de cima que corta o que passa dele
+se a folga do contorno do foco (3 px em volta: 1 px a 2 px de distância) cabe inteira no primeiro bloco de cima que corta o que passa dele
 (overflow diferente de visible: o que rola ou recolhe). Lista cada campo cortado, o bloco que corta e de que lado.
 
   node extension/scripts/check-focus-crop.js
 
 Precisa do Playwright (npm i -D playwright, ou o que já estiver instalado na máquina). Sai com código 1 quando
-acha algum corte. As transições ficam desligadas: o brilho é medido já no tamanho final.
+acha algum corte. As transições ficam desligadas: o contorno é medido já no tamanho final.
 
-Não cobre os campos que só aparecem depois de uma ação que não está nos passos abaixo (ex: uma linha nova):
-quando criar um passo novo numa janela, acrescente aqui.
+Não cobre os campos que só aparecem depois de uma ação que não está nos passos de ui-states.js (ex: uma linha nova):
+quando criar um passo novo numa janela, acrescente lá.
 
 */
 
-const path = require('path');
 const { chromium } = require('playwright');
+const { CLIENT, CHECKS, prepareContext } = require('./ui-states');
+const RING = 3; // :focus-visible { outline: 1px solid …; outline-offset: 2px } (guia de UI: foco)
 
-const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
-const RING = 4; // .cfg-input:focus { box-shadow: 0 0 0 4px … } (panel.css)
-
-// roda na página: foca cada campo visível e procura o primeiro bloco de cima que corta o brilho
+// roda na página: foca cada campo visível e procura o primeiro bloco de cima que corta a folga do foco
 function findCrops(ring) {
 	const out = [];
 	const fields = Array.from(document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, .dropdown-trigger')).filter(function (e) {
@@ -61,71 +59,12 @@ function findCrops(ring) {
 	return Array.from(new Set(out));
 }
 
-// as janelas e os passos para chegar em cada estado (o mock responde)
-const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }] };
-
-async function projectTo(page, screen) {
-	// 1 · ATRAÇÃO: digita, escolhe "nova atração" (o nome e a categoria abrem embaixo)
-	await page.fill('#claq', 'TESTE NOVO');
-	await page.waitForTimeout(800);
-	await page.locator('#atr-list .combo-item:has-text("nova atração")').click();
-	await page.waitForTimeout(500);
-	if (screen === 'nova') return;
-
-	// 2 · CRIAR: o que é e as opções do output abertas
-	await page.click('#claq-next');
-	await page.waitForTimeout(600);
-	await page.fill('#arq-what', 'vt');
-	await page.waitForTimeout(600);
-	await page.click('.out-line');
-	await page.waitForTimeout(400);
-}
-
-async function openTemplate(page) {
-	await page.locator('.tree-row:visible', { hasText: 'LETTERING SOLTO' }).first().click();
-	await page.waitForTimeout(500);
-}
-
-const CHECKS = [
-	['criador', 'maker.html', async (p) => {
-		await p.click('#btn-import-add');
-		await p.waitForTimeout(900); // o campo abre animado (motion.js): mede depois de aberto
-		await p.click('#btn-fx'); // as variações de layout (os sufixos)
-		await p.waitForTimeout(500);
-	}],
-	['projeto: editor', 'project.html?mock=created'],
-	['projeto: atração', 'project.html'],
-	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
-	['projeto: criar', 'project.html', (p) => projectTo(p, 'criar')],
-	['busca', 'finder.html'],
-	['conversor', 'converter.html'],
-	['fontes do projeto', 'fonts.html'],
-	['coletar', 'collect.html'],
-	['templates', 'index.html', openTemplate],
-	['editor de config', 'index.html', async (p) => {
-		await openTemplate(p);
-		const edit = p.locator('[title*="editar config"]').first();
-
-		if (await edit.count()) await edit.click();
-		await p.waitForTimeout(800);
-	}]
-].concat(['prods', 'project', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
-	return ['configuração: ' + tab, 'productions.html', async (p) => {
-		const button = p.locator('.tab[data-tab="' + tab + '"]');
-
-		if (await button.count()) await button.click();
-		await p.waitForTimeout(500);
-	}];
-}));
-
 (async () => {
 	const browser = await chromium.launch();
 	const context = await browser.newContext({ viewport: { width: 1100, height: 1000 } });
 	let found = 0;
 
-	await context.addInitScript((categories) => {
-		localStorage.setItem('pad.mock.project', JSON.stringify(categories));
-	}, CATEGORIES);
+	await prepareContext(context);
 
 	for (const [name, url, prepare] of CHECKS) {
 		const page = await context.newPage();
@@ -151,6 +90,6 @@ const CHECKS = [
 	}
 
 	await browser.close();
-	console.log(found ? '\n' + found + ' campo(s) com o brilho cortado.' : '\nnenhum brilho cortado.');
+	console.log(found ? '\n' + found + ' campo(s) com o foco cortado.' : '\nnenhum foco cortado.');
 	process.exit(found ? 1 : 0);
 })();

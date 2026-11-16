@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+	<g class="anim-form">
+	<g class="form-sheet">
+	<rect x="5" y="3.5" width="14" height="17" rx="2" />
+	<path d="M8.5 8h7M8.5 12h7" />
+	<path class="form-line" d="M8.5 16h7" pathLength="7" stroke-dasharray="4 20" /></g></g>
+</svg>

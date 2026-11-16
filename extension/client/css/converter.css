@@ -20,7 +20,7 @@ body.converter-page {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 16px 16px 10px;
+  padding: 16px; /* embaixo, o "⋯" (38) com o centro a --footer-center (35) do fundo, como nas outras janelas */
 }
 
 .convert-field {

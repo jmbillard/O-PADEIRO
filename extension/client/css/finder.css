@@ -20,7 +20,7 @@ body.finder-page {
   height: 100%;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 14px 0;
+  padding: 16px 16px 0; /* o respiro de todas as janelas: 16 em volta */
 }
 
 .finder-top {
@@ -72,7 +72,7 @@ body.finder-page {
 .finder-source {
   overflow: hidden;
   padding-left: 4px;
-  color: rgb(var(--on-brand) / 82%);
+  color: rgb(var(--on-brand) / 88%);
   font-size: 0.72rem;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -108,7 +108,7 @@ body.finder-page {
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
-  color: rgb(var(--on-brand) / 66%);
+  color: rgb(var(--on-brand) / 88%);
   cursor: pointer;
   font-size: 0.64rem;
   font-weight: 750;
@@ -121,8 +121,8 @@ body.finder-page {
 }
 
 .chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--on-brand) / 30%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid rgb(var(--on-brand) / 80%); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 /* trilho: translúcido quando desligado, branco quando ligado; a bolinha fica azul ao ligar */
@@ -187,6 +187,11 @@ body.finder-page {
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;
+}
+
+/* tudo cabe na janela (ela cresceu até a altura do conteúdo): sem barra de rolagem, nem por um arredondamento */
+.finder-results.is-fit {
+  overflow-y: hidden;
 }
 
 .finder-results::-webkit-scrollbar {
@@ -259,8 +264,8 @@ body.finder-page {
 .crumb:focus-visible,
 .text-row:focus-visible,
 .comp-title:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 
@@ -542,8 +547,8 @@ body.finder-page {
 
 .finder-results .oven-loader .oven {
   grid-row: 1 / span 2;
-  margin: -14px -12px -14px -4px;
-  transform: scale(0.7);
+  margin: 0;
+  zoom: 0.42; /* a cena (480 × 216) ao lado do texto, sem sobra em volta */
 }
 
 .finder-results .oven-loader .oven-title {
@@ -574,7 +579,7 @@ body.finder-page {
 
 .finder-pane.is-idle .finder-state {
   padding-top: 8px;
-  color: rgb(var(--on-brand) / 78%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 .finder-pane.is-idle .finder-state strong {

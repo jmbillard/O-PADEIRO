@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+	<g class="anim-org">
+	<rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+	<rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+	<rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+	<rect class="org-loose" x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" transform="translate(1.2 1.4) rotate(24 16.75 16.75)" /></g>
+</svg>

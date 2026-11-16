@@ -138,12 +138,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 
 	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['templates', 'divider', 'fontes', 'projeto', 'coletar', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
+		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar'], hidden: [] };
 	}
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta7', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta8', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -181,7 +181,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
 						autoComment: 'EXPORTAR',
 						dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
-						commentSubfolders: true
+						commentSubfolders: true,
+						fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
 					},
 					links: [
 						{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' },
@@ -197,14 +198,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					project: mockProject(), // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
 					collect: {
 						folders: [
-							{ name: '01 PROJETOS', parent: '', contents: ['projeto'] },
-							{ name: '02 ARQUIVOS', parent: '', contents: [] },
-							{ name: 'FONTS', parent: '02 ARQUIVOS', contents: ['fontes'] },
-							{ name: 'IMAGENS', parent: '02 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-							{ name: 'VÍDEOS', parent: '02 ARQUIVOS', contents: ['videos'] },
-							{ name: 'AUDIOS', parent: '02 ARQUIVOS', contents: ['audio'] },
-							{ name: 'DADOS', parent: '02 ARQUIVOS', contents: ['dados'] },
-							{ name: '03 SAIDA', parent: '', contents: [] }
+							{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+							{ name: '02_ARQUIVOS', parent: '', contents: [] },
+							{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+							{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+							{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+							{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+							{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+							{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
+							{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+							{ name: '04_REFS', parent: '', contents: [] },
+							{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 						]
 					},
 					items: [
@@ -233,7 +237,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
-				fonts: JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/BANCO DE FONTES', upload: true },
+				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '', upload: true }),
 				bar: mockBar(),
 				personal: mockPrefs(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
@@ -272,7 +276,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', render: a.render || { 'final': '', preview: '' }, productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, fontsCheck: a.fontsCheck !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
@@ -367,19 +371,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 				(a.project.categories || []).forEach(function (c, i) {
 					var key = String(c.name || '').trim().toUpperCase();
-					var badTok = /\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|categoria|letra)\})[^}]*\}/.exec(c.path || '');
+					var badTok = /\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|categoria|letra)\})[^}]*\}/.exec(c.path || '');
 
 					if (!key) throw new Error('#PAD_089 - projeto: preencha o nome da categoria ' + (i + 1) + '.');
 					if (seenCat[key]) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' aparece mais de uma vez.');
 					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: a categoria ' + key + ' precisa de um caminho.');
-					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {categoria} ou {letra}).');
-					if (String(c.path).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + key + ' precisa do {atracao} (a pasta da atração nova).');
-					if (String(c.output || '').trim() && String(c.output).indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o output de ' + key + ' precisa do {atracao} (a pasta de output da atração nova).');
-					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|categoria|letra)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
+					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
+					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|categoria|letra)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
 					seenCat[key] = true;
 				});
 				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
-					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), icon: c.icon || '' };
+					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), file: String(c.file || '').trim(), icon: c.icon || '' };
 				}) };
 				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}
@@ -484,8 +486,60 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { name: a.name };
 		},
 
+		// O FORNO: os presets de render do After e as comps na fila
+		renderPresets: function () {
+			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+			var r = m.render || {};
+
+			return { templates: ['H.264 - Match Render Settings - 15 Mbps', 'H.264 metade', 'High Quality', 'High Quality with Alpha', 'Lossless', 'ProRes 422 HQ', 'ProRes 4444 + alpha', 'XDCAM HD 50', 'Sequência PNG'], 'final': r['final'] || '', preview: r.preview || '' };
+		},
+
+		logoGlobo: async function (a) {
+			await wait(200);
+
+			return { name: 'LOGO GLOBO', comp: 'PROMO_LOGO' };
+		},
+
+		renderQueue: async function (a) {
+			await wait(delay);
+
+			if (mode === 'fail') throw new Error('#PAD_113 - render: selecione as comps no painel de projeto (ou abra uma comp).');
+
+			return a && a.preview
+				? { count: 2, folder: 'T:/PROGRAMAS/INTERPOL/03_SAIDA/PREVIEWS', local: false, preview: true, names: ['ABERTURA_prev_v03', 'VINHETA_prev_v01'], warnings: [] }
+				: { count: 2, folder: 'O:/OUTPUT/INTERPOL/2026/SERVICO', local: false, preview: false, names: ['ABERTURA', 'VINHETA'], warnings: [] };
+		},
+
 		openLastOutput: function () {
 			return { messages: [], data: { path: '/mock/output' } };
+		},
+
+		projectShape: function () {
+			return { folders: [
+				{ name: '01_PROJETOS', depth: 0, contents: ['projeto'] },
+				{ name: '02_ARQUIVOS', depth: 0, contents: [] },
+				{ name: 'AUDIOS', depth: 1, contents: ['audio'] },
+				{ name: 'DADOS', depth: 1, contents: ['dados'] },
+				{ name: 'FONTS', depth: 1, contents: ['fontes'] },
+				{ name: 'IMAGENS', depth: 1, contents: ['imagens', 'sequencias'] },
+				{ name: 'VÍDEOS', depth: 1, contents: ['videos'] },
+				{ name: '03_SAIDA', depth: 0, contents: ['saidas'] },
+				{ name: 'PREVIEWS', depth: 1, contents: [] },
+				{ name: '04_REFS', depth: 0, contents: [] },
+				{ name: '05_EXTERNOS', depth: 0, contents: ['externos'] }
+			] };
+		},
+
+		// voltar e desfazer (fila de render): o projeto como antes de preencher
+		fillUndo: async function () {
+			await wait(500);
+
+			return { removed: 4 };
+		},
+
+		// depois de instalar: o After Effects enxerga as novas e as camadas passam para elas (no teste: nada faltando)
+		fontsSync: function () {
+			return { supported: true, replaced: 0, missing: [] };
 		},
 
 		installFonts: async function () {
@@ -505,19 +559,61 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (mode === 'fail') throw new Error('#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
 
-			return { messages: [] };
+			return { messages: [], data: { count: 3 } };
 		},
 
 		renameOutputs: function () {
 			return { messages: ['#PAD_033 - 1 saída(s) não foram renomeadas (já renderizadas ou bloqueadas).'] };
 		},
 
-		organizeProject: function () {
-			return { messages: [] };
+		// ?mock=nosel: nenhuma comp selecionada nem com comentário (a barra pergunta antes de organizar)
+		organizeCheck: function () {
+			return mode === 'nosel' ? { comps: 6, selected: 0, tagged: 0 } : { comps: 6, selected: 2, tagged: 3 };
 		},
 
-		createProjectFolders: function () {
-			return { messages: [] };
+		organizeProject: function () {
+			return { messages: [], data: { count: 14 } };
+		},
+
+		// etiquetas: 3 itens selecionados e alguns comentários no projeto
+		tagsSelection: function () {
+			return { selection: window.PAD_MOCK_SEL == null ? 3 : window.PAD_MOCK_SEL };
+		},
+
+		tagsInfo: function () {
+			var counts = window.PAD_MOCK_TAGS || (window.PAD_MOCK_TAGS = { EXPORTAR: 4, TEMPLATE: 1, EDIT: 2, RODAPE: 6, CARTAO: 2, LETTERING: 3, TARJA: 1, ASSINA: 1, FUNDO: 3, LOGO: 2, FOTO: 5, TRILHA: 1 });
+			var list = function (names) {
+				return names.map(function (n) {
+					return { name: n, count: counts[n] || 0 };
+				});
+			};
+
+			return {
+				selection: window.PAD_MOCK_SEL == null ? 3 : window.PAD_MOCK_SEL,
+				groups: [
+					{ id: 'render', tags: list(['EXPORTAR', 'LOGO GLOBO', 'TEMPLATE']) },
+					{ id: 'edit', tags: list(['EDIT']) },
+					{ id: 'types', tags: list(['RODAPE', 'CARTAO', 'LETTERING', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']) },
+					{ id: 'files', tags: list(['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']) }
+				],
+				folders: { render: '01 COMPS', edit: '' }
+			};
+		},
+
+		tagsApply: function (a) {
+			var text = String(a.text || '').trim().toUpperCase();
+
+			var tag = text.split(':')[0].trim();
+
+			if (tag) window.PAD_MOCK_TAGS[tag] = (window.PAD_MOCK_TAGS[tag] || 0) + 3;
+
+			return { count: 3 };
+		},
+
+		tagsClearAll: function () {
+			window.PAD_MOCK_TAGS = {};
+
+			return { count: 31 };
 		},
 
 		requestTab: function (a) {
@@ -745,7 +841,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// ?mock=localfiles: o projeto com arquivos neste computador (a bolinha do coletar fica laranja)
 		collectStatus: function () {
-			return mode === 'localfiles' ? { state: 'out', total: 12, local: 2, names: ['logo.png', 'trilha.wav'] } : { state: 'ok', total: 12, local: 0, names: [] };
+			return mode === 'localfiles' ? { state: 'out', total: 12, local: 2, names: ['logo.png', 'trilha.wav'], kinds: { imagens: 1, audio: 1 } } : { state: 'ok', total: 12, local: 0, names: [], kinds: {} };
 		},
 
 		fontsInstallProject: function () {
@@ -862,7 +958,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var node;
 
-			if (mode === 'unmounted' && !window.PAD_MOCK_MOUNTED && !a.uri) return { exists: false, path: a.path, name: '', entries: [] };
+			if ((mode === 'unmounted' || mode === 'slowmount') && !window.PAD_MOCK_MOUNTED && !a.uri) return { exists: false, path: a.path, name: '', entries: [] };
 			if (a.uri) node = find(tree, a.uri);
 			else if (/TESTES/.test(a.path)) node = { type: 'node', text: 'TESTES', children: [] };
 			else if (/TEMP_PADEIRO/.test(a.path)) return { exists: false, path: a.path, name: '', entries: [] };
@@ -883,8 +979,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { mountable: true, volume: 'VFX' };
 		},
 
+		// ?mock=slowmount: monta, mas o volume só aparece uns segundos depois (o host responde que não montou)
 		mountPath: async function () {
 			await wait(1600);
+
+			if (mode === 'slowmount') {
+				setTimeout(function () {
+					window.PAD_MOCK_MOUNTED = true;
+				}, 3500);
+
+				return { mounted: false };
+			}
+
 			window.PAD_MOCK_MOUNTED = true;
 
 			return { mounted: true };
@@ -1059,7 +1165,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		projectCurrent: function () {
-			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { oQueE: '', designer: 'JMBILLARD', atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
+			var c = window.PAD_MOCK_CUR || (window.PAD_MOCK_CUR = mode === 'created' ? { oQueE: '', designer: 'JMBILLARD', criado: '2026-11-12', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_N_/NAO NAO OLHE', editores: [{ user: 'JMBILLARD', day: '2026-11-12' }, { user: 'TMARTA', day: '2026-11-15' }], atracao: 'Tela Quente', root: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE', file: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_N_/NAO NAO OLHE/01 PROJETOS/NAO NAO OLHE.aep' } : null);
 
 			// ?mock=outside: com os dados do padeiro, mas salvo na Área de Trabalho
 			if (!c && mode === 'outside') return { created: false, outside: true, oQueE: 'CONVIDADOS', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: 'Domingão com Huck', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026', file: '/Users/jmbillard/Desktop/teste.aep', fileName: 'teste.aep', hasItems: true, user: 'JMBILLARD' };
@@ -1068,6 +1174,40 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (!c) return { created: false, oQueE: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
 
 			return Object.assign({ created: true, defaultUser: 'JMBILLARD', fileName: c.file.split('/').pop(), hasItems: true, user: 'JMBILLARD' }, c);
+		},
+
+		// as pastas de um nível (ATRAÇÃO/PASTA/… e o output): uma árvore de exemplo pelo fim do caminho
+		// os quadros com a estrutura do padeiro em outros anos (o exemplo: os de 2025 na organização nova)
+		projectQuadros: function (a) {
+			return { names: /DOMINGAO COM HUCK$/.test(String(a.root || '')) ? ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'] : [] };
+		},
+
+		projectFolders: function (a) {
+			var root = String(a.path || '').replace(/\/+$/, '');
+
+			if (!a.plain) root = root.replace(/\/0?1[ _]?PROJETOS?$/i, '');
+
+			var TREE = {
+				'DOMINGAO COM HUCK/2026': ['DANÇA DOS FAMOSOS', 'DOMINGÃO RECORD', 'QUEM QUER SER UM MILIONÁRIO', 'VIDEOSHOW', 'TE VI NA TV', 'ARQUIVO CONFIDENCIAL', 'PATRÕES'],
+				'DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['ESTREIA', 'FINAL', 'SEMIFINAL'],
+				'DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS/FINAL': ['2025'],
+				'CHEF DE ALTO NIVEL': ['REPESCAGEM'],
+				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026': ['CHAMADAS', 'DANÇA DOS FAMOSOS', 'VIRADA'],
+				'cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026/DANÇA DOS FAMOSOS': ['SEMANA 1', 'SEMANA 2'],
+				// a organização nova (PROJETOS/…/{atracao}/{ano}): os quadros de outro ano viram exemplos
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK': ['2025', '2026'],
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2025': ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'],
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL']
+			};
+			var names = [];
+
+			Object.keys(TREE).forEach(function (k) {
+				if (root.slice(-k.length - 1) === '/' + k) names = TREE[k];
+			});
+
+			return { root: root, rootName: root.split('/').pop(), exists: true, folders: names.map(function (n) {
+				return { name: n, path: root + '/' + n };
+			}) };
 		},
 
 		projectLookup: function (a) {
@@ -1079,7 +1219,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
-				{ name: 'Sessão da Tarde', pat: ['S TARDE', 'STARDE'], path: V + '/INSTITUCIONAL/ON AIR 2021/01PROJETOS' }
+				{ name: 'Sessão da Tarde', pat: ['S TARDE', 'STARDE'], path: V + '/INSTITUCIONAL/ON AIR 2021/01PROJETOS' },
+				{ name: 'O Mentiroso', pat: ['MENTIROSO'], path: '', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_M_/O MENTIROSO', isFilm: true, year: '1997' }
 			];
 			var key = function (t) {
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
@@ -1103,7 +1244,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, score: score });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;
@@ -1123,7 +1264,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 			};
 			var film = a.kind === 'film';
-			var base = film ? key(a.title) : key(a.atracao + ' ' + (a.what || ''));
+			var base = film ? key(a.title) : key((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
 			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
 			var H = 3600000;
@@ -1135,7 +1276,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
 				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
 			] : [];
-			var folders = [{ name: '02 ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03 SAIDA', depth: 0 }];
+			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
 
 			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
 		},
@@ -1145,7 +1286,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
 			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
 		},
@@ -1156,7 +1297,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// Salvar do editor: o .aep vai para a pasta de projetos da estrutura, com o nome da atração + o que é
 		projectSave: function (a) {
-			var base = String(a.atracao + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			var base = String((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 
 			if (!base) throw new Error('#PAD_090 - escolha a atração.');
 			if (a.fileBase) base = a.fileBase;
@@ -1165,7 +1306,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var root = String(a.root || '').replace(/\/01 ?PROJETOS$/i, '');
 			var file = root + '/01 PROJETOS/' + base + '.aep';
 
-			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, root: root, output: a.output || '', file: file };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: String(a.designer || 'JMBILLARD').toUpperCase(), atracao: a.atracao, quadro: a.quadro || '', root: root, output: a.output || '', file: file };
 			window.PAD_MOCK_SAVED = null;
 
 			var cur = api.projectCurrent();
@@ -1184,12 +1325,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return {
 				project: 'DOMINGAO COM HUCK SERVICO.aep',
 				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026',
+				dests: { videos: '02_ARQUIVOS/VÍDEOS', sequencias: '02_ARQUIVOS/IMAGENS', imagens: '02_ARQUIVOS/IMAGENS', audio: '02_ARQUIVOS/AUDIOS', dados: '02_ARQUIVOS/DADOS' },
 				items: [
 					{ id: 11, name: 'logo_convidado.png', file: D + 'ae-estrutura-projeto.png', kind: 'imagens', state: 'local', layers: 2 },
 					{ id: 12, name: 'trilha_abertura.wav', file: '/Users/jmbillard/Desktop/trilha_abertura.wav', kind: 'audio', state: 'local', layers: 1 },
 					{ id: 13, name: 'fundo_estudio.mov', file: '/Volumes/EDIT_IN_PLACE/PROMO/BRUTOS/fundo_estudio.mov', kind: 'videos', state: 'net', layers: 3 },
 					{ id: 14, name: 'textura_[0000-0120].png', file: D + 'ae-menu-output-module.png', kind: 'sequencias', state: 'net', layers: 1 },
-					{ id: 15, name: 'arte_antiga.psd', file: '/Volumes/VFX/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'net' : 'missing', layers: 1 },
+					{ id: 15, name: 'arte_antiga.psd', file: window.PAD_MOCK_RELINKED ? R + '/IMAGENS/arte_antiga.psd' : '/Volumes/VFX/ANTIGO/02 ARQUIVOS/arte_antiga.psd', kind: 'imagens', state: window.PAD_MOCK_RELINKED ? 'ok' : 'missing', layers: 1 },
+					{ id: 18, name: 'vinheta_2019.mov', file: '/Volumes/VFX/ANTIGO/vinheta_2019.mov', kind: 'videos', state: 'missing', layers: 1 },
 					{ id: 16, name: 'placar.csv', file: R + '/DADOS/placar.csv', kind: 'dados', state: 'ok', layers: 1 },
 					{ id: 17, name: 'barra.webp', file: D + 'barra-vertical.webp', kind: 'imagens', state: 'ok', layers: 0 }
 				]
@@ -1233,8 +1376,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { name: a.name };
 		},
 
-		openAep: function () {
-			return { opened: true };
+		// O VERSIONADOR: ?mock=unsaved simula um projeto nunca salvo
+		versionInfo: function () {
+			if (mode === 'unsaved') return { major: 25, version: '25.2x45', path: '', name: '', folder: '', dirty: true };
+
+			return { major: 25, version: '25.2x45', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK SERVICO.aep', name: 'DOMINGAO COM HUCK SERVICO.aep', folder: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS', dirty: false };
+		},
+
+		versionSave: function () {
+			return { path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK SERVICO.aep' };
 		},
 
 		collectReveal: function () {
@@ -1242,6 +1392,152 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// resolver faltando: acha o arte_antiga.psd no VFX-1 (?mock=fail: não acha)
+		// a migração da pasta (O CATADOR): a pasta bagunçada de exemplo; depois de migrar, nada para mover e o
+		// registro para desfazer
+		// com todos os projetos (a: { all }): o que só os outros projetos usam sai dos externos
+		migratePlan: async function (a) {
+			var all = !!(a && a.all);
+
+			// PAD_MOCK_SLOW (ms): a rede lenta de mentira, para ver as esperas da janela
+			if (window.PAD_MOCK_SLOW) {
+				await new Promise(function (r) {
+					setTimeout(r, window.PAD_MOCK_SLOW);
+				});
+			}
+			// a pasta grande de exemplo (um banco de stock): fica como está, a não ser que mandem mover
+			var moveStock = !!(a && a.move && a.move.indexOf('03 EXTERNOS/STOCK') >= 0);
+			var dests = [['01_PROJETOS', 0, 'projeto'], ['02_ARQUIVOS', 0, ''], ['02_ARQUIVOS/AUDIOS', 1, 'audio'], ['02_ARQUIVOS/DADOS', 1, 'dados'], ['02_ARQUIVOS/FONTS', 1, 'fontes'], ['02_ARQUIVOS/IMAGENS', 1, 'imagens'], ['02_ARQUIVOS/VÍDEOS', 1, 'videos'], ['03_SAIDA', 0, 'saidas'], ['03_SAIDA/PREVIEWS', 1, ''], ['04_REFS', 0, ''], ['05_EXTERNOS', 0, 'externos']];
+			var links = window.PAD_MOCK_MIGRATED ? [] : [['01 PROJETOS', '01_PROJETOS', 'projeto', 3], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 8], ['02 ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'sequencias', 240], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', 5], ['02 ARQUIVOS', '02_ARQUIVOS/DADOS', 'dados', 2], ['02 ARQUIVOS', '05_EXTERNOS', 'externos', all ? 2 : 6], ['02 ARQUIVOS', '02_ARQUIVOS/VÍDEOS', 'videos', all ? 4 : 0], ['02_ARQUIVOS', '02_ARQUIVOS/IMAGENS', 'imagens', 6], ['02_ARQUIVOS', '02_ARQUIVOS/AUDIOS', 'audio', 3], ['02_ARQUIVOS', '02_ARQUIVOS/FONTS', 'fontes', 4], ['03 EXTERNOS', '02_ARQUIVOS/VÍDEOS', 'videos', 2], ['03 EXTERNOS', '05_EXTERNOS', 'externos', all ? 24 : 36], ['03 EXTERNOS', '02_ARQUIVOS/IMAGENS', 'imagens', all ? 12 : 0], ['03 SAIDA', '03_SAIDA', 'saidas', 19], ['04 SAIDA', '03_SAIDA', 'saidas', 12], ['03 EXTERNOS', '05_EXTERNOS', 'externos', moveStock ? 728 : 0], ['', '05_EXTERNOS', 'externos', 16], ['..', '02_ARQUIVOS/VÍDEOS', 'videos', 2]];
+			var sources = {};
+			var count = {};
+			var total = 0;
+
+			// as faixas do mesmo caminho e tipo somam (o exemplo de todos os projetos acrescenta a algumas)
+			links = links.filter(function (l) {
+				return l[3] > 0;
+			}).reduce(function (list, l) {
+				var same = list.filter(function (o) {
+					return o[0] === l[0] && o[1] === l[1] && o[2] === l[2];
+				})[0];
+
+				if (same) same[3] += l[3];
+				else list.push(l.slice());
+
+				return list;
+			}, []);
+
+			links.forEach(function (l) {
+				sources[l[0]] = (sources[l[0]] || 0) + l[3];
+				count[l[1]] = (count[l[1]] || 0) + l[3];
+				total += l[3];
+			});
+
+			return {
+				blocked: mode === 'blocked' ? 'o .aep está salvo direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), e a migração arruma a pasta inteira onde ele está. leve o projeto para a pasta dele (Projeto > Criar / Alterar) e use o Coletar: ele copia para lá os arquivos usados, estejam onde estiverem' : '', loose: mode === 'loose', interrupted: mode === 'interrupted' && !window.PAD_MOCK_MIGRATED && !window.PAD_MOCK_UNDONE, interruptedCount: 120,
+				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL', name: 'INTERPOL', total: total, stay: window.PAD_MOCK_MIGRATED ? 362 : 4, conflicts: window.PAD_MOCK_MIGRATED ? 0 : 2, others: window.PAD_MOCK_MIGRATED ? 0 : 2, outside: window.PAD_MOCK_MIGRATED ? 0 : 2, partial: false, all: all, undo: !!window.PAD_MOCK_MIGRATED || (mode === 'interrupted' && !window.PAD_MOCK_UNDONE), kept: window.PAD_MOCK_MIGRATED || moveStock ? 0 : 728, bulk: window.PAD_MOCK_MIGRATED ? [] : [{ path: '03 EXTERNOS/STOCK', count: 728, deep: !moveStock, keep: !moveStock }],
+				sources: Object.keys(sources).sort(function (a, b) {
+					if (a === '..' || b === '..') return a === '..' ? 1 : -1;
+
+					return a === '' ? 1 : b === '' ? -1 : a.localeCompare(b);
+				}).map(function (k) {
+					return { name: k, count: sources[k] };
+				}),
+				dests: dests.map(function (d) {
+					return { path: d[0], depth: d[1], type: d[2], count: count[d[0]] || 0, extra: false };
+				}),
+				links: links.map(function (l) {
+					return { from: l[0], to: l[1], type: l[2], count: l[3], names: (l[2] === 'externos' ? ['moodboard.pdf', 'print_site.png', 'referencia_01.jpg', 'roteiro_v2.docx', 'briefing.pdf', 'paleta.ase', 'storyboard.pdf', 'print_02.png', 'print_03.png', 'email_cliente.pdf', 'ref_tipografia.jpg', 'ref_cor.jpg', 'ideias.txt', 'logo_antigo.ai', 'teste_export.mov', 'outro.png'] : ['arquivo_01.' + (l[2] === 'videos' ? 'mxf' : l[2] === 'audio' ? 'wav' : 'png'), 'arquivo_02.' + (l[2] === 'videos' ? 'mxf' : l[2] === 'audio' ? 'wav' : 'png')]).slice(0, Math.min(15, l[3])) };
+				})
+			};
+		},
+
+		// a leitura dos outros projetos (um por vez) e, depois de mover, o religar de cada um
+		// ?mock=interrupted: uma migração que parou no meio (o diário na pasta)
+		migrateState: function () {
+			return { interrupted: mode === 'interrupted' && !window.PAD_MOCK_UNDONE, undo: (mode === 'interrupted' && !window.PAD_MOCK_UNDONE) || !!window.PAD_MOCK_MIGRATED };
+		},
+
+		migrateReadBegin: function () {
+			window.PAD_MOCK_READ_AT = 0;
+
+			return { total: 2 };
+		},
+
+		migrateReadStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 500);
+			});
+
+			return { done: ++window.PAD_MOCK_READ_AT, total: 2, failed: 0 };
+		},
+
+		migrateReadEnd: function () {
+			return { failed: [] };
+		},
+
+		migrateOthersStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 500);
+			});
+			window.PAD_MOCK_OTHERS_AT = (window.PAD_MOCK_OTHERS_AT || 0) + 1;
+
+			return { done: window.PAD_MOCK_OTHERS_AT, total: 2, failed: 0 };
+		},
+
+		migrateOthersEnd: function () {
+			window.PAD_MOCK_OTHERS_AT = 0;
+			window.PAD_MOCK_MIGRATED = true;
+
+			return { projects: 2, failed: [], folders: 6 };
+		},
+
+		migrateBegin: function (a) {
+			window.PAD_MOCK_MIG_AT = 0;
+			window.PAD_MOCK_ALL = !!(a && a.all);
+
+			return { total: 362 };
+		},
+
+		migrateStep: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, window.PAD_MOCK_SLOW || 90);
+			});
+			window.PAD_MOCK_MIG_AT = Math.min(362, window.PAD_MOCK_MIG_AT + 60);
+
+			return { done: window.PAD_MOCK_MIG_AT, total: 362, failed: 0 };
+		},
+
+		migrateEnd: function () {
+			var all = !!window.PAD_MOCK_ALL;
+
+			if (!all) window.PAD_MOCK_MIGRATED = true;
+
+			return { moved: 361, failed: [], relinked: 23, folders: all ? 0 : 6, queue: 2, others: all ? 2 : 0, project: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/INTERPOL/01_PROJETOS/INTERPOL_ABERTURA.aep' };
+		},
+
+		migrateUndo: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 600);
+			});
+			window.PAD_MOCK_MIGRATED = false;
+			window.PAD_MOCK_UNDONE = true; // a interrompida (?mock=interrupted) também fica desfeita
+
+			return { restored: 361, failed: [], relinked: 23, newer: mode === 'newer' ? ['INTERPOL VINHETA.aep'] : [] };
+		},
+
+		// a busca dos faltando: acha um (com outro de mesmo nome) e não acha o outro; ?mock=fail: nenhum
+		collectRelinkFind: async function () {
+			await new Promise(function (r) {
+				setTimeout(r, 1200);
+			});
+
+			var still = [{ id: 18, name: 'vinheta_2019.mov' }];
+
+			if (mode === 'fail' || window.PAD_MOCK_RELINKED) return { found: [], still: window.PAD_MOCK_RELINKED ? still : still.concat([{ id: 15, name: 'arte_antiga.psd' }]), partial: false };
+
+			return { found: [{ id: 15, name: 'arte_antiga.psd', from: '/Volumes/VFX/ANTIGO/02 ARQUIVOS/arte_antiga.psd', to: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/02 ARQUIVOS/IMAGENS/arte_antiga.psd', how: 'busca', more: 1 }], still: still, partial: false };
+		},
+
 		collectRelink: async function () {
 			await new Promise(function (r) {
 				setTimeout(r, 1400);

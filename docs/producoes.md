@@ -2,7 +2,7 @@
 
 [← O PADEIRO](../README.md)
 
-a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas num cartão de vidro à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé dele.
+a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no painel de templates) tem as abas direto no degradê à esquerda, como a lista do painel de templates, com recarregar, salvar (disquete) e o `⋯` no rodapé. a aba aberta fica com um contorno fino.
 
 <p align="center"><img src="images/anim/produtor.webp" alt="O PRODUTOR: as abas (cada ícone anima ao passar)" width="900"></p>
 
@@ -43,7 +43,9 @@ uma faixa no topo de cada aba repete onde ela é salva (🌐 *equipe · salvo na
 
 **padrão da equipe** → a aparência e o layout têm um padrão da equipe, na rede: é o que aparece para quem não personalizou. nas abas **aparência** e **layout**, a faixa diz '*usando o padrão da equipe*' até a primeira mudança; depois, '*personalizado*', com o botão '*voltar ao padrão da equipe*'. para mudar o padrão da equipe, use **⋯ > editar o padrão da equipe**: as duas abas passam a editar o da rede (a faixa fica azul) até '*voltar às minhas preferências*'.
 
-> 🚩 *atalho:* `◖ clique DUPLO` numa ferramenta da barra abre esta janela já na aba dela (templates → templates, fontes → fontes, pastas → rede, renomear, organizar, projeto → projeto, coletar → coletar, buscar, links → links). é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+> 🚩 é tudo gravado pelo **disquete** (no rodapé do cartão das abas) ou `Ctrl/Cmd+S`; um ponto amarelo no disquete (e o aviso '*alterações não salvas*', no topo à direita) avisa que há alterações não salvas. o disquete grava tudo de uma vez: o que é da equipe na rede e o que é local neste computador (o aviso diz o que foi para onde).
+
+> 🚩 o que é **só seu** (meu usuário, presets de render, links pessoais, aparência e layout personalizados, as partes '*neste computador*') salva **sozinho**, um instante depois de cada mudança, separado do padrão da equipe: um problema numa aba da equipe não segura o seu ajuste. se um campo seu ainda estiver pela metade (uma produção local sem a pasta, por exemplo), o ponto no disquete continua e o **Salvar** diz o que falta.
 
 ## 📍 templates
 
@@ -94,15 +96,18 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
   | token | vira |
   | --- | --- |
-  | `{atracao}` | o nome da atração nova (obrigatório), sem acentos, em maiúsculas |
+  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, a categoria é a própria atração (MOOD MENSAL: digitar *mood* na claquete já leva para a pasta do mês) |
   | `{ano}` | o ano atual (`2026`) |
   | `{mes}` | o mês atual (`01` a `12`) |
   | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |
   | `{proximo_mes}` | o próximo mês por extenso (`DEZEMBRO`; em dezembro, `JANEIRO`) |
+  | `{proximo_mes_num}` | o número do próximo mês (`12`; em dezembro, `01`) |
+  | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
   | `{categoria}` | o nome da categoria |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
+- **arquivo** → opcional: o nome do `.aep` da atração criada pela categoria, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
@@ -110,6 +115,7 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 
 **👤 neste computador** (embaixo):
 
+- **presets de render** → os dois templates de output do **seu** After Effects que o botão **Render** da barra (O FORNO) usa: **render final** (o clique: na pasta de output do projeto, com o nome da comp) e **preview** (o clique direito: na pasta de previews das saídas, `COMP_prev_v01`, `_v02`…, sem substituir o anterior). cada pessoa tem a sua lista de presets, por isso ficam só neste computador. sem preset escolhido, a fila usa o padrão do After. se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para a [pasta de saída](#-produções) deste computador (vazia: a Área de Trabalho). a lista é lida do After quando a aba abre.
 - **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.
 
 > 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.
@@ -124,20 +130,25 @@ a aba **projeto** define as **categorias** da atração nova: a lista **dentro d
 a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela **projeto** salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
 
 ```
-01 PROJETOS        ← o .aep (tipo projeto)
-02 ARQUIVOS
+01_PROJETOS        ← o .aep (tipo projeto)
+02_ARQUIVOS
    FONTS           ← fontes
    IMAGENS         ← imagens e sequências de imagens
-   VÍDEOS          ← vídeos
+   VIDEOS          ← vídeos
    AUDIOS          ← áudio
    DADOS           ← dados (json, csv, txt...)
-03 SAIDA           ← previews e finais para avaliação (criada vazia)
+03_SAIDA           ← finais para avaliação (tipo saídas; criada vazia)
+   PREVIEWS        ← previews (criada vazia)
+04_REFS            ← referências (criada vazia)
+05_EXTERNOS        ← o que não é usado pelo projeto (tipo arquivos externos; criada vazia)
 ```
 
-a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01 PROJETOS`). pastas sem tipo (como `02 ARQUIVOS` e `03 SAIDA`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
+a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto** (`01_PROJETOS`). pastas sem tipo (como `02_ARQUIVOS` e `04_REFS`) também são criadas. '*usar a estrutura padrão*' (abaixo dos tipos) troca a árvore por esta.
 
 - **árvore** → as mesmas regras do organizar: arrastar, renomear, '*+ nova pasta*', **×** para excluir.
-- **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
+- **nomes** → o padrão da promo: só letras maiúsculas, números, `_` e `-`, sem acento nem cedilha. o campo já corrige enquanto digita (`Vídeos` → `VIDEOS`).
+- **tipos de arquivo** → projeto (.aep), vídeos, sequências de imagens, imagens, áudio, dados e fontes. arraste cada tipo para a pasta que deve recebê-lo. cada tipo tem uma cor, a mesma da aba organizar e da migração.
+- **saídas e arquivos externos** → não são coletados: dizem para onde a [migração](../README.md#migrar-a-pasta-para-a-estrutura-nova) do CATADOR leva os renders (`03_SAIDA`) e o que o projeto não usa (`05_EXTERNOS`). a pasta deles é sempre criada com a estrutura. o tipo que fica na raiz (riscado) **não é coletado** (o projeto, fora da árvore, fica na própria pasta do projeto).
 - **sequências de imagens** → copiadas inteiras (os quadros do trecho usado no projeto), cada uma numa subpasta com o nome dela (`render_0001.png` → `render`). a interpretação do item (fps, alpha) é mantida.
 - **sempre salva** → depois de copiar, os itens apontam para as cópias e o projeto é salvo.
 <br>
@@ -177,6 +188,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
+- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, TRILHA, LOC).
 - **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\
@@ -276,7 +288,7 @@ a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca mu
 
 a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro **neste computador**. sem personalização, vale o padrão da equipe (que se edita em **⋯ > editar o padrão da equipe**).
 
-- **modo** e **fundo** → dois menus lado a lado: claro, escuro ou automático (segue o sistema); degradê ou sólido. o escuro é o inverso do claro sobre o degradê: o vidro, os textos e os ícones (barra, listas, abas, botões) ficam pretos, e o item escolhido vira uma pílula escura.
+- **modo** e **fundo** → dois menus lado a lado: claro, escuro ou automático (segue o sistema); degradê ou sólido. o escuro é o inverso do claro sobre o degradê: os textos, os ícones e os contornos (barra, listas, abas, botões) ficam pretos, e o item escolhido ganha um contorno escuro. a prévia ao lado mostra as duas colunas de uma janela com as escolhas.
 - **cores** → o quadradinho com o espectro mostra as duas amostras: no **degradê**, início e fim (o fundo das janelas e da barra); no **sólido**, só a primeira (a cor do fundo e dos destaques); a linha da segunda fica desabilitada e ela volta ao trocar para degradê. cada amostra fica sobre a própria cor no quadradinho: a volta em torno do centro é a **matiz** e a distância do centro é a **saturação** (no centro, sem cor; na borda, a cor pura). **arraste** a amostra por todo o quadradinho (ou clique nele para levar até ali a amostra da linha aberta); clicar numa amostra abre a linha dela. ao lado, cada amostra tem uma linha com o nome e o código (`#rrggbb`, para digitar); clique na linha para abrir o **brilho** (o trilho mostra o efeito na própria cor; o quadradinho mostra as cores no brilho da cor da linha aberta, e a amostra dela fica por cima). no degradê, o destaque (botões, títulos, seleção) é o tom do meio entre início e fim; os tons claros (seleção, avisos, bordas de foco) são calculados a partir dele. com cores claras, o padeiro ajusta a leitura sozinho: o destaque usado em textos escurece até dar para ler (no modo escuro, clareia), e os textos e ícones sobre o degradê (barra, abas, botões) trocam o branco por um tom escuro.
 - **fonte** → Inter (padrão), a do sistema, Helvetica / Arial, Segoe UI, Roboto, Georgia ou monoespaçada. a fonte precisa estar instalada no computador.
 - **logo da barra** → uma imagem no lugar do pãozinho (reduzida para caber, sem cortar; PNG com fundo transparente fica melhor). '*voltar ao pãozinho*' desfaz.
@@ -295,10 +307,12 @@ a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro
 
 a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
-- **ordem padrão** → links | templates | fontes, projeto, coletar | renomear, organizar | pastas, buscar (`|` é um separador).
-- **ordem** → arraste cada ferramenta da barra pelos pontinhos.
-- **tirar** → o **×** de uma ferramenta (ou dos links, no topo) tira ela da barra; passe o mouse para ver o ×.
-- **fora da barra** → cada ferramenta tirada vira um bloco à direita, com o que ela faz; o **+** põe de volta, no fim da barra (os links voltam ao começo).
+- **ordem padrão** → links | Templates | Projeto (Criar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar), Importar | Pastas, Buscar (`|` é um separador).
+- **gavetas** → cada gaveta é um bloco com contorno, com o nome e quantas ferramentas mostra (`3`, ou `3 de 4` com alguma escondida). os pontinhos do título movem a gaveta inteira pela barra; os de uma ferramenta de dentro mudam a ordem **só dentro da gaveta** (uma ferramenta não sai da gaveta dela). a primeira de dentro é a do `◗` no botão da gaveta.
+- **ordem** → arraste as gavetas, as ferramentas soltas e os separadores pelos pontinhos.
+- **esconder** → o **×** (passe o mouse para ver) esconde uma ferramenta, a gaveta inteira (o × do título) ou os links (no topo). uma gaveta com uma ferramenta só à mostra aparece solta na barra; com nenhuma, some.
+- **fora da barra** → o que foi escondido vira um bloco à direita, com o que faz (a ferramenta de uma gaveta leva o nome dela em cima); o **+** põe de volta no mesmo lugar: a ferramenta no fim da gaveta dela, a gaveta e a ferramenta solta no fim da barra (os links voltam ao começo).
+- **o formato de antes** → a barra salva antes das gavetas continua valendo: cada gaveta fica no lugar da primeira ferramenta dela, com a ordem de dentro padrão.
 - **separadores** → '*+ separador*' (à direita, abaixo dos blocos) acrescenta um no fim da barra; arraste para o lugar. cada separador vira uma divisória na barra; o **×** tira. um grupo sem nenhuma ferramenta some junto com a divisória.
 
 > 🚩 *obs:* a barra acompanha em alguns segundos. separadores no começo, no fim ou dois seguidos são ignorados ao salvar.

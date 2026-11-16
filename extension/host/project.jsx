@@ -12,7 +12,8 @@ arquivos é do botão COLETAR (collect.jsx).
 'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
-               {atracao} (obrigatório) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {categoria} {letra} (a primeira letra do nome sem o
+               {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
+               {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes). icon: um ícone do seletor (js/util.js)
 Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
 atrações do índice.
@@ -21,7 +22,7 @@ atrações do índice.
 
 var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'categoria', 'letra'];
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'categoria', 'letra'];
 
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
@@ -39,6 +40,8 @@ function padCleanProject(o) {
 		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
 		var path = padProjectPath(c.path);
 		var output = padProjectPath(c.output);
+		// o nome do .aep da categoria (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
+		var fileName = padTrim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
 		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
 		var key = padAepName(name);
 		var re = /\{([^}]*)\}/g;
@@ -48,15 +51,13 @@ function padCleanProject(o) {
 		if (seen[key]) throw new Error('#PAD_089 - projeto: a categoria ' + name + ' aparece mais de uma vez.');
 		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
 
-		while ((m = re.exec(path + ' ' + output)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {categoria} ou {letra}).');
+		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
 		}
 
-		if (path.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o caminho de ' + name + ' precisa do {atracao} (a pasta da atração nova).');
-		if (output != '' && output.indexOf('{atracao}') < 0) throw new Error('#PAD_089 - projeto: o output de ' + name + ' precisa do {atracao} (a pasta de output da atração nova).');
 
 		seen[key] = true;
-		clean.categories.push({ name: name, path: path, output: output, icon: icon });
+		clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
 	}
 
 	return clean;
@@ -86,7 +87,7 @@ PADX.projectCategories = function () {
 
 		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(resolveMacVolumePath(padPath(fixed))).exists; // VFX-1… também vale
 
-		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, icon: list[i].icon, reachable: checked[fixed] });
+		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, reachable: checked[fixed] });
 	}
 
 	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
@@ -100,13 +101,16 @@ PADX.projectCategories = function () {
 
 Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos texto:
   atracao    → a atração (LÁ NA MINHA TERRA)                       janela projeto
-  oQueE      → o que é (SERVIÇO): o .aep é a atração + o que é       janela projeto
+  quadro     → as pastas abaixo da atração (DANÇA DOS FAMOSOS/FINAL), opcional: o .aep é o último nível + o que é
+  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o último nível) + o que é    janela projeto
   designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
   pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
   output     → a pasta de output                                     projeto; o template grava se faltar
-  producao   → a produção do último template preenchido (DIA-A-DIA)  template
-  templates  → os templates usados, um por linha: nome <tab> pasta   template (acumula; as fontes saem de lá)
+  producao   → (não é mais gravado: só nos arquivos de antes) a produção do último template preenchido
+  templates  → (não é mais gravado: só nos arquivos de antes) os templates usados, um por linha: nome <tab> pasta
   criado     → a data em que os dados foram gravados a primeira vez  o primeiro que gravar
+  editores   → quem salvou o projeto, um por linha: sigla <tab> o último dia (AAAA-MM-DD)   a cada salvamento
+  salvo      → quem salvou por último: sigla <tab> o dia                                  a cada salvamento
   versao     → a versão destes campos (para migrar no futuro)        todos
 Também ficam dc:title (o nome do .aep), dc:creator (o designer) e dc:date (criado), que aparecem nas
 informações do arquivo. Projeto de antes (sem padeiro:versao): os campos antigos (dc:coverage, dc:relation,
@@ -116,7 +120,7 @@ dc:publisher, dc:source, dc:identifier) são lidos aqui e, na próxima gravaçã
 
 var PAD_NS = 'https://github.com/jmbillard/O-PADEIRO/ns/1.0/';
 var PAD_META_VERSION = '1';
-var PAD_META_FIELDS = ['atracao', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado'];
+var PAD_META_FIELDS = ['atracao', 'quadro', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado', 'editores', 'salvo'];
 var PAD_META_LEGACY = ['identifier', 'coverage', 'relation', 'publisher', 'source'];
 var padNsReady = false;
 
@@ -163,7 +167,7 @@ function padMetaRead() {
 	try {
 		meta = padXmpMeta();
 	} catch (err) {
-		return { atracao: '', oQueE: '', designer: '', pasta: '', output: '', producao: '', templates: '', criado: '', versao: '' };
+		return { atracao: '', quadro: '', oQueE: '', designer: '', pasta: '', output: '', producao: '', templates: '', criado: '', versao: '' };
 	}
 
 	for (var i = 0; i < PAD_META_FIELDS.length; i++) out[PAD_META_FIELDS[i]] = padXmpProp(meta, PAD_NS, PAD_META_FIELDS[i]);
@@ -198,6 +202,12 @@ function padMetaWrite(fields, title) {
 
 	for (var k in fields) if (fields.hasOwnProperty(k) && fields[k] != null) cur[k] = String(fields[k]);
 
+	// toda gravação é de quem está usando: entra nos editores e no salvo por último
+	var touch = padEditorsTouch(cur);
+
+	cur.editores = touch.editores;
+	cur.salvo = touch.salvo;
+
 	for (i = 0; i < PAD_META_FIELDS.length; i++) {
 		var f = PAD_META_FIELDS[i];
 
@@ -225,6 +235,71 @@ function padMetaWrite(fields, title) {
 	app.project.xmpPacket = meta.serialize();
 }
 
+/*
+   quem editou e salvou: o padeiro não é avisado do salvar do After Effects (Ctrl+S, o salvar ao iniciar o render).
+   a barra percebe em seguida que o arquivo foi salvo (projectStatus) e anota quem está usando, em memória; a
+   anotação vai para o arquivo no salvamento seguinte. nos salvamentos do próprio padeiro, vai na hora.
+   por dia: a anotação só muda (e o projeto só fica "modificado") no primeiro salvamento de cada pessoa no dia
+*/
+
+// os editores de um projeto: [{ user, day }], do texto 'sigla <tab> dia' por linha
+function padEditorsList(text) {
+	var out = [];
+	var lines = String(text || '').split('\n');
+
+	for (var i = 0; i < lines.length; i++) {
+		var parts = lines[i].split('\t');
+
+		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '' });
+	}
+
+	return out;
+}
+
+// os editores e o salvo por último com quem está usando, hoje → { editores, salvo, changed }
+function padEditorsTouch(cur) {
+	var user = padMachineUser();
+	var today = padToday();
+	var list = padEditorsList(cur.editores);
+	var lines = [];
+	var found = false;
+	var i;
+
+	if (!user) return { editores: cur.editores || '', salvo: cur.salvo || '', changed: false };
+
+	for (i = 0; i < list.length; i++) {
+		if (list[i].user == user) {
+			list[i].day = today;
+			found = true;
+		}
+	}
+	if (!found) list.push({ user: user, day: today });
+	for (i = 0; i < list.length; i++) lines.push(list[i].user + '\t' + list[i].day);
+
+	var editores = lines.join('\n');
+	var salvo = user + '\t' + today;
+
+	return { editores: editores, salvo: salvo, changed: editores != (cur.editores || '') || salvo != (cur.salvo || '') };
+}
+
+// anota quem está usando nos dados do projeto (só num projeto com os dados do padeiro, e só se mudar)
+function padEditorsNote() {
+	try {
+		var cur = padMetaRead();
+
+		if (!cur.atracao || !padEditorsTouch(cur).changed) return false;
+
+		padMetaWrite({});
+
+		return true;
+	} catch (err) {
+		return false;
+	}
+}
+
+// o último salvamento visto pela barra: { path, time }
+var PAD_SAVE_SEEN = { path: '', time: 0 };
+
 // padeiro:templates: uma linha por template, nome <tab> pasta
 function padTemplatesList(text) {
 	var out = [];
@@ -248,27 +323,13 @@ function padTemplatesText(list) {
 	return lines.join('\n');
 }
 
-// Preenchimento e importação de templates: registra o template (nome e pasta, sem repetir) e a produção, e
-// grava o que ainda faltar (o designer, a data e a pasta de output do template). o que a janela projeto gravou
-// não muda. info: { name, path, producao, output }
+// Preenchimento e importação de templates: info: { name, path, producao, output }
 function padRegisterTemplateUse(info) {
+	// o arquivo que sai de um preenchimento não é um projeto: o template e a produção não são mais gravados nele (vão
+	// para o registro de uso / webhook). fica só a pasta de output do template, se ainda não houver uma: é para ela
+	// que o Render e o Pastas da barra apontam
 	try {
-		var cur = padMetaRead();
-		var list = padTemplatesList(cur.templates);
-		var path = padDisplayPath(String(info.path || ''));
-		var kept = [];
-
-		for (var i = 0; i < list.length; i++) if (padDisplayPath(list[i].path).toLowerCase() != path.toLowerCase()) kept.push(list[i]);
-		if (path) kept.push({ name: info.name || '', path: path });
-
-		var fields = { templates: padTemplatesText(kept) };
-
-		if (info.producao) fields.producao = info.producao;
-		if (!cur.designer) fields.designer = padMachineUser();
-		if (!cur.criado) fields.criado = padToday();
-		if (info.output && !cur.output) fields.output = padDisplayPath(padPath(info.output));
-
-		padMetaWrite(fields);
+		if (info.output && !padMetaRead().output) padMetaWrite({ output: padDisplayPath(padPath(info.output)) });
 	} catch (err) { }
 }
 
@@ -300,7 +361,7 @@ PADX.projectOpenFolder = function () {
 
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
 comparado com os padrões da atração ('pattern' no índice) e com o nome. A pasta da atração recebe a
-estrutura do coletar (01 PROJETOS, 02 ARQUIVOS, 03 SAIDA), aproveitando a que já existir.
+estrutura do coletar (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA…), aproveitando a que já existir.
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
 No projeto ficam os dados do padeiro (padeiro:, em 'dados do projeto aberto'): a atração, o que é, o designer,
@@ -310,6 +371,32 @@ etapa CRIAR: pular não grava).
 */
 
 // Para nomes de arquivo e pastas: sem acentos e símbolos, em maiúsculas (NÃO! NÃO OLHE! → NAO NAO OLHE).
+// Os tokens de data num caminho de output de template ({ano}, {mes}, {mes_extenso}, {proximo_mes},
+// {proximo_mes_num}, {ano_proximo_mes}) e o {atracao} (a atração do template): …/BBB/BBB {ano} vale todo ano. o
+// que não é token fica como está.
+var PAD_MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+
+function padFillDateTokens(path, atracao) {
+	var d = new Date();
+	var m = d.getMonth();
+	var two = function (n) {
+		return (n < 10 ? '0' : '') + n;
+	};
+	var values = {
+		ano: String(d.getFullYear()),
+		mes: two(m + 1),
+		mes_extenso: PAD_MONTHS[m],
+		proximo_mes: PAD_MONTHS[(m + 1) % 12],
+		proximo_mes_num: two((m + 1) % 12 + 1),
+		ano_proximo_mes: String(d.getFullYear() + (m == 11 ? 1 : 0)),
+		atracao: atracao ? padAepName(atracao) : null
+	};
+
+	return String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
+		return values[key] != null ? values[key] : all;
+	});
+}
+
 function padAepName(text) {
 	return String(text == null ? '' : text).replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]+/g, ' ').replace(/^\s+|\s+$/g, '');
 }
@@ -349,6 +436,9 @@ function padIndexGroups() {
 
 	try {
 		data = JSON.parse(text);
+		if (typeof data == 'string') data = JSON.parse(data); // o JSON mandado como texto
+		// embrulhado pelo n8n: [{ indice: '<o JSON em texto>' }]
+		if (data instanceof Array && data[0] && typeof data[0].indice == 'string') data = JSON.parse(data[0].indice);
 	} catch (err) { }
 
 	if (!data || data.v != 2) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
@@ -503,11 +593,14 @@ function padListedFolder(path) {
 
 function padNewProjectPlan(a) {
 	var settings = padReadCollect();
-	var sub = padCollectFolderPath(settings, 'projeto') || '01 PROJETOS';
+	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var root;
 	var fileBase;
 
-	fileBase = padAepName(a.atracao + ' ' + (a.what || ''));
+	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
+	var levels = padTrim(a.quadro).split('/');
+
+	fileBase = padAepName((padTrim(levels[levels.length - 1]) || padTrim(a.fileName) || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
@@ -517,7 +610,13 @@ function padNewProjectPlan(a) {
 	var rootFolder = new Folder(root);
 	var rootExists = padListedFolder(root);
 
-	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) return { settings: settings, root: rootFolder.parent.fsName, rootExists: true, projectsSub: '', projects: rootFolder.fsName, projectsExists: rootExists, fileBase: fileBase };
+	if (padIsProjectsFolderName(decodeURI(rootFolder.name))) {
+		// a de projetos pedida não existe, mas há outra com outra grafia ao lado (pediu …/PROJETOS e existe
+		// …/01_PROJETOS): é essa, pela estrutura da pasta de cima (nada de criar uma segunda pasta de projetos)
+		if (!rootExists) return { settings: settings, root: rootFolder.parent.fsName, rootExists: padListedFolder(rootFolder.parent.fsName), projectsSub: sub, projects: rootFolder.parent.fsName + '/' + sub, projectsExists: false, fileBase: fileBase };
+
+		return { settings: settings, root: rootFolder.parent.fsName, rootExists: true, projectsSub: '', projects: rootFolder.fsName, projectsExists: rootExists, fileBase: fileBase };
+	}
 
 	// a de projetos que já existir dentro dela (com outra grafia), sem criar nada aqui
 	var projects = root + '/' + sub;
@@ -568,6 +667,131 @@ function padAepList(folderPath) {
 // As pastas criadas junto com o projeto novo: o .aep, as fontes, as imagens e os vídeos (e as sem tipo);
 // áudio e dados o coletar cria quando aparecerem.
 var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
+
+// A estrutura de pastas de um projeto (configuração > coletar), para a árvore animada da etapa ATRAÇÃO: cada pasta
+// com a profundidade e o que ela recebe. → { folders: [{ name, depth, contents: ['projeto', 'imagens', …] }] }
+/*
+
+---------------------------------------------------------------
+> pastas de um nível (ATRAÇÃO/PASTA/PASTA… e o output na janela projeto)
+---------------------------------------------------------------
+
+As pastas dentro de uma pasta, lidas na hora, para a lista que abre a cada barra digitada. na pasta de uma atração
+(e nas de baixo), a de cima da de projetos quando o caminho aponta para ela, e ficam de fora as da estrutura do
+coletar (01_PROJETOS, 02_ARQUIVOS…, em qualquer grafia). plain (o output): só a pasta, sem tirar a estrutura. as de
+autosave, logs, sem nome (New Folder…) e as escondidas nunca aparecem.
+
+*/
+
+// a: { path, plain } → { root, rootName, exists, folders: [{ name, path }] }
+PADX.projectFolders = function (a) {
+	var root = padMountedPath(padPath(a.path));
+
+	if (!root) return { root: '', rootName: '', exists: false, folders: [] };
+
+	var folder = new Folder(root);
+
+	if (!a.plain && padIsProjectsFolderName(decodeURI(folder.name))) folder = folder.parent;
+
+	var skip = {};
+	var folders = [];
+	var i;
+
+	if (!a.plain) {
+		var settings = padReadCollect();
+
+		for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
+	}
+
+	var items = folder.exists ? folder.getFiles() || [] : [];
+
+	for (i = 0; i < items.length; i++) {
+		var name = decodeURI(items[i].name);
+
+		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^\./.test(name) || padIsJunkFolder(name)) continue;
+		if (!a.plain && (skip[padFolderKey(name)] || padIsProjectsFolderName(name))) continue;
+
+		folders.push({ name: name, path: padDisplayPath(items[i].fsName) });
+	}
+
+	folders.sort(function (x, y) {
+		return x.name.toUpperCase() < y.name.toUpperCase() ? -1 : 1;
+	});
+
+	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, folders: folders };
+};
+
+// Os quadros da organização nova numa atração, para os exemplos da janela: as pastas 'depth' níveis abaixo da
+// atração (o {ano}: qualquer ano) que têm dentro a pasta dos projetos da estrutura (01_PROJETOS), ou seja, as que o
+// padeiro criou. as pastas antigas da mesma atração ficam de fora. a: { root, depth, here (a do ano de agora) }
+// → { names: [nome] }
+PADX.projectQuadros = function (a) {
+	var settings = padReadCollect();
+	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
+	var level = [new Folder(padMountedPath(padPath(a.root)))];
+	var depth = Math.max(1, Math.min(3, a.depth || 1));
+	var hereKey = a.here ? padPathKey(new Folder(padMountedPath(padPath(a.here))).fsName) : '';
+	var names = [];
+	var seen = {};
+	var reads = 0;
+	var i;
+	var j;
+
+	var folders = function (f) {
+		var out = [];
+		var items = [];
+
+		if (++reads > 120) return out; // pasta enorme: para (os exemplos são um atalho, não uma lista completa)
+
+		try {
+			items = f.getFiles() || [];
+		} catch (err) { }
+
+		for (var k = 0; k < items.length; k++) {
+			var n = decodeURI(items[k].name);
+
+			if (items[k] instanceof Folder && !/^\./.test(n) && !padIsJunkFolder(n)) out.push(items[k]);
+		}
+
+		return out;
+	};
+
+	for (var d = 0; d < depth; d++) {
+		var next = [];
+
+		for (i = 0; i < level.length; i++) next = next.concat(folders(level[i]));
+		level = next;
+	}
+
+	for (i = 0; i < level.length; i++) {
+		if (padPathKey(level[i].fsName) == hereKey) continue;
+
+		var kids = folders(level[i]);
+
+		for (j = 0; j < kids.length; j++) {
+			var name = decodeURI(kids[j].name);
+			var key = padAepName(name);
+
+			if (!key || seen[key] || !new Folder(kids[j].fsName + '/' + sub).exists) continue;
+			seen[key] = true;
+			names.push(name);
+		}
+	}
+
+	return { names: names };
+};
+
+PADX.projectShape = function () {
+	var settings = padReadCollect();
+	var list = padStructureFolders(settings, null);
+	var byName = {};
+	var out = [];
+
+	for (var i = 0; i < settings.folders.length; i++) byName[settings.folders[i].name.toUpperCase()] = settings.folders[i].contents;
+	for (var j = 0; j < list.length; j++) out.push({ name: list[j].name, depth: list[j].depth, contents: byName[String(list[j].name).toUpperCase()] || [] });
+
+	return { folders: out };
+};
 
 // O que vai ser criado (para a etapa CRIAR e o aviso de arquivo existente). Não cria nada.
 PADX.projectPlan = function (a) {
@@ -622,7 +846,8 @@ function padCheckWritable(path) {
 
 	while (missing.parent && !missing.parent.exists) missing = missing.parent;
 
-	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.' + padFolderPeek(missing.parent));
+	// 'pedido': o caminho inteiro que o padeiro quis usar (para o diagnóstico: de onde veio o nome da pasta)
+	throw new Error('#PAD_091 - não foi possível criar a pasta ' + decodeURI(missing.name) + ' em ' + padDisplayPath(missing.parent ? missing.parent.fsName : path) + (padLastMkdir ? ' (' + padLastMkdir + ')' : ' (sem permissão ou rede fora?)') + padMacPrivacyHint() + '.' + padFolderPeek(missing.parent) + ' [pedido: ' + padDisplayPath(path) + ']');
 }
 
 // Para o diagnóstico: o que o After Effects e o sistema veem dentro da pasta (até 8 nomes de cada)
@@ -682,6 +907,7 @@ PADX.projectCreate = function (a) {
 
 	padMetaWrite({
 		atracao: String(a.atracao || ''),
+		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
 		designer: padMachineUser(),
 		pasta: padDisplayPath(plan.root),
@@ -717,21 +943,50 @@ function padInRoot(file) {
 		return padDisplayPath(path).replace(/\\/g, '/').replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').replace(/\/+$/, '').toLowerCase() + '/';
 	};
 
-	return key(file.fsName).indexOf(key(padPath(root))) == 0;
+	if (key(file.fsName).indexOf(key(padPath(root))) == 0) return true;
+
+	// o mesmo lugar escrito de outro jeito (\\servidor\… x /Volumes/…, a letra do drive): a chave da rede do coletar
+	try {
+		var here = padPathKey(file.fsName);
+
+		return here.indexOf(padPathKey(root)) == 0 || here.indexOf(padPathKey(padPath(root) || root)) == 0;
+	} catch (err) {
+		return false;
+	}
 }
 
 // O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro, na
-// pasta dele), 'missing' (sem eles: salvo sem a atração, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// pasta dele), 'out' (com eles, mas salvo fora da pasta dele), 'missing' (sem eles: salvo sem a atração, ou com
+// itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// state: a bolinha do Projeto. key: muda quando o projeto muda (outro projeto, ou salvo de novo): a barra confere
+// as fontes só nessa hora (fontsCheck: a chave deste computador)
 PADX.projectStatus = function () {
 	var file = app.project.file;
+	var key = '';
 
-	if (file && padMetaRead().atracao && padInRoot(file)) return { state: 'ok' };
+	try {
+		key = file ? file.fsName + '|' + file.modified.getTime() : 'novo';
+	} catch (err) { }
 
-	return { state: file || app.project.numItems > 0 ? 'missing' : '' };
+	// o arquivo aberto foi salvo de novo desde a última conferência (o Ctrl+S, o salvar do render): anota quem salvou
+	try {
+		var seenTime = file ? file.modified.getTime() : 0;
+		var seenPath = file ? file.fsName : '';
+
+		if (seenPath && seenPath == PAD_SAVE_SEEN.path && seenTime != PAD_SAVE_SEEN.time) padEditorsNote();
+		PAD_SAVE_SEEN = { path: seenPath, time: seenTime };
+	} catch (err2) { }
+
+	var hasData = !!(file && padMetaRead().atracao);
+	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
+	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
+
+	return { state: state, key: key, fontsCheck: padMachineFontsCheck() };
 };
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
-// → { created, outside, atracao, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
+// editores: quem já salvou [{ user, day }]; salvo: o último { user, day } ou null
+// → { created, outside, atracao, quadro, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
 PADX.projectCurrent = function () {
 	var file = app.project.file;
 	var m = padMetaRead();
@@ -742,8 +997,12 @@ PADX.projectCurrent = function () {
 		created: inRoot,
 		outside: !!(file && m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
 		atracao: m.atracao,
+		quadro: m.quadro,
 		oQueE: m.oQueE,
 		designer: m.designer || padMachineUser(),
+		criado: m.criado,
+		editores: padEditorsList(m.editores),
+		salvo: padEditorsList(m.salvo)[0] || null,
 		defaultUser: padDefaultUser(),
 		output: padNoVolumeSuffix(m.output),
 		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
@@ -758,6 +1017,7 @@ PADX.projectCurrent = function () {
 PADX.projectSaveNow = function () {
 	if (!app.project.file) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
+	padEditorsNote();
 	app.project.save();
 
 	return PADX.projectCurrent();
@@ -765,23 +1025,20 @@ PADX.projectSaveNow = function () {
 
 // Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura (criada se
 // faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
-// a: { atracao, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
+// a: { atracao, quadro, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
 PADX.projectSave = function (a) {
 	padLastMkdir = '';
 
 	var file = app.project.file;
-	var plan = padNewProjectPlan({ atracao: a.atracao, what: a.what, path: a.root });
+	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root });
 
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 
 	// só a pasta de projetos (para o .aep): as outras da estrutura o coletar cria quando precisar
 	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : padEnsureFolder(plan.projects).fsName;
 	var dest = new File(projects + '/' + plan.fileBase + '.aep');
-	var key = function (f) {
-		return padDisplayPath(f.fsName).replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1').toLowerCase();
-	};
-	var same = !!file && key(file) == key(dest);
+	var same = !!file && padSamePath(file.fsName, dest.fsName);
 
 	padCheckWritable(projects);
 	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + '.');
@@ -790,6 +1047,7 @@ PADX.projectSave = function (a) {
 
 	padMetaWrite({
 		atracao: String(a.atracao || ''),
+		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
 		designer: padCleanUser(a.designer) || padMachineUser(),
 		pasta: padDisplayPath(plan.root),

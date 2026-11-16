@@ -32,7 +32,7 @@ const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '../..');
 const CLIENT = 'file://' + path.join(ROOT, 'extension/client') + '/';
-const OUT = path.join(ROOT, 'docs/images');
+const OUT = process.env.PAD_DOC_OUT || path.join(ROOT, 'docs/images'); // PAD_DOC_OUT: grava em outra pasta (ex: para uma apresentação)
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'pad-doc-'));
 
 /* =========================================================
@@ -79,10 +79,13 @@ function markInPage(list) {
 		const n = document.createElement('b');
 		const left = Math.max(2, r.left - pad);
 		const top = Math.max(2, r.top - pad);
+		// o número fica sempre inteiro na imagem: perto da borda, ele entra no anel em vez de sair
+		const nLeft = Math.max(-9, 2 - left);
+		const nTop = Math.max(-9, 2 - top);
 
 		box.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;width:' + Math.min(innerWidth - left - 2, r.width + pad * 2) + 'px;height:' + Math.min(innerHeight - top - 2, r.height + pad * 2) + 'px;border-radius:' + radius + ';border:2px solid #ff9f1c;box-shadow:0 0 0 3px rgba(255,159,28,.25),0 0 14px rgba(255,159,28,.35);box-sizing:border-box';
 		n.textContent = m.n || i + 1;
-		n.style.cssText = 'position:absolute;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#ff9f1c;color:#1d2340;font:800 11px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,30,70,.35);border:1.5px solid #fff;' + (m.at === 'right' ? 'right:-9px;top:-9px' : m.at === 'bottom' ? 'left:-9px;bottom:-9px' : 'left:-9px;top:-9px');
+		n.style.cssText = 'position:absolute;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#ff9f1c;color:#1d2340;font:800 11px/1 Inter,system-ui,sans-serif;box-shadow:0 2px 6px rgba(20,30,70,.35);border:1.5px solid #fff;' + (m.at === 'right' ? 'right:-9px;top:' + nTop + 'px' : m.at === 'bottom' ? 'left:' + nLeft + 'px;bottom:-9px' : 'left:' + nLeft + 'px;top:' + nTop + 'px');
 		box.appendChild(n);
 		layer.appendChild(box);
 	});
@@ -169,7 +172,7 @@ const DOC_FONTS = `(() => {
 		] };
 })();`;
 
-// O FORNINHO: as prévias dos templates (imagens de exemplo, no lugar dos '_preview.png' da rede; um template fica
+// A FORMA: as prévias dos templates (imagens de exemplo, no lugar dos '_preview.png' da rede; um template fica
 // sem prévia, com o ícone) e dois fixados e um recente
 const DOC_PREVIEWS = `(() => {
 	try {
@@ -203,6 +206,7 @@ const DOC_PREVIEWS = `(() => {
 const CATEGORIES = { categories: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
+	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
 	{ name: 'FUTEBOL', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/{ano}/{atracao}', output: '', icon: 'bola' }
 ] };
 
@@ -217,9 +221,22 @@ async function selectTemplate(p) {
 
 const SHOTS = {
 	barra: { w: 1100, h: 110, url: 'bar.html?mock=localfiles', marks: [
-		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#btn-coletar .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
+		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#drawer-projeto .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
 	] },
 	'barra-vertical': { w: 170, h: 640, url: 'bar.html' },
+	// as gavetas abertas: Projeto (Criar, Fontes, Coletar) e Templates (Preencher, Criar)
+	'barra-gaveta-projeto': { w: 1100, h: 110, url: 'bar.html?mock=localfiles', async run(p) {
+		await p.click('#drawer-projeto');
+		await p.waitForTimeout(700);
+	} },
+	'barra-gaveta-organizar': { w: 1100, h: 110, url: 'bar.html', async run(p) {
+		await p.click('#drawer-organizar');
+		await p.waitForTimeout(700);
+	} },
+	'barra-gaveta-templates': { w: 1100, h: 110, url: 'bar.html', async run(p) {
+		await p.click('#drawer-templates');
+		await p.waitForTimeout(700);
+	} },
 	'forninho-lista': { w: 560, h: 800, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
 		await p.locator('.tree-row', { hasText: 'RECENTES' }).first().click(); // recolhe os recentes: cabem os fixados e a pasta aberta
 		await p.waitForTimeout(400);
@@ -236,10 +253,10 @@ const SHOTS = {
 	forma: { w: 1180, h: 780, url: 'maker.html', marks: [
 		{ sel: '#checklist' }, { sel: '#atr-picker' }, { sel: '#f-example' }, { sel: '#name-preview' }, { sel: '#preview-card' }, { sel: '#fonts' }, { sel: '#layers' }, { sel: '#fx-card' }, { sel: '#btn-test' }, { sel: '#btn-save' }
 	] },
-	'claquete-atracao': { w: 480, h: 520, url: 'project.html', async run(p) {
+	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#claq-next' }] },
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
 	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
@@ -248,14 +265,26 @@ const SHOTS = {
 		await p.evaluate(() => { const l = document.getElementById('fw-list'); if (l) l.scrollTop = 0; window.scrollTo(0, 0); });
 		await p.waitForTimeout(300);
 	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
-	catador: { w: 540, h: 640, url: 'collect.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '.cw-row:nth-child(1) .fw-state', round: true }, { sel: '.cw-row:nth-child(2) .fw-state', round: true }, { sel: '.cw-row:nth-child(4) .fw-state', round: true }, { sel: '.cw-row:nth-child(6) .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+	catador: { w: 540, h: 760, url: 'collect.html', marks: [
+		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
-	'acessorista-caminhos': { w: 560, h: 620, url: 'finder.html', async run(p) {
+	'catador-migracao': { w: 780, h: 660, url: 'collect.html', async run(p) {
+		await p.click('#app-menu summary');
+		await p.waitForTimeout(300);
+		await p.click('[data-action="migrate"]');
+		await p.waitForTimeout(900);
+		await p.hover('.mg-col.is-old .mg-item:nth-of-type(4)'); // 03 EXTERNOS: as faixas dela acesas
+		await p.waitForTimeout(400);
+	}, keepMouse: true },
+	versionador: { w: 560, h: 540, url: 'versioner.html', async run(p) {
+		await p.locator('.vs-row').nth(1).locator('.fw-head').click();
+		await p.waitForTimeout(400);
+	}, marks: [{ sel: '#vs-file', pad: 3 }, { sel: '#vs-list' }, { sel: '.cfg-path' }, { sel: '.vs-switch' }, { sel: '#vs-go' }] },
+	'acessorista-caminhos': { w: 720, h: 620, url: 'finder.html', async run(p) {
 		await p.fill('#q-paths', 'reporter');
 		await p.waitForTimeout(1600);
 	}, marks: [{ sel: '#tabs' }, { sel: '#q-paths' }, { sel: '#opts-paths' }, { sel: '#results-paths > *:first-child' }] },
-	adaptador: { w: 560, h: 300, url: 'converter.html', async run(p) {
+	adaptador: { w: 560, h: 182, url: 'converter.html', async run(p) {
 		await p.fill('#cv-mac', '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026');
 		await p.locator('#cv-mac').dispatchEvent('input');
 		await p.waitForTimeout(800);
@@ -273,8 +302,16 @@ const SCENES = {
 	// a barra: o mouse passa pelas ferramentas (cada ícone anima, a dica conta os dois cliques)
 	barra: { w: 1000, h: 110, url: 'bar.html', async run(p) {
 		mouse = [990, 100];
-		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
+		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
 		await hover(p, '#logo', 700);
+	} },
+
+	// as gavetas: só o clique abrindo cada uma, sem parar em nenhuma ferramenta (as dicas levam 2 s para aparecer)
+	gavetas: { w: 1000, h: 110, hires: true, width: 1664, fps: 14, quality: 72, url: 'bar.html?mock=localfiles', async run(p) {
+		await p.waitForTimeout(500);
+		for (const id of ['templates', 'projeto', 'organizar']) await tap(p, '#drawer-' + id, { ms: 200, wait: 800 });
+		await glide(p, [980, 100], 200); // sai de cima dos botões: o mouse parado chamaria a dica
+		await p.waitForTimeout(300);
 	} },
 
 	// a primeira vez: sem a configuração, o tour (a configuração, a sigla e a turma)
@@ -301,10 +338,11 @@ const SCENES = {
 	progresso: { w: 760, h: 110, url: 'bar.html', fps: 20, async run(p) {
 		mouse = [740, 100];
 		await p.waitForTimeout(600);
+		await tap(p, '#drawer-projeto', { wait: 700 }); // a gaveta Projeto abre
 		await tap(p, '#btn-coletar', { wait: 6800 });
 	} },
 
-	// O FORNINHO: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
+	// A FORMA: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
 	forninho: { w: 1000, h: 700, url: 'index.html', init: DOC_PREVIEWS, async run(p) {
 		mouse = [960, 660];
 		await p.waitForTimeout(600);
@@ -324,18 +362,63 @@ const SCENES = {
 	} },
 
 	// A CLAQUETE: a atração pela busca, o que é e o nome do .aep
-	claquete: { w: 480, h: 560, url: 'project.html', async run(p) {
-		mouse = [450, 520];
+	claquete: { w: 480, h: 680, url: 'project.html', async run(p) {
+		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
 		await type(p, 'domingao', 120);
 		await p.waitForTimeout(900);
 		await tap(p, p.locator('#atr-list .combo-item', { hasText: 'HUCK' }).first(), { wait: 900 });
-		await tap(p, '#claq-next', { wait: 1000 });
+		await tap(p, p.locator('#atr-list .combo-item', { hasText: 'DANÇA DOS FAMOSOS' }).first(), { wait: 900 });
+		await p.keyboard.press('Enter');
+		await p.waitForTimeout(600);
 		await tap(p, '#arq-what', { wait: 200 });
 		await type(p, 'servico', 120);
 		await p.waitForTimeout(1300);
 		await hover(p, '#criar-go', 900);
+	} },
+
+	// A CLAQUETE, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
+	'claquete-nova': { w: 480, h: 680, url: 'project.html', async run(p) {
+		mouse = [450, 640];
+		await p.waitForTimeout(500);
+		await tap(p, '#claq', { wait: 200 });
+		await type(p, 'vt reunião', 120);
+		await p.waitForTimeout(1100);
+		await hover(p, p.locator('.cat-chip', { hasText: 'NOVELA' }).first(), 700);
+		await hover(p, p.locator('.cat-chip.is-on').first(), 800);
+		await tap(p, p.locator('.cat-chip.is-on').first(), { wait: 1100 });
+		await tap(p, '#arq-what', { wait: 200 });
+		await type(p, 'abertura', 120);
+		await p.waitForTimeout(1300);
+		await hover(p, '#criar-go', 900);
+	} },
+
+	// O criador de templates: captura a comp, puxa os layers, dá o nome e salva
+	criador: { w: 1000, h: 700, url: 'maker.html', fps: 12, quality: 45, async run(p) {
+		mouse = [960, 660];
+		await p.waitForTimeout(700);
+		await tap(p, '#btn-capture', { wait: 1200 });
+		await tap(p, '#btn-layers', { wait: 1100 });
+		await tap(p, '#f-config', { wait: 200 });
+		await type(p, 'SERVICO', 120);
+		await p.waitForTimeout(700);
+		await tap(p, '#btn-example', { wait: 1100 });
+		await hover(p, '#btn-test', 800);
+		await hover(p, '#btn-save', 1100);
+	} },
+
+	// A CLAQUETE, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
+	dados: { w: 480, h: 680, url: 'project.html?mock=created', async run(p) {
+		mouse = [450, 640];
+		await p.waitForTimeout(900);
+		await hover(p, '#ed-editors', 900);
+		await tap(p, '#ed-info', { wait: 1100 });
+		await hover(p, '.pd-rows .pd-v:last-child', 900);
+		await hover(p, '.pd-person.is-last', 800);
+		await hover(p, p.locator('.pd-person').nth(1), 800);
+		await hover(p, p.locator('.pd-path').first(), 900);
+		await hover(p, '#pd-copy', 900);
 	} },
 
 	// O TIPÓGRAFO: troca a fonte que falta pela busca, com a prévia
@@ -362,13 +445,14 @@ const SCENES = {
 	catador: { w: 540, h: 640, url: 'collect.html', async run(p) {
 		mouse = [500, 600];
 		await p.waitForTimeout(900);
-		await hover(p, '.cw-row:nth-child(1) .fw-head', 500);
-		await tap(p, '#cw-relink', { wait: 2600 });
-		await tap(p, '#cw-go', { wait: 2200 });
+		await hover(p, '.cw-row .fw-head', 500);
+		await tap(p, '#cw-relink', { wait: 2600 }); // procura: o achado vira →
+		await tap(p, '#cw-go', { wait: 2000 }); // Relinkar
+		await tap(p, '#cw-go', { wait: 2200 }); // Coletar
 	} },
 
 	// O ACESSORISTA: busca de caminhos
-	acessorista: { w: 560, h: 560, url: 'finder.html', async run(p) {
+	acessorista: { w: 720, h: 560, url: 'finder.html', async run(p) {
 		mouse = [520, 520];
 		await p.waitForTimeout(700);
 		await tap(p, '#q-paths', { wait: 200 });
@@ -378,9 +462,20 @@ const SCENES = {
 		await tap(p, '#tab-texts', { wait: 1400 });
 	} },
 
-	// O ADAPTADOR: cola o caminho do Mac e sai o do Windows
-	adaptador: { w: 560, h: 260, url: 'converter.html', async run(p) {
-		mouse = [520, 230];
+	// O ACESSORISTA, só os caminhos: digita e os resultados aparecem (atrações, Teams, Trello)
+	busca: { w: 720, h: 560, url: 'finder.html', async run(p) {
+		mouse = [520, 520];
+		await p.waitForTimeout(700);
+		await tap(p, '#q-paths', { wait: 200 });
+		await type(p, 'reporter', 130);
+		await p.waitForTimeout(1600);
+		await hover(p, '#results-paths > *:first-child', 1300);
+		await hover(p, '#results-paths > *:nth-child(2)', 1300);
+	} },
+
+	// O ADAPTADOR: cola o caminho do Mac e sai o do Windows (a altura do conteúdo, como a janela)
+	adaptador: { w: 560, h: 182, url: 'converter.html', async run(p) {
+		mouse = [520, 160];
 		await p.waitForTimeout(500);
 		await tap(p, '#cv-mac', { wait: 200 });
 		await p.keyboard.press('Control+A');
@@ -401,14 +496,14 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fonts', 'project', 'collect', 'import', 'rename', 'organize', 'folders', 'search'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');
 
 	fs.mkdirSync(dir, { recursive: true });
 
-	const ctx = await b.newContext({ viewport: { width: 400, height: 200 }, deviceScaleFactor: 2 });
+	const ctx = await b.newContext({ viewport: { width: 400, height: 200 }, deviceScaleFactor: +process.env.PAD_DOC_ICON_SCALE || 2 }); // PAD_DOC_ICON_SCALE: ícones maiores (apresentação)
 	const p = await ctx.newPage();
 
 	await p.goto(CLIENT + 'bar.html');
@@ -488,7 +583,10 @@ async function gifs(b, names) {
 
 	for (const name of names) {
 		const s = SCENES[name];
-		const ctx = await b.newContext({ viewport: { width: s.w, height: s.h }, deviceScaleFactor: 1, recordVideo: { dir: TMP, size: { width: s.w, height: s.h } } });
+		// hires: em vez do vídeo do navegador (sempre em 1x), a cena é fotografada em 2x o tempo todo e as fotos viram a
+		// animação: sai nítida quando a janela é pequena e vai ampliada (a barra numa apresentação)
+		const ctx = await b.newContext(s.hires ? { viewport: { width: s.w, height: s.h }, deviceScaleFactor: 2 } : { viewport: { width: s.w, height: s.h }, deviceScaleFactor: 1, recordVideo: { dir: TMP, size: { width: s.w, height: s.h } } });
+
 
 		await ctx.addInitScript(CURSOR);
 		await ctx.addInitScript((c) => {
@@ -510,11 +608,46 @@ async function gifs(b, names) {
 		await p.mouse.move(mouse[0], mouse[1]);
 
 		const t0 = Date.now();
+		const frames = [];
+		let shooting = !!s.hires;
+		const shooter = (async () => {
+			while (shooting) {
+				const file = path.join(TMP, name + '-' + frames.length + '.png');
+				const at = Date.now();
+
+				try {
+					await p.screenshot({ path: file });
+					frames.push([file, at]);
+				} catch (e) { }
+			}
+		})();
 
 		await s.run(p);
 		await p.waitForTimeout(500);
+		shooting = false;
+		await shooter;
 
 		const dur = (Date.now() - t0) / 1000;
+		const anim0 = path.join(dir, name + '.webp');
+
+		if (s.hires) {
+			// as fotos na ordem, cada uma pelo tempo até a seguinte
+			const list = path.join(TMP, name + '.txt');
+			const lines = [];
+
+			frames.forEach((f, i) => {
+				const next = i + 1 < frames.length ? frames[i + 1][1] : f[1] + 300;
+
+				lines.push("file '" + f[0] + "'", 'duration ' + ((next - f[1]) / 1000).toFixed(3));
+			});
+			lines.push("file '" + frames[frames.length - 1][0] + "'");
+			fs.writeFileSync(list, lines.join('\n'));
+			await ctx.close();
+			execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-vf', 'fps=' + (s.fps || 16) + (s.width ? ',scale=' + s.width + ':-2:flags=lanczos' : ''), '-c:v', 'libwebp', '-lossless', '0', '-quality', String(s.quality || 60), '-compression_level', '6', '-loop', '0', '-an', anim0]);
+			console.log('· anim', name.padEnd(12), (fs.statSync(anim0).size / 1024).toFixed(0) + ' KB', dur.toFixed(1) + 's', frames.length + ' fotos', errs.length ? '← ' + errs.join(' | ') : '');
+			continue;
+		}
+
 		const video = await p.video().path();
 
 		await ctx.close();

@@ -1,0 +1,95 @@
+/* =========================================================
+   O VERSIONADOR — salvar o projeto em versões mais velhas do After
+   (a mesma folha das janelas de fontes e do coletar: fonts.css e collect.css)
+   ========================================================= */
+
+.versioner {
+  gap: 12px;
+}
+
+.vs-head {
+  display: grid;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.vs-head .cfg-title,
+.vs-head .cfg-hint {
+  margin: 0;
+}
+
+.vs-list {
+  gap: 8px;
+}
+
+/* a versão no lugar da miniatura */
+.vs-badge {
+  display: grid;
+  place-items: center;
+  color: var(--blue-500);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  transition: color 180ms ease;
+}
+
+.vs-row .fw-head {
+  cursor: pointer;
+}
+
+.vs-row .fw-text > * {
+  transition: opacity 180ms ease;
+}
+
+/* a marca da versão: vazia (contorno) ou marcada (cheia, no destaque) */
+.vs-row .vs-check {
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+  color: transparent;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.vs-row.is-on .vs-check {
+  border-color: var(--blue-500);
+  background: var(--blue-500);
+  color: var(--surface);
+}
+
+.vs-row:not(.is-on) .fw-text > * {
+  opacity: 0.55;
+}
+
+.vs-row:not(.is-on) .vs-badge {
+  color: var(--text-tertiary);
+}
+
+/* salvando: a marca da versão pulsa; pronta, fica verde */
+.vs-row.is-working .vs-check {
+  animation: vs-pulse 900ms ease-in-out infinite;
+}
+
+.vs-row.is-done .vs-check {
+  border-color: var(--success);
+  background: var(--success);
+}
+
+@keyframes vs-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.vs-note {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.vs-note:empty {
+  display: none;
+}

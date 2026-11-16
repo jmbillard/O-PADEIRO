@@ -120,26 +120,20 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	var app = $('app-shell');
 
 	/* =========================================================
-	   Largura da janela: estreita só com a busca, larga com um template
-	   selecionado (como no script original)
+	   Largura da janela: larga desde o início (a busca no meio sem template;
+	   com um template, as duas colunas)
 	   ========================================================= */
 
-	var COMPACT_WIDTH = 460;
-	var EXPANDED_WIDTH = 1000;
-	var compactWidth = null; // largura antes de alargar, para voltar a ela
+	var EXPANDED_WIDTH = 1100;
+	var OPEN_HEIGHT = 1160; // alta de cara: a lista e a folha inteiras sem rolar (nunca maior que a tela)
 
+	// A janela abre larga e não muda mais de tamanho (mudar de tamanho estica a imagem da tela e pisca): só a
+	// interface anima (panel.css): a busca desliza do meio para a esquerda e a folha entra pela direita
 	function setExpanded(on) {
 		if (on === app.classList.contains('is-expanded')) return;
 
 		app.classList.toggle('is-expanded', on);
-
-		if (on && window.innerWidth < EXPANDED_WIDTH) {
-			compactWidth = window.innerWidth;
-			PAD_BRIDGE.resizeWindow(EXPANDED_WIDTH, window.innerHeight);
-		} else if (!on && compactWidth) {
-			PAD_BRIDGE.resizeWindow(compactWidth, window.innerHeight);
-			compactWidth = null;
-		}
+		setTimeout(syncCardThumb, 560); // depois da animação: a coluna da busca mudou de largura
 	}
 
 	/* =========================================================
@@ -150,7 +144,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function errorText(text) {
 		text = String(text || '');
 
-		return /^#PAD_/.test(text) ? text : '#PAD_099 - ' + text;
+		return PAD_UTIL.errorText(text); // o texto primeiro, o código no fim (util.js)
 	}
 
 	function notify(kind, text) {
@@ -442,14 +436,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 					return loadId !== state.loadId;
 				},
 				// o volume não está montado: a lista de antes não abre nada; o loader avisa que está montando
-				function (volume) {
+				function (volume, step) {
 					if (loadId !== state.loadId) return;
 
 					state.tree = null;
 					state.byUri = {};
 					state.treeStatus = 'loading';
 					state.loading = true;
-					state.loadHint = 'o volume ' + volume + ' não está montado: tentando montar…';
+					state.loadHint = step === 'waiting' ? 'montando o volume ' + volume + ': esperando a pasta aparecer…' : 'o volume ' + volume + ' não está montado: tentando montar…';
 					state.mountTried = true;
 					setRefreshing(false);
 					renderTree();
@@ -675,6 +669,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// Lê a árvore pasta a pasta (chamadas curtas ao host). Pastas sem templates não entram.
 	// sem a pasta (o volume da rede desmontado, ex: depois da VPN cair): onMount avisa e o host tenta montar o
 	// share (como o acessorista faz ao abrir uma pasta); montou, a leitura segue
+	var MOUNT_RETRIES = 23; // depois de montar: até ~45 s esperando o volume aparecer (digitar a senha da rede demora)
+	var MOUNT_RETRY_MS = 2000;
+
 	async function readTemplateTree(path, onProgress, isStale, onMount) {
 		var first = await call('listDir', { path: path });
 
@@ -684,13 +681,20 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			});
 
 			if (volume.mountable && !isStale()) {
-				onMount(volume.volume);
+				onMount(volume.volume, 'mounting');
 
-				var mounted = await call('mountPath', { path: path }).catch(function () {
+				await call('mountPath', { path: path }).catch(function () {
 					return { mounted: false };
 				});
 
-				if (mounted.mounted && !isStale()) first = await call('listDir', { path: path });
+				// recém-montado, o volume pode levar uns segundos para aparecer (o macOS ainda lembra que a pasta "não
+				// existia"): lê de novo algumas vezes antes de desistir, mesmo que o host diga que não montou
+				for (var t = 0; t < MOUNT_RETRIES && !isStale(); t++) {
+					first = await call('listDir', { path: path });
+					if (first.exists) break;
+					onMount(volume.volume, 'waiting');
+					await new Promise(function (r) { setTimeout(r, MOUNT_RETRY_MS); });
+				}
 			}
 		}
 
@@ -833,7 +837,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				// Enter no template já selecionado vai para o campo de texto (não desmarca)
 				if (e.detail === 0 && state.selected && state.selected.uri === node.uri) return focusInput();
 
-				selectTemplate(node, { focusInput: e.detail === 0 });
+				// clique ou Enter: o foco vai para o texto (o exemplo vem selecionado: é só digitar por cima)
+				selectTemplate(node, { focusInput: true });
 			});
 			btn.addEventListener('dblclick', function () {
 				importTemplate(node);
@@ -880,6 +885,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		img.decoding = 'async';
 		img.onload = function () {
 			box.classList.add('has-image');
+			if (box.parentNode) box.parentNode.classList.add('has-thumb'); // a linha: o canto acompanha a miniatura crescida
 		};
 		img.onerror = function () {
 			img.remove(); // sem prévia: fica o ícone
@@ -1004,6 +1010,29 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		total.textContent = query ? found + ' de ' + plural(countTemplates(state.tree), 'template', 'templates') : plural(found, 'template', 'templates');
+		syncCardThumb();
+	}
+
+	// a miniatura da lista cresce (hover / escolhido) até o tamanho das dos cartões em destaque (fixados, recentes,
+	// novos): a largura vem de um cartão na tela ou, sem nenhum, da mesma conta das três colunas
+	var CARD_THUMB = 114; // a miniatura do cartão de 130 px (panel.css): 130 menos o respiro e a borda
+
+	function syncCardThumb() {
+		var list = $('tree');
+		var card = list.querySelector('.tree-item:not([data-section=""]) .tree-thumb');
+		var w = card ? card.getBoundingClientRect().width : 0;
+
+		// janela larga: os cartões têm tamanho fixo (panel.css), a miniatura também, com ou sem cartão na tela
+		if (!w && window.innerWidth > 900) w = CARD_THUMB;
+
+		if (!w) {
+			var children = list.querySelector('.tree-children');
+			var inner = children ? children.clientWidth : list.clientWidth - 21; // 21 = recuo de uma pasta (14 + 6 + a linha)
+
+			w = inner / 3 - 24; // cada cartão: um terço menos a margem (6) e o respiro da linha (18)
+		}
+
+		if (w > 40) list.style.setProperty('--card-thumb-w', Math.round(w) + 'px');
 	}
 
 	function updateFolderButton() {
@@ -1040,6 +1069,12 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		['readonly', 'input', 'config', 'run', 'loading'].forEach(function (view) {
 			$('view-' + view).hidden = view !== name;
 		});
+
+		// o rodapé do preenchimento fica no lugar ao trocar de template (carregando: os botões desligados)
+		$('input-footer').hidden = name !== 'input' && name !== 'loading';
+		$('btn-import').disabled = name !== 'input';
+		$('btn-output').disabled = name !== 'input';
+		if (name === 'loading') $('btn-fill').disabled = true;
 
 		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
 		$('btn-edit-config').classList.toggle('is-active', name === 'config');
@@ -1091,6 +1126,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		return items.length ? items[items.length - 1] : null;
 	}
 
+	var LOADER_DELAY = 300; // ms: leitura mais rápida que isso não mostra o loader
+
 	async function selectTemplate(node, opts) {
 		if (runIsOpen()) {
 			notify('warning', 'Finalize o preenchimento atual (fila de render) antes de trocar de template.');
@@ -1110,24 +1147,37 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setExpanded(true);
 		setStage('2 · preencher', node.text.replace(/\.[a-z0-9]+$/i, ''), '');
-		showView('loading');
+
+		// o loader só aparece se a leitura demorar (sem piscar a cada clique): até lá, o template anterior fica
+		// apagado e é trocado direto pelo novo
+		var queueSide = document.querySelector('.queue-side');
+
+		clearTimeout(state.loadingTimer);
+		queueSide.classList.add('is-switching');
+		state.loadingTimer = setTimeout(function () {
+			if (state.selected === node && !state.info) showView('loading');
+		}, LOADER_DELAY);
 
 		try {
 			state.info = await call('templateInfo', { uri: node.uri });
 		} catch (err) {
 			state.info = null;
-			showReadonly(err.message);
+			if (state.selected === node) {
+				clearTimeout(state.loadingTimer);
+				queueSide.classList.remove('is-switching');
+				showReadonly(err.message);
+			}
 			return;
 		}
 
 		if (!state.selected || state.selected.uri !== node.uri) return; // mudou de template enquanto lia
 
+		clearTimeout(state.loadingTimer);
+		queueSide.classList.remove('is-switching');
 		showTemplate(state.info);
 		checkFonts(node.uri);
 
 		if (opts && opts.focusInput) focusInput();
-
-		var queueSide = document.querySelector('.queue-side');
 
 		if (window.matchMedia('(max-width: 900px)').matches && queueSide.scrollIntoView) {
 			queueSide.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1210,6 +1260,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	function deselectTemplate() {
+		clearTimeout(state.loadingTimer);
+		document.querySelector('.queue-side').classList.remove('is-switching');
+
 		closeEditor();
 		state.selected = null;
 		state.info = null;
@@ -1357,7 +1410,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var n = countInputs();
 
 		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'item', 'itens');
-		$('btn-fill').textContent = 'Preencher: ' + n;
+		// o texto ainda é o exemplo do template (ninguém digitou): o botão avisa o que vai ser preenchido
+		var sample = n && state.example && $('input').value === state.example;
+
+		// sem a revisão da fila (o padrão), o mesmo botão preenche e já põe na fila de render
+		$('btn-fill').textContent = (sample ? 'Preencher o exemplo' : 'Preencher: ' + n) + (reviewQueue() ? '' : ' e pôr na fila');
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
 	}
 
@@ -1473,10 +1530,23 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var res = await call('installTemplateFonts', { uri: uri });
 			var missing = res.data.missing;
 
+			// o After Effects pode levar uns segundos para enxergar as novas: confere de novo até aparecerem (até ~15 s)
+			if (res.data.total) {
+				await PAD_UTIL.syncFonts(call, 15, async function () {
+					var again = await call('templateFonts', { uri: uri }).catch(function () {
+						return null;
+					});
+
+					if (again) missing = again.missing;
+
+					return !missing.length;
+				});
+			}
+
 			if (state.selected && state.selected.uri === uri) state.fonts = { uri: uri, missing: missing, total: res.data.total };
 
 			note = !missing.length
-				? { kind: 'success', text: 'Fontes instaladas. Se precisar, reinicie o After Effects e/ou a máquina.' }
+				? { kind: 'success', text: 'Fontes instaladas.' }
 				: { kind: 'warning', text: (res.messages.length ? res.messages.join(' ') + ' ' : '') + 'Ainda não aparecem como instaladas: ' + missing.join(', ') };
 		} catch (err) {
 			note = { kind: 'error', text: err.message };
@@ -1548,8 +1618,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 	var STATUS_LABEL = { waiting: 'aguardando', processing: 'processando', success: 'pronto', error: 'erro' };
 
+	// uma linha da fila: o cartão (li._card) dentro da linha, que ganha o puxador e a lixeira antes de criar a fila
 	function buildItem(index, label) {
-		var li = el('li', 'file-item is-new');
+		var row = el('li', 'rq-row');
+		var li = el('div', 'file-item is-new');
 		var main = el('div', 'file-main');
 		var heading = el('div', 'file-heading');
 		var actions = el('div', 'file-actions');
@@ -1571,11 +1643,21 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			li.classList.remove('is-new', 'just-completed');
 		});
 
-		return li;
+		row.appendChild(li);
+		row._card = li;
+
+		return row;
+	}
+
+	// o item pelo índice de quando foi criado (a ordem da fila pode mudar)
+	function runItem(i) {
+		return state.run.items.filter(function (item) {
+			return item.index === i;
+		})[0];
 	}
 
 	function setItem(i, status, info) {
-		var item = state.run.items[i];
+		var item = runItem(i);
 		var li = item.node;
 
 		item.status = status;
@@ -1626,7 +1708,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	async function startFill() {
-		var text = $('input').value;
+		// a letra e o acento juntos num caractere só (É, não E + ´): texto colado de PDFs, nomes de arquivo do macOS
+		// e alguns sistemas vem com o acento separado, que a fonte do template pode não ter (o After Effects desenha
+		// esse pedaço na fonte padrão, a Myriad)
+		var text = $('input').value.normalize ? $('input').value.normalize('NFC') : $('input').value;
 
 		if (!state.info || !state.info.hasInputLayers || text.trim() === '' || state.busy) return;
 
@@ -1663,11 +1748,17 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		list.textContent = '';
 		state.run = { items: [], finished: false, total: begin.total, queued: false, renderTemplates: [], outputPath: [] };
 
-		begin.jobs.forEach(function (job, i) {
-			var node = buildItem(i, job.label);
+		list.classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
 
-			list.appendChild(node);
-			state.run.items.push({ node: node, status: 'waiting', index: i, hostIndex: -1 });
+		begin.jobs.forEach(function (job, i) {
+			var row = buildItem(i, job.label);
+			var item = { node: row._card, row: row, status: 'waiting', index: i, hostIndex: -1, excluded: false };
+
+			row._item = item;
+			list.appendChild(row);
+			state.run.items.push(item);
 		});
 
 		$('render-options').hidden = true;
@@ -1686,7 +1777,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			try {
 				var res = await call('fillStep', { index: i });
 
-				state.run.items[i].hostIndex = hostIndex++;
+				runItem(i).hostIndex = hostIndex++;
 				setItem(i, 'success', { name: res.name, meta: 'comp criada no projeto', message: '' });
 			} catch (err) {
 				setItem(i, 'error', { meta: 'não foi possível preencher', message: err.message });
@@ -1756,11 +1847,130 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
+
+		// sem a revisão (o padrão): a fila sai direto, com o preset lembrado (o do template, o último ou o H.264).
+		// a tela de ordem e preset só aparece com 'Revisar a fila antes de criar' ligado (menu ⋯) ou sem preset
+		if (!reviewQueue() && select.value) {
+			createQueue();
+			return;
+		}
+
 		setStage('4 · render', null, 'selecione o template de output para continuar');
 		$('render-options').hidden = false;
 		$('queue-footer').hidden = false;
+		editQueue();
 		setPickerLocked(true);
 		select.focus();
+	}
+
+	// Antes de criar a fila: a ordem (o puxador, à esquerda) e o que fica de fora (a lixeira, à direita: sai só da
+	// fila; a comp fica no projeto)
+	function queueItems() {
+		return Array.prototype.map.call($('file-list').children, function (row) {
+			return row._item;
+		}).filter(function (item) {
+			return item && item.status === 'success' && !item.excluded;
+		});
+	}
+
+	function editQueue() {
+		var list = $('file-list');
+
+		list.classList.add('is-editing');
+		state.run.items.forEach(function (item) {
+			if (item.row.querySelector('.drag-handle')) return;
+
+			item.row.insertBefore(PAD_SORT.handle(), item.row.firstChild);
+			item.row.appendChild(item.status === 'success' ? PAD_UTIL.trashButton('tirar da fila de render (a comp fica no projeto)', function () {
+				excludeItem(item);
+			}) : el('span', 'rq-del-space'));
+		});
+
+		PAD_SORT.enable(list, '.rq-row', function (from, to) {
+			var rows = Array.prototype.slice.call(list.children);
+			var row = rows.splice(from, 1)[0];
+
+			rows.splice(to, 0, row);
+			rows.forEach(function (r) {
+				list.appendChild(r);
+			});
+			renumberQueue();
+		});
+
+		$('queue-list-head').hidden = false;
+		renumberQueue();
+	}
+
+	function renumberQueue() {
+		Array.prototype.forEach.call($('file-list').children, function (row, i) {
+			row._card.querySelector('.file-type').textContent = String(i + 1).padStart(2, '0');
+		});
+
+		var n = queueItems().length;
+
+		$('queue-count').textContent = n;
+		$('btn-queue').textContent = n ? 'Criar fila de render: ' + n : 'Criar fila de render';
+		$('btn-queue').disabled = !n;
+	}
+
+	// a linha sai da lista (e da fila); a nota embaixo devolve, no mesmo lugar (a última que saiu primeiro)
+	function excludeItem(item) {
+		var row = item.row;
+
+		row.classList.add('is-gone');
+		setTimeout(function () {
+			item.excluded = true;
+			item.before = row.nextSibling;
+			(state.run.out = state.run.out || []).push(item);
+			row.remove();
+			row.classList.remove('is-gone');
+			renumberQueue();
+			showQueueNote();
+		}, 200);
+	}
+
+	function showQueueNote() {
+		var note = $('queue-note');
+		var out = state.run.out || [];
+		var last = out[out.length - 1];
+
+		note.textContent = '';
+		note.hidden = !last;
+		if (!last) return;
+
+		var undo = el('button', null, 'desfazer');
+
+		undo.type = 'button';
+		undo.addEventListener('click', function () {
+			var item = out.pop();
+			var list = $('file-list');
+
+			item.excluded = false;
+			list.insertBefore(item.row, item.before && item.before.parentNode === list ? item.before : null);
+			renumberQueue();
+			showQueueNote();
+		});
+		note.appendChild(document.createTextNode('“' + last.node.querySelector('.file-name').textContent + '” saiu da fila (a comp continua no projeto) · '));
+		note.appendChild(undo);
+	}
+
+	// Voltar e desfazer (antes de criar a fila): tira do projeto o template importado e as comps criadas; o projeto
+	// volta a como estava antes de preencher, e o painel volta para o input, com o texto (por isso sem confirmar:
+	// é só preencher de novo)
+	async function undoFill() {
+		var btn = $('btn-undo-fill');
+
+		btn.disabled = true;
+
+		try {
+			await call('fillUndo');
+			$('file-list').classList.remove('is-editing');
+			newRun();
+		} catch (err) {
+			notify('error', err.message);
+		}
+
+		btn.disabled = false;
 	}
 
 	async function createQueue() {
@@ -1772,12 +1982,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (state.selected) rememberPreset(state.selected.uri, template);
 		$('render-options').hidden = true;
 		$('queue-footer').hidden = true;
+		$('file-list').classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
 		setBusy(true);
 		setStage('4 · render', null, 'verificando o caminho de output…');
 
-		var targets = state.run.items.filter(function (item) {
-			return item.status === 'success';
-		});
+		// na ordem da lista, sem as que saíram da fila
+		var targets = queueItems();
 
 		try {
 			var begin = await call('queueBegin', { outputTemplate: template });
@@ -1790,6 +2002,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			setBusy(false);
 			$('render-options').hidden = false;
 			$('queue-footer').hidden = false;
+			editQueue();
 			return;
 		}
 
@@ -1830,6 +2043,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		run.finished = true;
 		$('render-options').hidden = true;
 		$('queue-footer').hidden = true;
+		$('file-list').classList.remove('is-editing');
+		$('queue-list-head').hidden = true;
+		$('queue-note').hidden = true;
 		$('run-footer').hidden = false;
 		setPickerLocked(false);
 		renderTree(); // o template entra nos recentes
@@ -1868,7 +2084,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		if (!paths.length) return notify('warning', 'Esse template não define uma pasta de output.');
 
 		try {
-			var res = await call('openOutputs', { paths: paths });
+			var res = await call('openOutputs', { paths: paths, atracao: info && info.config && info.config.atracao ? info.config.atracao.name : '' });
 
 			res.missing.forEach(function (path) {
 				notify('error', '#PAD_019 - output não pode ser acessado: ' + path);
@@ -1900,7 +2116,24 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		await loadTree(true);
 	}
 
+	// revisar a fila (a ordem, o que fica de fora e o preset) antes de criar: desligado por padrão (neste computador)
+	function reviewQueue() {
+		return store.get('reviewQueue') === '1';
+	}
+
+	function paintReviewItem() {
+		var item = document.querySelector('#app-menu [data-action="review-queue"]');
+
+		if (item) item.textContent = (reviewQueue() ? '✓ ' : '') + 'Revisar a fila antes de criar';
+	}
+
 	async function menuAction(action) {
+		if (action === 'review-queue') {
+			store.set('reviewQueue', reviewQueue() ? '0' : '1');
+			paintReviewItem();
+			updateInputCount();
+			notify('success', reviewQueue() ? 'a fila aparece para revisar antes de ser criada.' : 'o Preencher já põe na fila, com o preset lembrado.');
+		}
 		if (action === 'refresh') await refreshTree();
 		if (action === 'open-templates') await openTemplatesFolder();
 		if (action === 'docs') PAD_BRIDGE.openUrl(DOCS_URL);
@@ -2064,6 +2297,29 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			}
 		});
 
+		// a janela abre pronta para buscar: o foco na busca. e, com o foco em lugar nenhum (depois de um clique no
+		// fundo, por exemplo), digitar leva a letra para a busca e ↓ vai para o primeiro item da lista
+		setTimeout(function () {
+			if (document.activeElement === document.body && !state.selected) search.focus();
+		}, 60);
+		document.addEventListener('keydown', function (e) {
+			if (document.activeElement !== document.body || e.defaultPrevented || runIsOpen()) return;
+			if (PAD_KEYS.isMod(e) || e.altKey) return;
+
+			if (e.key === 'ArrowDown') {
+				var first = Array.prototype.filter.call($('tree').querySelectorAll('.tree-row'), function (row) {
+					return row.getClientRects().length;
+				})[0];
+
+				if (first) {
+					e.preventDefault();
+					PAD_KEYS.focusItem(first);
+				}
+			} else if (e.key.length === 1 && e.key !== ' ') {
+				search.focus(); // o foco muda antes de a letra entrar: ela cai na busca
+			}
+		});
+
 		$('search-clear').addEventListener('click', function () {
 			search.value = '';
 			search.dispatchEvent(new Event('input'));
@@ -2141,6 +2397,19 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('btn-output').addEventListener('click', openOutputs);
 		$('btn-output-run').addEventListener('click', openOutputs);
 		$('btn-queue').addEventListener('click', createQueue);
+		$('btn-queue').title = $('btn-fill').title = PAD_KEYS.modLabel + '+Enter'; // o atalho com o nome do sistema
+		// o mesmo atalho do Preencher segue o fluxo: Ctrl/Cmd+Enter na etapa da fila cria a fila de render
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter' || !PAD_KEYS.isMod(e) || e.defaultPrevented) return;
+
+			var btn = $('btn-queue');
+
+			if (btn.getClientRects().length && !btn.disabled && !$('queue-footer').hidden) {
+				e.preventDefault();
+				createQueue();
+			}
+		});
+		$('btn-undo-fill').addEventListener('click', undoFill);
 		// concluir sem fila: sem erros, o painel também fecha
 		$('btn-skip-queue').addEventListener('click', async function () {
 			$('render-options').hidden = true;
@@ -2153,6 +2422,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// menu ⋯
 		var menu = $('app-menu');
 
+		paintReviewItem();
 		menu.addEventListener('click', function (e) {
 			var btn = e.target.closest('button[data-action]');
 
@@ -2176,8 +2446,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	async function init() {
-		// a janela abre estreita, só com a busca (a largura do manifest só muda reinstalando)
-		if (PAD_BRIDGE.inCep() && window.innerWidth > COMPACT_WIDTH) PAD_BRIDGE.resizeWindow(COMPACT_WIDTH, window.innerHeight);
+		// a janela abre larga (as duas colunas, sem mudar de tamanho depois) e alta (o tamanho do manifest só muda reinstalando)
+		if (PAD_BRIDGE.inCep()) {
+			var openH = Math.max(window.innerHeight, Math.min(OPEN_HEIGHT, (screen.availHeight || OPEN_HEIGHT) - 60));
+			if (window.innerWidth < EXPANDED_WIDTH - 4 || window.innerHeight < openH - 4) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, EXPANDED_WIDTH), openH);
+		}
 
 		bindEvents();
 		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
@@ -2187,7 +2460,16 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				return p.name === value;
 			})[0];
 
-			return prod && prod.icon && !/^['"]/.test(prod.icon) ? PAD_UTIL.iconMarkup(prod.icon) : '';
+			if (!prod || !prod.icon) return '';
+
+			// o ícone de antes (a imagem PNG da configuração antiga, gravada como texto): a imagem, como na configuração
+			if (/^['"]/.test(prod.icon)) {
+				var src = PAD_UTIL.decodeIcon(prod.icon);
+
+				return src ? '<img class="dropdown-img" src="' + src + '" alt="">' : '';
+			}
+
+			return PAD_UTIL.iconMarkup(prod.icon);
 		});
 		$('production').addEventListener('change', onProductionChange);
 
@@ -2206,6 +2488,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setInterval(watchProduction, 2000);
 		window.addEventListener('focus', watchProduction);
+		window.addEventListener('resize', syncCardThumb); // a miniatura da lista acompanha a largura dos cartões
 	}
 
 	init();

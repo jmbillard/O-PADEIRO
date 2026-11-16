@@ -4,6 +4,10 @@
 		"label": "TV de tubo"
 	},
 	{
+		"key": "pao",
+		"label": "pãozinho"
+	},
+	{
 		"key": "jornal",
 		"label": "jornal"
 	},
@@ -140,12 +144,36 @@
 		"label": "pastas"
 	},
 	{
+		"key": "barra-logo-globo",
+		"label": "logo Globo"
+	},
+	{
 		"key": "barra-collect",
 		"label": "coletar"
 	},
 	{
 		"key": "barra-import",
 		"label": "importar"
+	},
+	{
+		"key": "barra-form",
+		"label": "formulário"
+	},
+	{
+		"key": "barra-fill",
+		"label": "preencher"
+	},
+	{
+		"key": "barra-template-new",
+		"label": "novo template"
+	},
+	{
+		"key": "barra-render",
+		"label": "render"
+	},
+	{
+		"key": "barra-organization",
+		"label": "organização"
 	},
 	{
 		"key": "oscar",

@@ -1,12 +1,12 @@
-# 📄 O FORNINHO · templates
+# 📄 A FORMA · templates
 
 [← O PADEIRO](../README.md)
 
-o painel **O FORNINHO**: buscar, selecionar e preencher templates, e criar a fila de render.
+o painel **A FORMA**: buscar, selecionar e preencher templates, e criar a fila de render.
 
-o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre estreita, só com a busca, e se alarga sozinha em duas colunas quando você escolhe um template (e volta a estreitar quando a seleção é desfeita).
+o painel de templates mostra os templates da produção escolhida no rodapé dele (à esquerda do **⋯**). a janela abre com o foco na busca: é só digitar. a janela abre larga e alta (a lista inteira sem rolar), com a busca ocupando todo o degradê. ao escolher um template, a coluna do degradê encolhe para a esquerda e a folha do preenchimento entra pela direita; desfeita a seleção, tudo volta. a janela não muda de tamanho.
 
-<p align="center"><img src="images/anim/forninho.webp" alt="O FORNINHO: busca, escolhe o template e preenche" width="900"></p>
+<p align="center"><img src="images/anim/forninho.webp" alt="A FORMA: busca, escolhe o template e preenche" width="900"></p>
 
 <table><tr><td width="40%"><img src="images/forninho-lista.webp" alt="a lista de templates, com as partes numeradas"></td><td><img src="images/forninho-preencher.webp" alt="o template selecionado, com as partes numeradas"></td></tr></table>
 
@@ -14,28 +14,28 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 | :---: | --- | :---: | --- |
 | ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** |
 | ❷ | **fixados, recentes e novos** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
-| ❸ | na lista, a **miniatura** cresce no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
+| ❸ | na lista, a **miniatura** cresce até o tamanho dos cartões no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
 | ❹ | **atualizar**: lê a pasta de novo | ❹ | **dicas** de preenchimento |
 | ❺ | **abrir a pasta** de templates | ❺ | **importar** sem preencher |
 | ❻ | **produção**: a pasta de templates mostrada | ❻ | **pasta de output** do template |
 | ❼ | **⋯**: configuração, ajuda e recarregar | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
 
-**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
+**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse, até o tamanho das dos cartões; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. prévias com transparência ficam sobre um quadriculado. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
-1. `◖ clique esquerdo` em **templates**, na barra.
+1. `◖ clique esquerdo` em **templates**, na barra, e em **preencher**, na gaveta que abre.
 2. busque ou navegue pelas pastas.
-3. selecione o template.
+3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
-5. clique em '*Preencher*' (ou `Ctrl/Cmd+Enter`).
-6. escolha o template de output e clique em '*Criar fila de render*'.
+5. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
+6. o botão '*Preencher… e pôr na fila*' preenche e já cria a fila de render, com o preset lembrado (o do template, o último usado ou o H.264). para revisar antes a ordem, o que fica de fora e o preset, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila pede o template de output e '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). sem preset nenhum, a tela da fila aparece mesmo desligada.
 
 ### a lista
 
-- **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. `Enter` seleciona o primeiro template encontrado.
+- **busca** → filtra enquanto você digita, sem diferenciar maiúsculas e acentos. com o foco em lugar nenhum (depois de um clique no fundo), digitar leva a letra para a busca e `↓` vai para a lista. `Enter` seleciona o primeiro template encontrado.
 - **★ fixados / recentes** → atalhos no topo da lista (veja [fixados e recentes](#fixados-e-recentes)).
 - **atualizar** → lê a pasta de templates de novo (com o loader).
 - **lista na hora** → a janela guarda a última lista lida de cada produção (na pasta temp do computador). ao abrir, a lista aparece na hora e a pasta é relida em segundo plano (o ícone de atualizar gira): se algo mudou, a lista se atualiza sozinha.
-- **volume desmontado** → no macOS, se a pasta de templates está num volume da rede que não está montado (ex: depois da VPN cair), o loader avisa '*o volume VFX não está montado: tentando montar…*' e o padeiro monta o share, como ao abrir uma pasta pelo acessorista. não montando (sem rede, sem VPN), a lista avisa. uma tentativa que falhou só se repete depois de 1 minuto.
+- **volume desmontado** → no macOS, se a pasta de templates está num volume da rede que não está montado (ex: depois da VPN cair), o loader avisa '*o volume VFX não está montado: tentando montar…*' e o padeiro monta o share, como ao abrir uma pasta pelo acessorista. recém-montado, o volume pode levar uns segundos para aparecer: o loader avisa '*esperando a pasta aparecer…*' e a lista carrega sozinha assim que ela aparece (até uns 45 segundos, o tempo de digitar a senha da rede). não montando (sem rede, sem VPN), a lista avisa. uma tentativa que falhou só se repete depois de 1 minuto.
 - **abrir pasta** → abre a pasta do template selecionado (sem seleção, a pasta de templates da produção).
 - **produção** (no rodapé, à esquerda do **⋯**) → escolhe a produção: a pasta de templates mostrada. a escolha vale para os outros painéis (e para o log). no meio de um preenchimento a troca espera.
 - **⋯** (canto direito, embaixo) → configuração (produções, logs e drives), ajuda (esta página) e recarregar o painel.
@@ -47,7 +47,8 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 
 > 🚩 *obs:*\
 > • a lista mostra só os arquivos `.aep` / `.aet` e as pastas que têm templates. uma pasta com uma única subpasta aparece como `PASTA / SUBPASTA`.\
-> • pastas de rede podem demorar: enquanto a lista é lida, o forninho mostra quantas pastas já foram lidas.\
+> • pastas de rede podem demorar: enquanto a lista é lida, A FORMA mostra quantas pastas já foram lidas.\
+> • pastas de autosave (`Auto-Save`), de logs, sem nome (`New Folder`, `untitled folder`, `Nova pasta`…) e as de coisas fora de uso (`OLD`, `NÃO VALE`, `NÃO USAR`) não aparecem na lista.\
 > • fixados e recentes são de cada computador e de cada produção.
 
 ### fixados e recentes
@@ -89,8 +90,8 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 - **preencher** (ou importar) com fontes faltando → segue normalmente, sem a janela '*Resolve Fonts*' do After Effects (as fontes que faltam são trocadas pela padrão).
 
 > 🚩 *obs:*\
-> • no macOS as fontes são copiadas para `~/Library/Fonts`; no Windows, instaladas por um script de PowerShell.\
-> • se o After Effects ainda não mostrar uma fonte recém-instalada, reinicie-o.
+> • no macOS as fontes são copiadas para `~/Library/Fonts` e registradas no sistema na hora (como o Catálogo de Fontes faz); no Windows, instaladas pela pasta de fontes do sistema.\
+> • depois de instalar, o padeiro espera o After Effects enxergar as fontes novas (até uns 15 segundos) e passa os textos que estavam com a fonte substituída para a fonte de verdade: o desenho atualiza sem reiniciar (After Effects 2024 ou mais novo).
 
 ### fila de render
 
@@ -98,6 +99,9 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), a saída vai para a pasta de saída deste computador ([configuração > meu usuário](producoes.md)) e aparece o aviso `#PAD_019`. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
 
+- **ordem** → arraste cada comp pelo puxador (os pontinhos à esquerda) para mudar a ordem da fila; os números acompanham.
+- **lixeira** (à direita de cada comp) → tira a comp da fila de render; ela continua no projeto. '*desfazer*', logo abaixo da lista, devolve.
+- **voltar e desfazer** (a seta no rodapé, à esquerda) → antes de criar a fila, desfaz o preenchimento inteiro: o template importado e as comps criadas saem do projeto, as pastas e as configurações voltam a como estavam, e o painel volta para o input, com o texto digitado (é só ajustar e preencher de novo).
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
 

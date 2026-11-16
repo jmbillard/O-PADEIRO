@@ -6,7 +6,7 @@
   /* rodapés: o centro dos botões fica sempre a esta distância do fundo da janela (alinha a busca e o
      formulário lado a lado e todas as janelas entre si). botões de 46 px nas barras brancas; 38 px no
      rodapé do cartão de templates (dentro do cartão, com 15 px de respiro) */
-  --footer-center: 50px;
+  --footer-center: 35px; /* o centro dos botões do rodapé: o redondo (19) a 16 px do fundo, como da lateral */
   --blue-50: #f2f6ff;
   --blue-100: #e9f1ff;
   --blue-200: #c9d9f8;
@@ -30,6 +30,8 @@
   --fold-on-brand: rgb(0 0 0 / 26%);
   /* contorno dos indicadores sobre o degradê (no escuro, cinza escuro: theme.css) */
   --badge-ring: rgb(var(--on-brand));
+  --attention: #f5a524; /* a cor de atenção (as bolinhas laranja e os avisos das dicas) */
+  --attention-text: #ffd28a; /* o texto de um aviso, sobre o fundo escuro da dica */
 
   --white: #ffffff;
   --surface: #ffffff;
@@ -85,6 +87,97 @@
   --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
 
   --workspace-max-width: 1500px;
+}
+
+/* as barras de rolagem, as mesmas em todo lugar: finas, sem trilho, arredondadas e discretas (na cor do contorno;
+   sobre o degradê, na cor do texto dele: panel.css). o After Effects usa um Chromium que não entende scrollbar-color:
+   sem estas regras, aparece a barra cinza do sistema */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* as cores dos tipos de item e de arquivo: uma por tipo, a mesma na configuração (organizar e coletar) e na migração
+   do CATADOR. --type é a cor, usada sólida em todo lugar; --type-soft é o tom claro, só para o começo do degradê das
+   faixas da migração (de onde o arquivo sai → para onde vai). quem tem data-type="<tipo>" recebe as duas */
+[data-type="render"] {
+  --type-soft: #ffa39b; /* comps de render */
+  --type: #e5483a;
+}
+
+[data-type="editaveis"] {
+  --type-soft: #ffbe8f; /* comps editáveis */
+  --type: #ef7d2a;
+}
+
+[data-type="precomps"] {
+  --type-soft: #f7dc7a; /* outras comps */
+  --type: #d6a50c;
+}
+
+[data-type="videos"] {
+  --type-soft: #ffa3cf; /* vídeos */
+  --type: #e0468f;
+}
+
+[data-type="imagens"] {
+  --type-soft: #8cc2ff; /* imagens */
+  --type: #2f7df0;
+}
+
+[data-type="sequencias"] {
+  --type-soft: #86e1e8; /* sequências de imagens */
+  --type: #0fa3b1;
+}
+
+[data-type="audio"] {
+  --type-soft: #8fe3b5; /* áudio */
+  --type: #1faa62;
+}
+
+[data-type="solidos"] {
+  --type-soft: #c3c9d6; /* sólidos */
+  --type: #7a8499;
+}
+
+[data-type="dados"] {
+  --type-soft: #cbe58a; /* dados */
+  --type: #7fae1d;
+}
+
+[data-type="missing"] {
+  --type-soft: #f3a6a6; /* arquivos ausentes */
+  --type: #c9302c;
+}
+
+[data-type="projeto"] {
+  --type-soft: #b3a8ff; /* projeto (.aep) */
+  --type: #6f5bf0;
+}
+
+[data-type="fontes"] {
+  --type-soft: #e2a6f5; /* fontes */
+  --type: #b04fd6;
+}
+
+[data-type="externos"] {
+  --type-soft: #ffd592; /* arquivos externos */
+  --type: #f09a12;
+}
+
+[data-type="saidas"] {
+  --type-soft: #b9c6e0; /* saídas (renders) */
+  --type: #5f7199;
 }
 
 /* =========================================================
@@ -297,7 +390,7 @@ svg {
 }
 
 .eyebrow {
-  color: rgb(var(--on-brand) / 68%);
+  color: rgb(var(--on-brand) / 88%);
 }
 
 /* Typewriter */
@@ -331,12 +424,13 @@ svg {
     background-color 180ms ease,
     border-color 180ms ease,
     box-shadow 220ms ease,
+    filter 220ms ease,
     transform 220ms var(--ease-soft);
 }
 
 .button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px rgb(var(--accent-rgb) / 22%); /* o mesmo brilho de foco dos campos */
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 2px;
 }
 
 .validation-messages {
@@ -419,7 +513,6 @@ svg {
 .button-secondary:hover:not(:disabled) {
   border-color: var(--border-hover);
   background: var(--surface-soft);
-  box-shadow: 0 5px 14px rgb(32 45 82 / 7%);
   transform: translateY(-1px);
 }
 
@@ -550,7 +643,6 @@ svg {
       var(--blue-400),
       var(--blue-mid, var(--blue-500)),
       var(--blue-600));
-  box-shadow: 0 2px 8px rgb(var(--accent-rgb) / 28%);
   transition: width 600ms var(--ease-soft);
 }
 
@@ -688,7 +780,6 @@ svg {
 .file-item:hover {
   border-color: var(--border-hover);
   background: var(--surface);
-  box-shadow: var(--shadow-hover);
   transform: translateY(-1px);
 }
 
@@ -701,7 +792,6 @@ svg {
 
 .file-item.is-processing:hover {
   border-color: var(--border-hover);
-  box-shadow: 0 8px 22px rgb(var(--accent-rgb) / 7%);
 }
 
 .file-item.is-processing::after {
@@ -738,7 +828,6 @@ svg {
   border: 1px solid #dae3f2;
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: 0 5px 12px rgb(35 50 92 / 7%);
   color: var(--blue-500);
   font-size: 0.58rem;
   font-weight: 800;

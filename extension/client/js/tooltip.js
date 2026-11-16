@@ -10,10 +10,16 @@ hover (assim o navegador não mostra duas dicas) e aparece depois de uma pausa c
 
 O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, e se ajusta nas bordas.
 
+Na barra (o painel tem uns 86 px no menor lado e, no After, nada sai dele), a dica das ferramentas fica por cima
+da barra: na horizontal, ao lado do botão (à direita, ou à esquerda sem espaço), com a altura da barra e em
+colunas (o nome | os cliques | os avisos); na vertical, embaixo do botão (ou em cima), com a largura do painel e
+empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! linha' é um item dele, com a bolinha
+(os grupos lado a lado na horizontal, um embaixo do outro na vertical).
+
 */
 
 (function () {
-	var DELAY = 450;
+	var DELAY = 2000; // o tempo parado em cima até a dica aparecer (vale para todas as janelas)
 	var GAP = 6;
 	var MARGIN = 4;
 
@@ -33,6 +39,113 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		return tip;
 	}
 
+	// o mouse pequeno com o botão do clique aceso (l: esquerdo, r: direito)
+	function mouse(side) {
+		var ns = 'http://www.w3.org/2000/svg';
+		var svg = document.createElementNS(ns, 'svg');
+		var parts = [
+			['path', { class: 'tip-mouse-btn', d: side === 'l' ? 'M6.5 1.2A5.3 5.3 0 0 0 1.2 6.5V7.5H6.5Z' : 'M6.5 1.2A5.3 5.3 0 0 1 11.8 6.5V7.5H6.5Z' }],
+			['rect', { class: 'tip-mouse-body', x: '0.65', y: '0.65', width: '11.7', height: '15.7', rx: '5.85' }],
+			['path', { class: 'tip-mouse-body', d: 'M6.5 0.8V7.5M0.8 7.5H12.2' }]
+		];
+
+		svg.setAttribute('viewBox', '0 0 13 17');
+		svg.setAttribute('class', 'tip-mouse');
+		svg.setAttribute('aria-hidden', 'true');
+		parts.forEach(function (part) {
+			var node = document.createElementNS(ns, part[0]);
+
+			Object.keys(part[1]).forEach(function (k) {
+				node.setAttribute(k, part[1][k]);
+			});
+			svg.appendChild(node);
+		});
+
+		return svg;
+	}
+
+	// a dica das ferramentas (NOME, uma linha em branco, ◖ → … e ◗ → …, e o estado depois): o nome em cima, cada
+	// clique numa linha com o mouse e o botão aceso, e o estado embaixo, mais apagado. as outras: o texto como está
+	function fill(t, text) {
+		var lines = String(text).split('\n');
+		// os cliques, os avisos ('!# título', '! item') e os itens de uma lista ('· item', ex: as ferramentas de
+		// uma gaveta)
+		var clicks = lines.filter(function (line) {
+			return /^\s*[◖◗]\s*→/.test(line) || /^!#? |^· /.test(line.trim());
+		});
+
+		t.textContent = '';
+		t.classList.toggle('is-rich', clicks.length > 0);
+		if (!clicks.length) {
+			t.textContent = text;
+			return;
+		}
+
+		var notes = [];
+		var named = false;
+		var clicksBox = document.createElement('div');
+		var warnBox = document.createElement('div');
+
+		clicksBox.className = 'tip-clicks';
+		warnBox.className = 'tip-warns';
+
+		lines.forEach(function (line, i) {
+			var m = /^\s*([◖◗])\s*→\s*(.*)$/.exec(line);
+			var w = /^(!#?|·|~!?) (.*)$/.exec(line.trim());
+
+			if (m) {
+				var row = document.createElement('p');
+				var body = document.createElement('span');
+
+				// '! ' no começo do texto: o que o clique faz tem pendência (a cor de atenção, como os avisos)
+				row.className = 'tip-click' + (/^! /.test(m[2]) ? ' is-warn' : '');
+				body.textContent = m[2].replace(/^! /, '');
+				row.appendChild(mouse(m[1] === '◖' ? 'l' : 'r'));
+				row.appendChild(body);
+				clicksBox.appendChild(row);
+				if (!clicksBox.parentNode) t.appendChild(clicksBox);
+			} else if (w) {
+				var warn = document.createElement('p');
+				var text = document.createElement('span');
+
+				// um título abre um grupo novo; um item sem título entra no último grupo (ou num grupo novo)
+				if (w[1] === '!#' || !warnBox.lastChild) {
+					var group = document.createElement('div');
+
+					group.className = 'tip-wgroup';
+					warnBox.appendChild(group);
+				}
+
+				// '~ ' e '~! ': o item só com o texto, sem a bolinha nem o lugar dela (a lista da gaveta: a pendência é
+				// a cor do texto; a bolinha fica na dica da própria ferramenta)
+				warn.className = w[1] === '!#' ? 'tip-whead' : w[1] === '!' || w[1] === '~!' ? 'tip-warn' : 'tip-item';
+				if (w[1].charAt(0) === '~') warn.classList.add('is-plain');
+				text.textContent = w[2];
+				if (w[1] !== '!#' && w[1].charAt(0) !== '~') warn.appendChild(document.createElement('i'));
+				warn.appendChild(text);
+				warnBox.lastChild.appendChild(warn);
+			} else if (line.trim() && i === 0) {
+				var name = document.createElement('p');
+
+				name.className = 'tip-name';
+				name.textContent = line.trim();
+				t.appendChild(name);
+				named = true;
+			} else if (line.trim()) notes.push(line.trim());
+		});
+
+		if (warnBox.childNodes.length) t.appendChild(warnBox);
+
+		if (notes.length) {
+			var note = document.createElement('p');
+
+			note.className = 'tip-note';
+			note.textContent = notes.join('\n');
+			t.appendChild(note);
+		}
+		t.classList.toggle('has-name', named);
+	}
+
 	function hide() {
 		clearTimeout(timer);
 		target = null;
@@ -40,11 +153,64 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		if (tip) tip.classList.remove('is-visible');
 	}
 
+	// a dica das ferramentas na barra: por cima dela, ao lado do botão (horizontal) ou embaixo (vertical)
+	function placeOnBar(t, box, vw, vh) {
+		var BAR = 8;
+
+		t.classList.add('is-bar');
+		t.classList.remove('is-narrow');
+		t.classList.toggle('is-bar-v', vh > vw);
+		t.style.maxWidth = '';
+		t.style.width = '';
+		t.style.height = '';
+
+		if (vh > vw) {
+			t.style.width = vw - 12 + 'px';
+			t.style.left = '6px';
+
+			var h = t.offsetHeight;
+			var below = box.bottom + GAP;
+			var above = box.top - GAP - h;
+
+			t.style.top = Math.round(below + h <= vh - BAR ? below : above >= BAR ? above : Math.max(BAR, vh - BAR - h)) + 'px';
+			return;
+		}
+
+		t.style.top = BAR + 'px';
+		t.style.height = vh - BAR * 2 + 'px';
+		t.style.maxWidth = vw - BAR * 2 + 'px';
+
+		// nunca por cima do botão: à direita se couber, senão à esquerda; sem lugar inteiro em nenhum dos dois,
+		// no lado com mais espaço, com os textos cortados (…)
+		var w = t.offsetWidth;
+		var spaceR = vw - BAR - box.right - GAP;
+		var spaceL = box.left - GAP - BAR;
+		var right = w <= spaceR || (w > spaceL && spaceR >= spaceL);
+
+		if (w > (right ? spaceR : spaceL)) {
+			t.style.maxWidth = Math.max(120, right ? spaceR : spaceL) + 'px';
+			w = t.offsetWidth;
+		}
+
+		t.style.left = Math.round(right ? box.right + GAP : Math.max(BAR, box.left - GAP - w)) + 'px';
+	}
+
 	function place(el) {
 		var box = el.getBoundingClientRect();
 		var vw = document.documentElement.clientWidth;
 		var vh = document.documentElement.clientHeight;
 		var t = balloon();
+
+		t.classList.remove('is-bar', 'is-bar-v');
+		t.style.width = '';
+		t.style.height = '';
+
+		if (document.body.classList.contains('bar-page') && t.classList.contains('is-rich')) {
+			t.style.left = '0px';
+			t.style.top = '0px';
+			placeOnBar(t, box, vw, vh);
+			return;
+		}
 
 		t.style.maxWidth = Math.min(420, vw - MARGIN * 2) + 'px';
 		t.classList.toggle('is-narrow', vw < 160); // barra vertical (64 px): letra menor
@@ -74,7 +240,7 @@ O balão não sai da janela: abre embaixo do elemento ou, sem espaço, em cima, 
 		// menu ⋯ aberto: a dica do botão ficaria por cima do menu
 		if (el.matches('summary') && el.parentElement && el.parentElement.open) return;
 
-		balloon().textContent = text;
+		fill(balloon(), text);
 		place(el);
 		tip.classList.add('is-visible');
 	}

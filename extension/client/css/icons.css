@@ -2,9 +2,11 @@
    ÍCONES DAS FERRAMENTAS — as animações (barra e configuração)
    Os desenhos ficam em js/icons.js; aqui, o que cada um faz com o mouse em cima: no botão da barra
    (.bar-btn) e na aba da configuração (.tab).
+   o padrão: enquanto o mouse está em cima, o ícone fica diferente do normal (o movimento chega num estado e para
+   nele); ao sair, volta. nada anima e volta sozinho com o mouse ainda em cima.
    ========================================================= */
 
-/* buscar: a lupa procura (vai para o lado e para cima, inclinada) */
+/* buscar: a lupa procura (vai para o lado e para cima, inclinada) e, ao levantar, um reflexo passa no vidro */
 .anim-search {
   transform-origin: 40% 40%;
   transition: transform 320ms var(--ease-soft);
@@ -15,42 +17,44 @@
   transform: translate(-1.5px, -1.5px) rotate(-8deg);
 }
 
-/* templates: a coluna da lista abre e volta, e o título desce um pouco (a janela se arruma) */
-.anim-tpl .tpl-side,
-.anim-tpl .tpl-head {
+.anim-search .search-glint {
+  opacity: 0;
+  stroke-opacity: 0.85;
+}
+
+.bar-btn:hover:not(:disabled) .anim-search .search-glint,
+.tab:hover .anim-search .search-glint {
+  animation: search-glint 620ms ease-out 120ms;
+}
+
+@keyframes search-glint {
+  0% {
+    opacity: 1;
+    transform: translate(-7px, -7px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(9px, 9px);
+  }
+}
+
+/* templates: duas folhas empilhadas (os modelos); no hover elas se separam (a de trás sobe para o lado, a da
+   frente desce) */
+.anim-tpl .tpl-back,
+.anim-tpl .tpl-front {
   transform-box: view-box;
+  transition: transform 420ms var(--ease-soft);
 }
 
-.bar-btn:hover:not(:disabled) .anim-tpl .tpl-side,
-.tab:hover .anim-tpl .tpl-side {
-  animation: tpl-side 640ms var(--ease-soft);
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-back,
+.tab:hover .anim-tpl .tpl-back {
+  transform: translate(1.3px, -1.3px);
 }
 
-.bar-btn:hover:not(:disabled) .anim-tpl .tpl-head,
-.tab:hover .anim-tpl .tpl-head {
-  animation: tpl-head 640ms var(--ease-soft);
-}
-
-@keyframes tpl-side {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  45% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes tpl-head {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  45% {
-    transform: translateY(-1.5px);
-  }
+.bar-btn:hover:not(:disabled) .anim-tpl .tpl-front,
+.tab:hover .anim-tpl .tpl-front {
+  transform: translate(-1px, 1px);
 }
 
 /* pastas: a frente da pasta se abre */
@@ -64,38 +68,32 @@
   transform: skewX(-12deg) scaleY(0.72) translateX(1.5px);
 }
 
-/* importar (versão anterior do .aep): a seta em volta do AE dá um giro curto para trás e volta; enquanto isso,
-   o A e depois o E dão uma subidinha e voltam ao lugar */
-.anim-import .import-turn {
-  transform-box: view-box;
-  transform-origin: 12px 12px;
+/* importar (o .aep de outra versão): AE entre duas meias setas (⇌, a conversão). no hover, tudo anda só na
+   horizontal: a seta de cima e o E para a direita, a de baixo e o A para a esquerda (sem pular nem crescer: as
+   letras e as setas não se esbarram) */
+.anim-import .import-arrow,
+.anim-import .import-letter {
+  transition: transform 420ms var(--ease-soft);
 }
 
-.bar-btn:hover:not(:disabled) .anim-import .import-turn,
-.tab:hover .anim-import .import-turn {
-  animation: import-turn 620ms var(--ease-soft);
+.bar-btn:hover:not(:disabled) .anim-import .import-arrow.up,
+.tab:hover .anim-import .import-arrow.up {
+  transform: translateX(2px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-import .import-arrow.down,
+.tab:hover .anim-import .import-arrow.down {
+  transform: translateX(-2px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter,
 .tab:hover .anim-import .import-letter {
-  animation: import-hop 420ms var(--ease-soft) 60ms;
+  transform: translateX(-1.2px);
 }
 
 .bar-btn:hover:not(:disabled) .anim-import .import-letter.l2,
 .tab:hover .anim-import .import-letter.l2 {
-  animation-delay: 170ms;
-}
-
-@keyframes import-hop {
-  45% {
-    transform: translateY(-1.5px);
-  }
-}
-
-@keyframes import-turn {
-  45% {
-    transform: rotate(-40deg);
-  }
+  transform: translateX(1.2px);
 }
 
 /* coletar: as folhas saem um pouco da pasta e abrem em leque (movimento rígido: o traço não deforma) */
@@ -118,34 +116,28 @@
   transform: translateY(-1.2px) rotate(5deg);
 }
 
-/* projeto: a claquete fica aberta (diferencia dos outros ícones); no hover bate e abre de novo */
+/* projeto: a claquete fechada; no hover ela abre (passa um pouco e assenta) e fica aberta */
 .anim-clap .clap-top {
-  transform: rotate(-15deg);
   transform-box: fill-box;
   transform-origin: 0 100%;
 }
 
 .bar-btn:hover:not(:disabled) .anim-clap .clap-top,
 .tab:hover .anim-clap .clap-top {
-  animation: clap 760ms var(--ease-soft);
+  animation: clap 420ms var(--ease-soft) forwards;
 }
 
 @keyframes clap {
-  0%,
+  0% {
+    transform: rotate(0);
+  }
+
+  65% {
+    transform: rotate(-19deg);
+  }
+
   100% {
     transform: rotate(-15deg);
-  }
-
-  32% {
-    transform: rotate(1deg);
-  }
-
-  42% {
-    transform: rotate(0);
-  }
-
-  55% {
-    transform: rotate(0);
   }
 }
 
@@ -164,14 +156,18 @@
   transform: translateY(3.2px);
 }
 
-/* renomear: digitação rápida (letras aparecem e o cursor acompanha) */
+/* renomear: o campo só com o cursor; no hover, o texto é digitado (os tracinhos aparecem e o cursor acompanha) e
+   fica */
 .anim-type .type-char {
+  opacity: 0;
+  transform: scaleX(0);
   transform-origin: 0 50%;
 }
 
+
 .bar-btn:hover:not(:disabled) .anim-type .type-char,
 .tab:hover .anim-type .type-char {
-  animation: type-char 140ms ease-out backwards;
+  animation: type-char 140ms ease-out forwards;
 }
 
 .bar-btn:hover:not(:disabled) .anim-type .type-char:nth-of-type(2),
@@ -186,17 +182,17 @@
 
 .bar-btn:hover:not(:disabled) .anim-type .type-caret,
 .tab:hover .anim-type .type-caret {
-  animation: type-caret 360ms steps(3, end);
+  animation: type-caret 360ms steps(3, end) forwards;
 }
 
-/* fontes: o T fica negrito, itálico e fino */
+/* fontes: o T passa por negrito e fino e fica itálico */
 .anim-font .font-t {
   transform-origin: 50% 100%;
 }
 
 .bar-btn:hover:not(:disabled) .anim-font .font-t,
 .tab:hover .anim-font .font-t {
-  animation: font-style 1100ms ease-in-out;
+  animation: font-style 900ms ease-in-out forwards;
 }
 
 @keyframes type-char {
@@ -213,40 +209,126 @@
 
 @keyframes type-caret {
   from {
-    transform: translateX(-9px);
+    transform: translateX(0);
   }
 
   to {
-    transform: translateX(0);
+    transform: translateX(12.6px);
   }
 }
 
 @keyframes font-style {
-
-  0%,
-  100% {
+  0% {
     stroke-width: 1.7;
     transform: skewX(0);
   }
 
-  22% {
+  30% {
     stroke-width: 3.6;
     transform: skewX(0);
   }
 
-  44% {
-    stroke-width: 1.7;
+  55% {
+    stroke-width: 0.8;
     transform: skewX(0);
   }
 
-  60%,
-  72% {
+  100% {
     stroke-width: 1.7;
-    transform: skewX(-16deg);
+    transform: skewX(-14deg);
   }
+}
 
-  86% {
-    stroke-width: 0.7;
-    transform: skewX(0);
-  }
+/* criar / alterar projeto (a ferramenta do projeto, na gaveta Projeto): a folha sobe um pouco e a última linha
+   termina de ser escrita, e fica */
+.anim-form .form-sheet {
+  transition: transform 360ms var(--ease-soft);
+}
+
+.anim-form .form-line {
+  transition: stroke-dasharray 420ms var(--ease-soft) 120ms;
+}
+
+.bar-btn:hover:not(:disabled) .anim-form .form-sheet,
+.tab:hover .anim-form .form-sheet {
+  transform: translateY(-1.5px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-form .form-line,
+.tab:hover .anim-form .form-line {
+  stroke-dasharray: 7 20;
+}
+
+/* preencher (gaveta Templates): o lápis sobe até a segunda linha e escreve; ela cresce até ele */
+.anim-fill .fill-line {
+  transition: stroke-dasharray 520ms var(--ease-soft) 80ms;
+}
+
+.anim-fill .fill-pen {
+  transition: transform 520ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-fill .fill-line,
+.tab:hover .anim-fill .fill-line {
+  stroke-dasharray: 8.5 20;
+}
+
+.bar-btn:hover:not(:disabled) .anim-fill .fill-pen,
+.tab:hover .anim-fill .fill-pen {
+  transform: translate(1px, -4.5px);
+}
+
+/* criar template (gaveta Templates): o + gira um quarto de volta e fica maior */
+.anim-new .new-plus {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 420ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-new .new-plus,
+.tab:hover .anim-new .new-plus {
+  transform: rotate(90deg) scale(1.3);
+}
+
+/* organização (a gaveta de renomear e organizar): um bloco torto, fora do lugar; no hover ele encaixa na grade */
+/* render: a fila anda (entra mais uma linha embaixo) e o play avança */
+.anim-render .render-lines,
+.anim-render .render-play,
+.anim-render .render-last {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 420ms var(--ease-soft),
+    opacity 300ms ease;
+}
+
+.anim-render .render-last {
+  opacity: 0;
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-lines,
+.tab:hover .anim-render .render-lines {
+  transform: translateY(-2.5px);
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-last,
+.tab:hover .anim-render .render-last {
+  opacity: 1;
+}
+
+.bar-btn:hover:not(:disabled) .anim-render .render-play,
+.tab:hover .anim-render .render-play {
+  transform: translateX(2px) scale(1.12);
+}
+
+.anim-org .org-loose {
+  transform: translate(1.2px, 1.4px) rotate(24deg);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 420ms var(--ease-soft);
+}
+
+.bar-btn:hover:not(:disabled) .anim-org .org-loose,
+.tab:hover .anim-org .org-loose {
+  transform: none;
 }

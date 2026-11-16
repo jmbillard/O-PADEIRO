@@ -258,25 +258,28 @@ PADX.machinePrefs = function () {
 		defaultUser: padDefaultUser(),
 		projects: padMachinePath(d.projects),
 		outputs: padMachinePath(d.outputs),
+		render: padMachineRender(d),
 		productions: padMachineProductions(d),
 		log: padMachineLog(),
 		localMode: padLocalForced(),
 		search: padMachineSearch(d.search),
 		fontsUpload: padMachineFontsUpload(),
+		fontsCheck: padMachineFontsCheck(),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, productions, log, localMode, search, fontsUpload } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck() };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
 	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
+	if (a.render != null) data.render = padMachineRender({ render: a.render });
 	if (a.log != null) data.log = a.log !== false;
 
 	if (a.productions != null) {
@@ -306,6 +309,7 @@ PADX.saveMachinePrefs = function (a) {
 	if (a.localMode != null) data.localMode = a.localMode === true;
 	if (a.search != null) data.search = padMachineSearch(a.search);
 	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
+	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
@@ -958,6 +962,8 @@ PADX.listDir = function (a) {
 		var name = items[i].displayName;
 
 		if (items[i] instanceof Folder) {
+			if (padIsJunkFolder(name)) continue; // autosave e logs ficam fora da lista
+
 			entries.push({ type: 'folder', name: name, uri: items[i].absoluteURI });
 		} else if (PADX_TEMPLATE_EXT.indexOf(getFileExt(name)) >= 0) {
 			// a data de criação (os 'novos' da lista: os dos últimos 15 dias); sem ela, a última modificação
@@ -1248,6 +1254,27 @@ PADX.importTemplate = function (a) {
 
 */
 
+// A letra e o acento num caractere só (E + ´ → É): o texto que chega com o acento separado (NFD) é desenhado com o
+// acento na fonte padrão (Myriad) quando a fonte do template não tem o acento solto. o painel já manda junto
+// (normalize); aqui vale para o que vem de outros lugares (scripts). só as letras do português e do espanhol
+var PAD_ACCENT_MARKS = { '\u0300': 'grave', '\u0301': 'acute', '\u0302': 'circ', '\u0303': 'tilde', '\u0308': 'uml', '\u0327': 'cedil' };
+var PAD_ACCENT_TABLE = {
+	grave: { a: '\u00E0', e: '\u00E8', i: '\u00EC', o: '\u00F2', u: '\u00F9', A: '\u00C0', E: '\u00C8', I: '\u00CC', O: '\u00D2', U: '\u00D9' },
+	acute: { a: '\u00E1', e: '\u00E9', i: '\u00ED', o: '\u00F3', u: '\u00FA', y: '\u00FD', A: '\u00C1', E: '\u00C9', I: '\u00CD', O: '\u00D3', U: '\u00DA', Y: '\u00DD' },
+	circ: { a: '\u00E2', e: '\u00EA', i: '\u00EE', o: '\u00F4', u: '\u00FB', A: '\u00C2', E: '\u00CA', I: '\u00CE', O: '\u00D4', U: '\u00DB' },
+	tilde: { a: '\u00E3', o: '\u00F5', n: '\u00F1', A: '\u00C3', O: '\u00D5', N: '\u00D1' },
+	uml: { a: '\u00E4', e: '\u00EB', i: '\u00EF', o: '\u00F6', u: '\u00FC', A: '\u00C4', E: '\u00CB', I: '\u00CF', O: '\u00D6', U: '\u00DC' },
+	cedil: { c: '\u00E7', C: '\u00C7' }
+};
+
+function padComposeAccents(text) {
+	return String(text).replace(/([A-Za-z])([\u0300\u0301\u0302\u0303\u0308\u0327])/g, function (all, letter, mark) {
+		var table = PAD_ACCENT_TABLE[PAD_ACCENT_MARKS[mark]];
+
+		return table && table[letter] ? table[letter] : all;
+	});
+}
+
 // Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
 // a: { uri, text, quiet }
 PADX.fillBegin = function (a) {
@@ -1258,7 +1285,12 @@ PADX.fillBegin = function (a) {
 	if (!files.config.exists) throw new Error('#PAD_017 - esse template não tem arquivo de configuração');
 
 	var templateData = padReadTemplateConfig(files.config);
-	var text = String(a.text);
+	var text = padComposeAccents(String(a.text));
+
+	// os tokens das pastas de output ({ano}, {mes}…): trocados aqui, valem para a fila, o abrir pasta e o _script.js
+	if (templateData.outputPath instanceof Array) {
+		for (var op = 0; op < templateData.outputPath.length; op++) templateData.outputPath[op] = padFillDateTokens(templateData.outputPath[op], templateData.atracao && templateData.atracao.name);
+	}
 
 	if (text.trim() == '') throw new Error('#PAD_046 - o texto de input está vazio');
 
@@ -1268,6 +1300,7 @@ PADX.fillBegin = function (a) {
 	if (templateData.textCase == 'titleCase') text = text.toTitleCase();
 
 	var inputTextArray = text.split(/[\n\r]{2,}/);
+	var snapshot = padProjectSnapshot(); // para o "voltar e desfazer" da fila de render (PADX.fillUndo)
 
 	return padGroup('O PADEIRO: importar template', function () {
 		// Define configurações do projeto
@@ -1349,6 +1382,7 @@ PADX.fillBegin = function (a) {
 			newComps: [],
 			newOutputs: [],
 			renderTemplates: renderList,
+			snapshot: snapshot,
 			count: 0
 		};
 
@@ -1530,6 +1564,129 @@ PADX.fillFinish = function () {
 	};
 };
 
+// Como o projeto estava antes de preencher: cada item (o id, o nome, se é pasta e a pasta onde estava), as
+// configurações que o preenchimento muda e os metadados. → para o padFillUndo
+function padProjectSnapshot() {
+	var p = app.project;
+	var items = [];
+	var ids = {};
+
+	for (var i = 1; i <= p.numItems; i++) {
+		var it = p.item(i);
+		var parent = it.parentFolder;
+
+		items.push({ id: it.id, name: it.name, folder: it instanceof FolderItem, parent: parent && parent !== p.rootFolder ? parent.id : 0 });
+		ids[it.id] = true;
+	}
+
+	var xmp = null;
+
+	try {
+		xmp = p.xmpPacket;
+	} catch (err) { }
+
+	return {
+		items: items,
+		ids: ids,
+		settings: { bitsPerChannel: p.bitsPerChannel, expressionEngine: p.expressionEngine, linearBlending: p.linearBlending, timeDisplayType: p.timeDisplayType },
+		xmp: xmp
+	};
+}
+
+function padItemByID(id) {
+	try {
+		return app.project.itemByID(id);
+	} catch (err) {
+		return null;
+	}
+}
+
+// Voltar e desfazer (na fila de render, antes de criá-la): o projeto volta a como estava antes de preencher. as
+// pastas que existiam voltam (o organizar desfaz e refaz as pastas; as que sumiram são criadas de novo, com o mesmo
+// nome), cada item volta para a pasta onde estava, e sai tudo o que entrou (o template importado, as comps criadas,
+// as pastas novas). as configurações do projeto e os metadados também voltam. → { removed }
+PADX.fillUndo = function () {
+	var run = PADX_run;
+
+	if (!run || !run.snapshot) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
+	if (run.outputs) throw new Error('#PAD_049 - a fila de render já foi criada: use o ' + (appOs == 'Mac' ? 'Cmd+Z' : 'Ctrl+Z') + ' do After Effects');
+
+	var snap = run.snapshot;
+	var p = app.project;
+	var removed = 0;
+
+	padGroup('O PADEIRO: desfazer preenchimento', function () {
+		var byOld = {};
+		var keep = {};
+		var s;
+
+		// 1. as pastas que existiam (as que sumiram, de novo) e os outros itens
+		for (s = 0; s < snap.items.length; s++) {
+			var rec = snap.items[s];
+			var item = padItemByID(rec.id);
+
+			if (!item && rec.folder) item = p.items.addFolder(rec.name);
+			if (item) byOld[rec.id] = item;
+		}
+
+		for (var k in byOld) if (byOld.hasOwnProperty(k)) keep[byOld[k].id] = true;
+
+		// 2. cada um na pasta onde estava
+		for (s = 0; s < snap.items.length; s++) {
+			var it = byOld[snap.items[s].id];
+			var parent = snap.items[s].parent ? byOld[snap.items[s].parent] : p.rootFolder;
+
+			if (!it || !parent || it.parentFolder === parent) continue;
+
+			try {
+				it.parentFolder = parent;
+			} catch (err) { }
+		}
+
+		// 3. sai o que entrou: primeiro os itens, depois as pastas novas (já vazias)
+		for (var i = p.numItems; i >= 1; i--) {
+			var a = p.item(i);
+
+			if (!keep[a.id] && !(a instanceof FolderItem)) {
+				a.remove();
+				removed++;
+			}
+		}
+
+		var again = true;
+
+		while (again) {
+			again = false;
+
+			for (var f = p.numItems; f >= 1; f--) {
+				var folder = p.item(f);
+
+				if (folder instanceof FolderItem && !keep[folder.id] && folder.numItems === 0) {
+					folder.remove();
+					removed++;
+					again = true;
+				}
+			}
+		}
+
+		// 4. as configurações do projeto e os metadados
+		try {
+			p.bitsPerChannel = snap.settings.bitsPerChannel;
+			p.expressionEngine = snap.settings.expressionEngine;
+			p.linearBlending = snap.settings.linearBlending;
+			p.timeDisplayType = snap.settings.timeDisplayType;
+		} catch (err) { }
+
+		try {
+			if (snap.xmp != null) p.xmpPacket = snap.xmp;
+		} catch (err) { }
+	});
+
+	PADX_run = null;
+
+	return { removed: removed };
+};
+
 /*
 
 ---------------------------------------------------------------
@@ -1674,7 +1831,7 @@ PADX.openOutputs = function (a) {
 	for (var o = 0; o < paths.length; o++) {
 		// no volume realmente montado (EDIT_IN_PLACE-1 … -5; monta o share se não estiver): o caminho gravado
 		// fica sem o sufixo
-		var folder = new Folder(padMountedPath(padPath(paths[o])));
+		var folder = new Folder(padMountedPath(padPath(padFillDateTokens(paths[o], a.atracao))));
 		var near = folder.exists ? folder : nearestExistingFolder(folder.fsName);
 
 		// a pasta ainda não existe (o render cria): abre a mais perto que existir, dentro do volume
@@ -1718,24 +1875,100 @@ function padRequireNetwork(code) {
 	if (!netAccess()) throw new Error('#' + code + ' - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" nas preferências');
 }
 
-// Abre a pasta do último item da fila de render (ou a mais próxima que existe).
+// A pasta do caminho, mesmo que alguém tenha renomeado uma das pastas no meio (SERVICO → _SERVICO, 03 SAIDA →
+// 03_SAIDA): da pasta mais funda que existe para baixo, cada nível que falta é procurado entre as pastas de lá pelo
+// nome sem símbolos, espaços e acentos (padFolderKey) e, sem nenhuma, também sem o número da frente (03 SAIDA → SAIDA).
+// → Folder, ou null (algum nível não foi achado)
+function padResolveRenamed(path) {
+	var parts = padSlash(path).replace(/\/+$/, '').split('/');
+	var at = parts.length;
+	var folder = new Folder(path);
+
+	while (at > 1 && !folder.exists) {
+		at--;
+		folder = new Folder(parts.slice(0, at).join('/'));
+	}
+	if (!folder.exists) return null;
+
+	for (var i = at; i < parts.length; i++) {
+		var want = padFolderKey(parts[i]);
+		var bare = want.replace(/^\d+/, '');
+		var list = [];
+		var hit = null;
+		var loose = null;
+
+		try {
+			list = folder.getFiles() || [];
+		} catch (err) { }
+
+		for (var j = 0; j < list.length && !hit; j++) {
+			if (!(list[j] instanceof Folder)) continue;
+
+			var key = padFolderKey(decodeURI(list[j].name));
+
+			if (key == want) hit = list[j];
+			else if (!loose && bare && key.replace(/^\d+/, '') == bare) loose = list[j];
+		}
+
+		folder = hit || loose;
+		if (!folder) return null;
+	}
+
+	return folder;
+}
+
+// Abre a pasta do output da fila de render: a do último item; se ela não existe (nem renomeada), a do item de antes,
+// e assim por diante. nenhuma achada: a pasta mais próxima que existe da do último item.
 PADX.openLastOutput = function () {
 	padRequireNetwork('PAD_007');
 
-	var outputFile = getLastOutputFile();
+	var rq = app.project.renderQueue;
+	var first = '';
+	var tried = {};
 
-	if (outputFile == null) throw new Error('#PAD_008 - a fila de render está vazia...');
+	for (var i = rq.numItems; i >= 1; i--) {
+		var item = rq.item(i);
 
-	// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA & INTER);
-	// padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
-	var outputPath = padPath(outputFile.parent.fsName);
-	var folder = nearestExistingFolder(outputPath);
+		for (var m = 1; m <= item.numOutputModules; m++) {
+			var file = null;
 
-	if (folder == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(outputPath));
+			try {
+				file = item.outputModule(m).file;
+			} catch (err) { }
+			if (!file) continue;
 
-	openFolder(folder.fsName);
+			// fsName: o caminho do sistema já decodificado ('decodeURI' deixa '#' e '&' como %23 e %26: C# ABERTA &
+			// INTER); padPath acha o volume realmente montado (EDIT_IN_PLACE-1 … -5)
+			var outputPath = padPath(file.parent.fsName);
 
-	return { messages: [], data: { path: folder.fsName } };
+			if (!first) first = outputPath;
+			if (tried[outputPath]) continue;
+			tried[outputPath] = true;
+
+			var folder = padResolveRenamed(outputPath);
+
+			if (folder) {
+				openFolder(folder.fsName);
+
+				var notes = [];
+
+				if (padPathKey(folder.fsName) != padPathKey(outputPath)) notes.push('a pasta foi renomeada: abri ' + padDisplayPath(folder.fsName));
+				if (outputPath != first) notes.push('a pasta do último item não existe mais: abri a de um item anterior da fila');
+
+				return { messages: [], data: { path: folder.fsName, note: notes.join('\n') } };
+			}
+		}
+	}
+
+	if (!first) throw new Error('#PAD_008 - a fila de render está vazia...');
+
+	var near = nearestExistingFolder(first);
+
+	if (near == null) throw new Error('#PAD_009 - a pasta não foi encontrada: ' + padDisplayPath(first));
+
+	openFolder(near.fsName);
+
+	return { messages: [], data: { path: near.fsName, note: 'nenhuma pasta de output da fila existe: abri a mais próxima de ' + padDisplayPath(first) } };
 };
 
 // Instala as fontes do projeto: as da pasta de fontes dele (o coletar junta lá) ou, sem ela, as da pasta FONTS
@@ -1799,28 +2032,250 @@ PADX.collectFonts = function (a) {
 	});
 };
 
+// O que cada item do projeto tem agora (nome ou pasta), pelo id: a barra conta o que mudou depois da ação.
+function padItemSnapshot(key) {
+	var snap = {};
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (key == 'parent') {
+			snap[item.id] = item.parentFolder ? item.parentFolder.id : 0;
+		} else {
+			snap[item.id] = item.name;
+		}
+	}
+
+	return snap;
+}
+
+// Quantos itens mudaram desde o retrato (os que não existiam ou sumiram não contam).
+function padItemChanges(before, key) {
+	var after = padItemSnapshot(key);
+	var count = 0;
+
+	for (var id in after) {
+		if (!after.hasOwnProperty(id) || !before.hasOwnProperty(id)) continue;
+		if (after[id] !== before[id]) count++;
+	}
+
+	return count;
+}
+
+// Os nomes dos arquivos de saída da fila de render, na ordem (item da fila / módulo de saída).
+function padOutputSnapshot() {
+	var names = [];
+	var rq = app.project.renderQueue;
+
+	for (var i = 1; i <= rq.numItems; i++) {
+		var item = rq.item(i);
+
+		for (var j = 1; j <= item.numOutputModules; j++) {
+			var name = '';
+
+			try {
+				if (item.outputModule(j).file) name = item.outputModule(j).file.name;
+			} catch (err) { }
+
+			names.push(name);
+		}
+	}
+
+	return names;
+}
+
 PADX.renameComps = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
+		var before = padItemSnapshot('name');
+
 		padGroup('renomear comps', function () {
 			renamePromoComps(app.project.selection);
 		});
+
+		return { count: padItemChanges(before, 'name') };
 	});
 };
 
 PADX.renameOutputs = function () {
 	return padCollect(function () {
+		var before = padOutputSnapshot();
+
 		padGroup('renomear outputs', function () {
 			renameOutputs();
 		});
+
+		var after = padOutputSnapshot();
+		var count = 0;
+
+		for (var i = 0; i < after.length && i < before.length; i++) {
+			if (after[i] !== before[i]) count++;
+		}
+
+		return { count: count };
 	});
+};
+
+/*
+
+---------------------------------------------------------------
+> etiquetas (O CONTRARREGRA, clique direito): comentários nos itens
+---------------------------------------------------------------
+
+As etiquetas são comentários que o organizar entende: as de render e das editáveis (configuração > organizar), os
+tipos de peça (os do renomear: a comp vai para uma subpasta com o tipo) e as dos arquivos (o comentário vira
+subpasta). A janela aplica no que está selecionado no painel Project; as pastas ficam de fora.
+
+  tagsInfo        → { selection, groups: [{ id, tags: [{ name, count }] }], folders: { render, edit } }
+  tagsSelection   → { selection } (a janela pergunta a cada instante)
+  tagsApply       → { text } ('' limpa)                        → { count }
+  tagsClearAll    → limpa o comentário de todos os itens do projeto → { count }
+
+*/
+
+// O comentário como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
+function padTagOf(comment) {
+	return padTrim(String(comment).split(':')[0]).toUpperCase();
+}
+
+function padTagList(list, out, seen) {
+	for (var i = 0; i < list.length; i++) {
+		var name = padTrim(list[i]).toUpperCase();
+
+		if (name == '' || seen[name]) continue;
+
+		seen[name] = true;
+		out.push({ name: name, count: 0 });
+	}
+
+	return out;
+}
+
+function padOrganizeFolderFor(content) {
+	for (var i = 0; i < PAD_ORGANIZE.folders.length; i++) {
+		if (padIndexOf(PAD_ORGANIZE.folders[i].contents, content) >= 0) return PAD_ORGANIZE.folders[i].name;
+	}
+
+	return '';
+}
+
+PADX.tagsSelection = function () {
+	return { selection: app.project.selection.length };
+};
+
+PADX.tagsInfo = function () {
+	var seen = {};
+	var render = [PAD_ORGANIZE.autoComment];
+	var types = [];
+	var i;
+
+	// os de render que o automático já contém (EXPORT em EXPORTAR) ficam só no automático
+	for (i = 0; i < PAD_ORGANIZE.renderComments.length; i++) {
+		if (String(PAD_ORGANIZE.autoComment).indexOf(PAD_ORGANIZE.renderComments[i]) < 0) render.push(PAD_ORGANIZE.renderComments[i]);
+	}
+
+	for (i = 0; i < renameRefArray.length; i++) types.push(renameRefArray[i].comment);
+
+	var groups = [
+		{ id: 'render', tags: padTagList(render, [], seen) },
+		{ id: 'edit', tags: padTagList(PAD_ORGANIZE.editComments || [], [], seen) },
+		{ id: 'types', tags: padTagList(types, [], seen) },
+		{ id: 'files', tags: padTagList(PAD_ORGANIZE.fileTags || [], [], {}) }
+	];
+
+	// quantos itens do projeto já têm cada etiqueta (comps nos três primeiros grupos, arquivos no último)
+	for (i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (item instanceof FolderItem || item.comment == '') continue;
+
+		var tag = padTagOf(item.comment);
+		var list = item instanceof CompItem ? groups.slice(0, 3) : [groups[3]];
+
+		for (var g = 0; g < list.length; g++) {
+			for (var t = 0; t < list[g].tags.length; t++) {
+				if (list[g].tags[t].name == tag) list[g].tags[t].count++;
+			}
+		}
+	}
+
+	return {
+		selection: app.project.selection.length,
+		groups: groups,
+		folders: { render: padOrganizeFolderFor('render'), edit: padOrganizeFolderFor('editaveis') }
+	};
+};
+
+// O comentário em cada item selecionado (sem as pastas). '' limpa.
+PADX.tagsApply = function (a) {
+	var text = padTrim(a && a.text).replace(/\s+/g, ' ').toUpperCase();
+	var sel = app.project.selection;
+	var count = 0;
+
+	if (!sel.length) throw new Error('#PAD_103 - etiquetas: nada selecionado no painel Project.');
+
+	padGroup(text ? 'etiqueta ' + text : 'limpar etiquetas', function () {
+		for (var i = 0; i < sel.length; i++) {
+			if (sel[i] instanceof FolderItem) continue;
+
+			sel[i].comment = text;
+			count++;
+		}
+	});
+
+	if (!count) throw new Error('#PAD_103 - etiquetas: só pastas selecionadas (as etiquetas vão nas comps e nos arquivos).');
+
+	return { count: count };
+};
+
+PADX.tagsClearAll = function () {
+	var count = 0;
+
+	padGroup('limpar todas as etiquetas', function () {
+		for (var i = 1; i <= app.project.numItems; i++) {
+			var item = app.project.item(i);
+
+			if (item.comment == '') continue;
+
+			item.comment = '';
+			count++;
+		}
+	});
+
+	return { count: count };
+};
+
+// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm comentário. Sem nenhuma das
+// duas, nada iria para as comps de render: a barra pergunta antes.
+PADX.organizeCheck = function () {
+	var selected = 0;
+	var tagged = 0;
+	var comps = 0;
+	var sel = app.project.selection;
+
+	for (var s = 0; s < sel.length; s++) {
+		if (sel[s] instanceof CompItem) selected++;
+	}
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof CompItem)) continue;
+
+		comps++;
+		if (item.comment != '') tagged++;
+	}
+
+	return { comps: comps, selected: selected, tagged: tagged };
 };
 
 PADX.organizeProject = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	return padCollect(function () {
+		var before = padItemSnapshot('parent');
+
 		try {
 			padGroup('organização automática do projeto', function () {
 				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
@@ -1828,14 +2283,8 @@ PADX.organizeProject = function () {
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);
 		}
-	});
-};
 
-PADX.createProjectFolders = function () {
-	return padCollect(function () {
-		padGroup('criar pastas do projeto', function () {
-			projectTemplateFolders(); // cria a estrutura de pastas do projeto
-		});
+		return { count: padItemChanges(before, 'parent') };
 	});
 };
 
@@ -1871,16 +2320,35 @@ PADX.importAep = function (a) {
 	return { name: folder ? folder.name : decodeURI(file.name) };
 };
 
-// Abre um .aep no lugar do projeto atual (pergunta antes se o atual tem mudanças). a: { path } → { opened }
-PADX.openAep = function (a) {
-	var file = new File(a.path);
+// O VERSIONADOR (a janela): o projeto aberto e a versão do After que está rodando. → { major, version, path, name,
+// folder, saved } (path / folder vazios num projeto nunca salvo)
+PADX.versionInfo = function () {
+	var file = app.project.file;
+	var dirty = false;
 
-	if (!file.exists) throw new Error('#PAD_100 - importar: o arquivo não foi encontrado.');
-	if (app.project && !app.project.close(CloseOptions.PROMPT_TO_SAVE_CHANGES)) return { opened: false };
+	try {
+		dirty = !!app.project.dirty;
+	} catch (err) { }
 
-	app.open(file);
+	return {
+		major: parseInt(app.version, 10),
+		version: String(app.version),
+		path: file ? file.fsName : '',
+		name: file ? decodeURI(file.name) : '',
+		folder: file ? file.parent.fsName : '',
+		dirty: dirty
+	};
+};
 
-	return { opened: true };
+// Salva o projeto aberto no arquivo dele (as cópias em outras versões saem do arquivo salvo). → { path }
+PADX.versionSave = function () {
+	var file = app.project.file;
+
+	if (!file) throw new Error('#PAD_102 - versionador: o projeto ainda não foi salvo. salve uma vez (Arquivo > Salvar) e tente de novo.');
+
+	app.project.save(file);
+
+	return { path: file.fsName };
 };
 
 /*

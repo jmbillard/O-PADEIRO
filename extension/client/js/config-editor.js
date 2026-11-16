@@ -421,10 +421,11 @@ são preservadas ao salvar.
 		var outputsWrap = el('div', 'cfg-field');
 		var outputsList = el('div', 'cfg-rows');
 
-		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render.');
+		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render. com os tokens, o caminho vale todo ano (…/BBB/BBB {ano}).');
 
 		outputsWrap.appendChild(el('span', 'cfg-label', 'Pastas de output'));
 		outputsWrap.appendChild(outputsList);
+		outputsWrap.appendChild(PAD_UTIL.outputTokens(outputsList));
 		outputsWrap.appendChild(outputsHint);
 		pathCard.appendChild(outputsWrap);
 

@@ -318,11 +318,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	// as categorias da busca (a ordem é a dos resultados)
 	var V2_CATS = [
-		{ key: 'teams', label: 'TEAMS', max: 20 },
-		{ key: 'trello', label: 'TRELLO', max: 24 },
+		{ key: 'servidor', label: 'SERVIDOR', max: 10 },
 		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
 		{ key: 'filmes', label: 'FILMES', max: 20 },
-		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
+		{ key: 'teams', label: 'TEAMS', max: 20 },
+		{ key: 'trello', label: 'TRELLO', max: 24 }
 	];
 	// índice local (configuração > buscar, neste computador): as pastas deste computador e o servidor
 	var LOCAL_CATS = [
@@ -392,9 +392,21 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		} catch (err) { }
 	}
 
+	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
+	function unwrapIndex(data) {
+		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
+
+		var item = data instanceof Array ? data[0] : data;
+
+		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
+		if (item && item.indice && typeof item.indice === 'object') return item.indice;
+
+		return data;
+	}
+
 	// texto do webhook → { stamp, cats: { teams: [...], ... } } com o texto de busca de cada item
 	function parseV2(text, info) {
-		var data = JSON.parse(text);
+		var data = unwrapIndex(JSON.parse(text));
 
 		if (!data || data.v !== 2) throw new Error('formato inesperado');
 
@@ -535,7 +547,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		$('opts-paths').textContent = text || '';
 	}
 
-	// Webhook: um interruptor por categoria que tem itens (TEAMS, TRELLO, ATRAÇÕES, FILMES, SERVIDOR). a escolha
+	// Webhook: um interruptor por categoria que tem itens (SERVIDOR, ATRAÇÕES, FILMES, TEAMS, TRELLO). a escolha
 	// fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 	function buildCategoryFilters() {
 		var box = $('opts-paths');
@@ -561,6 +573,29 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 				searchPaths();
 			});
 			box.appendChild(chip);
+		});
+
+		fitFilters();
+	}
+
+	// os interruptores sempre numa linha só, já ao abrir (antes de qualquer busca): a janela alarga até caber
+	// (nunca menos que a largura padrão; nunca estreita)
+	function fitFilters() {
+		var opts = $('opts-paths');
+
+		if (!opts || !opts.children.length) return;
+
+		requestAnimationFrame(function () {
+			var natural = 0;
+
+			Array.prototype.forEach.call(opts.children, function (chip) {
+				natural += chip.getBoundingClientRect().width;
+			});
+			natural += Math.max(0, opts.children.length - 1) * parseFloat(getComputedStyle(opts).columnGap || 0);
+
+			var width = Math.max(FIT_MIN_WIDTH, Math.ceil(window.innerWidth + Math.max(0, natural - opts.clientWidth) + 2));
+
+			if (width > window.innerWidth + 1) PAD_BRIDGE.resizeWindow(width, window.innerHeight);
 		});
 	}
 
@@ -678,7 +713,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var parts = display.split(/[\\/]+/).filter(Boolean);
 
 		nav.dataset.copy = display;
-		nav.title = display + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o caminho';
+		nav.title = display + '\n\n' + PAD_KEYS.modLabel + '+C copia o caminho';
 		nav.appendChild(el('span', 'crumb-more', '…'));
 
 		parts.forEach(function (name, i) {
@@ -1172,7 +1207,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var row = el('button', 'text-row' + (entry.enabled ? '' : ' is-off'));
 
 			row.type = 'button';
-			row.title = entry.text + '\n\n' + (PAD_KEYS.mac ? 'Cmd' : 'Ctrl') + '+C copia o texto';
+			row.title = entry.text + '\n\n' + PAD_KEYS.modLabel + '+C copia o texto';
 			row.dataset.copy = entry.text;
 			row.appendChild(el('span', 'text-layer', entry.label));
 			row.appendChild(snippetNode(entry.text, key, opts, !opts.invert));
@@ -1351,6 +1386,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	window.addEventListener('resize', function () {
 		relayoutTrello();
+		markFit();
 		crumbsCollapse($('results-paths'));
 
 		if (!refitOnResize) return;
@@ -1358,6 +1394,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		refitOnResize = false;
 		scheduleFit();
 	});
+
+	// sobrando no máximo uns pixels para rolar (arredondamento), a barra de rolagem some; faltando mais (a janela não
+	// pôde crescer: o limite da tela), ela fica
+	function markFit() {
+		var results = $('results-' + state.tab);
+
+		if (!results) return;
+
+		results.classList.remove('is-fit');
+		results.classList.toggle('is-fit', results.scrollHeight - results.clientHeight <= 4);
+	}
 
 	function fitHeight(skipWidth) {
 		var results = $('results-' + state.tab);
@@ -1406,15 +1453,19 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var bottom = top;
 
 		Array.prototype.forEach.call(results.children, function (child) {
-			bottom = Math.max(bottom, child.getBoundingClientRect().bottom);
+			// com a margem de baixo de cada bloco (senão sobram uns pixels para rolar)
+			bottom = Math.max(bottom, child.getBoundingClientRect().bottom + (parseFloat(getComputedStyle(child).marginBottom) || 0));
 		});
 
 		var content = bottom - top + results.scrollTop + parseFloat(getComputedStyle(results).paddingBottom);
 		var max = Math.max(600, Math.round((window.screen.availHeight || 900) * 0.85));
-		var height = Math.round(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
+		var height = Math.ceil(Math.min(max, Math.max(fitMinHeight, window.innerHeight - results.clientHeight + content)));
 
-
-		if (Math.abs(height - window.innerHeight) > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+		// cabendo tudo, a barra de rolagem não aparece (nem por 1 px). crescer: qualquer diferença (faltando um pixel,
+		// a barra aparece); encolher: só se sobrar mais que uns pixels (sem tremer a cada busca)
+		if (height > window.innerHeight || window.innerHeight - height > 4) PAD_BRIDGE.resizeWindow(window.innerWidth, height);
+		setTimeout(markFit, 450); // depois que a janela mudou de tamanho
+		markFit();
 	}
 
 	// Sem busca, a folha branca sai: só o cabeçalho (loader e avisos aparecem sobre o degradê).

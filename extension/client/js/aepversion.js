@@ -14,7 +14,10 @@ arquivo fica igual, então efeitos ou recursos que só existem na versão nova p
   PAD_AEPVERSION.read(path)                  → { major } (a versão do arquivo)
   PAD_AEPVERSION.convert(path, major, dest)  → Promise { path, from, to, converted } (dest: a pasta da cópia;
                                                sem ela, a pasta temporária. arquivo da mesma versão ou mais velho
-                                               não é copiado: path é o original)
+                                               não é copiado: path é o original). vale para .aep e .aet: a cópia
+                                               fica com a mesma extensão e o sufixo _AE<versão>; já existindo, é
+                                               substituída. O VERSIONADOR usa o mesmo para salvar o projeto aberto
+                                               em versões mais velhas (a partir do AE 20)
 
 */
 
@@ -51,7 +54,7 @@ arquivo fica igual, então efeitos ou recursos que só existem na versão nova p
 			fs.closeSync(fd);
 		}
 
-		if (head.toString('latin1', 0, 4) !== 'RIFX') throw new Error('#PAD_100 - importar: ' + nodePath.basename(path) + ' não é um projeto do After Effects (.aep).');
+		if (head.toString('latin1', 0, 4) !== 'RIFX') throw new Error('#PAD_100 - versão: ' + nodePath.basename(path) + ' não é um projeto do After Effects (.aep / .aet).');
 
 		return head;
 	}
@@ -59,14 +62,15 @@ arquivo fica igual, então efeitos ou recursos que só existem na versão nova p
 	function read(path) {
 		var major = headerOf(path)[OFFSET] - BASE + FIRST;
 
-		if (major < FIRST || major > 60) throw new Error('#PAD_100 - importar: não deu para ler a versão de ' + nodePath.basename(path) + '.');
+		if (major < FIRST || major > 60) throw new Error('#PAD_100 - versão: não deu para ler a versão de ' + nodePath.basename(path) + '.');
 
 		return { major: major };
 	}
 
 	async function convert(path, major, dest) {
 		var from = read(path).major;
-		var name = nodePath.basename(path).replace(/\.aep$/i, '');
+		var ext = (nodePath.extname(path) || '.aep').toLowerCase();
+		var name = nodePath.basename(path, nodePath.extname(path)).replace(/_AE\d+$/i, ''); // sem o sufixo de uma conversão anterior
 
 		if (from <= major) return { path: path, from: from, to: from, converted: false };
 
@@ -74,7 +78,7 @@ arquivo fica igual, então efeitos ou recursos que só existem na versão nova p
 
 		await fs.promises.mkdir(folder, { recursive: true });
 
-		var out = nodePath.join(folder, name + '_AE' + major + '.aep');
+		var out = nodePath.join(folder, name + '_AE' + major + ext);
 		var data = await fs.promises.readFile(path);
 
 		data[OFFSET] = BASE + major - FIRST;
@@ -84,5 +88,5 @@ arquivo fica igual, então efeitos ou recursos que só existem na versão nova p
 		return { path: out, from: from, to: major, converted: true };
 	}
 
-	window.PAD_AEPVERSION = { available: available, read: read, convert: convert };
+	window.PAD_AEPVERSION = { available: available, read: read, convert: convert, FIRST: FIRST };
 })();

@@ -18,20 +18,44 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
   - destaque e tons: `--blue-50` … `--blue-700`, `--blue-ink`, `--blue-mid` (os nomes são históricos: o tema troca o azul por qualquer cor);
   - com transparência: `rgb(var(--accent-rgb) / 20%)`, `--accent-deep-rgb`, `--glow-rgb`, `--shade-rgb`;
   - superfícies, textos e linhas: `--surface`, `--surface-soft`, `--text-primary`, `--text-secondary`, `--text-tertiary`, `--border`…
-- **sobre o degradê (e o vidro em cima dele)**, texto, ícones, vidros, contornos e brilhos usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
-- **o modo escuro é o inverso do claro sobre o degradê**: o vidro, o texto e os ícones ficam pretos, e o item escolhido vira uma pílula escura. nunca coloque uma superfície escura sobre o vidro claro.
-- **pílula do item escolhido** (aba, template, arquivo do CRIAR): fundo `--surface` (ou `--on-brand`), texto e ícone na cor de destaque (`--blue-500`), a mesma dos ícones dos cartões.
-- **o brilho dos botões de destaque é sempre claro**: a sombra colorida usa `--button-glow-rgb` (no claro, o fim do degradê; no escuro, a cor clara do brilho, `--glow-rgb`). nunca `--accent-deep-rgb` direto numa sombra de botão: no escuro, ela some no fundo.
-- **brilho é brilho, em qualquer tema**: reflexos (a faixa de luz que passa no botão principal, o fio de luz no topo dos vidros, a mancha clara do degradê) usam `--shine-rgb` (branco). nunca `--on-brand` num brilho: ele é a tinta sobre o degradê e, no escuro, vira preta.
-- **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, a bolinha do projeto (verde / laranja), o pãozinho da logo e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
+- **sobre o degradê**, texto, ícones, campos, contornos e o item escolhido usam `--on-brand`: `rgb(var(--on-brand))` ou `rgb(var(--on-brand) / 20%)`. é branco no claro e preto no escuro. nunca `white` nem `rgb(255 255 255 / …)`.
+- **texto sobre o degradê: no mínimo 88%** de `--on-brand` (`rgb(var(--on-brand) / 88%)`), também o secundário: abaixo disso some no começo claro do degradê. menos que isso só no que está desabilitado ou é placeholder.
+- **o modo escuro é o inverso do claro sobre o degradê**: o texto, os ícones e os contornos ficam pretos. nunca coloque uma superfície escura sobre o degradê claro.
+- **o item escolhido sobre o degradê** (aba da configuração, template da lista): contorno fino `rgb(var(--on-brand) / 80%)` e fundo translúcido `rgb(var(--on-brand) / 14%)`, o texto na tinta do degradê. sem pílula branca e sem sombra.
+- **UI enxuta: sem halos** → nada de sombra colorida ou anel em volta dos componentes (botões, campos, cartões, item escolhido). o degradê já é a primeira camada (sem a caixa de vidro em cima) e cada coisa tem só um **contorno fino** de 1 px. sombra só no que flutua por cima de tudo: menus, listas abertas, dicas, avisos e o que está sendo arrastado.
+- **brilho é brilho, em qualquer tema**: reflexos (a mancha clara do degradê, o fio de luz das miniaturas) usam `--shine-rgb` (branco). nunca `--on-brand` num brilho: ele é a tinta sobre o degradê e, no escuro, vira preta.
+- **as únicas cores fixas permitidas** são as que têm significado: sucesso (verde), espera (amarelo), erro (vermelho), o alerta da rede, as bolinhas da barra (projeto, fontes, coletar: verde, tudo certo; laranja, falta algo, uma cor só de atenção), o pãozinho da logo, a ilustração do forninho (o loader) e as amostras de cor da aba APARÊNCIA. contorno dos indicadores: `--badge-ring` (branco no claro, cinza escuro no escuro).
 - **o tom de "em andamento"** (`--processing`) é o destaque do tema.
+
+### filtros que valem
+
+um filtro numa lista de coisas a fazer (as situações no topo do CATADOR) **vale para as ações**: o botão principal só age no que está aparecendo, e diz quantos. a lista abre mostrando o que precisa de atenção; o que já está certo fica escondido, a um clique.
+
+### as cores dos tipos
+
+cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, áudio, dados, projeto, fontes…) tem **uma cor só**, `--type`, usada **sólida** em todo lugar. o degradê (de `--type-soft`, o tom claro, até `--type`) fica só nas faixas da migração do CATADOR, onde ele diz o sentido: de onde o arquivo sai → para onde vai. a tabela fica no `styles.css` e quem tem `data-type="<tipo>"` recebe as duas. é a mesma cor na configuração (organizar e coletar) e na migração do CATADOR: um tipo novo entra na tabela antes de aparecer em qualquer tela.
+
+- **sobre o degradê azul** (as etiquetas da árvore) → a cor do tipo com um contorno claro fino (`1px solid rgb(var(--on-brand) / 85%)`), que separa a cor do fundo.
+- **nada de faixa colorida na borda** de uma linha ou de um cartão (a tira de cor encostada no lado esquerdo): numa linha de lista, a cor do tipo vai só no ícone dele, pequeno, junto do nome do tipo; a miniatura fica maior, com a mesma margem em cima, embaixo e do lado.
+- **sobre a folha** (os cartões dos tipos) → o ícone e uma pílula em pé na cor do tipo, à esquerda, com a mesma margem em cima e embaixo (como a amostra aberta da aparência). sem borda colorida no cartão.
 
 ## 📍 formas: cantos concêntricos e centros alinhados
 
 - **raios** pelos tokens: `--radius-small` (12), `--radius-medium` (16), `--radius-large` (22), `--radius-shell` (32), `--radius-pill`.
 - **cantos concêntricos** → um elemento arredondado dentro de outro tem o raio de fora = raio de dentro + respiro + borda. deixe a conta no comentário do CSS (ex: `/* concêntrico: raio dos campos + respiro (8) + borda (1) */`).
+  - **checagem automática** → `extension/scripts/check-corners.js` passa por todas as janelas (as telas de `extension/scripts/ui-states.js`, as mesmas da checagem do foco) e lista cada canto fora da conta, com o raio que o de fora pede:
+
+    ```bash
+    node extension/scripts/check-corners.js
+    ```
+
+    conta o que aparece arredondado (fundo, borda, contorno por dentro) e também botões, abas e linhas, que ganham fundo no hover ou no escolhido. **tela ou etapa nova** → acrescente em `ui-states.js`.
+  - **botões "+" e botões quadrados dentro de cartões** usam o canto dos campos (`--radius-small`), não a pílula: assim o cartão fica concêntrico com eles e com os campos ao mesmo tempo.
 - **botão redondo num canto arredondado** → o centro do botão fica no centro do arco do canto: raio do canto = distância do botão até a borda + raio do botão (ex: botões de 38 px a 15 px da borda → canto de 34 px).
-- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o vidro e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé é sempre um degradê**, nunca uma linha: na folha, o fundo do rodapé em degradê (`.action-bar.is-anchored`); no vidro, o conteúdo some numa máscara em degradê (`mask-image`).
+- **rodapés** → o centro dos botões fica sempre a `--footer-center` do fundo da janela, em todas as janelas (os botões se alinham entre janelas lado a lado). numa janela com o degradê e a folha lado a lado, os dois rodapés ficam na mesma altura. **a transição para o rodapé é sempre um degradê**, nunca uma linha: na folha, o fundo do rodapé em degradê (`.action-bar.is-anchored`); no degradê, o conteúdo some numa máscara em degradê (`mask-image`). `--footer-center` é 35 px: o botão redondo (38) fica a 16 px do fundo, o mesmo respiro da lateral. o "⋯" é sempre de 38 px, no degradê e na folha.
+  - **checagem automática** → `node extension/scripts/check-footers.js` passa pelas telas de `ui-states.js` e lista cada botão de rodapé fora da linha (o centro a `--footer-center` do fundo) e cada "⋯" de outro tamanho.
+- **respiro das janelas: 16 px** → em todas as janelas e colunas (degradê e folha), o conteúdo começa a 16 px da borda, dos lados e em cima; embaixo, os botões do rodapé ficam a 16 px do fundo (`--footer-center`).
+- **colunas no degradê** → sem vidro, tudo na coluna (o título, a busca, a lista, os campos, os botões do rodapé) começa na mesma linha à esquerda, a 16 px da borda; e o título da coluna fica na mesma altura do título da folha ao lado (16 px do topo).
 
 ## 📍 campos
 
@@ -52,14 +76,29 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 - **SVG em linha**, `stroke: currentcolor`, traço entre 1.7 e 1.8, cantos e pontas arredondados. a cor vem de quem o contém, nunca do ícone.
 - **pastas só no contorno**; **arquivos (o `.aep`, os templates) sólidos**, com a dobra do canto um tom mais escuro da cor do próprio ícone (`--fold`; sobre o degradê, `--fold-on-brand`, que no escuro é clara). num ícone de `<use>`, a cor da dobra passa pela variável `--file-fold`.
-- **ícones das ferramentas** (os `barra-<nome>.svg` da pasta de ícones, lidos pelo `js/icons.js`) animam no hover pelo CSS (`css/icons.css`, pelas classes de dentro do desenho: a claquete bate, a lupa procura, a janela de templates abre a coluna, a pasta recebe os arquivos…); parados, como no seletor, mostram o primeiro quadro. uma ferramenta nova ganha um ícone com animação. ids de máscaras e recortes levam `{u}` no arquivo (cada cópia ganha um sufixo próprio).
+- **ícones das ferramentas** (os `barra-<nome>.svg` da pasta de ícones, lidos pelo `js/icons.js`) animam no hover pelo CSS (`css/icons.css`, pelas classes de dentro do desenho: a claquete abre, a lupa procura (e um reflexo passa no vidro), as folhas dos templates se separam, a pasta recebe os arquivos…). **a regra:** enquanto o mouse está em cima, o ícone fica diferente do normal (o movimento chega num estado e para nele, com `transition` ou `animation … forwards`); ao sair, volta. nada anima e volta sozinho com o mouse ainda em cima. parados, como no seletor, mostram o primeiro quadro. uma ferramenta nova ganha um ícone com animação. **silhuetas diferentes** → dois ícones vizinhos na barra não podem ter o mesmo contorno (ex: a janela de templates e a claquete eram, as duas, um retângulo com uma faixa em cima): na dúvida, troque um deles. ids de máscaras e recortes levam `{u}` no arquivo (cada cópia ganha um sufixo próprio).
 - **a biblioteca de ícones** (o seletor das categorias e das produções) fica em **arquivos**, na pasta `extension/client/icons/`: um `nome.svg` por ícone (o desenho, 24 x 24, com `stroke="currentColor"`) ou um `nome.json` (animação **Lottie**, que toca ao passar o mouse). a ordem e os nomes que aparecem ficam em `icons/icons.json` (`{ "key", "label" }`; um arquivo fora dele vem depois, pelo nome). no After Effects a pasta é lida direto; para o modo de teste (navegador), rode `node extension/scripts/build-icons.js` depois de mexer nos arquivos.
   - **Lottie com as cores do tema** → por padrão os traços e preenchimentos seguem a cor do texto (como os svg); para manter as cores do arquivo, ponha `"tint": false` no item do `icons.json`.
   - a chave (o nome do arquivo) é o que fica gravado na configuração: trocar o desenho de um arquivo troca em todo lugar; renomear o arquivo desfaz a escolha de quem usava a chave antiga.
   - **trocar por uma animação** → um `nome.json` (Lottie) passa à frente do `nome.svg` de mesmo nome: dá para testar uma animação sem apagar o desenho (vale para os da barra também, ex: `barra-project.json`).
   - **nome antigo** → `{ "key": "claquete", "same": "barra-project" }` no `icons.json` faz o nome antigo apontar para outro ícone (o que já foi escolhido com ele continua funcionando). assim os ícones da barra entraram no lugar das cópias que a biblioteca tinha (templates, fonte, camadas, renomear, lupa, link, claquete).
 - **nada de ícone automático pelo nome**: quem escolhe é a pessoa.
-- **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`.
+- **indicadores** (bolinha do projeto, alerta da rede, selo do bonequinho) no canto de baixo à direita do ícone, pequenos, com o contorno `--badge-ring`. a cor de atenção (laranja) é `--attention`; o texto de um aviso nas dicas, `--attention-text`.
+  - **a bolinha fica por dentro do ícone** → os 7 px dela cabem na caixa do ícone (24 x 24), a 1 px da borda de baixo e da direita (o canto de cima à esquerda da bolinha fica 8 px antes do canto do ícone). nunca para fora da caixa.
+  - **presa ao ícone** → a bolinha anda junto com o ícone em toda animação (gaveta abrindo, barra virando): nada de posição calculada uma vez e corrigida depois, que faz a bolinha pular. na barra, o ícone fica numa caixa (`.bar-ico`) e a bolinha vai dentro dela, só com CSS.
+
+- **parado no estado final** → onde um ícone de ferramenta aparece parado e representa o grupo (o puxador das gavetas da barra), ele mostra o estado final do hover, desenhado assim (`STILL` no `bar.js`), não o primeiro quadro: a claquete aberta, as folhas dos templates separadas.
+
+## 📍 gavetas da barra
+
+- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Criar / Alterar, Fontes e Coletar; Organização: Renomear e Organizar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
+- **forma** → raio 16, com o lado do puxador em meio círculo (metade da altura; na vertical, da largura). os de dentro ficam concêntricos: o raio menos o respiro de 3 px (2 de folga e 1 do contorno).
+- **o puxador** → só o ícone do grupo, menor (17 px), parado no estado final do hover e perto do separador (a folga fica no lado redondo). no hover, vira uma seta simples no sentido de recolher (← na horizontal, ↑ na vertical) e fica assim.
+- **na vertical** → abre para baixo, do mesmo jeito em qualquer largura: o puxador em cima (o lado redondo, até 22 px de raio), na largura toda, o separador deitado e as ferramentas embaixo (em coluna no painel estreito; em linhas no largo, onde a gaveta tem no máximo 240 px). o lado redondo acompanha o tamanho da gaveta a todo momento (`ResizeObserver`): o painel muda de tamanho e de sentido com a gaveta aberta.
+- **nada samba ao abrir** → o que vem antes da gaveta na barra fica parado na tela quando ela abre, fecha ou troca com outra; só o que vem depois anda. o conteúdo da barra é centralizado, então o `bar.js` prende o começo do grupo da gaveta a cada quadro da animação (`pinTo`), até onde há espaço na barra. a gaveta e o botão dela animam com o tamanho exato de cada um (`--drawer-size`, `--btn-size`), no mesmo tempo: um limite folgado (ex: `max-height: 480px`) faz um terminar antes do outro e a barra pula.
+- **teste em todos os tamanhos** → 900 × 86, 86 × 720, 130 × 720, 200 × 720, 260 × 720 e quase quadrado (420 × 460), e mudando de um para o outro com a gaveta aberta.
+- **fechada** → o botão do grupo mostra a pior bolinha de dentro (laranja na frente do verde), a dica só lista as ferramentas de dentro (sem "abrir a gaveta" nem texto repetido), com a bolinha laranja nas que têm pendência; o detalhe fica na dica de cada uma e o andamento (coletar, fontes) aparece nele também.
+- **uma ferramenta nova numa gaveta** → um item no `GROUPS` do `bar.js` (ou um `drawer` na ferramenta); o tour abre a gaveta sozinho.
 
 ### desenhar um ícone
 
@@ -98,7 +137,15 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 ## 📍 mensagens e erros
 
-- **todo erro tem código**: `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
+- **todo erro tem código**: no código, `#PAD_0xx - texto curto em minúsculas.` (a tabela fica no [README](../README.md#-códigos-de-erro)). um código novo entra na tabela.
+- **na tela, o texto vem primeiro e o código no fim** (`PAD_UTIL.errorText`: `texto curto · PAD_0xx`): a pessoa lê o que fazer, o suporte acha o código. o texto diz o que fazer (`selecione as comps…`), não só o que deu errado.
+- **o que deu certo diz o alcance**: a contagem (`3 itens renomeados`) e, se dá para desfazer, `· Cmd+Z desfaz` (`PAD_UTIL.undoKey`: Cmd+Z no Mac, Ctrl+Z no Windows; nunca Ctrl+Z fixo, que no Mac não desfaz). sem o nome da ferramenta na frase.
+- **toda janela abre com o foco no primeiro campo que a pessoa vai usar** (a busca, a atração, a etiqueta livre): digitar funciona sem clicar antes.
+- **o botão principal responde a `Ctrl+Enter`** (`PAD_KEYS.primary(botão)`, que também põe o atalho na dica).
+- **atalhos sempre com o `Ctrl`, nos dois sistemas**: no macOS o `Cmd` costuma ficar com o After Effects e não chega ao painel. `PAD_KEYS.isMod` aceita os dois no macOS, mas os textos mostram `Ctrl` (`PAD_KEYS.modLabel`). a exceção é o desfazer: `Cmd+Z` no macOS, porque quem desfaz é o próprio After Effects.
+- **o que move arquivos na rede** (a migração) mostra o caminho inteiro da pasta, recusa as pastas erradas com o motivo, pede um segundo clique, fica fora do `Ctrl+Enter` (`data-no-shortcut` no botão) e grava o registro para desfazer **antes** de cada lote, nunca só no fim.
+- **o que apaga muita coisa de uma vez pede um segundo clique** (o ↻ do criador, a borracha das etiquetas): o primeiro clique marca o botão e avisa; o segundo, em até 4 s, faz.
+- **na barra, o resultado vai no aviso** (`toast` do `bar.js`): a bolinha (deu certo, atenção, erro) e o texto. uma ação que pede uma decisão ganha um botão no próprio aviso (ex: `organizar assim mesmo`).
 - **validação** (campo vazio, escolha faltando) também tem código e aparece na linha de status da janela, sem alert.
 - **o que deu certo** aparece rápido e some sozinho.
 
@@ -111,34 +158,34 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 ## 📍 janelas
 
 - **altura automática** → a janela cresce para caber a etapa (`fitHeight`) e volta ao tamanho padrão quando cabe.
+- **sempre no meio da tela** → toda janela (menos a barra) abre centralizada e, ao crescer ou encolher, se centraliza de novo. mude o tamanho só pelo `PAD_BRIDGE.resizeWindow` (`bridge.js`): ele limita o tamanho à área livre da tela (menos 24 px de margem), centraliza e, se o After Effects não deixar mover a janela, encolhe a altura até a parte de baixo caber na tela.
+- **a barra: horizontal e vertical, no mínimo 86 px** → o painel da barra pode ficar deitado ou em pé, e o menor lado dele tem 86 px. tudo o que é da barra (botões, bolinhas, dicas, gavetas) é testado nos dois sentidos, com 86 px: 900 × 86 e 86 × 720, e também nas larguras do meio da vertical (130, 200 e 260 px), onde o layout da barra muda. as dicas ficam por cima da barra, dentro do painel (no After, nada sai dele): na horizontal, ao lado do botão (nunca por cima dele), com a altura da barra e em colunas (o nome · os cliques · os avisos, que encolhem com … se faltar lugar); na vertical, embaixo do botão (ou em cima), com a largura do painel e empilhadas. linhas de aviso começam com `! ` e saem em laranja.
 - **a ação final fecha a janela** (ex: **Salvar** no editor do projeto).
 - **pular é pular** → uma opção "pular" não cria nem grava nada.
 - **dados só ficam se a ação der certo** → se salvar falhar, nada fica pela metade no projeto.
 
-## 📍 brilho do foco: nada cortado
+## 📍 foco: um contorno fino, nada cortado
 
-o campo com foco ganha um brilho de **4 px em volta** (`.cfg-input:focus`, em `panel.css`). se o campo fica dentro de algo que **rola ou recolhe** (`overflow` diferente de `visible`: listas com rolagem, colunas, blocos que abrem animados), o brilho é cortado na borda desse bloco, mais visível na **primeira linha** das listas e nos campos de largura total.
-
-- **como resolver** → dê ao bloco que corta 4 px de folga por dentro e compense na margem, para nada sair do lugar:
+- **campos** (`input`, `textarea`, lista) → no foco, só a cor do contorno muda (`--blue-500` na folha, `rgb(var(--on-brand) / 88%)` no degradê). sem anel em volta e sem linha extra.
+- **botões, abas e linhas** (`:focus-visible`, só pelo teclado) → um contorno fino de 1 px a 2 px de distância (`outline: 1px solid …; outline-offset: 2px`): `--blue-500` na folha, `rgb(var(--on-brand) / 80%)` no degradê. nas linhas de uma lista que rola, o contorno fica por dentro (`box-shadow: inset 0 0 0 1px …`), senão a rolagem corta.
+- **nada cortado** → o contorno do botão sai 3 px da borda. se ele fica dentro de algo que **rola ou recolhe** (`overflow` diferente de `visible`), dê ao bloco uma folga por dentro e compense na margem, para nada sair do lugar:
 
   ```css
   .bloco-que-rola {
     margin: -4px;  /* compensa a folga: o conteúdo fica onde estava */
-    padding: 4px;  /* o brilho cabe aqui dentro */
+    padding: 4px;  /* o contorno do foco cabe aqui dentro */
     overflow-y: auto;
   }
   ```
 
-  num bloco que abre e fecha animado, a folga entra na margem dos dois estados (fechado e aberto). veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
-- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas etapas principais (o criador com a pasta de mídias, as etapas da janela projeto, o editor de config, as abas da configuração…), foca cada campo e lista os que têm o brilho cortado: o campo, o bloco que corta e de que lado.
+  veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
+- **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas telas de `ui-states.js`, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
 
   ```bash
   node extension/scripts/check-focus-crop.js
   ```
 
-  precisa do Playwright. as transições ficam desligadas (o brilho é medido no tamanho final) e o script sai com erro quando acha algum corte.
-- **tela ou etapa nova** → acrescente o passo para chegar nela na lista `CHECKS` do script. ele não vê o que só aparece depois de uma ação que não está nos passos (ex: uma linha nova).
-- **corte só durante a animação** (o bloco abrindo, com `overflow: hidden` do `motion.js`) é aceitável: no fim da animação o brilho aparece inteiro.
+  precisa do Playwright e sai com erro quando acha algum corte. **tela ou etapa nova** → acrescente o passo em `ui-states.js`.
 
 ## 📍 antes de enviar
 
@@ -146,7 +193,10 @@ o campo com foco ganha um brilho de **4 px em volta** (`.cfg-input:focus`, em `p
 - [ ] **nenhuma cor nova fixa** no CSS (procure por `#` e por `rgb(255 255 255`);
 - [ ] **campos**: nenhum com ícone antes e botão dentro; lixeira fora;
 - [ ] **mudanças animadas** (entrar, mover, sumir) e nada pulando no hover;
-- [ ] **o brilho do foco aparece inteiro** em todos os campos ([acima](#-brilho-do-foco-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
+- [ ] **cantos concêntricos**: `node extension/scripts/check-corners.js` sem nenhum canto fora da conta;
+- [ ] **rodapés na mesma linha**: `node extension/scripts/check-footers.js` sem nenhum botão fora;
+- [ ] **sem halos** (nenhuma sombra ou anel em volta dos componentes) e **o foco aparece inteiro** ([acima](#-foco-um-contorno-fino-nada-cortado)): `node extension/scripts/check-focus-crop.js` sem nenhum corte;
+- [ ] **a barra nos dois sentidos**, com 86 px (horizontal e vertical): as telas `barra: horizontal 86 px` e `barra: vertical 86 px` das checagens;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
 - [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).

@@ -68,7 +68,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 					try {
 						var text = Buffer.concat(chunks).toString('utf8');
 
-						JSON.parse(text); // confere antes de trocar a cópia
+						unwrapIndex(JSON.parse(text)); // confere antes de trocar a cópia
 						fs.writeFileSync(file + '.part', text, 'utf8');
 						fs.renameSync(file + '.part', file);
 						resolve();
@@ -87,6 +87,31 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		});
 
 		return source.refreshing;
+	}
+
+	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
+	function unwrapIndex(data) {
+		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
+
+		var item = data instanceof Array ? data[0] : data;
+
+		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
+		if (item && item.indice && typeof item.indice === 'object') return item.indice;
+
+		return data;
+	}
+
+	// a pasta da atração no caminho do projeto, como mais um nome de busca: …/PROGRAMAS/BBB/BBB 2026/01 PROJETOS →
+	// BBB 2026 (sem a pasta de projetos; só ano, a de cima). BBB acha o BIG BROTHER BRASIL
+	function folderKeys(path) {
+		var parts = String(path || '').replace(/\\/g, '/').split('/').filter(Boolean);
+
+		while (parts.length && /^\d*[\s_-]*PROJETOS?$/i.test(aepName(parts[parts.length - 1]).replace(/^(\d+)\s*/, '$1'))) parts.pop();
+		while (parts.length && /^[\d\s_-]+$/.test(parts[parts.length - 1])) parts.pop();
+
+		var last = parts[parts.length - 1] || '';
+
+		return last && !/^(FILESERVER|PROGRAMAS|NOVELAS|SHOWS|ESPORTES|JORNALISMO|INSTITUCIONAL|FILMES|TITULOS)/i.test(aepName(last)) ? [wordKey(last)] : [];
 	}
 
 	function keyOf(text) {
@@ -155,6 +180,24 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return 0;
 	}
 
+	// Pelo começo do nome (scoreKey) ou, sem ele, a partir de uma palavra do meio ('brasileiro' acha CAMPEONATO
+	// BRASILEIRO MASCULINO): esses vêm depois dos que começam com o digitado e nunca contam como a claquete inteira
+	function scoreAny(key, words) {
+		var score = scoreKey(key, words);
+
+		if (score || !words.length || words.join('').length < 3) return score;
+
+		for (var i = 1; i < key.s.length; i++) {
+			if (key.s.charAt(i) !== '1') continue;
+
+			var mid = scoreKey({ f: key.f.slice(i), s: key.s.slice(i) }, words);
+
+			if (mid) return 1 + (mid % 1000) / 100;
+		}
+
+		return 0;
+	}
+
 	// as pastas do índice local
 	function localCandidates() {
 		var L = window.PAD_LOCAL_INDEX;
@@ -214,7 +257,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 		}
 
-		var data = JSON.parse(text);
+		var data = unwrapIndex(JSON.parse(text));
 		var roots = data.roots || {};
 		var full = function (p) {
 			var m = /^([a-z]+):(.*)$/.exec(p || '');
@@ -232,11 +275,18 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				path: full(a.proj) || full(a.out),
 				out: full(a.out),
 				depth: 0,
-				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey)).filter(function (k) {
+				keys: [wordKey(a.name)].concat((a.pattern || []).map(wordKey), folderKeys(full(a.proj))).filter(function (k) {
 					return k.f;
 				})
 			};
-		});
+		}).concat((data.filmes || []).filter(function (f) {
+			return f && f.name;
+		}).map(function (f) {
+			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela projeto)
+			return { name: f.name, cat: 'FILME', year: f.year ? String(f.year) : '', isFilm: true, path: '', out: full(f.out), depth: 1, keys: [wordKey(f.name)].filter(function (k) {
+				return k.f;
+			}) };
+		}));
 
 		return source.list;
 	}
@@ -285,7 +335,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			var score = 0;
 
 			it.keys.forEach(function (k) {
-				score = Math.max(score, scoreKey(k, words));
+				score = Math.max(score, scoreAny(k, words));
 			});
 
 			if (score) found.push({ it: it, score: score });
@@ -304,14 +354,14 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		var matches = found.sort(function (a, b) {
 			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
 		}).filter(function (f) {
-			var key = local ? f.it.path : aepName(f.it.name);
+			var key = local ? f.it.path : (f.it.isFilm ? 'f|' : '') + aepName(f.it.name);
 
 			if (seen[key]) return false;
 
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '' };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
@@ -323,16 +373,40 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
-		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
+		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
-	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {categoria}
+	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
+	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido na claquete) {categoria}
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
+	// o ano do projeto: o de agora, ou o escolhido na claquete (o BBB do ano que vem começa antes)
+	var yearOverride = 0;
+
+	function projectYear() {
+		return yearOverride || new Date().getFullYear();
+	}
+
+	function setYear(y) {
+		yearOverride = y && +y !== new Date().getFullYear() ? +y : 0;
+	}
+
+	// um caminho que já existe (o do índice) no ano escolhido: 2026 → 2027 e, num nome de pasta, 26 → 27 (BBB 26)
+	function shiftYear(path) {
+		var now = new Date().getFullYear();
+		var to = projectYear();
+
+		if (!path || to === now) return path;
+
+		return String(path).split(/([\\\/])/).map(function (seg) {
+			return seg.replace(new RegExp('(^|[^0-9])' + now + '(?![0-9])', 'g'), '$1' + to).replace(new RegExp('(^|[\\s_\\-])' + String(now).slice(2) + '(?![0-9A-Za-z])', 'g'), '$1' + String(to).slice(2));
+		}).join('');
+	}
+
 	function fillPattern(pattern, name, category) {
 		var d = new Date();
-		var values = { atracao: aepName(name), ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], categoria: aepName(category), letra: letterOf(name) };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: aepName(category), letra: letterOf(name) };
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -781,6 +855,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		candidates: candidates,
 		categories: newBases,
 		fillPattern: fillPattern,
+		projectYear: projectYear,
+		setYear: setYear,
+		shiftYear: shiftYear,
 		letterOf: letterOf,
 		resolveNew: resolveNew,
 		iconFor: iconFor,
