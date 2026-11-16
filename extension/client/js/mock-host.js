@@ -381,7 +381,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					seenCat[key] = true;
 				});
 				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
-					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), file: String(c.file || '').trim(), icon: c.icon || '', keepName: c.keepName === true };
+					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), file: String(c.file || '').trim(), icon: c.icon || '' };
 				}) };
 				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}

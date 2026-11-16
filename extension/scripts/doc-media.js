@@ -206,7 +206,7 @@ const DOC_PREVIEWS = `(() => {
 const CATEGORIES = { categories: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
-	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita', keepName: true },
+	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
 	{ name: 'FUTEBOL', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/{ano}/{atracao}', output: '', icon: 'bola' }
 ] };
 

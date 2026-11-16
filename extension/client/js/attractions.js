@@ -373,7 +373,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
-		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', keepName: c.keepName === true, path: fixed, display: displayPath(fixed), offline: !c.reachable };
+		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
 	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}

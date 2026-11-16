@@ -799,8 +799,8 @@ projetos com o nome certo).
 
 	/* ---------- a atração nova direto na categoria (os chips embaixo da lista) ---------- */
 
-	// "vt interpol" → a categoria VT e o nome INTERPOL (o nome ou o plural da categoria, como primeira palavra e com
-	// mais alguma depois). sem categoria no começo: o texto todo é o nome
+	// a categoria digitada no começo (o nome ou o plural dela, com mais alguma palavra depois) marca o chip; o nome
+	// da atração é sempre o texto todo: "novela guerreiros" → NOVELA GUERREIROS, com a categoria NOVELA marcada
 	function novaFromText(text) {
 		var raw = String(text || '').trim();
 		var words = raw.split(/\s+/);
@@ -821,8 +821,9 @@ projetos com o nome certo).
 			if (ok) best = { base: b, size: label.length };
 		});
 
-		// keepName (configuração): o nome da categoria faz parte do nome da atração (vt reunião → VT REUNIÃO, em VT)
-		if (best) return { name: (best.base.keepName ? raw : words.slice(best.size).join(' ')).toUpperCase(), base: best.base };
+		// a categoria no começo só marca o chip: o nome da atração é o texto todo, como foi digitado (vt reunião →
+		// VT REUNIAO em VT; novela guerreiros → NOVELA GUERREIROS em NOVELA)
+		if (best) return { name: raw.toUpperCase(), base: best.base };
 
 		return { name: raw.toUpperCase(), base: null };
 	}

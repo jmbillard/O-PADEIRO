@@ -436,7 +436,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function projectForSave() {
 		return {
 			categories: state.project.categories.map(function (c) {
-				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '', keepName: c.keepName === true };
+				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '' };
 			})
 		};
 	}
@@ -3693,7 +3693,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.project = {
 			categories: (data.categories || []).map(function (c) {
-				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '', keepName: c.keepName === true };
+				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '' };
 			})
 		};
 		renderProject();
