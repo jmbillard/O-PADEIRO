@@ -1439,3 +1439,224 @@ p.wz-exist b {
   background: var(--blue-50);
   color: var(--blue-500);
 }
+
+/* =========================================================
+   os dados do projeto (só para ver): o que o padeiro gravou no .aep
+   ========================================================= */
+.pd {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pd svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.pd-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.pd-head > svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  color: var(--blue-500);
+}
+
+.pd-head > div {
+  min-width: 0;
+}
+
+.pd-head b,
+.pd-head small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-head b {
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.pd-head small {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  direction: rtl;
+  font-size: 0.62rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+.pd-state {
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.pd-state.is-warn {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+.pd > .wz-title {
+  margin-top: 8px;
+}
+
+.pd-rows {
+  display: grid;
+  align-items: baseline;
+  column-gap: 12px;
+  grid-template-columns: 92px minmax(0, 1fr);
+  row-gap: 7px;
+}
+
+.pd-k {
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pd-v {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-control);
+  font-size: 0.76rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-v small {
+  margin-left: 6px;
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+
+.pd-people {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pd-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-control);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.pd-person i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--border-hover);
+}
+
+.pd-person.is-last i {
+  background: var(--blue-500);
+}
+
+.pd-person em {
+  color: var(--blue-500);
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pd-person small {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.pd-path {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 650;
+  text-align: left;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.pd-path:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-soft);
+}
+
+.pd-path svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--blue-500);
+}
+
+.pd-path span {
+  min-width: 0;
+  overflow: hidden;
+  direction: rtl;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-path b {
+  color: var(--text-primary);
+}
+
+.pd-empty {
+  margin: auto;
+  padding: 0 24px;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pd-empty b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+#sc-dados > .wz-foot {
+  margin-top: 0;
+}

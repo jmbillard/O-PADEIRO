@@ -137,8 +137,19 @@
 							<button type="button" data-action="reload">Recarregar painel</button>
 						</div>
 					</details>
+					<!-- os dados gravados no projeto (só para ver): a atração, quem criou, quem salvou e as pastas -->
+					<button type="button" class="icon-button is-light" id="ed-info" title="os dados do projeto" aria-label="os dados do projeto"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5M12 7.8h.01" /></svg></button>
 				</span>
 				<button type="button" class="button button-primary" id="ed-save">Salvar</button>
+			</footer>
+		</section>
+
+		<!-- os dados do projeto: o que o padeiro gravou no .aep, só para ver (o editor é onde se altera) -->
+		<section class="wz-screen" id="sc-dados" hidden>
+			<div class="pd" id="pd-body"></div>
+			<footer class="wz-foot">
+				<button type="button" class="io-button wz-back" id="pd-back" title="voltar ao editor (Esc)" aria-label="voltar ao editor"><svg viewBox="0 0 24 24"><path class="back-arrow" d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
+				<button type="button" class="button button-secondary" id="pd-copy">Copiar</button>
 			</footer>
 		</section>
 

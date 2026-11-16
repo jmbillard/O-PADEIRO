@@ -1676,6 +1676,177 @@ projetos com o nome certo).
 	}
 
 	// o nome do .aep: o último nível (ou a atração) + o que é (e o de hoje, quando muda)
+	/* ---------- os dados do projeto (só para ver): o que o padeiro gravou no .aep ---------- */
+
+	var PD_FILE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
+	var PD_OUT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
+
+	// 2026-11-12 → 12/11/2026
+	function pdDay(day) {
+		var d = /^(\d{4})-(\d{2})-(\d{2})/.exec(day || '');
+
+		return d ? d[3] + '/' + d[2] + '/' + d[1] : day || '';
+	}
+
+	function pdEditors(cur) {
+		return (cur.editores || []).slice().sort(function (a, b) {
+			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
+		});
+	}
+
+	// um caminho que abre a pasta no clique: o fim em destaque
+	function pdPath(icon, path, open) {
+		var btn = el('button', 'pd-path');
+		var shown = displayPath(path);
+		var cut = shown.replace(/\/+$/, '').lastIndexOf('/') + 1;
+		var span = el('span');
+
+		btn.type = 'button';
+		btn.title = 'abrir a pasta: ' + shown;
+		btn.innerHTML = icon;
+		span.appendChild(document.createTextNode('\u200E' + shown.slice(0, cut)));
+		span.appendChild(el('b', null, shown.slice(cut)));
+		btn.appendChild(span);
+		btn.addEventListener('click', open);
+
+		return btn;
+	}
+
+	function renderDados(cur) {
+		var body = $('pd-body');
+		var has = !!cur.atracao;
+		var head = el('div', 'pd-head');
+		var name = el('div');
+		var state2 = el('span', 'pd-state' + (cur.created ? '' : ' is-warn'), cur.created ? 'NA PASTA DELE' : cur.outside ? 'FORA DA PASTA' : 'SEM OS DADOS');
+		var folder = String(cur.file || '').replace(/[\\\/][^\\\/]*$/, '');
+
+		body.textContent = '';
+		head.innerHTML = PD_FILE;
+		name.appendChild(el('b', null, cur.fileName || 'projeto sem arquivo'));
+		name.appendChild(el('small', null, folder ? '\u200E' + displayPath(folder) : 'ainda não foi salvo')); // a marca LTR: a linha corta pelo começo
+		head.appendChild(name);
+		head.appendChild(state2);
+		body.appendChild(head);
+		$('pd-copy').disabled = !has;
+
+		if (!has) {
+			var empty = el('div', 'pd-empty');
+
+			empty.appendChild(el('b', null, 'Este projeto ainda não passou pela claquete'));
+			empty.appendChild(document.createTextNode('Sem atração, pasta nem output gravados. Volte e salve para dar os dados a ele.'));
+			body.appendChild(empty);
+
+			return;
+		}
+
+		var rows = el('div', 'pd-rows');
+		var row = function (k, v, small) {
+			var value = el('span', 'pd-v', v);
+
+			if (small) value.appendChild(el('small', null, small));
+			rows.appendChild(el('span', 'pd-k', k));
+			rows.appendChild(value);
+		};
+
+		body.appendChild(el('p', 'wz-title', 'PROJETO'));
+		row('atração', String(cur.atracao).toUpperCase());
+		if (cur.oQueE) row('o que é', String(cur.oQueE).toUpperCase());
+		if (cur.designer) row('criado por', cur.designer, pdDay(cur.criado));
+		body.appendChild(rows);
+
+		var editors = pdEditors(cur);
+
+		if (editors.length) {
+			var people = el('div', 'pd-people');
+
+			body.appendChild(el('p', 'wz-title', 'QUEM SALVOU'));
+			editors.forEach(function (e, i) {
+				var line = el('div', 'pd-person' + (i ? '' : ' is-last'));
+
+				line.appendChild(el('i'));
+				line.appendChild(document.createTextNode(e.user));
+				if (!i) line.appendChild(el('em', null, 'ÚLTIMO'));
+				line.appendChild(el('small', null, pdDay(e.day)));
+				people.appendChild(line);
+			});
+			body.appendChild(people);
+		}
+
+		body.appendChild(el('p', 'wz-title', 'PASTAS'));
+		if (cur.root) body.appendChild(pdPath(FOLDER_SVG, cur.root, async function () {
+			try {
+				await call('projectOpenFolder');
+			} catch (err) {
+				status(err.message, 'error');
+			}
+		}));
+		if (cur.output) body.appendChild(pdPath(PD_OUT, cur.output, async function () {
+			try {
+				var res = await call('openOutputs', { paths: [cur.output] });
+
+				if (res && res.missing && res.missing.length) status('#PAD_019 - output não pode ser acessado: ' + res.missing[0], 'error');
+			} catch (err) {
+				status(err.message, 'error');
+			}
+		}));
+		else body.appendChild(el('p', 'wz-hint', 'sem pasta de output'));
+	}
+
+	// os dados em texto, para colar no Teams ou num e-mail
+	function dadosText(cur) {
+		var lines = [cur.fileName || '', 'atração: ' + String(cur.atracao).toUpperCase()];
+
+		if (cur.oQueE) lines.push('o que é: ' + String(cur.oQueE).toUpperCase());
+		if (cur.designer) lines.push('criado por: ' + cur.designer + (cur.criado ? ' em ' + pdDay(cur.criado) : ''));
+
+		var editors = pdEditors(cur).map(function (e) {
+			return e.user + ' ' + pdDay(e.day);
+		});
+
+		if (editors.length) lines.push('salvo por: ' + editors.join(' · '));
+		if (cur.root) lines.push('pasta do projeto: ' + displayPath(cur.root));
+		if (cur.output) lines.push('output: ' + displayPath(cur.output));
+
+		return lines.join('\n');
+	}
+
+	async function copyDados() {
+		var text = dadosText(state.current || {});
+		var area = el('textarea');
+		var copied = false;
+
+		area.value = text;
+		area.setAttribute('readonly', '');
+		area.style.position = 'fixed';
+		area.style.opacity = '0';
+		document.body.appendChild(area);
+		area.select();
+		try {
+			copied = document.execCommand('copy');
+		} catch (err) { }
+		area.remove();
+
+		try {
+			if (!copied) await call('copyText', { text: text });
+			status('dados do projeto copiados.');
+		} catch (err2) {
+			status(err2.message, 'error');
+		}
+	}
+
+	function openDados() {
+		if (!state.current) return;
+		show('dados');
+		renderDados(state.current);
+	}
+
+	// volta para o editor (o refresh redesenha)
+	function closeDados() {
+		state.screen = '';
+		state.currentKey = null;
+		refresh(true);
+	}
+
 	// quem já salvou o projeto, o mais recente primeiro: 'salvo por: TMARTA 16/11 · JMBILLARD 14/11'
 	function edEditors(cur) {
 		var list = (cur.editores || []).slice().sort(function (a, b) {
@@ -2016,6 +2187,9 @@ projetos com o nome certo).
 			$('claq-back-space').hidden = false;
 		}
 
+		// vendo os dados do projeto: fica na tela (atualizada) enquanto o projeto aberto for o mesmo
+		if (state.screen === 'dados' && !changed) return renderDados(cur);
+
 		if (cur.created) {
 			if (state.screen !== 'editor') show('editor');
 			renderEditor(cur);
@@ -2181,6 +2355,12 @@ projetos com o nome certo).
 			input.focus();
 		});
 		$('claq-back').addEventListener('click', leaveManualNew);
+		$('ed-info').addEventListener('click', openDados);
+		$('pd-back').addEventListener('click', closeDados);
+		$('pd-copy').addEventListener('click', copyDados);
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && state.screen === 'dados') closeDados();
+		});
 		onEnter('claq', claqEnter);
 		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
 		$('claq').addEventListener('blur', function () {

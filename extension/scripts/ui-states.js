@@ -93,6 +93,10 @@ const CHECKS = [
 		await p.waitForTimeout(500);
 	}],
 	['projeto: editor', 'project.html?mock=created'],
+	['projeto: os dados', 'project.html?mock=created', async (p) => {
+		await p.click('#ed-info');
+		await p.waitForTimeout(500);
+	}],
 	['projeto: atração', 'project.html'],
 	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
 	['projeto: o que é e output', 'project.html', (p) => projectTo(p, 'criar')],

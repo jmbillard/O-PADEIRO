@@ -1000,6 +1000,7 @@ PADX.projectCurrent = function () {
 		quadro: m.quadro,
 		oQueE: m.oQueE,
 		designer: m.designer || padMachineUser(),
+		criado: m.criado,
 		editores: padEditorsList(m.editores),
 		salvo: padEditorsList(m.salvo)[0] || null,
 		defaultUser: padDefaultUser(),
