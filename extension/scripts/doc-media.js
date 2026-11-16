@@ -306,6 +306,22 @@ const SCENES = {
 		await hover(p, '#logo', 700);
 	} },
 
+	// as gavetas: o clique abre a gaveta; o clique direito nela já faz a primeira ferramenta de dentro
+	gavetas: { w: 1000, h: 110, hires: true, width: 1664, fps: 14, quality: 72, url: 'bar.html?mock=localfiles', async run(p) {
+		await p.waitForTimeout(600);
+		await hover(p, '#drawer-templates', 1300);
+		await tap(p, '#drawer-templates', { wait: 900 });
+		await hover(p, '#btn-preencher', 1100);
+		await hover(p, '#btn-criar-template', 1100);
+		await tap(p, '#drawer-projeto', { wait: 900 });
+		for (const id of ['projeto', 'fontes', 'coletar', 'render']) await hover(p, '#btn-' + id, 1000);
+		await hover(p, '#drawer-organizar', 1300);
+		await tap(p, '#drawer-organizar', { right: true, wait: 1900 }); // o clique direito: a primeira de dentro (renomear)
+		await p.evaluate(() => { const t = document.getElementById('toast'); if (t) t.hidden = true; });
+		await hover(p, '#btn-buscar', 1100);
+		await hover(p, '#btn-logo-globo', 1200);
+	} },
+
 	// a primeira vez: sem a configuração, o tour (a configuração, a sigla e a turma)
 	tour: { w: 1000, h: 116, url: 'bar.html?mock=nosetup', async before(p) {
 		await p.evaluate(() => { PAD_BRIDGE.pickFile = () => '/Volumes/VFX/imagem/O PADEIRO/O_PADEIRO_GLOBAL_config.json'; });
@@ -488,14 +504,14 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');
 
 	fs.mkdirSync(dir, { recursive: true });
 
-	const ctx = await b.newContext({ viewport: { width: 400, height: 200 }, deviceScaleFactor: 2 });
+	const ctx = await b.newContext({ viewport: { width: 400, height: 200 }, deviceScaleFactor: +process.env.PAD_DOC_ICON_SCALE || 2 }); // PAD_DOC_ICON_SCALE: ícones maiores (apresentação)
 	const p = await ctx.newPage();
 
 	await p.goto(CLIENT + 'bar.html');
@@ -575,7 +591,10 @@ async function gifs(b, names) {
 
 	for (const name of names) {
 		const s = SCENES[name];
-		const ctx = await b.newContext({ viewport: { width: s.w, height: s.h }, deviceScaleFactor: 1, recordVideo: { dir: TMP, size: { width: s.w, height: s.h } } });
+		// hires: em vez do vídeo do navegador (sempre em 1x), a cena é fotografada em 2x o tempo todo e as fotos viram a
+		// animação: sai nítida quando a janela é pequena e vai ampliada (a barra numa apresentação)
+		const ctx = await b.newContext(s.hires ? { viewport: { width: s.w, height: s.h }, deviceScaleFactor: 2 } : { viewport: { width: s.w, height: s.h }, deviceScaleFactor: 1, recordVideo: { dir: TMP, size: { width: s.w, height: s.h } } });
+
 
 		await ctx.addInitScript(CURSOR);
 		await ctx.addInitScript((c) => {
@@ -597,11 +616,46 @@ async function gifs(b, names) {
 		await p.mouse.move(mouse[0], mouse[1]);
 
 		const t0 = Date.now();
+		const frames = [];
+		let shooting = !!s.hires;
+		const shooter = (async () => {
+			while (shooting) {
+				const file = path.join(TMP, name + '-' + frames.length + '.png');
+				const at = Date.now();
+
+				try {
+					await p.screenshot({ path: file });
+					frames.push([file, at]);
+				} catch (e) { }
+			}
+		})();
 
 		await s.run(p);
 		await p.waitForTimeout(500);
+		shooting = false;
+		await shooter;
 
 		const dur = (Date.now() - t0) / 1000;
+		const anim0 = path.join(dir, name + '.webp');
+
+		if (s.hires) {
+			// as fotos na ordem, cada uma pelo tempo até a seguinte
+			const list = path.join(TMP, name + '.txt');
+			const lines = [];
+
+			frames.forEach((f, i) => {
+				const next = i + 1 < frames.length ? frames[i + 1][1] : f[1] + 300;
+
+				lines.push("file '" + f[0] + "'", 'duration ' + ((next - f[1]) / 1000).toFixed(3));
+			});
+			lines.push("file '" + frames[frames.length - 1][0] + "'");
+			fs.writeFileSync(list, lines.join('\n'));
+			await ctx.close();
+			execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-vf', 'fps=' + (s.fps || 16) + (s.width ? ',scale=' + s.width + ':-2:flags=lanczos' : ''), '-c:v', 'libwebp', '-lossless', '0', '-quality', String(s.quality || 60), '-compression_level', '6', '-loop', '0', '-an', anim0]);
+			console.log('· anim', name.padEnd(12), (fs.statSync(anim0).size / 1024).toFixed(0) + ' KB', dur.toFixed(1) + 's', frames.length + ' fotos', errs.length ? '← ' + errs.join(' | ') : '');
+			continue;
+		}
+
 		const video = await p.video().path();
 
 		await ctx.close();
