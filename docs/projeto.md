@@ -18,7 +18,7 @@ abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o pro
 | :---: | --- | :---: | --- |
 | ❶ | **o caminho**: a atração e, com barras, as pastas dela | ❶ | **atração** (com a mesma busca e as barras) |
 | ❷ | uma **atração achada** (pasta e output já conhecidos) | ❷ | **designer** (a sigla) |
-| ❸ | **nova atração**: o nome e a categoria abrem embaixo | ❸ | **o que é** (ex: SERVIÇO, CONVIDADO, AESP) |
+| ❸ | **nova atração**: os chips das categorias (um clique cria nela, com o nome digitado) | ❸ | **o que é** (ex: SERVIÇO, CONVIDADO, AESP) |
 | ❹ | **outra pasta…**: o navegador de pastas | ❹ | o **nome do .aep** (o último nível + o que é) |
 | ❺ | **Criar projeto** | ❺ | **trocar a pasta**: leva o .aep e a estrutura |
 | | | ❻ | **pasta de output** |

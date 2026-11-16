@@ -256,7 +256,7 @@ const SHOTS = {
 	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .cat-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
 	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
@@ -299,13 +299,6 @@ const SHOTS = {
    ========================================================= */
 
 const SCENES = {
-	// a barra: o mouse passa pelas ferramentas (cada ícone anima, a dica conta os dois cliques)
-	barra: { w: 1000, h: 110, url: 'bar.html', async run(p) {
-		mouse = [990, 100];
-		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
-		await hover(p, '#logo', 700);
-	} },
-
 	// as gavetas: só o clique abrindo cada uma, sem parar em nenhuma ferramenta (as dicas levam 2 s para aparecer)
 	gavetas: { w: 1000, h: 110, hires: true, width: 1664, fps: 14, quality: 72, url: 'bar.html?mock=localfiles', async run(p) {
 		await p.waitForTimeout(500);
@@ -339,7 +332,9 @@ const SCENES = {
 		mouse = [740, 100];
 		await p.waitForTimeout(600);
 		await tap(p, '#drawer-projeto', { wait: 700 }); // a gaveta Projeto abre
-		await tap(p, '#btn-coletar', { wait: 6800 });
+		await tap(p, '#btn-coletar', { wait: 500 });
+		await glide(p, [740, 100], 500); // sai de cima do botão: parado 2 s, a dica cobriria a contagem e o aviso
+		await p.waitForTimeout(6000);
 	} },
 
 	// A FORMA: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento

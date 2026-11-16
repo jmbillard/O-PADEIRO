@@ -7,7 +7,7 @@ o padeiro duplica comps, preenche os textos e cria a fila de render a partir de 
 o fluxo é simples, em 3 etapas:\
 `1 buscar` > `2 selecionar` > `3 preencher`
 
-<p align="center"><img src="docs/images/anim/barra.webp" alt="a barra do padeiro: cada ferramenta anima ao passar o mouse" width="1000"></p>
+<p align="center"><img src="docs/images/anim/gavetas.webp" alt="a barra do padeiro: as gavetas Templates, Projeto e Organização abrindo" width="1000"></p>
 
 > 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
@@ -159,8 +159,6 @@ O ETIQUETADOR
 ```
 
 ### as gavetas
-
-<p align="center"><img src="docs/images/anim/gavetas.webp" alt="as três gavetas abrindo: Templates, Projeto e Organização" width="1000"></p>
 
 | ![a gaveta Projeto aberta](docs/images/barra-gaveta-projeto.webp) |
 | :---: |
