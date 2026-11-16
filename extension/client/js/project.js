@@ -1622,6 +1622,7 @@ projetos com o nome certo).
 			? 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.'
 			: 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
+		edEditors(cur);
 
 		// os campos só são preenchidos quando o projeto muda: a atualização a cada 1,5 s não apaga o que está
 		// sendo digitado (nem a pasta escolhida e ainda não salva)
@@ -1673,6 +1674,22 @@ projetos com o nome certo).
 	}
 
 	// o nome do .aep: o último nível (ou a atração) + o que é (e o de hoje, quando muda)
+	// quem já salvou o projeto, o mais recente primeiro: 'salvo por: TMARTA 16/11 · JMBILLARD 14/11'
+	function edEditors(cur) {
+		var list = (cur.editores || []).slice().sort(function (a, b) {
+			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
+		});
+		var text = list.map(function (e) {
+			var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(e.day || '');
+
+			return e.user + (d ? ' ' + d[3] + '/' + d[2] : '');
+		}).join(' · ');
+
+		$('ed-editors').hidden = !text;
+		$('ed-editors').textContent = text ? 'salvo por: ' + text : '';
+		$('ed-editors').title = text ? 'quem já salvou este projeto e o último dia de cada um' : '';
+	}
+
 	function edFile() {
 		var p = edParts();
 		var name = state.edKeep || aepName((p.rest.length ? p.rest[p.rest.length - 1] : p.first) + ' ' + $('ed-what').value);

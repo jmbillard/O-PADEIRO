@@ -109,6 +109,8 @@ Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos
   producao   → a produção do último template preenchido (DIA-A-DIA)  template
   templates  → os templates usados, um por linha: nome <tab> pasta   template (acumula; as fontes saem de lá)
   criado     → a data em que os dados foram gravados a primeira vez  o primeiro que gravar
+  editores   → quem salvou o projeto, um por linha: sigla <tab> o último dia (AAAA-MM-DD)   a cada salvamento
+  salvo      → quem salvou por último: sigla <tab> o dia                                  a cada salvamento
   versao     → a versão destes campos (para migrar no futuro)        todos
 Também ficam dc:title (o nome do .aep), dc:creator (o designer) e dc:date (criado), que aparecem nas
 informações do arquivo. Projeto de antes (sem padeiro:versao): os campos antigos (dc:coverage, dc:relation,
@@ -118,7 +120,7 @@ dc:publisher, dc:source, dc:identifier) são lidos aqui e, na próxima gravaçã
 
 var PAD_NS = 'https://github.com/jmbillard/O-PADEIRO/ns/1.0/';
 var PAD_META_VERSION = '1';
-var PAD_META_FIELDS = ['atracao', 'quadro', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado'];
+var PAD_META_FIELDS = ['atracao', 'quadro', 'oQueE', 'designer', 'pasta', 'output', 'producao', 'templates', 'criado', 'editores', 'salvo'];
 var PAD_META_LEGACY = ['identifier', 'coverage', 'relation', 'publisher', 'source'];
 var padNsReady = false;
 
@@ -200,6 +202,12 @@ function padMetaWrite(fields, title) {
 
 	for (var k in fields) if (fields.hasOwnProperty(k) && fields[k] != null) cur[k] = String(fields[k]);
 
+	// toda gravação é de quem está usando: entra nos editores e no salvo por último
+	var touch = padEditorsTouch(cur);
+
+	cur.editores = touch.editores;
+	cur.salvo = touch.salvo;
+
 	for (i = 0; i < PAD_META_FIELDS.length; i++) {
 		var f = PAD_META_FIELDS[i];
 
@@ -226,6 +234,71 @@ function padMetaWrite(fields, title) {
 
 	app.project.xmpPacket = meta.serialize();
 }
+
+/*
+   quem editou e salvou: o padeiro não é avisado do salvar do After Effects (Ctrl+S, o salvar ao iniciar o render).
+   a barra percebe em seguida que o arquivo foi salvo (projectStatus) e anota quem está usando, em memória; a
+   anotação vai para o arquivo no salvamento seguinte. nos salvamentos do próprio padeiro, vai na hora.
+   por dia: a anotação só muda (e o projeto só fica "modificado") no primeiro salvamento de cada pessoa no dia
+*/
+
+// os editores de um projeto: [{ user, day }], do texto 'sigla <tab> dia' por linha
+function padEditorsList(text) {
+	var out = [];
+	var lines = String(text || '').split('\n');
+
+	for (var i = 0; i < lines.length; i++) {
+		var parts = lines[i].split('\t');
+
+		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '' });
+	}
+
+	return out;
+}
+
+// os editores e o salvo por último com quem está usando, hoje → { editores, salvo, changed }
+function padEditorsTouch(cur) {
+	var user = padMachineUser();
+	var today = padToday();
+	var list = padEditorsList(cur.editores);
+	var lines = [];
+	var found = false;
+	var i;
+
+	if (!user) return { editores: cur.editores || '', salvo: cur.salvo || '', changed: false };
+
+	for (i = 0; i < list.length; i++) {
+		if (list[i].user == user) {
+			list[i].day = today;
+			found = true;
+		}
+	}
+	if (!found) list.push({ user: user, day: today });
+	for (i = 0; i < list.length; i++) lines.push(list[i].user + '\t' + list[i].day);
+
+	var editores = lines.join('\n');
+	var salvo = user + '\t' + today;
+
+	return { editores: editores, salvo: salvo, changed: editores != (cur.editores || '') || salvo != (cur.salvo || '') };
+}
+
+// anota quem está usando nos dados do projeto (só num projeto com os dados do padeiro, e só se mudar)
+function padEditorsNote() {
+	try {
+		var cur = padMetaRead();
+
+		if (!cur.atracao || !padEditorsTouch(cur).changed) return false;
+
+		padMetaWrite({});
+
+		return true;
+	} catch (err) {
+		return false;
+	}
+}
+
+// o último salvamento visto pela barra: { path, time }
+var PAD_SAVE_SEEN = { path: '', time: 0 };
 
 // padeiro:templates: uma linha por template, nome <tab> pasta
 function padTemplatesList(text) {
@@ -909,6 +982,15 @@ PADX.projectStatus = function () {
 		key = file ? file.fsName + '|' + file.modified.getTime() : 'novo';
 	} catch (err) { }
 
+	// o arquivo aberto foi salvo de novo desde a última conferência (o Ctrl+S, o salvar do render): anota quem salvou
+	try {
+		var seenTime = file ? file.modified.getTime() : 0;
+		var seenPath = file ? file.fsName : '';
+
+		if (seenPath && seenPath == PAD_SAVE_SEEN.path && seenTime != PAD_SAVE_SEEN.time) padEditorsNote();
+		PAD_SAVE_SEEN = { path: seenPath, time: seenTime };
+	} catch (err2) { }
+
 	var hasData = !!(file && padMetaRead().atracao);
 	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
 	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
@@ -917,6 +999,7 @@ PADX.projectStatus = function () {
 };
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
+// editores: quem já salvou [{ user, day }]; salvo: o último { user, day } ou null
 // → { created, outside, atracao, quadro, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
 PADX.projectCurrent = function () {
 	var file = app.project.file;
@@ -931,6 +1014,8 @@ PADX.projectCurrent = function () {
 		quadro: m.quadro,
 		oQueE: m.oQueE,
 		designer: m.designer || padMachineUser(),
+		editores: padEditorsList(m.editores),
+		salvo: padEditorsList(m.salvo)[0] || null,
 		defaultUser: padDefaultUser(),
 		output: padNoVolumeSuffix(m.output),
 		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
@@ -945,6 +1030,7 @@ PADX.projectCurrent = function () {
 PADX.projectSaveNow = function () {
 	if (!app.project.file) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
+	padEditorsNote();
 	app.project.save();
 
 	return PADX.projectCurrent();

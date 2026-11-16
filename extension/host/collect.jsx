@@ -627,6 +627,7 @@ function padCollectFinish(target, settings, res) {
 	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
 	var sub = padCollectFolderPath(settings, 'projeto');
 
+	padEditorsNote();
 	if (file) app.project.save();
 	else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
 
