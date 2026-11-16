@@ -64,7 +64,8 @@
 				"name": "VT",
 				"path": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}",
 				"output": "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/INSTITUCIONAL/VTs/{atracao}",
-				"icon": "fita"
+				"icon": "fita",
+				"keepName": true
 			},
 			{
 				"name": "MOOD MENSAL",

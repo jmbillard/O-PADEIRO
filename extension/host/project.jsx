@@ -57,7 +57,7 @@ function padCleanProject(o) {
 
 
 		seen[key] = true;
-		clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
+		clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon, keepName: c.keepName === true });
 	}
 
 	return clean;
@@ -87,7 +87,7 @@ PADX.projectCategories = function () {
 
 		if (checked[fixed] == null) checked[fixed] = !local && fixed != '' && new Folder(resolveMacVolumePath(padPath(fixed))).exists; // VFX-1… também vale
 
-		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, reachable: checked[fixed] });
+		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, keepName: list[i].keepName === true, reachable: checked[fixed] });
 	}
 
 	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
@@ -109,6 +109,7 @@ Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos
   producao   → a produção do último template preenchido (DIA-A-DIA)  template
   templates  → os templates usados, um por linha: nome <tab> pasta   template (acumula; as fontes saem de lá)
   criado     → a data em que os dados foram gravados a primeira vez  o primeiro que gravar
+  (categorias: keepName = o nome da categoria faz parte do nome da atração: 'vt reunião' cria VT REUNIAO em VT)
   editores   → quem salvou o projeto, um por linha: sigla <tab> o último dia (AAAA-MM-DD)   a cada salvamento
   salvo      → quem salvou por último: sigla <tab> o dia                                  a cada salvamento
   versao     → a versão destes campos (para migrar no futuro)        todos

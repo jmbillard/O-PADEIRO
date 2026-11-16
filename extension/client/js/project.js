@@ -821,7 +821,8 @@ projetos com o nome certo).
 			if (ok) best = { base: b, size: label.length };
 		});
 
-		if (best) return { name: words.slice(best.size).join(' ').toUpperCase(), base: best.base };
+		// keepName (configuração): o nome da categoria faz parte do nome da atração (vt reunião → VT REUNIÃO, em VT)
+		if (best) return { name: (best.base.keepName ? raw : words.slice(best.size).join(' ')).toUpperCase(), base: best.base };
 
 		return { name: raw.toUpperCase(), base: null };
 	}

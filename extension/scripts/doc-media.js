@@ -206,7 +206,7 @@ const DOC_PREVIEWS = `(() => {
 const CATEGORIES = { categories: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
-	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
+	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita', keepName: true },
 	{ name: 'FUTEBOL', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/ESPORTES/FUTEBOL/{ano}/{atracao}', output: '', icon: 'bola' }
 ] };
 
@@ -375,7 +375,7 @@ const SCENES = {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
-		await type(p, 'vt interpol', 120);
+		await type(p, 'vt reunião', 120);
 		await p.waitForTimeout(1100);
 		await hover(p, p.locator('.cat-chip', { hasText: 'NOVELA' }).first(), 700);
 		await hover(p, p.locator('.cat-chip.is-on').first(), 800);
