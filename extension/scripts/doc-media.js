@@ -400,6 +400,19 @@ const SCENES = {
 		await hover(p, '#btn-save', 1100);
 	} },
 
+	// A CLAQUETE, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
+	dados: { w: 480, h: 680, url: 'project.html?mock=created', async run(p) {
+		mouse = [450, 640];
+		await p.waitForTimeout(900);
+		await hover(p, '#ed-editors', 900);
+		await tap(p, '#ed-info', { wait: 1100 });
+		await hover(p, '.pd-rows .pd-v:last-child', 900);
+		await hover(p, '.pd-person.is-last', 800);
+		await hover(p, p.locator('.pd-person').nth(1), 800);
+		await hover(p, p.locator('.pd-path').first(), 900);
+		await hover(p, '#pd-copy', 900);
+	} },
+
 	// O TIPÓGRAFO: troca a fonte que falta pela busca, com a prévia
 	tipografo: { w: 480, h: 600, url: 'fonts.html', init: DOC_FONTS, async run(p) {
 		mouse = [450, 560];
