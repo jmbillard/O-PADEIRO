@@ -1387,7 +1387,8 @@ p.wz-exist b {
   padding-top: 24px;
 }
 
-#sc-claquete > .wz-foot {
+#sc-claquete > .wz-foot,
+#sc-editor > .wz-foot {
   margin-top: 0;
 }
 
