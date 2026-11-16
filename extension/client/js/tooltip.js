@@ -19,7 +19,7 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 */
 
 (function () {
-	var DELAY = 450;
+	var DELAY = 900; // o tempo parado em cima até a dica aparecer (vale para todas as janelas)
 	var GAP = 6;
 	var MARGIN = 4;
 
