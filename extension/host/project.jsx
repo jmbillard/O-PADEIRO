@@ -106,8 +106,8 @@ Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos
   designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
   pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
   output     → a pasta de output                                     projeto; o template grava se faltar
-  producao   → a produção do último template preenchido (DIA-A-DIA)  template
-  templates  → os templates usados, um por linha: nome <tab> pasta   template (acumula; as fontes saem de lá)
+  producao   → (não é mais gravado: só nos arquivos de antes) a produção do último template preenchido
+  templates  → (não é mais gravado: só nos arquivos de antes) os templates usados, um por linha: nome <tab> pasta
   criado     → a data em que os dados foram gravados a primeira vez  o primeiro que gravar
   editores   → quem salvou o projeto, um por linha: sigla <tab> o último dia (AAAA-MM-DD)   a cada salvamento
   salvo      → quem salvou por último: sigla <tab> o dia                                  a cada salvamento
@@ -323,27 +323,13 @@ function padTemplatesText(list) {
 	return lines.join('\n');
 }
 
-// Preenchimento e importação de templates: registra o template (nome e pasta, sem repetir) e a produção, e
-// grava o que ainda faltar (o designer, a data e a pasta de output do template). o que a janela projeto gravou
-// não muda. info: { name, path, producao, output }
+// Preenchimento e importação de templates: info: { name, path, producao, output }
 function padRegisterTemplateUse(info) {
+	// o arquivo que sai de um preenchimento não é um projeto: o template e a produção não são mais gravados nele (vão
+	// para o registro de uso / webhook). fica só a pasta de output do template, se ainda não houver uma: é para ela
+	// que o Render e o Pastas da barra apontam
 	try {
-		var cur = padMetaRead();
-		var list = padTemplatesList(cur.templates);
-		var path = padDisplayPath(String(info.path || ''));
-		var kept = [];
-
-		for (var i = 0; i < list.length; i++) if (!padSamePath(padDisplayPath(list[i].path), path)) kept.push(list[i]);
-		if (path) kept.push({ name: info.name || '', path: path });
-
-		var fields = { templates: padTemplatesText(kept) };
-
-		if (info.producao) fields.producao = info.producao;
-		if (!cur.designer) fields.designer = padMachineUser();
-		if (!cur.criado) fields.criado = padToday();
-		if (info.output && !cur.output) fields.output = padDisplayPath(padPath(info.output));
-
-		padMetaWrite(fields);
+		if (info.output && !padMetaRead().output) padMetaWrite({ output: padDisplayPath(padPath(info.output)) });
 	} catch (err) { }
 }
 
