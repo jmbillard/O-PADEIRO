@@ -1318,8 +1318,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
 	}
 
-	async function watchProject() {
-		if (document.hidden) return;
+	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (a claquete que acabou de
+	// criar o projeto), o painel pode se dizer escondido e a bolinha ficava no estado de antes; por isso, escondida,
+	// a barra ainda confere, só que mais devagar (1 a cada 3 vezes), e sempre que o mouse entra nela
+	var projectSkips = 0;
+
+	async function watchProject(force) {
+		if (document.hidden && force !== true && ++projectSkips % 3) return;
 
 		try {
 			var res = await call('projectStatus');
@@ -1534,6 +1539,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		// as bolinhas ficam presas ao ícone (css); ao virar a barra, o lado redondo das gavetas é medido de novo
 		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);
+		document.documentElement.addEventListener('mouseenter', function () {
+			watchProject(true);
+		});
 		window.addEventListener('focus', loadLinks);
 		window.addEventListener('focus', syncFonts);
 		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
