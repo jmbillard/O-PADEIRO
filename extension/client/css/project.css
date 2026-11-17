@@ -1851,3 +1851,11 @@ p.wz-exist b {
   color: var(--text-tertiary);
   font-size: 0.66rem;
 }
+
+/* a hora, à esquerda do HOJE, na lista de quem salvou */
+.pd-person small b {
+  margin-right: 6px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}

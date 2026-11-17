@@ -246,7 +246,8 @@ function padMetaWrite(fields, title) {
    por dia: a anotação só muda (e o projeto só fica "modificado") no primeiro salvamento de cada pessoa no dia
 */
 
-// os editores de um projeto: [{ user, day }], do texto 'sigla <tab> dia' por linha
+// os editores de um projeto: [{ user, day, time }], do texto 'sigla <tab> dia <tab> hora' por linha (a hora é
+// opcional: HH:MM do último salvamento de quem já não é o último; a do último vem da data do arquivo)
 function padEditorsList(text) {
 	var out = [];
 	var lines = String(text || '').split('\n');
@@ -254,10 +255,20 @@ function padEditorsList(text) {
 	for (var i = 0; i < lines.length; i++) {
 		var parts = lines[i].split('\t');
 
-		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '' });
+		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '', time: parts[2] || '' });
 	}
 
 	return out;
+}
+
+// o dia (AAAA-MM-DD) e a hora (HH:MM) de uma data em ms
+function padDayTime(ms) {
+	var d = new Date(ms);
+	var two = function (n) {
+		return (n < 10 ? '0' : '') + n;
+	};
+
+	return { day: d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()), time: two(d.getHours()) + ':' + two(d.getMinutes()) };
 }
 
 // os editores e o salvo por último com quem está usando, hoje → { editores, salvo, changed }
@@ -265,19 +276,33 @@ function padEditorsTouch(cur) {
 	var user = padMachineUser();
 	var today = padToday();
 	var list = padEditorsList(cur.editores);
+	var before = padEditorsList(cur.salvo)[0] || null; // quem era o último, antes de agora
 	var lines = [];
-	var found = false;
 	var i;
 
 	if (!user) return { editores: cur.editores || '', salvo: cur.salvo || '', changed: false };
 
+	// outra pessoa era a última: a hora do último salvamento dela é a data que o arquivo tinha antes deste
+	// salvamento (a barra guarda em PAD_SAVE_SEEN). fica na linha dela, sem gravar nada a mais depois
+	var stamp = null;
+
+	try {
+		var file = app.project.file;
+
+		if (before && before.user != user && file && PAD_SAVE_SEEN.path == file.fsName && PAD_SAVE_SEEN.time) stamp = padDayTime(PAD_SAVE_SEEN.time);
+	} catch (err) { }
+
 	// quem salva vai para o fim da lista: a ordem das linhas é a ordem em que cada um salvou por último (duas
 	// pessoas no mesmo dia: a de baixo salvou depois)
 	for (i = 0; i < list.length; i++) {
-		if (list[i].user == user) found = true;
-		else lines.push(list[i].user + '\t' + list[i].day);
+		if (list[i].user == user) continue;
+
+		var time = list[i].time;
+
+		if (stamp && list[i].user == before.user && list[i].day == stamp.day) time = stamp.time;
+		lines.push(list[i].user + '\t' + list[i].day + (time ? '\t' + time : ''));
 	}
-	lines.push(user + '\t' + today);
+	lines.push(user + '\t' + today); // a hora de quem é o último vem da data do arquivo
 
 	var editores = lines.join('\n');
 	var salvo = user + '\t' + today;

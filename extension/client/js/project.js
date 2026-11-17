@@ -1838,7 +1838,7 @@ projetos com o nome certo).
 		var last = cur.salvo && cur.salvo.user;
 
 		return (cur.editores || []).map(function (e, i) {
-			return { user: e.user, day: e.day, at: i };
+			return { user: e.user, day: e.day, time: e.time || '', at: i };
 		}).sort(function (a, b) {
 			if ((a.user === last) !== (b.user === last)) return a.user === last ? -1 : 1;
 			if (a.day !== b.day) return a.day < b.day ? 1 : -1;
@@ -1925,9 +1925,15 @@ projetos com o nome certo).
 				line.appendChild(el('i'));
 				line.appendChild(document.createTextNode(e.user));
 				if (!i) line.appendChild(el('em', null, 'ÚLTIMO'));
-				var when2 = el('small', null, pdFriendlyDay(e.day));
+				var friendly = pdFriendlyDay(e.day);
+				var when2 = el('small');
+				// a hora, à esquerda, nos de hoje: a do último vem da data do arquivo; a dos outros ficou gravada quando
+				// outra pessoa salvou depois deles
+				var hour = friendly !== 'HOJE' ? '' : !i && cur.modified && pdFriendlyStamp(cur.modified).indexOf('HOJE ') === 0 ? pdFriendlyStamp(cur.modified).slice(5) : e.time;
 
-				when2.title = pdDay(e.day); // a data inteira, na dica
+				if (hour) when2.appendChild(el('b', null, hour));
+				when2.appendChild(document.createTextNode(friendly));
+				when2.title = pdDay(e.day) + (hour ? ' ' + hour : ''); // a data inteira, na dica
 				line.appendChild(when2);
 				people.appendChild(line);
 			});

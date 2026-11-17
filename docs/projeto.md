@@ -69,7 +69,7 @@ os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metada
 | `padeiro:pasta` | a raiz da estrutura | janela projeto |
 | `padeiro:output` | a pasta de output | janela projeto; o template grava se faltar |
 | `padeiro:criado` | 2026-11-05 | o primeiro que gravar |
-| `padeiro:editores` | quem já salvou o projeto e o último dia de cada um (`USUARIO` e `2026-11-16`, um por linha) | cada salvamento (abaixo) |
+| `padeiro:editores` | quem já salvou o projeto e o último dia de cada um (`USUARIO` e `2026-11-16`, um por linha, na ordem em que salvaram por último; a hora do último salvamento entra na linha de quem deixou de ser o último) | cada salvamento (abaixo) |
 | `padeiro:salvo` | o dia do último salvamento | cada salvamento |
 | `padeiro:versao` | 1 | todos |
 
@@ -94,7 +94,7 @@ ao abrir a janela com um projeto criado por ela:
 - **pasta do projeto** → o caminho do projeto. o botão de pasta dentro do campo escolhe outra pasta.
 - **salvo por** → embaixo, quem já salvou o projeto, o mais recente primeiro (`salvo por: TMARTA 16/11 · JMBILLARD 14/11`).
 - **output** → embaixo, logo acima do rodapé (como no projeto novo): a pasta de output do projeto. o botão de pasta dentro do campo escolhe outra.
-- **os dados do projeto** (o botão redondo com o **i**, no rodapé, antes do **⋯**) → uma tela só de leitura: o arquivo e onde está, a situação (**na pasta dele**, **fora da pasta** ou **sem os dados**), a atração, o o que é, quem criou e quando, **salvo em** (a data e a hora do último salvamento do arquivo), quem salvou (uma linha por pessoa, com o último dia dela: salvar de novo no mesmo dia não muda a lista, só o **salvo em**; as datas aparecem como se fala: **HOJE**, **ONTEM** ou, mais para trás, a data, com a data inteira na dica), a pasta do projeto e a de output. **copiar** leva tudo em texto (para colar no Teams); a seta volta para o editor.
+- **os dados do projeto** (o botão redondo com o **i**, no rodapé, antes do **⋯**) → uma tela só de leitura: o arquivo e onde está, a situação (**na pasta dele**, **fora da pasta** ou **sem os dados**), a atração, o o que é, quem criou e quando, **salvo em** (a data e a hora do último salvamento do arquivo), quem salvou (uma linha por pessoa, com o último dia dela: salvar de novo no mesmo dia não muda a lista, só o **salvo em**; as datas aparecem como se fala: **HOJE**, **ONTEM** ou, mais para trás, a data, com a data inteira na dica. nos de **hoje**, a hora fica à esquerda: a do último vem da data do arquivo; a dos outros é a do último salvamento de cada um antes de outra pessoa salvar), a pasta do projeto e a de output. **copiar** leva tudo em texto (para colar no Teams); a seta volta para o editor.
 - **Salvar** → grava os campos e salva o `.aep` **na pasta de projetos da estrutura, com o nome de baixo** (cria a pasta de projetos se faltar; as outras pastas da estrutura o [coletar](#-coletar-os-arquivos) cria quando precisar). com outro nome ou em outro lugar, o arquivo antigo continua onde estava e a janela avisa onde; senão, ela fecha.
 
 **a estrutura do projeto** → com o campo do projeto vazio, a tela mostra, animada, as pastas que o projeto novo vai ter (as da [configuração > coletar](producoes.md)), num desenho decorativo: as pastas cheias, sem nada para clicar. digitando, ela sai e o resto da tela (o que é e output) entra no lugar.
