@@ -1601,13 +1601,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { file: a.path };
 		},
 
-		filesRequest: function (a) {
-			return { where: a.where || '' };
-		},
-
 		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)
 		filesStart: function () {
-			return { path: mode === 'nofolder' ? '' : '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço', undo: window.PAD_MOCK_FILES_UNDO || null };
+			return { undo: window.PAD_MOCK_FILES_UNDO || null };
 		},
 
 		filesList: function (a) {

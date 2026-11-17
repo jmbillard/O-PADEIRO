@@ -21,7 +21,6 @@ desliga o que não deve mudar e renomeia.
 
 	var call = PAD_BRIDGE.call;
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#arquivos';
-	var PREF_PATH = 'pad.files.path'; // a última pasta, neste computador
 	var PREF_OPTS = 'pad.files.opts';
 	var BAD_CHARS = /[\\\/:*?"<>|]/;
 
@@ -281,7 +280,7 @@ desliga o que não deve mudar e renomeia.
 
 	function emptyText(count) {
 		if (!state.loaded) return 'lendo a pasta…';
-		if (!state.path) return 'escolha a pasta em cima.';
+		if (!state.path) return 'escolha a pasta em cima: a pastinha do campo, ou cole o caminho e Enter.';
 		if (!count.all) return 'nada para renomear nesta pasta (os projetos e os arquivos de sistema ficam de fora).';
 
 		return 'nada nesta situação.';
@@ -305,7 +304,7 @@ desliga o que não deve mudar e renomeia.
 			return status(plural(count.bad, 'nome repetido ou inválido', 'nomes repetidos ou inválidos') + ': edite o novo nome ou desligue a linha.', 'error');
 		}
 
-		go.textContent = state.step === 1 ? 'Confirmar: renomear ' + count.chg : 'Renomear ' + plural(count.chg, 'item', 'itens');
+		go.textContent = state.step === 1 ? 'Confirmar: renomear ' + count.chg : count.all ? 'Renomear ' + plural(count.chg, 'item', 'itens') : 'Renomear';
 		go.disabled = !count.chg;
 		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + ' · ' + count.same + ' no padrão' + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
 	}
@@ -335,7 +334,6 @@ desliga o que não deve mudar e renomeia.
 			});
 			$('fl-path').value = res.path;
 			$('fl-path').scrollLeft = $('fl-path').scrollWidth; // o fim do caminho (a pasta) à vista
-			pref(PREF_PATH, res.path);
 		} catch (err) {
 			state.note = err.message;
 			status(err.message, 'error');
@@ -519,22 +517,18 @@ desliga o que não deve mudar e renomeia.
 		start();
 	}
 
-	// a pasta de partida: a do projeto aberto ou, sem ela, a última usada; sem nenhuma, a janela pede a pasta
+	// a janela abre sempre vazia: a pasta é escolhida aqui (a pastinha, ou o caminho digitado e Enter). nada vem do
+	// projeto aberto nem da última vez
 	async function start() {
-		var path = '';
-
 		try {
 			var res = await call('filesStart');
 
-			path = res.path || '';
 			state.undo = res.undo || null;
 		} catch (err) { }
 
-		if (!path) path = pref(PREF_PATH) || '';
-		if (path) return load(path);
-
 		state.loaded = true;
 		render();
+		$('fl-path').focus();
 	}
 
 	bind();

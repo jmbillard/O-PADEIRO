@@ -269,7 +269,11 @@ const SHOTS = {
 		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
-	arquivista: { w: 720, h: 680, url: 'files.html', marks: [
+	arquivista: { w: 720, h: 680, url: 'files.html', async run(p) {
+		await p.fill('#fl-path', '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço');
+		await p.press('#fl-path', 'Enter');
+		await p.waitForTimeout(600);
+	}, marks: [
 		{ sel: '.fl-path' }, { sel: '.fl-opts', pad: 3 }, { sel: '.fl-tools', pad: 3 }, { sel: '.fl-row:nth-of-type(3) .fl-new-wrap', pad: 2 }, { sel: '.fl-row.is-bad .fl-st', round: true }, { sel: '#fl-undo', round: true }, { sel: '#fl-go' }
 	] },
 	'catador-migracao': { w: 780, h: 660, url: 'collect.html', async run(p) {

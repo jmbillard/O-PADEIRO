@@ -361,9 +361,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(LABELS_PANEL_ID);
 		},
 
-		// O ARQUIVISTA: renomear os arquivos e as pastas de um diretório. where: '' (a pasta do projeto) ou 'output'
-		openFiles: async function (where) {
-			await call('filesRequest', { where: where || '' });
+		// O ARQUIVISTA: renomear os arquivos e as pastas de um diretório. a janela abre vazia: a pasta é escolhida lá
+		openFiles: function () {
 			PAD_BRIDGE.openPanel(FILES_PANEL_ID);
 		},
 
@@ -594,13 +593,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Arquivos',
 			icon: 'files',
 			name: 'O ARQUIVISTA',
-			tips: [L_CLICK + 'renomear os arquivos e as pastas da pasta do projeto', R_CLICK + 'renomear os da pasta de output'],
-			left: function () {
-				return actions.openFiles('');
-			},
-			right: function () {
-				return actions.openFiles('output');
-			}
+			tips: [L_CLICK + 'renomear os arquivos e as pastas de uma pasta'],
+			left: actions.openFiles
 		},
 		{
 			key: 'buscar',

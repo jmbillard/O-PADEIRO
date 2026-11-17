@@ -19,6 +19,13 @@ const LISTS = { 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/m
 
 const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'film' }] };
 
+// O ARQUIVISTA abre vazio: a pasta é digitada no campo (o mock responde com uma pasta de exemplo)
+async function filesFolder(page) {
+	await page.fill('#fl-path', '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço');
+	await page.press('#fl-path', 'Enter');
+	await page.waitForTimeout(500);
+}
+
 async function projectTo(page, screen) {
 	// o campo do projeto: digita e Enter sem categoria abre a atração nova (o nome e a categoria embaixo; os chips das
 	// categorias ficam na lista)
@@ -123,8 +130,12 @@ const CHECKS = [
 	['versionador', 'versioner.html'],
 	['versionador: projeto não salvo', 'versioner.html?mock=unsaved'],
 	['etiquetas', 'labels.html'],
-	['arquivista', 'files.html'],
+	['arquivista: vazio', 'files.html'],
+	['arquivista', 'files.html', async (p) => {
+		await filesFolder(p);
+	}],
 	['arquivista: confirmar', 'files.html', async (p) => {
+		await filesFolder(p);
 		// desliga os dois de nome repetido e pede a confirmação (o botão de voltar aparece no rodapé)
 		await p.locator('.fl-row.is-bad .fl-cb').first().click();
 		await p.click('#fl-go');

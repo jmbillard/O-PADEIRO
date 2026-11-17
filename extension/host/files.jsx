@@ -9,7 +9,7 @@ A mesma regra do renomear das comps (configuração > renomear: a caixa, os acen
 tipo), aplicada aos nomes dos arquivos e das pastas de um diretório. O prefixo do tipo vem do PRÓPRIO nome
 (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima.
 
-- filesStart  → a pasta em que a janela abre (a do projeto aberto)
+- filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
 - filesList   → os itens da pasta (e das subpastas, se pedido), com a sugestão de cada um
 - filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora), religa no projeto aberto
                 o que mudou de caminho e guarda o registro para desfazer
@@ -193,36 +193,9 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	}
 }
 
-// a barra pede a pasta em que a janela vai abrir (o clique: a do projeto; o clique direito: a de output), e a
-// janela lê uma vez. a: { where: '' | 'output' }
-var PAD_FILES_REQUEST = { where: '', at: 0 };
-
-PADX.filesRequest = function (a) {
-	PAD_FILES_REQUEST = { where: a && a.where == 'output' ? 'output' : '', at: new Date().getTime() };
-
-	return { where: PAD_FILES_REQUEST.where };
-};
-
-// a pasta em que a janela abre: a do projeto aberto (a da estrutura, gravada pela claquete, ou a do .aep) ou, pelo
-// clique direito na barra, a de output do projeto
+// a janela abre sempre vazia (a pessoa escolhe a pasta): só diz se há uma renomeação para desfazer
 PADX.filesStart = function () {
-	var path = '';
-	var wantOutput = PAD_FILES_REQUEST.where == 'output' && new Date().getTime() - PAD_FILES_REQUEST.at < 15000;
-
-	PAD_FILES_REQUEST = { where: '', at: 0 };
-
-	try {
-		var m = padMetaRead();
-		var file = app.project.file;
-
-		if (wantOutput && m.output) path = padMountedPath(padPath(m.output));
-		else if (m.pasta) path = padMountedPath(padPath(m.pasta));
-		else if (file) path = padCollectRoot(file, padReadCollect());
-	} catch (err) { }
-
-	if (path && !new Folder(path).exists) path = '';
-
-	return { path: path ? padDisplayPath(path) : '', undo: padFilesUndoInfo() };
+	return { undo: padFilesUndoInfo() };
 };
 
 // a: { path, sub } → { path, name, items, truncated, undo }

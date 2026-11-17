@@ -25,7 +25,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
-| <img src="docs/images/icons/files.png" width="40" alt="arquivos"> | **Arquivos** (gaveta **Organização**) | abre **[O ARQUIVISTA](#arquivos)** na pasta do projeto: renomear os arquivos e as pastas | abre **[O ARQUIVISTA](#arquivos)** na pasta de output do projeto |
+| <img src="docs/images/icons/files.png" width="40" alt="arquivos"> | **Arquivos** (gaveta **Organização**) | abre **[O ARQUIVISTA](#arquivos)**: renomear os arquivos e as pastas de uma pasta | |
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
@@ -351,14 +351,13 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 **O ARQUIVISTA**: renomeia os arquivos e as pastas de um diretório com a mesma regra do [renomear](#renomear) das comps (a caixa, os acentos e o separador da [configuração > renomear](docs/producoes.md#-renomear)).
 
-`◖ clique esquerdo` → abre a janela na pasta do projeto aberto.\
-`◗ clique direito` → abre na pasta de output do projeto.
+`◖ clique esquerdo` → abre a janela, **sempre vazia**: a pasta é você quem escolhe (nada vem do projeto aberto, da pasta de output ou da última vez).
 
 <p align="center"><img src="docs/images/arquivista.webp" alt="O ARQUIVISTA, com as partes numeradas" width="640"></p>
 
 | | |
 | :---: | --- |
-| ❶ | **a pasta**: o caminho (digite e `Enter`) ou a pastinha, dentro do campo. sem projeto aberto, vale a última pasta usada |
+| ❶ | **a pasta**: a pastinha, dentro do campo, ou o caminho colado e `Enter`. a janela abre sem pasta nenhuma |
 | ❷ | **as chaves**: renomear **arquivos**, **pastas**, **incluir as subpastas** (desligada: só a pasta escolhida) e o **prefixo do tipo**. ficam lembradas neste computador |
 | ❸ | **os filtros**: quantos itens em cada situação (todos, mudam, já no padrão, nome repetido ou inválido, desligados) e a busca pelo nome |
 | ❹ | **o novo nome**: um campo. o que você edita fica marcado, e a seta ao lado volta para a sugestão. a extensão (e os números de uma sequência) ficam fora do campo: não mudam |
