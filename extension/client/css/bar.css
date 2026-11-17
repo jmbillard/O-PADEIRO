@@ -600,6 +600,11 @@ body.bar-page {
   box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 55%);
 }
 
+/* as gavetas com um tamanho só: a largura do maior nome (--drawer-w, medida pelo bar.js) */
+.has-drawer-w .bar-drawer-btn:not(.is-folded) {
+  min-width: var(--drawer-w);
+}
+
 .bar-drawer-btn.is-folded {
   max-width: 0;
   min-width: 0;

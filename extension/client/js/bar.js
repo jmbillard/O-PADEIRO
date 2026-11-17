@@ -742,6 +742,37 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			if (size) d.style.setProperty('--drawer-round', Math.round(size / 2) + 'px');
 		});
+		evenDrawers();
+	}
+
+	// os botões das gavetas com um tamanho só: a largura do maior nome (Organização), para Templates e Projeto não
+	// ficarem cada um de um tamanho. a conta é pelo nome, que tem a largura dele mesmo com o botão recolhido; sem
+	// os nomes à vista (a barra em pé, estreita), nada muda
+	function evenDrawers() {
+		var bar = document.querySelector('.bar');
+		var btns = document.querySelectorAll('.bar-drawer-btn');
+		var plain = document.querySelector('.bar-btn:not(.bar-drawer-btn)');
+		var widest = 0;
+
+		if (!bar) return;
+
+		Array.prototype.forEach.call(btns, function (btn) {
+			var label = btn.querySelector('.bar-label');
+
+			if (label && label.scrollWidth > widest) widest = label.scrollWidth;
+		});
+
+		if (!widest || btns.length < 2 || !plain) {
+			bar.classList.remove('has-drawer-w');
+
+			return;
+		}
+
+		var cs = getComputedStyle(plain);
+		var w = Math.max(Math.ceil(widest + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)), parseFloat(cs.minWidth) || 0);
+
+		bar.style.setProperty('--drawer-w', w + 'px');
+		bar.classList.add('has-drawer-w');
 	}
 
 	/* o resto da barra não sai do lugar quando uma gaveta abre ou fecha: o conteúdo da barra é centralizado, então
@@ -828,6 +859,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		pin.btn = null;
 		pin.tx = pin.ty = 0;
 		document.querySelector('.bar-main').style.transform = '';
+		// o tamanho medido para a animação (--btn-size) é o do sentido em que a gaveta abriu: virando a barra, a largura
+		// de antes virava o limite da altura e o nome do botão saía para fora do contorno
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer-btn'), function (btn) {
+			btn.style.removeProperty('--btn-size');
+		});
 	});
 
 	// a gaveta e o botão dela animam com o tamanho exato de cada um (--drawer-size e --btn-size, medidos na hora),
