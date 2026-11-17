@@ -1795,6 +1795,16 @@ projetos com o nome certo).
 		return d ? d[3] + '/' + d[2] + '/' + d[1] : day || '';
 	}
 
+	// a data e a hora de um salvamento: 17/11/2026 14:32
+	function pdStamp(ms) {
+		var d = new Date(ms);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+	}
+
 	function pdEditors(cur) {
 		return (cur.editores || []).slice().sort(function (a, b) {
 			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
@@ -1859,6 +1869,9 @@ projetos com o nome certo).
 		row('atração', String(cur.atracao).toUpperCase());
 		if (cur.oQueE) row('o que é', String(cur.oQueE).toUpperCase());
 		if (cur.designer) row('criado por', cur.designer, pdDay(cur.criado));
+		// o último salvamento do arquivo, com a hora: os editores abaixo são por dia (salvar de novo no mesmo dia não
+		// muda a lista), e é aqui que se vê que o projeto foi salvo agora
+		if (cur.modified) row('salvo em', pdStamp(cur.modified));
 		body.appendChild(rows);
 
 		var editors = pdEditors(cur);
@@ -1867,6 +1880,7 @@ projetos com o nome certo).
 			var people = el('div', 'pd-people');
 
 			body.appendChild(el('p', 'wz-title', 'QUEM SALVOU'));
+			body.appendChild(el('p', 'pd-note', 'uma linha por pessoa, com o último dia em que ela salvou.'));
 			editors.forEach(function (e, i) {
 				var line = el('div', 'pd-person' + (i ? '' : ' is-last'));
 
@@ -1911,6 +1925,7 @@ projetos com o nome certo).
 		});
 
 		if (editors.length) lines.push('salvo por: ' + editors.join(' · '));
+		if (cur.modified) lines.push('último salvamento: ' + pdStamp(cur.modified));
 		if (cur.root) lines.push('pasta do projeto: ' + displayPath(cur.root));
 		if (cur.output) lines.push('output: ' + displayPath(cur.output));
 

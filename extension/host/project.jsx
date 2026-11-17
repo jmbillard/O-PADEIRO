@@ -1021,6 +1021,15 @@ PADX.projectStatus = function () {
 	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
 };
 
+// a data de modificação de um arquivo, em ms (0 sem arquivo ou sem leitura)
+function padFileTime(file) {
+	try {
+		return file && file.modified ? file.modified.getTime() : 0;
+	} catch (err) {
+		return 0;
+	}
+}
+
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
 // editores: quem já salvou [{ user, day }]; salvo: o último { user, day } ou null
 // → { created, outside, atracao, quadro, oQueE, designer, defaultUser, output, root, file, fileName, hasItems, user }
@@ -1045,6 +1054,7 @@ PADX.projectCurrent = function () {
 		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
+		modified: padFileTime(file), // o último salvamento do arquivo (a hora que os editores, por dia, não guardam)
 		hasItems: app.project.numItems > 0,
 		user: padMachineUser()
 	};

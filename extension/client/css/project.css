@@ -1844,3 +1844,10 @@ p.wz-exist b {
 .wz-files-note[hidden] {
   display: none;
 }
+
+/* a explicação curta embaixo de um título da tela dos dados */
+.pd-note {
+  margin: -6px 0 2px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+}
