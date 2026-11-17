@@ -1149,6 +1149,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   --------------------------------------------------------------- */
 
 	var projectState = '';
+	var projectWhy = ''; // por que está laranja (o host diz: sem salvar, ou o arquivo sem a atração nos dados)
+	var projectError = ''; // a conferência falhou: aparece na dica, em vez de a bolinha ficar parada no estado de antes
 
 	// Criar (o projeto aberto não tem os dados do padeiro) ou Alterar (já tem): o nome, a dica e a bolinha
 	function paintProjectDot() {
@@ -1162,7 +1164,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
 		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
-		setTip(btn, projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' : projectState === 'out' ? '!# Projeto:\n! salvo fora da pasta dele: clique e Salvar leva o .aep de volta' : '');
+		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! salvo fora da pasta dele: clique e Salvar leva o .aep de volta' : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
 		else btn.removeAttribute('data-project');
@@ -1329,8 +1331,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		try {
 			var res = await call('projectStatus');
 
-			if (res.state !== projectState) {
+			if (res.state !== projectState || (res.why || '') !== projectWhy || projectError) {
 				projectState = res.state;
+				projectWhy = res.why || '';
+				projectError = '';
 				paintProjectDot();
 			}
 
@@ -1342,7 +1346,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				fontsSync.key = res.key;
 				syncFonts();
 			}
-		} catch (err) { }
+		} catch (err) {
+			var msg = String((err && err.message) || err);
+
+			if (msg !== projectError) {
+				projectError = msg;
+				paintProjectDot();
+			}
+		}
 	}
 
 	/* =========================================================

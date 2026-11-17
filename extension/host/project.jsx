@@ -997,11 +997,23 @@ PADX.projectStatus = function () {
 		PAD_SAVE_SEEN = { path: seenPath, time: seenTime };
 	} catch (err2) { }
 
-	var hasData = !!(file && padMetaRead().atracao);
+	var meta = padMetaRead();
+	var hasData = !!(file && meta.atracao);
+	// why: por que a bolinha está laranja, para a dica da barra (e para achar o que houve quando ela erra)
+	var why = '';
+
+	if (!hasData) {
+		var fileName = '';
+
+		try {
+			fileName = file ? decodeURI(file.name) : '';
+		} catch (err3) { }
+		why = !file ? 'o projeto ainda não foi salvo' : fileName + ' não tem a atração nos dados do padeiro' + (meta.versao ? '' : ' (nenhum dado do padeiro no arquivo)');
+	}
 	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
 	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
 
-	return { state: state, key: key, fontsCheck: padMachineFontsCheck() };
+	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
 };
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
