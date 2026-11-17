@@ -25,6 +25,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
+| <img src="docs/images/icons/files.png" width="40" alt="arquivos"> | **Arquivos** (gaveta **Organização**) | abre **[O ARQUIVISTA](#arquivos)** na pasta do projeto: renomear os arquivos e as pastas | abre **[O ARQUIVISTA](#arquivos)** na pasta de output do projeto |
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
@@ -42,6 +43,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
 | 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
+| 🗂️ [O ARQUIVISTA](#arquivos) | **O ARQUIVISTA** | renomear os arquivos e as pastas de um diretório com a regra do renomear das comps |
 | 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
 | 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
@@ -169,7 +171,7 @@ O ETIQUETADOR
 
 - **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
 - **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
-- **Organização** → **Renomear** (O ETIQUETADOR) e **Organizar** (O CONTRARREGRA), cada uma com os seus dois cliques.
+- **Organização** → **Renomear** (O ETIQUETADOR), **Organizar** (O CONTRARREGRA) e **Arquivos** ([O ARQUIVISTA](#arquivos)), cada uma com os seus dois cliques.
 - **a gaveta lembrada** → a que você deixou aberta volta aberta ao reabrir o painel (neste computador). um duplo clique no botão só abre: o segundo clique, de reflexo, não recolhe.
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, as folhas dos templates separadas, os blocos encaixados); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
 - **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica lista as ferramentas de dentro, com a bolinha laranja nas que têm pendência (o que falta fica na dica de cada uma) e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
@@ -344,6 +346,37 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
+### arquivos
+
+**O ARQUIVISTA**: renomeia os arquivos e as pastas de um diretório com a mesma regra do [renomear](#renomear) das comps (a caixa, os acentos e o separador da [configuração > renomear](docs/producoes.md#-renomear)).
+
+`◖ clique esquerdo` → abre a janela na pasta do projeto aberto.\
+`◗ clique direito` → abre na pasta de output do projeto.
+
+<p align="center"><img src="docs/images/arquivista.webp" alt="O ARQUIVISTA, com as partes numeradas" width="640"></p>
+
+| | |
+| :---: | --- |
+| ❶ | **a pasta**: o caminho (digite e `Enter`) ou a pastinha, dentro do campo. sem projeto aberto, vale a última pasta usada |
+| ❷ | **as chaves**: renomear **arquivos**, **pastas**, **incluir as subpastas** (desligada: só a pasta escolhida) e o **prefixo do tipo**. ficam lembradas neste computador |
+| ❸ | **os filtros**: quantos itens em cada situação (todos, mudam, já no padrão, nome repetido ou inválido, desligados) e a busca pelo nome |
+| ❹ | **o novo nome**: um campo. o que você edita fica marcado, e a seta ao lado volta para a sugestão. a extensão (e os números de uma sequência) ficam fora do campo: não mudam |
+| ❺ | **a situação**, em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode renomear), o elo (muda e é usado no projeto aberto) e o traço (desligado). a dica diz o motivo |
+| ❻ | **desfazer**: a última renomeação volta, mesmo depois de fechar a janela |
+| ❼ | **Renomear**: o primeiro clique mostra quantos mudam e pede a confirmação; o segundo renomeia |
+
+- **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
+- **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
+- **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **travam o botão** até você editar o novo nome ou desligar a linha.
+- **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
+- **sequências de imagens** → uma linha só: o nome muda em todos os quadros e os números ficam como estão.
+- **ficam de fora** → os projetos (`.aep`, `.aet` e os de outros programas), os arquivos escondidos e de sistema e as pastas de autosave e de logs do After.
+
+> 🚩 *obs:*\
+> • a ordem é sempre a mesma: os arquivos antes das pastas, e as pastas de dentro para fora.\
+> • um item que não pôde ser renomeado (em uso por outro programa, sem permissão) fica como estava, e o aviso do rodapé diz qual.\
+> • o desfazer do After (`Ctrl+Z`) não desfaz nomes de arquivos: use o botão de desfazer da janela.
+
 <br>
 
 ---
@@ -462,6 +495,8 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |
 | `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_110` | migrar: o registro não pôde ser gravado na pasta do projeto (sem permissão, ou a rede caiu no meio): sem registro, nada é movido |
+| `#PAD_113` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
+| `#PAD_114` | arquivos: não há renomeação para desfazer |
 | `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |

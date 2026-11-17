@@ -2238,6 +2238,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
+		arquivos: ['Arquivos', 'O ARQUIVISTA: renomear os arquivos e as pastas da pasta do projeto · da pasta de output', 'files'],
 		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search'],

@@ -123,6 +123,12 @@ const CHECKS = [
 	['versionador', 'versioner.html'],
 	['versionador: projeto não salvo', 'versioner.html?mock=unsaved'],
 	['etiquetas', 'labels.html'],
+	['arquivista', 'files.html'],
+	['arquivista: confirmar', 'files.html', async (p) => {
+		// desliga os dois de nome repetido e pede a confirmação (o botão de voltar aparece no rodapé)
+		await p.locator('.fl-row.is-bad .fl-cb').first().click();
+		await p.click('#fl-go');
+	}],
 	['templates', 'index.html', openTemplate],
 	['templates: fixados e recentes', 'index.html?lists', async (p) => {
 		await p.locator('.tree-folder > .tree-row', { hasText: 'TARJAS' }).first().click();

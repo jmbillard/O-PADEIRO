@@ -1,0 +1,359 @@
+/* =========================================================
+   O ARQUIVISTA: renomear os arquivos e as pastas de um diretório
+   a janela é uma coluna: a pasta, as chaves, os filtros, a tabela (ocupa o que sobra) e o rodapé
+   ========================================================= */
+
+html,
+body.files-page {
+  height: 100%;
+}
+
+.files {
+  height: 100%;
+  min-height: 0;
+}
+
+/* a pasta: o campo com o botão dentro, à direita (cfg-path, panel.css) */
+.fl-path .cfg-input {
+  padding-right: 44px;
+}
+
+.fl-path > .mini-button {
+  right: 8px;
+  border-color: transparent;
+}
+
+.fl-opts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+
+.fl-opts .cfg-switch-label {
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+/* os filtros e a busca: sempre numa linha (os filtros em ícone, a busca com o que sobra) */
+.fl-tools {
+  display: flex;
+  min-width: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fl-chip {
+  display: inline-flex;
+  height: 30px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.fl-chip b {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.fl-chip svg,
+.fl-st svg,
+.fl-reset svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.fl-chip.fl-chg svg {
+  color: var(--success);
+}
+
+.fl-chip.fl-bad svg,
+.fl-chip.fl-bad b {
+  color: var(--danger);
+}
+
+.fl-chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.fl-chip.is-on {
+  border-color: rgb(var(--accent-rgb) / 45%);
+  background: rgb(var(--accent-rgb) / 12%);
+  color: var(--text-primary);
+}
+
+.fl-chip:focus-visible,
+.fl-search:focus-visible,
+.fl-new:focus-visible,
+.fl-reset:focus-visible {
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 1px;
+}
+
+.fl-search {
+  min-width: 0;
+  max-width: 220px;
+  height: 30px;
+  flex: 1 1 110px;
+  margin-left: auto;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+/* a tabela: ocupa o que sobra da janela (o fundo dela fica fixo, logo acima do rodapé); só as linhas rolam */
+.fl-table {
+  display: flex;
+  min-width: 0;
+  min-height: 120px;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium, 14px);
+}
+
+.fl-head,
+.fl-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  grid-template-columns: 18px 18px minmax(0, 1fr) 14px minmax(0, 1.15fr) 24px;
+}
+
+.fl-head {
+  flex: 0 0 auto;
+  overflow-y: hidden;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  scrollbar-gutter: stable;
+}
+
+.fl-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.fl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px 3px;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.fl-group span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fl-kind,
+.fl-group svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--text-tertiary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.fl-kind.is-folder,
+.fl-group svg {
+  stroke: var(--blue-500);
+}
+
+.fl-row {
+  border-top: 1px solid var(--border);
+  font-size: 0.74rem;
+}
+
+.fl-group + .fl-row {
+  border-top: 0;
+}
+
+.fl-cb {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--blue-500);
+  cursor: pointer;
+}
+
+.fl-cur {
+  overflow: hidden;
+  color: var(--text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fl-cur i,
+.fl-ext {
+  color: var(--text-tertiary);
+  font-style: normal;
+}
+
+.fl-arrow {
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.fl-new-wrap {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+/* o novo nome: um campo sem cara de campo até o mouse ou o foco chegarem */
+.fl-new {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.fl-new:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+.fl-ext {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.fl-reset {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--blue-500);
+  cursor: pointer;
+}
+
+.fl-reset:hover {
+  background: rgb(var(--accent-rgb) / 12%);
+}
+
+/* editado à mão */
+.fl-row.is-edited .fl-new {
+  border-color: rgb(var(--accent-rgb) / 45%);
+  background: rgb(var(--accent-rgb) / 7%);
+}
+
+.fl-row.is-same .fl-new {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.fl-row.is-off .fl-cur,
+.fl-row.is-off .fl-new,
+.fl-row.is-off .fl-ext {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+  text-decoration-color: var(--border-strong);
+}
+
+.fl-row.is-bad .fl-new {
+  border-color: var(--danger-border);
+}
+
+/* a situação: um ícone redondo, com o motivo na dica */
+.fl-st {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  justify-self: end;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+}
+
+.fl-st.is-chg {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.fl-st.is-use {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+.fl-st.is-bad {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.fl-empty {
+  margin: 0;
+  padding: 22px 14px;
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+/* o rodapé: a tabela termina antes dele (sem o degradê por cima) */
+.files .fw-bar.action-bar.is-anchored {
+  position: static;
+  margin-top: 0;
+  padding-top: 12px;
+  background: none;
+}
+
+/* o segundo clique: o botão pede a confirmação */
+#fl-go.is-confirm {
+  background: var(--attention);
+  color: #202636;
+}

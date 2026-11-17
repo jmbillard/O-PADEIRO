@@ -148,6 +148,10 @@
 		"label": "logo Globo"
 	},
 	{
+		"key": "barra-files",
+		"label": "arquivos"
+	},
+	{
 		"key": "barra-collect",
 		"label": "coletar"
 	},

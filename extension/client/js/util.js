@@ -475,9 +475,9 @@
 	   items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
 	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
 	   --------------------------------------------------------------- */
-	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
+	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar', 'arquivos'] };
 	var BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
-	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
+	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
 
 	function barGroupOf(key) {
 		for (var g in BAR_GROUPS) {

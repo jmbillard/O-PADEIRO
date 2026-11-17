@@ -55,4 +55,9 @@
 			<Host Name="AEFT" Port="8098" />
 		</HostList>
 	</Extension>
+	<Extension Id="com.jmbillard.opadeiro.files">
+		<HostList>
+			<Host Name="AEFT" Port="8099" />
+		</HostList>
+	</Extension>
 </ExtensionList>

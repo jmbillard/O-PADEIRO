@@ -1601,6 +1601,90 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { file: a.path };
 		},
 
+		filesRequest: function (a) {
+			return { where: a.where || '' };
+		},
+
+		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)
+		filesStart: function () {
+			return { path: mode === 'nofolder' ? '' : '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço', undo: window.PAD_MOCK_FILES_UNDO || null };
+		},
+
+		filesList: function (a) {
+			var clean = function (t) {
+				return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+			};
+			var types = [['RDP', ['RODAPE', 'RDP']], ['CRT', ['CARTAO', 'CRT']], ['LETT', ['LETTERING', 'LETT']], ['TARJA', ['TARJA']], ['PASSAGEM', ['PASSAGEM']], ['REF', ['REFERENCIA', 'REF']]];
+			var typed = function (name) {
+				var words = ' ' + clean(name) + ' ';
+
+				for (var i = 0; i < types.length; i++) for (var j = 0; j < types[i][1].length; j++) {
+					var t = types[i][1][j];
+
+					if (words.indexOf(' ' + t + ' ') >= 0) {
+						var rest = words.split(' ' + t + ' ').join(' ').replace(/\s+/g, ' ').trim();
+
+						return rest ? types[i][0] + ' - ' + rest : types[i][0];
+					}
+				}
+
+				return clean(name);
+			};
+			var list = (window.PAD_MOCK_FILES || (window.PAD_MOCK_FILES = [
+				{ dir: '', name: 'antigos', ext: '', kind: 'folder' },
+				{ dir: '', name: 'Sequência fundo', ext: '', kind: 'folder' },
+				{ dir: '', name: '_CRT_HOJE', ext: 'mov', kind: 'file' },
+				{ dir: '', name: '_crt_amanhã', ext: 'mov', kind: 'file' },
+				{ dir: '', name: 'CRT - AMANHA', ext: 'mov', kind: 'file' },
+				{ dir: '', name: '_RDP_convidado João Gomes', ext: 'mov', kind: 'file' },
+				{ dir: '', name: 'rodapé_anitta (final)', ext: 'mov', kind: 'file' },
+				{ dir: '', name: 'LETT - VEM AI', ext: 'mov', kind: 'file' },
+				{ dir: '', name: 'tarja_patrocínio  v2', ext: 'png', kind: 'file', use: true },
+				{ dir: '', name: 'fundo palco', ext: 'png', kind: 'file', use: true },
+				{ dir: '', name: 'ref_palco', ext: 'jpg', kind: 'file' },
+				{ dir: 'Sequência fundo', name: 'textura_ouro', ext: 'png', kind: 'seq', sep: '_', pad: 4, frames: '_[0001-0120]', count: 120, use: true },
+				{ dir: 'antigos', name: '_CRT_ONTEM', ext: 'mov', kind: 'file' },
+				{ dir: 'antigos', name: 'passagem glitter', ext: 'mov', kind: 'file' }
+			])).filter(function (it) {
+				return a.sub || !it.dir;
+			}).map(function (it) {
+				return Object.assign({ use: false }, it, { plain: it.name === typed(it.name) ? it.name : clean(it.name), typed: it.kind === 'folder' ? clean(it.name) : typed(it.name) });
+			});
+
+			return { path: a.path, name: String(a.path).split('/').pop(), items: list, truncated: false, undo: window.PAD_MOCK_FILES_UNDO || null };
+		},
+
+		filesRename: function (a) {
+			var before = JSON.stringify(window.PAD_MOCK_FILES);
+			var used = 0;
+
+			a.items.forEach(function (r) {
+				window.PAD_MOCK_FILES.forEach(function (it) {
+					if (it.dir === r.dir && it.name === r.name && it.ext === r.ext) {
+						if (it.use) used++;
+						// a pasta renomeada leva os de dentro
+						if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
+							if (x.dir === it.name) x.dir = r.to;
+						});
+						it.name = r.to;
+					}
+				});
+			});
+			window.PAD_MOCK_FILES_UNDO = { count: a.items.length, folder: a.path, when: Date.now(), before: before };
+
+			return { count: a.items.length, relinked: used, errors: [], undo: window.PAD_MOCK_FILES_UNDO };
+		},
+
+		filesUndo: function () {
+			var u = window.PAD_MOCK_FILES_UNDO;
+
+			if (!u) throw new Error('#PAD_114 - não há renomeação para desfazer.');
+			window.PAD_MOCK_FILES = JSON.parse(u.before);
+			window.PAD_MOCK_FILES_UNDO = null;
+
+			return { count: u.count, relinked: 0, errors: [], folder: u.folder, undo: null };
+		},
+
 		openFolder: function (a) {
 			(window.PAD_MOCK_OPENED = window.PAD_MOCK_OPENED || []).push(a.path);
 

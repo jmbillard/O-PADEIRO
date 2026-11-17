@@ -24,6 +24,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
+	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -360,6 +361,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(LABELS_PANEL_ID);
 		},
 
+		// O ARQUIVISTA: renomear os arquivos e as pastas de um diretório. where: '' (a pasta do projeto) ou 'output'
+		openFiles: async function (where) {
+			await call('filesRequest', { where: where || '' });
+			PAD_BRIDGE.openPanel(FILES_PANEL_ID);
+		},
+
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
 			await call('makerReady');
@@ -581,6 +588,19 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				return actions.organizeProject();
 			},
 			right: actions.openLabels
+		},
+		{
+			key: 'arquivos',
+			label: 'Arquivos',
+			icon: 'files',
+			name: 'O ARQUIVISTA',
+			tips: [L_CLICK + 'renomear os arquivos e as pastas da pasta do projeto', R_CLICK + 'renomear os da pasta de output'],
+			left: function () {
+				return actions.openFiles('');
+			},
+			right: function () {
+				return actions.openFiles('output');
+			}
 		},
 		{
 			key: 'buscar',
