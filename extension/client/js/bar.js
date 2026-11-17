@@ -1500,6 +1500,93 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* =========================================================
+	   O código novo: a barra é um painel que fica aberto o dia todo, e o código trocado na rede só entrava ao
+	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Projeto errava). ela confere a data dos
+	   próprios arquivos (os da página e os do host) e se recarrega quando mudam: ao entrar o mouse (no máximo uma
+	   vez a cada 30 s) e a cada 5 minutos. sem a rede, ou trabalhando (coletar, fontes, tour), espera
+	   ========================================================= */
+
+	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/collect.jsx', 'host/productions.jsx'];
+	var code = { stamp: null, at: 0, when: 0 };
+
+	// a pasta extension (a de cima da client desta página), como o cep.fs a entende
+	function codeRoot() {
+		var path = decodeURIComponent(location.pathname).replace(/\/client\/[^/]*$/, '');
+
+		if (location.host) return '//' + location.host + path; // Windows: \\servidor\share
+		if (/^\/[A-Za-z]:\//.test(path)) return path.slice(1); // Windows: C:/...
+
+		return path;
+	}
+
+	// as datas dos arquivos do código, ou null se algum não pôde ser lido (a rede caiu: não é hora de recarregar)
+	function codeStamp() {
+		if (!window.cep || !window.cep.fs || window.PAD_MOCK_HOST) return null;
+
+		var root = codeRoot();
+		var out = [];
+		var last = 0;
+
+		for (var i = 0; i < CODE_FILES.length; i++) {
+			var st = window.cep.fs.stat(root + '/' + CODE_FILES[i]);
+
+			if (!st || st.err !== 0 || !st.data) return null;
+
+			var t = +new Date(st.data.modificationTime);
+
+			out.push(t);
+			if (t > last) last = t;
+		}
+		code.when = last;
+
+		return out.join('|');
+	}
+
+	function watchCode() {
+		var now = Date.now();
+
+		if (now - code.at < 30000) return;
+		code.at = now;
+
+		var stamp;
+
+		try {
+			stamp = codeStamp();
+		} catch (err) {
+			return;
+		}
+
+		if (!stamp) return;
+		if (code.stamp === null) {
+			code.stamp = stamp;
+
+			return paintCodeDate();
+		}
+		if (stamp === code.stamp) return;
+		// trabalhando (a contagem do coletar, as fontes) ou no tour: espera a próxima
+		if (document.querySelector('.bar-btn.is-running') || document.body.classList.contains('is-touring')) return;
+
+		location.reload();
+	}
+
+	// a data do código em uso, na dica do pãozinho: dá para ver se a barra já pegou a atualização
+	function paintCodeDate() {
+		var logo = $('logo');
+
+		if (!logo || !code.when) return;
+
+		var d = new Date(code.when);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var line = 'código de ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+		var base = String(logo.dataset.tip || logo.title || '').replace(/\n\ncódigo de [^\n]*$/, '');
+
+		logo.dataset.tip = base + '\n\n' + line;
+		logo.title = base + '\n\n' + line;
+	}
+
+	/* =========================================================
 	   Início
 	   ========================================================= */
 
@@ -1554,6 +1641,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			watchProject(true);
 		});
 		window.addEventListener('focus', loadLinks);
+		watchCode();
+		setInterval(watchCode, 5 * 60000);
+		document.documentElement.addEventListener('mouseenter', watchCode);
 		window.addEventListener('focus', syncFonts);
 		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', function () {
