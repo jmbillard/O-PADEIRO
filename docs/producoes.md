@@ -90,7 +90,7 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
 - **tipos de projeto** → cada tipo num cartão:
   - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui o tipo;
   - **PROJETO** → o caminho da pasta da atração nova, com tokens;
-  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. **espaços a mais não passam**: em todo caminho de output (aqui, na claquete e nas pastas de output dos templates), dois ou mais espaços seguidos viram um e os espaços em volta das barras e nas pontas somem, ao salvar e na hora de usar. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
 
   embaixo de cada caminho, a prévia; a pastinha escolhe a pasta do tipo (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a dos chips).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):

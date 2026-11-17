@@ -86,6 +86,7 @@ ao salvar, o padeiro:
 > • a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.\
 > • o separador só é usado com mais de um layer editável.\
 > • todo template pode ter várias pastas de output: o render é copiado em todas. sem nenhuma, vale o output padrão.\
+> • espaços a mais não passam nas pastas de output: dois ou mais seguidos viram um, e os das pontas e em volta das barras somem.\
 > • as pastas de output aceitam **tokens** de data, para o caminho valer todo ano: `{ano}`, `{mes}`, `{mes_extenso}`, `{proximo_mes}`, `{proximo_mes_num}` e `{ano_proximo_mes}` (os botões embaixo dos campos põem o token no cursor). ex: `…/BBB/BBB {ano}` → `…/BBB/BBB 2026`. o padeiro troca na hora de preencher e de abrir o output.
 
 ### variações de layout
