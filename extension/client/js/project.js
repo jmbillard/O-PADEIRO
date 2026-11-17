@@ -1832,9 +1832,18 @@ projetos com o nome certo).
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 	}
 
+	// quem salvou, o mais recente primeiro: quem salvou por último (padeiro:salvo) em cima; depois pelo dia e, no
+	// mesmo dia, pela ordem das linhas (a de baixo salvou depois)
 	function pdEditors(cur) {
-		return (cur.editores || []).slice().sort(function (a, b) {
-			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
+		var last = cur.salvo && cur.salvo.user;
+
+		return (cur.editores || []).map(function (e, i) {
+			return { user: e.user, day: e.day, at: i };
+		}).sort(function (a, b) {
+			if ((a.user === last) !== (b.user === last)) return a.user === last ? -1 : 1;
+			if (a.day !== b.day) return a.day < b.day ? 1 : -1;
+
+			return b.at - a.at;
 		});
 	}
 
@@ -2003,9 +2012,7 @@ projetos com o nome certo).
 
 	// quem já salvou o projeto, o mais recente primeiro: 'salvo por: TMARTA 16/11 · JMBILLARD 14/11'
 	function edEditors(cur) {
-		var list = (cur.editores || []).slice().sort(function (a, b) {
-			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
-		});
+		var list = pdEditors(cur);
 		var text = list.map(function (e) {
 			var day = pdFriendlyDay(e.day);
 

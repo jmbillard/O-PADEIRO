@@ -271,14 +271,13 @@ function padEditorsTouch(cur) {
 
 	if (!user) return { editores: cur.editores || '', salvo: cur.salvo || '', changed: false };
 
+	// quem salva vai para o fim da lista: a ordem das linhas é a ordem em que cada um salvou por último (duas
+	// pessoas no mesmo dia: a de baixo salvou depois)
 	for (i = 0; i < list.length; i++) {
-		if (list[i].user == user) {
-			list[i].day = today;
-			found = true;
-		}
+		if (list[i].user == user) found = true;
+		else lines.push(list[i].user + '\t' + list[i].day);
 	}
-	if (!found) list.push({ user: user, day: today });
-	for (i = 0; i < list.length; i++) lines.push(list[i].user + '\t' + list[i].day);
+	lines.push(user + '\t' + today);
 
 	var editores = lines.join('\n');
 	var salvo = user + '\t' + today;
