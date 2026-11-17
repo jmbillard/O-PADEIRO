@@ -1796,6 +1796,33 @@ projetos com o nome certo).
 	}
 
 	// a data e a hora de um salvamento: 17/11/2026 14:32
+	// um dia (AAAA-MM-DD) do jeito que se fala: HOJE, ONTEM ou, mais para trás, a data (sem o ano, no ano de agora)
+	function pdFriendlyDay(day) {
+		var d = /^(\d{4})-(\d{2})-(\d{2})/.exec(day || '');
+
+		if (!d) return day || '';
+
+		var now = new Date();
+		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+		var that = new Date(+d[1], +d[2] - 1, +d[3]).getTime();
+
+		if (that === today) return 'HOJE';
+		if (that === today - 86400000) return 'ONTEM';
+
+		return d[3] + '/' + d[2] + (+d[1] === now.getFullYear() ? '' : '/' + d[1]);
+	}
+
+	// um salvamento com a hora: HOJE 14:32, ONTEM 09:10 ou a data e a hora
+	function pdFriendlyStamp(ms) {
+		var d = new Date(ms);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var day = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+
+		return pdFriendlyDay(day) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+	}
+
 	function pdStamp(ms) {
 		var d = new Date(ms);
 		var pad = function (n) {
@@ -1857,10 +1884,12 @@ projetos com o nome certo).
 		}
 
 		var rows = el('div', 'pd-rows');
-		var row = function (k, v, small) {
+		// tip: a data inteira, na dica (o texto diz HOJE, ONTEM)
+		var row = function (k, v, small, tip) {
 			var value = el('span', 'pd-v', v);
 
 			if (small) value.appendChild(el('small', null, small));
+			if (tip) value.title = tip;
 			rows.appendChild(el('span', 'pd-k', k));
 			rows.appendChild(value);
 		};
@@ -1868,10 +1897,10 @@ projetos com o nome certo).
 		body.appendChild(el('p', 'wz-title', 'PROJETO'));
 		row('atração', String(cur.atracao).toUpperCase());
 		if (cur.oQueE) row('o que é', String(cur.oQueE).toUpperCase());
-		if (cur.designer) row('criado por', cur.designer, pdDay(cur.criado));
+		if (cur.designer) row('criado por', cur.designer, pdFriendlyDay(cur.criado), pdDay(cur.criado));
 		// o último salvamento do arquivo, com a hora: os editores abaixo são por dia (salvar de novo no mesmo dia não
 		// muda a lista), e é aqui que se vê que o projeto foi salvo agora
-		if (cur.modified) row('salvo em', pdStamp(cur.modified));
+		if (cur.modified) row('salvo em', pdFriendlyStamp(cur.modified), '', pdStamp(cur.modified));
 		body.appendChild(rows);
 
 		var editors = pdEditors(cur);
@@ -1887,7 +1916,10 @@ projetos com o nome certo).
 				line.appendChild(el('i'));
 				line.appendChild(document.createTextNode(e.user));
 				if (!i) line.appendChild(el('em', null, 'ÚLTIMO'));
-				line.appendChild(el('small', null, pdDay(e.day)));
+				var when2 = el('small', null, pdFriendlyDay(e.day));
+
+				when2.title = pdDay(e.day); // a data inteira, na dica
+				line.appendChild(when2);
 				people.appendChild(line);
 			});
 			body.appendChild(people);
@@ -1975,9 +2007,9 @@ projetos com o nome certo).
 			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
 		});
 		var text = list.map(function (e) {
-			var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(e.day || '');
+			var day = pdFriendlyDay(e.day);
 
-			return e.user + (d ? ' ' + d[3] + '/' + d[2] : '');
+			return e.user + (day ? ' ' + day.toLowerCase() : '');
 		}).join(' · ');
 
 		$('ed-editors').hidden = !text;
