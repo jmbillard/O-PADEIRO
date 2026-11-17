@@ -66,6 +66,44 @@ Instalar / atualizar:
 		return new File(src.fsName + '/CSXS/manifest.xml').exists && new File(src.fsName + '/loader/stub.html').exists;
 	}
 
+	// a pasta do padeiro: a que tem a pasta "extension" (e a configuração da equipe). vem da pasta do instalador ou,
+	// se o After não consegue ler essa pasta, da que a pessoa escolher (o link "escolher a pasta do padeiro")
+	function setHome(folder) {
+		here = folder;
+		src = new Folder(here.fsName + '/extension');
+		sharedList = new File(here.fsName + '/O_PADEIRO_GLOBAL_config.json');
+		oldList = new File(here.fsName + '/O_PADEIRO_config.json');
+	}
+
+	// por que a pasta "extension" não foi achada: o After não consegue LER a pasta do instalador (no macOS, a
+	// proteção de Documentos, Mesa e Downloads: o script abre, mas os vizinhos dele não aparecem), a pasta não está
+	// lá, ou está incompleta
+	function extensionHelp() {
+		var items = null;
+		var names = [];
+		var found = false;
+
+		try {
+			items = here.getFiles();
+		} catch (err) { }
+
+		if (!items || !items.length) {
+			return 'o After não consegue ler a pasta do instalador (' + here.fsName + ').' + (IS_MAC ? ' no macOS, libere em Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas > After Effects, ou tire a pasta de Documentos / Mesa / Downloads.' : '') + ' ou use o link abaixo para escolher a pasta do padeiro.';
+		}
+
+		for (var i = 0; i < items.length; i++) {
+			var name = decodeURI(items[i].name);
+
+			if (name == 'extension') found = true;
+			if (names.length < 6) names.push(name);
+		}
+
+		if (!found) return 'não há uma pasta "extension" em ' + here.fsName + ' (achei: ' + names.join(', ') + '). use o link abaixo para escolher a pasta do padeiro.';
+		if (!new File(src.fsName + '/CSXS/manifest.xml').exists) return 'a pasta "extension" está incompleta: falta CSXS/manifest.xml (a cópia terminou? no macOS, o After pode não ter permissão para ler dentro dela).';
+
+		return 'a pasta "extension" está incompleta: falta loader/stub.html.';
+	}
+
 	function padeiroVersion() {
 		try {
 			var m = readText(new File(src.fsName + '/host/index.jsx')).match(/PADX_VERSION\s*=\s*'([^']+)'/);
@@ -294,7 +332,7 @@ Instalar / atualizar:
 	var checks = [
 		{ label: 'After Effects 2022 ou mais novo', test: aeVersionOk, required: true, help: 'o padeiro precisa do After Effects 2022 (22.0) ou mais novo.' },
 		{ label: 'acesso à rede e escrita de arquivos', test: canWriteFiles, required: true, help: 'habilite "Allow Scripts to Write Files and Access Network" nas preferências de scripts e expressões.' },
-		{ label: 'pasta "extension" ao lado do instalador', test: extensionOk, required: true, help: 'rode o instalador direto da pasta do padeiro na rede (a que tem a pasta "extension").' },
+		{ label: 'pasta "extension" ao lado do instalador', test: extensionOk, required: true, help: extensionHelp },
 		{ label: 'lista de produções compartilhada', test: function () { return sharedList.exists || oldList.exists; }, required: false, help: 'não achei o O_PADEIRO_GLOBAL_config.json ao lado do instalador: sem ele não há lista de produções.' }
 	];
 
@@ -320,12 +358,23 @@ Instalar / atualizar:
 		checks[c].text.preferredSize.width = WIDTH - 24;
 	}
 
-	var helpText = text(p1, '', 46);
+	var helpText = text(p1, '', 104);
 	var prefsLink = link(p1, '› abrir preferências de scripts e expressões', function () {
 		app.executeCommand(3131); // Preferences > Scripting & Expressions
 		runChecks();
 	});
 	var recheckLink = link(p1, '› verificar de novo', function () {
+		runChecks();
+	});
+	// a pasta do padeiro escolhida à mão: vale a que tem a "extension" dentro, ou a própria "extension"
+	var homeLink = link(p1, '› escolher a pasta do padeiro (a que tem a "extension")', function () {
+		var picked = Folder.selectDialog('A pasta do padeiro (a que tem a pasta "extension")');
+
+		if (!picked) return;
+		if (decodeURI(picked.name) == 'extension' && new File(picked.fsName + '/CSXS/manifest.xml').exists) picked = picked.parent;
+		setHome(picked);
+		srcText.text = 'origem: ' + src.fsName;
+		srcText.helpTip = src.fsName;
 		runChecks();
 	});
 
@@ -400,12 +449,14 @@ Instalar / atualizar:
 
 			for (var d in checks[i].dots) checks[i].dots[d].visible = d === state;
 
-			if (!pass) help.push(checks[i].help);
+			// a ajuda pode ser um texto ou uma função (o motivo, conferido na hora)
+			if (!pass) help.push(typeof checks[i].help == 'function' ? checks[i].help() : checks[i].help);
 			if (!pass && checks[i].required) ok = false;
 		}
 
 		helpText.text = help.length ? help.join('\n') : 'tudo certo!';
 		prefsLink.visible = !canWriteFiles();
+		homeLink.visible = !extensionOk();
 		nextBtn.enabled = ok;
 
 		return ok;

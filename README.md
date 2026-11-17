@@ -103,7 +103,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 1. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_GLOBAL_config.json`).
 2. o instalador guia o passo a passo. com tudo certo (os testes passam), ele abre direto na **ação**; '*anterior*' volta para a checagem:
-   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
+   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'. se a pasta `extension/` não for achada, a explicação diz o motivo (o After não consegue ler a pasta do instalador, a pasta não está lá ou está incompleta) e o link '*› escolher a pasta do padeiro*' deixa apontar a pasta à mão.
    - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
    - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
 
@@ -114,6 +114,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
 > 🚩 *obs:*\
+> • **macOS, pasta em Documentos, Mesa ou Downloads** → o sistema protege essas pastas: o After abre o instalador que você escolheu, mas não enxerga a pasta `extension/` ao lado dele (a checagem falha mesmo com a pasta lá). libere em `Ajustes do Sistema` > `Privacidade e Segurança` > `Arquivos e Pastas` > `After Effects`, ou ponha a pasta do padeiro fora delas (na pasta do usuário, por exemplo). a mesma permissão vale para o padeiro rodar depois de instalado: o código é lido dessa pasta.\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
 > • o **código do padeiro fica na rede**: o computador recebe só um carregador, que abre os painéis direto da pasta do padeiro. por isso, **para atualizar, basta fechar e abrir o painel de novo** depois que os arquivos da rede forem trocados.\
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
