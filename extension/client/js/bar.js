@@ -283,7 +283,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		render: async function (preview) {
 			var res = await call('renderQueue', { preview: !!preview });
 			var what = preview ? counted(res.count, 'preview', 'previews') : counted(res.count, 'render final', 'renders finais');
-			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz', res.folder];
+			// só o nome da última pasta (o caminho inteiro enchia o aviso, mais ainda na barra em pé)
+			var last = String(res.folder || '').replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
+			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz'];
+
+			if (last) lines.push('na pasta ' + last);
 
 			lines.push(res.names.join(' · '));
 			// os avisos (pasta deste computador, o preset padrão) não são erro: o render está na fila
