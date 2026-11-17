@@ -385,6 +385,7 @@ PADX.makerSave = function (a) {
 	}
 
 	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) cfg.outputPath = defaultTemplateConfigObj.outputPath.slice();
+	for (var cp = 0; cp < cfg.outputPath.length; cp++) cfg.outputPath[cp] = padCleanSpaces(cfg.outputPath[cp]); // sem espaços a mais
 	if (!cfg.importPath) cfg.importPath = defaultTemplateConfigObj.importPath;
 
 	var previousComment = comp.comment;

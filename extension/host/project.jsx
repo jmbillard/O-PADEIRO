@@ -24,6 +24,14 @@ var PAD_DEFAULT_PROJECT = { categories: [] };
 
 var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 
+// Um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
+// barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). vale em todo caminho de output: os tipos de
+// projeto, a claquete, os dados do projeto e as pastas de output dos templates. um token vazio ou um nome digitado
+// com espaço sobrando criaria uma pasta quase igual à certa, que ninguém acha depois
+function padCleanSpaces(path) {
+	return String(path == null ? '' : path).replace(/[ \t\u00A0]{2,}/g, ' ').replace(/ *([\\\/]) */g, '$1').replace(/^ +| +$/g, '');
+}
+
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
 	return padTrim(path).replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
@@ -39,7 +47,7 @@ function padCleanProject(o) {
 		var c = list[i] || {};
 		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
 		var path = padProjectPath(c.path);
-		var output = padProjectPath(c.output);
+		var output = padCleanSpaces(padProjectPath(c.output));
 		// o nome do .aep da categoria (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
 		var fileName = padTrim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
 		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
@@ -205,6 +213,7 @@ function padMetaWrite(fields, title) {
 	var i;
 
 	for (var k in fields) if (fields.hasOwnProperty(k) && fields[k] != null) cur[k] = String(fields[k]);
+	if (cur.output) cur.output = padCleanSpaces(cur.output);
 
 	// toda gravação é de quem está usando: entra nos editores e no salvo por último
 	var touch = padEditorsTouch(cur);
@@ -420,9 +429,10 @@ function padFillDateTokens(path, atracao) {
 		atracao: atracao ? padAepName(atracao) : null
 	};
 
-	return String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
+	// depois dos tokens: um token vazio não deixa dois espaços (nem um espaço na ponta) no caminho de output
+	return padCleanSpaces(String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
 		return values[key] != null ? values[key] : all;
-	});
+	}));
 }
 
 function padAepName(text) {
@@ -838,7 +848,7 @@ PADX.projectPlan = function (a) {
 	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet') exists = true;
 	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
-	var outputPath = a.output ? padMountedPath(padPath(a.output)) : '';
+	var outputPath = a.output ? padMountedPath(padPath(padCleanSpaces(a.output))) : '';
 	// a subpasta do "o que é" dentro da de output (…/2026/SERVICO): a outra opção da etapa CRIAR, conferida de fato
 	var subName = a.what ? padAepName(a.what) : '';
 	var subPath = outputPath && subName ? outputPath + '/' + subName : '';
@@ -942,7 +952,7 @@ PADX.projectCreate = function (a) {
 	}
 
 	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
-	var output = a.output ? new Folder(padMountedPath(padPath(a.output))) : null;
+	var output = a.output ? new Folder(padMountedPath(padPath(padCleanSpaces(a.output)))) : null;
 
 	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
 
@@ -1122,7 +1132,7 @@ PADX.projectSave = function (a) {
 		oQueE: String(a.what || ''),
 		designer: padCleanUser(a.designer) || padMachineUser(),
 		pasta: padDisplayPath(plan.root),
-		output: a.output != null ? (a.output ? padDisplayPath(padPath(a.output)) : '') : null,
+		output: a.output != null ? (a.output ? padDisplayPath(padPath(padCleanSpaces(a.output))) : '') : null,
 		criado: padMetaRead().criado || padToday()
 	}, plan.fileBase);
 

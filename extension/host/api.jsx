@@ -1081,6 +1081,7 @@ PADX.saveTemplateConfig = function (a) {
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
 	if (!(cfg.inputLayers instanceof Array)) throw new Error('#PAD_044 - lista de layers inválida');
 	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) throw new Error('#PAD_044 - informe ao menos uma pasta de output');
+	for (var cp = 0; cp < cfg.outputPath.length; cp++) cfg.outputPath[cp] = padCleanSpaces(cfg.outputPath[cp]); // sem espaços a mais
 
 	for (var l = 0; l < cfg.inputLayers.length; l++) {
 		var layer = cfg.inputLayers[l];
