@@ -574,7 +574,7 @@ projetos com o nome certo).
 				return Object.assign({}, m, { oldPath: m.path, path: here, display: displayPath(here), out: outHere, base: base, category: base ? base.label : m.category, fromIndex: true });
 			}
 
-			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha a categoria', noBase: true });
+			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha o tipo', noBase: true });
 
 			var path = fillPattern(base.pattern, name, base.label);
 
@@ -877,7 +877,7 @@ projetos com o nome certo).
 	function novaPathLine(node, nova, base) {
 		node.textContent = '';
 		if (!base) {
-			node.textContent = 'escolha a categoria da atração nova';
+			node.textContent = 'escolha o tipo da atração nova';
 			return;
 		}
 
@@ -914,7 +914,7 @@ projetos com o nome certo).
 			chip.type = 'button';
 			chip.innerHTML = (PAD_UTIL.categoryIcon(b.icon) || FOLDER_SVG) + '<span></span>';
 			chip.lastChild.textContent = b.label;
-			chip.title = b.offline ? 'a pasta da categoria não está acessível: vai para a pasta deste computador' : '';
+			chip.title = b.offline ? 'a pasta do tipo não está acessível: vai para a pasta deste computador' : '';
 			chip.addEventListener('mousedown', function (e) {
 				e.preventDefault(); // o campo não perde o foco
 			});
@@ -1118,7 +1118,7 @@ projetos com o nome certo).
 		var plan = state.plan;
 
 		if (!flow.claquete) return hintLine(node, '');
-		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou a categoria da nova');
+		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou o tipo da nova');
 		if (!plan) return hintLine(node, 'conferindo a pasta…');
 
 		// a pasta da estrutura (a do projeto) com os níveis em destaque, e a de projetos dentro dela
@@ -1273,7 +1273,7 @@ projetos com o nome certo).
 			select.appendChild(opt);
 		});
 
-		var other = el('option', null, 'nenhuma destas: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
+		var other = el('option', null, 'nenhum destes: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
 
 		other.value = 'pick';
 		select.appendChild(other);
@@ -1314,7 +1314,7 @@ projetos com o nome certo).
 
 			preview.appendChild(el('span', null, full.slice(0, cut + 1)));
 			preview.appendChild(el('b', null, full.slice(cut + 1)));
-			if (base.offline) preview.appendChild(el('em', 'nova-offline', 'pasta deste computador: a da categoria não está acessível'));
+			if (base.offline) preview.appendChild(el('em', 'nova-offline', 'pasta deste computador: a do tipo não está acessível'));
 		} else if (base) {
 			preview.appendChild(el('span', null, base.display + '/'));
 			preview.appendChild(el('b', null, name || '…'));

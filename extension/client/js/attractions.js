@@ -370,7 +370,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
 	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
 	function categoryBase(c, fallback) {
-		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{categoria}/{atracao}';
+		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{tipo}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
 		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
@@ -406,7 +406,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	function fillPattern(pattern, name, category) {
 		var d = new Date();
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: aepName(category), letra: letterOf(name) };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name) };
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -585,7 +585,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		name.setAttribute('aria-label', 'Nome da atração nova');
 		nameField.insertAdjacentHTML('afterbegin', ICONS.file);
 		nameField.appendChild(name);
-		select.setAttribute('aria-label', 'Categoria');
+		select.setAttribute('aria-label', 'Tipo de projeto');
 		selWrap.appendChild(select);
 		pickBtn.type = 'button';
 		pickBtn.hidden = true;

@@ -3704,7 +3704,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'categoria', 'letra'];
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
@@ -3729,7 +3729,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3782,7 +3782,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			name.placeholder = 'nome (ex: PROGRAMAS)';
 			name.spellcheck = false;
 			name.disabled = !state.available;
-			name.setAttribute('aria-label', 'nome da categoria ' + (i + 1));
+			name.setAttribute('aria-label', 'nome do tipo de projeto ' + (i + 1));
 			name.addEventListener('input', function () {
 				row.name = name.value;
 				// {categoria} nas prévias
@@ -3792,8 +3792,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 
 			remove.type = 'button';
-			remove.title = 'excluir a categoria';
-			remove.setAttribute('aria-label', 'excluir a categoria ' + (row.name || i + 1));
+			remove.title = 'excluir o tipo de projeto';
+			remove.setAttribute('aria-label', 'excluir o tipo ' + (row.name || i + 1));
 			remove.disabled = !state.available;
 			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
@@ -3814,7 +3814,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			[['path', 'PROJETO', '//servidor/share/PROGRAMAS/{atracao}'], ['output', 'OUTPUT', 'opcional: a pasta de output da atração nova']].forEach(function (k) {
 				var line = el('div', 'cat-line');
 				var preview = el('p', 'cat-preview');
-				var field = pathField(row[k[0]], k[2], (k[0] === 'path' ? 'pasta da atração nova em ' : 'pasta de output em ') + (row.name || 'categoria ' + (i + 1)), function (v) {
+				var field = pathField(row[k[0]], k[2], (k[0] === 'path' ? 'pasta da atração nova em ' : 'pasta de output em ') + (row.name || 'tipo ' + (i + 1)), function (v) {
 					row[k[0]] = v;
 					preview.innerHTML = catPreview(row, k[0]);
 				}, function (picked) {
@@ -3855,7 +3855,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fileInput.value = row.file || '';
 			fileInput.placeholder = 'opcional: o nome do .aep, ex: {proximo_mes} NA GLOBO';
 			fileInput.spellcheck = false;
-			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'categoria ' + (i + 1)));
+			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'tipo ' + (i + 1)));
 			fileInput.addEventListener('input', function () {
 				row.file = fileInput.value;
 				filePreview.innerHTML = catPreview(row, 'file');
@@ -3902,7 +3902,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var cards = $('cat-list').querySelectorAll('.cat-card');
 			var rows = state.project.categories;
 
-			if (!cards.length) return toast(null, 'crie uma categoria antes (+ nova categoria).');
+			if (!cards.length) return toast(null, 'crie um tipo de projeto antes (+ novo tipo).');
 
 			var last = cards[cards.length - 1];
 
@@ -3928,7 +3928,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function openIconPicker(anchor, row, opts) {
 		closeIconPicker();
 
-		opts = opts || { title: 'ícone da categoria', pane: 'pane-project', render: renderProject };
+		opts = opts || { title: 'ícone do tipo de projeto', pane: 'pane-project', render: renderProject };
 
 		var pop = el('div', 'icon-pop');
 		var grid = el('div', 'icon-grid');
