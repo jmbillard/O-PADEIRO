@@ -67,7 +67,7 @@ Instalar / atualizar:
 	}
 
 	// a pasta do padeiro: a que tem a pasta "extension" (e a configuração da equipe). vem da pasta do instalador ou,
-	// se o After não consegue ler essa pasta, da que a pessoa escolher (o link "escolher a pasta do padeiro")
+	// se o After não consegue ler essa pasta, da que a pessoa escolher (o link "escolher a pasta extension")
 	function setHome(folder) {
 		here = folder;
 		src = new Folder(here.fsName + '/extension');
@@ -88,7 +88,7 @@ Instalar / atualizar:
 		} catch (err) { }
 
 		if (!items || !items.length) {
-			return 'o After não consegue ler a pasta do instalador (' + here.fsName + ').' + (IS_MAC ? ' no macOS, libere em Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas > After Effects, ou tire a pasta de Documentos / Mesa / Downloads.' : '') + ' ou use o link abaixo para escolher a pasta do padeiro.';
+			return 'o After não consegue ler a pasta do instalador (' + here.fsName + ').' + (IS_MAC ? ' no macOS, libere em Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas > After Effects, ou tire a pasta de Documentos / Mesa / Downloads.' : '') + ' ou use o link abaixo para escolher a pasta "extension".';
 		}
 
 		for (var i = 0; i < items.length; i++) {
@@ -98,7 +98,7 @@ Instalar / atualizar:
 			if (names.length < 6) names.push(name);
 		}
 
-		if (!found) return 'não há uma pasta "extension" em ' + here.fsName + ' (achei: ' + names.join(', ') + '). use o link abaixo para escolher a pasta do padeiro.';
+		if (!found) return 'não há uma pasta "extension" em ' + here.fsName + ' (achei: ' + names.join(', ') + '). use o link abaixo para escolher a pasta "extension".';
 		if (!new File(src.fsName + '/CSXS/manifest.xml').exists) return 'a pasta "extension" está incompleta: falta CSXS/manifest.xml (a cópia terminou? no macOS, o After pode não ter permissão para ler dentro dela).';
 
 		return 'a pasta "extension" está incompleta: falta loader/stub.html.';
@@ -366,13 +366,19 @@ Instalar / atualizar:
 	var recheckLink = link(p1, '› verificar de novo', function () {
 		runChecks();
 	});
-	// a pasta do padeiro escolhida à mão: vale a que tem a "extension" dentro, ou a própria "extension"
-	var homeLink = link(p1, '› escolher a pasta do padeiro (a que tem a "extension")', function () {
-		var picked = Folder.selectDialog('A pasta do padeiro (a que tem a pasta "extension")');
+	// a pasta "extension" escolhida à mão (a que tem CSXS e loader dentro, com qualquer nome). quem escolher a pasta
+	// de cima, a do padeiro, também acerta: vale a "extension" de dentro dela
+	var homeLink = link(p1, '› escolher a pasta "extension"', function () {
+		var picked = Folder.selectDialog('A pasta "extension" do padeiro');
 
 		if (!picked) return;
-		if (decodeURI(picked.name) == 'extension' && new File(picked.fsName + '/CSXS/manifest.xml').exists) picked = picked.parent;
-		setHome(picked);
+
+		if (new File(picked.fsName + '/CSXS/manifest.xml').exists) {
+			setHome(picked.parent);
+			src = picked; // a pasta escolhida é a própria extensão, com o nome que tiver
+		} else {
+			setHome(picked);
+		}
 		srcText.text = 'origem: ' + src.fsName;
 		srcText.helpTip = src.fsName;
 		runChecks();
