@@ -951,7 +951,8 @@ body.prods-page {
   min-height: 0;
   flex: 1;
   user-select: none; /* arrastar não seleciona o texto (o nome continua editável) */
-  padding: 12px 10px;
+  margin-block: 20px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  padding: 0 10px;
   overflow-y: auto;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
@@ -2065,7 +2066,8 @@ body.is-org-dragging * {
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 12px;
+  margin-block: 20px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  padding: 0 12px;
   overflow-y: auto;
   user-select: none;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
@@ -2142,11 +2144,14 @@ body.is-org-dragging * {
 
 .bar-row .mini-button {
   margin-left: auto;
-  border-color: rgb(var(--on-brand) / 30%);
-  background: rgb(var(--on-brand) / 12%);
-  color: rgb(var(--on-brand));
+  border-color: transparent; /* o × sem contorno, como nos outros campos */
+  background: none;
+  color: rgb(var(--on-brand) / 75%);
   opacity: 0;
-  transition: opacity 160ms ease;
+  transition:
+    opacity 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 /* o × aparece com o mouse em cima (ou com o foco) */
@@ -2155,9 +2160,10 @@ body.is-org-dragging * {
   opacity: 1;
 }
 
-.bar-row.is-divider .mini-button {
-  border-color: rgb(var(--on-brand) / 30%);
-  background: rgb(var(--on-brand) / 12%);
+.bar-row .mini-button:hover:not(:disabled),
+.bar-row .mini-button:focus-visible {
+  border-color: transparent;
+  background: rgb(var(--on-brand) / 14%);
   color: rgb(var(--on-brand));
 }
 
