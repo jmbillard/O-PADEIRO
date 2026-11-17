@@ -854,6 +854,7 @@ body.bar-page {
   .bar-drawer {
     width: 100%;
     max-width: none;
+    flex: 0 0 100%; /* sempre numa linha só dela: fechada (sem altura), não encolhe ao lado dos botões nem os empurra */
     max-height: 0;
     flex-flow: row wrap;
     align-items: center;
@@ -921,6 +922,9 @@ body.bar-page {
   .bar-drawer,
   .bar-drawer.is-open {
     max-width: 240px;
+    /* com a largura limitada, as margens completam a linha: a gaveta fica numa linha só dela, no centro, e os
+       botões do grupo (a gaveta fechada e os soltos ao lado, como o Importar) ficam juntos e centralizados */
+    margin-inline: max(0px, calc((100% - 240px) / 2));
   }
 }
 
