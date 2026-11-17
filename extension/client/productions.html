@@ -321,9 +321,10 @@
 					<button type="button" class="tok" data-token="ano_proximo_mes" title="o ano do próximo mês (em dezembro, o ano que vem)">{ano_proximo_mes}</button>
 					<button type="button" class="tok" data-token="tipo" title="o nome do tipo de projeto">{tipo}</button>
 					<button type="button" class="tok" data-token="letra" title="a primeira letra do nome, sem o artigo (# para números)">{letra}</button>
+					<button type="button" class="tok" data-token="o_que_e" title="o que é (o que se digita na claquete, depois da atração): só no OUTPUT e no ARQUIVO">{o_que_e}</button>
 					<span class="tok-hint">clique para pôr no caminho em foco</span>
 				</div>
-				<p class="cfg-hint"><b>{letra}</b>: a primeira letra da atração, sem o artigo (# para números).</p>
+				<p class="cfg-hint"><b>{letra}</b>: a primeira letra da atração, sem o artigo (# para números). <b>{o_que_e}</b>: o que se digita depois da atração; vale só no <b>output</b> e no <b>arquivo</b> (no arquivo, o o que é entra no lugar dele, não no fim).</p>
 				<div class="drive-rows" id="cat-list"></div>
 				<p class="scope-note cat-empty" id="cat-empty" hidden>sem tipos de projeto: a janela PROJETO pede a pasta da atração nova (livre).</p>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-cat">+ novo tipo de projeto</button>

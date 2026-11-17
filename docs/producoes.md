@@ -90,7 +90,7 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
 - **tipos de projeto** → cada tipo num cartão:
   - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui o tipo;
   - **PROJETO** → o caminho da pasta da atração nova, com tokens;
-  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
 
   embaixo de cada caminho, a prévia; a pastinha escolhe a pasta do tipo (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a dos chips).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
@@ -106,9 +106,10 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
   | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
   | `{tipo}` | o nome do tipo de projeto (`{categoria}`, o nome antigo, continua valendo nos caminhos já salvos) |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
+  | `{o_que_e}` | o **o que é**, digitado na claquete depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
-- **arquivo** → opcional: o nome do `.aep` da atração criada pelo tipo, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
+- **arquivo** → opcional: o nome do `.aep` da atração criada pelo tipo, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). com `{o_que_e}`, o o que é entra **no lugar do token**, não no fim: `{o_que_e} DO {atracao}` → `CHAMADA DO VT REUNIAO.aep`. vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todos os tipos (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela PROJETO. o tipo novo começa com a pasta.
 - a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip do tipo; se nenhum serve, **outra pasta…** (livre). sem tipos de projeto na configuração, só o livre.

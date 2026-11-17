@@ -447,7 +447,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou sem `{atracao}` |
+| `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
 | `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada (o padeiro tenta três jeitos: criar direto, pelo sistema e, por último, criar neste computador e levar para a rede) |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |

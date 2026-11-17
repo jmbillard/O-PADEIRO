@@ -1077,7 +1077,26 @@ projetos com o nome certo).
 	function attrFileName(attr) {
 		if (!attr || !attr.base || !attr.base.filePattern || attr.fromIndex) return '';
 
-		return aepName(fillPattern(attr.base.filePattern, attr.name, attr.base.label));
+		var filled = fillPattern(attr.base.filePattern, attr.name, attr.base.label);
+
+		// com {o_que_e}: o token fica (o o que é entra no lugar dele, em localFile e no host); o resto já normalizado
+		return filled.split(WHAT_TOKEN).map(aepName).join(filled.indexOf(WHAT_TOKEN) >= 0 ? ' ' + WHAT_TOKEN + ' ' : '').trim();
+	}
+
+	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba PROJETO > ARQUIVO) e na pasta de output
+	var WHAT_TOKEN = '{o_que_e}';
+
+	// a pasta de output com o o que é no lugar do token; sem o que é, o pedaço some (…/ATRACAO/{o_que_e} → …/ATRACAO)
+	function fillWhat(path) {
+		var p = String(path || '');
+
+		if (p.indexOf(WHAT_TOKEN) < 0) return p;
+
+		var lead = /^[\\\/]+/.exec(p);
+
+		return (lead ? lead[0] : '') + p.slice(lead ? lead[0].length : 0).split(WHAT_TOKEN).join(aepName(flow.what)).split(/[\\\/]/).map(function (seg) {
+			return seg.replace(/\s+/g, ' ').trim();
+		}).filter(Boolean).join(p.indexOf('/') < 0 && p.indexOf('\\') >= 0 ? '\\' : '/');
 	}
 
 	// o destino mudou: o plano (o nome do .aep, o que já existe, o output) é refeito
@@ -1140,7 +1159,10 @@ projetos com o nome certo).
 	// travava a digitação)
 	function localFile(plan) {
 		var levels = String(flow.pick.quadro || '').split('/');
-		var base = aepName((levels[levels.length - 1].trim() || flow.pick.fileName || flow.pick.name) + ' ' + (flow.what || ''));
+		var custom = flow.pick.fileName || '';
+		var base = !levels[levels.length - 1].trim() && custom.indexOf(WHAT_TOKEN) >= 0
+			? aepName(custom.split(WHAT_TOKEN).join(' ' + (flow.what || '') + ' ')) // o o que é no lugar do token
+			: aepName((levels[levels.length - 1].trim() || custom.split(WHAT_TOKEN).join(' ') || flow.pick.name) + ' ' + (flow.what || ''));
 
 		plan.fileBase = base;
 		plan.fileName = base + '.aep';
@@ -1394,7 +1416,7 @@ projetos com o nome certo).
 
 	// a pasta de partida: a escolhida no navegador ou a da atração (o caminho já montado no volume, do plano)
 	function outBase() {
-		return state.outCustom || (state.plan && state.plan.output) || '';
+		return state.outCustom || fillWhat(state.plan && state.plan.output) || '';
 	}
 
 	function outParts() {

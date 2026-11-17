@@ -22,7 +22,7 @@ atrações do índice.
 
 var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra']; // {categoria}: o nome antigo do {tipo}, ainda aceito
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
@@ -51,8 +51,12 @@ function padCleanProject(o) {
 		if (seen[key]) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' aparece mais de uma vez.');
 		if (path == '') throw new Error('#PAD_089 - projeto: o tipo ' + name + ' precisa de um caminho.');
 
+		// {o_que_e} (o que se digita na claquete, depois da atração): só no output e no nome do arquivo. a pasta do
+		// projeto é decidida antes de o o que é existir
+		if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
+
 		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo} ou {letra}).');
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra} ou {o_que_e}).');
 		}
 
 
@@ -600,7 +604,11 @@ function padNewProjectPlan(a) {
 	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
 	var levels = padTrim(a.quadro).split('/');
 
-	fileBase = padAepName((padTrim(levels[levels.length - 1]) || padTrim(a.fileName) || a.atracao) + ' ' + (a.what || ''));
+	// o nome do tipo (aba PROJETO > ARQUIVO) com {o_que_e}: o o que é entra no lugar do token, não no fim
+	var custom = padTrim(a.fileName);
+
+	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
+	else fileBase = padAepName((padTrim(levels[levels.length - 1]) || custom.split('{o_que_e}').join(' ') || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
