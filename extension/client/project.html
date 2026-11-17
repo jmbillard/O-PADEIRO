@@ -23,6 +23,8 @@
 				<p class="wz-title">PASTA DO PROJETO</p>
 				<div class="wz-meta" id="criar-meta"></div>
 			</div>
+			<!-- a pasta do projeto (com a atração escolhida): o clique abre a pasta -->
+			<button type="button" class="wz-path" id="claq-path" hidden></button>
 			<!-- a busca e a lista na mesma caixa (a lista com busca, js/attractions.js) -->
 			<div class="combo combo-claq" id="claq-combo">
 			<div class="has-field-icon wz-claq combo-field">
@@ -57,7 +59,12 @@
 					<input type="text" class="cfg-input" id="arq-what" placeholder="ex: SERVIÇO, CONVIDADO, AESP" spellcheck="false" autocomplete="off" aria-label="O que é">
 				</div>
 				<p class="wz-preview" id="arq-file"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg><span></span></p>
-				<p class="wz-exist" id="arq-exist" hidden></p>
+				<!-- os .aep / .aet que já estão na pasta: um clique marca um (o botão vira "Abrir projeto") -->
+				<div class="wz-files" id="arq-files" hidden>
+					<p class="wz-title" id="arq-files-title">JÁ NA PASTA</p>
+					<div class="wz-files-list" id="arq-files-list" role="listbox" aria-label="Projetos que já estão na pasta"></div>
+					<p class="wz-files-note" id="arq-files-note" hidden></p>
+				</div>
 				<!-- o .aep já existe: abrir o existente ou salvar como … 2, ali mesmo -->
 				<div class="arq-dup" id="arq-dup" hidden>
 					<p class="arq-dup-note" id="arq-dup-note"></p>

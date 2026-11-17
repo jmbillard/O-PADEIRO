@@ -1272,6 +1272,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var now = Date.now();
 			var existing = !film && /MAIS VOCE/.test(root) ? [
 				{ name: 'MAIS VOCE CREDITOS', modified: now - 2 * H },
+				{ name: 'MAIS VOCE TARJAS', ext: 'aet', modified: now - 5 * H },
+				{ name: 'MAIS VOCE CONVIDADOS', modified: now - 50 * H },
+				{ name: 'MAIS VOCE VINHETA', modified: now - 200 * 24 * H },
 				{ name: 'MAIS VOCE CHROMA', modified: now - 26 * H },
 				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
@@ -1590,6 +1593,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ code: 'MAC', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign/JORNALISMO/GLOBONEWS/PROMO/MARCA E COMUNICACAO' }
 				]
 			};
+		},
+
+		projectOpenFile: function (a) {
+			window.PAD_MOCK_OPENED_FILE = a.path;
+
+			return { file: a.path };
 		},
 
 		openFolder: function (a) {

@@ -1108,6 +1108,7 @@ projetos com o nome certo).
 		if (key === state.pickKey) return renderDest();
 
 		state.pickKey = key;
+		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
 		flow.pick = pick;
 		state.plan = null;
 		flow.mode = '';
@@ -1136,6 +1137,10 @@ projetos com o nome certo).
 		var pick = flow.pick;
 		var plan = state.plan;
 
+		var top = $('claq-path'); // com o destino conferido, o caminho fica em cima, logo abaixo do título (e abre a pasta)
+
+		top.hidden = true;
+		node.hidden = false;
 		if (!flow.claquete) return hintLine(node, '');
 		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou o tipo da nova');
 		if (!plan) return hintLine(node, 'conferindo a pasta…');
@@ -1151,8 +1156,20 @@ projetos com o nome certo).
 			segs = [{ name: plan.rootName, isNew: true }];
 			head = cut.slice(0, -1).join('/');
 		}
-		destLine(node, head, segs, plan.projectsName);
+		destLine(top, head, segs, plan.projectsName);
+		top.hidden = false;
+		node.hidden = true;
+
+		// a pasta que já existe abre no clique (a de projetos ou, sem ela ainda, a da estrutura)
+		var open = plan.projectsExists ? plan.projects : plan.rootExists ? plan.root : '';
+
+		top.disabled = !open;
+		top.dataset.open = open;
+		top.title = open ? 'abrir a pasta: ' + top.title : top.title + ' (ainda não existe: é criada com o projeto)';
+		if (open) top.insertAdjacentHTML('beforeend', OPEN_SVG);
 	}
+
+	var OPEN_SVG = '<svg class="wz-path-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h9v9M18 6 7 17" /></svg>';
 
 	// o nome do .aep e se ele já existe, sem perguntar ao After: o último nível (ou a atração) + o que é (a mesma
 	// conta do host); a lista dos .aep da pasta veio no plano. digitar o o que é não chama o host (ele lê a rede e
@@ -1167,7 +1184,7 @@ projetos com o nome certo).
 		plan.fileBase = base;
 		plan.fileName = base + '.aep';
 		plan.exists = (plan.existing || []).some(function (f) {
-			return f.name === base;
+			return f.name === base && f.ext !== 'aet';
 		});
 	}
 
@@ -1215,7 +1232,7 @@ projetos com o nome certo).
 		renderFile();
 		renderExisting(plan);
 		renderOut();
-		$('criar-go').textContent = plan.exists && flow.mode === 'open' ? 'Abrir projeto' : 'Criar projeto';
+		$('criar-go').textContent = state.openFile || (plan.exists && flow.mode === 'open') ? 'Abrir projeto' : 'Criar projeto';
 	}
 
 	// o ano do projeto: um clique passa para o próximo (o de agora, o que vem, o anterior). o BBB do ano que vem
@@ -1362,23 +1379,91 @@ projetos com o nome certo).
 	/* ---------- o .aep que já existe ---------- */
 
 	// os .aep que já estão na pasta, numa linha (o último alterado primeiro); o repetido ganha as duas saídas
-	function renderExisting(plan) {
-		var line = $('arq-exist');
-		var dup = $('arq-dup');
-		var list = (plan.existing || []).filter(function (f) {
-			return f.name !== plan.fileBase;
+	// os .aep / .aet que já estão na pasta de projetos, do mais novo para o mais velho, com a data à direita. um
+	// clique marca um (de novo, desmarca): o botão do rodapé vira "Abrir projeto" e a nota diz o que acontece. a
+	// confirmação é o próprio botão: nada abre no primeiro clique
+	function renderFiles(plan) {
+		var box = $('arq-files');
+		var list = $('arq-files-list');
+		var note = $('arq-files-note');
+		var files = (plan.existing || []).slice().sort(function (a, b) {
+			return (b.modified || 0) - (a.modified || 0);
 		});
+		var picked = '';
+
+		box.hidden = !files.length;
+		list.textContent = '';
+		$('arq-files-title').textContent = 'JÁ NA PASTA · ' + files.length;
+
+		files.forEach(function (f) {
+			var full = f.name + '.' + (f.ext || 'aep');
+			var row = el('button', 'wz-file' + (state.openFile === full ? ' is-on' : '') + (f.name === plan.fileBase && f.ext !== 'aet' ? ' is-same' : ''));
+			var name = el('span', 'wz-file-name');
+
+			row.type = 'button';
+			row.setAttribute('role', 'option');
+			row.setAttribute('aria-selected', String(state.openFile === full));
+			row.title = state.openFile === full ? 'clique para desmarcar' : 'clique para marcar: o botão Abrir projeto abre este';
+			row.innerHTML = FILE_ROW_SVG;
+			name.appendChild(document.createTextNode(f.name));
+			name.appendChild(el('i', null, '.' + (f.ext || 'aep')));
+			row.appendChild(name);
+			row.appendChild(el('time', null, when(f.modified)));
+			row.addEventListener('click', function () {
+				state.openFile = state.openFile === full ? '' : full;
+				renderPlan(plan);
+			});
+			list.appendChild(row);
+			if (state.openFile === full) picked = full;
+		});
+
+		// o marcado sumiu da pasta (outra atração, a lista relida): nada marcado
+		if (!picked) state.openFile = '';
+		list.classList.toggle('is-picking', !!picked);
+		note.hidden = !picked;
+		note.textContent = '';
+		if (picked) {
+			note.appendChild(document.createTextNode('abrir '));
+			note.appendChild(el('b', null, picked));
+			note.appendChild(document.createTextNode(' fecha esta janela sem criar nada. clique nele de novo para desmarcar.'));
+		}
+	}
+
+	var FILE_ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
+
+	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
+	async function openPicked() {
+		if (state.busy || !state.openFile || !state.plan) return;
+
+		state.busy = true;
+		$('criar-go').disabled = true;
+		$('criar-go').textContent = 'Abrindo…';
+		try {
+			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
+			status('projeto aberto: ' + state.openFile, 'success');
+			$('criar-go').textContent = 'Aberto';
+			state.openFile = '';
+			setTimeout(function () {
+				PAD_BRIDGE.closePanel();
+				state.busy = false;
+				state.currentKey = null;
+				refresh(true);
+			}, 700);
+		} catch (err) {
+			state.busy = false;
+			$('criar-go').disabled = false;
+			$('criar-go').textContent = 'Abrir projeto';
+			status(err.message, 'error');
+		}
+	}
+
+	function renderExisting(plan) {
+		var dup = $('arq-dup');
 		var same = (plan.existing || []).filter(function (f) {
-			return f.name === plan.fileBase;
+			return f.name === plan.fileBase && f.ext !== 'aet';
 		})[0];
 
-		line.textContent = '';
-		line.hidden = !list.length || plan.exists;
-		if (list.length && !plan.exists) {
-			line.appendChild(document.createTextNode('já na pasta: '));
-			line.appendChild(el('b', null, list[0].name + '.aep'));
-			line.appendChild(document.createTextNode(' · ' + when(list[0].modified) + (list.length > 1 ? ' · +' + (list.length - 1) : '')));
-		}
+		renderFiles(plan);
 
 		dup.hidden = !plan.exists;
 		if (plan.exists) {
@@ -2433,6 +2518,7 @@ projetos com o nome certo).
 
 		// o que é (o nome do .aep muda enquanto digita) e o .aep repetido; Enter cria
 		$('arq-what').addEventListener('input', function () {
+			state.openFile = ''; // digitar o o que é é criar: o projeto marcado na lista sai
 			flow.what = this.value;
 			flow.mode = '';
 			// só o nome do .aep muda: conta aqui, sem o host (o plano é refeito quando a pasta muda)
@@ -2486,7 +2572,13 @@ projetos com o nome certo).
 		});
 
 		$('criar-go').addEventListener('click', function () {
-			create();
+			if (state.openFile) openPicked();
+			else create();
+		});
+		$('claq-path').addEventListener('click', function () {
+			if (this.dataset.open) call('openFolder', { path: this.dataset.open }).catch(function (err) {
+				status(err.message, 'error');
+			});
 		});
 
 		$('ed-save').addEventListener('click', editorSave);

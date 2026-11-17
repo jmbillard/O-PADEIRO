@@ -664,7 +664,8 @@ function padAepList(folderPath) {
 	for (var i = 0; i < items.length; i++) {
 		var name = decodeURI(items[i].name);
 
-		if (items[i] instanceof File && /\.aep$/i.test(name)) out.push({ name: name.replace(/\.aep$/i, ''), modified: items[i].modified ? items[i].modified.getTime() : 0 });
+		// os .aep e os .aet (ext: a lista da claquete mostra os dois; só o .aep conta como nome repetido)
+		if (items[i] instanceof File && /\.ae[pt]$/i.test(name)) out.push({ name: name.replace(/\.ae[pt]$/i, ''), ext: /\.aet$/i.test(name) ? 'aet' : 'aep', modified: items[i].modified ? items[i].modified.getTime() : 0 });
 	}
 
 	return out.sort(function (a, b) {
@@ -810,7 +811,7 @@ PADX.projectPlan = function (a) {
 	var folders = [];
 	var list = padStructureFolders(plan.settings, PAD_PROJECT_KINDS);
 
-	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase) exists = true;
+	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet') exists = true;
 	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
 	var outputPath = a.output ? padMountedPath(padPath(a.output)) : '';
@@ -836,6 +837,17 @@ PADX.projectPlan = function (a) {
 		outputSub: subPath ? padDisplayPath(subPath) : '',
 		outputSubExists: subPath ? new Folder(subPath).exists : false
 	};
+};
+
+// Abre um projeto que já está na pasta (a lista "já na pasta" da claquete). a: { path } → { file }
+PADX.projectOpenFile = function (a) {
+	var file = new File(padMountedPath(padPath(a.path)));
+
+	if (!file.exists) throw new Error('#PAD_112 - o projeto não foi encontrado: ' + padDisplayPath(file.fsName));
+
+	app.open(file);
+
+	return { file: padDisplayPath(file.fsName) };
 };
 
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")

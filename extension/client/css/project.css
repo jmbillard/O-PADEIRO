@@ -1660,3 +1660,187 @@ p.wz-exist b {
 #sc-dados > .wz-foot {
   margin-top: 0;
 }
+
+/* =========================================================
+   a pasta do projeto, em cima (logo abaixo do título): o caminho numa linha, que abre a pasta no clique
+   ========================================================= */
+.wz-path {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  margin: -4px -6px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.7rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.wz-path[hidden] {
+  display: none;
+}
+
+.wz-path svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--blue-500);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.wz-path span {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  direction: rtl; /* o fim do caminho (a pasta) fica à vista; o começo vira … */
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-path b {
+  color: var(--text-primary);
+}
+
+.wz-path .wz-path-open {
+  width: 13px;
+  height: 13px;
+  stroke: currentcolor;
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+.wz-path:not(:disabled):hover {
+  background: rgb(var(--accent-rgb) / 10%);
+  color: var(--text-primary);
+}
+
+.wz-path:disabled {
+  cursor: default;
+}
+
+/* =========================================================
+   já na pasta: os .aep / .aet, mais apagados que o resto (é consulta), com o fim da lista sumindo num degradê
+   ========================================================= */
+.wz-files {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.wz-files[hidden] {
+  display: none;
+}
+
+.wz-files .wz-title {
+  color: var(--text-tertiary);
+}
+
+.wz-files-list {
+  display: flex;
+  max-height: 176px;
+  flex-direction: column;
+  margin: 0 -8px;
+  padding-bottom: 22px; /* o último item passa do degradê quando a lista rola até o fim */
+  overflow-y: auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent);
+}
+
+.wz-file {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.wz-file svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  opacity: 0.7;
+}
+
+.wz-file-name {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wz-file-name i {
+  font-style: normal;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.wz-file time {
+  flex: 0 0 auto;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.wz-file:hover {
+  background: rgb(var(--accent-rgb) / 8%);
+  color: var(--text-secondary);
+}
+
+/* o marcado: em destaque; os outros recuam */
+.wz-file.is-on {
+  background: rgb(var(--accent-rgb) / 14%);
+  color: var(--text-primary);
+}
+
+.wz-file.is-on svg {
+  stroke: var(--blue-500);
+  opacity: 1;
+}
+
+.wz-files-list.is-picking .wz-file:not(.is-on) {
+  opacity: 0.8;
+}
+
+/* o que tem o nome do projeto que vai ser criado */
+.wz-file.is-same {
+  color: var(--waiting);
+}
+
+.wz-files-note {
+  margin: 0 2px;
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.wz-files-note[hidden] {
+  display: none;
+}
