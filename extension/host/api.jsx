@@ -250,6 +250,22 @@ function padMachineSearch(o) {
 	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
 }
 
+// A lista de templates neste computador (configuração > templates): quantos recentes aparecem (0 a 30, padrão 5)
+// e há quantos dias um template ainda é novo (0 a 90, padrão 15). 0 esconde a seção
+function padMachineLists(d) {
+	var o = d && d.lists && typeof d.lists == 'object' ? d.lists : {};
+
+	function num(v, def, max) {
+		var n = parseInt(v, 10);
+
+		if (isNaN(n)) return def;
+
+		return n < 0 ? 0 : n > max ? max : n;
+	}
+
+	return { recents: num(o.recents, 5, 30), newDays: num(o.newDays, 15, 90) };
+}
+
 PADX.machinePrefs = function () {
 	var d = padMachineData();
 
@@ -265,16 +281,17 @@ PADX.machinePrefs = function () {
 		search: padMachineSearch(d.search),
 		fontsUpload: padMachineFontsUpload(),
 		fontsCheck: padMachineFontsCheck(),
+		lists: padMachineLists(d),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck(), lists: padMachineLists(d) };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
@@ -310,6 +327,7 @@ PADX.saveMachinePrefs = function (a) {
 	if (a.search != null) data.search = padMachineSearch(a.search);
 	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
 	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
+	if (a.lists != null) data.lists = padMachineLists({ lists: a.lists });
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
@@ -660,6 +678,7 @@ PADX.productions = function () {
 		productions: productions,
 		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
 		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
+		lists: padMachineLists(padMachineData()), // quantos recentes e quantos dias de novos (neste computador)
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
 		rename: padReadRename(),

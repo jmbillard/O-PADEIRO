@@ -76,6 +76,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 - **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, a **lixeira** à direita exclui; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
   > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
+- **lista de templates** → as seções do topo do [painel de templates](templates.md#fixados-e-recentes): **recentes** (quantos templates aparecem, de 0 a 30; padrão 5) e **novos** (criados há até quantos dias, de 0 a 90; padrão 15). 0 esconde a seção. vale ao reabrir o painel de templates.
 <br>
 
 ---

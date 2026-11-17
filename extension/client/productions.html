@@ -105,6 +105,12 @@
 				<p class="cfg-title prods-section-title">pasta de saída</p>
 				<p class="cfg-hint">para onde vão os renders da fila quando a pasta do template não pode ser acessada. vazia: a Área de Trabalho.</p>
 				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Pasta de saída neste computador"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta de saída"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+				<p class="cfg-title prods-section-title">lista de templates</p>
+				<p class="cfg-hint">as seções do topo do painel de templates. <b>0</b> esconde a seção.</p>
+				<div class="render-presets">
+					<label class="cfg-field" for="machine-recents"><span class="cfg-label">recentes · quantos templates</span><span class="cfg-number"><input type="number" class="cfg-input" id="machine-recents" min="0" max="30" step="1" inputmode="numeric" aria-label="Quantos templates recentes aparecem"><span class="cfg-hint">os últimos usados (padrão: 5)</span></span></label>
+					<label class="cfg-field" for="machine-new-days"><span class="cfg-label">novos · criados há até</span><span class="cfg-number"><input type="number" class="cfg-input" id="machine-new-days" min="0" max="90" step="1" inputmode="numeric" aria-label="Há quantos dias um template ainda é novo"><span class="cfg-hint">dias (padrão: 15)</span></span></label>
+				</div>
 			</div>
 			</div>
 

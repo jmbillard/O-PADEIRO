@@ -282,6 +282,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		try {
 			var res = await call('productions', {});
 
+			setListLimits(res);
+
 			state.productions = productionList(res);
 			state.listStamp = res.stamp;
 			state.listError = res.shared ? '' : res.error;
@@ -326,6 +328,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		try {
 			var res = await call('productions', {});
+
+			setListLimits(res);
 
 			state.listStamp = res.stamp;
 			state.productions = productionList(res);
@@ -530,7 +534,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   'O PADEIRO script/temp/template_lists.json', gravado pelo host)
 	   ========================================================= */
 
-	var MAX_RECENTS = 5;
+	var MAX_RECENTS = 5; // quantos aparecem: o da configuração > templates, neste computador (0 esconde a seção)
+	var KEEP_RECENTS = 30; // quantos ficam guardados: aumentar o limite já mostra os anteriores
 
 	function productionName() {
 		var prod = state.productions[state.production];
@@ -618,7 +623,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		});
 
 		list.unshift(node.uri);
-		writeList('recents', list.slice(0, MAX_RECENTS));
+		writeList('recents', list.slice(0, KEEP_RECENTS));
 	}
 
 	// Só os templates que ainda existem na árvore lida.
@@ -630,10 +635,21 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			.filter(Boolean);
 	}
 
-	// os novos: criados nos últimos 15 dias, do mais novo para o mais velho (os fixados e recentes não repetem)
+	// os novos: criados nos últimos dias (15, ou o da configuração > templates, neste computador; 0 esconde a
+	// seção), do mais novo para o mais velho (os fixados e recentes não repetem)
 	var NEW_DAYS = 15;
 
+	// os limites da lista vêm com as produções (host: padMachineLists)
+	function setListLimits(res) {
+		var l = (res && res.lists) || {};
+
+		if (typeof l.recents === 'number') MAX_RECENTS = l.recents;
+		if (typeof l.newDays === 'number') NEW_DAYS = l.newDays;
+	}
+
 	function newNodes(skip) {
+		if (!NEW_DAYS) return [];
+
 		var since = Date.now() - NEW_DAYS * 86400000;
 
 		return Object.keys(state.byUri)
@@ -996,7 +1012,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			var favorites = listNodes('favorites');
 			var recents = listNodes('recents').filter(function (node) {
 				return favorites.indexOf(node) < 0;
-			});
+			}).slice(0, MAX_RECENTS); // guardados até 30; aparecem os do limite da configuração
 
 			var fresh = newNodes(favorites.concat(recents));
 

@@ -509,7 +509,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false, lists: { recents: m.lists.recents, newDays: m.lists.newDays } };
 	}
 
 	function personalDirty() {
@@ -2794,6 +2794,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			localMode: !!m.localMode,
 			fontsUpload: m.fontsUpload !== false,
 			fontsCheck: m.fontsCheck !== false,
+			lists: { recents: m.lists && typeof m.lists.recents === 'number' ? m.lists.recents : 5, newDays: m.lists && typeof m.lists.newDays === 'number' ? m.lists.newDays : 15 },
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
 		state.localIndexFile = m.localIndex || '';
@@ -2803,11 +2804,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderMachine();
 	}
 
+	// a lista de templates neste computador: [campo, chave, máximo, padrão]
+	var LIST_KEYS = [['machine-recents', 'recents', 30, 5], ['machine-new-days', 'newDays', 90, 15]];
+
 	function renderMachine() {
 		var m = state.machine;
 
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
+		});
+		LIST_KEYS.forEach(function (k) {
+			if (document.activeElement !== $(k[0])) $(k[0]).value = m.lists[k[1]];
 		});
 		renderPresets();
 		$('machine-user').placeholder = state.defaultUser;
@@ -3035,6 +3042,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
 				state.machine[pair[1]] = this.value;
 				updateDirty();
+			});
+		});
+
+		// só números, dentro do limite; vazio fica com o padrão (ao sair do campo, o número aparece)
+		LIST_KEYS.forEach(function (k) {
+			$(k[0]).addEventListener('input', function () {
+				var n = parseInt(this.value, 10);
+
+				state.machine.lists[k[1]] = isNaN(n) ? k[3] : Math.max(0, Math.min(k[2], n));
+				updateDirty();
+			});
+			$(k[0]).addEventListener('blur', function () {
+				this.value = state.machine.lists[k[1]];
 			});
 		});
 

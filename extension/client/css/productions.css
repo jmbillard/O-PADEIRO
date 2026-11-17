@@ -2900,3 +2900,20 @@ body.is-org-dragging * {
 .render-presets .select select {
   width: 100%;
 }
+
+/* um número e a unidade ao lado (lista de templates: quantos recentes, quantos dias de novos) */
+.cfg-number {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cfg-number .cfg-input {
+  width: 96px;
+  flex: 0 0 96px;
+  text-align: center;
+}
+
+.cfg-number .cfg-hint {
+  margin: 0;
+}

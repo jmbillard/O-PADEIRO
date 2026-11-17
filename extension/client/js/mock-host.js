@@ -245,7 +245,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					return Object.assign({}, p, { ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
 				}),
 				localProductions: ((JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).productions || []).slice(),
-				localMode: !!(JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).localMode
+				localMode: !!(JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).localMode,
+				lists: (JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).lists || { recents: 5, newDays: 15 }
 			};
 		},
 
@@ -276,7 +277,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', render: a.render || { 'final': '', preview: '' }, productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, fontsCheck: a.fontsCheck !== false, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
+			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', render: a.render || { 'final': '', preview: '' }, productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, fontsCheck: a.fontsCheck !== false, lists: a.lists || { recents: 5, newDays: 15 }, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
 			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
 		},
