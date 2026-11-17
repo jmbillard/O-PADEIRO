@@ -367,7 +367,8 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 - **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
 - **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
-- **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **travam o botão** até você editar o novo nome ou desligar a linha.
+- **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **de fora** da renomeação: o botão renomeia o que dá e eles continuam na lista, como estão, para você resolver depois (editar o novo nome ou desligar a linha).
+- **o progresso** → a renomeação vai em lotes: uma barra fina abaixo da tabela e a contagem no botão (`20 de 120`) mostram o andamento; o desfazer volta todos os lotes de uma vez.
 - **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
 - **sequências de imagens** → uma linha só: o nome muda em todos os quadros e os números ficam como estão.
 - **ficam de fora** → os projetos (`.aep`, `.aet` e os de outros programas), os arquivos escondidos e de sistema e as pastas de autosave e de logs do After.

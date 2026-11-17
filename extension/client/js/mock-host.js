@@ -1666,7 +1666,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					}
 				});
 			});
-			window.PAD_MOCK_FILES_UNDO = { count: a.items.length, folder: a.path, when: Date.now(), before: before };
+			var prev = a.append ? window.PAD_MOCK_FILES_UNDO : null;
+
+			window.PAD_MOCK_FILES_UNDO = { count: a.items.length + (prev ? prev.count : 0), folder: a.path, when: Date.now(), before: prev ? prev.before : before };
 
 			return { count: a.items.length, relinked: used, errors: [], undo: window.PAD_MOCK_FILES_UNDO };
 		},

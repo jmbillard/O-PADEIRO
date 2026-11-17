@@ -47,7 +47,9 @@ function padFilesSplit(name, isFolder) {
 
 // o nome novo de um item, pela regra do renomear: { plain (só o formato), typed (com o prefixo do tipo) }
 function padFilesSuggest(name) {
-	var base = String(name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+	// o macOS guarda o nome com o acento separado da letra (a + ~): junta os dois antes da regra, senão a marca solta
+	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
+	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
 	var typed = plain;
 	var found = findMatchingPrefix(base, false);
@@ -300,6 +302,7 @@ function padFilesRelink(ops) {
 }
 
 // a: { path, items: [{ dir, name, ext, kind, sep, pad, to }] } → { count, relinked, errors: [{ name, error }], undo }
+// a: { path, items, append } → { count, relinked, errors, undo }
 PADX.filesRename = function (a) {
 	var root = new Folder(padMountedPath(padPath(a.path)));
 
@@ -391,7 +394,23 @@ PADX.filesRename = function (a) {
 			var prefs = new Folder(scriptPreferencesPath);
 
 			if (!prefs.exists) prefs.create();
-			saveTextFile(JSON.stringify({ folder: base, count: count, when: new Date().getTime(), ops: ops }), padFilesUndoFile().fsName);
+			// a.append: mais um lote da mesma renomeação (a janela manda em lotes para mostrar o progresso); o
+			// registro continua o do lote anterior, para o desfazer voltar tudo de uma vez
+			var all = ops;
+			var total = count;
+
+			if (a.append === true && padFilesUndoFile().exists) {
+				try {
+					var prev = JSON.parse(readFileContent(padFilesUndoFile()));
+
+					if (prev && prev.ops instanceof Array && padFilesKey(prev.folder) == base) {
+						all = prev.ops.concat(ops);
+						total = (prev.count || 0) + count;
+					}
+				} catch (errPrev) { }
+			}
+
+			saveTextFile(JSON.stringify({ folder: base, count: total, when: new Date().getTime(), ops: all }), padFilesUndoFile().fsName);
 		} catch (err) { }
 	}
 

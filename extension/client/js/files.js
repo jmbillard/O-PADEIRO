@@ -9,7 +9,7 @@ host (files.jsx) lê a pasta e sugere o nome de cada item; aqui a pessoa confere
 desliga o que não deve mudar e renomeia.
 
   - o prefixo do tipo vem do próprio nome do arquivo (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
-  - nome repetido na mesma pasta, vazio ou com caractere inválido trava o botão (o alerta na linha diz o motivo);
+  - nome repetido na mesma pasta, vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em lotes, com a barra de progresso;
   - o arquivo usado no projeto aberto é religado depois de renomeado;
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);
   - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela.
@@ -129,12 +129,13 @@ desliga o que não deve mudar e renomeia.
 
 		if (!name || BAD_CHARS.test(name) || clash[it.id]) return 'bad';
 
-		return name === it.name ? 'same' : 'chg';
+		// o mesmo nome com o acento junto ou separado (macOS) é o mesmo nome
+		return name.normalize('NFC') === it.name.normalize('NFC') ? 'same' : 'chg';
 	}
 
 	function reason(it, st, clash) {
 		if (st === 'bad') {
-			if (clash[it.id]) return 'nome repetido nesta pasta: edite um dos dois ou desligue a linha';
+			if (clash[it.id]) return 'nome repetido nesta pasta: fica como está até você editar um dos dois';
 			if (!target(it).trim()) return 'sem nome';
 
 			return 'caractere que não vale em nome de arquivo ( \\ / : * ? " < > | )';
@@ -297,16 +298,23 @@ desliga o que não deve mudar e renomeia.
 
 		if (state.busy) return;
 
-		if (count.bad) {
-			go.textContent = 'Renomear ' + count.chg;
-			go.disabled = true;
-
-			return status(plural(count.bad, 'nome repetido ou inválido', 'nomes repetidos ou inválidos') + ': edite o novo nome ou desligue a linha.', 'error');
-		}
+		// os com problema não travam: renomeia o que dá, eles ficam como estão (e continuam na lista para resolver depois)
+		var left = count.bad ? ' · ' + plural(count.bad, 'com problema fica como está', 'com problema ficam como estão') : '';
 
 		go.textContent = state.step === 1 ? 'Confirmar: renomear ' + count.chg : count.all ? 'Renomear ' + plural(count.chg, 'item', 'itens') : 'Renomear';
 		go.disabled = !count.chg;
-		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + ' · ' + count.same + ' no padrão' + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
+		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + ' · ' + count.same + ' no padrão' + left + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
+	}
+
+	// o progresso: uma barra fina entre a tabela e o rodapé e a contagem no botão
+	function progress(done, total) {
+		var bar = $('fl-progress');
+
+		bar.hidden = total == null;
+		if (total == null) return;
+		bar.firstChild.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+		$('fl-go').textContent = done + ' de ' + total;
+		status('renomeando… ' + done + ' de ' + plural(total, 'item', 'itens'));
 	}
 
 	/* ---------- ler, renomear, desfazer ---------- */
@@ -343,6 +351,8 @@ desliga o que não deve mudar e renomeia.
 		render();
 	}
 
+	var BATCH = 10; // itens por chamada ao After
+
 	async function rename() {
 		var clash = clashes();
 		var list = state.items.filter(function (it) {
@@ -353,27 +363,50 @@ desliga o que não deve mudar e renomeia.
 
 		if (!list.length) return;
 
+		// a mesma ordem do host (arquivos antes das pastas, as pastas de dentro para fora), para os lotes não
+		// quebrarem o caminho uns dos outros
+		var depth = function (it) {
+			return it.dir ? it.dir.split('/').length : 0;
+		};
+
+		list.sort(function (x, y) {
+			var fx = x.kind === 'folder' ? 1 : 0;
+			var fy = y.kind === 'folder' ? 1 : 0;
+
+			return fx !== fy ? fx - fy : depth(y) - depth(x);
+		});
+
 		state.busy = true;
 		$('fl-go').disabled = true;
-		$('fl-go').textContent = 'Renomeando…';
-		status('renomeando ' + plural(list.length, 'item', 'itens') + '…');
+		progress(0, list.length);
 
 		var note = '';
 		var kind = '';
+		var count = 0;
+		var relinked = 0;
+		var errors = [];
 
+		// em lotes: cada um volta do After e a barra anda (o registro do desfazer junta todos)
 		try {
-			var res = await call('filesRename', { path: state.path, items: list });
+			for (var at = 0; at < list.length; at += BATCH) {
+				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: at > 0 });
 
-			note = plural(res.count, 'renomeado', 'renomeados') + (res.relinked ? ' · ' + plural(res.relinked, 'religado', 'religados') + ' no projeto' : '');
-			if (res.errors && res.errors.length) {
-				note += ' · ' + plural(res.errors.length, 'não mudou', 'não mudaram') + ': ' + res.errors[0].name + ' (' + res.errors[0].error + ')';
-				kind = 'error';
+				count += res.count || 0;
+				relinked += res.relinked || 0;
+				errors = errors.concat(res.errors || []);
+				progress(Math.min(at + BATCH, list.length), list.length);
 			}
 		} catch (err) {
-			note = err.message;
+			errors.push({ name: 'a renomeação parou', error: err.message });
+		}
+
+		note = plural(count, 'renomeado', 'renomeados') + (relinked ? ' · ' + plural(relinked, 'religado', 'religados') + ' no projeto' : '');
+		if (errors.length) {
+			note += ' · ' + plural(errors.length, 'não mudou', 'não mudaram') + ': ' + errors[0].name + ' (' + errors[0].error + ')';
 			kind = 'error';
 		}
 
+		progress(0, null);
 		state.busy = false;
 		await load(state.path);
 		state.note = note;

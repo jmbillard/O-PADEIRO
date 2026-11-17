@@ -164,6 +164,7 @@ body.files-page {
 .fl-scroll {
   min-height: 0;
   flex: 1;
+  margin-bottom: 12px; /* a rolagem (e a barra dela) termina antes das quinas curvas da tabela */
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -344,12 +345,41 @@ body.files-page {
   text-align: center;
 }
 
+/* o progresso da renomeação: uma barra fina logo abaixo da tabela */
+.fl-progress {
+  overflow: hidden;
+  height: 4px;
+  flex: 0 0 auto;
+  margin-top: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+}
+
+.fl-progress[hidden] {
+  display: none;
+}
+
+.fl-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue-500);
+  transition: width 220ms ease;
+}
+
 /* o rodapé: a tabela termina antes dele (sem o degradê por cima) */
 .files .fw-bar.action-bar.is-anchored {
   position: static;
   margin-top: 0;
   padding-top: 12px;
   background: none;
+}
+
+/* o botão não quebra em duas linhas (o aviso ao lado é que encurta) */
+#fl-go {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* o segundo clique: o botão pede a confirmação */
