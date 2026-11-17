@@ -345,6 +345,12 @@ body.files-page {
   text-align: center;
 }
 
+/* arrastando uma pasta sobre a janela: o campo da pasta acende */
+.files.is-drop .fl-path .cfg-input {
+  border-color: var(--blue-500);
+  background: rgb(var(--accent-rgb) / 8%);
+}
+
 /* o progresso da renomeação: uma barra fina logo abaixo da tabela */
 .fl-progress {
   overflow: hidden;

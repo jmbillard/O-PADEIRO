@@ -498,6 +498,34 @@ desliga o que não deve mudar e renomeia.
 
 			if (picked) load(picked);
 		});
+		// arrastar uma pasta do Finder / Explorer para a janela: ela vira a pasta (um arquivo solto traz a pasta dele)
+		var root = $('files');
+
+		window.addEventListener('dragover', function (e) {
+			e.preventDefault(); // sem isto o painel abriria o arquivo no lugar da janela
+			if (e.dataTransfer) e.dataTransfer.dropEffect = state.busy ? 'none' : 'copy';
+			root.classList.toggle('is-drop', !state.busy);
+		});
+		window.addEventListener('dragleave', function (e) {
+			if (!e.relatedTarget) root.classList.remove('is-drop');
+		});
+		window.addEventListener('drop', function (e) {
+			e.preventDefault();
+			root.classList.remove('is-drop');
+
+			var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+			var path = file && file.path ? String(file.path) : '';
+
+			if (!path || state.busy) return;
+
+			try {
+				var stat = window.cep && window.cep.fs && window.cep.fs.stat(path);
+
+				if (stat && stat.err === 0 && stat.data && !stat.data.isDirectory()) path = path.replace(/[\\/][^\\/]*$/, '');
+			} catch (err) { }
+
+			load(path);
+		});
 		$('fl-path').addEventListener('keydown', function (e) {
 			if (e.key !== 'Enter') return;
 
