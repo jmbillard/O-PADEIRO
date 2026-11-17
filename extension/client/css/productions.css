@@ -951,7 +951,7 @@ body.prods-page {
   min-height: 0;
   flex: 1;
   user-select: none; /* arrastar não seleciona o texto (o nome continua editável) */
-  margin-block: 20px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  margin-block: 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
   padding: 0 10px;
   overflow-y: auto;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
@@ -2066,7 +2066,7 @@ body.is-org-dragging * {
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  margin-block: 20px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  margin-block: 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
   padding: 0 12px;
   overflow-y: auto;
   user-select: none;
