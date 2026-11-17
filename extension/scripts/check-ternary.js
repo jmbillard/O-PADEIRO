@@ -46,6 +46,7 @@ const targets = files(path.join(ROOT, 'host'))
 	.concat(fs.readdirSync(path.join(ROOT, 'scripts')).filter((n) => /\.jsx$/.test(n)).map((n) => path.join(ROOT, 'scripts', n)))
 	.concat(fs.readdirSync(path.join(ROOT, '..')).filter((n) => /\.jsx$/.test(n)).map((n) => path.join(ROOT, '..', n)));
 const found = [];
+const es3 = [];
 
 targets.forEach(function (file) {
 	const text = fs.readFileSync(file, 'utf8');
@@ -61,6 +62,25 @@ targets.forEach(function (file) {
 				}
 			});
 		}
+		// de passagem: sintaxe que o ExtendScript (ES3) não lê. o arquivo inteiro deixa de carregar, com um erro pouco claro
+		const K = ts.SyntaxKind;
+		const flags = node.kind === K.VariableDeclarationList ? node.flags & (ts.NodeFlags.Let | ts.NodeFlags.Const) : 0;
+		const modern = flags ? 'let / const'
+			: node.kind === K.ArrowFunction ? 'arrow function'
+			: node.kind === K.TemplateExpression || node.kind === K.NoSubstitutionTemplateLiteral ? 'template string'
+			: node.kind === K.ForOfStatement ? 'for…of'
+			: node.kind === K.SpreadElement || node.kind === K.SpreadAssignment ? 'spread (...)'
+			: node.kind === K.ShorthandPropertyAssignment ? 'propriedade abreviada ({ a })'
+			: node.kind === K.Parameter && node.initializer ? 'parâmetro com valor padrão'
+			: node.kind === K.ClassDeclaration ? 'class'
+			: node.kind === K.ObjectBindingPattern || node.kind === K.ArrayBindingPattern ? 'desestruturação'
+			: '';
+
+		if (modern) {
+			const pos = src.getLineAndCharacterOfPosition(node.getStart());
+
+			es3.push(path.relative(path.join(ROOT, '..'), file) + ':' + (pos.line + 1) + '  ' + modern);
+		}
 		ts.forEachChild(node, walk);
 	})(src);
 });
@@ -71,4 +91,10 @@ if (found.length) {
 	process.exit(1);
 }
 
-console.log('nenhum ternário encadeado no host (' + targets.length + ' arquivos).');
+if (es3.length) {
+	console.log('sintaxe que o ExtendScript (ES3) não lê:\n');
+	es3.forEach((f) => console.log('  ' + f));
+	process.exit(1);
+}
+
+console.log('nenhum ternário encadeado nem sintaxe fora do ES3 no host (' + targets.length + ' arquivos).');
