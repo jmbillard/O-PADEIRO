@@ -260,7 +260,10 @@ function padMachineLists(d) {
 
 		if (isNaN(n)) return def;
 
-		return n < 0 ? 0 : n > max ? max : n;
+		// sem ternário encadeado (o ExtendScript agrupa errado)
+		if (n < 0) return 0;
+
+		return n > max ? max : n;
 	}
 
 	return { recents: num(o.recents, 5, 30), newDays: num(o.newDays, 15, 90) };
@@ -1999,7 +2002,11 @@ PADX.installFonts = function () {
 	var settings = padReadCollect();
 	var file = app.project.file;
 	var folders = [];
-	var root = m.pasta ? padMountedPath(padPath(m.pasta)) : file ? padCollectRoot(file, settings) : '';
+	// sem ternário encadeado (o ExtendScript agrupa errado: com a pasta gravada, caía na conta pelo arquivo)
+	var root = '';
+
+	if (m.pasta) root = padMountedPath(padPath(m.pasta));
+	else if (file) root = padCollectRoot(file, settings);
 	var sub = padCollectFolderPath(settings, 'fontes');
 	var list = padTemplatesList(m.templates);
 

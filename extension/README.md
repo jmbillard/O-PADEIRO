@@ -225,7 +225,7 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 
 > 🚩 *obs:*\
 > • `host/lib/JSON lib.js` usa codificação UTF-16 LE e os `.jsx` do host usam UTF-8 com BOM: mantenha essas codificações ao editar.\
-> • o ExtendScript é ES3: nada de `let`, `const`, *arrow functions* ou métodos novos de array e string. ele também avalia ternários encadeados (`a ? b : c ? d : e`) de outro jeito: use parênteses ou `if` / `else`.\
+> • o ExtendScript é ES3: nada de `let`, `const`, *arrow functions* ou métodos novos de array e string. ele também avalia ternários encadeados (`a ? b : c ? d : e`) de outro jeito: use parênteses ou `if` / `else` (`node extension/scripts/check-ternary.js` confere o host inteiro).\
 > • o client roda no Chromium do CEP 11 (Chrome 88): `async` / `await` funcionam, mas evite recursos mais novos que isso.
 
 <br>

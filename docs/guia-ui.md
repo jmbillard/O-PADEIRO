@@ -199,4 +199,4 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - [ ] **a barra nos dois sentidos**, com 86 px (horizontal e vertical): as telas `barra: horizontal 86 px` e `barra: vertical 86 px` das checagens;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
-- [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
+- [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado: `node extension/scripts/check-ternary.js` acha os que escaparem).

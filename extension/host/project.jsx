@@ -1011,7 +1011,12 @@ PADX.projectStatus = function () {
 		why = !file ? 'o projeto ainda não foi salvo' : fileName + ' não tem a atração nos dados do padeiro' + (meta.versao ? '' : ' (nenhum dado do padeiro no arquivo)');
 	}
 	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
-	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
+	// if/else em vez de ternário encadeado: o ExtendScript agrupa 'a ? b : c ? d : e' como '(a ? b : c) ? d : e', e
+	// o projeto com a atração caía sempre em 'missing' (a barra dizia "ainda sem atração" num projeto já criado)
+	var state = '';
+
+	if (hasData) state = padInRoot(file) ? 'ok' : 'out';
+	else if (file || app.project.numItems > 0) state = 'missing';
 
 	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
 };

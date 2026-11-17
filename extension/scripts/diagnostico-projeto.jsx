@@ -48,7 +48,7 @@ da barra pergunta), num campo de texto para copiar. Não muda nada no projeto.
 
 		while ((m = re.exec(sig)) != null) if (+m[1] > last) last = +m[1];
 
-		return sig ? sig.split(';').length - 1 + ' arquivos, o mais novo de ' + new Date(last) : '(nenhuma)';
+		return sig ? sig.split(';').length - 1 + ' arquivos, o mais novo de ' + String(new Date(last)) : '(nenhuma)';
 	});
 	line('projectStatus (o que a barra recebe)', function () {
 		return json(PADX.projectStatus());
