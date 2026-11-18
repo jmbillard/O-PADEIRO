@@ -173,7 +173,7 @@ body.finder-page {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  margin: 4px -14px 0;
+  margin: 4px -16px 0; /* até as bordas da janela (o respiro da .finder), sem sobra do degradê nas laterais */
   background: var(--surface);
   transition: background-color 240ms ease;
 }
@@ -182,7 +182,7 @@ body.finder-page {
   display: block;
   min-height: 0;
   flex: 1;
-  padding: 6px 20px 16px;
+  padding: 6px 22px 16px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--border-strong) transparent;
@@ -564,37 +564,13 @@ body.finder-page {
   padding: 26px 18px;
 }
 
-/* sem busca: sem a folha branca. loader e avisos ficam sobre o degradê; a dica de busca vazia some */
-.finder-pane.is-idle .finder-sheet {
-  background: transparent;
-}
-
+/* sem busca: a folha branca continua (um pouco dela, para o loader e os avisos); a dica de busca vazia some */
 .finder-pane.is-idle .finder-state.is-hint {
   display: none;
 }
 
 .finder-pane.is-idle .finder-results {
   overflow: hidden;
-}
-
-.finder-pane.is-idle .finder-state {
-  padding-top: 8px;
-  color: rgb(var(--on-brand) / 88%);
-}
-
-.finder-pane.is-idle .finder-state strong {
-  color: rgb(var(--on-brand));
-}
-
-.finder-pane.is-idle .oven-loader.is-light {
-  --oven-line: rgb(var(--on-brand) / 88%);
-  --oven-fill: rgb(var(--on-brand) / 14%);
-  --oven-belt: rgb(var(--on-brand) / 40%);
-  --oven-steam: rgb(var(--on-brand) / 70%);
-  --oven-text: white;
-  --oven-hint: rgb(var(--on-brand) / 72%);
-
-  padding-top: 2px;
 }
 
 /* =========================================================

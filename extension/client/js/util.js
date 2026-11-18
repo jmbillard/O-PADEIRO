@@ -193,11 +193,12 @@
 		// dias de calendário até hoje (meia-noite a meia-noite: a mudança de horário de verão não atrapalha)
 		var days = Math.round((day - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
 
-		if (days <= 0) return 'hoje ' + time;
-		if (days === 1) return 'ontem ' + time;
-		if (days <= 6) return WEEKDAYS[d.getDay()] + ' ' + time;
+		// como nos dados do projeto: tudo em maiúsculas, a hora antes do dia
+		if (days <= 0) return time + ' HOJE';
+		if (days === 1) return time + ' ONTEM';
+		if (days <= 6) return time + ' ' + WEEKDAYS[d.getDay()].toUpperCase();
 
-		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
+		return time + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
 
 	// Os ícones da biblioteca (o seletor de ícones das categorias e das produções): um arquivo por ícone na pasta

@@ -1479,7 +1479,7 @@ projetos com o nome certo).
 		}
 	}
 
-	// hoje 14:32 · ontem 09:10 · 28/10 · 28/10/2025
+	// 14:32 HOJE · 09:10 ONTEM · 28/10 · 28/10/2025 (como nos dados do projeto: maiúsculas, a hora antes)
 	function when(ms) {
 		if (!ms) return '';
 
@@ -1491,8 +1491,8 @@ projetos com o nome certo).
 		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
 		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-		if (ms >= day) return 'hoje ' + time;
-		if (ms >= day - 86400000) return 'ontem ' + time;
+		if (ms >= day) return time + ' HOJE';
+		if (ms >= day - 86400000) return time + ' ONTEM';
 
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
@@ -1815,7 +1815,7 @@ projetos com o nome certo).
 		return d[3] + '/' + d[2] + (+d[1] === now.getFullYear() ? '' : '/' + d[1]);
 	}
 
-	// um salvamento com a hora: HOJE 14:32, ONTEM 09:10 ou a data e a hora
+	// um salvamento com a hora (antes do dia): 14:32 HOJE, 09:10 ONTEM ou a hora e a data
 	function pdFriendlyStamp(ms) {
 		var d = new Date(ms);
 		var pad = function (n) {
@@ -1823,7 +1823,7 @@ projetos com o nome certo).
 		};
 		var day = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 
-		return pdFriendlyDay(day) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+		return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' ' + pdFriendlyDay(day);
 	}
 
 	function pdStamp(ms) {
@@ -1932,7 +1932,7 @@ projetos com o nome certo).
 				var when2 = el('small');
 				// a hora, à esquerda, nos de hoje: a do último vem da data do arquivo; a dos outros ficou gravada quando
 				// outra pessoa salvou depois deles
-				var hour = friendly !== 'HOJE' ? '' : !i && cur.modified && pdFriendlyStamp(cur.modified).indexOf('HOJE ') === 0 ? pdFriendlyStamp(cur.modified).slice(5) : e.time;
+				var hour = friendly !== 'HOJE' ? '' : !i && cur.modified && / HOJE$/.test(pdFriendlyStamp(cur.modified)) ? pdFriendlyStamp(cur.modified).slice(0, 5) : e.time;
 
 				if (hour) when2.appendChild(el('b', null, hour));
 				when2.appendChild(document.createTextNode(friendly));
