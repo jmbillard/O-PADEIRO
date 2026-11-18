@@ -951,9 +951,13 @@ body.prods-page {
   min-height: 0;
   flex: 1;
   user-select: none; /* arrastar não seleciona o texto (o nome continua editável) */
-  margin-block: 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
-  padding: 0 10px;
+  margin-block: 14px 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  padding: 10px 10px 12px;
   overflow-y: auto;
+  /* nas pontas, o conteúdo some num degradê em vez de um corte seco; o respiro de dentro deixa o primeiro e o
+     último item inteiros quando a rolagem está no começo ou no fim */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;
 }
@@ -1529,6 +1533,15 @@ body.is-org-dragging * {
   z-index: 2;
 }
 
+/* a amostra da cor que está sendo editada cresce, a outra encolhe (as duas animam ao trocar) */
+.swatch-dot:not(.is-active) {
+  transform: scale(0.8);
+}
+
+.swatch-dot.is-active {
+  transform: scale(1.12);
+}
+
 /* arrastando: a amostra acompanha o mouse */
 .swatch-tile.is-dragging,
 .swatch-tile.is-dragging .swatch-dot {
@@ -1537,11 +1550,15 @@ body.is-org-dragging * {
 
 .swatch-dot.is-dragging {
   z-index: 3;
-  transform: scale(1.12);
+  transform: scale(1.2);
 }
 
-.swatch-dot:hover {
-  transform: scale(1.12);
+.swatch-dot.is-active:hover {
+  transform: scale(1.2);
+}
+
+.swatch-dot:not(.is-active):hover {
+  transform: scale(0.92);
 }
 
 /* sólido: a segunda cor some do quadradinho; a linha dela fica, desabilitada */
@@ -1714,6 +1731,7 @@ body.is-org-dragging * {
 .app-preview {
   display: grid;
   overflow: hidden;
+  flex: 0 0 auto; /* o exemplo fica no tamanho dele: com a janela baixa, a aba rola (não espreme as linhas) */
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
   margin-top: 4px;
   border: 1px solid var(--border);
@@ -1739,7 +1757,7 @@ body.is-org-dragging * {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 12px 12px 16px;
+  padding: 12px 12px 13px; /* embaixo, como o lado claro: os rodapés dos dois lados na mesma altura */
   background: linear-gradient(145deg, var(--blue-400), var(--blue-mid, var(--blue-500)) 45%, var(--blue-600));
   color: rgb(var(--on-brand));
 }
@@ -1792,6 +1810,9 @@ body.is-org-dragging * {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* o primeiro botão (raio 12) concêntrico com o canto da moldura (28 − 1 de borda = 27): 15 da borda de baixo
+     (13 de respiro + 2 da linha, que é 4 mais alta que o botão) e 15 da esquerda (12 de respiro + 3) */
+  margin-left: 3px;
 }
 
 .pv-round {
@@ -2066,9 +2087,13 @@ body.is-org-dragging * {
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  margin-block: 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
-  padding: 0 12px;
+  margin-block: 14px 24px; /* a rolagem (e a barra dela) termina antes das quinas curvas do cartão */
+  padding: 10px 12px 12px;
   overflow-y: auto;
+  /* nas pontas, o conteúdo some num degradê em vez de um corte seco; o respiro de dentro deixa o primeiro e o
+     último item inteiros quando a rolagem está no começo ou no fim */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
   user-select: none;
   scrollbar-color: rgb(var(--on-brand) / 40%) transparent;
   scrollbar-width: thin;

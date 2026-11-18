@@ -609,7 +609,7 @@ body.bar-page {
 /* todos os botões com um tamanho só: a largura do maior nome de gaveta (--drawer-w, medida pelo bar.js). o nome
    que não couber ganha reticências */
 .has-drawer-w .bar-btn:not(.is-folded) {
-  /* deitada, 10 a menos que em pé (84 e 94 com os nomes de hoje): a barra não fica comprida demais */
+  /* a largura do maior nome de gaveta, sem a folga (84 com os nomes de hoje): deitada e em pé */
   --btn-w: calc(var(--drawer-w) - 10px);
 
   width: var(--btn-w);
@@ -617,11 +617,6 @@ body.bar-page {
   box-sizing: border-box;
 }
 
-@media (max-aspect-ratio: 1/1) {
-  .has-drawer-w .bar-btn:not(.is-folded) {
-    --btn-w: var(--drawer-w);
-  }
-}
 
 .has-drawer-w .bar-btn .bar-label {
   overflow: hidden;
