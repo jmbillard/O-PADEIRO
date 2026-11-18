@@ -1218,7 +1218,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
 		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
-		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! salvo fora da pasta dele: clique e Salvar leva o .aep de volta' : '');
+		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! ' + (projectWhy ? projectWhy + ': clique para ver os dados e salvar' : 'salvo fora da pasta dele: clique e Salvar leva o .aep de volta') : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
 		else btn.removeAttribute('data-project');

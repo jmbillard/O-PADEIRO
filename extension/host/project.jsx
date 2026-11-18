@@ -1032,7 +1032,8 @@ PADX.projectStatus = function () {
 	} catch (err2) { }
 
 	var meta = padMetaRead();
-	var hasData = !!(file && meta.atracao);
+	// os dados valem mesmo sem arquivo: o projeto antigo que o After converte ao abrir fica "(converted)", sem salvar
+	var hasData = !!meta.atracao;
 	// why: por que a bolinha está laranja, para a dica da barra (e para achar o que houve quando ela erra)
 	var why = '';
 
@@ -1049,7 +1050,11 @@ PADX.projectStatus = function () {
 	// o projeto com a atração caía sempre em 'missing' (a barra dizia "ainda sem atração" num projeto já criado)
 	var state = '';
 
-	if (hasData) state = padInRoot(file) ? 'ok' : 'out';
+	if (hasData) {
+		if (file && padInRoot(file)) state = 'ok';
+		else state = 'out';
+		if (!file) why = 'convertido de uma versão antiga do After e ainda não salvo';
+	}
 	else if (file || app.project.numItems > 0) state = 'missing';
 
 	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
@@ -1075,7 +1080,8 @@ PADX.projectCurrent = function () {
 
 	return {
 		created: inRoot,
-		outside: !!(file && m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
+		outside: !!(m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
+		unsaved: !file && !!m.atracao, // com os dados, mas sem arquivo: o After converteu o projeto antigo ao abrir
 		atracao: m.atracao,
 		quadro: m.quadro,
 		oQueE: m.oQueE,
@@ -1122,7 +1128,7 @@ PADX.projectSave = function (a) {
 	var same = !!file && padSamePath(file.fsName, dest.fsName);
 
 	padCheckWritable(projects);
-	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + '.');
+	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + (file ? '.' : ' (o original, da versão antiga do After): mude o "o que é" para salvar o convertido ao lado dele.'));
 
 	var packet = app.project.xmpPacket;
 

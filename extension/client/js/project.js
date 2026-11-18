@@ -1722,14 +1722,17 @@ projetos com o nome certo).
 	// atração + o que é. um projeto salvo sem os dados do padeiro (adopt) entra direto aqui: a busca roda sozinha
 	// com o nome do arquivo e a primeira atração achada já vem marcada (o resto do nome vai para o o que é).
 	function renderEditor(cur, adopt) {
-		var key = (adopt ? 'a|' : 'c|') + cur.file;
+		var key = (adopt ? 'a|' : 'c|') + (cur.file || (cur.unsaved ? 'convertido|' + cur.atracao : ''));
 
 		state.adopt = !!adopt;
 		$('ed-hint').hidden = !adopt;
 		// com os dados, mas salvo fora da pasta dele (ex: "salvar como" na Área de Trabalho): Salvar leva o .aep de volta
-		$('ed-hint').textContent = cur.outside
-			? 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.'
-			: 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
+		// convertido: o After abriu um projeto antigo e converteu, sem salvar; os dados do padeiro vieram junto
+		var hint = 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
+
+		if (cur.unsaved) hint = 'projeto convertido de uma versão antiga do After, ainda não salvo: estes são os dados que ele já tinha. Salvar grava o .aep na pasta abaixo.';
+		else if (cur.outside) hint = 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.';
+		$('ed-hint').textContent = hint;
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
 		edEditors(cur);
 
@@ -1870,7 +1873,7 @@ projetos com o nome certo).
 		var has = !!cur.atracao;
 		var head = el('div', 'pd-head');
 		var name = el('div');
-		var state2 = el('span', 'pd-state' + (cur.created ? '' : ' is-warn'), cur.created ? 'NA PASTA DELE' : cur.outside ? 'FORA DA PASTA' : 'SEM OS DADOS');
+		var state2 = el('span', 'pd-state' + (cur.created ? '' : ' is-warn'), cur.created ? 'NA PASTA DELE' : cur.unsaved ? 'NÃO SALVO' : cur.outside ? 'FORA DA PASTA' : 'SEM OS DADOS');
 		var folder = String(cur.file || '').replace(/[\\\/][^\\\/]*$/, '');
 
 		body.textContent = '';
@@ -2340,7 +2343,7 @@ projetos com o nome certo).
 			return;
 		}
 
-		var key = cur.created ? 'c|' + cur.file : 'n|' + cur.file;
+		var key = cur.created ? 'c|' + cur.file : (cur.unsaved ? 'u|' + cur.atracao : 'n|' + cur.file);
 		var changed = !state.current || state.currentKey !== key;
 
 		state.current = cur;
@@ -2360,7 +2363,7 @@ projetos com o nome certo).
 		if (cur.created) {
 			if (state.screen !== 'editor') show('editor');
 			renderEditor(cur);
-		} else if (cur.file && (changed || !state.screen || state.screen === 'editor')) {
+		} else if ((cur.file || cur.unsaved) && (changed || !state.screen || state.screen === 'editor')) {
 			// salvo, mas sem os dados do padeiro (ou fora da pasta dele): pula as etapas (a atração é o nome do
 			// arquivo, a pasta é a dele)
 			if (state.screen !== 'editor') show('editor');

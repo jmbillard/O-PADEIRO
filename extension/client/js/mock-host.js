@@ -1162,6 +1162,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		projectStatus: function () {
 			if (window.PAD_MOCK_CUR || mode === 'created') return { state: 'ok' };
 
+			if (mode === 'converted') return { state: 'out', why: 'convertido de uma versão antiga do After e ainda não salvo' };
+
 			return { state: mode === 'saved' || mode === 'items' || mode === 'outside' ? 'missing' : '' };
 		},
 
@@ -1170,6 +1172,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			// ?mock=outside: com os dados do padeiro, mas salvo na Área de Trabalho
 			if (!c && mode === 'outside') return { created: false, outside: true, oQueE: 'CONVIDADOS', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: 'Domingão com Huck', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026', file: '/Users/jmbillard/Desktop/teste.aep', fileName: 'teste.aep', hasItems: true, user: 'JMBILLARD' };
+			// ?mock=converted: projeto antigo que o After converteu ao abrir (sem arquivo), com os dados do padeiro
+			if (!c && mode === 'converted') return { created: false, outside: true, unsaved: true, oQueE: 'PACOTE GRAFICO', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: 'Premio Multishow', criado: '2024-10-02', editores: [{ user: 'JMBILLARD', day: '2024-10-02' }], salvo: { user: 'JMBILLARD', day: '2024-10-02' }, output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PREMIO MULTISHOW', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/PREMIO MULTISHOW', file: '', fileName: '', modified: 0, hasItems: true, user: 'JMBILLARD' };
 			if (!c && mode === 'saved' && window.PAD_MOCK_SAVED === undefined) window.PAD_MOCK_SAVED = '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA/01 PROJETOS/A CLINICA TESTE.aep';
 			if (!c && window.PAD_MOCK_SAVED) return { created: false, oQueE: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', output: '', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/A CLINICA', file: window.PAD_MOCK_SAVED, fileName: 'A CLINICA TESTE.aep', hasItems: true, user: 'JMBILLARD' };
 			if (!c) return { created: false, oQueE: '', designer: 'JMBILLARD', defaultUser: 'JMBILLARD', atracao: '', root: '', file: '', fileName: '', hasItems: true, user: 'JMBILLARD' };
