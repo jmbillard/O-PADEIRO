@@ -114,7 +114,7 @@ abrir outro projeto troca os dados da janela.
 o botão **criar / alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
 
 - 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro, dentro da pasta dele.
-- 🟠 **laranja** → falta algo, e a dica do botão diz o quê: **ainda sem atração** (o projeto não foi criado pela janela: clique para criar) ou **salvo fora da pasta dele** (ex: um "salvar como" na Área de Trabalho: o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta). um **projeto antigo convertido** (o After abre, converte e deixa "(converted)", sem salvar) também fica laranja, mas com o botão **Alterar**: a janela mostra os dados que ele já tinha, antes mesmo de salvar; ao salvar, se o original ainda estiver na pasta com o mesmo nome, mude o "o que é" para gravar o convertido ao lado dele.
+- 🟠 **laranja** → falta algo, e a dica do botão diz o quê: **ainda sem atração** (o projeto não foi criado pela janela: clique para iniciar) ou **salvo fora da pasta dele** (ex: um "salvar como" na Área de Trabalho: o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta). um **projeto antigo convertido** (o After abre, converte e deixa "(converted)", sem salvar) também fica laranja, mas com o botão **Alterar**: a janela mostra os dados que ele já tinha, antes mesmo de salvar; ao salvar, se o original ainda estiver na pasta com o mesmo nome, mude o "o que é" para gravar o convertido ao lado dele.
 - sem bolinha → projeto vazio (sem arquivo e sem itens).
 
 ## 📍 coletar os arquivos

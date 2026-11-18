@@ -309,7 +309,7 @@ a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro
 
 a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
-- **ordem padrão** → links | Templates | Projeto (Criar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar), Importar | Pastas, Buscar (`|` é um separador).
+- **ordem padrão** → links | Templates | Projeto (Iniciar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar), Importar | Pastas, Buscar (`|` é um separador).
 - **gavetas** → cada gaveta é um bloco com contorno, com o nome e quantas ferramentas mostra (`3`, ou `3 de 4` com alguma escondida). os pontinhos do título movem a gaveta inteira pela barra; os de uma ferramenta de dentro mudam a ordem **só dentro da gaveta** (uma ferramenta não sai da gaveta dela). a primeira de dentro é a do `◗` no botão da gaveta.
 - **ordem** → arraste as gavetas, as ferramentas soltas e os separadores pelos pontinhos.
 - **esconder** → o **×** (passe o mouse para ver) esconde uma ferramenta, a gaveta inteira (o × do título) ou os links (no topo). uma gaveta com uma ferramenta só à mostra aparece solta na barra; com nenhuma, some.

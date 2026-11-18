@@ -2232,7 +2232,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TOOL_INFO = {
 		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
 		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
-		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
+		projeto: ['Iniciar / Alterar', 'A CLAQUETE: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
