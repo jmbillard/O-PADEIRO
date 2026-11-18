@@ -210,7 +210,7 @@ function padChildFolder(parent, name, isProjects) {
 	}
 
 	// nenhuma com o mesmo nome: a que é a mesma de longe (outro número na frente, sem o plural), numa estrutura
-	// antiga. só quando há uma única candidata: com duas (ex: 02 ARQUIVOS e 05 ARQUIVO), não dá para saber qual é
+	// antiga. com duas ou mais candidatas (ex: 02 ARQUIVOS e 05 ARQUIVO), vale a primeira na ordem alfabética
 	var loose = padFolderLoose(name);
 	var alike = [];
 
@@ -219,7 +219,19 @@ function padChildFolder(parent, name, isProjects) {
 		if (items[k] instanceof Folder || new Folder(items[k].fsName).exists) alike.push(items[k]);
 	}
 
-	if (alike.length == 1) return new Folder(alike[0].fsName);
+	if (alike.length) {
+		alike.sort(function (x, y) {
+			var nx = decodeURI(x.name).toUpperCase();
+			var ny = decodeURI(y.name).toUpperCase();
+
+			if (nx < ny) return -1;
+			if (nx > ny) return 1;
+
+			return 0;
+		});
+
+		return new Folder(alike[0].fsName);
+	}
 
 	// a lista não achou: as grafias comuns da pasta de projetos, direto pelo caminho
 	if (isProjects) {
