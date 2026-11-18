@@ -2240,7 +2240,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
 		arquivos: ['Arquivos', 'O ARQUIVISTA: renomear os arquivos e as pastas de uma pasta', 'files'],
-		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
+		importar: ['Importar AEP', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search'],
 		'logo-globo': ['Logo Globo', 'logo animado · logo parado', 'logo-globo']

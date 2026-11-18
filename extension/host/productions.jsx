@@ -728,8 +728,8 @@ PADX.savePersonalLinks = function (a) {
 // as gavetas e as de dentro (a ordem padrão de dentro) e as soltas; a mesma regra do painel (js/util.js: barLayout)
 var PAD_BAR_GROUPS = { templates: ['preencher', 'duplicar', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar', 'arquivos'] };
 var PAD_BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
-var PAD_BAR_TOOLS = ['preencher', 'duplicar', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'arquivos', 'importar', 'pastas', 'buscar', 'logo-globo'];
-var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
+var PAD_BAR_TOOLS = ['preencher', 'duplicar', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'arquivos', 'pastas', 'buscar', 'importar', 'logo-globo'];
+var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'];
 
 function padBarGroupOf(key) {
 	for (var g in PAD_BAR_GROUPS) {

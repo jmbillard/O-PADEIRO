@@ -478,7 +478,7 @@
 	   --------------------------------------------------------------- */
 	var BAR_GROUPS = { templates: ['preencher', 'duplicar', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar', 'arquivos'] };
 	var BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
-	var BAR_DEFAULT = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
+	var BAR_DEFAULT = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'];
 
 	function barGroupOf(key) {
 		for (var g in BAR_GROUPS) {

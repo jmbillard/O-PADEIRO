@@ -557,7 +557,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'importar',
-			label: 'Importar',
+			label: 'Importar AEP',
 			icon: 'import',
 			name: 'O VERSIONADOR',
 			tips: [L_CLICK + 'importar um projeto do After de qualquer versão', R_CLICK + 'salvar o projeto em versões mais velhas do After'],
