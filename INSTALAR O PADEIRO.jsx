@@ -410,7 +410,9 @@ Instalar / atualizar:
 
 	// 3 · andamento e conclusão
 	var p3 = page();
-	var resultText = text(p3, '', 92);
+	// alto o bastante para o texto mais comprido (a nota do macOS, quebrada em linhas, e as notas da instalação): com a
+	// altura justa, o ScriptUI corta a linha em vez de quebrar
+	var resultText = text(p3, '', 230);
 
 	var progressLab = win.add('statictext', undefined, '');
 	var progressBar = win.add('progressbar', undefined, 0, 100);
