@@ -402,3 +402,10 @@
     animation: none;
   }
 }
+
+/* o voltar é o da fila de render (a seta curva), mas aqui não desfaz nada: sem o vermelho no hover */
+#lt-back.rq-undo:hover:not(:disabled) {
+  border-color: var(--blue-200);
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
