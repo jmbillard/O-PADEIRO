@@ -766,8 +766,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		evenDrawers();
 	}
 
-	// os botões das gavetas com um tamanho só: a largura do maior nome (Organização), para Templates e Projeto não
-	// ficarem cada um de um tamanho. a conta é pelo nome, que tem a largura dele mesmo com o botão recolhido; sem
+	// todos os botões com um tamanho só: a largura do maior nome de gaveta (Organização), para as gavetas e as
+	// ferramentas não ficarem cada uma de um tamanho (o nome que não couber ganha reticências). a conta é pelo nome, que tem a largura dele mesmo com o botão recolhido; sem
 	// os nomes à vista (a barra em pé, estreita), nada muda
 	function evenDrawers() {
 		var bar = document.querySelector('.bar');
@@ -783,11 +783,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (label && label.scrollWidth > widest) widest = label.scrollWidth;
 		});
 
-		if (!widest || btns.length < 2 || !plain) {
-			bar.classList.remove('has-drawer-w');
+		// a largura mínima de um botão é lida sem o tamanho padrão aplicado (senão a conta se alimenta dela mesma)
+		bar.classList.remove('has-drawer-w');
 
-			return;
-		}
+		if (!widest || btns.length < 2 || !plain) return;
 
 		var cs = getComputedStyle(plain);
 		// + 12: um respiro a mais de cada lado, para o nome mais comprido não encostar no contorno

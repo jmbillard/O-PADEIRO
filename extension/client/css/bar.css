@@ -606,9 +606,31 @@ body.bar-page {
   box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 55%);
 }
 
-/* as gavetas com um tamanho só: a largura do maior nome (--drawer-w, medida pelo bar.js) */
-.has-drawer-w .bar-drawer-btn:not(.is-folded) {
-  min-width: var(--drawer-w);
+/* todos os botões com um tamanho só: a largura do maior nome de gaveta (--drawer-w, medida pelo bar.js). o nome
+   que não couber ganha reticências */
+.has-drawer-w .bar-btn:not(.is-folded) {
+  /* deitada, 10 a menos que em pé (84 e 94 com os nomes de hoje): a barra não fica comprida demais */
+  --btn-w: calc(var(--drawer-w) - 10px);
+
+  width: var(--btn-w);
+  min-width: var(--btn-w);
+  box-sizing: border-box;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .has-drawer-w .bar-btn:not(.is-folded) {
+    --btn-w: var(--drawer-w);
+  }
+}
+
+.has-drawer-w .bar-btn .bar-label {
+  overflow: hidden;
+  /* o nome pode entrar 6 de cada lado no respiro do botão antes de ganhar reticências (Importar AEP, deitada) */
+  max-width: calc(100% + 12px);
+  margin-inline: -6px;
+  padding-block: 1px; /* a linha é justa (line-height 1): sem isto o corte come os acentos e as pernas das letras */
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bar-drawer-btn.is-folded {
