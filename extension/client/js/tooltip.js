@@ -176,9 +176,15 @@ empilhada. Os avisos ficam em laranja: '!# Título:' abre um grupo e cada '! lin
 			return;
 		}
 
-		t.style.top = BAR + 'px';
-		t.style.height = vh - BAR * 2 + 'px';
+		// a altura da barra quando ela é baixa (a dica ocupa a faixa inteira); numa janela alta, só a do conteúdo (no
+		// mínimo a do botão), centralizada no botão
 		t.style.maxWidth = vw - BAR * 2 + 'px';
+
+		var full = vh - BAR * 2;
+		var tall = full <= 160 ? full : Math.min(full, Math.max(t.offsetHeight, Math.round(box.height)));
+
+		t.style.height = tall + 'px';
+		t.style.top = Math.round(Math.min(Math.max(BAR, box.top + box.height / 2 - tall / 2), vh - BAR - tall)) + 'px';
 
 		// nunca por cima do botão: à direita se couber, senão à esquerda; sem lugar inteiro em nenhum dos dois,
 		// no lado com mais espaço, com os textos cortados (…)
