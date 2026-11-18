@@ -783,7 +783,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		}
 
 		var cs = getComputedStyle(plain);
-		var w = Math.max(Math.ceil(widest + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)), parseFloat(cs.minWidth) || 0);
+		// + 12: um respiro a mais de cada lado, para o nome mais comprido não encostar no contorno
+		var w = Math.max(Math.ceil(widest + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) + 12, parseFloat(cs.minWidth) || 0);
 
 		bar.style.setProperty('--drawer-w', w + 'px');
 		bar.classList.add('has-drawer-w');
