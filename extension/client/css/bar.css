@@ -325,6 +325,12 @@ body.bar-page {
 
 /* trabalhando (O CATADOR, O TIPÓGRAFO): o nome vira a contagem, menor; uma linha fina enche embaixo; o ícone
    repete a animação do hover. no fim, um brilho verde */
+/* apagado: a ferramenta não tem o que fazer agora (o coletar sem projeto salvo); a dica diz o motivo */
+.bar-btn.is-off {
+  opacity: 0.38;
+  cursor: default;
+}
+
 .bar-btn.is-running {
   position: relative;
   animation: none;

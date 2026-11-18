@@ -425,13 +425,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes');
 
-			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 			setTimeout(function () {
 				watchCollect(true);
 			}, 300);
 		},
 
-		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
+		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
 		openCollect: function () {
 			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
 		},
@@ -529,7 +529,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Coletar',
 			icon: 'collect',
 			name: 'O CATADOR',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto: coletar em outra pasta e resolver os que faltam'],
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto e resolver os que faltam'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -639,7 +639,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
-		if (!handler) return;
+		if (!handler || btn.classList.contains('is-off')) return; // apagado (ex: o coletar sem projeto salvo): nenhum clique
 		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão
 		if (btn.classList.contains('is-busy')) return;
 
@@ -1336,9 +1336,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!btn) return;
 		var tip = '';
 
-		if (res && res.state === 'out') tip = '!# Arquivos fora:\n' + kindLines(res);
+		// sem o .aep salvo e sem a pasta do projeto nos dados não há para onde coletar: o botão fica apagado
+		var off = !!res && res.ready === false;
+
+		btn.classList.toggle('is-off', off);
+		btn.setAttribute('aria-disabled', off ? 'true' : 'false');
+		if (off) tip = '!# Coletar:\n! inicie ou salve o projeto: os arquivos vão para a pasta dele';
+		else if (res && res.state === 'out') tip = '!# Arquivos fora:\n' + kindLines(res);
 		setTip(btn, tip);
-		setDot(btn, res && res.state);
+		setDot(btn, off ? '' : res && res.state);
 		paintGroupDots();
 	}
 

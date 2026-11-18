@@ -2234,7 +2234,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
 		projeto: ['Iniciar / Alterar', 'A CLAQUETE: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
-		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],

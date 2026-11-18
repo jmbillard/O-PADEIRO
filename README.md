@@ -21,7 +21,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta | |
 | <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Iniciar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Iniciar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
-| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
+| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos e os que faltam |
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
@@ -40,7 +40,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | ✨ [A FORMA · criar](docs/criador.md) | **A FORMA · criar** | o criador de templates: transformar a comp aberta em um novo template |
 | 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura, salva o `.aep` e guarda quem criou e quem salvou |
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
-| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
+| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
 | 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
 | 🗂️ [O ARQUIVISTA](#arquivos) | **O ARQUIVISTA** | renomear os arquivos e as pastas de um diretório com a regra do renomear das comps |
@@ -243,12 +243,13 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | :---: | --- | --- |
 | ❶ | **o projeto** | o `.aep` e quantos arquivos ele usa. |
 | ❷ | **o filtro** | quantos arquivos em cada situação: **faltando**, **locais** (neste computador), **na rede** e **no lugar**. cada etiqueta liga e desliga a situação na lista. a janela abre mostrando só o que precisa de atenção (o que está no lugar fica escondido). **o filtro vale para as ações**: o Coletar só copia, e a busca só procura, o que está aparecendo. |
-| ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❼ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
+| ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❻ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
 | ❹ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
 | ❺ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. (**✓**: já está na pasta do projeto; **–** cinza: tipo fora da árvore do coletar. os dois ficam em **no lugar**.) |
-| ❻ | **outra pasta** | coleta numa pasta escolhida. |
-| ❼ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
-| ❽ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
+| ❻ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
+| ❼ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
+
+- **sem para onde coletar** → o botão **Coletar** da barra fica **apagado** (sem nenhum dos cliques) enquanto o projeto não tem o `.aep` salvo nem a pasta do projeto nos dados do padeiro; a dica diz o motivo. com a pasta nos dados (ex: um projeto antigo convertido, ainda sem salvar), os arquivos vão para ela. para coletar em **outro lugar**, use o *Collect Files* do After Effects.
 
 a lista é dividida em **faltando**, **para coletar** e **na pasta do projeto**. cada linha tem a miniatura, o nome, o tipo (com o ícone na cor do tipo, a mesma da configuração) e as comps que usam o arquivo, e **de onde → para onde**: a pasta de hoje e a pasta da estrutura que vai recebê-lo.
 
@@ -395,7 +396,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 | [🔤 O TIPÓGRAFO](docs/fontes.md) | fontes: banco de fontes, o botão fontes e a janela de fontes do projeto |
 | [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração (tipos de projeto em chips, ano do projeto), estrutura de pastas, editor e os dados de quem criou e salvou |
 | [🗂️ O PRODUTOR](docs/producoes.md) | configuração: produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
-| [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto, outra pasta e os que faltam |
+| [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto e os que faltam |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 O ADAPTADOR](docs/conversor.md) | conversor: caminhos Windows / macOS |
 | [🧭 guia de UI](docs/guia-ui.md) | as regras para criar e mexer nas janelas: cores do tema, cantos, campos, ícones, animações, mensagens |

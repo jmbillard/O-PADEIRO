@@ -266,7 +266,7 @@ const SHOTS = {
 		await p.waitForTimeout(300);
 	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
 	catador: { w: 540, h: 760, url: 'collect.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
 	arquivista: { w: 720, h: 680, url: 'files.html', async run(p) {

@@ -50,7 +50,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 		'criar-template': { title: 'Criar template', l: ['A FORMA', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
 		projeto: { title: 'Iniciar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
-		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
+		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos e resolve os que faltam'] },
 		render: { title: 'Render', l: ['O FORNO', 'põe o render final das comps na fila, na pasta de output'], r: ['O FORNO', 'põe um preview na fila, na pasta de previews'] },
 		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
 		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },

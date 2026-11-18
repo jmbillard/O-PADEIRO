@@ -589,6 +589,26 @@ function padCollectItem(item, root, paths, res) {
 	}
 }
 
+// A pasta do projeto gravada nos dados do padeiro (padeiro:pasta), se ela existe; senão ''
+function padCollectMetaRoot() {
+	try {
+		var pasta = padMetaRead().pasta;
+
+		if (!pasta) return '';
+
+		var folder = new Folder(padMountedPath(padPath(pasta)));
+
+		return folder.exists ? folder.fsName : '';
+	} catch (err) {
+		return '';
+	}
+}
+
+// há para onde coletar: o .aep salvo ou a pasta do projeto nos dados (a barra apaga o botão sem isso)
+function padCollectReady() {
+	return !!app.project.file || padCollectMetaRoot() != '';
+}
+
 // A pasta onde coletar (a escolhida ou a raiz do projeto) e a configuração, já conferidas.
 function padCollectTarget(a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
@@ -600,8 +620,9 @@ function padCollectTarget(a) {
 	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
 	if (a && a.path) target = padPath(a.path);
 	else if (file) target = padCollectRoot(file, settings);
+	else target = padCollectMetaRoot(); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
 
-	if (!target) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
+	if (!target) throw new Error('#PAD_095 - inicie ou salve o projeto antes de coletar (os arquivos vão para a pasta dele).');
 
 	var hasType = false;
 
@@ -627,9 +648,22 @@ function padCollectFinish(target, settings, res) {
 	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
 	var sub = padCollectFolderPath(settings, 'projeto');
 
-	padEditorsNote();
-	if (file) app.project.save();
-	else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
+	// sem arquivo e já existe um .aep com esse nome na pasta (o original do projeto convertido): não salva por cima;
+	// os arquivos ficam coletados e o projeto continua sem salvar (a claquete salva com outro nome)
+	var saved = true;
+
+	if (file) {
+		padEditorsNote();
+		app.project.save();
+	} else {
+		var dest = new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep');
+
+		if (dest.exists) saved = false;
+		else {
+			padEditorsNote();
+			app.project.save(dest);
+		}
+	}
 
 	if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
 	if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
@@ -640,7 +674,7 @@ function padCollectFinish(target, settings, res) {
 		sequences: res.sequences,
 		frames: res.frames,
 		fonts: res.fonts != '',
-		saved: true
+		saved: saved
 	};
 }
 
@@ -817,11 +851,13 @@ PADX.collectStatus = function (a) {
 	var now = new Date().getTime();
 	var cache = PAD_COLLECT_STATUS;
 
-	if (!(a && a.force) && cache.res && cache.key == key) return cache.res;
+	if ((a && a.force) || !cache.res || cache.key != key) {
+		cache.res = padCollectStatusNow();
+		cache.key = key;
+		cache.at = now;
+	}
 
-	cache.res = padCollectStatusNow();
-	cache.key = key;
-	cache.at = now;
+	cache.res.ready = padCollectReady(); // conferido sempre (barato): o projeto sem arquivo pode ganhar a pasta nos dados
 
 	return cache.res;
 };
