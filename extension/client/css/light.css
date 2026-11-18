@@ -154,32 +154,54 @@
   cursor: default;
 }
 
-.lt-input {
+.lt-input-box {
+  display: flex;
   min-height: 84px;
   flex: 1 1 96px;
-  padding: 10px 12px;
+  padding: 8px 4px 8px 0; /* a rolagem do texto começa e termina antes das quinas curvas, com um respiro da borda */
   border: 1px solid var(--border);
   border-radius: var(--radius-medium, 14px);
+  background: var(--surface-soft);
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.lt-input-box:hover {
+  border-color: var(--border-hover);
+}
+
+.lt-input-box:focus-within {
+  border-color: var(--blue-500); /* como os outros campos de texto: o contorno azul, sem halo */
   background: var(--surface);
+}
+
+.lt-input {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  padding: 2px 8px 2px 12px;
+  border: 0;
+  background: transparent;
   color: var(--text-primary);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.5;
+  outline: none;
   resize: none;
-  transition: border-color 160ms ease;
 }
 
-.lt-input:hover:not(:disabled) {
-  border-color: var(--border-hover);
+.lt-input::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
 .lt-input:disabled {
   opacity: 0.55;
 }
 
-.lt-case:focus-visible,
-.lt-input:focus-visible {
+.lt-case:focus-visible {
   outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
   outline-offset: 1px;
 }
@@ -207,27 +229,19 @@
 /* a versão em chips: um por linha, na ordem dos layers; a linha que sobra (ignorada) vem riscada */
 .lt-chips {
   display: flex;
-  overflow: hidden;
   min-width: 0;
+  flex-wrap: wrap; /* os chips que não cabem numa linha descem: o texto de cada um aparece inteiro */
   gap: 4px;
+  padding-block: 2px;
 }
 
-.lt-chip {
-  overflow: hidden;
-  min-width: 22px;
-  flex: 0 1 auto;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--blue-50);
-  color: var(--blue-500);
-  font-size: 0.66rem;
-  font-weight: 750;
-  line-height: 1.3;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* os chips são os da configuração (.tag-chip, panel.css), sem o × */
+.lt-chips .tag-chip {
+  min-width: 0;
+  padding: 3px 9px;
 }
 
-.lt-chip.is-off {
+.lt-chips .tag-chip.is-off {
   background: var(--waiting-bg);
   color: var(--waiting);
   text-decoration: line-through;

@@ -193,7 +193,9 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 			// a versão em chips: um por linha, na ordem dos layers; a que sobra (ignorada) vem riscada
 			lines.forEach(function (text, n) {
 				var off = n >= state.info.layers.length;
-				var chip = el('span', 'lt-chip' + (off ? ' is-off' : ''), text);
+				var chip = el('span', 'tag-chip' + (off ? ' is-off' : ''));
+
+				chip.appendChild(el('span', null, text));
 
 				chip.title = off ? text + '\nignorada: não há layer para esta linha' : text + '\nvai para o layer ' + (n + 1) + (state.info.layers[n] ? ' (' + state.info.layers[n].name + ')' : '');
 				chips.appendChild(chip);
