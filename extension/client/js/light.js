@@ -10,6 +10,8 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 
   - o nome de cada duplicata segue o da comp de hoje: o trecho que é o texto de um layer selecionado muda; a regra
     do renomear (configuração > renomear) dá a caixa, os acentos e o separador;
+  - o texto de um layer pode ter várias linhas: com 1 layer, a versão inteira vai para ele; com 2 ou mais, as partes
+    de cada versão são separadas por uma linha com o separador (--- por padrão; vazio: uma linha por layer);
   - o nome digitado na tabela é absoluto: vale como está, por cima até do layer de nome (script_template_name);
   - com menos linhas que layers, o layer sem linha fica escondido; com mais, as que sobram são ignoradas. os dois
     casos aparecem no ícone da linha (o motivo na dica) e a linha ignorada vem riscada entre os chips;
@@ -63,18 +65,58 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 	/* ---------- o input ---------- */
 
 	// as versões: os blocos separados por linha vazia, cada um com as linhas dele (sem as vazias)
+	// o separador das partes de uma versão (um layer cada); vazio: uma linha por layer (como antes)
+	var SEP_DEFAULT = '---';
+
+	function separator() {
+		return $('lt-sep').value.trim();
+	}
+
+	// por partes: com 2 layers ou mais e o separador preenchido. com 1 layer, a versão inteira (todas as linhas)
+	// vai para ele
+	function byParts() {
+		return !!(state.info && state.info.layers.length > 1 && separator());
+	}
+
+	// as versões: os blocos separados por linha vazia; em cada um, o texto de cada layer (pode ter várias linhas)
 	function versions() {
-		return $('lt-input').value.replace(/\r/g, '').split(/\n[ \t]*\n+/).map(function (block) {
-			return block.split('\n').map(function (line) {
+		var count = state.info ? state.info.layers.length : 0;
+		var sep = separator();
+
+		return $('lt-input').value.replace(/\r\n?/g, '\n').split(/\n[ \t]*\n+/).map(function (block) {
+			var lines = block.split('\n').map(function (line) {
 				return line.trim();
+			});
+
+			// 1 layer: o bloco inteiro, com as quebras de linha
+			if (count === 1) return [lines.filter(Boolean).join('\n')].filter(Boolean);
+
+			// 2 ou mais, sem separador: uma linha por layer
+			if (!sep) return lines.filter(Boolean);
+
+			// 2 ou mais: as partes entre as linhas do separador (cada parte, um layer)
+			var parts = [[]];
+
+			lines.forEach(function (line) {
+				if (line === sep) return parts.push([]);
+				parts[parts.length - 1].push(line);
+			});
+
+			return parts.map(function (part) {
+				return part.filter(Boolean).join('\n');
 			}).filter(Boolean);
-		}).filter(function (lines) {
-			return lines.length;
+		}).filter(function (parts) {
+			return parts.length;
 		});
 	}
 
 	function keyOf(lines) {
-		return lines.join('\n');
+		return lines.join('\u0001');
+	}
+
+	// o texto numa linha só, para os chips e as dicas (a quebra de linha vira ↵)
+	function flat(text) {
+		return String(text).replace(/\n/g, ' ↵ ');
 	}
 
 	function recase(text, how) {
@@ -155,7 +197,9 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		if (custom != null && !name) notes.push('sem nome: a duplicata fica com o nome sugerido');
 		if (custom != null && name && (seen[key] || state.plan.existing.indexOf(key) >= 0)) notes.push('já existe uma comp com este nome');
 		if (custom == null && planned && planned.taken) notes.push('o nome já existia no projeto: ganhou o sufixo');
-		if (extra > 0) notes.push(plural(extra, 'linha ignorada', 'linhas ignoradas') + ': “' + lines.slice(count).join(' / ') + '”');
+		var unit = byParts() ? ['parte ignorada', 'partes ignoradas'] : ['linha ignorada', 'linhas ignoradas'];
+
+		if (extra > 0) notes.push(plural(extra, unit[0], unit[1]) + ': “' + lines.slice(count).map(flat).join(' / ') + '”');
 		if (extra < 0) {
 			var hidden = state.info.layers.slice(lines.length).map(function (layer, i) {
 				return lines.length + i + 1;
@@ -195,9 +239,9 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 				var off = n >= state.info.layers.length;
 				var chip = el('span', 'tag-chip' + (off ? ' is-off' : ''));
 
-				chip.appendChild(el('span', null, text));
+				chip.appendChild(el('span', null, flat(text)));
 
-				chip.title = off ? text + '\nignorada: não há layer para esta linha' : text + '\nvai para o layer ' + (n + 1) + (state.info.layers[n] ? ' (' + state.info.layers[n].name + ')' : '');
+				chip.title = off ? text + '\n\nignorada: não há layer para este texto' : text + '\n\nvai para o layer ' + (n + 1) + (state.info.layers[n] ? ' (' + state.info.layers[n].name + ')' : '');
 				chips.appendChild(chip);
 			});
 
@@ -258,6 +302,20 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 	}
 
 	// o rodapé só orienta quando não há o que duplicar: os avisos de cada versão estão nos ícones da tabela
+	// o separador só vale com 2 layers ou mais; o texto de fundo do input diz como digitar
+	function renderSeparator() {
+		var many = !!(state.info && state.info.layers.length > 1);
+		var sep = separator();
+		var input = $('lt-input');
+
+		$('lt-sep-box').hidden = !many;
+		$('lt-sep').disabled = state.busy;
+
+		if (state.info && state.info.layers.length === 1) input.placeholder = 'o texto do layer (pode ter várias linhas) · linha vazia separa as versões';
+		else if (many && sep) input.placeholder = 'o texto de cada layer separado por uma linha com ' + sep + ' · linha vazia separa as versões';
+		else input.placeholder = 'uma linha por layer · linha vazia separa as versões';
+	}
+
 	function renderFooter(count) {
 		var go = $('lt-go');
 		var info = state.info;
@@ -286,6 +344,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 	function render(keepFocus) {
 		renderComp();
 		renderLayers();
+		renderSeparator();
 		renderFooter(renderRows(keepFocus));
 	}
 
@@ -416,6 +475,23 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 				render();
 				plan();
 			});
+		});
+
+		// o separador: o último usado neste computador (vazio vale: uma linha por layer)
+		try {
+			var saved = localStorage.getItem('pad.light.sep');
+
+			$('lt-sep').value = saved == null ? SEP_DEFAULT : saved;
+		} catch (err) {
+			$('lt-sep').value = SEP_DEFAULT;
+		}
+		$('lt-sep').addEventListener('input', function () {
+			try {
+				localStorage.setItem('pad.light.sep', $('lt-sep').value);
+			} catch (err) { }
+			state.note = '';
+			render(true);
+			schedulePlan();
 		});
 
 		$('lt-reread').addEventListener('click', function () {

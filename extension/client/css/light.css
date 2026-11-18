@@ -119,7 +119,46 @@
 }
 
 .lt-head .cfg-title {
-  margin: 0;
+  margin: 0 auto 0 0;
+}
+
+/* o separador: um campo pequeno ao lado da caixa do texto */
+.lt-sep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.lt-sep[hidden] {
+  display: none;
+}
+
+.lt-sep input {
+  width: 48px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  transition: border-color 160ms ease;
+}
+
+.lt-sep input:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.lt-sep input:focus-visible {
+  border-color: var(--blue-500);
+  outline: none;
 }
 
 .lt-cases {

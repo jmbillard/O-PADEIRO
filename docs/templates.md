@@ -303,7 +303,7 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 | ❶ | **a comp aberta**: o nome de hoje, com o trecho que muda marcado (a dica explica a regra do nome) |
 | ❷ | **os layers de texto selecionados**, numerados na ordem em que recebem as linhas (de cima para baixo na comp); o de contorno azul está no nome da comp |
 | ❸ | **a caixa**: `AA`, `aa` e `Aa` passam todo o texto do input para caixa alta, baixa ou de título |
-| ❹ | **o input**: o mesmo do preenchimento completo. uma linha por layer, linha vazia separa as versões |
+| ❹ | **o input**: linha vazia separa as versões. com 1 layer, a versão inteira (pode ter várias linhas) vai para ele; com 2 ou mais, o texto de cada layer é separado por uma linha com o **separador** (`---` por padrão, no campo ao lado da caixa) |
 | ❺ | **o nome da comp** de cada versão, **editável** |
 | ❻ | **a situação**: ✓ tudo certo ou ⚠ atenção, com o motivo na dica |
 | ❼ | **Duplicar**: cria as comps (`Ctrl/Cmd+Enter`) |
@@ -312,8 +312,22 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 2. digite o input. cada versão vira uma linha da tabela, com o texto dela em chips e o nome que a duplicata vai ter.
 3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as duplicatas ficam na mesma pasta do projeto que a comp original, que não muda.
 
-- **linhas a menos** → o layer que fica sem linha é **escondido** naquela duplicata (como no preenchimento completo).
-- **linhas a mais** → as que sobram são **ignoradas**. a linha ignorada aparece riscada entre os chips da versão.
+- **texto com várias linhas** → o texto de um layer pode ter quantas linhas quiser. com **1 layer**, cada versão inteira vai para ele. com **2 ou mais**, separe o texto de cada layer com uma linha só com o separador:
+
+  ```
+  JOÃO GOMES
+  DA SILVA
+  ---
+  CANTOR
+
+  IVETE SANGALO
+  ---
+  CANTORA
+  ```
+
+  o separador fica no campo ao lado da caixa do texto (o último usado volta na próxima vez). **vazio**, vale uma linha por layer, sem separador.
+- **partes a menos** → o layer que fica sem texto é **escondido** naquela duplicata (como no preenchimento completo).
+- **partes a mais** → as que sobram são **ignoradas** e aparecem riscadas entre os chips da versão.
 - **os avisos** → ficam no ícone de cada linha da tabela, com o motivo na dica: linha ignorada, layer escondido, nome que já existia.
 
 ### o nome das duplicatas

@@ -5,7 +5,8 @@
 ---------------------------------------------------------------
 
 Duplica a comp aberta e preenche os layers de texto selecionados, uma duplicata por versão do input (uma linha por
-layer, linha vazia separa as versões: o mesmo input do preenchimento completo). Tudo na memória: nenhum template,
+layer, linha vazia separa as versões: o mesmo input do preenchimento completo). o texto de um layer pode ter várias
+linhas: com 1 layer, a versão inteira vai para ele; com 2 ou mais, a janela separa as partes pelo separador (---). Tudo na memória: nenhum template,
 nenhum arquivo. Um passo só de desfazer do After.
 
 O nome de cada duplicata:
@@ -166,7 +167,8 @@ function padLightVersions(list) {
 		var src = list[v] instanceof Array ? list[v] : [];
 
 		for (var l = 0; l < src.length; l++) {
-			var text = String(src[l] == null ? '' : src[l]).replace(/^\s+|\s+$/g, '');
+			// o texto de um layer pode ter várias linhas: as quebras ficam (no After, \r)
+			var text = String(src[l] == null ? '' : src[l]).replace(/\r\n?/g, '\n').replace(/^\s+|\s+$/g, '');
 
 			if (text != '') lines.push(text);
 		}
@@ -303,7 +305,7 @@ PADX.lightFill = function (a) {
 					var prop = layer.property('ADBE Text Properties').property('ADBE Text Document');
 					var doc = prop.value;
 
-					doc.text = lines[l];
+					doc.text = lines[l].replace(/\n/g, '\r');
 					if (prop.numKeys > 0) prop.setValueAtKey(1, doc);
 					else prop.setValue(doc);
 				} catch (err) {

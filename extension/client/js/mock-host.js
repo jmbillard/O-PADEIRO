@@ -1612,6 +1612,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		lightRead: function () {
 			var layers = mode === 'nolayers' ? [] : [{ index: 2, name: 'nome', text: 'ANA MARIA' }, { index: 3, name: 'info', text: 'APRESENTADORA' }];
 
+			if (mode === 'onelayer') layers = layers.slice(0, 1); // ?mock=onelayer: um layer só
+
 			return {
 				comp: 'RDP - ANA MARIA',
 				id: 42,
@@ -1635,7 +1637,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				names: (a.versions || []).map(function (lines) {
 					if (mode === 'namelayer') return { name: '', taken: false };
 
-					var name = 'RDP - ' + String(lines[0] || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+					var name = 'RDP - ' + String(lines[0] || '').replace(/\s+/g, ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 					var key = name.toUpperCase();
 					var was = !!taken[key];
 
