@@ -270,7 +270,7 @@ const SHOTS = {
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
 	// A FORMINHA: a comp, os layers, o input, a caixa, o nome (editável), a situação e o rodapé
-	forminha: { w: 460, h: 520, url: 'light.html', async run(p) {
+	forminha: { w: 460, h: 600, url: 'light.html', async run(p) {
 		await p.fill('#lt-input', 'João Gomes\nCantor\n\nIvete Sangalo\nCantora\nSalvador\n\nXuxa');
 		await p.waitForTimeout(700);
 	}, marks: [
