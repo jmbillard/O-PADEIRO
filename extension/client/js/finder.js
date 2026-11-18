@@ -1368,6 +1368,25 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			document.addEventListener('click', function (e) {
 				if (!menu.contains(e.target)) menu.removeAttribute('open');
 			});
+
+			// a janela compacta (sem resultados) é mais baixa que o menu: ela cresce para o menu caber inteiro e
+			// volta à altura de antes quando ele fecha
+			var before = 0;
+
+			menu.addEventListener('toggle', function () {
+				if (menu.open) {
+					var pop = menu.querySelector('.menu-popover');
+					var need = pop ? Math.ceil(pop.getBoundingClientRect().bottom + 12) : 0;
+
+					if (need > window.innerHeight) {
+						before = window.innerHeight;
+						PAD_BRIDGE.resizeWindow(window.innerWidth, need);
+					}
+				} else if (before) {
+					PAD_BRIDGE.resizeWindow(window.innerWidth, before);
+					before = 0;
+				}
+			});
 		});
 		window.addEventListener('focus', watchRequestedTab);
 		window.addEventListener('focus', watchSearchSource);
