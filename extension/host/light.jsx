@@ -18,6 +18,8 @@ O nome de cada duplicata:
 
 Com menos linhas que layers, o layer sem linha fica escondido; com mais, as que sobram são ignoradas (a janela avisa).
 
+A janela pede uma comp por vez (para mostrar o andamento): cada comp é um passo de desfazer do After.
+
 */
 
 // a comp aberta (a ativa), ou null
@@ -258,7 +260,7 @@ PADX.lightPlan = function (a) {
 };
 
 // Duplica e preenche. a: { id, layers: [índices], versions, names: [o nome digitado ou ''] }
-// → { count, names, errors: [{ name, error }] }
+// → { count, names, ids, errors: [{ name, error }] } (a janela manda uma versão por vez, para mostrar o andamento)
 PADX.lightFill = function (a) {
 	var comp = padLightComp();
 
@@ -285,6 +287,7 @@ PADX.lightFill = function (a) {
 	var parts = padLightParts(comp.name, texts);
 	var taken = padLightTaken();
 	var created = [];
+	var ids = [];
 	var errors = [];
 
 	padGroup('A FORMINHA: duplicar e preencher', function () {
@@ -333,8 +336,20 @@ PADX.lightFill = function (a) {
 			}
 
 			created.push(copy.name);
+			ids.push(copy.id);
 		}
 	});
 
-	return { count: created.length, names: created, errors: errors };
+	return { count: created.length, names: created, ids: ids, errors: errors };
+};
+
+// Abre uma das comps criadas no visualizador. a: { id }
+PADX.lightOpen = function (a) {
+	var item = app.project.itemByID(Number(a.id));
+
+	if (!(item instanceof CompItem)) throw new Error('#PAD_116 - a forminha: a comp não está mais no projeto.');
+
+	item.openInViewer();
+
+	return true;
 };

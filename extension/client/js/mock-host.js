@@ -1656,7 +1656,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_LIGHT = (window.PAD_MOCK_LIGHT || []).concat(names);
 
-			return { count: names.length, names: names, errors: [] };
+			return { count: names.length, names: names, ids: names.map(function (n, i) {
+				return 100 + window.PAD_MOCK_LIGHT.length + i;
+			}), errors: [] };
+		},
+
+		lightOpen: function () {
+			return true;
 		},
 
 		filesStart: function () {

@@ -292,7 +292,7 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 
 ## a forminha
 
-**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma duplicata por versão do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto, num passo só de desfazer do After (`Ctrl/Cmd+Z`).
+**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma duplicata por versão do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto.
 
 abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 
@@ -311,6 +311,9 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 1. abra a comp e selecione os layers de texto que mudam de uma versão para a outra. a janela acompanha a seleção (o botão redondo do rodapé lê de novo na hora).
 2. digite o input. cada versão vira uma linha da tabela, com o texto dela em chips e o nome que a duplicata vai ter.
 3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as duplicatas ficam na mesma pasta do projeto que a comp original, que não muda.
+4. a janela mostra o **andamento**: a barra de progresso e, na tabela, cada comp na fila (–), sendo criada (o anel girando) e criada (✓). no fim, o botão ao lado de cada uma abre a comp; a **seta** do rodapé volta para um preenchimento novo, com o input limpo.
+
+> 🚩 *obs:* para a barra andar, as comps são criadas uma por vez: cada uma é um passo de desfazer do After (`Ctrl/Cmd+Z` desfaz a última criada).
 
 - **texto com várias linhas** → o texto de um layer pode ter quantas linhas quiser. com **1 layer**, cada versão inteira vai para ele. com **2 ou mais**, separe o texto de cada layer com uma linha só com o separador:
 

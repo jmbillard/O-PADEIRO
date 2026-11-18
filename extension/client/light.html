@@ -26,7 +26,7 @@
 
 		<div class="lt-layers" id="lt-layers"></div>
 
-		<div class="lt-head">
+		<div class="lt-head" id="lt-head">
 			<label class="cfg-title" for="lt-input">INPUT</label>
 			<!-- com 2 layers ou mais: a linha que separa o texto de cada layer (vazio: uma linha por layer) -->
 			<label class="lt-sep" id="lt-sep-box" title="a linha que separa o texto de cada layer numa versão (vazio: uma linha por layer)" hidden>separador<input type="text" id="lt-sep" spellcheck="false" autocomplete="off" maxlength="12" aria-label="Separador"></label>
@@ -37,7 +37,18 @@
 			</div>
 		</div>
 		<!-- o campo: o contorno fica na caixa de fora, para a barra de rolagem do texto terminar antes das quinas -->
-		<div class="lt-input-box"><textarea class="lt-input" id="lt-input" spellcheck="false" placeholder="uma linha por layer · linha vazia separa as versões"></textarea></div>
+		<div class="lt-input-box" id="lt-input-box"><textarea class="lt-input" id="lt-input" spellcheck="false" placeholder="uma linha por layer · linha vazia separa as versões"></textarea></div>
+
+		<!-- duplicando: o andamento (a barra padrão), no lugar do input -->
+		<div class="progress-section lt-progress" id="lt-progress" hidden>
+			<div class="progress-header">
+				<p><strong id="lt-progress-label">Duplicando</strong></p>
+				<p id="lt-progress-pct">0%</p>
+			</div>
+			<div class="progress-track">
+				<div class="progress-bar" id="lt-progress-bar"></div>
+			</div>
+		</div>
 
 		<!-- as comps novas: como a tabela do ARQUIVISTA (o título das colunas fica fora da rolagem) -->
 		<div class="fl-table lt-table" id="lt-table" hidden>
@@ -48,6 +59,7 @@
 		</div>
 
 		<div class="action-bar is-anchored fw-bar">
+			<button type="button" class="io-button" id="lt-back" title="voltar para um novo preenchimento" aria-label="voltar para um novo preenchimento" hidden><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
 			<button type="button" class="io-button" id="lt-reread" title="ler de novo a comp aberta e os layers selecionados" aria-label="ler de novo a comp aberta e os layers selecionados"><svg viewBox="0 0 24 24" class="anim-refresh"><path d="M4.5 11.5a7.5 7.5 0 0 1 12.9-5.2l2.1 2.2" /><path d="M19.5 4v4.5H15" /><path d="M19.5 12.5a7.5 7.5 0 0 1-12.9 5.2l-2.1-2.2" /><path d="M4.5 20v-4.5H9" /></svg></button>
 			<details class="actions-menu fw-menu" id="app-menu">
 				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>

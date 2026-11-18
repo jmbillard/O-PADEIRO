@@ -29,11 +29,15 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 
 	var ICON_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>';
 	var ICON_WARN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg>';
+	var ICON_WAIT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>';
+	var ICON_GO = '<svg viewBox="0 0 24 24" aria-hidden="true" class="lt-spin"><path d="M12 4a8 8 0 1 1-8 8" /></svg>';
+	var ICON_OPEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4.5h5.5V10" /><path d="M19.5 4.5 11 13" /><path d="M18 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1H10" /></svg>';
 	var ICON_BACK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg>';
 
 	// info: o que o host leu (a comp e os layers); plan: os nomes sugeridos; edits: os nomes digitados, pelo texto
 	// da versão (apagar uma versão do meio não leva o nome digitado para a seguinte)
-	var state = { info: null, infoKey: '', plan: { names: [], existing: [] }, edits: {}, busy: false, note: '', noteKind: '' };
+	var state = { info: null, infoKey: '', plan: { names: [], existing: [] }, edits: {}, busy: false, note: '', noteKind: '', run: null };
+	// run: duplicando ou feito → { rows: [{ lines, name, st: 'wait'|'go'|'ok'|'err', id, error }], done, finished }
 	var planTimer = null;
 	var planSeq = 0;
 
@@ -341,7 +345,97 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		status('');
 	}
 
+	// duplicando e feito: a barra de progresso no lugar do input; a tabela mostra cada comp (na fila, criando,
+	// criada); feita, cada uma abre no visualizador. o rodapé só tem o voltar (para um preenchimento novo)
+	function renderRun() {
+		var run = state.run;
+		var total = run.rows.length;
+		var pct = total ? Math.round(run.done / total * 100) : 100;
+		var rows = $('lt-rows');
+
+		$('light').classList.toggle('is-running', !run.finished);
+		$('light').classList.toggle('is-done', run.finished);
+		$('lt-head').hidden = true;
+		$('lt-input-box').hidden = true;
+		$('lt-progress').hidden = false;
+		$('lt-progress-label').textContent = run.finished ? 'Pronto' : 'Duplicando · ' + Math.min(run.done + 1, total) + ' de ' + total;
+		$('lt-progress-pct').textContent = pct + '%';
+		$('lt-progress-bar').style.width = pct + '%';
+		$('lt-table').hidden = false;
+		document.querySelector('#lt-table .fl-head').children[2].textContent = run.finished ? 'COMP CRIADA' : 'NOME DA COMP';
+
+		rows.textContent = '';
+		run.rows.forEach(function (item) {
+			var row = el('div', 'fl-row' + (item.st === 'wait' ? ' is-wait' : ''));
+			var chips = el('span', 'lt-chips');
+			var st = el('span', 'fl-st is-' + item.st);
+			var side = el('span');
+			var tips = { wait: 'na fila', go: 'criando…', ok: 'criada', err: 'não foi criada: ' + (item.error || '') };
+
+			item.lines.forEach(function (text, n) {
+				var off = n >= state.info.layers.length;
+				var chip = el('span', 'tag-chip' + (off ? ' is-off' : ''));
+
+				chip.appendChild(el('span', null, flat(text)));
+				chip.title = text;
+				chips.appendChild(chip);
+			});
+
+			if (run.finished && item.st === 'ok' && item.id) {
+				side = el('button', 'lt-open');
+				side.type = 'button';
+				side.title = 'abrir a comp ' + item.name;
+				side.setAttribute('aria-label', side.title);
+				side.innerHTML = ICON_OPEN;
+				side.addEventListener('click', function () {
+					call('lightOpen', { id: item.id }).catch(function (err) {
+						status(err.message, 'error');
+					});
+				});
+			}
+
+			if (item.st === 'ok') st.innerHTML = ICON_OK;
+			else if (item.st === 'go') st.innerHTML = ICON_GO;
+			else if (item.st === 'err') st.innerHTML = ICON_WARN;
+			else st.innerHTML = ICON_WAIT;
+			st.title = tips[item.st];
+			st.setAttribute('role', 'img');
+			st.setAttribute('aria-label', tips[item.st]);
+
+			var name = el('span', 'lt-name', item.name || '…');
+
+			name.title = item.name || '';
+			row.appendChild(chips);
+			row.appendChild(el('span', 'fl-arrow', '→'));
+			row.appendChild(name);
+			row.appendChild(side);
+			row.appendChild(st);
+			rows.appendChild(row);
+		});
+
+		var failed = run.rows.filter(function (item) {
+			return item.st === 'err';
+		});
+
+		$('lt-reread').hidden = true;
+		$('lt-back').hidden = !run.finished;
+		$('lt-go').hidden = run.finished;
+		$('lt-go').disabled = true;
+		$('lt-go').textContent = 'Duplicando…';
+		status(run.finished && failed.length ? plural(failed.length, 'comp não foi criada', 'comps não foram criadas') + ': ' + failed[0].error : '', failed.length ? 'error' : '');
+	}
+
 	function render(keepFocus) {
+		if (state.run) return renderRun();
+
+		$('light').classList.remove('is-running', 'is-done');
+		$('lt-head').hidden = false;
+		$('lt-input-box').hidden = false;
+		$('lt-progress').hidden = true;
+		$('lt-back').hidden = true;
+		$('lt-reread').hidden = false;
+		$('lt-go').hidden = false;
+		document.querySelector('#lt-table .fl-head').children[2].textContent = 'NOME DA COMP';
 		renderComp();
 		renderLayers();
 		renderSeparator();
@@ -405,50 +499,68 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		plan();
 	}
 
+	// uma comp por vez, para a barra andar (cada comp é um passo de desfazer do After)
 	async function fill() {
 		var list = versions();
 
 		if (state.busy || !ready() || !list.length) return;
 
+		var layers = state.info.layers.map(function (layer) {
+			return layer.index;
+		});
+
 		state.busy = true;
 		state.note = '';
-		$('lt-go').disabled = true;
-		$('lt-go').textContent = 'Duplicando…';
-		status('duplicando ' + plural(list.length, 'comp', 'comps') + '…');
-		render();
+		state.run = {
+			done: 0,
+			finished: false,
+			rows: list.map(function (lines, at) {
+				var key = keyOf(lines);
+				var typed = state.edits.hasOwnProperty(key) ? state.edits[key].trim() : '';
+				var planned = state.plan.names[at];
 
-		var note = '';
-		var kind = '';
+				return { lines: lines, typed: typed, name: typed || (planned && planned.name) || '', st: 'wait', id: 0, error: '' };
+			})
+		};
 
-		try {
-			var res = await call('lightFill', {
-				id: state.info.id,
-				layers: state.info.layers.map(function (layer) {
-					return layer.index;
-				}),
-				versions: list,
-				names: list.map(function (lines) {
-					var key = keyOf(lines);
+		for (var i = 0; i < state.run.rows.length; i++) {
+			var item = state.run.rows[i];
 
-					return state.edits.hasOwnProperty(key) ? state.edits[key].trim() : '';
-				})
-			});
+			item.st = 'go';
+			render();
 
-			note = plural(res.count, 'comp criada', 'comps criadas');
-			if (res.errors && res.errors.length) {
-				note += ' · ' + plural(res.errors.length, 'layer não mudou', 'layers não mudaram') + ': ' + res.errors[0].name + ' (' + res.errors[0].error + ')';
-				kind = 'error';
+			try {
+				var res = await call('lightFill', { id: state.info.id, layers: layers, versions: [item.lines], names: [item.typed] });
+
+				item.name = (res.names && res.names[0]) || item.name;
+				item.id = (res.ids && res.ids[0]) || 0;
+				item.st = 'ok';
+				if (res.errors && res.errors.length) {
+					item.st = 'err';
+					item.error = res.errors[0].name + ' (' + res.errors[0].error + ')';
+				}
+			} catch (err) {
+				item.st = 'err';
+				item.error = err.message;
 			}
-		} catch (err) {
-			note = err.message;
-			kind = 'error';
+
+			state.run.done = i + 1;
 		}
 
+		state.run.finished = true;
 		state.busy = false;
-		state.note = note;
-		state.noteKind = kind;
 		render();
-		plan(); // os nomes criados agora existem no projeto
+	}
+
+	// voltar: um preenchimento novo (o input limpo; a comp e os layers continuam os de agora)
+	function back() {
+		state.run = null;
+		state.edits = {};
+		state.note = '';
+		$('lt-input').value = '';
+		render();
+		plan();
+		$('lt-input').focus();
 	}
 
 	/* ---------- início ---------- */
@@ -498,6 +610,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 			read(true);
 		});
 		$('lt-go').addEventListener('click', fill);
+		$('lt-back').addEventListener('click', back);
 		PAD_KEYS.primary($('lt-go')); // Ctrl+Enter faz o botão principal
 
 		var menu = $('app-menu');
