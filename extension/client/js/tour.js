@@ -47,6 +47,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 	var TOOLS = {
 		// as ferramentas de dentro das gavetas (Templates e Projeto): o tour abre a gaveta de cada uma
 		preencher: { title: 'Preencher', l: ['A FORMA', 'preenche um template e cria a fila de render'] },
+		duplicar: { title: 'Duplicar', l: ['A FORMINHA', 'duplica a comp aberta e preenche os layers de texto selecionados'] },
 		'criar-template': { title: 'Criar template', l: ['A FORMA', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
 		projeto: { title: 'Iniciar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },

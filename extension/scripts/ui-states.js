@@ -130,6 +130,8 @@ const CHECKS = [
 	['versionador', 'versioner.html'],
 	['versionador: projeto não salvo', 'versioner.html?mock=unsaved'],
 	['etiquetas', 'labels.html'],
+	['forminha', 'light.html'],
+	['forminha: sem seleção', 'light.html?mock=nolayers'],
 	['arquivista: vazio', 'files.html'],
 	['arquivista', 'files.html', async (p) => {
 		await filesFolder(p);

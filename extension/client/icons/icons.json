@@ -172,6 +172,10 @@
 		"label": "novo template"
 	},
 	{
+		"key": "barra-duplicate",
+		"label": "duplicar"
+	},
+	{
 		"key": "barra-render",
 		"label": "render"
 	},

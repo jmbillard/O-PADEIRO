@@ -1608,6 +1608,55 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)
+		// A FORMINHA (?mock=nolayers: comp aberta sem layer de texto selecionado; ?mock=namelayer: com o layer de nome)
+		lightRead: function () {
+			var layers = mode === 'nolayers' ? [] : [{ index: 2, name: 'nome', text: 'ANA MARIA' }, { index: 3, name: 'info', text: 'APRESENTADORA' }];
+
+			return {
+				comp: 'RDP - ANA MARIA',
+				id: 42,
+				layers: layers,
+				parts: layers.length ? [{ text: 'RDP - ' }, { text: 'ANA MARIA', layer: 0 }] : [{ text: 'RDP - ANA MARIA' }],
+				nameLayer: mode === 'namelayer',
+				separator: ' - '
+			};
+		},
+
+		lightPlan: function (a) {
+			var taken = {};
+			var existing = ['RDP - ANA MARIA', 'RDP - XUXA'].concat(window.PAD_MOCK_LIGHT || []);
+
+			existing.forEach(function (n) {
+				taken[n.toUpperCase()] = 1;
+			});
+
+			return {
+				existing: Object.keys(taken),
+				names: (a.versions || []).map(function (lines) {
+					if (mode === 'namelayer') return { name: '', taken: false };
+
+					var name = 'RDP - ' + String(lines[0] || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+					var key = name.toUpperCase();
+					var was = !!taken[key];
+
+					taken[key] = (taken[key] || 0) + 1;
+
+					return { name: was ? name + '_' + taken[key] : name, taken: was };
+				})
+			};
+		},
+
+		lightFill: function (a) {
+			var plan = this.lightPlan(a);
+			var names = (a.versions || []).map(function (lines, i) {
+				return a.names[i] || plan.names[i].name || 'RDP - ' + lines.join(' ').toUpperCase();
+			});
+
+			window.PAD_MOCK_LIGHT = (window.PAD_MOCK_LIGHT || []).concat(names);
+
+			return { count: names.length, names: names, errors: [] };
+		},
+
 		filesStart: function () {
 			return { undo: window.PAD_MOCK_FILES_UNDO || null };
 		},

@@ -290,6 +290,45 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 
 <br>
 
+## a forminha
+
+**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma duplicata por versão do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto, num passo só de desfazer do After (`Ctrl/Cmd+Z`).
+
+abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
+
+<p align="center"><img src="images/forminha.webp" alt="A FORMINHA, com as partes numeradas" width="460"></p>
+
+| | |
+| :---: | --- |
+| ❶ | **a comp aberta**: o nome de hoje, com o trecho que muda marcado (a dica explica a regra do nome) |
+| ❷ | **os layers de texto selecionados**, numerados na ordem em que recebem as linhas (de cima para baixo na comp); o de contorno azul está no nome da comp |
+| ❸ | **a caixa**: `AA`, `aa` e `Aa` passam todo o texto do input para caixa alta, baixa ou de título |
+| ❹ | **o input**: o mesmo do preenchimento completo. uma linha por layer, linha vazia separa as versões |
+| ❺ | **o nome da comp** de cada versão, **editável** |
+| ❻ | **a situação**: ✓ tudo certo ou ⚠ atenção, com o motivo na dica |
+| ❼ | **Duplicar**: cria as comps (`Ctrl/Cmd+Enter`) |
+
+1. abra a comp e selecione os layers de texto que mudam de uma versão para a outra. a janela acompanha a seleção (o botão redondo do rodapé lê de novo na hora).
+2. digite o input. cada versão vira uma linha da tabela, com o texto dela em chips e o nome que a duplicata vai ter.
+3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as duplicatas ficam na mesma pasta do projeto que a comp original, que não muda.
+
+- **linhas a menos** → o layer que fica sem linha é **escondido** naquela duplicata (como no preenchimento completo).
+- **linhas a mais** → as que sobram são **ignoradas**. a linha ignorada aparece riscada entre os chips da versão.
+- **os avisos** → ficam no ícone de cada linha da tabela, com o motivo na dica: linha ignorada, layer escondido, nome que já existia.
+
+### o nome das duplicatas
+
+- **pelo nome da comp** → o padeiro compara o nome da comp com o texto dos layers selecionados. cada trecho do nome que é o texto de um layer vira a parte que muda; o resto (o prefixo, o separador) fica como está. `RDP - ANA MARIA` com o layer "ANA MARIA" selecionado dá `RDP - JOAO GOMES`; com dois layers no nome (`RDP - ANA MARIA APRESENTADORA`), os dois trechos mudam. o layer escondido (sem linha) sai do nome.
+- **sem trecho nenhum** → se o nome da comp não tem o texto de nenhum layer selecionado, a duplicata leva o nome da comp, o separador e a primeira linha da versão.
+- **a regra do renomear** → o texto que entra no nome passa pela regra da [configuração > renomear](producoes.md#-renomear) (caixa, acentos, separador). o texto do layer fica como foi digitado: `João Gomes` no layer, `RDP - JOAO GOMES` no nome.
+- **nome que já existe** → ganha um sufixo (`_2`, `_3`…), avisado no ícone da linha.
+- **o layer de nome** → a comp com o layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name) leva o texto dele, como no preenchimento completo. o campo do nome aparece vazio ("pelo layer de nome"), porque o texto só existe depois de preencher.
+- **o nome digitado é absoluto** → o que você digitar no campo do nome vale como está: sem a regra, sem sufixo e por cima até do layer de nome. a seta ao lado volta ao nome sugerido.
+
+> 🚩 *obs:*\
+> • a forminha não cria fila de render, não confere fontes e não roda script de template: para isso, use o preenchimento completo.\
+> • a comparação do nome ignora a caixa e os acentos, mas o texto do layer precisa estar inteiro no nome da comp. um nome abreviado à mão (`RDP - ANA M`) não é reconhecido, e a duplicata cai na regra "sem trecho nenhum".
+
 ## 📍 teclado
 
 | tecla | o que faz |

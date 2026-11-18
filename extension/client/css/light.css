@@ -1,0 +1,255 @@
+/* =========================================================
+   A FORMINHA: o preenchimento leve (duplicar a comp aberta e preencher os layers de texto selecionados)
+   a janela é uma coluna: a comp, os layers, o input (ocupa o que sobra), a tabela das comps novas e o rodapé.
+   a tabela, o campo do nome, a situação e o rodapé são os do ARQUIVISTA (files.css)
+   ========================================================= */
+
+/* a comp aberta: o nome de hoje, com o trecho que muda marcado */
+.lt-comp {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium, 14px);
+  color: var(--text-tertiary);
+}
+
+.lt-comp svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.lt-comp-name {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.lt-comp.is-empty .lt-comp-name {
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* o resto do nome fica na cor da marca; o trecho que é o texto de um layer, numa pílula clara */
+.lt-fix {
+  color: var(--blue-500);
+}
+
+.lt-var {
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: rgb(var(--accent-rgb) / 12%);
+}
+
+/* os layers selecionados: pílulas numeradas, na ordem das linhas do input (o nome do layer na dica) */
+.lt-layers {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lt-layers:empty {
+  display: none;
+}
+
+.lt-layer {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.lt-layer.is-name {
+  border-color: rgb(var(--accent-rgb) / 45%);
+}
+
+.lt-layer span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt-num {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--accent-rgb) / 12%);
+  color: var(--blue-500);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* o título do input e, à direita, a caixa do texto (alta, baixa, título) */
+.lt-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.lt-head .cfg-title {
+  margin: 0;
+}
+
+.lt-cases {
+  display: flex;
+  gap: 4px;
+}
+
+.lt-case {
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.lt-case:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.lt-case:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.lt-input {
+  min-height: 84px;
+  flex: 1 1 96px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium, 14px);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 160ms ease;
+}
+
+.lt-input:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.lt-input:disabled {
+  opacity: 0.55;
+}
+
+.lt-case:focus-visible,
+.lt-input:focus-visible {
+  outline: 1px solid var(--blue-500); /* foco: um contorno fino, sem halo */
+  outline-offset: 1px;
+}
+
+/* a tabela das comps novas: cresce com as versões, até um pouco menos da metade da janela */
+.light .lt-table {
+  max-height: 44%;
+  min-height: 0;
+  flex: 0 1 auto;
+}
+
+.light .fl-head,
+.light .fl-row {
+  grid-template-columns: minmax(0, 1fr) 14px minmax(0, 1fr) 22px 24px;
+}
+
+.light .fl-scroll {
+  flex: 0 1 auto;
+}
+
+.light .fl-row:first-child {
+  border-top: 0; /* a linha do título das colunas já separa */
+}
+
+/* a versão em chips: um por linha, na ordem dos layers; a linha que sobra (ignorada) vem riscada */
+.lt-chips {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  gap: 4px;
+}
+
+.lt-chip {
+  overflow: hidden;
+  min-width: 22px;
+  flex: 0 1 auto;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--blue-50);
+  color: var(--blue-500);
+  font-size: 0.66rem;
+  font-weight: 750;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lt-chip.is-off {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+  text-decoration: line-through;
+}
+
+/* o nome que o layer de nome decide: o campo vazio diz isso, mais apagado */
+.light .fl-new::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* atenção: o contorno do nome e a situação em laranja (a dica do ícone diz o motivo) */
+.light .fl-row.is-warn .fl-new {
+  border-color: var(--waiting-border, rgb(184 107 0 / 45%));
+}
+
+.light .fl-st.is-ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.light .fl-st.is-warn {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}

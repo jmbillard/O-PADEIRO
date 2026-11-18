@@ -2231,6 +2231,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
 		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
+		duplicar: ['Duplicar', 'A FORMINHA: duplicar a comp aberta e preencher os layers de texto selecionados', 'duplicate'],
 		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
 		projeto: ['Iniciar / Alterar', 'A CLAQUETE: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],

@@ -18,6 +18,7 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | | ferramenta | `◖ clique esquerdo` | `◗ clique direito` |
 | :---: | --- | --- | --- |
 | <img src="docs/images/icons/fill.png" width="40" alt="preencher"> | **Preencher** (gaveta **Templates**) | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | |
+| <img src="docs/images/icons/duplicate.png" width="40" alt="duplicar"> | **Duplicar** (gaveta **Templates**) | abre **[A FORMINHA](docs/templates.md#a-forminha)**: duplicar a comp aberta e preencher os layers de texto selecionados, sem template | |
 | <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta | |
 | <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Iniciar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Iniciar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
@@ -170,7 +171,7 @@ O ETIQUETADOR
 
 **Templates**, **Projeto** e **Organização** são gavetas, e por isso têm um **contorno fino** em volta do botão (as ferramentas soltas não têm): o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
 
-- **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
+- **Templates** → **Preencher** ([A FORMA](docs/templates.md)), **Duplicar** ([A FORMINHA](docs/templates.md#a-forminha)) e **Criar** ([A FORMA · criar](docs/criador.md)), cada um num botão.
 - **Projeto** → **Iniciar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
 - **Organização** → **Renomear** (O ETIQUETADOR), **Organizar** (O CONTRARREGRA) e **Arquivos** ([O ARQUIVISTA](#arquivos)), cada uma com os seus dois cliques.
 - **a gaveta lembrada** → a que você deixou aberta volta aberta ao reabrir o painel (neste computador). um duplo clique no botão só abre: o segundo clique, de reflexo, não recolhe.
@@ -501,6 +502,8 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_110` | migrar: o registro não pôde ser gravado na pasta do projeto (sem permissão, ou a rede caiu no meio): sem registro, nada é movido |
 | `#PAD_113` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
 | `#PAD_114` | arquivos: não há renomeação para desfazer |
+| `#PAD_115` | a forminha: sem comp aberta, sem layer de texto selecionado ou sem texto no input |
+| `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
 | `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |

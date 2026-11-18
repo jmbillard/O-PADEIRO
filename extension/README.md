@@ -24,6 +24,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O VERSIONADOR | `com.jmbillard.opadeiro.versioner` | `versioner.html` | `js/versioner.js` | 8097 |
 | O CONTRARREGRA | `com.jmbillard.opadeiro.labels` | `labels.html` | `js/labels.js` | 8098 |
 | O ARQUIVISTA | `com.jmbillard.opadeiro.files` | `files.html` | `js/files.js` | 8099 |
+| A FORMINHA | `com.jmbillard.opadeiro.light` | `light.html` | `js/light.js` | 8100 |
 
 <br>
 

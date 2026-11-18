@@ -269,6 +269,13 @@ const SHOTS = {
 		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
+	// A FORMINHA: a comp, os layers, o input, a caixa, o nome (editável), a situação e o rodapé
+	forminha: { w: 460, h: 520, url: 'light.html', async run(p) {
+		await p.fill('#lt-input', 'João Gomes\nCantor\n\nIvete Sangalo\nCantora\nSalvador\n\nXuxa');
+		await p.waitForTimeout(700);
+	}, marks: [
+		{ sel: '#lt-comp' }, { sel: '#lt-layers', pad: 3 }, { sel: '.lt-cases', pad: 3 }, { sel: '#lt-input' }, { sel: '.fl-row:nth-of-type(2) .fl-new', pad: 2 }, { sel: '.fl-row:nth-of-type(2) .fl-st', round: true }, { sel: '#lt-go' }
+	] },
 	arquivista: { w: 720, h: 680, url: 'files.html', async run(p) {
 		await p.fill('#fl-path', '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço');
 		await p.press('#fl-path', 'Enter');
@@ -499,7 +506,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo', 'files'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo', 'files', 'duplicate'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');

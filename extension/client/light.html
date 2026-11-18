@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>A FORMINHA</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/icons.css">
+	<link rel="stylesheet" href="css/fonts.css">
+	<link rel="stylesheet" href="css/files.css">
+	<link rel="stylesheet" href="css/light.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="fonts-page files-page">
+	<!-- A FORMINHA: o preenchimento leve. a comp aberta (com o trecho do nome que muda), os layers de texto
+	     selecionados, o input (o do preenchimento completo) e a tabela das comps novas (a versão → o nome, editável →
+	     a situação); o rodapé duplica -->
+	<main class="fonts files light" id="light">
+		<div class="lt-comp" id="lt-comp">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><path d="M3.5 9.5h17M8 5.5v13" /></svg>
+			<span class="lt-comp-name" id="lt-comp-name"></span>
+		</div>
+
+		<div class="lt-layers" id="lt-layers"></div>
+
+		<div class="lt-head">
+			<label class="cfg-title" for="lt-input">INPUT</label>
+			<div class="lt-cases" role="group" aria-label="Caixa do texto">
+				<button type="button" class="lt-case" data-case="upper" title="todo o texto em CAIXA ALTA" aria-label="caixa alta">AA</button>
+				<button type="button" class="lt-case" data-case="lower" title="todo o texto em caixa baixa" aria-label="caixa baixa">aa</button>
+				<button type="button" class="lt-case" data-case="title" title="todo o texto em Caixa De Título" aria-label="caixa de título">Aa</button>
+			</div>
+		</div>
+		<textarea class="lt-input" id="lt-input" spellcheck="false" placeholder="uma linha por layer · linha vazia separa as versões"></textarea>
+
+		<!-- as comps novas: como a tabela do ARQUIVISTA (o título das colunas fica fora da rolagem) -->
+		<div class="fl-table lt-table" id="lt-table" hidden>
+			<div class="fl-head"><span>VERSÃO</span><span></span><span>NOME DA COMP</span><span></span><span></span></div>
+			<div class="fl-scroll" id="lt-scroll">
+				<div id="lt-rows"></div>
+			</div>
+		</div>
+
+		<div class="action-bar is-anchored fw-bar">
+			<button type="button" class="io-button" id="lt-reread" title="ler de novo a comp aberta e os layers selecionados" aria-label="ler de novo a comp aberta e os layers selecionados"><svg viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" /><path d="M19.5 4.5v4h-4" /></svg></button>
+			<details class="actions-menu fw-menu" id="app-menu">
+				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="config">Editar a regra do renomear (O PRODUTOR)</button>
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
+				</div>
+			</details>
+			<span class="fw-status" id="fw-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="lt-go" title="Ctrl/Cmd+Enter" disabled>Duplicar</button>
+		</div>
+	</main>
+
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/light.js"></script>
+</body>
+
+</html>

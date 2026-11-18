@@ -25,6 +25,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
 	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
+	var LIGHT_PANEL_ID = 'com.jmbillard.opadeiro.light';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -366,6 +367,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(FILES_PANEL_ID);
 		},
 
+		// A FORMINHA: o preenchimento leve (duplica a comp aberta e preenche os layers de texto selecionados)
+		openLight: function () {
+			PAD_BRIDGE.openPanel(LIGHT_PANEL_ID);
+		},
+
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
 			await call('makerReady');
@@ -493,7 +499,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
 	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
-	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project'].forEach(function (key) {
+	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
 		actions[key].opensWindow = true;
 	});
 
@@ -505,6 +511,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TOOLS = [
 		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
 		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
+		{ key: 'duplicar', label: 'Duplicar', icon: 'duplicate', name: 'A FORMINHA', tips: [L_CLICK + 'duplicar a comp aberta e preencher os layers de texto selecionados'], left: actions.openLight },
 		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
 		{
 			key: 'fontes',
