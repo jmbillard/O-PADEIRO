@@ -119,6 +119,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
 > • o **código do padeiro fica na rede**: o computador recebe só um carregador, que abre os painéis direto da pasta do padeiro. por isso, **para atualizar, basta fechar e abrir o painel de novo** depois que os arquivos da rede forem trocados.\
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
+> • **janelas antigas duplicadas** → a cada instalação, o instalador apaga e grava de novo a pasta da extensão e também remove **outras cópias do padeiro** que encontrar nas pastas de extensões (a do usuário e a do sistema): as das primeiras versões beta, uma pasta copiada à mão ou um link de teste. ele reconhece pelo manifest, não pelo nome da pasta. se uma delas não puder ser apagada (a pasta do sistema pede permissão de administrador), o caminho aparece no fim da instalação para apagar à mão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
 > • **janelas pretas no After Effects 2025**: resolvido a partir desta versão. se ainda acontecer, rode o instalador de novo (o carregador antigo usava outro manifest).\

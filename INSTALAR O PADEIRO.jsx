@@ -166,6 +166,47 @@ Instalar / atualizar:
 		}
 	}
 
+	// Outras cópias do padeiro nas pastas de extensões (as primeiras versões beta, uma pasta copiada à mão, um link de
+	// teste, a pasta de extensões do sistema): cada uma registra as janelas dela de novo, e as antigas aparecem
+	// duplicadas no menu Window > Extensions. reconhece pelo manifest (o id com.jmbillard.opadeiro), nunca pelo
+	// nome da pasta; a instalação de agora (dest) e a pasta da rede (src) ficam. → { removed, failed: [caminhos] }
+	function removeStrayCopies() {
+		var roots = [userData + '/Adobe/CEP/extensions'];
+		var out = { removed: 0, failed: [] };
+		var keep = String(dest.fsName).toLowerCase();
+		var home = String(src.fsName).toLowerCase();
+
+		if (IS_MAC) roots.push('/Library/Application Support/Adobe/CEP/extensions');
+		else if (Folder.commonFiles) roots.push(Folder.commonFiles.fsName + '/Adobe/CEP/extensions');
+
+		for (var r = 0; r < roots.length; r++) {
+			var root = new Folder(roots[r]);
+			var items = root.exists ? root.getFiles() : [];
+
+			for (var i = 0; i < items.length; i++) {
+				if (!(items[i] instanceof Folder)) continue;
+
+				var path = String(items[i].fsName);
+				var low = path.toLowerCase();
+
+				if (low == keep || home.indexOf(low + (IS_MAC ? '/' : '\\')) == 0 || home == low) continue;
+
+				var manifest = new File(path + '/CSXS/manifest.xml');
+
+				if (!manifest.exists || !/com\.jmbillard\.opadeiro/.test(readText(manifest))) continue;
+
+				// 'rm' sem barra no fim: num link, apaga só o link
+				if (IS_MAC) system.callSystem('rm -rf ' + quote(path));
+				else removeFolder(items[i]);
+
+				if (new Folder(path).exists) out.failed.push(path);
+				else out.removed++;
+			}
+		}
+
+		return out;
+	}
+
 	// O carregador: o manifest da rede e, para cada janela, uma página que abre a página de verdade na rede.
 	function installExtension() {
 		var manifest = new File(src.fsName + '/CSXS/manifest.xml');
@@ -521,6 +562,11 @@ Instalar / atualizar:
 
 		if (removeOldScript()) notes.push('a versão antiga (script) foi removida.');
 
+		var stray = removeStrayCopies();
+
+		if (stray.removed) notes.push(stray.removed + (stray.removed == 1 ? ' cópia antiga do padeiro foi removida' : ' cópias antigas do padeiro foram removidas') + ' (as janelas duplicadas somem ao reiniciar o After).');
+		if (stray.failed.length) notes.push('não consegui apagar (apague à mão, com permissão de administrador):\n' + stray.failed.join('\n'));
+
 		step('pronto!', 100);
 		resultText.text =
 			'O PADEIRO ' + (installed ? 'atualizado' : 'instalado') + '!\n\n' +
@@ -532,8 +578,12 @@ Instalar / atualizar:
 	function doRemove() {
 		step('removendo…', 50);
 		removeExtension();
+
+		var stray = removeStrayCopies();
+
 		step('pronto!', 100);
-		resultText.text = 'O PADEIRO foi removido deste computador.\n\nreinicie o After Effects.';
+		resultText.text = 'O PADEIRO foi removido deste computador.\n\nreinicie o After Effects.' +
+			(stray.failed.length ? '\n\nnão consegui apagar (apague à mão, com permissão de administrador):\n' + stray.failed.join('\n') : '');
 	}
 
 	cancelBtn.onClick = function () {
