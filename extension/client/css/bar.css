@@ -144,6 +144,161 @@ body.bar-page {
   }
 }
 
+/* =========================================================
+   O pãozinho no fim do ano (bar.js, paintSeason): gorro de 1º a 25 de dezembro; fogos de 26 a 31
+   ========================================================= */
+
+.bar-logo {
+  position: relative;
+}
+
+.xmas-hat {
+  display: none;
+  transform-box: view-box;
+  transform-origin: 14px 14px;
+}
+
+.bar-logo.is-xmas .xmas-hat {
+  display: inline;
+  animation: xmas-hat-in 700ms cubic-bezier(0.22, 0.9, 0.3, 1.2) both; /* entra caindo, uma vez */
+}
+
+@keyframes xmas-hat-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-18deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* só a ponta balança, presa na dobra */
+.xmas-tip {
+  transform-box: view-box;
+  transform-origin: 37px 3px;
+}
+
+.bar-logo.is-xmas .xmas-tip {
+  animation: xmas-tip-sway 2.8s ease-in-out 700ms infinite;
+}
+
+@keyframes xmas-tip-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  50% {
+    transform: rotate(9deg);
+  }
+}
+
+/* contornos sólidos; os da copa e da ponta com a cor por cima (fica só a metade de fora: sem emenda entre elas) */
+.bar-loaf .xmas-line,
+.bar-loaf .xmas-top {
+  fill: none;
+  stroke: #8a1f27;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8;
+}
+
+.bar-loaf .xmas-line {
+  fill: #d8313b;
+}
+
+.bar-loaf .xmas-red {
+  fill: #d8313b;
+  stroke: none;
+}
+
+.bar-loaf .xmas-fold {
+  fill: none;
+  stroke: #8a1f27;
+  stroke-linecap: round;
+  stroke-width: 1.4;
+}
+
+.bar-loaf .xmas-fur {
+  fill: #fff;
+  stroke: #b4bccb;
+  stroke-width: 1;
+}
+
+.bar-loaf .xmas-band-edge,
+.bar-loaf .xmas-band {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.bar-loaf .xmas-band-edge {
+  stroke: #b4bccb;
+  stroke-width: 6.6;
+}
+
+.bar-loaf .xmas-band {
+  stroke: #fff;
+  stroke-width: 5;
+}
+
+/* os fogos: estouros pequenos em volta do pão, um par a cada poucos segundos */
+.bar-fx {
+  position: absolute;
+  inset: -40px -46px -10px;
+  pointer-events: none;
+}
+
+.bar-fx-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.bar-fx-spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 6px var(--c);
+  opacity: 0;
+  animation: bar-fx-spark 1.15s cubic-bezier(0.15, 0.8, 0.3, 1) var(--d) both;
+}
+
+@keyframes bar-fx-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+
+  12%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), calc(var(--y) + 8px)) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-logo.is-xmas .xmas-hat,
+  .bar-logo.is-xmas .xmas-tip {
+    animation: none;
+  }
+
+  .bar-fx {
+    display: none;
+  }
+}
+
 .bar-version {
   color: rgb(var(--on-brand) / 88%);
   font-size: 0.58rem;

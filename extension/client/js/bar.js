@@ -1657,6 +1657,88 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   Início
 	   ========================================================= */
 
+	/* o pãozinho no fim do ano: o gorro de 1º a 25 de dezembro (até 23:59), os fogos de 26 a 31 e, em 1º de janeiro,
+	   o de sempre. pela data do computador, conferida a cada minuto (vira sozinho à meia-noite). com a logo trocada
+	   na aparência, nada muda. no navegador, ?season=xmas ou ?season=fogos mostra cada um */
+	var SEASON_COLORS = ['#ffd75e', '#7cd1ff', '#ff7ac8', '#9cff9a', '#ffffff', '#ffa94d'];
+	var season = { name: null, timer: null };
+
+	function seasonNow() {
+		var test = /[?&]season=(xmas|fogos)/.exec(location.search);
+		var now = new Date();
+
+		if (test) return test[1];
+		if (now.getMonth() !== 11) return '';
+
+		return now.getDate() <= 25 ? 'xmas' : 'fogos';
+	}
+
+	// um estouro: faíscas em círculo a partir de um ponto, numa cor (às vezes duas)
+	function seasonBurst(fx) {
+		var w = fx.clientWidth;
+		var h = fx.clientHeight;
+
+		if (!w || !h) return;
+
+		var burst = el('div', 'bar-fx-burst');
+		var c1 = SEASON_COLORS[Math.floor(Math.random() * SEASON_COLORS.length)];
+		var c2 = Math.random() < 0.4 ? SEASON_COLORS[Math.floor(Math.random() * SEASON_COLORS.length)] : c1;
+		var r = 14 + Math.random() * 10;
+
+		burst.style.left = Math.round(w * (0.12 + Math.random() * 0.76)) + 'px';
+		burst.style.top = Math.round(h * (0.12 + Math.random() * 0.35)) + 'px';
+		for (var i = 0; i < 12; i++) {
+			var a = (Math.PI * 2 * i) / 12 + Math.random() * 0.2;
+			var spark = el('i', 'bar-fx-spark');
+
+			spark.style.setProperty('--c', i % 2 ? c2 : c1);
+			spark.style.setProperty('--x', (Math.cos(a) * r).toFixed(1) + 'px');
+			spark.style.setProperty('--y', (Math.sin(a) * r).toFixed(1) + 'px');
+			spark.style.setProperty('--d', Math.round(Math.random() * 60) + 'ms');
+			burst.appendChild(spark);
+		}
+		fx.appendChild(burst);
+		setTimeout(function () {
+			burst.remove();
+		}, 1400);
+	}
+
+	function paintSeason() {
+		var logo = $('logo');
+		var loaf = logo && logo.querySelector('.bar-loaf');
+		var name = loaf && loaf.style.display !== 'none' ? seasonNow() : '';
+
+		if (!logo || name === season.name) return;
+
+		season.name = name;
+		logo.classList.toggle('is-xmas', name === 'xmas');
+		clearInterval(season.timer);
+
+		var fx = logo.querySelector('.bar-fx');
+
+		if (name !== 'fogos') {
+			if (fx) fx.remove();
+			return;
+		}
+
+		if (!fx) {
+			fx = el('div', 'bar-fx');
+			fx.setAttribute('aria-hidden', 'true');
+			logo.appendChild(fx);
+		}
+
+		var pair = function () {
+			if (document.hidden) return; // escondida, não gasta nada
+			seasonBurst(fx);
+			setTimeout(function () {
+				seasonBurst(fx);
+			}, 380);
+		};
+
+		pair();
+		season.timer = setInterval(pair, 2600);
+	}
+
 	// logo escolhida na configuração (aparência) no lugar do pãozinho
 	function applyLogo(theme) {
 		var logo = $('logo');
@@ -1667,6 +1749,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!src) {
 			if (img) img.remove();
 			loaf.style.display = '';
+			paintSeason();
 			return;
 		}
 
@@ -1678,6 +1761,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		img.src = src;
 		loaf.style.display = 'none';
+		paintSeason();
 	}
 
 	async function init() {
@@ -1686,6 +1770,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			applyLogo(e.detail);
 		});
 		if (window.PAD_THEME) applyLogo(PAD_THEME.current());
+		paintSeason();
+		setInterval(paintSeason, 60000); // a virada do dia (25 → 26, 31 → 1º)
 
 		// ← → andam pela barra (logo, link e ferramentas)
 		PAD_KEYS.listNav({
