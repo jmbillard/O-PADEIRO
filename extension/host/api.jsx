@@ -23,6 +23,11 @@ var PADX_run = null;
 
 function PADX_call(method, argsJson) {
 	var res;
+	var notes = [];
+
+	// nenhum alert() nativo (a caixa do After, herança do script antigo): o que as libs avisam fica recolhido e vai
+	// para o painel junto da resposta (res.notes)
+	PADX_alerts = notes;
 
 	try {
 		var args = argsJson ? JSON.parse(argsJson) : {};
@@ -39,7 +44,10 @@ function PADX_call(method, argsJson) {
 		res = { ok: false, error: /^#PAD_/.test(msg) ? msg : '#PAD_099 - erro inesperado: ' + msg };
 	} finally {
 		padUndoClose(); // nenhum grupo de desfazer fica aberto entre uma chamada e outra
+		PADX_alerts = null;
 	}
+
+	if (notes.length) res.notes = notes;
 
 	return JSON.stringify(res);
 }
@@ -73,6 +81,7 @@ $.global.alert = function (msg) {
 function padCollect(fn) {
 	var data;
 	var messages;
+	var outer = PADX_alerts; // a chamada (PADX_call) já recolhe: volta para ela no fim
 
 	PADX_alerts = [];
 
@@ -80,7 +89,7 @@ function padCollect(fn) {
 		data = fn();
 	} finally {
 		messages = PADX_alerts;
-		PADX_alerts = null;
+		PADX_alerts = outer;
 	}
 
 	return { messages: messages, data: data };

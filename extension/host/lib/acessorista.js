@@ -416,7 +416,9 @@ function psResolveOnMac(path, fixedServer, fixedShare) {
 
 		if (/(^|\/)edit_output(\/|$)/i.test(path)) server = PS_SMB.cppHp; // edit_output fica no cpp-ml-hp
 		else if (lowerVolume == 'vfx' || lowerVolume == 'edit_in_place') server = PS_SMB.sp; // -sp é o padrão
-		else return path;
+		else if (typeof findServerForShare == 'function') server = findServerForShare(volume) || ''; // os outros: o servidor do mapa de drives (configuração > rede)
+
+		if (!server) return path;
 	}
 
 	var root = psMountShare(server, share);

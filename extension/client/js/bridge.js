@@ -75,6 +75,8 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 
 		if (!res.ok) throw new Error(res.error);
+		// o que as libs do host avisariam com alert() (a caixa nativa do After não aparece mais): só no console
+		if (res.notes && res.notes.length && window.console) console.warn('[padeiro] ' + method + ': ' + res.notes.join(' | '));
 
 		return res.data;
 	}

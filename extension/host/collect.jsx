@@ -1080,8 +1080,19 @@ function padPathKind(item, path) {
 // Onde o arquivo que falta está agora: o caminho no formato deste sistema, no volume que tem o caminho
 // (VFX, VFX-1 … VFX-5) e, no macOS, montando o share quando nenhum volume tem (uma vez por share: 'tried').
 // → o File que existe, ou null
+// O caminho guardado no projeto, como o After do macOS mostra um caminho que veio do Windows: \\servidor\share\…
+// vira /servidor/share/… (com uma barra só) e L:\… vira /L/…. de volta para o formato que o conversor entende.
+function padRelinkNormalize(path) {
+	var p = String(path || '').replace(/\\/g, '/');
+
+	if (/^\/[A-Za-z]\//.test(p)) return p.charAt(1).toUpperCase() + ':' + p.substring(2); // /L/… → L:/…
+	if (/^\/[^\/]+\.[^\/]+\.[^\/]+\/[^\/]+/.test(p) && !/^\/(Volumes|Users)\//.test(p)) return '/' + p; // /servidor.dominio/share/… → //…
+
+	return p;
+}
+
 function padRelinkCandidate(path, tried) {
-	var clean = padPath(padNoVolumeSuffix(path)) || String(path);
+	var clean = padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || String(path);
 	var file = new File(clean);
 
 	if (file.exists) return file;
@@ -1184,7 +1195,7 @@ function padRelinkScan(folder, depth, state) {
 // A pasta mais próxima do caminho antigo que ainda existe (subindo até 6 níveis), sem chegar na raiz de um volume
 // ou perto dela (vasculhar o servidor inteiro não dá). → Folder ou null
 function padRelinkAncestor(path) {
-	var clean = String(padPath(padNoVolumeSuffix(path)) || path).replace(/\\/g, '/');
+	var clean = String(padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || path).replace(/\\/g, '/');
 	var parts = clean.split('/');
 	// as partes do volume: /Volumes/VFX (3, com a vazia do começo), //servidor/share (4), L: (1); a busca fica pelo
 	// menos 2 pastas para dentro dele
