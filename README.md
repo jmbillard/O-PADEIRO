@@ -372,6 +372,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 - **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
 - **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
 - **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **de fora** da renomeação: o botão renomeia o que dá e eles continuam na lista, como estão, para você resolver depois (editar o novo nome ou desligar a linha).
+- **exportar a lista** → no **⋯**, *Exportar a lista (.csv)…* salva o nome e o caminho de cada item da lista (todos, como estão agora) numa planilha `.csv` que abre direto no Excel.
 - **arrastar a pasta** → dá para arrastar uma pasta do Finder / Explorer para a janela: ela entra no campo e é lida (um arquivo solto traz a pasta em que ele está).
 - **o progresso** → a renomeação vai em lotes: uma barra fina abaixo da tabela e a contagem no botão (`20 de 120`) mostram o andamento; o desfazer volta todos os lotes de uma vez.
 - **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
@@ -505,6 +506,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_114` | arquivos: não há renomeação para desfazer |
 | `#PAD_115` | a forminha: sem comp aberta, sem layer de texto selecionado ou sem texto no input |
 | `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
+| `#PAD_117` | arquivos: a lista (.csv) não pôde ser gravada no lugar escolhido |
 | `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |

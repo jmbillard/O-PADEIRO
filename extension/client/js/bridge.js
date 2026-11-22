@@ -161,6 +161,15 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res && res.err === 0 && res.data ? res.data : null;
 	}
 
+	// Grava um texto (UTF-8) no disco. Retorna true se gravou.
+	function writeTextFile(path, text) {
+		if (!cep || !window.cep || !window.cep.fs) return false;
+
+		var res = window.cep.fs.writeFile(path, text, window.cep.encoding.UTF8);
+
+		return !!res && res.err === 0;
+	}
+
 	// Lê um arquivo do disco como base64 (sem Node). Retorna a string base64 ou null.
 	function readFileBase64(path) {
 		if (!cep || !window.cep || !window.cep.fs) return null;
@@ -282,5 +291,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, writeTextFile: writeTextFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
 })();

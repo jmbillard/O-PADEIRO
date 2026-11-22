@@ -413,6 +413,36 @@ desliga o que não deve mudar e renomeia.
 		status(note, kind);
 	}
 
+	// A lista da pasta num .csv: o nome de cada item e o caminho dele (como estão agora, todos os da lista, sem os
+	// filtros). separado por ';' e com o BOM do UTF-8: o Excel em português abre direto, com os acentos certos
+	function exportCsv() {
+		if (!state.path || !state.items.length) return status('escolha uma pasta com itens para exportar a lista.', 'error');
+
+		var sep = state.path.indexOf('\\') >= 0 ? '\\' : '/';
+		var cell = function (text) {
+			return '"' + String(text).replace(/"/g, '""') + '"';
+		};
+		var rows = ['nome;caminho'];
+
+		state.items.forEach(function (it) {
+			var name = it.name + tail(it);
+			var path = state.path.replace(/[\\\/]+$/, '') + (it.dir ? sep + it.dir.split('/').join(sep) : '') + sep + name;
+
+			rows.push(cell(name) + ';' + cell(path));
+		});
+
+		var text = '\ufeff' + rows.join('\r\n') + '\r\n';
+		var file = PAD_BRIDGE.pickSaveFile('Salvar a lista da pasta', (state.name || 'lista') + '.csv', ['csv']);
+
+		if (!PAD_BRIDGE.inCep()) return status('lista com ' + plural(rows.length - 1, 'item', 'itens') + ' (no navegador não grava o arquivo)');
+		if (!file) return;
+		if (!/\.csv$/i.test(file)) file += '.csv';
+		if (!PAD_BRIDGE.writeTextFile(file, text)) return status('#PAD_117 - não foi possível gravar ' + file, 'error');
+
+		state.note = 'lista salva: ' + file.replace(/^.*[\\\/]/, '') + ' (' + plural(rows.length - 1, 'item', 'itens') + ')';
+		status(state.note);
+	}
+
 	async function undo() {
 		if (state.busy || !state.undo) return;
 
@@ -564,6 +594,7 @@ desliga o que não deve mudar e renomeia.
 			try {
 				if (btn.dataset.action === 'reread' && state.path) await load(state.path);
 				if (btn.dataset.action === 'folder' && state.path) await call('openFolder', { path: state.path });
+				if (btn.dataset.action === 'csv') exportCsv();
 				if (btn.dataset.action === 'config') {
 					await call('requestConfigTab', { tab: 'rename' });
 					PAD_BRIDGE.openPanel('com.jmbillard.opadeiro.productions');
