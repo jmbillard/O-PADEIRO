@@ -646,8 +646,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
-		if (!handler || btn.classList.contains('is-off')) return; // apagado (ex: o coletar sem projeto salvo): nenhum clique
-		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão
+		if (!handler) return;
+		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão (e vale apagado)
+		if (btn.classList.contains('is-off')) return; // apagado (ex: o coletar sem projeto salvo): só o que abre janela
 		if (btn.classList.contains('is-busy')) return;
 
 		btn.classList.add('is-busy');
@@ -1765,6 +1766,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	async function init() {
+		// os avisos do host (o que era alert() nas libs antigas) no aviso da barra
+		window.addEventListener('pad-notes', function (e) {
+			e.preventDefault();
+			toast('error', e.detail.notes.join('\n'));
+		});
 
 		document.addEventListener('pad-theme', function (e) {
 			applyLogo(e.detail);

@@ -598,5 +598,18 @@
 		return bar;
 	}
 
+	// os avisos do host (o que era alert() nas libs antigas): na linha do rodapé da janela, como aviso. a barra tem o
+	// dela (bar.js) e marca o evento como tratado
+	window.addEventListener('pad-notes', function (e) {
+		if (e.defaultPrevented || !e.detail || !e.detail.notes) return;
+
+		var line = document.querySelector('.fw-status');
+
+		if (!line) return;
+		line.textContent = e.detail.notes.join(' · ');
+		line.title = e.detail.notes.join('\n');
+		line.className = 'fw-status is-error';
+	});
+
 	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
 })();

@@ -74,9 +74,14 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 			throw new Error('#PAD_068 - o host do After Effects não respondeu (' + String(raw).slice(0, 80) + ')');
 		}
 
-		if (!res.ok) throw new Error(res.error);
-		// o que as libs do host avisariam com alert() (a caixa nativa do After não aparece mais): só no console
-		if (res.notes && res.notes.length && window.console) console.warn('[padeiro] ' + method + ': ' + res.notes.join(' | '));
+		// o que as libs do host avisariam com alert() (a caixa nativa do After não aparece mais): junto do erro, ou num
+		// evento que a janela mostra (o aviso da barra, a linha do rodapé das outras janelas: util.js)
+		if (!res.ok) throw new Error(res.error + (res.notes && res.notes.length ? '\n' + res.notes.join('\n') : ''));
+		if (res.notes && res.notes.length) {
+			try {
+				window.dispatchEvent(new CustomEvent('pad-notes', { cancelable: true, detail: { method: method, notes: res.notes } }));
+			} catch (err) { }
+		}
 
 		return res.data;
 	}

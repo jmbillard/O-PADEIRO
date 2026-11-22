@@ -1086,7 +1086,8 @@ function padRelinkNormalize(path) {
 	var p = String(path || '').replace(/\\/g, '/');
 
 	if (/^\/[A-Za-z]\//.test(p)) return p.charAt(1).toUpperCase() + ':' + p.substring(2); // /L/… → L:/…
-	if (/^\/[^\/]+\.[^\/]+\.[^\/]+\/[^\/]+/.test(p) && !/^\/(Volumes|Users)\//.test(p)) return '/' + p; // /servidor.dominio/share/… → //…
+	// /servidor/share/… → //servidor/share/…: a primeira pasta não é uma das do macOS (com ou sem domínio no nome)
+	if (/^\/[^\/]+\/[^\/]+\//.test(p) && !/^\/(Volumes|Users|Applications|System|Library|private|tmp|var|opt|usr|bin|sbin|etc|cores|dev|Network|home)\//i.test(p)) return '/' + p;
 
 	return p;
 }

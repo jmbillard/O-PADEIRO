@@ -329,6 +329,7 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
   ```
 
   o separador fica no campo ao lado da caixa do texto (o último usado volta na próxima vez). **vazio**, vale uma linha por layer, sem separador.
+- **parte vazia** → uma parte sem texto entre dois separadores (ou antes do primeiro) fica no lugar dela: o layer dela é **escondido** e os textos seguintes continuam nos layers certos.
 - **partes a menos** → o layer que fica sem texto é **escondido** naquela duplicata (como no preenchimento completo).
 - **partes a mais** → as que sobram são **ignoradas** e aparecem riscadas entre os chips da versão.
 - **os avisos** → ficam no ícone de cada linha da tabela, com o motivo na dica: linha ignorada, layer escondido, nome que já existia.

@@ -127,8 +127,8 @@ function padLightName(parts, compName, lines) {
 		}
 
 		vars++;
-		// o layer sem linha fica escondido: o trecho dele sai do nome
-		if (parts[i].layer < lines.length) out += padRenameFormat(lines[parts[i].layer]);
+		// o layer sem texto fica escondido: o trecho dele sai do nome
+		if (parts[i].layer < lines.length && lines[parts[i].layer] != '') out += padRenameFormat(lines[parts[i].layer]);
 	}
 
 	// o nome não tem o texto de nenhum layer: o nome da comp + a primeira linha
@@ -168,14 +168,19 @@ function padLightVersions(list) {
 		var lines = [];
 		var src = list[v] instanceof Array ? list[v] : [];
 
+		var filled = false;
+
 		for (var l = 0; l < src.length; l++) {
-			// o texto de um layer pode ter várias linhas: as quebras ficam (no After, \r)
+			// o texto de um layer pode ter várias linhas: as quebras ficam (no After, \r). um texto vazio fica no lugar
+			// dele (o layer é escondido): os seguintes não sobem para o layer de cima
 			var text = String(src[l] == null ? '' : src[l]).replace(/\r\n?/g, '\n').replace(/^\s+|\s+$/g, '');
 
-			if (text != '') lines.push(text);
+			lines.push(text);
+			if (text != '') filled = true;
 		}
 
-		if (lines.length) out.push(lines);
+		while (lines.length && lines[lines.length - 1] == '') lines.pop();
+		if (filled) out.push(lines);
 	}
 
 	return out;
@@ -298,8 +303,8 @@ PADX.lightFill = function (a) {
 			for (var l = 0; l < wanted.length; l++) {
 				var layer = copy.layer(wanted[l]);
 
-				// menos linhas que layers: o layer sem linha fica escondido
-				if (l >= lines.length) {
+				// menos linhas que layers (ou o texto vazio): o layer sem texto fica escondido
+				if (l >= lines.length || lines[l] == '') {
 					layer.enabled = false;
 					continue;
 				}
@@ -308,9 +313,20 @@ PADX.lightFill = function (a) {
 					var prop = layer.property('ADBE Text Properties').property('ADBE Text Document');
 					var doc = prop.value;
 
-					doc.text = lines[l].replace(/\n/g, '\r');
-					if (prop.numKeys > 0) prop.setValueAtKey(1, doc);
-					else prop.setValue(doc);
+					var text = lines[l].replace(/\n/g, '\r');
+
+					// com keyframes no texto, todos eles: senão a duplicata volta ao texto antigo no key seguinte
+					if (prop.numKeys > 0) {
+						for (var k = 1; k <= prop.numKeys; k++) {
+							var keyDoc = prop.keyValue(k);
+
+							keyDoc.text = text;
+							prop.setValueAtKey(k, keyDoc);
+						}
+					} else {
+						doc.text = text;
+						prop.setValue(doc);
+					}
 				} catch (err) {
 					errors.push({ name: layer.name, error: err.message });
 				}

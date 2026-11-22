@@ -106,9 +106,13 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 				parts[parts.length - 1].push(line);
 			});
 
-			return parts.map(function (part) {
+			// uma parte vazia fica no lugar dela (o layer dela é escondido); só as vazias do fim saem
+			parts = parts.map(function (part) {
 				return part.filter(Boolean).join('\n');
-			}).filter(Boolean);
+			});
+			while (parts.length && !parts[parts.length - 1]) parts.pop();
+
+			return parts.some(Boolean) ? parts : [];
 		}).filter(function (parts) {
 			return parts.length;
 		});
@@ -204,6 +208,12 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		var unit = byParts() ? ['parte ignorada', 'partes ignoradas'] : ['linha ignorada', 'linhas ignoradas'];
 
 		if (extra > 0) notes.push(plural(extra, unit[0], unit[1]) + ': “' + lines.slice(count).map(flat).join(' / ') + '”');
+		var blank = [];
+
+		lines.forEach(function (text, n) {
+			if (!text && n < count) blank.push(n + 1);
+		});
+		if (blank.length) notes.push((blank.length === 1 ? 'layer ' : 'layers ') + blank.join(', ') + (blank.length === 1 ? ' fica escondido' : ' ficam escondidos') + ' (texto vazio)');
 		if (extra < 0) {
 			var hidden = state.info.layers.slice(lines.length).map(function (layer, i) {
 				return lines.length + i + 1;
@@ -243,7 +253,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 				var off = n >= state.info.layers.length;
 				var chip = el('span', 'tag-chip' + (off ? ' is-off' : ''));
 
-				chip.appendChild(el('span', null, flat(text)));
+				chip.appendChild(el('span', null, text ? flat(text) : '(vazio)'));
 
 				chip.title = off ? text + '\n\nignorada: não há layer para este texto' : text + '\n\nvai para o layer ' + (n + 1) + (state.info.layers[n] ? ' (' + state.info.layers[n].name + ')' : '');
 				chips.appendChild(chip);
@@ -376,7 +386,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 				var off = n >= state.info.layers.length;
 				var chip = el('span', 'tag-chip' + (off ? ' is-off' : ''));
 
-				chip.appendChild(el('span', null, flat(text)));
+				chip.appendChild(el('span', null, text ? flat(text) : '(vazio)'));
 				chip.title = text;
 				chips.appendChild(chip);
 			});

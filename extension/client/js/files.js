@@ -386,11 +386,16 @@ desliga o que não deve mudar e renomeia.
 		var relinked = 0;
 		var errors = [];
 
-		// em lotes: cada um volta do After e a barra anda (o registro do desfazer junta todos)
+		// em lotes: cada um volta do After e a barra anda (o registro do desfazer junta todos). só junta ao registro
+		// depois de um lote que gravou nele: se os primeiros não renomearam nada, o registro ainda é o de antes
+		// (outra renomeação), e juntar nele faria o desfazer voltar aquela também
+		var wrote = false;
+
 		try {
 			for (var at = 0; at < list.length; at += BATCH) {
-				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: at > 0 });
+				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote });
 
+				if (res.count > 0) wrote = true;
 				count += res.count || 0;
 				relinked += res.relinked || 0;
 				errors = errors.concat(res.errors || []);

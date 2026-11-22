@@ -157,13 +157,29 @@ Instalar / atualizar:
 		folder.remove();
 	}
 
-	function removeExtension() {
+	// Apaga uma pasta de extensão. num link (a instalação de desenvolvimento, uma junção do Windows), apaga só o link,
+	// nunca o que ele aponta (a pasta da rede, o repositório)
+	function removeExtensionFolder(folder) {
 		if (IS_MAC) {
-			// 'rm' sem barra no fim apaga só o link, se a instalação de desenvolvimento for um link
-			system.callSystem('rm -rf ' + quote(dest.fsName));
-		} else if (dest.exists) {
-			removeFolder(dest);
+			// 'rm' sem barra no fim apaga só o link
+			system.callSystem('rm -rf ' + quote(folder.fsName));
+			return;
 		}
+
+		if (!folder.exists) return;
+
+		// 'rmdir' sem /s: apaga a junção ou o link; numa pasta de verdade (com arquivos) não faz nada
+		system.callSystem('cmd /c rmdir ' + quote(folder.fsName));
+		if (!new Folder(folder.fsName).exists) return;
+
+		// o After vê o link como um apelido: se ainda for um, não segue para dentro dele
+		if (folder.alias) return;
+
+		removeFolder(folder);
+	}
+
+	function removeExtension() {
+		removeExtensionFolder(dest);
 	}
 
 	// Outras cópias do padeiro nas pastas de extensões (as primeiras versões beta, uma pasta copiada à mão, um link de
@@ -195,9 +211,7 @@ Instalar / atualizar:
 
 				if (!manifest.exists || !/com\.jmbillard\.opadeiro/.test(readText(manifest))) continue;
 
-				// 'rm' sem barra no fim: num link, apaga só o link
-				if (IS_MAC) system.callSystem('rm -rf ' + quote(path));
-				else removeFolder(items[i]);
+				removeExtensionFolder(items[i]);
 
 				if (new Folder(path).exists) out.failed.push(path);
 				else out.removed++;

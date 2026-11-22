@@ -1637,7 +1637,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				names: (a.versions || []).map(function (lines) {
 					if (mode === 'namelayer') return { name: '', taken: false };
 
-					var name = 'RDP - ' + String(lines[0] || '').replace(/\s+/g, ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+					var name = 'RDP - ' + String(lines.filter(Boolean)[0] || '').replace(/\s+/g, ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 					var key = name.toUpperCase();
 					var was = !!taken[key];
 
