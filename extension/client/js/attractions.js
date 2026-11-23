@@ -37,7 +37,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var source = { info: null, list: null, stamp: '', refreshing: null };
+	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [] };
+	var CARD_DAYS = 7; // os cards do Trello que viram sugestão na claquete: os que entraram nos últimos 7 dias
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
 	function nodeFs() {
@@ -274,6 +275,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		};
 
 		source.stamp = stamp;
+		source.cards = recentCards(data.trello);
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
 		}).map(function (a) {
@@ -397,6 +399,46 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return films.loading;
 	}
 
+	/* ---------------------------------------------------------------
+	   os cards do Trello como referência: a atração com card novo (a claquete do card começa com o nome ou um
+	   padrão dela: DOMINGAO 25/11 → DOMINGÃO COM HUCK) vem primeiro na busca, para abrir o projeto dela. só os cards
+	   que entraram nos últimos 7 dias ('at', a data) e não estão finalizados ('fim'). o índice de antes (sem 'at')
+	   não sugere nada.
+	   --------------------------------------------------------------- */
+
+	function recentCards(list) {
+		var since = Date.now() - CARD_DAYS * 86400000;
+
+		return (list || []).filter(function (c) {
+			var at = c && c.at ? Date.parse(String(c.at)) : NaN;
+
+			// os cards de filme ('fil') ficam de fora: os filmes têm a lista deles
+			return c && c.claq && !c.fim && !c.fil && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
+		}).map(function (c) {
+			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), atr: c.atr ? aepName(c.atr) : '', words: aepName(c.claq).split(' ').filter(Boolean) };
+		}).sort(function (a, b) {
+			return b.time - a.time; // o mais novo primeiro
+		});
+	}
+
+	// o card mais novo de uma atração → { claq, red, ed, card, at, more } ou null. o card ligado a uma atração no banco
+	// ('atr') vale só para ela (Fut Fem Amis → AMISTOSOS DA SELECAO FEMININA, não FUTEBOL); o card sem vínculo, pelas
+	// chaves dela (o nome e os padrões) no começo da claquete
+	function cardFor(it, cards) {
+		var name = aepName(it.name);
+		var hits = (cards || []).filter(function (c) {
+			if (c.atr) return c.atr === name;
+
+			return it.keys.some(function (k) {
+				return scoreKey(k, c.words) >= 1000;
+			});
+		});
+
+		if (!hits.length) return null;
+
+		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1 };
+	}
+
 	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
 	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
 	async function watchSearchSource() {
@@ -444,21 +486,44 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				score = Math.max(score, scoreAny(k, words));
 			});
 
-			if (score) found.push({ it: it, score: score });
+			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it, source.cards) });
 		});
 
-		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA)
+		// pela claquete dos cards novos: o card ligado a uma atração no banco traz ela, mesmo que o nome dela não bata com
+		// o digitado (fut → o card FUT FEM AMIS 29/11 → AMISTÓSOS DA SELEÇÃO FEMININA, ao lado do FUTEBOL)
+		if (!local) {
+			(source.cards || []).forEach(function (c) {
+				if (!c.atr || !scoreAny(wordKey(c.claq), words)) return;
+
+				var it = list.filter(function (x) {
+					return !x.isFilm && aepName(x.name) === c.atr;
+				})[0];
+
+				if (!it) return;
+
+				var had = found.filter(function (f) {
+					return f.it === it;
+				})[0];
+
+				if (had) had.viaCard = true;
+				else found.push({ it: it, score: 1000, card: cardFor(it, source.cards), viaCard: true });
+			});
+		}
+
+		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA); as que vieram
+		// por um card ficam
 		if (found.some(function (f) {
 			return f.score >= 1000;
 		})) {
 			found = found.filter(function (f) {
-				return f.score >= 1000;
+				return f.score >= 1000 || f.viaCard;
 			});
 		}
 
 		var seen = {};
 		var matches = found.sort(function (a, b) {
-			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
+			// a atração com card novo no Trello primeiro (a referência para abrir o projeto dela)
+			return (b.card ? 1 : 0) - (a.card ? 1 : 0) || b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
 		}).filter(function (f) {
 			var key = local ? f.it.path : (f.it.isFilm ? 'f|' : '') + aepName(f.it.name);
 
@@ -467,7 +532,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '' };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
@@ -511,13 +576,23 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
-	function fillPattern(pattern, name, category, year) {
+	// month: o mês do card do Trello ({ index: 0-11, year }), que vale mais que a data de hoje (monthOf): JANEIRO NA
+	// GLOBO → os tokens de mês e de ano são os de janeiro (o próximo)
+	function fillPattern(pattern, name, category, year, month) {
 		var d = new Date();
 
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
 		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name), ano_producao: year };
+
+		if (month && month.index >= 0) {
+			var num = ('0' + (month.index + 1)).slice(-2);
+
+			values.ano = values.ano_proximo_mes = String(month.year);
+			values.mes = values.proximo_mes_num = num;
+			values.mes_extenso = values.proximo_mes = MONTHS[month.index];
+		}
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -535,6 +610,25 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return (cfg && cfg.categories || []).map(function (c) {
 			return categoryBase(c, cfg.fallback);
 		});
+	}
+
+	// o mês escrito numa claquete (JANEIRO NA GLOBO, MOOD MARÇO 2027) → { index, year } ou null. sem o ano escrito, o
+	// próximo daquele mês: em dezembro, JANEIRO é o do ano que vem; o mês de agora (ou o anterior) é deste ano
+	function monthOf(text) {
+		var words = aepName(text).split(' ');
+		var index = -1;
+
+		words.some(function (w) {
+			index = MONTHS.indexOf(w);
+			return index >= 0;
+		});
+		if (index < 0) return null;
+
+		var typed = /\b(20\d\d)\b/.exec(aepName(text));
+		var now = new Date();
+		var year = now.getFullYear() + (index < now.getMonth() - 1 ? 1 : 0);
+
+		return { index: index, year: typed ? Number(typed[1]) : year };
 	}
 
 	// a mesma regra do host: a primeira letra do título sem o artigo, ou # para números
@@ -969,6 +1063,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		candidates: candidates,
 		categories: newBases,
 		fillPattern: fillPattern,
+		monthOf: monthOf,
 		projectYear: projectYear,
 		setYear: setYear,
 		shiftYear: shiftYear,

@@ -1204,7 +1204,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				// a organização nova (PROJETOS/…/{atracao}/{ano}): os quadros de outro ano viram exemplos
 				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK': ['2025', '2026'],
 				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2025': ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'],
-				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL']
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL'],
+				// o filme que já tem projeto: as pastas da estrutura (a claquete recolhe e vai para os .aep)
+				'_A_/ANNA - O PERIGO TEM NOME (2019)': ['03BOARDS', '05SAIDA', '06EXTERNOS'],
+				'_A_/ANNA - O PERIGO TEM NOME': ['03BOARDS', '05SAIDA', '06EXTERNOS']
 			};
 			var names = [];
 
@@ -1253,7 +1256,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var list = [
 				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
 				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/CHEF DE ALTO NIVEL' },
-				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026' },
+				// com card novo no Trello (a sugestão da claquete)
+				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026', trello: { claq: 'DOMINGAO 25/11', red: 'ANA', ed: 'BETO', card: 'aB12cD', at: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10), more: 1 } },
 				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
@@ -1282,7 +1286,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.trello || null });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;
@@ -1302,7 +1306,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 			};
 			var film = a.kind === 'film';
-			var base = film ? key(a.title) : key((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || ''));
+			// o nome do .aep do tipo (aba PROJETO > ARQUIVO), como no host: {o_que_e} no lugar do token, ou no fim
+			var custom = String(a.fileName || '');
+			var base = film ? key(a.title) : custom ? key(custom.indexOf('{o_que_e}') >= 0 ? custom.split('{o_que_e}').join(' ' + (a.what || '') + ' ') : custom + ' ' + (a.what || '')) : key((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;
 			var projectsRoot = /PROJETOS?$/i.test(root.replace(/ /g, ''));
 			var H = 3600000;
@@ -1316,10 +1322,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
 				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
+			] : !film && /MOOD MENSAL/.test(root) ? [
+				// o mood do mês já começado (o card do Trello abre ele)
+				{ name: 'JANEIRO NA GLOBO', modified: now - 3 * H }
 			] : [];
 			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
 		},
 
 		projectCreate: function (a) {

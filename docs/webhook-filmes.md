@@ -1,8 +1,8 @@
 # webhook dos filmes recentes
 
-O que a claquete (janela **PROJETO**) espera do workflow dos filmes. Com o campo vazio, a claquete mostra os filmes
-criados na base nos últimos dias, com o pôster, o ano de produção e a exibição. Os filmes que ainda não têm pasta de
-projeto ganham a etiqueta **A PRODUZIR** e vêm primeiro.
+O que a claquete (janela **PROJETO**) espera do workflow dos filmes. Digitando, os filmes criados na base nos últimos
+dias que batem com o texto aparecem na busca, com o pôster, o ano de produção e a exibição (com o campo vazio, nada
+aparece). Os filmes que ainda não têm pasta de projeto ganham a etiqueta **A PRODUZIR**.
 
 ## endereço
 
@@ -51,7 +51,7 @@ aparece e a claquete segue funcionando como antes.
   `{atracao}`), cada letra uma vez, e marca o filme que ainda não tem pasta. Compara o título sem acento e sem
   pontuação: vale a pasta com o mesmo ano ou uma antiga sem ano (`NAO NAO OLHE`). A pasta de outro ano é outro filme
   (um remake: `ANNA (1987)` não é `ANNA (2019)`).
-- **Sem travar o After:** a lista aparece na hora, e as etiquetas chegam depois. O host só converte o caminho das
+- **Sem travar o After:** a lista é baixada no primeiro clique no campo, e as etiquetas chegam depois. O host só converte o caminho das
   pastas das letras (`projectFilmsParents`), e o Node do painel lê as pastas sem bloquear. Sem o Node, o host lê
   (`projectFilmsDone`).
 - **Já tem pasta antiga sem ano:** escolhido o filme, o projeto entra na pasta que já existe, em vez de criar outra
