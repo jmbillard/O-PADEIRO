@@ -723,6 +723,7 @@ templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo:
 */
 
 var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
+// colunas do CSV (o webhook recebe também projeto, atracao, quadro, o_que_e, pasta, output e versao)
 var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
 
 function padDefaultLog() {
@@ -1576,6 +1577,19 @@ PADX.fillFinish = function () {
 			return n < 10 ? '0' + n : String(n);
 		};
 
+		// os dados do projeto (A CLAQUETE) vão junto: o template e a produção não ficam mais no arquivo, só aqui
+		var meta = {};
+
+		try {
+			meta = padMetaRead();
+		} catch (err) { }
+
+		var projeto = '';
+
+		try {
+			projeto = app.project.file ? app.project.file.fsName : '';
+		} catch (err) { }
+
 		padWriteLog({
 			producao: run.production || '',
 			template: run.templateData.configName,
@@ -1583,7 +1597,15 @@ PADX.fillFinish = function () {
 			user: system.userName,
 			work_station: system.machineName.replaceSpecialCharacters(),
 			data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
-			caminho: run.projectFile.fsName
+			caminho: run.projectFile.fsName,
+			// só no webhook (o CSV continua com as colunas de PAD_LOG_COLUMNS)
+			projeto: projeto,
+			atracao: meta.atracao || '',
+			quadro: meta.quadro || '',
+			o_que_e: meta.oQueE || '',
+			pasta: meta.pasta || '',
+			output: meta.output || (run.templateData.outputPath || [])[0] || '',
+			versao: PADX_VERSION
 		});
 	} catch (err) { }
 

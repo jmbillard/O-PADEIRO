@@ -55,7 +55,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var LOG_HINTS = {
 		csvGlobal: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da equipe (um arquivo só, na mesma pasta da lista de produções).',
-		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina e projeto).',
+		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina, o projeto e os dados dele: atração, quadro, o que é, pasta, output e a versão do Padeiro).',
 		csv: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da produção (um arquivo só, na pasta de templates dela).',
 		off: 'nada é registrado.'
 	};
