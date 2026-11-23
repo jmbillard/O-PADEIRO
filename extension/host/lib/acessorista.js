@@ -11,7 +11,7 @@ var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
 var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
 
 // Os filmes criados na base nos últimos dias (a claquete mostra com o campo vazio e marca os que ainda não têm
-// pasta). O workflow responde { filmes: [{ titulo, ano, exibicao, sessao, poster }] }. (ainda um endereço provisório)
+// pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
 var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
 
 var PS_SERVIDOR = null; // caminhos fixos do servidor: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES

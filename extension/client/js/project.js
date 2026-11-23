@@ -499,11 +499,19 @@ projetos com o nome certo).
 		return add.concat(out);
 	}
 
-	// baixa os filmes recentes (uma vez por janela) e confere quais já têm pasta (a pasta da letra, pelo host)
+	// baixa os filmes recentes (uma vez por janela) e confere quais já têm pasta (a pasta da letra). a lista aparece na
+	// hora; as etiquetas (A PRODUZIR / JÁ TEM PROJETO) chegam quando a conferência termina, sem travar o After: o
+	// host só converte as pastas das letras (uma vez cada) e o Node do painel lê as pastas. sem o Node, o host lê
 	async function loadFilms() {
-		if (state.films || state.filmsLoading) return;
+		// a janela aberta por muito tempo: de 10 em 10 min, de novo (os filmes novos e as pastas criadas por outros)
+		if (state.filmsLoading || (state.films && Date.now() - state.filmsAt < 600000)) return;
 
 		state.filmsLoading = true;
+		state.filmsAt = Date.now();
+
+		var redraw = function () {
+			if (!$('claq').value.trim() && document.activeElement === $('claq')) renderAttractions();
+		};
 
 		try {
 			var list = await ATR.recentFilms();
@@ -517,16 +525,20 @@ projetos com o nome certo).
 				return;
 			}
 
+			// já mostra (sem etiqueta), na ordem do webhook; na volta depois de 10 min, fica a lista de antes até conferir
+			if (!state.films || !state.films.length) {
+				state.films = list.slice();
+				redraw();
+			}
+
 			// a pasta de cima da do filme: o caminho do tipo FILME até o {atracao} (…/TITULOS/_N_)
 			var head = base.pattern.split('{atracao}')[0];
-			var items = list.map(function (f) {
-				return { parent: fillPattern(head, f.name.toUpperCase(), base.label, f.year).replace(/[^\\\/]*$/, '').replace(/[\\\/]+$/, ''), title: f.name };
+			var parents = list.map(function (f) {
+				return fillPattern(head, f.name.toUpperCase(), base.label, f.year).replace(/[^\\\/]*$/, '').replace(/[\\\/]+$/, '');
 			});
-			var res = { done: [], paths: [] };
+			var res = await filmsDone(list, parents);
 
-			try {
-				res = await call('projectFilmsDone', { items: items });
-			} catch (err) { }
+			if (!res) return; // a conferência falhou: a lista fica sem etiquetas
 
 			state.films = list.map(function (f, i) {
 				return Object.assign({}, f, { done: !!res.done[i], path: res.paths[i] || '' });
@@ -534,10 +546,77 @@ projetos com o nome certo).
 				return (a.done ? 1 : 0) - (b.done ? 1 : 0); // a produzir primeiro (na ordem do webhook)
 			});
 		} catch (err) {
-			state.films = [];
+			if (!state.films) state.films = [];
 		} finally {
 			state.filmsLoading = false;
-			if (!$('claq').value.trim() && document.activeElement === $('claq')) renderAttractions();
+			redraw();
+		}
+	}
+
+	// o título como chave da pasta: sem acento, sem pontuação e sem o ano (NAO NAO OLHE e NAO NAO OLHE (2022))
+	function filmKey(text) {
+		return aepName(String(text || '').replace(/\(\d{4}\)/g, ' '));
+	}
+
+	// a pasta do filme entre as de mesmo título: a com o mesmo ano ou, sem ela, uma antiga sem ano. a de outro ano é
+	// outro filme (um remake: ANNA (1987) não é ANNA (2019))
+	function filmFolder(folders, year) {
+		var same = (folders || []).filter(function (d) {
+			return year && d.year === String(year);
+		})[0] || (folders || []).filter(function (d) {
+			return !d.year || !year;
+		})[0];
+
+		return same ? same.path : '';
+	}
+
+	// quais filmes já têm pasta: { done: [bool], paths: [a pasta ou ''] }, ou null se não deu para conferir
+	async function filmsDone(list, parents) {
+		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
+
+		if (fs && fs.promises) {
+			try {
+				// as pastas das letras, cada uma uma vez: o host só converte o caminho (o volume montado no Mac)
+				var unique = parents.filter(function (p, i) {
+					return p && parents.indexOf(p) === i;
+				});
+				var mounted = (await call('projectFilmsParents', { parents: unique })).paths || [];
+				var pathMod = require('path');
+				var names = {};
+
+				await Promise.all(unique.map(async function (p, i) {
+					var dir = mounted[i];
+					var found = {};
+
+					if (dir) {
+						try {
+							(await fs.promises.readdir(dir, { withFileTypes: true })).forEach(function (d) {
+								if (!d.isDirectory()) return;
+
+								var key = filmKey(d.name);
+								var year = (String(d.name).match(/\((\d{4})\)\s*$/) || [])[1] || '';
+
+								(found[key] = found[key] || []).push({ year: year, path: pathMod.join(dir, d.name) });
+							});
+						} catch (err) { } // a pasta da letra ainda não existe: nenhum filme dela tem projeto
+					}
+					names[p] = found;
+				}));
+
+				var paths = list.map(function (f, i) {
+					return filmFolder((names[parents[i]] || {})[filmKey(f.name)], f.year);
+				});
+
+				return { done: paths.map(Boolean), paths: paths };
+			} catch (err) { } // sem a conversão pelo host: tenta o caminho de antes
+		}
+
+		try {
+			return await call('projectFilmsDone', { items: list.map(function (f, i) {
+				return { parent: parents[i], title: f.name, year: f.year || '' };
+			}) });
+		} catch (err) {
+			return null;
 		}
 	}
 
@@ -597,9 +676,12 @@ projetos com o nome certo).
 		});
 
 		var match = flow.matches.filter(function (m) {
-			return m.isFilm && aepName(m.name) === aepName(f.name);
+			return m.isFilm && aepName(m.name) === aepName(f.name) && (!f.year || !m.year || String(m.year) === String(f.year));
 		})[0];
 
+		// o filme ainda fora do índice da busca (cadastrado depois da última cópia): entra pelos dados do webhook, com a
+		// pasta pela categoria de filmes, como os do índice
+		if (!match) match = (await toNewOrg(await resolveFilms([{ name: f.name, year: f.year || '', isFilm: true, path: '', out: '', category: 'FILME' + (f.year ? ' · ' + f.year : ''), depth: 1 }])))[0];
 		if (match) enterAttraction(match);
 	}
 
@@ -622,9 +704,19 @@ projetos com o nome certo).
 	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
 	// configuração (aba PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
 	function filmBase() {
-		return state.bases.filter(function (b) {
+		var base = state.bases.filter(function (b) {
 			return b.pattern && /^FILMES?( |$)/.test(aepName(b.label));
 		})[0] || null;
+
+		if (!base) return null;
+
+		// o padrão dos filmes: a pasta e o output terminam no título com o ano (NAO NAO OLHE (2022)), mesmo que a
+		// configuração ainda não tenha o {ano_producao}. sem ano, os parênteses somem (fillPattern)
+		var withYear = function (p) {
+			return !p || /\{ano_producao\}/.test(p) ? p : String(p).replace(/\{atracao\}([\\\/]*)$/, '{atracao} ({ano_producao})$1');
+		};
+
+		return Object.assign({}, base, { pattern: withYear(base.pattern), outPattern: withYear(base.outPattern) });
 	}
 
 	async function resolveFilms(matches) {
@@ -641,6 +733,19 @@ projetos com o nome certo).
 
 			var name = m.name.toUpperCase();
 			var path = fillPattern(base.pattern, name, base.label, m.year);
+			var known = (state.films || []).filter(function (f) {
+				return f.path && filmKey(f.name) === filmKey(m.name);
+			})[0];
+
+			// o filme que já tem pasta (conferida na lista dos recentes): entra nela, mesmo que seja uma antiga sem o
+			// ano (NAO NAO OLHE), em vez de criar outra ao lado com o ano
+			if (known && /\{atracao\}[^\\\/]*[\\\/]*$/.test(base.pattern)) {
+				var folder = String(known.path).replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
+
+				path = path.replace(/[^\\\/]+([\\\/]*)$/, function (all, tail) {
+					return folder + tail;
+				});
+			}
 
 			// o .aep do filme: o nome do tipo (aba PROJETO > ARQUIVO) ou o título com o ano (NAO NAO OLHE (2022))
 			var file = base.filePattern ? fillPattern(base.filePattern, name, base.label, m.year) : name + (m.year ? ' (' + m.year + ')' : '');
@@ -1940,7 +2045,11 @@ projetos com o nome certo).
 				// nome fora desse padrão (projeto antigo) fica como está até a atração ou o que é mudarem
 				// com pastas abaixo da atração: ATRAÇÃO/PASTA/… no campo, e o .aep é o último nível + o que é
 				var atr = aepName(String(cur.quadro || '').split('/').pop() || cur.atracao);
-				var fname = aepName(String(cur.fileName || '').replace(/\.aep$/i, ''));
+				var year = !cur.quadro && (String(cur.fileName || '').match(/\((\d{4})\)/) || [])[1];
+				// o filme: o ano entre parênteses depois do título (NAO NAO OLHE (2022) CHAMADA) fica ao salvar
+				var fname = aepName(String(cur.fileName || '').replace(/\.aep$/i, '').replace(/\(\d{4}\)/, ' '));
+
+				edSetYear(year && fname.indexOf(atr) === 0 ? year : '', cur.atracao);
 				var what = cur.oQueE || (fname.indexOf(atr + ' ') === 0 ? fname.slice(atr.length + 1) : '');
 
 				$('ed-atracao').value = cur.atracao.toUpperCase() + (cur.quadro ? '/' + cur.quadro.toUpperCase() : '');
@@ -1949,6 +2058,7 @@ projetos com o nome certo).
 			} else {
 				var base = String(cur.fileName || '').replace(/\.aep$/i, '');
 
+				edSetYear('', '');
 				$('ed-atracao').value = base.toUpperCase();
 				$('ed-what').value = '';
 				if (base) edLookup(base, true);
@@ -2217,9 +2327,23 @@ projetos com o nome certo).
 		$('ed-editors').title = text ? 'quem já salvou este projeto e o último dia de cada um' : '';
 	}
 
+	// o ano de produção do filme no nome do .aep: vale enquanto a atração do campo for o filme (sem pastas abaixo)
+	function edSetYear(year, name) {
+		state.edYear = year ? String(year) : '';
+		state.edYearFor = year ? aepName(name) : '';
+	}
+
+	function edYearBase() {
+		var p = edParts();
+
+		if (!state.edYear || p.rest.length || aepName(p.first) !== state.edYearFor) return '';
+
+		return ATR.aepFileName(p.first + ' (' + state.edYear + ') ' + $('ed-what').value);
+	}
+
 	function edFile() {
 		var p = edParts();
-		var name = state.edKeep || aepName((p.rest.length ? p.rest[p.rest.length - 1] : p.first) + ' ' + $('ed-what').value);
+		var name = state.edKeep || edYearBase() || aepName((p.rest.length ? p.rest[p.rest.length - 1] : p.first) + ' ' + $('ed-what').value);
 		var now = state.current ? String(state.current.fileName || '').replace(/\.aep$/i, '') : '';
 		var span = $('ed-file').querySelector('span');
 
@@ -2383,6 +2507,7 @@ projetos com o nome certo).
 		state.edPicked = match.path;
 		state.edAttr = match; // digitando a barra depois, as pastas são desta
 		state.edKeep = '';
+		edSetYear(match.isFilm ? match.year : '', match.name);
 		$('ed-atracao').value = match.name.toUpperCase();
 		if (typed && !$('ed-what').value && rest.indexOf(atr + ' ') === 0) $('ed-what').value = rest.slice(atr.length + 1);
 		if (match.path) {
@@ -2445,7 +2570,7 @@ projetos com o nome certo).
 		}
 
 		try {
-			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep });
+			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() });
 
 			state.editorKey = null;
 			state.current = cur;
