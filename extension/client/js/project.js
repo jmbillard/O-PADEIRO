@@ -643,19 +643,18 @@ projetos com o nome certo).
 		return 'há ' + Math.ceil((start.getTime() - t) / day) + ' dias';
 	}
 
-	// uma atração com card novo no Trello: o nome e, embaixo, o card (a claquete, quando entrou e o redator). o clique
-	// abre a atração, como na lista: o card só diz qual é (o projeto não leva o nome dele)
-	function cardRow(match) {
-		var c = match.trello;
+	// um card novo no Trello: a claquete do card e, embaixo, a atração, quando entrou e o redator. o clique abre a
+	// atração (a pasta de projetos dela, recolhida) e marca na lista JÁ NA PASTA o .aep que bate com o card
+	function cardRow(match, c) {
 		var item = el('button', 'combo-item card-row');
 		var text = el('span', 'film-text');
-		var sub = ['card ' + c.claq, cardWhen(c.at), c.red].filter(Boolean).join(' · ') + (c.more ? ' · + ' + c.more + (c.more === 1 ? ' card' : ' cards') : '');
+		var sub = [match.name, cardWhen(c.at), c.red].filter(Boolean).join(' · ');
 
 		item.type = 'button';
 		item.setAttribute('role', 'option');
 		item.title = match.display || '';
 		item.insertAdjacentHTML('afterbegin', TRELLO_SVG);
-		text.appendChild(el('span', 'combo-title', match.name.toUpperCase()));
+		text.appendChild(el('span', 'combo-title', String(c.claq).toUpperCase()));
 		text.appendChild(el('span', 'film-sub', sub));
 		item.appendChild(text);
 		item.appendChild(el('span', 'film-tag', 'CARD NOVO'));
@@ -665,10 +664,59 @@ projetos com o nome certo).
 		item.addEventListener('click', function () {
 			// pelo card: a lista recolhe direto na pasta de projetos da atração (os .aep que já estão lá), como no filme
 			state.settleAll = true;
+			state.cardPick = { claq: c.claq, attr: aepName(match.name) };
 			enterAttraction(match);
 		});
 
 		return item;
+	}
+
+	// o .aep da pasta que é o do card: cada palavra da claquete é o começo de uma palavra do nome do arquivo
+	// (CH JOR ESP G5 → MELHOR CHAMADA DE JORNALISMO E ESPORTE G5). vale o que bate com mais palavras, só se for um só
+	// (empate ou quase nada em comum: nada marcado). as datas (29/11) e as palavras que batem com todos não contam
+	function cardFile(claq, files) {
+		var words = aepName(String(claq || '').replace(/\b\d{1,2}\/\d{1,2}(\/\d{2,4})?\b/g, ' ')).split(' ').filter(function (w) {
+			return w.length >= 2;
+		});
+		var list = (files || []).filter(function (f) {
+			return f.ext !== 'aet';
+		});
+
+		if (!words.length || !list.length) return null;
+
+		var hits = list.map(function (f) {
+			var fw = aepName(f.name).split(' ');
+
+			return words.filter(function (w) {
+				return fw.some(function (x) {
+					return x.indexOf(w) === 0;
+				});
+			});
+		});
+		var useful = words.filter(function (w) {
+			var n = hits.filter(function (h) {
+				return h.indexOf(w) >= 0;
+			}).length;
+
+			return n > 0 && (n < list.length || list.length === 1);
+		});
+
+		if (!useful.length) return null;
+
+		var scores = hits.map(function (h) {
+			return h.filter(function (w) {
+				return useful.indexOf(w) >= 0;
+			}).length;
+		});
+		var best = Math.max.apply(null, scores);
+
+		if (scores.filter(function (s) {
+			return s === best;
+		}).length !== 1 || best < Math.min(2, useful.length)) return null;
+
+		var f = list[scores.indexOf(best)];
+
+		return f.name + '.' + (f.ext || 'aep');
 	}
 
 	// uma linha de filme: o pôster (ou o ícone), o título com o ano, a exibição e a etiqueta
@@ -1068,7 +1116,11 @@ projetos com o nome certo).
 			if (carded.length) {
 				list.appendChild(ATR.group('no trello'));
 				carded.forEach(function (match) {
-					list.appendChild(cardRow(match));
+					// um card por linha (no máximo 5 de cada atração). no tipo com regra (MOOD MENSAL), só o mais novo: o mês
+					// dele já está na pasta e no .aep da linha
+					(match.isFixed ? [match.trello] : match.trello.all || [match.trello]).slice(0, 5).forEach(function (c) {
+						list.appendChild(cardRow(match, c));
+					});
 				});
 				m = m.filter(function (x) {
 					return carded.indexOf(x) < 0;
@@ -1452,6 +1504,9 @@ projetos com o nome certo).
 		flow.pick = pick;
 		state.plan = null;
 		flow.mode = '';
+		// a lista JÁ NA PASTA e o aviso do .aep repetido eram da pasta de antes: saem até o plano novo chegar
+		$('arq-files').hidden = true;
+		$('arq-dup').hidden = true;
 		if (!pick) {
 			renderDest();
 			renderFile();
@@ -1570,6 +1625,13 @@ projetos com o nome certo).
 
 				if (seq !== state.planSeq) return;
 				state.plan = plan;
+				// veio pelo card do Trello: o .aep da pasta que bate com o card fica marcado (Abrir projeto)
+				if (state.cardPick && flow.pick && aepName(flow.pick.name) === state.cardPick.attr && !state.openFile) {
+					var own = cardFile(state.cardPick.claq, plan.existing);
+
+					if (own) state.openFile = own;
+				}
+				state.cardPick = null;
 				localFile(plan);
 				renderPlan(plan);
 			} catch (err) {

@@ -436,7 +436,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		if (!hits.length) return null;
 
-		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1 };
+		// all: todos os cards dela (o mais novo primeiro): a claquete mostra um por linha (o prêmio com um card por categoria)
+		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1, all: hits.map(function (h) {
+			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at };
+		}) };
 	}
 
 	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a

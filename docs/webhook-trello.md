@@ -58,7 +58,7 @@ O card decide **qual atração**; a regra da atração decide **a pasta e o `.ae
    vem em **abrir o existente** (fora do card, o padrão continua sendo **salvar como … 2**).
 
 O nome do card não vira nome de arquivo: ele só diz a atração e, quando a regra usa mês, qual mês.
-Com vários cards da mesma atração, aparece uma linha só, com o mais novo (`+ 1 card`).
+Com vários cards da mesma atração, aparece **um card por linha** (até 5; no tipo com regra, como o MOOD MENSAL, só o mais novo). O clique marca na lista **JÁ NA PASTA** o `.aep` daquele card: cada palavra da claquete é o começo de uma palavra do nome do arquivo (`PREMIO 2026 CH JOR ESP G5` → `MELHOR CHAMADA DE JORNALISMO E ESPORTE G5.aep`), o botão vira **Abrir projeto**. Empate ou nada em comum: nada marcado.
 
 ## onde está no código
 

@@ -1322,13 +1322,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
 				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
+			] : !film && /PREMIO REDE GLOBO/.test(root) ? [
+				// um .aep por categoria do prêmio (o card de cada uma marca o dele)
+				{ name: 'MELHOR CHAMADA DE JORNALISMO E ESPORTE G5', modified: now - 20 * H },
+				{ name: 'MELHOR CHAMADA DE JORNALISMO E ESPORTE AFILIADA', modified: now - 22 * H },
+				{ name: 'MELHOR CHAMADA DE PROGRAMA LOCAL AFILIADA', modified: now - 30 * H },
+				{ name: 'MELHOR CHAMADA DE CONTEUDO REDE', modified: now - 70 * H }
 			] : !film && /MOOD MENSAL/.test(root) ? [
 				// o mood do mês já começado (o card do Trello abre ele)
 				{ name: 'JANEIRO NA GLOBO', modified: now - 3 * H }
 			] : [];
 			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
 		},
 
 		projectCreate: function (a) {
