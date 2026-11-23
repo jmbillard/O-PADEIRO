@@ -1859,3 +1859,104 @@ p.wz-exist b {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
 }
+
+/* os filmes recentes (o campo vazio): o pôster, o título com o ano, a exibição e a etiqueta */
+.combo-item.film-row {
+  gap: 12px;
+  padding-block: 6px;
+}
+
+/* o último filme com mais ar embaixo: o pôster não encosta na quina da caixa */
+.combo-panel .film-row:last-child {
+  margin-bottom: 6px;
+}
+
+.film-poster {
+  display: grid;
+  width: 28px;
+  height: 40px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--surface-soft);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.film-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.combo-item.film-row .film-poster svg {
+  width: 16px;
+  height: 16px;
+}
+
+.film-text {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.film-text .combo-title {
+  color: var(--text-primary);
+}
+
+.film-year {
+  color: var(--blue-500);
+  font-weight: 650;
+}
+
+.film-sub {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.film-tag {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.film-tag.is-done {
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+}
+
+/* o filme escolhido: a mesma linha da lista, num cartão (só para conferir) */
+.film-card {
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.film-card[hidden] {
+  display: none;
+}
+
+.film-card .film-row {
+  width: 100%;
+  padding: 8px 12px;
+  cursor: default;
+}
+
+.film-card .film-row:disabled {
+  background: none;
+  color: inherit;
+  opacity: 1;
+}

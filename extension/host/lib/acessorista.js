@@ -9,6 +9,11 @@ var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
 // sozinho (sem travar o After Effects); o curl daqui é só o plano B.
 var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
 var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
+
+// Os filmes criados na base nos últimos dias (a claquete mostra com o campo vazio e marca os que ainda não têm
+// pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
+var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
+
 var PS_SERVIDOR = null; // caminhos fixos do servidor: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
 
 // De onde vem o índice (configuração > busca): 'webhook' (PS_WEBHOOK_URL) ou 'file' (PS_INDEX_FILE, o mesmo JSON

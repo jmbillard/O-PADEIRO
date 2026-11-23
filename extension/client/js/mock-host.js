@@ -143,7 +143,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta8', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta9', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -372,13 +372,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 				(a.project.categories || []).forEach(function (c, i) {
 					var key = String(c.name || '').trim().toUpperCase();
-					var badTok = /\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e)\})[^}]*\}/.exec(c.path || '');
+					var badTok = /\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e|ano_producao)\})[^}]*\}/.exec(c.path || '');
 
 					if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
 					if (seenCat[key]) throw new Error('#PAD_089 - projeto: o tipo ' + key + ' aparece mais de uma vez.');
 					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: o tipo ' + key + ' precisa de um caminho.');
 					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
-					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
+					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e|ano_producao)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
 					seenCat[key] = true;
 				});
 				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
@@ -1214,6 +1214,37 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			return { root: root, rootName: root.split('/').pop(), exists: true, folders: names.map(function (n) {
 				return { name: n, path: root + '/' + n };
+			}) };
+		},
+
+		// os filmes recentes (o webhook dos filmes): ?mock=nofilms, nenhum
+		projectFilmsRecent: function () {
+			if (/mock=nofilms/.test(location.search)) return { data: { filmes: [] } };
+
+			return { data: { filmes: [
+				{ titulo: 'Não! Não Olhe!', ano: 2022, exibicao: '2026-12-05', sessao: 'Corujão', poster: '' },
+				{ titulo: 'O Repórter da Meia-Noite', ano: 2023, exibicao: '2026-12-12', sessao: 'Supercine', poster: '' },
+				{ titulo: '90 Decibéis', ano: 2025, exibicao: '2026-11-28', sessao: 'Sessão da Tarde', poster: '' },
+				{ titulo: 'Nosso Lar 2: Os Mensageiros', ano: 2024, exibicao: '', sessao: '', poster: '' },
+				{ titulo: 'Anna - O Perigo Tem Nome', ano: 2019, exibicao: '2026-12-19', sessao: 'Temperatura Máxima', poster: '' },
+				// fora do índice da busca (cadastrado depois da última cópia): entra pelos dados do webhook
+				{ titulo: 'Um Sonho de Liberdade', ano: 1994, exibicao: '2026-12-26', sessao: 'Corujão', poster: '' }
+			] } };
+		},
+
+		// as pastas das letras no formato do computador (o mock devolve como veio)
+		projectFilmsParents: function (a) {
+			return { paths: (a.parents || []).slice() };
+		},
+
+		// a pasta de cada filme já existe? (o mock: ANNA já tem)
+		projectFilmsDone: function (a) {
+			var done = (a.items || []).map(function (it) {
+				return /^ANNA/i.test(it.title);
+			});
+
+			return { done: done, paths: (a.items || []).map(function (it, i) {
+				return done[i] ? it.parent + '/ANNA - O PERIGO TEM NOME' : '';
 			}) };
 		},
 

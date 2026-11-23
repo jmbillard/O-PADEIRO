@@ -1,0 +1,84 @@
+# webhook dos filmes recentes
+
+O que a claquete (janela **PROJETO**) espera do workflow dos filmes. Com o campo vazio, a claquete mostra os filmes
+criados na base nos últimos dias, com o pôster, o ano de produção e a exibição. Os filmes que ainda não têm pasta de
+projeto ganham a etiqueta **A PRODUZIR** e vêm primeiro.
+
+## endereço
+
+```
+GET https://workflows.jmbillard.com/webhook/filmes-recentes
+```
+
+O workflow é o **PROMO: FILMES PARA O PADEIRO** (n8n). O endereço fica em `PS_FILMS_URL`, no começo de
+`extension/host/lib/acessorista.js`.
+
+O painel faz um `GET` simples, sem corpo e sem autenticação (tempo máximo de 15 s), e guarda a lista por 10 min: com
+a janela aberta o dia todo, os filmes novos e os pôsteres (o link expira) chegam sozinhos. Sem resposta, a lista não
+aparece e a claquete segue funcionando como antes.
+
+## resposta
+
+```json
+{
+  "filmes": [
+    {
+      "titulo": "Não! Não Olhe!",
+      "ano": 2022,
+      "exibicao": "2026-12-05",
+      "sessao": "Corujão",
+      "poster": "https://…/nao-nao-olhe_sm.webp?token=…"
+    }
+  ]
+}
+```
+
+| campo | obrigatório | o que é |
+| --- | --- | --- |
+| `titulo` | sim | o título do filme, como deve aparecer (com acentos e pontuação). a claquete tira acentos e símbolos para o nome das pastas e do `.aep`. |
+| `ano` | não | o ano de produção, com 4 algarismos (número ou texto). vai para o token `{ano_producao}` e para o nome do `.aep`. sem ano, os parênteses somem. |
+| `exibicao` | não | a data da exibição, `AAAA-MM-DD` (aparece como `05/12`). |
+| `sessao` | não | a sessão (Corujão, Supercine…). |
+| `poster` | não | o endereço de uma **miniatura pública**, aberta sem login (uns 200 × 300 px). sem pôster, aparece o ícone de filme. |
+
+- **Quais filmes:** um por filme, pela próxima exibição, de 2 dias atrás a 45 dias à frente (sem as canceladas); os
+  próximos primeiro. A ordem da resposta é a ordem da lista, com os que já têm projeto depois. O workflow manda
+  também `filme_id`, `pasta`, `projeto`, `output`, `inedito` e `trello`; o painel ainda não usa esses campos.
+- **O pôster:** a miniatura do anexo do Teable, com um link assinado que expira. Se ele falhar, aparece o ícone.
+- **Também aceito:** a lista direto (`[ {…}, {…} ]`), embrulhada pelo n8n (`[{ "filmes": [...] }]`) ou um item por
+  filme (`[{ "json": {…} }]`). Os nomes em inglês (`name`, `year`) também valem.
+- **A PRODUZIR:** não vem do webhook. A claquete lê a pasta da letra do filme (o caminho do tipo **FILME**, até o
+  `{atracao}`), cada letra uma vez, e marca o filme que ainda não tem pasta. Compara o título sem acento e sem
+  pontuação: vale a pasta com o mesmo ano ou uma antiga sem ano (`NAO NAO OLHE`). A pasta de outro ano é outro filme
+  (um remake: `ANNA (1987)` não é `ANNA (2019)`).
+- **Sem travar o After:** a lista aparece na hora, e as etiquetas chegam depois. O host só converte o caminho das
+  pastas das letras (`projectFilmsParents`), e o Node do painel lê as pastas sem bloquear. Sem o Node, o host lê
+  (`projectFilmsDone`).
+- **Já tem pasta antiga sem ano:** escolhido o filme, o projeto entra na pasta que já existe, em vez de criar outra
+  ao lado com o ano. O `.aep` leva o ano do mesmo jeito.
+- **Fora do índice da busca:** o filme cadastrado depois da última cópia do índice entra pelos dados do webhook, com
+  a pasta pelo tipo **FILME**.
+
+## na configuração
+
+O ano entra sozinho na pasta e no output dos filmes: se o caminho do tipo **FILME** (configuração > PROJETO) termina
+em `{atracao}` e não tem o token `{ano_producao}`, a claquete acrescenta ` ({ano_producao})`. Para colocar o ano em
+outro lugar, use o token no caminho:
+
+```
+…/FILMES/TITULOS/_{letra}_/{atracao} ({ano_producao})
+```
+
+O `.aep` do filme leva o título com o ano (`NAO NAO OLHE (2022) CHAMADA.aep`), ou o nome do campo ARQUIVO do tipo,
+se ele estiver preenchido. No editor (o botão **Alterar**), o ano fica no nome ao salvar, enquanto a atração for o
+filme.
+
+## onde está no código
+
+- `extension/host/lib/acessorista.js`: `PS_FILMS_URL`, o endereço.
+- `extension/client/js/attractions.js`: `recentFilms()` baixa e `parseFilms()` lê a resposta.
+- `extension/client/js/project.js`: `loadFilms()` confere as pastas, `renderFilms()` mostra a lista e `filmRow()`
+  desenha cada linha.
+- `extension/host/project.jsx`: `PADX.projectFilmsParents` converte as pastas das letras; `PADX.projectFilmsDone`
+  confere quais filmes já têm pasta (o plano B, sem o Node).
+- `extension/client/js/mock-host.js`: `projectFilmsRecent`, os filmes de exemplo do modo de teste.

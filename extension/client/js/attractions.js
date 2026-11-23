@@ -20,6 +20,14 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 	}
 
+	// o nome do .aep: o mesmo, mas o ano de produção de um filme fica entre parênteses (NAO NAO OLHE (2022) CHAMADA),
+	// como no host (padAepFileName)
+	function aepFileName(text) {
+		return String(text || '').split(/\((\d{4})\)/).map(function (piece, i) {
+			return i % 2 ? '(' + piece + ')' : aepName(piece);
+		}).filter(Boolean).join(' ');
+	}
+
 	/* ---------------------------------------------------------------
 	   a claquete → a atração, procurada aqui mesmo, na memória (rápido a cada tecla): as atrações do índice da
 	   busca (webhook, a mesma cópia do acessorista) ou, no índice local (configuração > buscar), as pastas.
@@ -291,6 +299,104 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return source.list;
 	}
 
+	/* ---------------------------------------------------------------
+	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). a claquete
+	   mostra com o campo vazio, a produzir primeiro. baixados uma vez por janela aberta, pelo Node do painel (sem
+	   travar o After); sem o Node (navegador de teste), o host responde.
+	   → [{ name, year, exib, sessao, poster }]
+	   --------------------------------------------------------------- */
+
+	var films = { list: null, loading: null };
+
+	// a resposta do webhook: { filmes: [...] }, a lista direto ou embrulhada pelo n8n ([{ filmes: [...] }] ou um item
+	// por filme: [{ json: {...} }]). os campos em português (titulo, ano, exibicao) ou em inglês (name, year)
+	function parseFilms(data) {
+		if (typeof data === 'string') data = JSON.parse(data);
+
+		var list = data && data.filmes ? data.filmes : data instanceof Array && data.length === 1 && data[0] && data[0].filmes ? data[0].filmes : data;
+
+		if (!(list instanceof Array)) return [];
+
+		return list.map(function (f) {
+			f = f && f.json ? f.json : f;
+			if (!f) return null;
+
+			var year = String(f.ano || f.year || '').trim();
+			var exib = String(f.exibicao || f.exib || '').trim();
+			var iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(exib);
+
+			return {
+				name: String(f.titulo || f.name || '').trim(),
+				year: /^\d{4}$/.test(year) ? year : '',
+				exib: iso ? iso[3] + '/' + iso[2] : exib, // 2026-12-05 → 05/12
+				sessao: String(f.sessao || '').trim(),
+				poster: /^https?:\/\//i.test(String(f.poster || '')) ? String(f.poster) : ''
+			};
+		}).filter(function (f) {
+			return f && f.name;
+		});
+	}
+
+	function fetchJson(url) {
+		return new Promise(function (resolve, reject) {
+			var https = require(/^https:/i.test(url) ? 'https' : 'http');
+			var req = https.get(url, { headers: { 'User-Agent': 'O PADEIRO', Accept: 'application/json' }, timeout: 15000 }, function (res) {
+				if (res.statusCode !== 200) {
+					res.resume();
+					reject(new Error('HTTP ' + res.statusCode));
+					return;
+				}
+
+				var chunks = [];
+
+				res.on('data', function (c) {
+					chunks.push(c);
+				});
+				res.on('error', reject);
+				res.on('end', function () {
+					try {
+						resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+					} catch (err) {
+						reject(err);
+					}
+				});
+			});
+
+			req.on('timeout', function () {
+				req.destroy(new Error('tempo esgotado'));
+			});
+			req.on('error', reject);
+		});
+	}
+
+	// os filmes recentes (uma vez por janela; uma falha não trava a claquete: a lista fica vazia e tenta de novo
+	// na próxima vez que a janela pedir)
+	function recentFilms() {
+		// a lista vale 10 min (o painel fica aberto o dia todo: os filmes novos e os pôsteres, com link que expira)
+		if (films.list && Date.now() - films.at < 600000) return Promise.resolve(films.list);
+		if (films.loading) return films.loading;
+
+		films.loading = (async function () {
+			if (!source.info) source.info = await call('searchInfo');
+
+			var data = null;
+
+			if (nodeFs() && source.info.films) data = await fetchJson(source.info.films);
+			else data = (await call('projectFilmsRecent', {})).data;
+
+			films.list = parseFilms(data);
+			films.at = Date.now();
+
+			return films.list;
+		})().catch(function () {
+			return [];
+		}).finally(function () {
+			films.loading = null;
+		});
+
+		return films.loading;
+	}
+
 	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
 	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
 	async function watchSearchSource() {
@@ -404,9 +510,14 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}).join('');
 	}
 
-	function fillPattern(pattern, name, category) {
+	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
+	function fillPattern(pattern, name, category, year) {
 		var d = new Date();
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name) };
+
+		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
+		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
+
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name), ano_producao: year };
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -850,6 +961,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	window.PAD_ATTRACTIONS = {
 		aepName: aepName,
+		aepFileName: aepFileName,
+		recentFilms: recentFilms,
+		nodeFs: nodeFs,
 		displayPath: displayPath,
 		find: findAttractions,
 		candidates: candidates,
