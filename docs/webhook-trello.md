@@ -21,7 +21,9 @@ Os cards já vêm no índice da busca (`GET …/webhook/buscar`, o campo `trello
 | campo | o que é |
 | --- | --- |
 | `at` | a data em que o card entrou, `AAAA-MM-DD` (ou data e hora ISO). |
-| `fim` | `true` quando o card está finalizado (na lista de concluídos). |
+| `fim` | `true` quando o card está finalizado (FINALIZADO ou CAIU, ou arquivado). |
+| `atr` | a atração ligada ao card no banco (ARTE_producao), quando tem. |
+| `fil` | `true` nos cards de filme (os filmes têm a lista deles na claquete: ficam de fora). |
 
 - **Não quebra a versão anterior:** são campos novos; o padeiro de antes ignora. O webhook continua mandando **todos**
   os cards, como hoje: a busca de caminhos (acessorista) mostra todos.
@@ -30,8 +32,15 @@ Os cards já vêm no índice da busca (`GET …/webhook/buscar`, o campo `trello
 
 ## card → atração
 
-Pelo começo da claquete do card, com o nome e os padrões (`pattern`) da atração no índice, a mesma regra da busca:
-`DOMINGAO 25/11` → **DOMINGÃO COM HUCK** (padrão `DOMINGAO`). Card que não bate com nenhuma atração fica de fora.
+O card ligado a uma atração no banco (`atr`) vale só para ela: `FUT FEM AMIS 29/11` → **AMISTÓSOS DA SELEÇÃO
+FEMININA**, não FUTEBOL. O card sem vínculo vai pelo começo da claquete, com o nome e os padrões (`pattern`) da
+atração no índice, a mesma regra da busca: `DOMINGAO 25/11` → **DOMINGÃO COM HUCK** (padrão `DOMINGAO`). Card que não
+bate com nenhuma atração fica de fora.
+
+A busca também procura pela claquete dos cards novos: o card ligado a uma atração traz ela para o grupo **NO TRELLO**
+mesmo que o nome dela não bata com o digitado (`fut` → o card `FUT FEM AMIS 29/11` → **AMISTÓSOS DA SELEÇÃO
+FEMININA**, ao lado do FUTEBOL). O clique no card recolhe a lista direto na pasta de projetos da atração (os `.aep`
+que já estão lá, em **JÁ NA PASTA**), sem mostrar as pastas de dentro, como no filme.
 Com vários cards da mesma atração, aparece uma linha só, com o mais novo (`+ 1 card`).
 
 ## onde está no código

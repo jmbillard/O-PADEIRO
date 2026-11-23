@@ -444,10 +444,14 @@ projetos com o nome certo).
 					if (flow.walk && !p.levels.length) flow.walk.examples = await quadroExamples(flow.attr, flow.walk.info ? flow.walk.info.folders : []);
 					if (seq !== state.lookupSeq) return;
 
-					// escolhida na lista: sem pastas dentro, não há o que mostrar (recolhe)
+					// escolhida na lista: sem pastas dentro, não há o que mostrar (recolhe). o filme e a atração escolhida pelo
+					// card do Trello recolhem sempre: o que vale são os .aep (JÁ NA PASTA), não as pastas de dentro
 					if (state.autoSettle) {
+						var all = state.settleAll; // escolhida pelo card do Trello: recolhe mesmo com pastas
+
 						state.autoSettle = false;
-						if (flow.attr && flow.walk && !p.last && !(flow.walk.info && flow.walk.info.folders.length)) return collapseClaq(true);
+						state.settleAll = false;
+						if (flow.attr && flow.walk && !p.last && (all || flow.attr.isFilm || !(flow.walk.info && flow.walk.info.folders.length))) return collapseClaq(true);
 					}
 				}
 			} catch (err) {
@@ -659,6 +663,8 @@ projetos com o nome certo).
 			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
 		});
 		item.addEventListener('click', function () {
+			// pelo card: a lista recolhe direto na pasta de projetos da atração (os .aep que já estão lá), como no filme
+			state.settleAll = true;
 			enterAttraction(match);
 		});
 

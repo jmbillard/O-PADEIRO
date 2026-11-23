@@ -1204,7 +1204,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				// a organização nova (PROJETOS/…/{atracao}/{ano}): os quadros de outro ano viram exemplos
 				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK': ['2025', '2026'],
 				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2025': ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'],
-				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL']
+				'PROJETOS/PROGRAMAS/DOMINGAO COM HUCK/2026': ['THE WALL'],
+				// o filme que já tem projeto: as pastas da estrutura (a claquete recolhe e vai para os .aep)
+				'_A_/ANNA - O PERIGO TEM NOME (2019)': ['03BOARDS', '05SAIDA', '06EXTERNOS'],
+				'_A_/ANNA - O PERIGO TEM NOME': ['03BOARDS', '05SAIDA', '06EXTERNOS']
 			};
 			var names = [];
 

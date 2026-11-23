@@ -412,18 +412,24 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return (list || []).filter(function (c) {
 			var at = c && c.at ? Date.parse(String(c.at)) : NaN;
 
-			return c && c.claq && !c.fim && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
+			// os cards de filme ('fil') ficam de fora: os filmes têm a lista deles
+			return c && c.claq && !c.fim && !c.fil && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
 		}).map(function (c) {
-			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), words: aepName(c.claq).split(' ').filter(Boolean) };
+			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), atr: c.atr ? aepName(c.atr) : '', words: aepName(c.claq).split(' ').filter(Boolean) };
 		}).sort(function (a, b) {
 			return b.time - a.time; // o mais novo primeiro
 		});
 	}
 
-	// o card mais novo de uma atração (pelas chaves dela: o nome e os padrões) → { claq, red, ed, card, at, more } ou null
-	function cardFor(keys, cards) {
+	// o card mais novo de uma atração → { claq, red, ed, card, at, more } ou null. o card ligado a uma atração no banco
+	// ('atr') vale só para ela (Fut Fem Amis → AMISTOSOS DA SELECAO FEMININA, não FUTEBOL); o card sem vínculo, pelas
+	// chaves dela (o nome e os padrões) no começo da claquete
+	function cardFor(it, cards) {
+		var name = aepName(it.name);
 		var hits = (cards || []).filter(function (c) {
-			return keys.some(function (k) {
+			if (c.atr) return c.atr === name;
+
+			return it.keys.some(function (k) {
 				return scoreKey(k, c.words) >= 1000;
 			});
 		});
@@ -480,15 +486,37 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				score = Math.max(score, scoreAny(k, words));
 			});
 
-			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it.keys, source.cards) });
+			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it, source.cards) });
 		});
 
-		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA)
+		// pela claquete dos cards novos: o card ligado a uma atração no banco traz ela, mesmo que o nome dela não bata com
+		// o digitado (fut → o card FUT FEM AMIS 29/11 → AMISTÓSOS DA SELEÇÃO FEMININA, ao lado do FUTEBOL)
+		if (!local) {
+			(source.cards || []).forEach(function (c) {
+				if (!c.atr || !scoreAny(wordKey(c.claq), words)) return;
+
+				var it = list.filter(function (x) {
+					return !x.isFilm && aepName(x.name) === c.atr;
+				})[0];
+
+				if (!it) return;
+
+				var had = found.filter(function (f) {
+					return f.it === it;
+				})[0];
+
+				if (had) had.viaCard = true;
+				else found.push({ it: it, score: 1000, card: cardFor(it, source.cards), viaCard: true });
+			});
+		}
+
+		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA); as que vieram
+		// por um card ficam
 		if (found.some(function (f) {
 			return f.score >= 1000;
 		})) {
 			found = found.filter(function (f) {
-				return f.score >= 1000;
+				return f.score >= 1000 || f.viaCard;
 			});
 		}
 
