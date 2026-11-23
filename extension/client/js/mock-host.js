@@ -1226,8 +1226,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ titulo: 'O Repórter da Meia-Noite', ano: 2023, exibicao: '2026-12-12', sessao: 'Supercine', poster: '' },
 				{ titulo: '90 Decibéis', ano: 2025, exibicao: '2026-11-28', sessao: 'Sessão da Tarde', poster: '' },
 				{ titulo: 'Nosso Lar 2: Os Mensageiros', ano: 2024, exibicao: '', sessao: '', poster: '' },
-				{ titulo: 'Anna - O Perigo Tem Nome', ano: 2019, exibicao: '2026-12-19', sessao: 'Temperatura Máxima', poster: '' }
+				{ titulo: 'Anna - O Perigo Tem Nome', ano: 2019, exibicao: '2026-12-19', sessao: 'Temperatura Máxima', poster: '' },
+				// fora do índice da busca (cadastrado depois da última cópia): entra pelos dados do webhook
+				{ titulo: 'Um Sonho de Liberdade', ano: 1994, exibicao: '2026-12-26', sessao: 'Corujão', poster: '' }
 			] } };
+		},
+
+		// as pastas das letras no formato do computador (o mock devolve como veio)
+		projectFilmsParents: function (a) {
+			return { paths: (a.parents || []).slice() };
 		},
 
 		// a pasta de cada filme já existe? (o mock: ANNA já tem)

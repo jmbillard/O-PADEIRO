@@ -372,7 +372,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	// os filmes recentes (uma vez por janela; uma falha não trava a claquete: a lista fica vazia e tenta de novo
 	// na próxima vez que a janela pedir)
 	function recentFilms() {
-		if (films.list) return Promise.resolve(films.list);
+		// a lista vale 10 min (o painel fica aberto o dia todo: os filmes novos e os pôsteres, com link que expira)
+		if (films.list && Date.now() - films.at < 600000) return Promise.resolve(films.list);
 		if (films.loading) return films.loading;
 
 		films.loading = (async function () {
@@ -384,6 +385,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			else data = (await call('projectFilmsRecent', {})).data;
 
 			films.list = parseFilms(data);
+			films.at = Date.now();
 
 			return films.list;
 		})().catch(function () {
@@ -961,6 +963,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		aepName: aepName,
 		aepFileName: aepFileName,
 		recentFilms: recentFilms,
+		nodeFs: nodeFs,
 		displayPath: displayPath,
 		find: findAttractions,
 		candidates: candidates,

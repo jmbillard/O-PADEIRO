@@ -532,6 +532,26 @@ function padIndexGroups() {
 }
 
 
+// As pastas das letras dos filmes recentes no formato deste computador (o volume montado no Mac), sem ler nada
+// dentro delas: quem lê é o Node do painel, sem travar o After. a: { parents: [...] } → { paths: [a pasta ou ''] }
+PADX.projectFilmsParents = function (a) {
+	var parents = a && a.parents instanceof Array ? a.parents : [];
+	var paths = [];
+
+	for (var i = 0; i < parents.length; i++) {
+		var p = '';
+
+		try {
+			p = padMountedPath(padPath(parents[i] || '')) || '';
+			if (p) p = new Folder(p).fsName;
+		} catch (err) { p = ''; }
+
+		paths.push(p);
+	}
+
+	return { paths: paths };
+};
+
 // Os filmes recentes (o webhook dos filmes) que já têm pasta de projeto. a: { items: [{ parent, title }] } →
 // { done: [bool], paths: [a pasta achada ou ''] }. parent: a pasta onde a do filme fica (a da letra, _N_); a pasta
 // conta pelo título sem acento, sem pontuação e sem o ano (NAO NAO OLHE e NAO NAO OLHE (2022) são o mesmo filme).
@@ -546,6 +566,7 @@ PADX.projectFilmsDone = function (a) {
 	for (var i = 0; i < items.length; i++) {
 		var parent = padMountedPath(padPath(items[i].parent || ''));
 		var key = padAepName(String(items[i].title || '').replace(/\(\d{4}\)/g, ' '));
+		var year = String(items[i].year || '');
 		var found = '';
 
 		if (parent && key) {
@@ -555,13 +576,28 @@ PADX.projectFilmsDone = function (a) {
 				var files = padListedFolder(parent) ? folder.getFiles() || [] : [];
 
 				for (var f = 0; f < files.length; f++) {
-					if (files[f] instanceof Folder) names[padAepName(decodeURI(files[f].name).replace(/\(\d{4}\)/g, ' '))] = files[f].fsName;
+					if (!(files[f] instanceof Folder)) continue;
+
+					var nm = decodeURI(files[f].name);
+					var k = padAepName(nm.replace(/\(\d{4}\)/g, ' '));
+					var y = nm.match(/\((\d{4})\)\s*$/);
+
+					if (!names.hasOwnProperty(k)) names[k] = [];
+					names[k].push({ year: y ? y[1] : '', path: files[f].fsName });
 				}
 
 				lists[parent] = names;
 			}
 
-			if (lists[parent].hasOwnProperty(key)) found = lists[parent][key];
+			// a com o mesmo ano ou, sem ela, uma antiga sem ano (a de outro ano é outro filme: um remake)
+			var cands = lists[parent].hasOwnProperty(key) ? lists[parent][key] : [];
+
+			for (var c = 0; c < cands.length && !found; c++) {
+				if (year && cands[c].year == year) found = cands[c].path;
+			}
+			for (c = 0; c < cands.length && !found; c++) {
+				if (!cands[c].year || !year) found = cands[c].path;
+			}
 		}
 
 		done.push(found != '');
