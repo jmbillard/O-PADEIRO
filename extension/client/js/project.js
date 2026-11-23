@@ -391,6 +391,8 @@ projetos com o nome certo).
 		var seq = ++state.lookupSeq;
 		var p = claqParts();
 
+		if (aepName(claqParts().first) !== state.novaFor) state.novaOpen = false; // outro texto: os tipos voltam para a linha
+		state.novaFor = aepName(claqParts().first);
 		flow.claquete = claq;
 		state.claqClosed = false;
 
@@ -451,7 +453,8 @@ projetos com o nome certo).
 
 						state.autoSettle = false;
 						state.settleAll = false;
-						if (flow.attr && flow.walk && !p.last && (all || flow.attr.isFilm || !(flow.walk.info && flow.walk.info.folders.length))) return collapseClaq(true);
+						// o filme e o card recolhem mesmo sem a pasta ainda (o filme novo, A PRODUZIR): ela é criada com o projeto
+						if (flow.attr && !p.last && (all || flow.attr.isFilm || (flow.walk && !(flow.walk.info && flow.walk.info.folders.length)))) return collapseClaq(true);
 					}
 				}
 			} catch (err) {
@@ -643,21 +646,17 @@ projetos com o nome certo).
 		return 'há ' + Math.ceil((start.getTime() - t) / day) + ' dias';
 	}
 
-	// um card novo no Trello: a claquete do card e, embaixo, a atração, quando entrou e o redator. o clique abre a
-	// atração (a pasta de projetos dela, recolhida) e marca na lista JÁ NA PASTA o .aep que bate com o card
+	// um card novo no Trello, numa linha: o ícone, a claquete e quando entrou (a atração e o redator ficam na dica). o
+	// clique abre a atração (a pasta de projetos dela, recolhida) e marca na lista JÁ NA PASTA o .aep do card
 	function cardRow(match, c) {
 		var item = el('button', 'combo-item card-row');
-		var text = el('span', 'film-text');
-		var sub = [match.name, cardWhen(c.at), c.red].filter(Boolean).join(' · ');
 
 		item.type = 'button';
 		item.setAttribute('role', 'option');
-		item.title = match.display || '';
-		item.insertAdjacentHTML('afterbegin', TRELLO_SVG);
-		text.appendChild(el('span', 'combo-title', String(c.claq).toUpperCase()));
-		text.appendChild(el('span', 'film-sub', sub));
-		item.appendChild(text);
-		item.appendChild(el('span', 'film-tag', 'CARD NOVO'));
+		item.title = [match.name, c.red].filter(Boolean).join(' · ') + (match.display ? '\n' + match.display : '');
+		item.insertAdjacentHTML('afterbegin', '<span class="card-icon">' + TRELLO_SVG + '</span>');
+		item.appendChild(el('span', 'combo-title', String(c.claq).toUpperCase()));
+		item.appendChild(el('small', 'combo-meta', cardWhen(c.at)));
 		item.addEventListener('mousedown', function (e) {
 			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
 		});
@@ -1045,7 +1044,14 @@ projetos com o nome certo).
 		if (next) $('arq-what').focus();
 	}
 
+	// com a lista aberta, a tela fica só com ela: o "o que é", o arquivo, o JÁ NA PASTA e o output aparecem depois
+	// de escolher (is-choosing)
 	function renderAttractions() {
+		renderAttractionList();
+		$('sc-claquete').classList.toggle('is-choosing', !$('atr-list').hidden && !!$('claq').value.trim());
+	}
+
+	function renderAttractionList() {
 		var list = $('atr-list');
 		var p = claqParts();
 		var hint = '';
@@ -1153,10 +1159,20 @@ projetos com o nome certo).
 			if (state.bases.length) {
 				// a atração nova: as categorias à vista (um clique cria nela); a digitada no começo (vt …) vem marcada
 				var nova = novaFromText(p.first);
+				var label = aepName(nova.name) || 'o nome digitado';
 
-				list.appendChild(ATR.group('nova atração · ' + (aepName(nova.name) || 'o nome digitado')));
-				catChips(list, nova);
-				list.appendChild(ATR.sep());
+				// os tipos ficam numa linha só ("nova atração …"): abrem no clique, ou sozinhos quando nada foi achado ou
+				// quando o texto começa com o nome de um tipo (vt reunião)
+				if (state.novaOpen || nova.base || (!m.length && !carded.length)) {
+					list.appendChild(ATR.group('nova atração · ' + label));
+					catChips(list, nova);
+					list.appendChild(ATR.sep());
+				} else {
+					list.appendChild(ATR.row(PLUS_SVG, 'nova atração "' + label + '"…', '', false, function () {
+						state.novaOpen = true;
+						renderAttractions();
+					}));
+				}
 			} else {
 				list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
 					chooseAttraction('new');
@@ -1165,9 +1181,7 @@ projetos com o nome certo).
 			list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', flow.choice === 'folder', function () {
 				chooseAttraction('folder');
 			}));
-			var more = flow.matches.length - shown;
-
-			hint = more > 0 ? '+ ' + more + (more === 1 ? ' outra atração: continue digitando' : ' outras atrações: continue digitando') : '';
+			hint = ''; // sem frase de ajuda: a lista já diz o que achou
 		});
 		list.hidden = false;
 		$('claq-hint').textContent = hint;
@@ -1501,6 +1515,8 @@ projetos com o nome certo).
 
 		state.pickKey = key;
 		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
+		state.filesAll = false;
+		$('claq-rest').classList.remove('is-opening');
 		flow.pick = pick;
 		state.plan = null;
 		flow.mode = '';
@@ -1561,7 +1577,7 @@ projetos com o nome certo).
 		top.hidden = true;
 		node.hidden = false;
 		if (!flow.claquete) return hintLine(node, '');
-		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou o tipo da nova');
+		if (!pick) return hintLine(node, '');
 		if (!plan) return hintLine(node, 'conferindo a pasta…');
 
 		// a pasta da estrutura (a do projeto) com os níveis em destaque, e a de projetos dentro dela
@@ -1822,7 +1838,12 @@ projetos com o nome certo).
 		list.textContent = '';
 		$('arq-files-title').textContent = 'JÁ NA PASTA · ' + files.length;
 
-		files.forEach(function (f) {
+		// até 3 (os mais recentes, mais o marcado, se estiver depois); o resto num "+ N"
+		var shown = state.filesAll ? files : files.filter(function (f, i) {
+			return i < 3 || state.openFile === f.name + '.' + (f.ext || 'aep');
+		});
+
+		shown.forEach(function (f) {
 			var full = f.name + '.' + (f.ext || 'aep');
 			var row = el('button', 'wz-file' + (state.openFile === full ? ' is-on' : '') + (f.name === plan.fileBase && f.ext !== 'aet' ? ' is-same' : ''));
 			var name = el('span', 'wz-file-name');
@@ -1844,15 +1865,35 @@ projetos com o nome certo).
 			if (state.openFile === full) picked = full;
 		});
 
+		if (shown.length < files.length) {
+			var more = el('button', 'wz-files-more', '+ ' + (files.length - shown.length));
+
+			more.type = 'button';
+			more.title = 'mostrar todos';
+			more.addEventListener('click', function () {
+				state.filesAll = true;
+				renderPlan(plan);
+			});
+			list.appendChild(more);
+		}
+
 		// o marcado sumiu da pasta (outra atração, a lista relida): nada marcado
 		if (!picked) state.openFile = '';
 		list.classList.toggle('is-picking', !!picked);
+		// com um marcado (abrir), o "o que é" e o nome do arquivo novo saem: "criar um novo" volta para eles
+		$('claq-rest').classList.toggle('is-opening', !!picked);
 		note.hidden = !picked;
 		note.textContent = '';
 		if (picked) {
-			note.appendChild(document.createTextNode('abrir '));
-			note.appendChild(el('b', null, picked));
-			note.appendChild(document.createTextNode(' fecha esta janela sem criar nada. clique nele de novo para desmarcar.'));
+			var fresh = el('button', 'wz-files-new', 'criar um novo em vez de abrir');
+
+			fresh.type = 'button';
+			fresh.addEventListener('click', function () {
+				state.openFile = '';
+				renderPlan(plan);
+				$('arq-what').focus();
+			});
+			note.appendChild(fresh);
 		}
 	}
 
@@ -1892,7 +1933,7 @@ projetos com o nome certo).
 
 		renderFiles(plan);
 
-		dup.hidden = !plan.exists;
+		dup.hidden = !plan.exists || !!state.openFile; // com um marcado na lista (abrir), o aviso não vale
 		if (plan.exists) {
 			var note = $('arq-dup-note');
 
@@ -2979,6 +3020,13 @@ projetos com o nome certo).
 			if (e.key === 'Escape' && state.screen === 'dados') closeDados();
 		});
 		onEnter('claq', claqEnter);
+		// Esc com a lista aberta: recolhe, como o clique fora (o resto da tela volta)
+		$('claq').addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape' || $('atr-list').hidden || state.claqClosed || !flow.claquete) return;
+			e.preventDefault();
+			e.stopPropagation();
+			collapseClaq(false);
+		});
 		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
 		$('claq').addEventListener('blur', function () {
 			setTimeout(function () {
