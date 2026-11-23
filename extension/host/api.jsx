@@ -1600,7 +1600,8 @@ PADX.fillFinish = function () {
 			caminho: run.projectFile.fsName,
 			// só no webhook (o CSV continua com as colunas de PAD_LOG_COLUMNS)
 			projeto: projeto,
-			atracao: meta.atracao || '',
+			// a atração do template (escolhida da lista de atrações do cadastro): a mesma da tabela atracoes
+			atracao: (run.templateData.atracao && run.templateData.atracao.name) || meta.atracao || '',
 			quadro: meta.quadro || '',
 			o_que_e: meta.oQueE || '',
 			pasta: meta.pasta || '',
