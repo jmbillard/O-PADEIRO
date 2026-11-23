@@ -14,7 +14,8 @@ arquivos é do botão COLETAR (collect.jsx).
                projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
                {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
                {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
-               artigo: a pasta da letra dos filmes). icon: um ícone do seletor (js/util.js)
+               artigo: a pasta da letra dos filmes) {ano_producao} (o ano de produção do filme escolhido: NAO NAO OLHE
+               (2022); sem ano, o token sai junto dos parênteses em volta). icon: um ícone do seletor (js/util.js)
 Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
 atrações do índice.
 
@@ -22,7 +23,7 @@ atrações do índice.
 
 var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e']; // {categoria}: o nome antigo do {tipo}, ainda aceito
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 
 // Um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
 // barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). vale em todo caminho de output: os tipos de
@@ -64,7 +65,7 @@ function padCleanProject(o) {
 		if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
 
 		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra} ou {o_que_e}).');
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
 		}
 
 
@@ -435,6 +436,29 @@ function padFillDateTokens(path, atracao) {
 	}));
 }
 
+// O nome do .aep: como o padAepName, mas o ano de produção de um filme fica entre parênteses (NAO NAO OLHE (2022)
+// CHAMADA). só um ano de 4 algarismos sozinho nos parênteses; o resto dos parênteses sai como qualquer símbolo
+function padAepFileName(text) {
+	var rest = String(text == null ? '' : text);
+	var re = /\((\d{4})\)/;
+	var out = [];
+	var m;
+
+	// um ano por vez (o split com grupo não é confiável no ExtendScript)
+	while ((m = re.exec(rest)) != null) {
+		var before = padAepName(rest.substring(0, m.index));
+
+		if (before) out.push(before);
+		out.push('(' + m[1] + ')');
+		rest = rest.substring(m.index + m[0].length);
+	}
+
+	rest = padAepName(rest);
+	if (rest) out.push(rest);
+
+	return out.join(' ');
+}
+
 function padAepName(text) {
 	return String(text == null ? '' : text).replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]+/g, ' ').replace(/^\s+|\s+$/g, '');
 }
@@ -507,6 +531,45 @@ function padIndexGroups() {
 	return [{ category: { key: 'atracoes', label: 'ATRAÇÕES' }, groups: groups }];
 }
 
+
+// Os filmes recentes (o webhook dos filmes) que já têm pasta de projeto. a: { items: [{ parent, title }] } →
+// { done: [bool], paths: [a pasta achada ou ''] }. parent: a pasta onde a do filme fica (a da letra, _N_); a pasta
+// conta pelo título sem acento, sem pontuação e sem o ano (NAO NAO OLHE e NAO NAO OLHE (2022) são o mesmo filme).
+// cada pasta de cima é lida uma vez só, pela lista dela (sem perguntar por uma pasta que ainda não existe:
+// padListedFolder)
+PADX.projectFilmsDone = function (a) {
+	var items = a && a.items instanceof Array ? a.items : [];
+	var lists = {};
+	var done = [];
+	var paths = [];
+
+	for (var i = 0; i < items.length; i++) {
+		var parent = padMountedPath(padPath(items[i].parent || ''));
+		var key = padAepName(String(items[i].title || '').replace(/\(\d{4}\)/g, ' '));
+		var found = '';
+
+		if (parent && key) {
+			if (!lists.hasOwnProperty(parent)) {
+				var names = {};
+				var folder = new Folder(parent);
+				var files = padListedFolder(parent) ? folder.getFiles() || [] : [];
+
+				for (var f = 0; f < files.length; f++) {
+					if (files[f] instanceof Folder) names[padAepName(decodeURI(files[f].name).replace(/\(\d{4}\)/g, ' '))] = files[f].fsName;
+				}
+
+				lists[parent] = names;
+			}
+
+			if (lists[parent].hasOwnProperty(key)) found = lists[parent][key];
+		}
+
+		done.push(found != '');
+		paths.push(found);
+	}
+
+	return { done: done, paths: paths };
+};
 
 // Atrações cuja claquete começa com um dos padrões (ou com o nome), a mais específica primeiro.
 // a: { claquete } → { claquete, matches: [{ name, category, path, display }] }
@@ -641,8 +704,8 @@ function padNewProjectPlan(a) {
 	// o nome do tipo (aba PROJETO > ARQUIVO) com {o_que_e}: o o que é entra no lugar do token, não no fim
 	var custom = padTrim(a.fileName);
 
-	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
-	else fileBase = padAepName((padTrim(levels[levels.length - 1]) || custom.split('{o_que_e}').join(' ') || a.atracao) + ' ' + (a.what || ''));
+	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepFileName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
+	else fileBase = padAepFileName((padTrim(levels[levels.length - 1]) || custom.split('{o_que_e}').join(' ') || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
