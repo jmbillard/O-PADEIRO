@@ -106,6 +106,10 @@ const CHECKS = [
 	}],
 	['projeto: atração', 'project.html'],
 	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
+	['projeto: card do trello', 'project.html', async (p) => {
+		await p.fill('#claq', 'domingao');
+		await p.waitForTimeout(1200);
+	}],
 	// digitando: os filmes recentes que batem (o webhook dos filmes), com o pôster; um clique escolhe o filme (o cartão)
 	['projeto: filmes recentes', 'project.html', async (p) => {
 		await p.fill('#claq', 'nao');

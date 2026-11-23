@@ -29,6 +29,7 @@ projetos com o nome certo).
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
 	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
 	var CHEVRON_SVG = '<svg class="out-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>';
+	var TRELLO_SVG = '<svg class="card-logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect x="7" y="7" width="4" height="9.5" rx="1" /><rect x="13" y="7" width="4" height="5.5" rx="1" /></svg>';
 	var FILM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
@@ -622,6 +623,48 @@ projetos com o nome certo).
 		}
 	}
 
+	// há quanto tempo o card entrou (hoje, ontem, há 3 dias)
+	function cardWhen(at) {
+		var day = 86400000;
+		var start = new Date();
+
+		start.setHours(0, 0, 0, 0);
+
+		var t = Date.parse(at);
+
+		if (isNaN(t)) return '';
+		if (t >= start.getTime()) return 'hoje';
+		if (t >= start.getTime() - day) return 'ontem';
+
+		return 'há ' + Math.ceil((start.getTime() - t) / day) + ' dias';
+	}
+
+	// uma atração com card novo no Trello: o nome e, embaixo, o card (a claquete, quando entrou e o redator). o clique
+	// abre a atração, como na lista: o card só diz qual é (o projeto não leva o nome dele)
+	function cardRow(match) {
+		var c = match.trello;
+		var item = el('button', 'combo-item card-row');
+		var text = el('span', 'film-text');
+		var sub = ['card ' + c.claq, cardWhen(c.at), c.red].filter(Boolean).join(' · ') + (c.more ? ' · + ' + c.more + (c.more === 1 ? ' card' : ' cards') : '');
+
+		item.type = 'button';
+		item.setAttribute('role', 'option');
+		item.title = match.display || '';
+		item.insertAdjacentHTML('afterbegin', TRELLO_SVG);
+		text.appendChild(el('span', 'combo-title', match.name.toUpperCase()));
+		text.appendChild(el('span', 'film-sub', sub));
+		item.appendChild(text);
+		item.appendChild(el('span', 'film-tag', 'CARD NOVO'));
+		item.addEventListener('mousedown', function (e) {
+			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
+		});
+		item.addEventListener('click', function () {
+			enterAttraction(match);
+		});
+
+		return item;
+	}
+
 	// uma linha de filme: o pôster (ou o ícone), o título com o ano, a exibição e a etiqueta
 	// onPick: o clique (sem ele, escolhe o filme pelo título)
 	function filmRow(f, onPick) {
@@ -1009,6 +1052,22 @@ projetos com o nome certo).
 
 			// sem a barra: as atrações (o clique entra nela: a barra e as pastas dela), a nova e outra pasta
 			var m = flow.matches.slice(0, LIST_MAX);
+			var shown = m.length; // as que aparecem (com as do Trello): o resto é o "continue digitando"
+
+			// as atrações com card novo no Trello primeiro, no grupo delas (o card é a referência para abrir o projeto)
+			var carded = m.filter(function (x) {
+				return x.trello && !x.isFilm;
+			});
+
+			if (carded.length) {
+				list.appendChild(ATR.group('no trello'));
+				carded.forEach(function (match) {
+					list.appendChild(cardRow(match));
+				});
+				m = m.filter(function (x) {
+					return carded.indexOf(x) < 0;
+				});
+			}
 
 			// o título diz o que veio: atrações, filmes ou os dois
 			var films = m.filter(function (x) {
@@ -1016,7 +1075,7 @@ projetos com o nome certo).
 			}).length;
 			var found = ATR.mode() === 'local' ? 'pastas' : !films ? 'atrações' : films === m.length ? 'filmes' : 'atrações e filmes';
 
-			list.appendChild(ATR.group(m.length ? found : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome')));
+			if (m.length || !carded.length) list.appendChild(ATR.group(m.length ? found : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome')));
 			m.forEach(function (match) {
 				// o filme dos recentes: o pôster, o ano, a exibição e a etiqueta (a produzir ou já tem projeto)
 				if (match.isFilm && match.recent) {
@@ -1048,7 +1107,7 @@ projetos com o nome certo).
 			list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', flow.choice === 'folder', function () {
 				chooseAttraction('folder');
 			}));
-			var more = flow.matches.length - m.length;
+			var more = flow.matches.length - shown;
 
 			hint = more > 0 ? '+ ' + more + (more === 1 ? ' outra atração: continue digitando' : ' outras atrações: continue digitando') : '';
 		});

@@ -37,7 +37,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var source = { info: null, list: null, stamp: '', refreshing: null };
+	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [] };
+	var CARD_DAYS = 7; // os cards do Trello que viram sugestão na claquete: os que entraram nos últimos 7 dias
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
 	function nodeFs() {
@@ -274,6 +275,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		};
 
 		source.stamp = stamp;
+		source.cards = recentCards(data.trello);
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
 		}).map(function (a) {
@@ -397,6 +399,40 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return films.loading;
 	}
 
+	/* ---------------------------------------------------------------
+	   os cards do Trello como referência: a atração com card novo (a claquete do card começa com o nome ou um
+	   padrão dela: DOMINGAO 25/11 → DOMINGÃO COM HUCK) vem primeiro na busca, para abrir o projeto dela. só os cards
+	   que entraram nos últimos 7 dias ('at', a data) e não estão finalizados ('fim'). o índice de antes (sem 'at')
+	   não sugere nada.
+	   --------------------------------------------------------------- */
+
+	function recentCards(list) {
+		var since = Date.now() - CARD_DAYS * 86400000;
+
+		return (list || []).filter(function (c) {
+			var at = c && c.at ? Date.parse(String(c.at)) : NaN;
+
+			return c && c.claq && !c.fim && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
+		}).map(function (c) {
+			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), words: aepName(c.claq).split(' ').filter(Boolean) };
+		}).sort(function (a, b) {
+			return b.time - a.time; // o mais novo primeiro
+		});
+	}
+
+	// o card mais novo de uma atração (pelas chaves dela: o nome e os padrões) → { claq, red, ed, card, at, more } ou null
+	function cardFor(keys, cards) {
+		var hits = (cards || []).filter(function (c) {
+			return keys.some(function (k) {
+				return scoreKey(k, c.words) >= 1000;
+			});
+		});
+
+		if (!hits.length) return null;
+
+		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1 };
+	}
+
 	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
 	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
 	async function watchSearchSource() {
@@ -444,7 +480,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				score = Math.max(score, scoreAny(k, words));
 			});
 
-			if (score) found.push({ it: it, score: score });
+			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it.keys, source.cards) });
 		});
 
 		// achou pela claquete completa: as parciais saem (senão a claquete inteira cairia na etapa PASTA)
@@ -458,7 +494,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		var seen = {};
 		var matches = found.sort(function (a, b) {
-			return b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
+			// a atração com card novo no Trello primeiro (a referência para abrir o projeto dela)
+			return (b.card ? 1 : 0) - (a.card ? 1 : 0) || b.score - a.score || a.it.depth - b.it.depth || a.it.name.length - b.it.name.length;
 		}).filter(function (f) {
 			var key = local ? f.it.path : (f.it.isFilm ? 'f|' : '') + aepName(f.it.name);
 
@@ -467,7 +504,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			seen[key] = true;
 			return true;
 		}).slice(0, 6).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '' };
+			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
 		});
 
 		return { claquete: aepName(claq), matches: matches };
