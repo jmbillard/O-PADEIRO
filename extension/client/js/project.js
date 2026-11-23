@@ -1177,8 +1177,23 @@ projetos com o nome certo).
 				return aepName(m.name) === aepName(b.label);
 			});
 		}).map(function (b) {
-			return Object.assign(novaAttr(b.label, b), { isNewAttr: false, isFixed: true });
-		});
+			// a atração do índice com o mesmo nome dá o card do Trello (se tem); o mês escrito no card (JANEIRO NA GLOBO)
+			// vale mais que a data de hoje na regra do tipo (a pasta e o .aep)
+			var same = matches.filter(function (m) {
+				return aepName(m.name) === aepName(b.label);
+			})[0];
+			var card = same && same.trello ? same.trello : null;
+			var month = card ? ATR.monthOf(card.claq) : null;
+
+			var fixed = [Object.assign(novaAttr(b.label, b, month), { isNewAttr: false, isFixed: true, trello: card, month: month })];
+
+			// o card é de outro mês (JANEIRO, em novembro): a regra de sempre (o próximo mês) continua na lista
+			if (month && month.index !== (new Date().getMonth() + 1) % 12) fixed.push(Object.assign(novaAttr(b.label, b), { isNewAttr: false, isFixed: true }));
+
+			return fixed;
+		}).reduce(function (all, list) {
+			return all.concat(list);
+		}, []);
 
 		if (!fixed.length) return matches;
 
@@ -1191,10 +1206,10 @@ projetos com o nome certo).
 
 	// a atração nova numa categoria, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
 	// barra fica dentro dele (ATRAÇÃO/2026/QUADRO)
-	function novaAttr(name, base) {
-		var path = fillPattern(base.pattern, name, base.label);
+	function novaAttr(name, base, month) {
+		var path = fillPattern(base.pattern, name, base.label, '', month);
 
-		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true, isNewAttr: true };
+		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label, '', month) : '', base: base, category: base.label, newOrg: true, isNewAttr: true };
 	}
 
 	// o caminho de uma categoria para a atração nova, com a pasta da atração em diante em destaque
@@ -1387,10 +1402,10 @@ projetos com o nome certo).
 
 			return { name: flow.attr.name, path: segs.length ? flow.walk.path : flow.attr.path, display: displayPath(segs.length ? flow.walk.path : flow.attr.path), out: flow.attr.out || '', quadro: segs.map(function (s) {
 				return s.name;
-			}).join('/'), segs: segs, base: flow.walk.base, fileName: attrFileName(flow.attr) };
+			}).join('/'), segs: segs, base: flow.walk.base, fileName: attrFileName(flow.attr), trello: flow.attr.trello || null };
 		}
 		// a atração escolhida, sem pastas abaixo (o campo só com o nome dela)
-		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [], fileName: attrFileName(flow.attr) };
+		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [], fileName: attrFileName(flow.attr), trello: flow.attr.trello || null };
 		if (!p.deep && flow.choice === 'new' && novaReady()) return novaTarget();
 
 		return null;
@@ -1402,7 +1417,7 @@ projetos com o nome certo).
 		var filled = attr && attr.filmFile ? attr.filmFile : ''; // o filme: o título com o ano (resolveFilms)
 
 		if (!filled && (!attr || !attr.base || !attr.base.filePattern || attr.fromIndex)) return '';
-		if (!filled) filled = fillPattern(attr.base.filePattern, attr.name, attr.base.label);
+		if (!filled) filled = fillPattern(attr.base.filePattern, attr.name, attr.base.label, '', attr.month);
 
 		// com {o_que_e}: o token fica (o o que é entra no lugar dele, em localFile e no host); o resto já normalizado
 		return filled.split(WHAT_TOKEN).map(ATR.aepFileName).join(filled.indexOf(WHAT_TOKEN) >= 0 ? ' ' + WHAT_TOKEN + ' ' : '').trim();
@@ -1567,9 +1582,10 @@ projetos com o nome certo).
 		var meta = $('criar-meta');
 		var user = el('span');
 
-		// o .aep que já existe: abrir ou salvar como … 2 (o padrão)
+		// o .aep que já existe: abrir ou salvar como … 2 (o padrão). pelo card do Trello, abrir: o card é de um projeto
+		// que já pode estar começado (JANEIRO NA GLOBO.aep)
 		if (!plan.exists) flow.mode = '';
-		else if (!flow.mode) flow.mode = 'increment';
+		else if (!flow.mode) flow.mode = flow.pick && flow.pick.trello ? 'open' : 'increment';
 
 		meta.textContent = '';
 		meta.appendChild(yearChip());

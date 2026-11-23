@@ -41,6 +41,23 @@ A busca também procura pela claquete dos cards novos: o card ligado a uma atra�
 mesmo que o nome dela não bata com o digitado (`fut` → o card `FUT FEM AMIS 29/11` → **AMISTÓSOS DA SELEÇÃO
 FEMININA**, ao lado do FUTEBOL). O clique no card recolhe a lista direto na pasta de projetos da atração (os `.aep`
 que já estão lá, em **JÁ NA PASTA**), sem mostrar as pastas de dentro, como no filme.
+
+## criar ou abrir
+
+O card decide **qual atração**; a regra da atração decide **a pasta e o `.aep`**; o arquivo que já existe decide
+**criar ou abrir**:
+
+1. **atração** → o vínculo do card no banco (`atr`): `JANEIRO NA GLOBO` → **MOOD MENSAL**.
+2. **pasta e `.aep`** → a atração que é um tipo com regra na aba PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
+   usa a regra, e **o mês escrito na claquete do card vale mais que a data de hoje** nos tokens de mês e de ano
+   (`{mes}`, `{mes_extenso}`, `{proximo_mes}`, `{proximo_mes_num}`, `{ano}`, `{ano_proximo_mes}`): `JANEIRO NA GLOBO`
+   → `…/MOOD MENSAL/2027/01 JANEIRO` e `JANEIRO NA GLOBO.aep` (sem o ano escrito, o próximo janeiro). Com o card de
+   outro mês, a regra de sempre (o próximo mês) continua na lista, logo abaixo. A atração sem regra usa a pasta de
+   projetos dela (a do banco).
+3. **criar ou abrir** → o `.aep` que a regra dá ainda não existe: **Criar projeto**. Já existe: pelo card, a janela
+   vem em **abrir o existente** (fora do card, o padrão continua sendo **salvar como … 2**).
+
+O nome do card não vira nome de arquivo: ele só diz a atração e, quando a regra usa mês, qual mês.
 Com vários cards da mesma atração, aparece uma linha só, com o mais novo (`+ 1 card`).
 
 ## onde está no código

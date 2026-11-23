@@ -576,13 +576,23 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
-	function fillPattern(pattern, name, category, year) {
+	// month: o mês do card do Trello ({ index: 0-11, year }), que vale mais que a data de hoje (monthOf): JANEIRO NA
+	// GLOBO → os tokens de mês e de ano são os de janeiro (o próximo)
+	function fillPattern(pattern, name, category, year, month) {
 		var d = new Date();
 
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
 		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name), ano_producao: year };
+
+		if (month && month.index >= 0) {
+			var num = ('0' + (month.index + 1)).slice(-2);
+
+			values.ano = values.ano_proximo_mes = String(month.year);
+			values.mes = values.proximo_mes_num = num;
+			values.mes_extenso = values.proximo_mes = MONTHS[month.index];
+		}
 
 		return pattern.replace(/\{(\w+)\}/g, function (all, key) {
 			return values[key] != null ? values[key] : all;
@@ -600,6 +610,25 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return (cfg && cfg.categories || []).map(function (c) {
 			return categoryBase(c, cfg.fallback);
 		});
+	}
+
+	// o mês escrito numa claquete (JANEIRO NA GLOBO, MOOD MARÇO 2027) → { index, year } ou null. sem o ano escrito, o
+	// próximo daquele mês: em dezembro, JANEIRO é o do ano que vem; o mês de agora (ou o anterior) é deste ano
+	function monthOf(text) {
+		var words = aepName(text).split(' ');
+		var index = -1;
+
+		words.some(function (w) {
+			index = MONTHS.indexOf(w);
+			return index >= 0;
+		});
+		if (index < 0) return null;
+
+		var typed = /\b(20\d\d)\b/.exec(aepName(text));
+		var now = new Date();
+		var year = now.getFullYear() + (index < now.getMonth() - 1 ? 1 : 0);
+
+		return { index: index, year: typed ? Number(typed[1]) : year };
 	}
 
 	// a mesma regra do host: a primeira letra do título sem o artigo, ou # para números
@@ -1034,6 +1063,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		candidates: candidates,
 		categories: newBases,
 		fillPattern: fillPattern,
+		monthOf: monthOf,
 		projectYear: projectYear,
 		setYear: setYear,
 		shiftYear: shiftYear,
