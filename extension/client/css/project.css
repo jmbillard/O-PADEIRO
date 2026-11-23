@@ -1960,3 +1960,12 @@ p.wz-exist b {
   color: inherit;
   opacity: 1;
 }
+
+/* a atração com card novo no Trello: o logo, o nome, o card embaixo e a etiqueta */
+.combo-item.card-row {
+  gap: 10px;
+}
+
+.combo-item.card-row .film-text .combo-title {
+  color: var(--text-primary);
+}

@@ -143,7 +143,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var api = {
 		ping: function () {
-			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta8', network: mode !== 'nonet' };
+			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta9', network: mode !== 'nonet' };
 		},
 
 		productions: function (a) {
@@ -1253,7 +1253,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var list = [
 				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
 				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/CHEF DE ALTO NIVEL' },
-				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026' },
+				// com card novo no Trello (a sugestão da claquete)
+				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026', trello: { claq: 'DOMINGAO 25/11', red: 'ANA', ed: 'BETO', card: 'aB12cD', at: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10), more: 1 } },
 				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
@@ -1282,7 +1283,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.trello || null });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;
