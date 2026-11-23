@@ -1936,6 +1936,36 @@ p.wz-exist b {
   color: var(--text-tertiary);
 }
 
+/* os cards do Trello em produção (digitando): a mesma linha dos filmes, com o ícone do Trello no lugar do pôster */
+.card-icon {
+  height: 28px;
+  color: var(--blue-500);
+  background: var(--blue-100, #e8eeff);
+  box-shadow: none;
+}
+
+.combo-item.film-row .card-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.combo-item.film-row .card-icon svg rect + rect {
+  fill: currentColor;
+  stroke: none;
+}
+
+.film-tag.card-tag {
+  max-width: 40%;
+  overflow: hidden;
+  background: var(--blue-100, #e8eeff);
+  color: var(--blue-500);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* o filme escolhido: a mesma linha da lista, num cartão (só para conferir) */
 .film-card {
   margin-top: 8px;

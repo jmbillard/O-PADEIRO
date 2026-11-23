@@ -111,6 +111,12 @@ const CHECKS = [
 		await p.click('#claq');
 		await p.waitForTimeout(900);
 	}],
+	// digitando: os cards do Trello em produção no topo (o mock: DOM acha dois do Domingão)
+	['projeto: cards do Trello', 'project.html', async (p) => {
+		await p.click('#claq');
+		await p.keyboard.type('DOM', { delay: 40 });
+		await p.waitForTimeout(1200);
+	}],
 	['projeto: filme escolhido', 'project.html', async (p) => {
 		await p.click('#claq');
 		await p.waitForTimeout(900);

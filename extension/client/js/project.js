@@ -29,6 +29,7 @@ projetos com o nome certo).
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
 	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
 	var CHEVRON_SVG = '<svg class="out-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>';
+	var TRELLO_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect x="7" y="7" width="4" height="9.5" rx="1" /><rect x="13" y="7" width="4" height="5.5" rx="1" /></svg>';
 	var FILM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
 
@@ -406,6 +407,7 @@ projetos com o nome certo).
 		if (!claq) {
 			state.lookupBusy = false;
 			flow.matches = [];
+			flow.cards = [];
 			flow.choice = '';
 			renderAttractions();
 			updatePick();
@@ -417,8 +419,11 @@ projetos com o nome certo).
 			state.lookupTimer = null;
 
 			try {
+				// os cards recentes do Trello que batem com o digitado (sem a barra: a busca da atração)
+				var cardsAsk = p.deep ? Promise.resolve([]) : ATR.recentCards(p.first);
 				var res = await findAttractions(p.first);
 
+				flow.cards = await cardsAsk;
 				if (seq !== state.lookupSeq) return;
 
 				flow.matches = withFixed(p.first, await toNewOrg(await resolveFilms(withRecentFilms(res.matches, p.first))));
@@ -451,6 +456,7 @@ projetos com o nome certo).
 			} catch (err) {
 				if (seq !== state.lookupSeq) return;
 				flow.matches = [];
+				flow.cards = [];
 				$('claq-hint').textContent = PAD_UTIL.errorText(err.message);
 			}
 
@@ -657,6 +663,57 @@ projetos com o nome certo).
 		});
 
 		return item;
+	}
+
+	// um card do Trello: o ícone, a claquete, a atração com o dia em que entrou e quem faz, e o status
+	function cardRow(c) {
+		var item = el('button', 'combo-item film-row card-row');
+		var icon = el('span', 'film-poster card-icon');
+		var text = el('span', 'film-text');
+		var day = /^\d{4}-(\d{2})-(\d{2})$/.exec(c.at || '');
+		var sub = [c.atr || 'sem atração no card', day ? 'entrou ' + day[2] + '/' + day[1] : '', c.des].filter(Boolean).join(' · ');
+
+		item.type = 'button';
+		item.setAttribute('role', 'option');
+		item.title = c.atr ? 'entra na atração do card: ' + c.atr : 'o card não tem atração: busca pela claquete';
+		icon.innerHTML = TRELLO_SVG;
+		text.appendChild(el('span', 'combo-title', c.claq.toUpperCase()));
+		text.appendChild(el('span', 'film-sub', sub));
+		item.appendChild(icon);
+		item.appendChild(text);
+		item.appendChild(el('span', 'film-tag card-tag', c.st || 'NO TRELLO'));
+		item.addEventListener('mousedown', function (e) {
+			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
+		});
+		item.addEventListener('click', function () {
+			pickCard(c);
+		});
+
+		return item;
+	}
+
+	// o card clicado: entra na atração dele (a mesma do índice, sem criar outra); sem atração no card, a claquete vai
+	// para o campo e a busca de sempre procura
+	async function pickCard(c) {
+		$('claq').value = String(c.atr || c.claq).toUpperCase();
+		state.userChose = true;
+		lookup();
+		if (!c.atr) return;
+
+		await new Promise(function (resolve) {
+			var wait = function () {
+				if (state.lookupTimer || state.lookupBusy) return setTimeout(wait, 40);
+				resolve();
+			};
+
+			setTimeout(wait, 40);
+		});
+
+		var match = flow.matches.filter(function (m) {
+			return !m.isFilm && aepName(m.name) === aepName(c.atr);
+		})[0];
+
+		if (match) enterAttraction(match);
 	}
 
 	// o filme clicado na lista: o título no campo e a busca acha ele (com o ano e a pasta) e entra
@@ -1022,7 +1079,18 @@ projetos com o nome certo).
 				return;
 			}
 
-			// sem a barra: as atrações (o clique entra nela: a barra e as pastas dela), a nova e outra pasta
+			// sem a barra: os cards do Trello que estão em produção (o clique entra na atração do card), as atrações (o
+			// clique entra nela: a barra e as pastas dela), a nova e outra pasta
+			var cards = flow.cards || [];
+
+			if (cards.length) {
+				list.appendChild(ATR.group(cards.length === 1 ? 'card no Trello' : 'cards no Trello'));
+				cards.forEach(function (c) {
+					list.appendChild(cardRow(c));
+				});
+				list.appendChild(ATR.sep());
+			}
+
 			var m = flow.matches.slice(0, LIST_MAX);
 
 			// o título diz o que veio: atrações, filmes ou os dois
