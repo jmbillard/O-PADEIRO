@@ -244,7 +244,7 @@ a aba **telemetria** concentra o que sai do padeiro para fora: em cima, o da equ
 
 ### registro de uso (equipe)
 
-define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
+define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e o arquivo do template. pelo **webhook** vão também a atração do template (a da lista de atrações), os dados do projeto (quadro, o que é, pasta e output, os mesmos da janela PROJETO) e a versão do padeiro (`versao_padeiro`); o CSV continua com as colunas de sempre.
 
 | opção | o que faz |
 | --- | --- |
