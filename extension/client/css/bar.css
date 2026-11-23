@@ -144,6 +144,161 @@ body.bar-page {
   }
 }
 
+/* =========================================================
+   O pãozinho no fim do ano (bar.js, paintSeason): gorro de 1º a 25 de dezembro; fogos de 26 a 31
+   ========================================================= */
+
+.bar-logo {
+  position: relative;
+}
+
+.xmas-hat {
+  display: none;
+  transform-box: view-box;
+  transform-origin: 14px 14px;
+}
+
+.bar-logo.is-xmas .xmas-hat {
+  display: inline;
+  animation: xmas-hat-in 700ms cubic-bezier(0.22, 0.9, 0.3, 1.2) both; /* entra caindo, uma vez */
+}
+
+@keyframes xmas-hat-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) rotate(-18deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* só a ponta balança, presa na dobra */
+.xmas-tip {
+  transform-box: view-box;
+  transform-origin: 37px 3px;
+}
+
+.bar-logo.is-xmas .xmas-tip {
+  animation: xmas-tip-sway 2.8s ease-in-out 700ms infinite;
+}
+
+@keyframes xmas-tip-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  50% {
+    transform: rotate(9deg);
+  }
+}
+
+/* contornos sólidos; os da copa e da ponta com a cor por cima (fica só a metade de fora: sem emenda entre elas) */
+.bar-loaf .xmas-line,
+.bar-loaf .xmas-top {
+  fill: none;
+  stroke: #8a1f27;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8;
+}
+
+.bar-loaf .xmas-line {
+  fill: #d8313b;
+}
+
+.bar-loaf .xmas-red {
+  fill: #d8313b;
+  stroke: none;
+}
+
+.bar-loaf .xmas-fold {
+  fill: none;
+  stroke: #8a1f27;
+  stroke-linecap: round;
+  stroke-width: 1.4;
+}
+
+.bar-loaf .xmas-fur {
+  fill: #fff;
+  stroke: #b4bccb;
+  stroke-width: 1;
+}
+
+.bar-loaf .xmas-band-edge,
+.bar-loaf .xmas-band {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.bar-loaf .xmas-band-edge {
+  stroke: #b4bccb;
+  stroke-width: 6.6;
+}
+
+.bar-loaf .xmas-band {
+  stroke: #fff;
+  stroke-width: 5;
+}
+
+/* os fogos: estouros pequenos em volta do pão, um par a cada poucos segundos */
+.bar-fx {
+  position: absolute;
+  inset: -40px -46px -10px;
+  pointer-events: none;
+}
+
+.bar-fx-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.bar-fx-spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 6px var(--c);
+  opacity: 0;
+  animation: bar-fx-spark 1.15s cubic-bezier(0.15, 0.8, 0.3, 1) var(--d) both;
+}
+
+@keyframes bar-fx-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+
+  12%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), calc(var(--y) + 8px)) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-logo.is-xmas .xmas-hat,
+  .bar-logo.is-xmas .xmas-tip {
+    animation: none;
+  }
+
+  .bar-fx {
+    display: none;
+  }
+}
+
 .bar-version {
   color: rgb(var(--on-brand) / 88%);
   font-size: 0.58rem;
@@ -325,6 +480,12 @@ body.bar-page {
 
 /* trabalhando (O CATADOR, O TIPÓGRAFO): o nome vira a contagem, menor; uma linha fina enche embaixo; o ícone
    repete a animação do hover. no fim, um brilho verde */
+/* apagado: a ferramenta não tem o que fazer agora (o coletar sem projeto salvo); a dica diz o motivo */
+.bar-btn.is-off {
+  opacity: 0.38;
+  cursor: default;
+}
+
 .bar-btn.is-running {
   position: relative;
   animation: none;
@@ -589,6 +750,39 @@ body.bar-page {
     transform 200ms ease;
 }
 
+/* o botão que é gaveta tem um contorno fino (o mesmo traço da gaveta aberta, mais leve): diferencia das ferramentas
+   soltas. por dentro (inset), para o botão não mudar de tamanho */
+.bar-drawer-btn {
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 32%);
+}
+
+.bar-drawer-btn:hover,
+.bar-drawer-btn:focus-visible {
+  box-shadow: inset 0 0 0 1px rgb(var(--on-brand) / 55%);
+}
+
+/* todos os botões com um tamanho só: a largura do maior nome de gaveta (--drawer-w, medida pelo bar.js). o nome
+   que não couber ganha reticências */
+.has-drawer-w .bar-btn:not(.is-folded) {
+  /* a largura do maior nome de gaveta, sem a folga (84 com os nomes de hoje): deitada e em pé */
+  --btn-w: calc(var(--drawer-w) - 10px);
+
+  width: var(--btn-w);
+  min-width: var(--btn-w);
+  box-sizing: border-box;
+}
+
+
+.has-drawer-w .bar-btn .bar-label {
+  overflow: hidden;
+  /* o nome pode entrar 6 de cada lado no respiro do botão antes de ganhar reticências (Importar AEP, deitada) */
+  max-width: calc(100% + 12px);
+  margin-inline: -6px;
+  padding-block: 1px; /* a linha é justa (line-height 1): sem isto o corte come os acentos e as pernas das letras */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bar-drawer-btn.is-folded {
   max-width: 0;
   min-width: 0;
@@ -843,6 +1037,7 @@ body.bar-page {
   .bar-drawer {
     width: 100%;
     max-width: none;
+    flex: 0 0 100%; /* sempre numa linha só dela: fechada (sem altura), não encolhe ao lado dos botões nem os empurra */
     max-height: 0;
     flex-flow: row wrap;
     align-items: center;
@@ -910,6 +1105,9 @@ body.bar-page {
   .bar-drawer,
   .bar-drawer.is-open {
     max-width: 240px;
+    /* com a largura limitada, as margens completam a linha: a gaveta fica numa linha só dela, no centro, e os
+       botões do grupo (a gaveta fechada e os soltos ao lado, como o Importar) ficam juntos e centralizados */
+    margin-inline: max(0px, calc((100% - 240px) / 2));
   }
 }
 

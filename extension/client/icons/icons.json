@@ -148,6 +148,10 @@
 		"label": "logo Globo"
 	},
 	{
+		"key": "barra-files",
+		"label": "arquivos"
+	},
+	{
 		"key": "barra-collect",
 		"label": "coletar"
 	},
@@ -166,6 +170,10 @@
 	{
 		"key": "barra-template-new",
 		"label": "novo template"
+	},
+	{
+		"key": "barra-duplicate",
+		"label": "duplicar"
 	},
 	{
 		"key": "barra-render",

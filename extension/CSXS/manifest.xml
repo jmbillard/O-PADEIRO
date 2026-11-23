@@ -14,6 +14,8 @@
 		<Extension Id="com.jmbillard.opadeiro.collect" Version="2.0.8" />
 		<Extension Id="com.jmbillard.opadeiro.versioner" Version="2.0.8" />
 		<Extension Id="com.jmbillard.opadeiro.labels" Version="2.0.8" />
+		<Extension Id="com.jmbillard.opadeiro.files" Version="2.0.8" />
+		<Extension Id="com.jmbillard.opadeiro.light" Version="2.0.8" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -187,7 +189,7 @@
 					<Geometry>
 						<Size>
 							<Width>940</Width>
-							<Height>800</Height>
+							<Height>880</Height>
 						</Size>
 						<MinSize>
 							<Width>940</Width>
@@ -406,6 +408,76 @@
 						<MinSize>
 							<Width>440</Width>
 							<Height>640</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- O ARQUIVISTA: renomear os arquivos e as pastas de um diretório -->
+		<Extension Id="com.jmbillard.opadeiro.files">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/files.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>O ARQUIVISTA</Menu>
+					<Geometry>
+						<Size>
+							<Width>720</Width>
+							<Height>720</Height>
+						</Size>
+						<MinSize>
+							<Width>480</Width>
+							<Height>420</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- A FORMINHA: o preenchimento leve (duplicar a comp aberta e preencher os layers de texto selecionados) -->
+		<Extension Id="com.jmbillard.opadeiro.light">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/light.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Modeless</Type>
+					<Menu>A FORMINHA</Menu>
+					<Geometry>
+						<Size>
+							<Width>460</Width>
+							<Height>600</Height>
+						</Size>
+						<MinSize>
+							<Width>360</Width>
+							<Height>380</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

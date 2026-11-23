@@ -23,6 +23,11 @@ var PADX_run = null;
 
 function PADX_call(method, argsJson) {
 	var res;
+	var notes = [];
+
+	// nenhum alert() nativo (a caixa do After, herança do script antigo): o que as libs avisam fica recolhido e vai
+	// para o painel junto da resposta (res.notes)
+	PADX_alerts = notes;
 
 	try {
 		var args = argsJson ? JSON.parse(argsJson) : {};
@@ -39,7 +44,10 @@ function PADX_call(method, argsJson) {
 		res = { ok: false, error: /^#PAD_/.test(msg) ? msg : '#PAD_099 - erro inesperado: ' + msg };
 	} finally {
 		padUndoClose(); // nenhum grupo de desfazer fica aberto entre uma chamada e outra
+		PADX_alerts = null;
 	}
+
+	if (notes.length) res.notes = notes;
 
 	return JSON.stringify(res);
 }
@@ -73,6 +81,7 @@ $.global.alert = function (msg) {
 function padCollect(fn) {
 	var data;
 	var messages;
+	var outer = PADX_alerts; // a chamada (PADX_call) já recolhe: volta para ela no fim
 
 	PADX_alerts = [];
 
@@ -80,7 +89,7 @@ function padCollect(fn) {
 		data = fn();
 	} finally {
 		messages = PADX_alerts;
-		PADX_alerts = null;
+		PADX_alerts = outer;
 	}
 
 	return { messages: messages, data: data };
@@ -250,6 +259,25 @@ function padMachineSearch(o) {
 	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
 }
 
+// A lista de templates neste computador (configuração > templates): quantos recentes aparecem (0 a 30, padrão 5)
+// e há quantos dias um template ainda é novo (0 a 90, padrão 15). 0 esconde a seção
+function padMachineLists(d) {
+	var o = d && d.lists && typeof d.lists == 'object' ? d.lists : {};
+
+	function num(v, def, max) {
+		var n = parseInt(v, 10);
+
+		if (isNaN(n)) return def;
+
+		// sem ternário encadeado (o ExtendScript agrupa errado)
+		if (n < 0) return 0;
+
+		return n > max ? max : n;
+	}
+
+	return { recents: num(o.recents, 5, 30), newDays: num(o.newDays, 15, 90) };
+}
+
 PADX.machinePrefs = function () {
 	var d = padMachineData();
 
@@ -265,16 +293,17 @@ PADX.machinePrefs = function () {
 		search: padMachineSearch(d.search),
 		fontsUpload: padMachineFontsUpload(),
 		fontsCheck: padMachineFontsCheck(),
+		lists: padMachineLists(d),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists } (só os campos enviados mudam)
 PADX.saveMachinePrefs = function (a) {
 	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck() };
+	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck(), lists: padMachineLists(d) };
 
 	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
 	if (a.projects != null) data.projects = padMachinePath(a.projects);
@@ -310,6 +339,7 @@ PADX.saveMachinePrefs = function (a) {
 	if (a.search != null) data.search = padMachineSearch(a.search);
 	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
 	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
+	if (a.lists != null) data.lists = padMachineLists({ lists: a.lists });
 
 	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
@@ -660,6 +690,7 @@ PADX.productions = function () {
 		productions: productions,
 		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
 		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
+		lists: padMachineLists(padMachineData()), // quantos recentes e quantos dias de novos (neste computador)
 		log: padReadLogSettings(),
 		drives: padReadDrives(),
 		rename: padReadRename(),
@@ -692,6 +723,7 @@ templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo:
 */
 
 var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
+// colunas do CSV (o webhook recebe também projeto, atracao, quadro, o_que_e, pasta, output e versao)
 var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
 
 function padDefaultLog() {
@@ -1059,6 +1091,7 @@ PADX.saveTemplateConfig = function (a) {
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
 	if (!(cfg.inputLayers instanceof Array)) throw new Error('#PAD_044 - lista de layers inválida');
 	if (!(cfg.outputPath instanceof Array) || cfg.outputPath.length == 0) throw new Error('#PAD_044 - informe ao menos uma pasta de output');
+	for (var cp = 0; cp < cfg.outputPath.length; cp++) cfg.outputPath[cp] = padCleanSpaces(cfg.outputPath[cp]); // sem espaços a mais
 
 	for (var l = 0; l < cfg.inputLayers.length; l++) {
 		var layer = cfg.inputLayers[l];
@@ -1544,6 +1577,19 @@ PADX.fillFinish = function () {
 			return n < 10 ? '0' + n : String(n);
 		};
 
+		// os dados do projeto (A CLAQUETE) vão junto: o template e a produção não ficam mais no arquivo, só aqui
+		var meta = {};
+
+		try {
+			meta = padMetaRead();
+		} catch (err) { }
+
+		var projeto = '';
+
+		try {
+			projeto = app.project.file ? app.project.file.fsName : '';
+		} catch (err) { }
+
 		padWriteLog({
 			producao: run.production || '',
 			template: run.templateData.configName,
@@ -1551,7 +1597,15 @@ PADX.fillFinish = function () {
 			user: system.userName,
 			work_station: system.machineName.replaceSpecialCharacters(),
 			data: [dt.getFullYear(), pad2(dt.getMonth() + 1), pad2(dt.getDate())].join('-') + ' ' + pad2(dt.getHours()) + ':' + pad2(dt.getMinutes()),
-			caminho: run.projectFile.fsName
+			caminho: run.projectFile.fsName,
+			// só no webhook (o CSV continua com as colunas de PAD_LOG_COLUMNS)
+			projeto: projeto,
+			atracao: meta.atracao || '',
+			quadro: meta.quadro || '',
+			o_que_e: meta.oQueE || '',
+			pasta: meta.pasta || '',
+			output: meta.output || (run.templateData.outputPath || [])[0] || '',
+			versao: PADX_VERSION
 		});
 	} catch (err) { }
 
@@ -1980,7 +2034,11 @@ PADX.installFonts = function () {
 	var settings = padReadCollect();
 	var file = app.project.file;
 	var folders = [];
-	var root = m.pasta ? padMountedPath(padPath(m.pasta)) : file ? padCollectRoot(file, settings) : '';
+	// sem ternário encadeado (o ExtendScript agrupa errado: com a pasta gravada, caía na conta pelo arquivo)
+	var root = '';
+
+	if (m.pasta) root = padMountedPath(padPath(m.pasta));
+	else if (file) root = padCollectRoot(file, settings);
 	var sub = padCollectFolderPath(settings, 'fontes');
 	var list = padTemplatesList(m.templates);
 

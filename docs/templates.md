@@ -59,9 +59,9 @@ no topo da lista, antes das pastas, ficam três atalhos:
 - **recentes** → os templates usados por último.
   - um template entra nos recentes quando você **preenche** (ao clicar em '*Preencher*', quando o template começa a ser importado) ou **importa** (duplo clique na lista ou o botão de importar, no rodapé). só selecionar não conta.
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
-  - o limite é de **5 templates**: quando entra o 6º, o mais antigo sai.
-  - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos de 5.
-- **novos** → os templates criados nos últimos **15 dias**, do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
+  - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **neste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
+  - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos que o limite.
+- **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **neste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
 - **preset de render** → fixados e recentes lembram o último template de output usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 
@@ -75,7 +75,7 @@ no topo da lista, antes das pastas, ficam três atalhos:
 - **preview** → a imagem `_preview.png` do template (transparências aparecem sobre um fundo xadrez). se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
 - **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
 - **dicas** → como preencher esse template.
-- **abrir output** (o botão redondo com a pastinha, no rodapé) → abre as pastas de output do template.
+- **abrir output** (o botão redondo com a pastinha, no rodapé) → abre as pastas de output do template (com os tokens de data, como `{ano}`, já trocados).
 - **avisos** → com o template à vista, os avisos (erros de output, config salva, fontes) aparecem logo abaixo do preview, sem repetir mensagens iguais, e fecham no ×.
 - **importar** (o botão redondo com a seta para baixo, no rodapé, antes do de output) → importa o template para o projeto, sem preencher.
 - **✎ editar config** → abre o editor do arquivo de configuração (veja [editor de config](#editor-de-config)).
@@ -289,6 +289,63 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 ---
 
 <br>
+
+## a forminha
+
+**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma duplicata por versão do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto.
+
+abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
+
+<p align="center"><img src="images/forminha.webp" alt="A FORMINHA, com as partes numeradas" width="460"></p>
+
+| | |
+| :---: | --- |
+| ❶ | **a comp aberta**: o nome de hoje, com o trecho que muda marcado (a dica explica a regra do nome) |
+| ❷ | **os layers de texto selecionados**, numerados na ordem em que recebem as linhas (de cima para baixo na comp); o de contorno azul está no nome da comp |
+| ❸ | **a caixa**: `AA`, `aa` e `Aa` passam todo o texto do input para caixa alta, baixa ou de título |
+| ❹ | **o input**: linha vazia separa as versões. com 1 layer, a versão inteira (pode ter várias linhas) vai para ele; com 2 ou mais, o texto de cada layer é separado por uma linha com o **separador** (`---` por padrão, no campo ao lado da caixa) |
+| ❺ | **o nome da comp** de cada versão, **editável** |
+| ❻ | **a situação**: ✓ tudo certo ou ⚠ atenção, com o motivo na dica |
+| ❼ | **Duplicar**: cria as comps (`Ctrl/Cmd+Enter`) |
+
+1. abra a comp e selecione os layers de texto que mudam de uma versão para a outra. a janela acompanha a seleção (o botão redondo do rodapé lê de novo na hora).
+2. digite o input. cada versão vira uma linha da tabela, com o texto dela em chips e o nome que a duplicata vai ter.
+3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as duplicatas ficam na mesma pasta do projeto que a comp original, que não muda.
+4. a janela mostra o **andamento**: a barra de progresso e, na tabela, cada comp na fila (–), sendo criada (o anel girando) e criada (✓). no fim, o botão ao lado de cada uma abre a comp; a **seta** do rodapé volta para um preenchimento novo, com o input limpo.
+
+> 🚩 *obs:* para a barra andar, as comps são criadas uma por vez: cada uma é um passo de desfazer do After (`Ctrl/Cmd+Z` desfaz a última criada).
+
+- **texto com várias linhas** → o texto de um layer pode ter quantas linhas quiser. com **1 layer**, cada versão inteira vai para ele. com **2 ou mais**, separe o texto de cada layer com uma linha só com o separador:
+
+  ```
+  JOÃO GOMES
+  DA SILVA
+  ---
+  CANTOR
+
+  IVETE SANGALO
+  ---
+  CANTORA
+  ```
+
+  o separador fica no campo ao lado da caixa do texto (o último usado volta na próxima vez). **vazio**, vale uma linha por layer, sem separador.
+- **parte vazia** → uma parte sem texto entre dois separadores (ou antes do primeiro) fica no lugar dela: o layer dela é **escondido** e os textos seguintes continuam nos layers certos.
+- **partes a menos** → o layer que fica sem texto é **escondido** naquela duplicata (como no preenchimento completo).
+- **partes a mais** → as que sobram são **ignoradas** e aparecem riscadas entre os chips da versão.
+- **os avisos** → ficam no ícone de cada linha da tabela, com o motivo na dica: linha ignorada, layer escondido, nome que já existia.
+
+### o nome das duplicatas
+
+- **pelo nome da comp** → o padeiro compara o nome da comp com o texto dos layers selecionados. cada trecho do nome que é o texto de um layer vira a parte que muda; o resto (o prefixo, o separador) fica como está. `RDP - ANA MARIA` com o layer "ANA MARIA" selecionado dá `RDP - JOAO GOMES`; com dois layers no nome (`RDP - ANA MARIA APRESENTADORA`), os dois trechos mudam. o layer escondido (sem linha) sai do nome.
+- **sem trecho nenhum** → se o nome da comp não tem o texto de nenhum layer selecionado, a duplicata leva o nome da comp, o separador e a primeira linha da versão.
+- **a regra do renomear** → o texto que entra no nome passa pela regra da [configuração > renomear](producoes.md#-renomear) (caixa, acentos, separador). o texto do layer fica como foi digitado: `João Gomes` no layer, `RDP - JOAO GOMES` no nome.
+- **nome que já existe** → ganha um sufixo (`_2`, `_3`…), avisado no ícone da linha.
+- **o layer de nome** → a comp com o layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name) leva o texto dele, como no preenchimento completo. o campo do nome aparece vazio ("pelo layer de nome"), porque o texto só existe depois de preencher.
+- **o nome digitado é absoluto** → o que você digitar no campo do nome vale como está: sem a regra, sem sufixo e por cima até do layer de nome. a seta ao lado volta ao nome sugerido.
+
+> 🚩 *obs:*\
+> • a forminha não cria fila de render, não confere fontes e não roda script de template: para isso, use o preenchimento completo.\
+> • a comparação do nome ignora a caixa e os acentos, mas o texto do layer precisa estar inteiro no nome da comp. um nome abreviado à mão (`RDP - ANA M`) não é reconhecido, e a duplicata cai na regra "sem trecho nenhum".
 
 ## 📍 teclado
 

@@ -75,13 +75,22 @@
 			var ROOT = __PADEIRO_ROOT__;
 			var PAGE = __PADEIRO_PAGE__;
 
-			// macOS: o volume de rede pode ser montado com sufixo (/Volumes/VFX-1 ... VFX-5)
+			// macOS: o volume de rede pode ser montado com sufixo (/Volumes/VFX-1 ... VFX-5). vale nos dois sentidos: o
+			// instalador pode ter rodado com o volume em VFX-2, e hoje ele estar em VFX (ou em VFX-1)
 			function candidates(root) {
 				var list = [root];
-				var m = /^\/Volumes\/([^/]+)(\/.*)?$/.exec(root);
+				var m = /^\/Volumes\/([^/]+?)(-[1-5])?(\/.*)?$/.exec(root);
 
 				if (m) {
-					for (var i = 1; i <= 5; i++) list.push('/Volumes/' + m[1] + '-' + i + (m[2] || ''));
+					var rest = m[3] || '';
+					var names = [m[1]];
+
+					for (var i = 1; i <= 5; i++) names.push(m[1] + '-' + i);
+					names.forEach(function (n) {
+						var p = '/Volumes/' + n + rest;
+
+						if (list.indexOf(p) < 0) list.push(p);
+					});
 				}
 
 				return list;
@@ -117,8 +126,15 @@
 					}
 				}
 
-				document.getElementById('title').textContent = 'a pasta do padeiro na rede não está acessível';
-				document.getElementById('detail').textContent = ROOT;
+				// a pasta existe mas a página não: a cópia da rede é de uma versão anterior (não é a rede fora)
+				var found = '';
+
+				for (var k = 0; k < list.length && !found; k++) {
+					if (exists(list[k].replace(/[\\/]+$/, '') + '/client')) found = list[k];
+				}
+
+				document.getElementById('title').textContent = found ? 'a pasta do padeiro na rede não tem esta janela' : 'a pasta do padeiro na rede não está acessível';
+				document.getElementById('detail').textContent = found ? found + ' · falta client/' + PAGE + ' (a cópia da rede é de uma versão anterior?)' : ROOT + (list.length > 1 ? ' (também procurei nos volumes com sufixo -1 a -5: o volume está montado?)' : '');
 				document.getElementById('retry').hidden = false;
 				setTimeout(open, 4000); // a rede pode voltar
 			}

@@ -8,7 +8,7 @@ O clique direito no coletar (barra). Uma linha por arquivo do projeto: a miniatu
 do vídeo ou da sequência; áudio e dados com o ícone do tipo), o nome, o tipo e os layers e, à direita, o
 estado: ✓ na pasta do projeto · ↑ nas pastas de projetos · ↑ amarela fora delas · ✕ faltando · – fora da árvore
 do coletar. clicar mostra o item no painel Project. Coletar copia para a estrutura do projeto (a seta sobe
-enquanto copia); a pasta do rodapé coleta em outra pasta; o triângulo resolve os arquivos faltando que estão
+enquanto copia); o triângulo resolve os arquivos faltando que estão
 num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e relinka.
 
 */
@@ -919,7 +919,6 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('fw-list').hidden = true;
 		$('fw-empty').hidden = true;
 		$('cw-filter').hidden = true;
-		$('cw-other').hidden = true;
 		$('cw-relink').hidden = true;
 		$('mg-back').hidden = false;
 		$('mg').hidden = false;
@@ -958,7 +957,6 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('mg').textContent = '';
 		$('mg-back').hidden = true;
 		$('fw-list').hidden = false;
-		$('cw-other').hidden = false;
 		$('cw-relink').hidden = false;
 		$('cw-go').classList.add('button-primary');
 		document.body.classList.remove('is-migrating');
@@ -1169,11 +1167,6 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('mg-back').addEventListener('click', closeMigration);
 		window.addEventListener('resize', function () {
 			if (state.mig || state.reading) drawWires();
-		});
-		$('cw-other').addEventListener('click', function () {
-			var path = PAD_BRIDGE.pickFolder('Coletar em qual pasta', state.data && state.data.root);
-
-			if (path) collect(path);
 		});
 
 		var menu = $('app-menu');

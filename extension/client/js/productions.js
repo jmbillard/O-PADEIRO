@@ -55,7 +55,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	var LOG_HINTS = {
 		csvGlobal: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da equipe (um arquivo só, na mesma pasta da lista de produções).',
-		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina e projeto).',
+		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina, o projeto e os dados dele: atração, quadro, o que é, pasta, output e a versão do Padeiro).',
 		csv: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da produção (um arquivo só, na pasta de templates dela).',
 		off: 'nada é registrado.'
 	};
@@ -509,7 +509,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			daily: m.search.daily
 		};
 
-		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false };
+		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false, lists: { recents: m.lists.recents, newDays: m.lists.newDays } };
 	}
 
 	function personalDirty() {
@@ -2231,14 +2231,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// nome, o que os cliques fazem e o ícone (o desenho da barra, em js/icons.js)
 	var TOOL_INFO = {
 		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
+		duplicar: ['Duplicar', 'A FORMINHA: duplicar a comp aberta e preencher os layers de texto selecionados', 'duplicate'],
 		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
-		projeto: ['Criar / Alterar', 'A CLAQUETE: criar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
+		projeto: ['Iniciar / Alterar', 'A CLAQUETE: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
-		coletar: ['Coletar', 'coletar na pasta do projeto · em outra pasta', 'collect'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
-		importar: ['Importar', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
+		arquivos: ['Arquivos', 'O ARQUIVISTA: renomear os arquivos e as pastas de uma pasta', 'files'],
+		importar: ['Importar AEP', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
 		pastas: ['Pastas', 'pasta do último output · conversor de caminhos', 'folders'],
 		buscar: ['Buscar', 'busca de caminhos · busca em textos', 'search'],
 		'logo-globo': ['Logo Globo', 'logo animado · logo parado', 'logo-globo']
@@ -2794,6 +2796,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			localMode: !!m.localMode,
 			fontsUpload: m.fontsUpload !== false,
 			fontsCheck: m.fontsCheck !== false,
+			lists: { recents: m.lists && typeof m.lists.recents === 'number' ? m.lists.recents : 5, newDays: m.lists && typeof m.lists.newDays === 'number' ? m.lists.newDays : 15 },
 			search: { mode: ms.mode === 'local' ? 'local' : 'webhook', folders: (ms.folders || []).slice(), foldersOnly: ms.foldersOnly !== false, daily: ms.daily !== false }
 		};
 		state.localIndexFile = m.localIndex || '';
@@ -2803,11 +2806,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderMachine();
 	}
 
+	// a lista de templates neste computador: [campo, chave, máximo, padrão]
+	var LIST_KEYS = [['machine-recents', 'recents', 30, 5], ['machine-new-days', 'newDays', 90, 15]];
+
 	function renderMachine() {
 		var m = state.machine;
 
 		[['machine-user', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
+		});
+		LIST_KEYS.forEach(function (k) {
+			if (document.activeElement !== $(k[0])) $(k[0]).value = m.lists[k[1]];
 		});
 		renderPresets();
 		$('machine-user').placeholder = state.defaultUser;
@@ -3035,6 +3044,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
 				state.machine[pair[1]] = this.value;
 				updateDirty();
+			});
+		});
+
+		// só números, dentro do limite; vazio fica com o padrão (ao sair do campo, o número aparece)
+		LIST_KEYS.forEach(function (k) {
+			$(k[0]).addEventListener('input', function () {
+				var n = parseInt(this.value, 10);
+
+				state.machine.lists[k[1]] = isNaN(n) ? k[3] : Math.max(0, Math.min(k[2], n));
+				updateDirty();
+			});
+			$(k[0]).addEventListener('blur', function () {
+				this.value = state.machine.lists[k[1]];
 			});
 		});
 
@@ -3684,7 +3706,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'categoria', 'letra'];
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
@@ -3709,7 +3731,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), categoria: row.name.trim().toUpperCase() || 'CATEGORIA', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3762,7 +3784,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			name.placeholder = 'nome (ex: PROGRAMAS)';
 			name.spellcheck = false;
 			name.disabled = !state.available;
-			name.setAttribute('aria-label', 'nome da categoria ' + (i + 1));
+			name.setAttribute('aria-label', 'nome do tipo de projeto ' + (i + 1));
 			name.addEventListener('input', function () {
 				row.name = name.value;
 				// {categoria} nas prévias
@@ -3772,8 +3794,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 
 			remove.type = 'button';
-			remove.title = 'excluir a categoria';
-			remove.setAttribute('aria-label', 'excluir a categoria ' + (row.name || i + 1));
+			remove.title = 'excluir o tipo de projeto';
+			remove.setAttribute('aria-label', 'excluir o tipo ' + (row.name || i + 1));
 			remove.disabled = !state.available;
 			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
@@ -3794,7 +3816,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			[['path', 'PROJETO', '//servidor/share/PROGRAMAS/{atracao}'], ['output', 'OUTPUT', 'opcional: a pasta de output da atração nova']].forEach(function (k) {
 				var line = el('div', 'cat-line');
 				var preview = el('p', 'cat-preview');
-				var field = pathField(row[k[0]], k[2], (k[0] === 'path' ? 'pasta da atração nova em ' : 'pasta de output em ') + (row.name || 'categoria ' + (i + 1)), function (v) {
+				var field = pathField(row[k[0]], k[2], (k[0] === 'path' ? 'pasta da atração nova em ' : 'pasta de output em ') + (row.name || 'tipo ' + (i + 1)), function (v) {
 					row[k[0]] = v;
 					preview.innerHTML = catPreview(row, k[0]);
 				}, function (picked) {
@@ -3835,7 +3857,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fileInput.value = row.file || '';
 			fileInput.placeholder = 'opcional: o nome do .aep, ex: {proximo_mes} NA GLOBO';
 			fileInput.spellcheck = false;
-			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'categoria ' + (i + 1)));
+			fileInput.setAttribute('aria-label', 'nome do .aep de ' + (row.name || 'tipo ' + (i + 1)));
 			fileInput.addEventListener('input', function () {
 				row.file = fileInput.value;
 				filePreview.innerHTML = catPreview(row, 'file');
@@ -3882,7 +3904,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var cards = $('cat-list').querySelectorAll('.cat-card');
 			var rows = state.project.categories;
 
-			if (!cards.length) return toast(null, 'crie uma categoria antes (+ nova categoria).');
+			if (!cards.length) return toast(null, 'crie um tipo de projeto antes (+ novo tipo).');
 
 			var last = cards[cards.length - 1];
 
@@ -3908,7 +3930,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function openIconPicker(anchor, row, opts) {
 		closeIconPicker();
 
-		opts = opts || { title: 'ícone da categoria', pane: 'pane-project', render: renderProject };
+		opts = opts || { title: 'ícone do tipo de projeto', pane: 'pane-project', render: renderProject };
 
 		var pop = el('div', 'icon-pop');
 		var grid = el('div', 'icon-grid');

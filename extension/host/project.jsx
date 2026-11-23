@@ -22,7 +22,15 @@ atrações do índice.
 
 var PAD_DEFAULT_PROJECT = { categories: [] };
 
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'categoria', 'letra'];
+var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e']; // {categoria}: o nome antigo do {tipo}, ainda aceito
+
+// Um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
+// barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). vale em todo caminho de output: os tipos de
+// projeto, a claquete, os dados do projeto e as pastas de output dos templates. um token vazio ou um nome digitado
+// com espaço sobrando criaria uma pasta quase igual à certa, que ninguém acha depois
+function padCleanSpaces(path) {
+	return String(path == null ? '' : path).replace(/[ \t\u00A0]{2,}/g, ' ').replace(/ *([\\\/]) */g, '$1').replace(/^ +| +$/g, '');
+}
 
 // Caminho guardado na configuração: barras normais, sem barra no fim.
 function padProjectPath(path) {
@@ -39,7 +47,7 @@ function padCleanProject(o) {
 		var c = list[i] || {};
 		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
 		var path = padProjectPath(c.path);
-		var output = padProjectPath(c.output);
+		var output = padCleanSpaces(padProjectPath(c.output));
 		// o nome do .aep da categoria (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
 		var fileName = padTrim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
 		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
@@ -47,12 +55,16 @@ function padCleanProject(o) {
 		var re = /\{([^}]*)\}/g;
 		var m;
 
-		if (!key) throw new Error('#PAD_089 - projeto: preencha o nome da categoria ' + (i + 1) + '.');
-		if (seen[key]) throw new Error('#PAD_089 - projeto: a categoria ' + name + ' aparece mais de uma vez.');
-		if (path == '') throw new Error('#PAD_089 - projeto: a categoria ' + name + ' precisa de um caminho.');
+		if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
+		if (seen[key]) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' aparece mais de uma vez.');
+		if (path == '') throw new Error('#PAD_089 - projeto: o tipo ' + name + ' precisa de um caminho.');
+
+		// {o_que_e} (o que se digita na claquete, depois da atração): só no output e no nome do arquivo. a pasta do
+		// projeto é decidida antes de o o que é existir
+		if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
 
 		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
+			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra} ou {o_que_e}).');
 		}
 
 
@@ -201,6 +213,7 @@ function padMetaWrite(fields, title) {
 	var i;
 
 	for (var k in fields) if (fields.hasOwnProperty(k) && fields[k] != null) cur[k] = String(fields[k]);
+	if (cur.output) cur.output = padCleanSpaces(cur.output);
 
 	// toda gravação é de quem está usando: entra nos editores e no salvo por último
 	var touch = padEditorsTouch(cur);
@@ -242,7 +255,8 @@ function padMetaWrite(fields, title) {
    por dia: a anotação só muda (e o projeto só fica "modificado") no primeiro salvamento de cada pessoa no dia
 */
 
-// os editores de um projeto: [{ user, day }], do texto 'sigla <tab> dia' por linha
+// os editores de um projeto: [{ user, day, time }], do texto 'sigla <tab> dia <tab> hora' por linha (a hora é
+// opcional: HH:MM do último salvamento de quem já não é o último; a do último vem da data do arquivo)
 function padEditorsList(text) {
 	var out = [];
 	var lines = String(text || '').split('\n');
@@ -250,10 +264,20 @@ function padEditorsList(text) {
 	for (var i = 0; i < lines.length; i++) {
 		var parts = lines[i].split('\t');
 
-		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '' });
+		if (parts[0]) out.push({ user: parts[0], day: parts[1] || '', time: parts[2] || '' });
 	}
 
 	return out;
+}
+
+// o dia (AAAA-MM-DD) e a hora (HH:MM) de uma data em ms
+function padDayTime(ms) {
+	var d = new Date(ms);
+	var two = function (n) {
+		return (n < 10 ? '0' : '') + n;
+	};
+
+	return { day: d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()), time: two(d.getHours()) + ':' + two(d.getMinutes()) };
 }
 
 // os editores e o salvo por último com quem está usando, hoje → { editores, salvo, changed }
@@ -261,20 +285,33 @@ function padEditorsTouch(cur) {
 	var user = padMachineUser();
 	var today = padToday();
 	var list = padEditorsList(cur.editores);
+	var before = padEditorsList(cur.salvo)[0] || null; // quem era o último, antes de agora
 	var lines = [];
-	var found = false;
 	var i;
 
 	if (!user) return { editores: cur.editores || '', salvo: cur.salvo || '', changed: false };
 
+	// outra pessoa era a última: a hora do último salvamento dela é a data que o arquivo tinha antes deste
+	// salvamento (a barra guarda em PAD_SAVE_SEEN). fica na linha dela, sem gravar nada a mais depois
+	var stamp = null;
+
+	try {
+		var file = app.project.file;
+
+		if (before && before.user != user && file && PAD_SAVE_SEEN.path == file.fsName && PAD_SAVE_SEEN.time) stamp = padDayTime(PAD_SAVE_SEEN.time);
+	} catch (err) { }
+
+	// quem salva vai para o fim da lista: a ordem das linhas é a ordem em que cada um salvou por último (duas
+	// pessoas no mesmo dia: a de baixo salvou depois)
 	for (i = 0; i < list.length; i++) {
-		if (list[i].user == user) {
-			list[i].day = today;
-			found = true;
-		}
+		if (list[i].user == user) continue;
+
+		var time = list[i].time;
+
+		if (stamp && list[i].user == before.user && list[i].day == stamp.day) time = stamp.time;
+		lines.push(list[i].user + '\t' + list[i].day + (time ? '\t' + time : ''));
 	}
-	if (!found) list.push({ user: user, day: today });
-	for (i = 0; i < list.length; i++) lines.push(list[i].user + '\t' + list[i].day);
+	lines.push(user + '\t' + today); // a hora de quem é o último vem da data do arquivo
 
 	var editores = lines.join('\n');
 	var salvo = user + '\t' + today;
@@ -392,9 +429,10 @@ function padFillDateTokens(path, atracao) {
 		atracao: atracao ? padAepName(atracao) : null
 	};
 
-	return String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
+	// depois dos tokens: um token vazio não deixa dois espaços (nem um espaço na ponta) no caminho de output
+	return padCleanSpaces(String(path || '').replace(/\{(\w+)\}/g, function (all, key) {
 		return values[key] != null ? values[key] : all;
-	});
+	}));
 }
 
 function padAepName(text) {
@@ -600,7 +638,11 @@ function padNewProjectPlan(a) {
 	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
 	var levels = padTrim(a.quadro).split('/');
 
-	fileBase = padAepName((padTrim(levels[levels.length - 1]) || padTrim(a.fileName) || a.atracao) + ' ' + (a.what || ''));
+	// o nome do tipo (aba PROJETO > ARQUIVO) com {o_que_e}: o o que é entra no lugar do token, não no fim
+	var custom = padTrim(a.fileName);
+
+	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
+	else fileBase = padAepName((padTrim(levels[levels.length - 1]) || custom.split('{o_que_e}').join(' ') || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
 	root = padMountedPath(padPath(a.path));
 
@@ -656,7 +698,8 @@ function padAepList(folderPath) {
 	for (var i = 0; i < items.length; i++) {
 		var name = decodeURI(items[i].name);
 
-		if (items[i] instanceof File && /\.aep$/i.test(name)) out.push({ name: name.replace(/\.aep$/i, ''), modified: items[i].modified ? items[i].modified.getTime() : 0 });
+		// os .aep e os .aet (ext: a lista da claquete mostra os dois; só o .aep conta como nome repetido)
+		if (items[i] instanceof File && /\.ae[pt]$/i.test(name)) out.push({ name: name.replace(/\.ae[pt]$/i, ''), ext: /\.aet$/i.test(name) ? 'aet' : 'aep', modified: items[i].modified ? items[i].modified.getTime() : 0 });
 	}
 
 	return out.sort(function (a, b) {
@@ -802,10 +845,10 @@ PADX.projectPlan = function (a) {
 	var folders = [];
 	var list = padStructureFolders(plan.settings, PAD_PROJECT_KINDS);
 
-	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase) exists = true;
+	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet') exists = true;
 	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
-	var outputPath = a.output ? padMountedPath(padPath(a.output)) : '';
+	var outputPath = a.output ? padMountedPath(padPath(padCleanSpaces(a.output))) : '';
 	// a subpasta do "o que é" dentro da de output (…/2026/SERVICO): a outra opção da etapa CRIAR, conferida de fato
 	var subName = a.what ? padAepName(a.what) : '';
 	var subPath = outputPath && subName ? outputPath + '/' + subName : '';
@@ -828,6 +871,17 @@ PADX.projectPlan = function (a) {
 		outputSub: subPath ? padDisplayPath(subPath) : '',
 		outputSubExists: subPath ? new Folder(subPath).exists : false
 	};
+};
+
+// Abre um projeto que já está na pasta (a lista "já na pasta" da claquete). a: { path } → { file }
+PADX.projectOpenFile = function (a) {
+	var file = new File(padMountedPath(padPath(a.path)));
+
+	if (!file.exists) throw new Error('#PAD_112 - o projeto não foi encontrado: ' + padDisplayPath(file.fsName));
+
+	app.open(file);
+
+	return { file: padDisplayPath(file.fsName) };
 };
 
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
@@ -898,7 +952,7 @@ PADX.projectCreate = function (a) {
 	}
 
 	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
-	var output = a.output ? new Folder(padMountedPath(padPath(a.output))) : null;
+	var output = a.output ? new Folder(padMountedPath(padPath(padCleanSpaces(a.output)))) : null;
 
 	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
 
@@ -977,12 +1031,43 @@ PADX.projectStatus = function () {
 		PAD_SAVE_SEEN = { path: seenPath, time: seenTime };
 	} catch (err2) { }
 
-	var hasData = !!(file && padMetaRead().atracao);
-	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
-	var state = hasData ? (padInRoot(file) ? 'ok' : 'out') : file || app.project.numItems > 0 ? 'missing' : '';
+	var meta = padMetaRead();
+	// os dados valem mesmo sem arquivo: o projeto antigo que o After converte ao abrir fica "(converted)", sem salvar
+	var hasData = !!meta.atracao;
+	// why: por que a bolinha está laranja, para a dica da barra (e para achar o que houve quando ela erra)
+	var why = '';
 
-	return { state: state, key: key, fontsCheck: padMachineFontsCheck() };
+	if (!hasData) {
+		var fileName = '';
+
+		try {
+			fileName = file ? decodeURI(file.name) : '';
+		} catch (err3) { }
+		why = !file ? 'o projeto ainda não foi salvo' : fileName + ' não tem a atração nos dados do padeiro' + (meta.versao ? '' : ' (nenhum dado do padeiro no arquivo)');
+	}
+	// out: com os dados do padeiro, mas o .aep está fora da pasta dele (ex: "salvar como" na Área de Trabalho)
+	// if/else em vez de ternário encadeado: o ExtendScript agrupa 'a ? b : c ? d : e' como '(a ? b : c) ? d : e', e
+	// o projeto com a atração caía sempre em 'missing' (a barra dizia "ainda sem atração" num projeto já criado)
+	var state = '';
+
+	if (hasData) {
+		if (file && padInRoot(file)) state = 'ok';
+		else state = 'out';
+		if (!file) why = 'convertido de uma versão antiga do After e ainda não salvo';
+	}
+	else if (file || app.project.numItems > 0) state = 'missing';
+
+	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
 };
+
+// a data de modificação de um arquivo, em ms (0 sem arquivo ou sem leitura)
+function padFileTime(file) {
+	try {
+		return file && file.modified ? file.modified.getTime() : 0;
+	} catch (err) {
+		return 0;
+	}
+}
 
 // O projeto aberto: com os dados do padeiro (a atração) ou não.
 // editores: quem já salvou [{ user, day }]; salvo: o último { user, day } ou null
@@ -995,7 +1080,8 @@ PADX.projectCurrent = function () {
 
 	return {
 		created: inRoot,
-		outside: !!(file && m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
+		outside: !!(m.atracao && !inRoot), // com os dados, mas salvo fora da pasta dele (ex: na Área de Trabalho)
+		unsaved: !file && !!m.atracao, // com os dados, mas sem arquivo: o After converteu o projeto antigo ao abrir
 		atracao: m.atracao,
 		quadro: m.quadro,
 		oQueE: m.oQueE,
@@ -1008,6 +1094,7 @@ PADX.projectCurrent = function () {
 		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
+		modified: padFileTime(file), // o último salvamento do arquivo (a hora que os editores, por dia, não guardam)
 		hasItems: app.project.numItems > 0,
 		user: padMachineUser()
 	};
@@ -1041,7 +1128,7 @@ PADX.projectSave = function (a) {
 	var same = !!file && padSamePath(file.fsName, dest.fsName);
 
 	padCheckWritable(projects);
-	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + '.');
+	if (!same && dest.exists) throw new Error('#PAD_092 - já existe ' + plan.fileBase + '.aep em ' + padDisplayPath(projects) + (file ? '.' : ' (o original, da versão antiga do After): mude o "o que é" para salvar o convertido ao lado dele.'));
 
 	var packet = app.project.xmpPacket;
 
@@ -1051,7 +1138,7 @@ PADX.projectSave = function (a) {
 		oQueE: String(a.what || ''),
 		designer: padCleanUser(a.designer) || padMachineUser(),
 		pasta: padDisplayPath(plan.root),
-		output: a.output != null ? (a.output ? padDisplayPath(padPath(a.output)) : '') : null,
+		output: a.output != null ? (a.output ? padDisplayPath(padPath(padCleanSpaces(a.output))) : '') : null,
 		criado: padMetaRead().criado || padToday()
 	}, plan.fileBase);
 

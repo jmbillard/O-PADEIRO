@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O ARQUIVISTA</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="css/panel.css">
+	<link rel="stylesheet" href="css/icons.css">
+	<link rel="stylesheet" href="css/fonts.css">
+	<link rel="stylesheet" href="css/files.css">
+	<link rel="stylesheet" href="css/theme.css">
+</head>
+
+<body class="fonts-page files-page">
+	<!-- O ARQUIVISTA: renomear os arquivos e as pastas de um diretório com a regra do renomear das comps. a pasta em
+	     cima, as chaves, os filtros pela situação e a tabela (nome atual → novo nome, editável); o rodapé renomeia -->
+	<main class="fonts files" id="files">
+		<p class="cfg-title">PASTA</p>
+		<div class="cfg-path fl-path">
+			<input type="text" class="cfg-input" id="fl-path" placeholder="escolha a pasta ou arraste uma para cá" spellcheck="false" autocomplete="off" aria-label="Pasta">
+			<button type="button" class="mini-button" id="fl-pick" title="escolher a pasta" aria-label="escolher a pasta"><svg viewBox="0 0 24 24"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg></button>
+		</div>
+
+		<div class="fl-opts">
+			<label class="cfg-switch"><input type="checkbox" id="fl-o-files" checked><span class="cfg-switch-track"></span><span class="cfg-switch-label">arquivos</span></label>
+			<label class="cfg-switch"><input type="checkbox" id="fl-o-folders" checked><span class="cfg-switch-track"></span><span class="cfg-switch-label">pastas</span></label>
+			<label class="cfg-switch"><input type="checkbox" id="fl-o-sub"><span class="cfg-switch-track"></span><span class="cfg-switch-label">incluir as subpastas</span></label>
+			<label class="cfg-switch"><input type="checkbox" id="fl-o-prefix" checked><span class="cfg-switch-track"></span><span class="cfg-switch-label">prefixo do tipo</span></label>
+		</div>
+
+		<!-- os filtros pela situação (os mesmos ícones da coluna da direita, com a contagem) e a busca, numa linha -->
+		<div class="fl-tools">
+			<button type="button" class="fl-chip is-on" data-filter="all" title="todos os itens">todos<b id="fl-n-all">0</b></button>
+			<button type="button" class="fl-chip fl-chg" data-filter="chg" title="mudam de nome" aria-label="mudam de nome"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg><b id="fl-n-chg">0</b></button>
+			<button type="button" class="fl-chip" data-filter="same" title="já estão no padrão" aria-label="já estão no padrão"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg><b id="fl-n-same">0</b></button>
+			<button type="button" class="fl-chip fl-bad" data-filter="bad" title="nome repetido na mesma pasta, vazio ou com caractere inválido" aria-label="nome repetido ou inválido"><svg viewBox="0 0 24 24"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg><b id="fl-n-bad">0</b></button>
+			<button type="button" class="fl-chip" data-filter="off" title="desligados" aria-label="desligados"><svg viewBox="0 0 24 24"><path d="M6 12h12" /></svg><b id="fl-n-off">0</b></button>
+			<input type="search" class="fl-search" id="fl-q" placeholder="filtrar pelo nome" spellcheck="false" autocomplete="off" aria-label="Filtrar pelo nome">
+		</div>
+
+		<!-- a tabela ocupa o que sobra da janela: o título das colunas fica fora da rolagem -->
+		<div class="fl-table">
+			<div class="fl-head"><input type="checkbox" class="fl-cb" id="fl-all" aria-label="ligar ou desligar todos"><span></span><span>NOME ATUAL</span><span></span><span>NOVO NOME</span><span></span></div>
+			<div class="fl-scroll" id="fl-scroll">
+				<div id="fl-rows"></div>
+			</div>
+		</div>
+
+		<div class="fl-progress" id="fl-progress" role="progressbar" aria-label="progresso da renomeação" hidden><span></span></div>
+
+		<div class="action-bar is-anchored fw-bar">
+			<button type="button" class="io-button" id="fl-back" title="voltar sem renomear" aria-label="voltar sem renomear" hidden><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
+			<button type="button" class="io-button" id="fl-undo" title="desfazer a última renomeação" aria-label="desfazer a última renomeação" disabled><svg viewBox="0 0 24 24"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg></button>
+			<details class="actions-menu fw-menu" id="app-menu">
+				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
+				<div class="menu-popover">
+					<button type="button" data-action="reread">Reler a pasta</button>
+					<button type="button" data-action="folder">Abrir a pasta</button>
+					<button type="button" data-action="csv">Exportar a lista (.csv)…</button>
+					<button type="button" data-action="config">Editar a regra do renomear (O PRODUTOR)</button>
+					<button type="button" data-action="docs">Ajuda / documentação</button>
+					<button type="button" data-action="reload">Recarregar painel</button>
+				</div>
+			</details>
+			<span class="fw-status" id="fw-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="fl-go" disabled>Renomear</button>
+		</div>
+	</main>
+
+	<script src="js/motion.js"></script>
+	<script src="js/tooltip.js"></script>
+	<script src="js/bridge.js"></script>
+	<script src="js/mock-host.js"></script>
+	<script src="js/theme.js"></script>
+	<script src="icons/_snapshot.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/keys.js"></script>
+	<script src="js/files.js"></script>
+</body>
+
+</html>

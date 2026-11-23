@@ -7,7 +7,7 @@ o padeiro duplica comps, preenche os textos e cria a fila de render a partir de 
 o fluxo é simples, em 3 etapas:\
 `1 buscar` > `2 selecionar` > `3 preencher`
 
-<p align="center"><img src="docs/images/anim/barra.webp" alt="a barra do padeiro: cada ferramenta anima ao passar o mouse" width="1000"></p>
+<p align="center"><img src="docs/images/anim/gavetas.webp" alt="a barra do padeiro: as gavetas Templates, Projeto e Organização abrindo" width="1000"></p>
 
 > 🚩 *a versão anterior (script ScriptUI, até a v1.97) continua disponível no branch [`LEGACY`](https://github.com/jmbillard/O-PADEIRO/tree/LEGACY).*
 
@@ -18,14 +18,16 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | | ferramenta | `◖ clique esquerdo` | `◗ clique direito` |
 | :---: | --- | --- | --- |
 | <img src="docs/images/icons/fill.png" width="40" alt="preencher"> | **Preencher** (gaveta **Templates**) | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | |
+| <img src="docs/images/icons/duplicate.png" width="40" alt="duplicar"> | **Duplicar** (gaveta **Templates**) | abre **[A FORMINHA](docs/templates.md#a-forminha)**: duplicar a comp aberta e preencher os layers de texto selecionados, sem template | |
 | <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta | |
-| <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Criar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Criar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
+| <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Iniciar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Iniciar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
-| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos, outra pasta, os que faltam |
+| <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos e os que faltam |
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
 | <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
 | <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
-| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
+| <img src="docs/images/icons/files.png" width="40" alt="arquivos"> | **Arquivos** (gaveta **Organização**) | abre **[O ARQUIVISTA](#arquivos)**: renomear os arquivos e as pastas de uma pasta | |
+| <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar AEP** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
 | <img src="docs/images/icons/search.png" width="40" alt="buscar"> | **Buscar** | abre **[O ACESSORISTA](docs/acessorista.md)**: busca de caminhos | abre **O ACESSORISTA**: busca nos textos dos layers |
 | <img src="extension/client/icons/barra-logo-globo.svg" width="40" alt="logo Globo"> | **Logo Globo** | o logo da Globo animado na comp aberta (shape layer, a animação do PROMO) | o logo parado |
@@ -37,11 +39,12 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | a barra | **O PADEIRO** | as ferramentas e os atalhos para as janelas ([abaixo](#-a-barra-principal)) |
 | 📄 [A FORMA](docs/templates.md) | **A FORMA** | os templates: buscar, selecionar e preencher, e criar a fila de render |
 | ✨ [A FORMA · criar](docs/criador.md) | **A FORMA · criar** | o criador de templates: transformar a comp aberta em um novo template |
-| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura e salva o `.aep` |
+| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura, salva o `.aep` e guarda quem criou e quem salvou |
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
-| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar, coletar em outra pasta e resolver os que faltam |
+| 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
 | 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
+| 🗂️ [O ARQUIVISTA](#arquivos) | **O ARQUIVISTA** | renomear os arquivos e as pastas de um diretório com a regra do renomear das comps |
 | 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
 | 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
@@ -101,7 +104,7 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 
 1. no After Effects, acesse `File` > `Scripts` > `Run Script File...` e escolha o arquivo **`INSTALAR O PADEIRO.jsx`**, direto da **pasta do padeiro na rede** (a que tem a pasta `extension/` e o arquivo `O_PADEIRO_GLOBAL_config.json`).
 2. o instalador guia o passo a passo. com tudo certo (os testes passam), ele abre direto na **ação**; '*anterior*' volta para a checagem:
-   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'.
+   - **checagem** → confere a versão do After Effects, o acesso à rede, a pasta `extension/` e a lista de produções compartilhada. o que faltar fica marcado em vermelho (ou amarelo, se for só um aviso), com a explicação de como resolver. sem o acesso à rede, o link '*› abrir preferências de scripts e expressões*' abre a tela certa: marque a opção (veja [abaixo](#habilitando-o-acesso-à-rede)) e clique em '*› verificar de novo*'. se a pasta `extension/` não for achada, a explicação diz o motivo (o After não consegue ler a pasta do instalador, a pasta não está lá ou está incompleta) e o link '*› escolher a pasta "extension"*' deixa apontar a pasta à mão.
    - **ação** → '*instalar*' (ou '*atualizar*', se já estiver instalado) ou '*remover*'.
    - **andamento** → a barra mostra cada etapa e, no fim, o resumo.
 
@@ -112,9 +115,11 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 4. abra a barra pelo menu `Window` > `Extensions` > `O PADEIRO` e acople onde preferir. as outras ferramentas abrem em janelas, pelos botões da barra (ou pelo mesmo menu).
 
 > 🚩 *obs:*\
+> • **macOS, pasta em Documentos, Mesa ou Downloads** → o sistema protege essas pastas: o After abre o instalador que você escolheu, mas não enxerga a pasta `extension/` ao lado dele (a checagem falha mesmo com a pasta lá). libere em `Ajustes do Sistema` > `Privacidade e Segurança` > `Arquivos e Pastas` > `After Effects`, ou ponha a pasta do padeiro fora delas (na pasta do usuário, por exemplo). a mesma permissão vale para o padeiro rodar depois de instalado: o código é lido dessa pasta.\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
 > • o **código do padeiro fica na rede**: o computador recebe só um carregador, que abre os painéis direto da pasta do padeiro. por isso, **para atualizar, basta fechar e abrir o painel de novo** depois que os arquivos da rede forem trocados.\
 > • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
+> • **janelas antigas duplicadas** → a cada instalação, o instalador apaga e grava de novo a pasta da extensão e também remove **outras cópias do padeiro** que encontrar nas pastas de extensões (a do usuário e a do sistema): as das primeiras versões beta, uma pasta copiada à mão ou um link de teste. ele reconhece pelo manifest, não pelo nome da pasta. se uma delas não puder ser apagada (a pasta do sistema pede permissão de administrador), o caminho aparece no fim da instalação para apagar à mão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
 > • **janelas pretas no After Effects 2025**: resolvido a partir desta versão. se ainda acontecer, rode o instalador de novo (o carregador antigo usava outro manifest).\
@@ -146,10 +151,10 @@ a barra se adapta ao tamanho do painel: horizontal, com os nomes embaixo dos íc
 | ❶ | **rede / local** | **servidor**: tudo vem da rede. **servidor com alerta amarelo**: a rede caiu e o padeiro usa as cópias deste computador (modo local, até a rede voltar). **notebook**: modo local, ligado por você. `◖` abre a [configuração > rede](docs/producoes.md#-rede) (no notebook, [meu usuário](docs/producoes.md#-meu-usuário)). |
 | ❷ | **links** | os links da equipe e, com um bonequinho no canto, os seus (só neste computador), com o ícone de cada site ([configuração > links](docs/producoes.md#-links)). |
 | ❸ | **a turma** | as ferramentas ([tabela acima](#-a-turma)), em grupos, e as **[gavetas](#as-gavetas)** (Templates, Projeto e Organização). a ordem, os grupos e quais aparecem ficam na aba **layout** da [configuração](docs/producoes.md#-layout): cada pessoa monta a sua barra a partir de um padrão da equipe. |
-| ❹ | **bolinhas** | o estado de cada uma: no **criar / alterar**, 🟢 com os dados do padeiro, 🟠 sem; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": a dica do botão diz o quê. o botão da gaveta **Projeto** mostra a pior das de dentro (🟠 na frente do 🟢), com a gaveta fechada. a bolinha fica por dentro do ícone, no canto de baixo à direita. |
-| ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele. |
+| ❹ | **bolinhas** | o estado de cada uma: no **criar / alterar**, 🟢 com a atração e salvo na pasta dele, 🟠 ainda sem atração ou salvo fora da pasta; nas **fontes**, 🟠 falta alguma, 🟢 tudo certo; no **coletar**, 🟠 arquivo fora das pastas de projetos, 🟢 tudo nelas. 🟠 é sempre "falta algo": a dica do botão diz o quê. o botão da gaveta **Projeto** mostra a pior das de dentro (🟠 na frente do 🟢), com a gaveta fechada. a bolinha fica por dentro do ícone, no canto de baixo à direita. |
+| ❺ | **pãozinho** | `◖` abre esta documentação; `◗` refaz o tour da barra. a versão do padeiro aparece embaixo dele, e a dica mostra a data do código em uso (`código de 17/11 15:42`). no fim do ano ele se enfeita sozinho, pela data do computador: **gorro de Papai Noel** de 1º a 25 de dezembro e **fogos de artifício** de 26 a 31 (com "reduzir movimento" ligado no sistema, sem animação; com a logo trocada na aparência, nada muda). a barra confere o código da rede ao entrar o mouse e a cada 5 minutos, e **se recarrega sozinha** quando ele muda (não é mais preciso reiniciar o After para ela pegar uma atualização). |
 
-cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (passe o mouse) traz o nome da ferramenta e as ações, cada uma com um mousezinho que mostra o botão (esquerdo ou direito), e os **avisos** em laranja (ex: quais arquivos estão fora das pastas). ela abre **por cima da barra**, dentro do painel: na horizontal, ao lado do botão, em colunas (o nome · os cliques · os avisos); na vertical, embaixo do botão, empilhada. o texto é este:
+cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. a dica de cada botão (pare o mouse em cima por 2 s) traz o nome da ferramenta e as ações, cada uma com um mousezinho que mostra o botão (esquerdo ou direito), e os **avisos** em laranja (ex: quais arquivos estão fora das pastas). ela abre **por cima da barra**, dentro do painel: na horizontal, ao lado do botão, em colunas (o nome · os cliques · os avisos); na vertical, embaixo do botão, empilhada. o texto é este:
 
 ```
 O ETIQUETADOR
@@ -165,16 +170,16 @@ O ETIQUETADOR
 | ![a gaveta Templates aberta](docs/images/barra-gaveta-templates.webp) |
 | ![a gaveta Organização aberta](docs/images/barra-gaveta-organizar.webp) |
 
-**Templates**, **Projeto** e **Organização** são gavetas: o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
+**Templates**, **Projeto** e **Organização** são gavetas, e por isso têm um **contorno fino** em volta do botão (as ferramentas soltas não têm): o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
 
-- **Templates** → **Preencher** ([A FORMA](docs/templates.md)) e **Criar** ([A FORMA · criar](docs/criador.md)), os dois cliques de antes, cada um num botão.
-- **Projeto** → **Criar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
-- **Organização** → **Renomear** (O ETIQUETADOR) e **Organizar** (O CONTRARREGRA), cada uma com os seus dois cliques.
+- **Templates** → **Preencher** ([A FORMA](docs/templates.md)), **Duplicar** ([A FORMINHA](docs/templates.md#a-forminha)) e **Criar** ([A FORMA · criar](docs/criador.md)), cada um num botão.
+- **Projeto** → **Iniciar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
+- **Organização** → **Renomear** (O ETIQUETADOR), **Organizar** (O CONTRARREGRA) e **Arquivos** ([O ARQUIVISTA](#arquivos)), cada uma com os seus dois cliques.
 - **a gaveta lembrada** → a que você deixou aberta volta aberta ao reabrir o painel (neste computador). um duplo clique no botão só abre: o segundo clique, de reflexo, não recolhe.
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, as folhas dos templates separadas, os blocos encaixados); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
 - **com a gaveta fechada** → o botão mostra a bolinha (a pior das de dentro), a dica lista as ferramentas de dentro, com a bolinha laranja nas que têm pendência (o que falta fica na dica de cada uma) e o andamento do coletar e das fontes (a contagem e a linha) aparece nele também.
 
-> 🚩 *na configuração, Criar / Alterar, Fontes e Coletar continuam como ferramentas separadas (a ordem e quais aparecem): na barra, as que aparecem vão juntas para a gaveta Projeto, no lugar da primeira delas. com só uma delas na barra, ela fica solta.*
+> 🚩 *na configuração, Iniciar / Alterar, Fontes e Coletar continuam como ferramentas separadas (a ordem e quais aparecem): na barra, as que aparecem vão juntas para a gaveta Projeto, no lugar da primeira delas. com só uma delas na barra, ela fica solta.*
 
 ### primeira vez (o tour)
 
@@ -222,7 +227,7 @@ as fontes de cada projeto aberto vão sozinhas para o [banco de fontes](docs/fon
 
 ### coletar
 
-a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo fora das pastas de projetos ([configuração > projeto](docs/producoes.md): o começo fixo do caminho de cada categoria, como `…/PROGRAMAS`; `VFX-1` … `VFX-5` valem como `VFX`; no Windows, `L:\…` vale como o caminho de rede da letra no [mapa de drives](docs/producoes.md), e o nome do servidor, curto ou completo, não importa), 🟢 verde quando está tudo nelas. sem categorias na configuração, vale estar na rede.
+a bolinha no botão: 🟠 laranja quando o projeto tem algum arquivo fora das pastas de projetos ([configuração > projeto](docs/producoes.md): o começo fixo do caminho de cada tipo, como `…/PROGRAMAS`; `VFX-1` … `VFX-5` valem como `VFX`; no Windows, `L:\…` vale como o caminho de rede da letra no [mapa de drives](docs/producoes.md), e o nome do servidor, curto ou completo, não importa), 🟢 verde quando está tudo nelas. sem tipos de projeto na configuração, vale estar na rede.
 
 enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enche embaixo dele e o ícone repete a animação; no fim, um brilho verde. o mesmo vale para as **fontes**: ao resolver (projeto → banco → conferindo) e ao enviar as fontes ao banco em segundo plano.
 
@@ -240,12 +245,14 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | :---: | --- | --- |
 | ❶ | **o projeto** | o `.aep` e quantos arquivos ele usa. |
 | ❷ | **o filtro** | quantos arquivos em cada situação: **faltando**, **locais** (neste computador), **na rede** e **no lugar**. cada etiqueta liga e desliga a situação na lista. a janela abre mostrando só o que precisa de atenção (o que está no lugar fica escondido). **o filtro vale para as ações**: o Coletar só copia, e a busca só procura, o que está aparecendo. |
-| ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❼ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
+| ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❻ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
 | ❹ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
 | ❺ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. (**✓**: já está na pasta do projeto; **–** cinza: tipo fora da árvore do coletar. os dois ficam em **no lugar**.) |
-| ❻ | **outra pasta** | coleta numa pasta escolhida. |
-| ❼ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
-| ❽ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
+| ❻ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
+| ❼ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
+
+- **estrutura antiga ou com outra grafia** → o coletar usa as pastas que **já existem**, mesmo com o nome um pouco diferente do da configuração: outro número na frente (ou nenhum), com ou sem `_`, `-` e espaços, acento, caixa e plural (`01_PROJETOS` = `01PROJETO` = `PROJETOS`; `IMAGENS` = `03 imagem`). nada é criado ao lado de uma pasta equivalente. se houver **duas** candidatas na mesma pasta (ex: `02 ARQUIVOS` e `05 ARQUIVO`), vale a primeira na ordem alfabética (`02 ARQUIVOS`).
+- **sem para onde coletar** → o botão **Coletar** da barra fica **apagado** (sem nenhum dos cliques) enquanto o projeto não tem o `.aep` salvo nem a pasta do projeto nos dados do padeiro; a dica diz o motivo. com a pasta nos dados (ex: um projeto antigo convertido, ainda sem salvar), os arquivos vão para ela. para coletar em **outro lugar**, use o *Collect Files* do After Effects.
 
 a lista é dividida em **faltando**, **para coletar** e **na pasta do projeto**. cada linha tem a miniatura, o nome, o tipo (com o ícone na cor do tipo, a mesma da configuração) e as comps que usam o arquivo, e **de onde → para onde**: a pasta de hoje e a pasta da estrutura que vai recebê-lo.
 
@@ -266,7 +273,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 - **todos os projetos da pasta** → por padrão só o projeto aberto é religado; os outros vão para a pasta dos projetos sem religar (o After pede os arquivos quando forem abertos) e o que só eles usam conta como não usado. ligando '*religar também os outros projetos da pasta*', o After Effects abre cada um para ler o que ele usa (o plano passa a contar como usado o que **qualquer** projeto usa) e, depois de mover, abre de novo para religar, salvar e fechar; no fim, volta ao projeto de antes. demora mais: cada projeto é aberto duas vezes. o original de cada projeto religado fica guardado em `_originais_migracao`, dentro dos arquivos externos (salvo por um After mais novo, um projeto de versão mais velha sai convertido). um projeto que não abre (versão mais nova que a do After, corrompido) vai movido sem religar e aparece no fim. o projeto aberto precisa estar salvo.
 - **ao migrar** → os arquivos são movidos (na mesma unidade é só trocar o nome: rápido, mesmo com vídeo grande), os itens são religados, o `.aep` é salvo no lugar novo, as saídas da fila de render passam a apontar para a pasta nova e as pastas antigas que ficaram vazias são apagadas. nome repetido no destino não sobrescreve: o segundo ganha `_2`.
 - **antes de migrar** → a janela mostra, em cima, o **caminho da pasta** que será arrumada e os avisos que importam: os outros projetos que vão sem religar, o projeto fora de uma pasta de projetos (a migração arruma a pasta inteira onde ele está salvo). **Migrar** pede um **segundo clique** (o primeiro vira '*Confirmar: mover N*') e não responde ao `Ctrl+Enter`.
-- **pastas que não migram** → isto é sobre **onde o `.aep` está salvo**, não sobre onde estão os arquivos que ele usa. a migração arruma a pasta inteira do projeto, então ela recusa quando o `.aep` está direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), na raiz de um volume (ou na primeira pasta dele), na pasta de uma categoria inteira ou, com categorias na [configuração > projeto](docs/producoes.md#-projeto), fora delas: migrar ali moveria tudo o que está nessa pasta. a janela diz o motivo e o caminho: levar o projeto para a pasta dele (Projeto > Criar / Alterar) e usar o Coletar. **os arquivos usados que estão espalhados** (a Área de Trabalho de quem criou, outra pasta da rede) **continuam sendo copiados** para a estrutura, numa migração de qualquer pasta válida: é a origem '*fora da pasta · copiados*' do desenho.
+- **pastas que não migram** → isto é sobre **onde o `.aep` está salvo**, não sobre onde estão os arquivos que ele usa. a migração arruma a pasta inteira do projeto, então ela recusa quando o `.aep` está direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), na raiz de um volume (ou na primeira pasta dele), na pasta de um tipo de projeto inteiro ou, com tipos de projeto na [configuração > projeto](docs/producoes.md#-projeto), fora delas: migrar ali moveria tudo o que está nessa pasta. a janela diz o motivo e o caminho: levar o projeto para a pasta dele (Projeto > Iniciar / Alterar) e usar o Coletar. **os arquivos usados que estão espalhados** (a Área de Trabalho de quem criou, outra pasta da rede) **continuam sendo copiados** para a estrutura, numa migração de qualquer pasta válida: é a origem '*fora da pasta · copiados*' do desenho.
 - **desfazer** → arquivo movido no disco não volta com `Cmd+Z` / `Ctrl+Z`: a migração grava um registro na raiz (`_migracao_padeiro.json`) e o botão vira **Desfazer a migração** (também com segundo clique; logo depois de migrar ele espera 2 s, para um clique de reflexo não desfazer), que leva tudo de volta. os outros projetos voltam a ser os originais guardados, **menos os que foram salvos de novo depois da migração**: esses ficam como estão (o original continua guardado nos arquivos externos) e a janela diz quais. com o registro na pasta, ela não migra de novo.
 - **se parar no meio** → o registro é gravado **a cada lote** (`_migracao_padeiro.andamento`, na raiz), antes de o lote seguinte começar: se a janela for fechada, o After Effects travar ou a rede cair, o que já foi movido está nele. ao abrir O CATADOR de novo, a janela avisa; na migração, o botão é **Desfazer a migração** e leva de volta o que tinha sido movido. sem conseguir gravar o registro na pasta (sem permissão), a migração não começa.
 
@@ -338,11 +345,44 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 - **render** (EXPORTAR, TEMPLATE, LOGO GLOBO) e **editáveis** (EDIT): os comentários da configuração > organizar.
 - **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
-- **arquivos** (FUNDO, LOGO, FOTO, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
+- **arquivos** (FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
 `◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
+
+### arquivos
+
+**O ARQUIVISTA**: renomeia os arquivos e as pastas de um diretório com a mesma regra do [renomear](#renomear) das comps (a caixa, os acentos e o separador da [configuração > renomear](docs/producoes.md#-renomear)).
+
+`◖ clique esquerdo` → abre a janela, **sempre vazia**: a pasta é você quem escolhe (nada vem do projeto aberto, da pasta de output ou da última vez).
+
+<p align="center"><img src="docs/images/arquivista.webp" alt="O ARQUIVISTA, com as partes numeradas" width="640"></p>
+
+| | |
+| :---: | --- |
+| ❶ | **a pasta**: a pastinha, dentro do campo, ou o caminho colado e `Enter`. a janela abre sem pasta nenhuma |
+| ❷ | **as chaves**: renomear **arquivos**, **pastas**, **incluir as subpastas** (desligada: só a pasta escolhida) e o **prefixo do tipo**. ficam lembradas neste computador |
+| ❸ | **os filtros**: quantos itens em cada situação (todos, mudam, já no padrão, nome repetido ou inválido, desligados) e a busca pelo nome |
+| ❹ | **o novo nome**: um campo. o que você edita fica marcado, e a seta ao lado volta para a sugestão. a extensão (e os números de uma sequência) ficam fora do campo: não mudam |
+| ❺ | **a situação**, em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode renomear), o elo (muda e é usado no projeto aberto) e o traço (desligado). a dica diz o motivo |
+| ❻ | **desfazer**: a última renomeação volta, mesmo depois de fechar a janela |
+| ❼ | **Renomear**: o primeiro clique mostra quantos mudam e pede a confirmação; o segundo renomeia |
+
+- **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
+- **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
+- **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **de fora** da renomeação: o botão renomeia o que dá e eles continuam na lista, como estão, para você resolver depois (editar o novo nome ou desligar a linha).
+- **exportar a lista** → no **⋯**, *Exportar a lista (.csv)…* salva o nome e o caminho de cada item da lista (todos, como estão agora) numa planilha `.csv` que abre direto no Excel.
+- **arrastar a pasta** → dá para arrastar uma pasta do Finder / Explorer para a janela: ela entra no campo e é lida (um arquivo solto traz a pasta em que ele está).
+- **o progresso** → a renomeação vai em lotes: uma barra fina abaixo da tabela e a contagem no botão (`20 de 120`) mostram o andamento; o desfazer volta todos os lotes de uma vez.
+- **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
+- **sequências de imagens** → uma linha só: o nome muda em todos os quadros e os números ficam como estão.
+- **ficam de fora** → os projetos (`.aep`, `.aet` e os de outros programas), os arquivos escondidos e de sistema e as pastas de autosave e de logs do After.
+
+> 🚩 *obs:*\
+> • a ordem é sempre a mesma: os arquivos antes das pastas, e as pastas de dentro para fora.\
+> • um item que não pôde ser renomeado (em uso por outro programa, sem permissão) fica como estava, e o aviso do rodapé diz qual.\
+> • o desfazer do After (`Ctrl+Z`) não desfaz nomes de arquivos: use o botão de desfazer da janela.
 
 <br>
 
@@ -358,9 +398,9 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 | [📄 A FORMA](docs/templates.md) | templates: buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
 | [✨ A FORMA](docs/criador.md) | criar template: formulário, nomenclatura, layers editáveis e arquivo de configuração |
 | [🔤 O TIPÓGRAFO](docs/fontes.md) | fontes: banco de fontes, o botão fontes e a janela de fontes do projeto |
-| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração, estrutura de pastas e editor |
+| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração (tipos de projeto em chips, ano do projeto), estrutura de pastas, editor e os dados de quem criou e salvou |
 | [🗂️ O PRODUTOR](docs/producoes.md) | configuração: produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
-| [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto, outra pasta e os que faltam |
+| [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto e os que faltam |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
 | [🔁 O ADAPTADOR](docs/conversor.md) | conversor: caminhos Windows / macOS |
 | [🧭 guia de UI](docs/guia-ui.md) | as regras para criar e mexer nas janelas: cores do tema, cantos, campos, ícones, animações, mensagens |
@@ -447,7 +487,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração > projeto: categoria sem nome ou sem caminho, repetida, com token desconhecido ou sem `{atracao}` |
+| `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
 | `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada (o padeiro tenta três jeitos: criar direto, pelo sistema e, por último, criar neste computador e levar para a rede) |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |
@@ -462,7 +502,13 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |
 | `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_110` | migrar: o registro não pôde ser gravado na pasta do projeto (sem permissão, ou a rede caiu no meio): sem registro, nada é movido |
-| `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de uma categoria inteira, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
+| `#PAD_113` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
+| `#PAD_114` | arquivos: não há renomeação para desfazer |
+| `#PAD_115` | a forminha: sem comp aberta, sem layer de texto selecionado ou sem texto no input |
+| `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
+| `#PAD_117` | arquivos: a lista (.csv) não pôde ser gravada no lugar escolhido |
+| `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
+| `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |
 

@@ -153,6 +153,28 @@ function padFolderKey(name) {
 	return String(name || '').replaceSpecialCharacters().toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
+// O nome de pasta para comparar "de longe", como numa estrutura antiga e mais bagunçada: sem o número da frente e
+// sem o plural, além do que o padFolderKey já tira (01_PROJETOS = 01PROJETO = PROJETOS; IMAGENS = 03 IMAGEM;
+// VETORES = VETOR). um nome que é só número fica como está
+function padFolderLoose(name) {
+	var key = padFolderKey(name);
+	var word = key.replace(/^\d+/, '');
+
+	if (!word) return key;
+	if (word.length > 3) {
+		if (/NS$/.test(word)) word = word.replace(/NS$/, 'M'); // IMAGENS → IMAGEM
+		else if (/[RZL]ES$/.test(word)) word = word.replace(/ES$/, ''); // VETORES → VETOR
+		else word = word.replace(/S$/, ''); // ARQUIVOS → ARQUIVO
+	}
+
+	return word;
+}
+
+// os dois nomes são a mesma pasta: iguais (padFolderKey) ou iguais de longe (padFolderLoose)
+function padFolderAlike(a, b) {
+	return padFolderKey(a) == padFolderKey(b) || padFolderLoose(a) == padFolderLoose(b);
+}
+
 // Pasta que o After Effects (ou alguém) cria e não interessa nas listas: autosave, logs, as pastas sem nome
 // (Adobe After Effects Auto-Save, Auto-Save, logs, New Folder, untitled folder 2, Nova pasta (3), Sem título…) e as
 // que guardam o que saiu de uso (OLD, _old, NÃO VALE, nao_vale, NÃO USAR). e os arquivos do Windows que a rede do
@@ -187,6 +209,30 @@ function padChildFolder(parent, name, isProjects) {
 		if (items[i] instanceof Folder || new Folder(items[i].fsName).exists) return new Folder(items[i].fsName);
 	}
 
+	// nenhuma com o mesmo nome: a que é a mesma de longe (outro número na frente, sem o plural), numa estrutura
+	// antiga. com duas ou mais candidatas (ex: 02 ARQUIVOS e 05 ARQUIVO), vale a primeira na ordem alfabética
+	var loose = padFolderLoose(name);
+	var alike = [];
+
+	for (var k = 0; k < items.length; k++) {
+		if (padFolderLoose(decodeURI(items[k].name)) != loose) continue;
+		if (items[k] instanceof Folder || new Folder(items[k].fsName).exists) alike.push(items[k]);
+	}
+
+	if (alike.length) {
+		alike.sort(function (x, y) {
+			var nx = decodeURI(x.name).toUpperCase();
+			var ny = decodeURI(y.name).toUpperCase();
+
+			if (nx < ny) return -1;
+			if (nx > ny) return 1;
+
+			return 0;
+		});
+
+		return new Folder(alike[0].fsName);
+	}
+
 	// a lista não achou: as grafias comuns da pasta de projetos, direto pelo caminho
 	if (isProjects) {
 		var found = padProjectsVariant(parent, name);
@@ -214,7 +260,8 @@ function padProjectsVariant(parent, name) {
 	return null;
 }
 
-// Caminho da árvore ('02 ARQUIVOS/VIDEOS') dentro da raiz, usando as pastas que já existem.
+// Caminho da árvore ('02 ARQUIVOS/VIDEOS') dentro da raiz, usando as pastas que já existem (com outra grafia, outro
+// número na frente ou sem o plural: padChildFolder).
 function padCollectResolve(root, relPath, isProjects) {
 	var folder = padEnsureFolder(root);
 	var parts = String(relPath || '').split('/');
@@ -287,7 +334,7 @@ function padCollectRoot(file, settings) {
 
 	for (var i = parts.length - 1; i >= 0; i--) {
 		var name = cur ? decodeURI(cur.name) : '';
-		var ok = i == parts.length - 1 ? padIsProjectsFolderName(name) || padFolderKey(name) == padFolderKey(parts[i]) : padFolderKey(name) == padFolderKey(parts[i]);
+		var ok = (i == parts.length - 1 && padIsProjectsFolderName(name)) || padFolderAlike(name, parts[i]);
 
 		if (!cur || !ok) return folder.fsName;
 		cur = cur.parent;
@@ -589,6 +636,26 @@ function padCollectItem(item, root, paths, res) {
 	}
 }
 
+// A pasta do projeto gravada nos dados do padeiro (padeiro:pasta), se ela existe; senão ''
+function padCollectMetaRoot() {
+	try {
+		var pasta = padMetaRead().pasta;
+
+		if (!pasta) return '';
+
+		var folder = new Folder(padMountedPath(padPath(pasta)));
+
+		return folder.exists ? folder.fsName : '';
+	} catch (err) {
+		return '';
+	}
+}
+
+// há para onde coletar: o .aep salvo ou a pasta do projeto nos dados (a barra apaga o botão sem isso)
+function padCollectReady() {
+	return !!app.project.file || padCollectMetaRoot() != '';
+}
+
 // A pasta onde coletar (a escolhida ou a raiz do projeto) e a configuração, já conferidas.
 function padCollectTarget(a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
@@ -600,8 +667,9 @@ function padCollectTarget(a) {
 	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
 	if (a && a.path) target = padPath(a.path);
 	else if (file) target = padCollectRoot(file, settings);
+	else target = padCollectMetaRoot(); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
 
-	if (!target) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
+	if (!target) throw new Error('#PAD_095 - inicie ou salve o projeto antes de coletar (os arquivos vão para a pasta dele).');
 
 	var hasType = false;
 
@@ -627,9 +695,22 @@ function padCollectFinish(target, settings, res) {
 	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
 	var sub = padCollectFolderPath(settings, 'projeto');
 
-	padEditorsNote();
-	if (file) app.project.save();
-	else app.project.save(new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep'));
+	// sem arquivo e já existe um .aep com esse nome na pasta (o original do projeto convertido): não salva por cima;
+	// os arquivos ficam coletados e o projeto continua sem salvar (a claquete salva com outro nome)
+	var saved = true;
+
+	if (file) {
+		padEditorsNote();
+		app.project.save();
+	} else {
+		var dest = new File(new Folder(target).fsName + (sub ? '/' + sub : '') + '/' + (padAepName(padXmpGet('title')) || 'projeto') + '.aep');
+
+		if (dest.exists) saved = false;
+		else {
+			padEditorsNote();
+			app.project.save(dest);
+		}
+	}
 
 	if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
 	if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
@@ -640,7 +721,7 @@ function padCollectFinish(target, settings, res) {
 		sequences: res.sequences,
 		frames: res.frames,
 		fonts: res.fonts != '',
-		saved: true
+		saved: saved
 	};
 }
 
@@ -817,11 +898,13 @@ PADX.collectStatus = function (a) {
 	var now = new Date().getTime();
 	var cache = PAD_COLLECT_STATUS;
 
-	if (!(a && a.force) && cache.res && cache.key == key) return cache.res;
+	if ((a && a.force) || !cache.res || cache.key != key) {
+		cache.res = padCollectStatusNow();
+		cache.key = key;
+		cache.at = now;
+	}
 
-	cache.res = padCollectStatusNow();
-	cache.key = key;
-	cache.at = now;
+	cache.res.ready = padCollectReady(); // conferido sempre (barato): o projeto sem arquivo pode ganhar a pasta nos dados
 
 	return cache.res;
 };
@@ -997,8 +1080,20 @@ function padPathKind(item, path) {
 // Onde o arquivo que falta está agora: o caminho no formato deste sistema, no volume que tem o caminho
 // (VFX, VFX-1 … VFX-5) e, no macOS, montando o share quando nenhum volume tem (uma vez por share: 'tried').
 // → o File que existe, ou null
+// O caminho guardado no projeto, como o After do macOS mostra um caminho que veio do Windows: \\servidor\share\…
+// vira /servidor/share/… (com uma barra só) e L:\… vira /L/…. de volta para o formato que o conversor entende.
+function padRelinkNormalize(path) {
+	var p = String(path || '').replace(/\\/g, '/');
+
+	if (/^\/[A-Za-z]\//.test(p)) return p.charAt(1).toUpperCase() + ':' + p.substring(2); // /L/… → L:/…
+	// /servidor/share/… → //servidor/share/…: a primeira pasta não é uma das do macOS (com ou sem domínio no nome)
+	if (/^\/[^\/]+\/[^\/]+\//.test(p) && !/^\/(Volumes|Users|Applications|System|Library|private|tmp|var|opt|usr|bin|sbin|etc|cores|dev|Network|home)\//i.test(p)) return '/' + p;
+
+	return p;
+}
+
 function padRelinkCandidate(path, tried) {
-	var clean = padPath(padNoVolumeSuffix(path)) || String(path);
+	var clean = padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || String(path);
 	var file = new File(clean);
 
 	if (file.exists) return file;
@@ -1101,7 +1196,7 @@ function padRelinkScan(folder, depth, state) {
 // A pasta mais próxima do caminho antigo que ainda existe (subindo até 6 níveis), sem chegar na raiz de um volume
 // ou perto dela (vasculhar o servidor inteiro não dá). → Folder ou null
 function padRelinkAncestor(path) {
-	var clean = String(padPath(padNoVolumeSuffix(path)) || path).replace(/\\/g, '/');
+	var clean = String(padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || path).replace(/\\/g, '/');
 	var parts = clean.split('/');
 	// as partes do volume: /Volumes/VFX (3, com a vazia do começo), //servidor/share (4), L: (1); a busca fica pelo
 	// menos 2 pastas para dentro dele
@@ -1128,7 +1223,7 @@ function padRelinkAlike(a, b) {
 	x.pop();
 	y.pop();
 
-	while (x.length && y.length && padFolderKey(x.pop()) == padFolderKey(y.pop())) n++;
+	while (x.length && y.length && padFolderAlike(x.pop(), y.pop())) n++;
 
 	return n;
 }

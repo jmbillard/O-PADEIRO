@@ -4,7 +4,7 @@
 
 o painel **O ACESSORISTA**: as buscas do padeiro, em duas abas (caminhos e textos).
 
-a janela abre com 720 px de largura (ou mais, se os interruptores precisarem: eles ficam sempre numa linha) e baixa: sem uma busca, ela mostra só o cabeçalho (o loader e os avisos aparecem sobre o degradê). a folha branca com os resultados entra quando você pesquisa. a cada busca ela se ajusta sozinha: alarga para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola).
+a janela abre com 720 px de largura (ou mais, se os interruptores precisarem: eles ficam sempre numa linha) e baixa: sem uma busca, ela mostra o cabeçalho e um pouco da folha branca (onde aparecem o loader e os avisos). a folha branca com os resultados entra quando você pesquisa. a cada busca ela se ajusta sozinha: alarga para os toggles caberem numa linha e os caminhos aparecerem inteiros (até 70% da largura da tela; ela nunca estreita sozinha) e ajusta a altura para caber os resultados (até 85% da altura da tela; passando disso, a lista rola).
 
 ### caminhos
 
@@ -35,7 +35,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de onde el
 - **interruptores** (ao lado do atualizar) → **SERVIDOR**, **ATRAÇÕES**, **FILMES**, **TEAMS** e **TRELLO** (a mesma ordem dos resultados): desligado, a categoria sai da busca (só aparecem as que têm itens). a escolha fica ao atualizar. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 - **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
-- **atualizar** (o botão redondo, abaixo da busca) → baixa os caminhos de novo (no índice local, indexa as pastas de novo). ao lado dele aparece de onde vêm os caminhos no índice local ('*índice local · 18.430 itens · hoje 09:12*') ou o andamento da indexação.
+- **atualizar** (o botão redondo, abaixo da busca) → baixa os caminhos de novo (no índice local, indexa as pastas de novo). ao lado dele aparece de onde vêm os caminhos no índice local ('*índice local · 18.430 itens · 09:12 HOJE*') ou o andamento da indexação.
 
 ### índice local
 
@@ -45,7 +45,7 @@ em vez do webhook, cada computador pode ter o seu **índice local** ([configura�
 - a janela [PROJETO](projeto.md) procura a claquete pelo nome das pastas: vale a pasta cujo nome é o começo da claquete (*MAIS VOCE* para *MAIS VOCE 30 10*). acerta menos que as atrações do webhook (sem os *patterns*).
 
 > 🚩 *obs:*\
-> • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva.\
+> • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão (ou no modo local), vale a cópia salva. a resposta pode vir como o JSON do índice, como o JSON em texto ou embrulhada pelo n8n (`[{ "indice": "…" }]`): o painel entende as três.\
 > • o endereço do workflow e os caminhos fixos do servidor ficam na [configuração > buscar](producoes.md#-buscar).\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
 > • aparecem no máximo 20 itens por categoria (24 cards do Trello): refine o termo para ver os demais.

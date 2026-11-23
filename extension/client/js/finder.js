@@ -810,7 +810,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return box.firstChild;
 	}
 
-	var when = PAD_UTIL.when; // hoje 14:32 · ontem 09:10 · terça 16:20 · 28/10 14:32 (js/util.js)
+	var when = PAD_UTIL.when; // 14:32 HOJE · 09:10 ONTEM · 16:20 TERÇA · 14:32 28/10 (js/util.js)
 
 	// o mesmo formato do "copiar link" do Teams: o id do chat como vem (19:…@thread.v2), o da mensagem e o contexto
 	function teamsLink(m) {
@@ -1368,6 +1368,25 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			document.addEventListener('click', function (e) {
 				if (!menu.contains(e.target)) menu.removeAttribute('open');
 			});
+
+			// a janela compacta (sem resultados) é mais baixa que o menu: ela cresce para o menu caber inteiro e
+			// volta à altura de antes quando ele fecha
+			var before = 0;
+
+			menu.addEventListener('toggle', function () {
+				if (menu.open) {
+					var pop = menu.querySelector('.menu-popover');
+					var need = pop ? Math.ceil(pop.getBoundingClientRect().bottom + 12) : 0;
+
+					if (need > window.innerHeight) {
+						before = window.innerHeight;
+						PAD_BRIDGE.resizeWindow(window.innerWidth, need);
+					}
+				} else if (before) {
+					PAD_BRIDGE.resizeWindow(window.innerWidth, before);
+					before = 0;
+				}
+			});
 		});
 		window.addEventListener('focus', watchRequestedTab);
 		window.addEventListener('focus', watchSearchSource);
@@ -1380,7 +1399,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var FIT_MIN_WIDTH = 720;
 	var FIT_WIDE_ITEMS = '.path-crumbs, .result-name, .comp-name';
-	var fitMinHeight = 150; // só o cabeçalho (busca vazia)
+	var fitMinHeight = 280; // o cabeçalho e um pouco da folha branca (cabe o loader), mesmo com a busca vazia
 	var fitTimer = null;
 	var refitOnResize = false;
 
@@ -1468,7 +1487,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		markFit();
 	}
 
-	// Sem busca, a folha branca sai: só o cabeçalho (loader e avisos aparecem sobre o degradê).
+	// Sem busca: a folha branca fica (um pouco dela, onde aparecem o loader e os avisos); só a dica de busca vazia some.
 	function updateIdle() {
 		['paths', 'texts'].forEach(function (tab) {
 			var q = $('q-' + tab).value.trim();

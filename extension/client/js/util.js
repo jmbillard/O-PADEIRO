@@ -193,11 +193,12 @@
 		// dias de calendário até hoje (meia-noite a meia-noite: a mudança de horário de verão não atrapalha)
 		var days = Math.round((day - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
 
-		if (days <= 0) return 'hoje ' + time;
-		if (days === 1) return 'ontem ' + time;
-		if (days <= 6) return WEEKDAYS[d.getDay()] + ' ' + time;
+		// como nos dados do projeto: tudo em maiúsculas, a hora antes do dia
+		if (days <= 0) return time + ' HOJE';
+		if (days === 1) return time + ' ONTEM';
+		if (days <= 6) return time + ' ' + WEEKDAYS[d.getDay()].toUpperCase();
 
-		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear()) + ' ' + time;
+		return time + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
 
 	// Os ícones da biblioteca (o seletor de ícones das categorias e das produções): um arquivo por ícone na pasta
@@ -475,9 +476,9 @@
 	   items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
 	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
 	   --------------------------------------------------------------- */
-	var BAR_GROUPS = { templates: ['preencher', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar'] };
+	var BAR_GROUPS = { templates: ['preencher', 'duplicar', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar', 'arquivos'] };
 	var BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
-	var BAR_DEFAULT = ['preencher', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'importar', 'divider', 'pastas', 'buscar', 'logo-globo'];
+	var BAR_DEFAULT = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'];
 
 	function barGroupOf(key) {
 		for (var g in BAR_GROUPS) {
@@ -596,6 +597,19 @@
 
 		return bar;
 	}
+
+	// os avisos do host (o que era alert() nas libs antigas): na linha do rodapé da janela, como aviso. a barra tem o
+	// dela (bar.js) e marca o evento como tratado
+	window.addEventListener('pad-notes', function (e) {
+		if (e.defaultPrevented || !e.detail || !e.detail.notes) return;
+
+		var line = document.querySelector('.fw-status');
+
+		if (!line) return;
+		line.textContent = e.detail.notes.join(' · ');
+		line.title = e.detail.notes.join('\n');
+		line.className = 'fw-status is-error';
+	});
 
 	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
 })();

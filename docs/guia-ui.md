@@ -91,7 +91,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 
 ## 📍 gavetas da barra
 
-- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Criar / Alterar, Fontes e Coletar; Organização: Renomear e Organizar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
+- **o que é** → um botão que junta ferramentas (Templates: Preencher e Criar; Projeto: Iniciar / Alterar, Fontes e Coletar; Organização: Renomear e Organizar). o `◖` abre, no lugar do botão, um contorno fino de 1 px (`rgb(var(--on-brand) / 55%)`), sem fundo, com o puxador, o separador e as ferramentas. uma aberta por vez; fecha no puxador, no clique fora e no `Esc`.
 - **forma** → raio 16, com o lado do puxador em meio círculo (metade da altura; na vertical, da largura). os de dentro ficam concêntricos: o raio menos o respiro de 3 px (2 de folga e 1 do contorno).
 - **o puxador** → só o ícone do grupo, menor (17 px), parado no estado final do hover e perto do separador (a folga fica no lado redondo). no hover, vira uma seta simples no sentido de recolher (← na horizontal, ↑ na vertical) e fica assim.
 - **na vertical** → abre para baixo, do mesmo jeito em qualquer largura: o puxador em cima (o lado redondo, até 22 px de raio), na largura toda, o separador deitado e as ferramentas embaixo (em coluna no painel estreito; em linhas no largo, onde a gaveta tem no máximo 240 px). o lado redondo acompanha o tamanho da gaveta a todo momento (`ResizeObserver`): o painel muda de tamanho e de sentido com a gaveta aberta.
@@ -199,4 +199,4 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - [ ] **a barra nos dois sentidos**, com 86 px (horizontal e vertical): as telas `barra: horizontal 86 px` e `barra: vertical 86 px` das checagens;
 - [ ] **mensagens com código** `#PAD_`;
 - [ ] **o mesmo componente** que já existe em outra janela;
-- [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado).
+- [ ] testado no navegador (`?mock=`) e, no host, código **ES3** (sem ternário encadeado: `node extension/scripts/check-ternary.js` acha os que escaparem).

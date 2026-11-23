@@ -158,7 +158,7 @@ function padMigrateBlocked(rootPath) {
 
 	for (i = 0; i < roots.length; i++) {
 		// a própria pasta de uma categoria (…/PROGRAMAS), ou uma acima dela: lá dentro estão as atrações todas
-		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de uma categoria inteira (configuração > projeto): a migração arrumaria todas as atrações dela';
+		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de um tipo de projeto inteiro (configuração > projeto): a migração arrumaria todas as atrações dele';
 	}
 
 	if (roots.length && !padInProjects(rootPath, roots)) return 'a pasta do projeto está fora das pastas de projetos da configuração (aba PROJETO): a migração só arruma pastas que estão nelas';

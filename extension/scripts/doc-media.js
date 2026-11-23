@@ -256,7 +256,7 @@ const SHOTS = {
 	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .combo-item', text: 'nova atração', pad: 2 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .cat-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
 	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
@@ -266,7 +266,22 @@ const SHOTS = {
 		await p.waitForTimeout(300);
 	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
 	catador: { w: 540, h: 760, url: 'collect.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-other', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+	] },
+	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
+	// A FORMINHA: a comp, os layers, o input, a caixa, o nome (editável), a situação e o rodapé
+	forminha: { w: 460, h: 600, url: 'light.html', async run(p) {
+		await p.fill('#lt-input', 'João Gomes\nCantor\n\nIvete Sangalo\nCantora\nSalvador\n\nXuxa');
+		await p.waitForTimeout(700);
+	}, marks: [
+		{ sel: '#lt-comp' }, { sel: '#lt-layers', pad: 3 }, { sel: '.lt-cases', pad: 3 }, { sel: '#lt-input' }, { sel: '.fl-row:nth-of-type(2) .fl-new', pad: 2 }, { sel: '.fl-row:nth-of-type(2) .fl-st', round: true }, { sel: '#lt-go' }
+	] },
+	arquivista: { w: 720, h: 680, url: 'files.html', async run(p) {
+		await p.fill('#fl-path', '/Volumes/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO MULTISHOW/2026/_serviço');
+		await p.press('#fl-path', 'Enter');
+		await p.waitForTimeout(600);
+	}, marks: [
+		{ sel: '.fl-path' }, { sel: '.fl-opts', pad: 3 }, { sel: '.fl-tools', pad: 3 }, { sel: '.fl-row:nth-of-type(3) .fl-new-wrap', pad: 2 }, { sel: '.fl-row.is-bad .fl-st', round: true }, { sel: '#fl-undo', round: true }, { sel: '#fl-go' }
 	] },
 	'catador-migracao': { w: 780, h: 660, url: 'collect.html', async run(p) {
 		await p.click('#app-menu summary');
@@ -299,13 +314,6 @@ const SHOTS = {
    ========================================================= */
 
 const SCENES = {
-	// a barra: o mouse passa pelas ferramentas (cada ícone anima, a dica conta os dois cliques)
-	barra: { w: 1000, h: 110, url: 'bar.html', async run(p) {
-		mouse = [990, 100];
-		for (const id of ['templates', 'fontes', 'projeto', 'coletar', 'render', 'renomear', 'organizar', 'importar', 'pastas', 'buscar']) await hover(p, '#btn-' + id, 520);
-		await hover(p, '#logo', 700);
-	} },
-
 	// as gavetas: só o clique abrindo cada uma, sem parar em nenhuma ferramenta (as dicas levam 2 s para aparecer)
 	gavetas: { w: 1000, h: 110, hires: true, width: 1664, fps: 14, quality: 72, url: 'bar.html?mock=localfiles', async run(p) {
 		await p.waitForTimeout(500);
@@ -339,7 +347,9 @@ const SCENES = {
 		mouse = [740, 100];
 		await p.waitForTimeout(600);
 		await tap(p, '#drawer-projeto', { wait: 700 }); // a gaveta Projeto abre
-		await tap(p, '#btn-coletar', { wait: 6800 });
+		await tap(p, '#btn-coletar', { wait: 500 });
+		await glide(p, [740, 100], 500); // sai de cima do botão: parado 2 s, a dica cobriria a contagem e o aviso
+		await p.waitForTimeout(6000);
 	} },
 
 	// A FORMA: os fixados em cartões, a miniatura que cresce na lista, a busca, o template escolhido e o preenchimento
@@ -496,7 +506,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo', 'files', 'duplicate'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');

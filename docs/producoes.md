@@ -67,7 +67,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 > 🚩 *obs:*\
 > • a ordem da lista é a do seletor de produção (no rodapé do painel de templates): arraste pelos pontinhos à esquerda de cada produção para reordenar (com o filtro ativo, o arraste fica escondido).\
 > • o caminho do arquivo da lista aparece no fim da lista de produções.\
-> • os ícones vêm da **biblioteca de ícones** (a pasta `extension/client/icons/`, a mesma das categorias da aba PROJETO). uma produção com um ícone antigo (imagem) continua com ele até você escolher outro.\
+> • os ícones vêm da **biblioteca de ícones** (a pasta `extension/client/icons/`, a mesma dos tipos de projeto da aba PROJETO). uma produção com um ícone antigo (imagem) continua com ele até você escolher outro.\
 > • se outra pessoa salvou a lista depois que você abriu o editor, o padeiro **não** sobrescreve o trabalho dela: recarregue e refaça as alterações. uma cópia da lista anterior fica em `O_PADEIRO_GLOBAL_config.bak.json`.\
 > • sem acesso ao arquivo compartilhado (rede fora), não há lista: os painéis avisam e voltam a ler sozinhos quando a rede voltar.
 
@@ -76,6 +76,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 - **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, a **lixeira** à direita exclui; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
   > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
 - **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
+- **lista de templates** → as seções do topo do [painel de templates](templates.md#fixados-e-recentes): **recentes** (quantos templates aparecem, de 0 a 30; padrão 5) e **novos** (criados há até quantos dias, de 0 a 90; padrão 15). 0 esconde a seção. vale ao reabrir o painel de templates.
 <br>
 
 ---
@@ -84,41 +85,42 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 
 ## 📍 projeto
 
-a aba **projeto** define as **categorias** da atração nova: a lista **dentro de** da [janela PROJETO](projeto.md) (etapa NOVA).
+a aba **projeto** define os **tipos de projeto** da atração nova: os **chips** que aparecem embaixo da busca da [janela PROJETO](projeto.md#-projeto-novo-numa-tela).
 
-- **categorias** → cada categoria num cartão:
-  - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui a categoria;
+- **tipos de projeto** → cada tipo num cartão:
+  - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui o tipo;
   - **PROJETO** → o caminho da pasta da atração nova, com tokens;
-  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a etapa CRIAR não propõe a pasta de output).
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. **espaços a mais não passam**: em todo caminho de output (aqui, na claquete e nas pastas de output dos templates), dois ou mais espaços seguidos viram um e os espaços em volta das barras e nas pontas somem, ao salvar e na hora de usar. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
 
-  embaixo de cada caminho, a prévia; a pastinha escolhe a pasta da categoria (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a do dentro de).
+  embaixo de cada caminho, a prévia; a pastinha escolhe a pasta do tipo (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a dos chips).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
 
   | token | vira |
   | --- | --- |
-  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, a categoria é a própria atração (MOOD MENSAL: digitar *mood* na claquete já leva para a pasta do mês) |
+  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, o tipo é a própria atração (MOOD MENSAL: digitar *mood* na claquete já leva para a pasta do mês) |
   | `{ano}` | o ano atual (`2026`) |
   | `{mes}` | o mês atual (`01` a `12`) |
   | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |
   | `{proximo_mes}` | o próximo mês por extenso (`DEZEMBRO`; em dezembro, `JANEIRO`) |
   | `{proximo_mes_num}` | o número do próximo mês (`12`; em dezembro, `01`) |
   | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
-  | `{categoria}` | o nome da categoria |
+  | `{tipo}` | o nome do tipo de projeto (`{categoria}`, o nome antigo, continua valendo nos caminhos já salvos) |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
+  | `{o_que_e}` | o **o que é**, digitado na claquete depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
-- **arquivo** → opcional: o nome do `.aep` da atração criada pela categoria, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
-- **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todas as categorias (o `.aep` é a atração + o que é).
-- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale no dentro de da janela PROJETO. a categoria nova começa com a pasta.
-- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, a categoria; se nenhuma serve, **nenhuma destas: escolher a pasta…** (livre). sem categorias na configuração, só o livre.
+- **arquivo** → opcional: o nome do `.aep` da atração criada pelo tipo, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). com `{o_que_e}`, o o que é entra **no lugar do token**, não no fim: `{o_que_e} DO {atracao}` → `CHAMADA DO VT REUNIAO.aep`. vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
+- **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todos os tipos (o `.aep` é a atração + o que é).
+- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela PROJETO. o tipo novo começa com a pasta.
+- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip do tipo; se nenhum serve, **outra pasta…** (livre). sem tipos de projeto na configuração, só o livre.
 
 
 **👤 neste computador** (embaixo):
 
 - **presets de render** → os dois templates de output do **seu** After Effects que o botão **Render** da barra (O FORNO) usa: **render final** (o clique: na pasta de output do projeto, com o nome da comp) e **preview** (o clique direito: na pasta de previews das saídas, `COMP_prev_v01`, `_v02`…, sem substituir o anterior). cada pessoa tem a sua lista de presets, por isso ficam só neste computador. sem preset escolhido, a fila usa o padrão do After. se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para a [pasta de saída](#-produções) deste computador (vazia: a Área de Trabalho). a lista é lida do After quando a aba abre.
-- **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta da categoria não pode ser acessada (rede fora ou modo local), na estrutura `{categoria}/{atracao}`. vazia, a Área de Trabalho.
+- **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta do tipo não pode ser acessada (rede fora ou modo local), na estrutura `{tipo}/{atracao}`. vazia, a Área de Trabalho.
 
-> 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos das categorias valem só para a atração nova.
+> 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos dos tipos valem só para a atração nova.
 <br>
 
 ---
@@ -188,7 +190,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
 - **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
-- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, TRILHA, LOC).
+- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC). os campos de termos desta aba mostram cada termo como um **chip**.
 - **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
 
 > 🚩 *obs:*\
@@ -242,7 +244,7 @@ a aba **telemetria** concentra o que sai do padeiro para fora: em cima, o da equ
 
 ### registro de uso (equipe)
 
-define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e projeto.
+define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e o arquivo do template. pelo **webhook** vão também o projeto (`.aep`), os dados dele (atração, quadro, o que é, pasta e output, os mesmos da janela PROJETO) e a versão do padeiro; o CSV continua com as colunas de sempre.
 
 | opção | o que faz |
 | --- | --- |
@@ -257,7 +259,7 @@ define onde o padeiro registra cada preenchimento: data, produção, template, q
 
 ### cadastro no banco *(em breve, desligado)*
 
-reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela PROJETO **propõe** o cadastro (o nome, a categoria e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
+reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela PROJETO **propõe** o cadastro (o nome, o tipo e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
 
 ### neste computador
 
@@ -307,7 +309,7 @@ a aba **aparência** (👤 local) define o visual de todas as janelas do padeiro
 
 a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale o padrão da equipe), no mesmo esquema do organizar: à esquerda, no azul, a **barra em fila única** (como ela aparece); à direita, o que está **fora da barra**.
 
-- **ordem padrão** → links | Templates | Projeto (Criar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar), Importar | Pastas, Buscar (`|` é um separador).
+- **ordem padrão** → links | Templates | Projeto (Iniciar / Alterar, Fontes, Coletar, Render) | Organização (Renomear, Organizar, Arquivos) | Pastas, Buscar, Importar AEP, Logo Globo (`|` é um separador).
 - **gavetas** → cada gaveta é um bloco com contorno, com o nome e quantas ferramentas mostra (`3`, ou `3 de 4` com alguma escondida). os pontinhos do título movem a gaveta inteira pela barra; os de uma ferramenta de dentro mudam a ordem **só dentro da gaveta** (uma ferramenta não sai da gaveta dela). a primeira de dentro é a do `◗` no botão da gaveta.
 - **ordem** → arraste as gavetas, as ferramentas soltas e os separadores pelos pontinhos.
 - **esconder** → o **×** (passe o mouse para ver) esconde uma ferramenta, a gaveta inteira (o × do título) ou os links (no topo). uma gaveta com uma ferramenta só à mostra aparece solta na barra; com nenhuma, some.

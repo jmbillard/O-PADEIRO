@@ -74,7 +74,14 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 			throw new Error('#PAD_068 - o host do After Effects não respondeu (' + String(raw).slice(0, 80) + ')');
 		}
 
-		if (!res.ok) throw new Error(res.error);
+		// o que as libs do host avisariam com alert() (a caixa nativa do After não aparece mais): junto do erro, ou num
+		// evento que a janela mostra (o aviso da barra, a linha do rodapé das outras janelas: util.js)
+		if (!res.ok) throw new Error(res.error + (res.notes && res.notes.length ? '\n' + res.notes.join('\n') : ''));
+		if (res.notes && res.notes.length) {
+			try {
+				window.dispatchEvent(new CustomEvent('pad-notes', { cancelable: true, detail: { method: method, notes: res.notes } }));
+			} catch (err) { }
+		}
 
 		return res.data;
 	}
@@ -157,6 +164,15 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		var res = window.cep.fs.showSaveDialogEx(title, '', extensions || [], defaultName || '', '');
 
 		return res && res.err === 0 && res.data ? res.data : null;
+	}
+
+	// Grava um texto (UTF-8) no disco. Retorna true se gravou.
+	function writeTextFile(path, text) {
+		if (!cep || !window.cep || !window.cep.fs) return false;
+
+		var res = window.cep.fs.writeFile(path, text, window.cep.encoding.UTF8);
+
+		return !!res && res.err === 0;
 	}
 
 	// Lê um arquivo do disco como base64 (sem Node). Retorna a string base64 ou null.
@@ -280,5 +296,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, writeTextFile: writeTextFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
 })();

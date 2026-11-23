@@ -47,12 +47,13 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 	var TOOLS = {
 		// as ferramentas de dentro das gavetas (Templates e Projeto): o tour abre a gaveta de cada uma
 		preencher: { title: 'Preencher', l: ['A FORMA', 'preenche um template e cria a fila de render'] },
+		duplicar: { title: 'Duplicar', l: ['A FORMINHA', 'duplica a comp aberta e preenche os layers de texto selecionados'] },
 		'criar-template': { title: 'Criar template', l: ['A FORMA', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
-		projeto: { title: 'Criar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
-		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos, coleta em outra pasta, resolve os que faltam'] },
+		projeto: { title: 'Iniciar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
+		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos e resolve os que faltam'] },
 		render: { title: 'Render', l: ['O FORNO', 'põe o render final das comps na fila, na pasta de output'], r: ['O FORNO', 'põe um preview na fila, na pasta de previews'] },
-		importar: { title: 'Importar', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
+		importar: { title: 'Importar AEP', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
 		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },
 		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica etiquetas (comentários) nos itens do projeto'] },
 		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },

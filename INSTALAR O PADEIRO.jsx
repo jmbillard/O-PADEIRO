@@ -66,6 +66,44 @@ Instalar / atualizar:
 		return new File(src.fsName + '/CSXS/manifest.xml').exists && new File(src.fsName + '/loader/stub.html').exists;
 	}
 
+	// a pasta do padeiro: a que tem a pasta "extension" (e a configuração da equipe). vem da pasta do instalador ou,
+	// se o After não consegue ler essa pasta, da que a pessoa escolher (o link "escolher a pasta extension")
+	function setHome(folder) {
+		here = folder;
+		src = new Folder(here.fsName + '/extension');
+		sharedList = new File(here.fsName + '/O_PADEIRO_GLOBAL_config.json');
+		oldList = new File(here.fsName + '/O_PADEIRO_config.json');
+	}
+
+	// por que a pasta "extension" não foi achada: o After não consegue LER a pasta do instalador (no macOS, a
+	// proteção de Documentos, Mesa e Downloads: o script abre, mas os vizinhos dele não aparecem), a pasta não está
+	// lá, ou está incompleta
+	function extensionHelp() {
+		var items = null;
+		var names = [];
+		var found = false;
+
+		try {
+			items = here.getFiles();
+		} catch (err) { }
+
+		if (!items || !items.length) {
+			return 'o After não consegue ler a pasta do instalador (' + here.fsName + ').' + (IS_MAC ? ' no macOS, libere em Ajustes do Sistema > Privacidade e Segurança > Arquivos e Pastas > After Effects, ou tire a pasta de Documentos / Mesa / Downloads.' : '') + ' ou use o link abaixo para escolher a pasta "extension".';
+		}
+
+		for (var i = 0; i < items.length; i++) {
+			var name = decodeURI(items[i].name);
+
+			if (name == 'extension') found = true;
+			if (names.length < 6) names.push(name);
+		}
+
+		if (!found) return 'não há uma pasta "extension" em ' + here.fsName + ' (achei: ' + names.join(', ') + '). use o link abaixo para escolher a pasta "extension".';
+		if (!new File(src.fsName + '/CSXS/manifest.xml').exists) return 'a pasta "extension" está incompleta: falta CSXS/manifest.xml (a cópia terminou? no macOS, o After pode não ter permissão para ler dentro dela).';
+
+		return 'a pasta "extension" está incompleta: falta loader/stub.html.';
+	}
+
 	function padeiroVersion() {
 		try {
 			var m = readText(new File(src.fsName + '/host/index.jsx')).match(/PADX_VERSION\s*=\s*'([^']+)'/);
@@ -119,13 +157,68 @@ Instalar / atualizar:
 		folder.remove();
 	}
 
-	function removeExtension() {
+	// Apaga uma pasta de extensão. num link (a instalação de desenvolvimento, uma junção do Windows), apaga só o link,
+	// nunca o que ele aponta (a pasta da rede, o repositório)
+	function removeExtensionFolder(folder) {
 		if (IS_MAC) {
-			// 'rm' sem barra no fim apaga só o link, se a instalação de desenvolvimento for um link
-			system.callSystem('rm -rf ' + quote(dest.fsName));
-		} else if (dest.exists) {
-			removeFolder(dest);
+			// 'rm' sem barra no fim apaga só o link
+			system.callSystem('rm -rf ' + quote(folder.fsName));
+			return;
 		}
+
+		if (!folder.exists) return;
+
+		// 'rmdir' sem /s: apaga a junção ou o link; numa pasta de verdade (com arquivos) não faz nada
+		system.callSystem('cmd /c rmdir ' + quote(folder.fsName));
+		if (!new Folder(folder.fsName).exists) return;
+
+		// o After vê o link como um apelido: se ainda for um, não segue para dentro dele
+		if (folder.alias) return;
+
+		removeFolder(folder);
+	}
+
+	function removeExtension() {
+		removeExtensionFolder(dest);
+	}
+
+	// Outras cópias do padeiro nas pastas de extensões (as primeiras versões beta, uma pasta copiada à mão, um link de
+	// teste, a pasta de extensões do sistema): cada uma registra as janelas dela de novo, e as antigas aparecem
+	// duplicadas no menu Window > Extensions. reconhece pelo manifest (o id com.jmbillard.opadeiro), nunca pelo
+	// nome da pasta; a instalação de agora (dest) e a pasta da rede (src) ficam. → { removed, failed: [caminhos] }
+	function removeStrayCopies() {
+		var roots = [userData + '/Adobe/CEP/extensions'];
+		var out = { removed: 0, failed: [] };
+		var keep = String(dest.fsName).toLowerCase();
+		var home = String(src.fsName).toLowerCase();
+
+		if (IS_MAC) roots.push('/Library/Application Support/Adobe/CEP/extensions');
+		else if (Folder.commonFiles) roots.push(Folder.commonFiles.fsName + '/Adobe/CEP/extensions');
+
+		for (var r = 0; r < roots.length; r++) {
+			var root = new Folder(roots[r]);
+			var items = root.exists ? root.getFiles() : [];
+
+			for (var i = 0; i < items.length; i++) {
+				if (!(items[i] instanceof Folder)) continue;
+
+				var path = String(items[i].fsName);
+				var low = path.toLowerCase();
+
+				if (low == keep || home.indexOf(low + (IS_MAC ? '/' : '\\')) == 0 || home == low) continue;
+
+				var manifest = new File(path + '/CSXS/manifest.xml');
+
+				if (!manifest.exists || !/com\.jmbillard\.opadeiro/.test(readText(manifest))) continue;
+
+				removeExtensionFolder(items[i]);
+
+				if (new Folder(path).exists) out.failed.push(path);
+				else out.removed++;
+			}
+		}
+
+		return out;
 	}
 
 	// O carregador: o manifest da rede e, para cada janela, uma página que abre a página de verdade na rede.
@@ -294,7 +387,7 @@ Instalar / atualizar:
 	var checks = [
 		{ label: 'After Effects 2022 ou mais novo', test: aeVersionOk, required: true, help: 'o padeiro precisa do After Effects 2022 (22.0) ou mais novo.' },
 		{ label: 'acesso à rede e escrita de arquivos', test: canWriteFiles, required: true, help: 'habilite "Allow Scripts to Write Files and Access Network" nas preferências de scripts e expressões.' },
-		{ label: 'pasta "extension" ao lado do instalador', test: extensionOk, required: true, help: 'rode o instalador direto da pasta do padeiro na rede (a que tem a pasta "extension").' },
+		{ label: 'pasta "extension" ao lado do instalador', test: extensionOk, required: true, help: extensionHelp },
 		{ label: 'lista de produções compartilhada', test: function () { return sharedList.exists || oldList.exists; }, required: false, help: 'não achei o O_PADEIRO_GLOBAL_config.json ao lado do instalador: sem ele não há lista de produções.' }
 	];
 
@@ -320,12 +413,29 @@ Instalar / atualizar:
 		checks[c].text.preferredSize.width = WIDTH - 24;
 	}
 
-	var helpText = text(p1, '', 46);
+	var helpText = text(p1, '', 104);
 	var prefsLink = link(p1, '› abrir preferências de scripts e expressões', function () {
 		app.executeCommand(3131); // Preferences > Scripting & Expressions
 		runChecks();
 	});
 	var recheckLink = link(p1, '› verificar de novo', function () {
+		runChecks();
+	});
+	// a pasta "extension" escolhida à mão (a que tem CSXS e loader dentro, com qualquer nome). quem escolher a pasta
+	// de cima, a do padeiro, também acerta: vale a "extension" de dentro dela
+	var homeLink = link(p1, '› escolher a pasta "extension"', function () {
+		var picked = Folder.selectDialog('A pasta "extension" do padeiro');
+
+		if (!picked) return;
+
+		if (new File(picked.fsName + '/CSXS/manifest.xml').exists) {
+			setHome(picked.parent);
+			src = picked; // a pasta escolhida é a própria extensão, com o nome que tiver
+		} else {
+			setHome(picked);
+		}
+		srcText.text = 'origem: ' + src.fsName;
+		srcText.helpTip = src.fsName;
 		runChecks();
 	});
 
@@ -355,7 +465,9 @@ Instalar / atualizar:
 
 	// 3 · andamento e conclusão
 	var p3 = page();
-	var resultText = text(p3, '', 92);
+	// alto o bastante para o texto mais comprido (a nota do macOS, quebrada em linhas, e as notas da instalação): com a
+	// altura justa, o ScriptUI corta a linha em vez de quebrar
+	var resultText = text(p3, '', 230);
 
 	var progressLab = win.add('statictext', undefined, '');
 	var progressBar = win.add('progressbar', undefined, 0, 100);
@@ -400,12 +512,14 @@ Instalar / atualizar:
 
 			for (var d in checks[i].dots) checks[i].dots[d].visible = d === state;
 
-			if (!pass) help.push(checks[i].help);
+			// a ajuda pode ser um texto ou uma função (o motivo, conferido na hora)
+			if (!pass) help.push(typeof checks[i].help == 'function' ? checks[i].help() : checks[i].help);
 			if (!pass && checks[i].required) ok = false;
 		}
 
 		helpText.text = help.length ? help.join('\n') : 'tudo certo!';
 		prefsLink.visible = !canWriteFiles();
+		homeLink.visible = !extensionOk();
 		nextBtn.enabled = ok;
 
 		return ok;
@@ -462,6 +576,11 @@ Instalar / atualizar:
 
 		if (removeOldScript()) notes.push('a versão antiga (script) foi removida.');
 
+		var stray = removeStrayCopies();
+
+		if (stray.removed) notes.push(stray.removed + (stray.removed == 1 ? ' cópia antiga do padeiro foi removida' : ' cópias antigas do padeiro foram removidas') + ' (as janelas duplicadas somem ao reiniciar o After).');
+		if (stray.failed.length) notes.push('não consegui apagar (apague à mão, com permissão de administrador):\n' + stray.failed.join('\n'));
+
 		step('pronto!', 100);
 		resultText.text =
 			'O PADEIRO ' + (installed ? 'atualizado' : 'instalado') + '!\n\n' +
@@ -473,8 +592,12 @@ Instalar / atualizar:
 	function doRemove() {
 		step('removendo…', 50);
 		removeExtension();
+
+		var stray = removeStrayCopies();
+
 		step('pronto!', 100);
-		resultText.text = 'O PADEIRO foi removido deste computador.\n\nreinicie o After Effects.';
+		resultText.text = 'O PADEIRO foi removido deste computador.\n\nreinicie o After Effects.' +
+			(stray.failed.length ? '\n\nnão consegui apagar (apague à mão, com permissão de administrador):\n' + stray.failed.join('\n') : '');
 	}
 
 	cancelBtn.onClick = function () {

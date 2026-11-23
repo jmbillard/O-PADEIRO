@@ -24,6 +24,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
+	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
+	var LIGHT_PANEL_ID = 'com.jmbillard.opadeiro.light';
 	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
@@ -283,7 +285,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		render: async function (preview) {
 			var res = await call('renderQueue', { preview: !!preview });
 			var what = preview ? counted(res.count, 'preview', 'previews') : counted(res.count, 'render final', 'renders finais');
-			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz', res.folder];
+			// só o nome da última pasta (o caminho inteiro enchia o aviso, mais ainda na barra em pé)
+			var last = String(res.folder || '').replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
+			var lines = [what + ' na fila de render' + (res.local ? ' · na pasta deste computador' : '') + ' · ' + UNDO_KEY + ' desfaz'];
+
+			if (last) lines.push('na pasta ' + last);
 
 			lines.push(res.names.join(' · '));
 			// os avisos (pasta deste computador, o preset padrão) não são erro: o render está na fila
@@ -356,6 +362,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(LABELS_PANEL_ID);
 		},
 
+		// O ARQUIVISTA: renomear os arquivos e as pastas de um diretório. a janela abre vazia: a pasta é escolhida lá
+		openFiles: function () {
+			PAD_BRIDGE.openPanel(FILES_PANEL_ID);
+		},
+
+		// A FORMINHA: o preenchimento leve (duplica a comp aberta e preenche os layers de texto selecionados)
+		openLight: function () {
+			PAD_BRIDGE.openPanel(LIGHT_PANEL_ID);
+		},
+
 		// criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
 			await call('makerReady');
@@ -415,13 +431,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes');
 
-			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '.') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 			setTimeout(function () {
 				watchCollect(true);
 			}, 300);
 		},
 
-		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado) e coletar em outra pasta
+		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
 		openCollect: function () {
 			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
 		},
@@ -483,7 +499,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
 	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
-	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project'].forEach(function (key) {
+	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
 		actions[key].opensWindow = true;
 	});
 
@@ -495,6 +511,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TOOLS = [
 		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
 		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
+		{ key: 'duplicar', label: 'Duplicar', icon: 'duplicate', name: 'A FORMINHA', tips: [L_CLICK + 'duplicar a comp aberta e preencher os layers de texto selecionados'], left: actions.openLight },
 		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
 		{
 			key: 'fontes',
@@ -507,10 +524,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'projeto',
-			label: 'Criar', // Alterar quando o projeto aberto já tem os dados do padeiro (paintProjectDot)
+			label: 'Iniciar', // Alterar quando o projeto aberto já tem os dados do padeiro (paintProjectDot)
 			icon: 'form',
 			name: 'A CLAQUETE',
-			tips: [L_CLICK + 'criar o projeto pela atração', R_CLICK + 'salvar o projeto na pasta dele'],
+			tips: [L_CLICK + 'iniciar o projeto pela atração', R_CLICK + 'salvar o projeto na pasta dele'],
 			left: actions.project,
 			right: actions.saveProject
 		},
@@ -519,7 +536,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Coletar',
 			icon: 'collect',
 			name: 'O CATADOR',
-			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto: coletar em outra pasta e resolver os que faltam'],
+			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto e resolver os que faltam'],
 			left: function () {
 				return actions.collect('');
 			},
@@ -540,7 +557,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 		{
 			key: 'importar',
-			label: 'Importar',
+			label: 'Importar AEP',
 			icon: 'import',
 			name: 'O VERSIONADOR',
 			tips: [L_CLICK + 'importar um projeto do After de qualquer versão', R_CLICK + 'salvar o projeto em versões mais velhas do After'],
@@ -577,6 +594,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				return actions.organizeProject();
 			},
 			right: actions.openLabels
+		},
+		{
+			key: 'arquivos',
+			label: 'Arquivos',
+			icon: 'files',
+			name: 'O ARQUIVISTA',
+			tips: [L_CLICK + 'renomear os arquivos e as pastas de uma pasta'],
+			left: actions.openFiles
 		},
 		{
 			key: 'buscar',
@@ -622,7 +647,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	// Executa a ação do botão com feedback de "ocupado" e erro no aviso.
 	async function run(btn, handler) {
 		if (!handler) return;
-		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão
+		if (handler.opensWindow) return handler(); // abrir a janela não espera a outra ação do botão (e vale apagado)
+		if (btn.classList.contains('is-off')) return; // apagado (ex: o coletar sem projeto salvo): só o que abre janela
 		if (btn.classList.contains('is-busy')) return;
 
 		btn.classList.add('is-busy');
@@ -738,6 +764,37 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			if (size) d.style.setProperty('--drawer-round', Math.round(size / 2) + 'px');
 		});
+		evenDrawers();
+	}
+
+	// todos os botões com um tamanho só: a largura do maior nome de gaveta (Organização), para as gavetas e as
+	// ferramentas não ficarem cada uma de um tamanho (o nome que não couber ganha reticências). a conta é pelo nome, que tem a largura dele mesmo com o botão recolhido; sem
+	// os nomes à vista (a barra em pé, estreita), nada muda
+	function evenDrawers() {
+		var bar = document.querySelector('.bar');
+		var btns = document.querySelectorAll('.bar-drawer-btn');
+		var plain = document.querySelector('.bar-btn:not(.bar-drawer-btn)');
+		var widest = 0;
+
+		if (!bar) return;
+
+		Array.prototype.forEach.call(btns, function (btn) {
+			var label = btn.querySelector('.bar-label');
+
+			if (label && label.scrollWidth > widest) widest = label.scrollWidth;
+		});
+
+		// a largura mínima de um botão é lida sem o tamanho padrão aplicado (senão a conta se alimenta dela mesma)
+		bar.classList.remove('has-drawer-w');
+
+		if (!widest || btns.length < 2 || !plain) return;
+
+		var cs = getComputedStyle(plain);
+		// + 12: um respiro a mais de cada lado, para o nome mais comprido não encostar no contorno
+		var w = Math.max(Math.ceil(widest + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) + 12, parseFloat(cs.minWidth) || 0);
+
+		bar.style.setProperty('--drawer-w', w + 'px');
+		bar.classList.add('has-drawer-w');
 	}
 
 	/* o resto da barra não sai do lugar quando uma gaveta abre ou fecha: o conteúdo da barra é centralizado, então
@@ -824,6 +881,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		pin.btn = null;
 		pin.tx = pin.ty = 0;
 		document.querySelector('.bar-main').style.transform = '';
+		// o tamanho medido para a animação (--btn-size) é o do sentido em que a gaveta abriu: virando a barra, a largura
+		// de antes virava o limite da altura e o nome do botão saía para fora do contorno
+		Array.prototype.forEach.call(document.querySelectorAll('.bar-drawer-btn'), function (btn) {
+			btn.style.removeProperty('--btn-size');
+		});
 	});
 
 	// a gaveta e o botão dela animam com o tamanho exato de cada um (--drawer-size e --btn-size, medidos na hora),
@@ -1149,8 +1211,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   --------------------------------------------------------------- */
 
 	var projectState = '';
+	var projectWhy = ''; // por que está laranja (o host diz: sem salvar, ou o arquivo sem a atração nos dados)
+	var projectError = ''; // a conferência falhou: aparece na dica, em vez de a bolinha ficar parada no estado de antes
 
-	// Criar (o projeto aberto não tem os dados do padeiro) ou Alterar (já tem): o nome, a dica e a bolinha
+	// Iniciar (o projeto aberto não tem os dados do padeiro) ou Alterar (já tem): o nome, a dica e a bolinha
 	function paintProjectDot() {
 		var btn = $('btn-projeto');
 
@@ -1159,10 +1223,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		var has = projectState === 'ok' || projectState === 'out';
 		var label = btn.querySelector('.bar-label');
 
-		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Criar';
-		btn.setAttribute('aria-label', has ? 'Alterar' : 'Criar');
-		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'criar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
-		setTip(btn, projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para criar' : projectState === 'out' ? '!# Projeto:\n! salvo fora da pasta dele: clique e Salvar leva o .aep de volta' : '');
+		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Iniciar';
+		btn.setAttribute('aria-label', has ? 'Alterar' : 'Iniciar');
+		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'iniciar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
+		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para iniciar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! ' + (projectWhy ? projectWhy + ': clique para ver os dados e salvar' : 'salvo fora da pasta dele: clique e Salvar leva o .aep de volta') : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
 		else btn.removeAttribute('data-project');
@@ -1279,9 +1343,15 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!btn) return;
 		var tip = '';
 
-		if (res && res.state === 'out') tip = '!# Arquivos fora:\n' + kindLines(res);
+		// sem o .aep salvo e sem a pasta do projeto nos dados não há para onde coletar: o botão fica apagado
+		var off = !!res && res.ready === false;
+
+		btn.classList.toggle('is-off', off);
+		btn.setAttribute('aria-disabled', off ? 'true' : 'false');
+		if (off) tip = '!# Coletar:\n! inicie ou salve o projeto: os arquivos vão para a pasta dele';
+		else if (res && res.state === 'out') tip = '!# Arquivos fora:\n' + kindLines(res);
 		setTip(btn, tip);
-		setDot(btn, res && res.state);
+		setDot(btn, off ? '' : res && res.state);
 		paintGroupDots();
 	}
 
@@ -1318,14 +1388,21 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
 	}
 
-	async function watchProject() {
-		if (document.hidden) return;
+	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (a claquete que acabou de
+	// criar o projeto), o painel pode se dizer escondido e a bolinha ficava no estado de antes; por isso, escondida,
+	// a barra ainda confere, só que mais devagar (1 a cada 3 vezes), e sempre que o mouse entra nela
+	var projectSkips = 0;
+
+	async function watchProject(force) {
+		if (document.hidden && force !== true && ++projectSkips % 3) return;
 
 		try {
 			var res = await call('projectStatus');
 
-			if (res.state !== projectState) {
+			if (res.state !== projectState || (res.why || '') !== projectWhy || projectError) {
 				projectState = res.state;
+				projectWhy = res.why || '';
+				projectError = '';
 				paintProjectDot();
 			}
 
@@ -1337,7 +1414,14 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				fontsSync.key = res.key;
 				syncFonts();
 			}
-		} catch (err) { }
+		} catch (err) {
+			var msg = String((err && err.message) || err);
+
+			if (msg !== projectError) {
+				projectError = msg;
+				paintProjectDot();
+			}
+		}
 	}
 
 	/* =========================================================
@@ -1484,8 +1568,177 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* =========================================================
+	   O código novo: a barra é um painel que fica aberto o dia todo, e o código trocado na rede só entrava ao
+	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Projeto errava). ela confere a data dos
+	   próprios arquivos (os da página e os do host) e se recarrega quando mudam: ao entrar o mouse (no máximo uma
+	   vez a cada 30 s) e a cada 5 minutos. sem a rede, ou trabalhando (coletar, fontes, tour), espera
+	   ========================================================= */
+
+	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/collect.jsx', 'host/productions.jsx'];
+	var code = { stamp: null, at: 0, when: 0 };
+
+	// a pasta extension (a de cima da client desta página), como o cep.fs a entende
+	function codeRoot() {
+		var path = decodeURIComponent(location.pathname).replace(/\/client\/[^/]*$/, '');
+
+		if (location.host) return '//' + location.host + path; // Windows: \\servidor\share
+		if (/^\/[A-Za-z]:\//.test(path)) return path.slice(1); // Windows: C:/...
+
+		return path;
+	}
+
+	// as datas dos arquivos do código, ou null se algum não pôde ser lido (a rede caiu: não é hora de recarregar)
+	function codeStamp() {
+		if (!window.cep || !window.cep.fs || window.PAD_MOCK_HOST) return null;
+
+		var root = codeRoot();
+		var out = [];
+		var last = 0;
+
+		for (var i = 0; i < CODE_FILES.length; i++) {
+			var st = window.cep.fs.stat(root + '/' + CODE_FILES[i]);
+
+			if (!st || st.err !== 0 || !st.data) return null;
+
+			var t = +new Date(st.data.modificationTime);
+
+			out.push(t);
+			if (t > last) last = t;
+		}
+		code.when = last;
+
+		return out.join('|');
+	}
+
+	function watchCode() {
+		var now = Date.now();
+
+		if (now - code.at < 30000) return;
+		code.at = now;
+
+		var stamp;
+
+		try {
+			stamp = codeStamp();
+		} catch (err) {
+			return;
+		}
+
+		if (!stamp) return;
+		if (code.stamp === null) {
+			code.stamp = stamp;
+
+			return paintCodeDate();
+		}
+		if (stamp === code.stamp) return;
+		// trabalhando (a contagem do coletar, as fontes) ou no tour: espera a próxima
+		if (document.querySelector('.bar-btn.is-running') || document.body.classList.contains('is-touring')) return;
+
+		location.reload();
+	}
+
+	// a data do código em uso, na dica do pãozinho: dá para ver se a barra já pegou a atualização
+	function paintCodeDate() {
+		var logo = $('logo');
+
+		if (!logo || !code.when) return;
+
+		var d = new Date(code.when);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var line = 'código de ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+		var base = String(logo.dataset.tip || logo.title || '').replace(/\n\ncódigo de [^\n]*$/, '');
+
+		logo.dataset.tip = base + '\n\n' + line;
+		logo.title = base + '\n\n' + line;
+	}
+
+	/* =========================================================
 	   Início
 	   ========================================================= */
+
+	/* o pãozinho no fim do ano: o gorro de 1º a 25 de dezembro (até 23:59), os fogos de 26 a 31 e, em 1º de janeiro,
+	   o de sempre. pela data do computador, conferida a cada minuto (vira sozinho à meia-noite). com a logo trocada
+	   na aparência, nada muda. no navegador, ?season=xmas ou ?season=fogos mostra cada um */
+	var SEASON_COLORS = ['#ffd75e', '#7cd1ff', '#ff7ac8', '#9cff9a', '#ffffff', '#ffa94d'];
+	var season = { name: null, timer: null };
+
+	function seasonNow() {
+		var test = /[?&]season=(xmas|fogos)/.exec(location.search);
+		var now = new Date();
+
+		if (test) return test[1];
+		if (now.getMonth() !== 11) return '';
+
+		return now.getDate() <= 25 ? 'xmas' : 'fogos';
+	}
+
+	// um estouro: faíscas em círculo a partir de um ponto, numa cor (às vezes duas)
+	function seasonBurst(fx) {
+		var w = fx.clientWidth;
+		var h = fx.clientHeight;
+
+		if (!w || !h) return;
+
+		var burst = el('div', 'bar-fx-burst');
+		var c1 = SEASON_COLORS[Math.floor(Math.random() * SEASON_COLORS.length)];
+		var c2 = Math.random() < 0.4 ? SEASON_COLORS[Math.floor(Math.random() * SEASON_COLORS.length)] : c1;
+		var r = 14 + Math.random() * 10;
+
+		burst.style.left = Math.round(w * (0.12 + Math.random() * 0.76)) + 'px';
+		burst.style.top = Math.round(h * (0.12 + Math.random() * 0.35)) + 'px';
+		for (var i = 0; i < 12; i++) {
+			var a = (Math.PI * 2 * i) / 12 + Math.random() * 0.2;
+			var spark = el('i', 'bar-fx-spark');
+
+			spark.style.setProperty('--c', i % 2 ? c2 : c1);
+			spark.style.setProperty('--x', (Math.cos(a) * r).toFixed(1) + 'px');
+			spark.style.setProperty('--y', (Math.sin(a) * r).toFixed(1) + 'px');
+			spark.style.setProperty('--d', Math.round(Math.random() * 60) + 'ms');
+			burst.appendChild(spark);
+		}
+		fx.appendChild(burst);
+		setTimeout(function () {
+			burst.remove();
+		}, 1400);
+	}
+
+	function paintSeason() {
+		var logo = $('logo');
+		var loaf = logo && logo.querySelector('.bar-loaf');
+		var name = loaf && loaf.style.display !== 'none' ? seasonNow() : '';
+
+		if (!logo || name === season.name) return;
+
+		season.name = name;
+		logo.classList.toggle('is-xmas', name === 'xmas');
+		clearInterval(season.timer);
+
+		var fx = logo.querySelector('.bar-fx');
+
+		if (name !== 'fogos') {
+			if (fx) fx.remove();
+			return;
+		}
+
+		if (!fx) {
+			fx = el('div', 'bar-fx');
+			fx.setAttribute('aria-hidden', 'true');
+			logo.appendChild(fx);
+		}
+
+		var pair = function () {
+			if (document.hidden) return; // escondida, não gasta nada
+			seasonBurst(fx);
+			setTimeout(function () {
+				seasonBurst(fx);
+			}, 380);
+		};
+
+		pair();
+		season.timer = setInterval(pair, 2600);
+	}
 
 	// logo escolhida na configuração (aparência) no lugar do pãozinho
 	function applyLogo(theme) {
@@ -1497,6 +1750,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (!src) {
 			if (img) img.remove();
 			loaf.style.display = '';
+			paintSeason();
 			return;
 		}
 
@@ -1508,14 +1762,22 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		img.src = src;
 		loaf.style.display = 'none';
+		paintSeason();
 	}
 
 	async function init() {
+		// os avisos do host (o que era alert() nas libs antigas) no aviso da barra
+		window.addEventListener('pad-notes', function (e) {
+			e.preventDefault();
+			toast('error', e.detail.notes.join('\n'));
+		});
 
 		document.addEventListener('pad-theme', function (e) {
 			applyLogo(e.detail);
 		});
 		if (window.PAD_THEME) applyLogo(PAD_THEME.current());
+		paintSeason();
+		setInterval(paintSeason, 60000); // a virada do dia (25 → 26, 31 → 1º)
 
 		// ← → andam pela barra (logo, link e ferramentas)
 		PAD_KEYS.listNav({
@@ -1534,7 +1796,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		// as bolinhas ficam presas ao ícone (css); ao virar a barra, o lado redondo das gavetas é medido de novo
 		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);
+		document.documentElement.addEventListener('mouseenter', function () {
+			watchProject(true);
+		});
 		window.addEventListener('focus', loadLinks);
+		watchCode();
+		setInterval(watchCode, 5 * 60000);
+		document.documentElement.addEventListener('mouseenter', watchCode);
 		window.addEventListener('focus', syncFonts);
 		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', function () {

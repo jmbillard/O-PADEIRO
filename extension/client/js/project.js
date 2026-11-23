@@ -574,7 +574,7 @@ projetos com o nome certo).
 				return Object.assign({}, m, { oldPath: m.path, path: here, display: displayPath(here), out: outHere, base: base, category: base ? base.label : m.category, fromIndex: true });
 			}
 
-			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha a categoria', noBase: true });
+			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha o tipo', noBase: true });
 
 			var path = fillPattern(base.pattern, name, base.label);
 
@@ -877,7 +877,7 @@ projetos com o nome certo).
 	function novaPathLine(node, nova, base) {
 		node.textContent = '';
 		if (!base) {
-			node.textContent = 'escolha a categoria da atração nova';
+			node.textContent = 'escolha o tipo da atração nova';
 			return;
 		}
 
@@ -914,7 +914,7 @@ projetos com o nome certo).
 			chip.type = 'button';
 			chip.innerHTML = (PAD_UTIL.categoryIcon(b.icon) || FOLDER_SVG) + '<span></span>';
 			chip.lastChild.textContent = b.label;
-			chip.title = b.offline ? 'a pasta da categoria não está acessível: vai para a pasta deste computador' : '';
+			chip.title = b.offline ? 'a pasta do tipo não está acessível: vai para a pasta deste computador' : '';
 			chip.addEventListener('mousedown', function (e) {
 				e.preventDefault(); // o campo não perde o foco
 			});
@@ -1077,7 +1077,26 @@ projetos com o nome certo).
 	function attrFileName(attr) {
 		if (!attr || !attr.base || !attr.base.filePattern || attr.fromIndex) return '';
 
-		return aepName(fillPattern(attr.base.filePattern, attr.name, attr.base.label));
+		var filled = fillPattern(attr.base.filePattern, attr.name, attr.base.label);
+
+		// com {o_que_e}: o token fica (o o que é entra no lugar dele, em localFile e no host); o resto já normalizado
+		return filled.split(WHAT_TOKEN).map(aepName).join(filled.indexOf(WHAT_TOKEN) >= 0 ? ' ' + WHAT_TOKEN + ' ' : '').trim();
+	}
+
+	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba PROJETO > ARQUIVO) e na pasta de output
+	var WHAT_TOKEN = '{o_que_e}';
+
+	// a pasta de output com o o que é no lugar do token; sem o que é, o pedaço some (…/ATRACAO/{o_que_e} → …/ATRACAO)
+	function fillWhat(path) {
+		var p = String(path || '');
+
+		if (p.indexOf(WHAT_TOKEN) < 0) return p;
+
+		var lead = /^[\\\/]+/.exec(p);
+
+		return (lead ? lead[0] : '') + p.slice(lead ? lead[0].length : 0).split(WHAT_TOKEN).join(aepName(flow.what)).split(/[\\\/]/).map(function (seg) {
+			return seg.replace(/\s+/g, ' ').trim();
+		}).filter(Boolean).join(p.indexOf('/') < 0 && p.indexOf('\\') >= 0 ? '\\' : '/');
 	}
 
 	// o destino mudou: o plano (o nome do .aep, o que já existe, o output) é refeito
@@ -1089,6 +1108,7 @@ projetos com o nome certo).
 		if (key === state.pickKey) return renderDest();
 
 		state.pickKey = key;
+		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
 		flow.pick = pick;
 		state.plan = null;
 		flow.mode = '';
@@ -1117,8 +1137,12 @@ projetos com o nome certo).
 		var pick = flow.pick;
 		var plan = state.plan;
 
+		var top = $('claq-path'); // com o destino conferido, o caminho fica em cima, logo abaixo do título (e abre a pasta)
+
+		top.hidden = true;
+		node.hidden = false;
 		if (!flow.claquete) return hintLine(node, '');
-		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou a categoria da nova');
+		if (!pick) return hintLine(node, claqParts().deep ? 'escolha a atração na lista' : 'escolha a atração (uma / abre as pastas dela) ou o tipo da nova');
 		if (!plan) return hintLine(node, 'conferindo a pasta…');
 
 		// a pasta da estrutura (a do projeto) com os níveis em destaque, e a de projetos dentro dela
@@ -1132,20 +1156,35 @@ projetos com o nome certo).
 			segs = [{ name: plan.rootName, isNew: true }];
 			head = cut.slice(0, -1).join('/');
 		}
-		destLine(node, head, segs, plan.projectsName);
+		destLine(top, head, segs, plan.projectsName);
+		top.hidden = false;
+		node.hidden = true;
+
+		// a pasta que já existe abre no clique (a de projetos ou, sem ela ainda, a da estrutura)
+		var open = plan.projectsExists ? plan.projects : plan.rootExists ? plan.root : '';
+
+		top.disabled = !open;
+		top.dataset.open = open;
+		top.title = open ? 'abrir a pasta: ' + top.title : top.title + ' (ainda não existe: é criada com o projeto)';
+		if (open) top.insertAdjacentHTML('beforeend', OPEN_SVG);
 	}
+
+	var OPEN_SVG = '<svg class="wz-path-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h9v9M18 6 7 17" /></svg>';
 
 	// o nome do .aep e se ele já existe, sem perguntar ao After: o último nível (ou a atração) + o que é (a mesma
 	// conta do host); a lista dos .aep da pasta veio no plano. digitar o o que é não chama o host (ele lê a rede e
 	// travava a digitação)
 	function localFile(plan) {
 		var levels = String(flow.pick.quadro || '').split('/');
-		var base = aepName((levels[levels.length - 1].trim() || flow.pick.fileName || flow.pick.name) + ' ' + (flow.what || ''));
+		var custom = flow.pick.fileName || '';
+		var base = !levels[levels.length - 1].trim() && custom.indexOf(WHAT_TOKEN) >= 0
+			? aepName(custom.split(WHAT_TOKEN).join(' ' + (flow.what || '') + ' ')) // o o que é no lugar do token
+			: aepName((levels[levels.length - 1].trim() || custom.split(WHAT_TOKEN).join(' ') || flow.pick.name) + ' ' + (flow.what || ''));
 
 		plan.fileBase = base;
 		plan.fileName = base + '.aep';
 		plan.exists = (plan.existing || []).some(function (f) {
-			return f.name === base;
+			return f.name === base && f.ext !== 'aet';
 		});
 	}
 
@@ -1193,7 +1232,7 @@ projetos com o nome certo).
 		renderFile();
 		renderExisting(plan);
 		renderOut();
-		$('criar-go').textContent = plan.exists && flow.mode === 'open' ? 'Abrir projeto' : 'Criar projeto';
+		$('criar-go').textContent = state.openFile || (plan.exists && flow.mode === 'open') ? 'Abrir projeto' : 'Criar projeto';
 	}
 
 	// o ano do projeto: um clique passa para o próximo (o de agora, o que vem, o anterior). o BBB do ano que vem
@@ -1273,7 +1312,7 @@ projetos com o nome certo).
 			select.appendChild(opt);
 		});
 
-		var other = el('option', null, 'nenhuma destas: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
+		var other = el('option', null, 'nenhum destes: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
 
 		other.value = 'pick';
 		select.appendChild(other);
@@ -1314,7 +1353,7 @@ projetos com o nome certo).
 
 			preview.appendChild(el('span', null, full.slice(0, cut + 1)));
 			preview.appendChild(el('b', null, full.slice(cut + 1)));
-			if (base.offline) preview.appendChild(el('em', 'nova-offline', 'pasta deste computador: a da categoria não está acessível'));
+			if (base.offline) preview.appendChild(el('em', 'nova-offline', 'pasta deste computador: a do tipo não está acessível'));
 		} else if (base) {
 			preview.appendChild(el('span', null, base.display + '/'));
 			preview.appendChild(el('b', null, name || '…'));
@@ -1340,23 +1379,91 @@ projetos com o nome certo).
 	/* ---------- o .aep que já existe ---------- */
 
 	// os .aep que já estão na pasta, numa linha (o último alterado primeiro); o repetido ganha as duas saídas
-	function renderExisting(plan) {
-		var line = $('arq-exist');
-		var dup = $('arq-dup');
-		var list = (plan.existing || []).filter(function (f) {
-			return f.name !== plan.fileBase;
+	// os .aep / .aet que já estão na pasta de projetos, do mais novo para o mais velho, com a data à direita. um
+	// clique marca um (de novo, desmarca): o botão do rodapé vira "Abrir projeto" e a nota diz o que acontece. a
+	// confirmação é o próprio botão: nada abre no primeiro clique
+	function renderFiles(plan) {
+		var box = $('arq-files');
+		var list = $('arq-files-list');
+		var note = $('arq-files-note');
+		var files = (plan.existing || []).slice().sort(function (a, b) {
+			return (b.modified || 0) - (a.modified || 0);
 		});
+		var picked = '';
+
+		box.hidden = !files.length;
+		list.textContent = '';
+		$('arq-files-title').textContent = 'JÁ NA PASTA · ' + files.length;
+
+		files.forEach(function (f) {
+			var full = f.name + '.' + (f.ext || 'aep');
+			var row = el('button', 'wz-file' + (state.openFile === full ? ' is-on' : '') + (f.name === plan.fileBase && f.ext !== 'aet' ? ' is-same' : ''));
+			var name = el('span', 'wz-file-name');
+
+			row.type = 'button';
+			row.setAttribute('role', 'option');
+			row.setAttribute('aria-selected', String(state.openFile === full));
+			row.title = state.openFile === full ? 'clique para desmarcar' : 'clique para marcar: o botão Abrir projeto abre este';
+			row.innerHTML = FILE_ROW_SVG;
+			name.appendChild(document.createTextNode(f.name));
+			name.appendChild(el('i', null, '.' + (f.ext || 'aep')));
+			row.appendChild(name);
+			row.appendChild(el('time', null, when(f.modified)));
+			row.addEventListener('click', function () {
+				state.openFile = state.openFile === full ? '' : full;
+				renderPlan(plan);
+			});
+			list.appendChild(row);
+			if (state.openFile === full) picked = full;
+		});
+
+		// o marcado sumiu da pasta (outra atração, a lista relida): nada marcado
+		if (!picked) state.openFile = '';
+		list.classList.toggle('is-picking', !!picked);
+		note.hidden = !picked;
+		note.textContent = '';
+		if (picked) {
+			note.appendChild(document.createTextNode('abrir '));
+			note.appendChild(el('b', null, picked));
+			note.appendChild(document.createTextNode(' fecha esta janela sem criar nada. clique nele de novo para desmarcar.'));
+		}
+	}
+
+	var FILE_ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
+
+	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
+	async function openPicked() {
+		if (state.busy || !state.openFile || !state.plan) return;
+
+		state.busy = true;
+		$('criar-go').disabled = true;
+		$('criar-go').textContent = 'Abrindo…';
+		try {
+			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
+			status('projeto aberto: ' + state.openFile, 'success');
+			$('criar-go').textContent = 'Aberto';
+			state.openFile = '';
+			setTimeout(function () {
+				PAD_BRIDGE.closePanel();
+				state.busy = false;
+				state.currentKey = null;
+				refresh(true);
+			}, 700);
+		} catch (err) {
+			state.busy = false;
+			$('criar-go').disabled = false;
+			$('criar-go').textContent = 'Abrir projeto';
+			status(err.message, 'error');
+		}
+	}
+
+	function renderExisting(plan) {
+		var dup = $('arq-dup');
 		var same = (plan.existing || []).filter(function (f) {
-			return f.name === plan.fileBase;
+			return f.name === plan.fileBase && f.ext !== 'aet';
 		})[0];
 
-		line.textContent = '';
-		line.hidden = !list.length || plan.exists;
-		if (list.length && !plan.exists) {
-			line.appendChild(document.createTextNode('já na pasta: '));
-			line.appendChild(el('b', null, list[0].name + '.aep'));
-			line.appendChild(document.createTextNode(' · ' + when(list[0].modified) + (list.length > 1 ? ' · +' + (list.length - 1) : '')));
-		}
+		renderFiles(plan);
 
 		dup.hidden = !plan.exists;
 		if (plan.exists) {
@@ -1372,7 +1479,7 @@ projetos com o nome certo).
 		}
 	}
 
-	// hoje 14:32 · ontem 09:10 · 28/10 · 28/10/2025
+	// 14:32 HOJE · 09:10 ONTEM · 28/10 · 28/10/2025 (como nos dados do projeto: maiúsculas, a hora antes)
 	function when(ms) {
 		if (!ms) return '';
 
@@ -1384,8 +1491,8 @@ projetos com o nome certo).
 		var time = pad(d.getHours()) + ':' + pad(d.getMinutes());
 		var day = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-		if (ms >= day) return 'hoje ' + time;
-		if (ms >= day - 86400000) return 'ontem ' + time;
+		if (ms >= day) return time + ' HOJE';
+		if (ms >= day - 86400000) return time + ' ONTEM';
 
 		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
@@ -1394,7 +1501,7 @@ projetos com o nome certo).
 
 	// a pasta de partida: a escolhida no navegador ou a da atração (o caminho já montado no volume, do plano)
 	function outBase() {
-		return state.outCustom || (state.plan && state.plan.output) || '';
+		return state.outCustom || fillWhat(state.plan && state.plan.output) || '';
 	}
 
 	function outParts() {
@@ -1615,14 +1722,17 @@ projetos com o nome certo).
 	// atração + o que é. um projeto salvo sem os dados do padeiro (adopt) entra direto aqui: a busca roda sozinha
 	// com o nome do arquivo e a primeira atração achada já vem marcada (o resto do nome vai para o o que é).
 	function renderEditor(cur, adopt) {
-		var key = (adopt ? 'a|' : 'c|') + cur.file;
+		var key = (adopt ? 'a|' : 'c|') + (cur.file || (cur.unsaved ? 'convertido|' + cur.atracao : ''));
 
 		state.adopt = !!adopt;
 		$('ed-hint').hidden = !adopt;
 		// com os dados, mas salvo fora da pasta dele (ex: "salvar como" na Área de Trabalho): Salvar leva o .aep de volta
-		$('ed-hint').textContent = cur.outside
-			? 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.'
-			: 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
+		// convertido: o After abriu um projeto antigo e converteu, sem salvar; os dados do padeiro vieram junto
+		var hint = 'projeto salvo sem os dados do padeiro: confira a atração, o que é e as pastas e salve.';
+
+		if (cur.unsaved) hint = 'projeto convertido de uma versão antiga do After, ainda não salvo: estes são os dados que ele já tinha. Salvar grava o .aep na pasta abaixo.';
+		else if (cur.outside) hint = 'o projeto está salvo fora da pasta dele: Salvar leva o .aep para a pasta abaixo.';
+		$('ed-hint').textContent = hint;
 		$('ed-user').placeholder = cur.defaultUser || 'designer';
 		edEditors(cur);
 
@@ -1688,9 +1798,55 @@ projetos com o nome certo).
 		return d ? d[3] + '/' + d[2] + '/' + d[1] : day || '';
 	}
 
+	// a data e a hora de um salvamento: 17/11/2026 14:32
+	// um dia (AAAA-MM-DD) do jeito que se fala: HOJE, ONTEM ou, mais para trás, a data (sem o ano, no ano de agora)
+	function pdFriendlyDay(day) {
+		var d = /^(\d{4})-(\d{2})-(\d{2})/.exec(day || '');
+
+		if (!d) return day || '';
+
+		var now = new Date();
+		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+		var that = new Date(+d[1], +d[2] - 1, +d[3]).getTime();
+
+		if (that === today) return 'HOJE';
+		if (that === today - 86400000) return 'ONTEM';
+
+		return d[3] + '/' + d[2] + (+d[1] === now.getFullYear() ? '' : '/' + d[1]);
+	}
+
+	// um salvamento com a hora (antes do dia): 14:32 HOJE, 09:10 ONTEM ou a hora e a data
+	function pdFriendlyStamp(ms) {
+		var d = new Date(ms);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+		var day = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+
+		return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' ' + pdFriendlyDay(day);
+	}
+
+	function pdStamp(ms) {
+		var d = new Date(ms);
+		var pad = function (n) {
+			return (n < 10 ? '0' : '') + n;
+		};
+
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+	}
+
+	// quem salvou, o mais recente primeiro: quem salvou por último (padeiro:salvo) em cima; depois pelo dia e, no
+	// mesmo dia, pela ordem das linhas (a de baixo salvou depois)
 	function pdEditors(cur) {
-		return (cur.editores || []).slice().sort(function (a, b) {
-			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
+		var last = cur.salvo && cur.salvo.user;
+
+		return (cur.editores || []).map(function (e, i) {
+			return { user: e.user, day: e.day, time: e.time || '', at: i };
+		}).sort(function (a, b) {
+			if ((a.user === last) !== (b.user === last)) return a.user === last ? -1 : 1;
+			if (a.day !== b.day) return a.day < b.day ? 1 : -1;
+
+			return b.at - a.at;
 		});
 	}
 
@@ -1717,7 +1873,7 @@ projetos com o nome certo).
 		var has = !!cur.atracao;
 		var head = el('div', 'pd-head');
 		var name = el('div');
-		var state2 = el('span', 'pd-state' + (cur.created ? '' : ' is-warn'), cur.created ? 'NA PASTA DELE' : cur.outside ? 'FORA DA PASTA' : 'SEM OS DADOS');
+		var state2 = el('span', 'pd-state' + (cur.created ? '' : ' is-warn'), cur.created ? 'NA PASTA DELE' : cur.unsaved ? 'NÃO SALVO' : cur.outside ? 'FORA DA PASTA' : 'SEM OS DADOS');
 		var folder = String(cur.file || '').replace(/[\\\/][^\\\/]*$/, '');
 
 		body.textContent = '';
@@ -1740,10 +1896,12 @@ projetos com o nome certo).
 		}
 
 		var rows = el('div', 'pd-rows');
-		var row = function (k, v, small) {
+		// tip: a data inteira, na dica (o texto diz HOJE, ONTEM)
+		var row = function (k, v, small, tip) {
 			var value = el('span', 'pd-v', v);
 
 			if (small) value.appendChild(el('small', null, small));
+			if (tip) value.title = tip;
 			rows.appendChild(el('span', 'pd-k', k));
 			rows.appendChild(value);
 		};
@@ -1751,7 +1909,10 @@ projetos com o nome certo).
 		body.appendChild(el('p', 'wz-title', 'PROJETO'));
 		row('atração', String(cur.atracao).toUpperCase());
 		if (cur.oQueE) row('o que é', String(cur.oQueE).toUpperCase());
-		if (cur.designer) row('criado por', cur.designer, pdDay(cur.criado));
+		if (cur.designer) row('criado por', cur.designer, pdFriendlyDay(cur.criado), pdDay(cur.criado));
+		// o último salvamento do arquivo, com a hora: os editores abaixo são por dia (salvar de novo no mesmo dia não
+		// muda a lista), e é aqui que se vê que o projeto foi salvo agora
+		if (cur.modified) row('salvo em', pdFriendlyStamp(cur.modified), '', pdStamp(cur.modified));
 		body.appendChild(rows);
 
 		var editors = pdEditors(cur);
@@ -1760,13 +1921,23 @@ projetos com o nome certo).
 			var people = el('div', 'pd-people');
 
 			body.appendChild(el('p', 'wz-title', 'QUEM SALVOU'));
+			body.appendChild(el('p', 'pd-note', 'uma linha por pessoa, com o último dia em que ela salvou.'));
 			editors.forEach(function (e, i) {
 				var line = el('div', 'pd-person' + (i ? '' : ' is-last'));
 
 				line.appendChild(el('i'));
 				line.appendChild(document.createTextNode(e.user));
 				if (!i) line.appendChild(el('em', null, 'ÚLTIMO'));
-				line.appendChild(el('small', null, pdDay(e.day)));
+				var friendly = pdFriendlyDay(e.day);
+				var when2 = el('small');
+				// a hora, à esquerda, nos de hoje: a do último vem da data do arquivo; a dos outros ficou gravada quando
+				// outra pessoa salvou depois deles
+				var hour = friendly !== 'HOJE' ? '' : !i && cur.modified && / HOJE$/.test(pdFriendlyStamp(cur.modified)) ? pdFriendlyStamp(cur.modified).slice(0, 5) : e.time;
+
+				if (hour) when2.appendChild(el('b', null, hour));
+				when2.appendChild(document.createTextNode(friendly));
+				when2.title = pdDay(e.day) + (hour ? ' ' + hour : ''); // a data inteira, na dica
+				line.appendChild(when2);
 				people.appendChild(line);
 			});
 			body.appendChild(people);
@@ -1804,6 +1975,7 @@ projetos com o nome certo).
 		});
 
 		if (editors.length) lines.push('salvo por: ' + editors.join(' · '));
+		if (cur.modified) lines.push('último salvamento: ' + pdStamp(cur.modified));
 		if (cur.root) lines.push('pasta do projeto: ' + displayPath(cur.root));
 		if (cur.output) lines.push('output: ' + displayPath(cur.output));
 
@@ -1849,13 +2021,11 @@ projetos com o nome certo).
 
 	// quem já salvou o projeto, o mais recente primeiro: 'salvo por: TMARTA 16/11 · JMBILLARD 14/11'
 	function edEditors(cur) {
-		var list = (cur.editores || []).slice().sort(function (a, b) {
-			return a.day < b.day ? 1 : a.day > b.day ? -1 : 0;
-		});
+		var list = pdEditors(cur);
 		var text = list.map(function (e) {
-			var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(e.day || '');
+			var day = pdFriendlyDay(e.day);
 
-			return e.user + (d ? ' ' + d[3] + '/' + d[2] : '');
+			return e.user + (day ? ' ' + day.toLowerCase() : '');
 		}).join(' · ');
 
 		$('ed-editors').hidden = !text;
@@ -2173,7 +2343,7 @@ projetos com o nome certo).
 			return;
 		}
 
-		var key = cur.created ? 'c|' + cur.file : 'n|' + cur.file;
+		var key = cur.created ? 'c|' + cur.file : (cur.unsaved ? 'u|' + cur.atracao : 'n|' + cur.file);
 		var changed = !state.current || state.currentKey !== key;
 
 		state.current = cur;
@@ -2193,7 +2363,7 @@ projetos com o nome certo).
 		if (cur.created) {
 			if (state.screen !== 'editor') show('editor');
 			renderEditor(cur);
-		} else if (cur.file && (changed || !state.screen || state.screen === 'editor')) {
+		} else if ((cur.file || cur.unsaved) && (changed || !state.screen || state.screen === 'editor')) {
 			// salvo, mas sem os dados do padeiro (ou fora da pasta dele): pula as etapas (a atração é o nome do
 			// arquivo, a pasta é a dele)
 			if (state.screen !== 'editor') show('editor');
@@ -2411,6 +2581,7 @@ projetos com o nome certo).
 
 		// o que é (o nome do .aep muda enquanto digita) e o .aep repetido; Enter cria
 		$('arq-what').addEventListener('input', function () {
+			state.openFile = ''; // digitar o o que é é criar: o projeto marcado na lista sai
 			flow.what = this.value;
 			flow.mode = '';
 			// só o nome do .aep muda: conta aqui, sem o host (o plano é refeito quando a pasta muda)
@@ -2464,7 +2635,13 @@ projetos com o nome certo).
 		});
 
 		$('criar-go').addEventListener('click', function () {
-			create();
+			if (state.openFile) openPicked();
+			else create();
+		});
+		$('claq-path').addEventListener('click', function () {
+			if (this.dataset.open) call('openFolder', { path: this.dataset.open }).catch(function (err) {
+				status(err.message, 'error');
+			});
 		});
 
 		$('ed-save').addEventListener('click', editorSave);
