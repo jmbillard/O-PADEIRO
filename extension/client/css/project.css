@@ -2093,4 +2093,5 @@ p.wz-exist b {
 
 #claq-out.wz-out {
   padding-top: 14px;
+  padding-bottom: 18px; /* um respiro entre o output e o botão do rodapé */
 }
