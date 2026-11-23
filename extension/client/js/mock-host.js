@@ -1232,24 +1232,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			] } };
 		},
 
-		// os cards do Trello em produção que batem com o digitado (no After vêm do índice da busca, pelo painel)
-		projectRecentCards: function (a) {
-			var norm = function (s) {
-				return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
-			};
-			var q = norm(a.claquete);
-			var cards = [
-				{ card: 'aB1cD2eF', claq: 'Domingão(Dança)30/11', atr: 'Domingão com Huck', at: '2026-11-21', st: 'PRODUZINDO', des: 'Juliana Barão' },
-				{ card: 'gH3iJ4kL', claq: 'Domingão DP Eliana 30/11', atr: 'Domingão com Huck', at: '2026-11-19', st: 'AGUARDANDO MATERIAL', des: '' },
-				{ card: 'mN5oP6qR', claq: 'Mais Voce (Ao Vivo) 25/11', atr: 'Mais Você', at: '2026-11-22', st: '', des: 'Yuri Correa' },
-				{ card: 'sT7uV8wX', claq: 'Emmy(Garota)', atr: '', at: '2026-11-19', st: '', des: '' }
-			];
-
-			return { cards: q ? cards.filter(function (c) {
-				return norm(c.atr).indexOf(q) === 0 || norm(c.claq).indexOf(q) === 0;
-			}) : [] };
-		},
-
 		// as pastas das letras no formato do computador (o mock devolve como veio)
 		projectFilmsParents: function (a) {
 			return { paths: (a.parents || []).slice() };

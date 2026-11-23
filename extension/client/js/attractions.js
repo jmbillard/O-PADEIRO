@@ -274,16 +274,6 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		};
 
 		source.stamp = stamp;
-		// os cards do Trello do índice (15 dias): a claquete mostra os que ainda não acabaram (sem os de filme, que têm
-		// a lista deles), filtrando pelo que se digita (recentCards)
-		source.cards = (data.trello || []).filter(function (c) {
-			return c && c.claq && !c.fim && !c.fil && /^\d{4}-\d{2}-\d{2}$/.test(c.at || '');
-		}).map(function (c) {
-			return { card: c.card || '', claq: String(c.claq).trim(), atr: c.atr || '', at: c.at, st: c.st || '', des: c.des || '',
-				keys: [wordKey(c.atr || ''), wordKey(c.claq)].filter(function (k) {
-					return k.f;
-				}) };
-		});
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
 		}).map(function (a) {
@@ -435,53 +425,6 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		if (local ? !canLocal : !fs) return null; // navegador de teste: o host responde
 
 		return local ? localCandidates() : await webhookCandidates(fs);
-	}
-
-	// os cards do Trello que entraram nos últimos dias (CARD_DAYS) e não acabaram, que batem com o que se digitou (pela
-	// atração do card ou pela claquete): os mais parecidos e os mais novos primeiro. sem o índice do webhook (o
-	// índice local ou o navegador de teste), o host responde (no After: nenhum)
-	var CARD_DAYS = 7;
-
-	async function recentCards(claq) {
-		var words = aepName(claq).split(' ').filter(Boolean);
-
-		if (!words.length) return [];
-
-		var list = null;
-
-		try {
-			list = await candidates();
-		} catch (err) { }
-
-		if (!list || source.info.mode === 'local') {
-			if (list) return [];
-			try {
-				return (await call('projectRecentCards', { claquete: claq })).cards || [];
-			} catch (err) {
-				return [];
-			}
-		}
-
-		var since = new Date(Date.now() - CARD_DAYS * 864e5);
-		var limit = since.getFullYear() + '-' + ('0' + (since.getMonth() + 1)).slice(-2) + '-' + ('0' + since.getDate()).slice(-2);
-
-		return (source.cards || []).filter(function (c) {
-			return c.at >= limit;
-		}).map(function (c) {
-			var score = 0;
-
-			c.keys.forEach(function (k) {
-				score = Math.max(score, scoreAny(k, words));
-			});
-
-			return { c: c, score: score };
-		}).filter(function (x) {
-			return x.score;
-		}).sort(function (a, b) {
-			return b.score - a.score || (b.c.atr ? 1 : 0) - (a.c.atr ? 1 : 0) || b.c.at.localeCompare(a.c.at);
-		}).slice(0, 4).map(function (x) {
-			return { card: x.c.card, claq: x.c.claq, atr: x.c.atr, at: x.c.at, st: x.c.st, des: x.c.des };
-		});
 	}
 
 	// → { claquete, matches: [{ name, category, path, out, display, score }] } (o mesmo formato do host)
@@ -1020,7 +963,6 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		aepName: aepName,
 		aepFileName: aepFileName,
 		recentFilms: recentFilms,
-		recentCards: recentCards,
 		nodeFs: nodeFs,
 		displayPath: displayPath,
 		find: findAttractions,
