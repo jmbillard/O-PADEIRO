@@ -81,6 +81,7 @@ PADX.searchInfo = function () {
 
 	return {
 		url: PS_V2_URL,
+		films: PS_FILMS_URL,
 		cache: tempFolder.fsName + '/busca_v2.json',
 		local: padLocalMode(),
 		platform: appOs,
