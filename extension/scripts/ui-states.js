@@ -106,14 +106,14 @@ const CHECKS = [
 	}],
 	['projeto: atração', 'project.html'],
 	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
-	// o campo vazio, com o foco: os filmes recentes (o webhook dos filmes); um clique escolhe o filme (o cartão)
+	// digitando: os filmes recentes que batem (o webhook dos filmes), com o pôster; um clique escolhe o filme (o cartão)
 	['projeto: filmes recentes', 'project.html', async (p) => {
-		await p.click('#claq');
-		await p.waitForTimeout(900);
+		await p.fill('#claq', 'nao');
+		await p.waitForTimeout(1200);
 	}],
 	['projeto: filme escolhido', 'project.html', async (p) => {
-		await p.click('#claq');
-		await p.waitForTimeout(900);
+		await p.fill('#claq', 'nao');
+		await p.waitForTimeout(1200);
 		await p.locator('.film-row').first().click();
 		await p.waitForTimeout(1200);
 		await p.click('#arq-what');

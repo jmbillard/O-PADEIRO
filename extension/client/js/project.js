@@ -384,6 +384,7 @@ projetos com o nome certo).
 	function lookup() {
 		clearTimeout(state.lookupTimer);
 		showShape();
+		loadFilms(); // os filmes recentes entram na busca (baixados uma vez; de novo depois de 10 min)
 
 		var claq = $('claq').value.trim();
 		var seq = ++state.lookupSeq;
@@ -509,8 +510,9 @@ projetos com o nome certo).
 		state.filmsLoading = true;
 		state.filmsAt = Date.now();
 
+		// os filmes (ou as etiquetas) chegaram com algo digitado: a busca de novo, para eles entrarem na lista
 		var redraw = function () {
-			if (!$('claq').value.trim() && document.activeElement === $('claq')) renderAttractions();
+			if ($('claq').value.trim() && document.activeElement === $('claq') && !state.claqClosed && !claqParts().deep) lookup();
 		};
 
 		try {
@@ -621,7 +623,8 @@ projetos com o nome certo).
 	}
 
 	// uma linha de filme: o pôster (ou o ícone), o título com o ano, a exibição e a etiqueta
-	function filmRow(f) {
+	// onPick: o clique (sem ele, escolhe o filme pelo título)
+	function filmRow(f, onPick) {
 		var item = el('button', 'combo-item film-row');
 		var poster = el('span', 'film-poster');
 		var text = el('span', 'film-text');
@@ -653,7 +656,8 @@ projetos com o nome certo).
 			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
 		});
 		item.addEventListener('click', function () {
-			pickFilm(f);
+			if (onPick) onPick();
+			else pickFilm(f);
 		});
 
 		return item;
@@ -683,22 +687,6 @@ projetos com o nome certo).
 		// pasta pela categoria de filmes, como os do índice
 		if (!match) match = (await toNewOrg(await resolveFilms([{ name: f.name, year: f.year || '', isFilm: true, path: '', out: '', category: 'FILME' + (f.year ? ' · ' + f.year : ''), depth: 1 }])))[0];
 		if (match) enterAttraction(match);
-	}
-
-	// o campo vazio, com o foco: os filmes recentes (a produzir primeiro)
-	function renderFilms(list) {
-		var films = state.films || [];
-
-		$('claq-combo').classList.add('is-open');
-		ATR.resize(list, function () {
-			list.textContent = '';
-			list.appendChild(ATR.group('filmes recentes'));
-			films.forEach(function (f) {
-				list.appendChild(filmRow(f));
-			});
-		});
-		list.hidden = false;
-		$('claq-hint').textContent = '';
 	}
 
 	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
@@ -978,9 +966,6 @@ projetos com o nome certo).
 
 		var closed = state.claqClosed; // fechada: depois do Enter
 
-		// o campo vazio, com o foco: os filmes recentes
-		if (!flow.claquete && state.filmsOpen && (state.films || []).length) return renderFilms(list);
-
 		$('claq-combo').classList.toggle('is-open', !!flow.claquete && !closed);
 
 		if (!flow.claquete || closed) {
@@ -1033,6 +1018,16 @@ projetos com o nome certo).
 
 			list.appendChild(ATR.group(m.length ? found : (ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome')));
 			m.forEach(function (match) {
+				// o filme dos recentes: o pôster, o ano, a exibição e a etiqueta (a produzir ou já tem projeto)
+				if (match.isFilm && match.recent) {
+					var row = filmRow(match, function () {
+						enterAttraction(match);
+					});
+
+					row.title = match.display || '';
+					return list.appendChild(row);
+				}
+
 				list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
 					enterAttraction(match);
 				}, match.display));
@@ -2844,23 +2839,14 @@ projetos com o nome certo).
 		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
 		$('claq').addEventListener('blur', function () {
 			setTimeout(function () {
-				if (state.filmsOpen && document.activeElement !== $('claq')) {
-					state.filmsOpen = false;
-					if (!flow.claquete) renderAttractions();
-				}
-
 				if ($('claq-combo').contains(document.activeElement) || $('claq-combo').hidden || state.claqClosed || !flow.claquete) return;
 				collapseClaq(false);
 			}, 150);
 		});
 		// voltando ao campo: a lista abre de novo
 		$('claq').addEventListener('focus', function () {
-			// vazio: os filmes recentes
-			if (!flow.claquete) {
-				state.filmsOpen = true;
-				loadFilms();
-				return renderAttractions();
-			}
+			// vazio: só baixa os filmes recentes (eles aparecem na busca, digitando)
+			if (!flow.claquete) return loadFilms();
 			if (!state.claqClosed) return;
 
 			state.claqClosed = false;
