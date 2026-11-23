@@ -1,0 +1,3 @@
+# Créditos
+
+O cardápio de visuais da seção **Summary** (pseudocódigo, árvores de chamadas, árvores de componentes, árvores de arquivos, Mermaid, diffs) e sua orientação de posicionamento vêm da skill [`show-me`](https://github.com/humanlayer/humanlayer) de [Dex Horthy](https://github.com/dexhorthy), reproduzidos quase palavra por palavra e voltados para um diff em vez de uma conversa ao vivo. `pr` não depende de `show-me` como skill (ela não faz parte deste repositório, e uma dependência rígida quebraria instalações avulsas), então o conteúdo foi copiado em vez de referenciado; este arquivo é a atribuição que uma dependência teria carregado.
