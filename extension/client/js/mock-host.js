@@ -1332,9 +1332,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				// o mood do mês já começado (o card do Trello abre ele)
 				{ name: 'JANEIRO NA GLOBO', modified: now - 3 * H }
 			] : [];
-			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
-
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base && f.ext !== 'aet'; }), user: 'JMBILLARD', output: a.output || '' };
 		},
 
 		projectCreate: function (a) {
@@ -1342,9 +1340,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (plan.exists && !a.mode) throw new Error('#PAD_092 - já existe ' + plan.fileName + '.');
 
-			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output && (a.outputCreate || plan.outputExists) ? a.output : '' /* pular: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
+			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output || '' /* sem output: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
-			return { file: window.PAD_MOCK_CUR.file, root: plan.root, opened: a.mode === 'open' };
+			return { file: window.PAD_MOCK_CUR.file, root: plan.root };
 		},
 
 		projectSaveNow: function () {

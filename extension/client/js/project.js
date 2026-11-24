@@ -1,13 +1,13 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> PROJETO — um projeto novo pela atração, em etapas, e o editor
+> PROJETO — um projeto novo pela atração, numa tela, e o editor
 ---------------------------------------------------------------
 
 Projeto nunca salvo: uma tela.
-  PROJETO → o caminho: o começo busca a atração no índice da busca (ou uma nova, nome + categoria, ou outra
-            pasta); a cada barra (ATRAÇÃO/PASTA/…), a lista mostra as pastas daquele nível e a nova com o nome
-            digitado
+  PROJETO → o caminho: o começo busca a atração no índice da busca (ou uma nova, pelos chips dos tipos na lista,
+            ou outra pasta); a cada barra (ATRAÇÃO/PASTA/…), a lista mostra as pastas daquele nível e a nova com o
+            nome digitado
   O QUE É → o .aep é o último nível (ou a atração) + isso, sem acentos
   OUTPUT  → a pasta de output da atração e, com barras, as subpastas dela (as novas são criadas)
 Projeto salvo: o editor (atração buscada, designer, o que é, as pastas e Salvar, que leva o .aep para a pasta de
@@ -23,12 +23,9 @@ projetos com o nome certo).
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/projeto.md';
 	var LOOKUP_MS = 90; // espera depois da última tecla para procurar a atração (a busca é na memória)
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
-	var FILE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
-	var SEARCH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg>';
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
 	var OUTPUT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5" /></svg>';
-	var CHEVRON_SVG = '<svg class="out-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>';
 	var TRELLO_SVG = '<svg class="card-logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect x="7" y="7" width="4" height="9.5" rx="1" /><rect x="13" y="7" width="4" height="5.5" rx="1" /></svg>';
 	var FILM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4" /></svg>';
 	var USER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>';
@@ -38,11 +35,9 @@ projetos com o nome certo).
 		claquete: '',
 		matches: [],
 		pick: null, // o destino: { name, path, display, out, quadro (as pastas abaixo da atração), segs }
-		choice: '', // sem a barra: '' (nada), 'new' (atração nova) ou 'folder' (outra pasta)
 		attr: null, // a atração do caminho (com a barra)
 		walk: null, // as pastas do caminho (walkPath)
-		what: '',
-		mode: '' // '', 'open', 'increment' (arquivo existente)
+		what: ''
 	};
 	var state = { screen: '', current: null, lookupTimer: null, lookupSeq: 0, planTimer: null, planSeq: 0, busy: false, bases: [] };
 
@@ -96,39 +91,6 @@ projetos com o nome certo).
 		}, 30);
 	}
 
-	function card(box, title, path) {
-		box.textContent = '';
-		box.appendChild(el('div', 'proj-card-head')).appendChild(el('span', 'proj-retranca', title));
-		box.appendChild(el('div', 'proj-target', '\u200E' + path + '\u200E')); // as marcas LTR seguram as barras no lugar (o texto corta pelo começo)
-		box.title = path;
-	}
-
-	// uma opção em cartão: ícone, título, caminho e a bolinha
-	function option(icon, title, path, selected, onPick, extraClass) {
-		var item = el('button', 'wz-opt' + (selected ? ' is-selected' : '') + (extraClass ? ' ' + extraClass : ''));
-		var text = el('span', 'wz-opt-text');
-
-		item.type = 'button';
-		item.setAttribute('role', 'radio');
-		item.setAttribute('aria-checked', String(!!selected));
-		item.insertAdjacentHTML('afterbegin', icon);
-		text.appendChild(el('b', null, title));
-		if (path) text.appendChild(el('small', /[\\\/]/.test(path) ? 'is-path' : null, /[\\\/]/.test(path) ? '\u200E' + path + '\u200E' : path));
-		item.appendChild(text);
-		if (!extraClass) item.appendChild(el('i', 'wz-radio'));
-		// dica só para o caminho (que aparece cortado): um texto que já está inteiro no cartão não ganha balão
-		if (path && /[\\\/]/.test(path)) item.title = path;
-		item.addEventListener('click', onPick);
-		item.addEventListener('dblclick', function () {
-			onPick();
-			var next = item.closest('.wz-screen').querySelector('.button-primary');
-
-			if (next && !next.disabled) next.click();
-		});
-
-		return item;
-	}
-
 	/* ---------------------------------------------------------------
 	   a busca das atrações e as categorias: js/attractions.js (a mesma do criador de templates)
 	   --------------------------------------------------------------- */
@@ -142,23 +104,13 @@ projetos com o nome certo).
 
 	/* ---------------------------------------------------------------
 	   projeto novo, numa tela
-	   o caminho (ATRAÇÃO/PASTA/…): o começo busca a atração (ou uma nova, ou outra pasta); a cada barra, a lista
+	   o caminho (ATRAÇÃO/PASTA/…): o começo busca a atração (ou uma nova, pelos chips, ou outra pasta); a cada barra, a lista
 	   mostra as pastas daquele nível. o que é (o .aep é o último nível + isso) e o output (a pasta da atração e,
 	   com barras, as subpastas dela). Criar projeto cria as pastas novas, a estrutura e salva o .aep
 	   --------------------------------------------------------------- */
 
-	var LIST_MAX = 4; // quantas atrações aparecem (as outras: continue digitando)
+	var LIST_MAX = ATR.LIST_MAX; // quantas atrações aparecem (as mesmas do seletor; as outras ficam de fora)
 	var LEVEL_MAX = 6; // quantas pastas de um nível aparecem
-	var PREF_BASE = 'pad.project.base'; // a última categoria de uma atração nova, neste computador
-
-	function pref(key, value) {
-		try {
-			if (value === undefined) return localStorage.getItem(key) || '';
-			localStorage.setItem(key, value);
-		} catch (err) { }
-
-		return '';
-	}
 
 	// a estrutura animada (só com o campo vazio: digitando, o resto da tela ocupa o lugar)
 	async function showShape() {
@@ -391,26 +343,21 @@ projetos com o nome certo).
 		var seq = ++state.lookupSeq;
 		var p = claqParts();
 
-		if (aepName(claqParts().first) !== state.novaFor) state.novaOpen = false; // outro texto: os tipos voltam para a linha
-		state.novaFor = aepName(claqParts().first);
+		if (aepName(p.first) !== state.novaFor) state.novaOpen = false; // outro texto: os tipos voltam para a linha
+		state.novaFor = aepName(p.first);
 		flow.claquete = claq;
 		state.claqClosed = false;
 
 		// a atração escolhida fica enquanto o começo do campo for o nome dela (com ou sem a barra); com a barra, as
 		// pastas dela. outro texto: volta a busca das atrações
-		if (p.deep) {
-			if (!flow.attr && /^m\d+$/.test(flow.choice)) flow.attr = flow.matches[+flow.choice.slice(1)] || null;
-			if (flow.choice !== 'new') flow.choice = '';
-		} else {
+		if (!p.deep) {
 			if (!(flow.attr && aepName(flow.attr.name) === aepName(p.first))) flow.attr = null;
 			flow.walk = null;
 		}
-		if (flow.choice === 'new') $('nova-name').value = $('claq').value.trim();
 
 		if (!claq) {
 			state.lookupBusy = false;
 			flow.matches = [];
-			flow.choice = '';
 			renderAttractions();
 			updatePick();
 			return;
@@ -463,19 +410,13 @@ projetos com o nome certo).
 				$('claq-hint').textContent = PAD_UTIL.errorText(err.message);
 			}
 
-			// nada vem marcado: Enter sem escolher fica com o nome digitado (a atração de nome igual, ou uma nova)
-			if (!p.deep && !state.userChose) flow.choice = '';
-			if (flow.choice === 'new') {
-				await ensureBases();
-				$('nova-name').value = $('claq').value.trim();
-			}
 			renderAttractions();
 			updatePick();
 			if (seq === state.lookupSeq) state.lookupBusy = false;
 		}, LOOKUP_MS);
 	}
 
-	/* ---------- os filmes recentes (o webhook dos filmes): com o campo vazio, a lista; digitando, junto da busca ---------- */
+	/* ---------- os filmes recentes (o webhook dos filmes): digitando, junto da busca ---------- */
 
 	// os filmes recentes que começam com o digitado (ou com uma palavra dele) entram na busca: o filme novo ainda não
 	// está no índice. o que já está ganha o ano, o pôster e a exibição
@@ -719,7 +660,7 @@ projetos com o nome certo).
 	}
 
 	// uma linha de filme: o pôster (ou o ícone), o título com o ano, a exibição e a etiqueta
-	// onPick: o clique (sem ele, escolhe o filme pelo título)
+	// onPick: o clique (sem ele, a linha é só para ver: o cartão do filme escolhido)
 	function filmRow(f, onPick) {
 		var item = el('button', 'combo-item film-row');
 		var poster = el('span', 'film-poster');
@@ -751,38 +692,9 @@ projetos com o nome certo).
 		item.addEventListener('mousedown', function (e) {
 			e.preventDefault(); // o campo não perde o foco (a lista não fecha antes do clique)
 		});
-		item.addEventListener('click', function () {
-			if (onPick) onPick();
-			else pickFilm(f);
-		});
+		if (onPick) item.addEventListener('click', onPick);
 
 		return item;
-	}
-
-	// o filme clicado na lista: o título no campo e a busca acha ele (com o ano e a pasta) e entra
-	async function pickFilm(f) {
-		$('claq').value = f.name.toUpperCase();
-		state.userChose = true;
-		lookup();
-
-		// a busca inteira (a pausa da digitação e a resposta, com a pasta do filme)
-		await new Promise(function (resolve) {
-			var wait = function () {
-				if (state.lookupTimer || state.lookupBusy) return setTimeout(wait, 40);
-				resolve();
-			};
-
-			setTimeout(wait, 40);
-		});
-
-		var match = flow.matches.filter(function (m) {
-			return m.isFilm && aepName(m.name) === aepName(f.name) && (!f.year || !m.year || String(m.year) === String(f.year));
-		})[0];
-
-		// o filme ainda fora do índice da busca (cadastrado depois da última cópia): entra pelos dados do webhook, com a
-		// pasta pela categoria de filmes, como os do índice
-		if (!match) match = (await toNewOrg(await resolveFilms([{ name: f.name, year: f.year || '', isFilm: true, path: '', out: '', category: 'FILME' + (f.year ? ' · ' + f.year : ''), depth: 1 }])))[0];
-		if (match) enterAttraction(match);
 	}
 
 	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
@@ -946,11 +858,11 @@ projetos com o nome certo).
 		});
 	}
 
-	// a atração sem categoria que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe a categoria)
+	// a atração sem categoria que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe o tipo nos chips)
 	function asNew(match) {
 		$('claq').value = match.name.toUpperCase();
 		flow.attr = null;
-		chooseAttraction('new');
+		openNova(true);
 	}
 
 	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} da categoria, qualquer valor:
@@ -992,7 +904,7 @@ projetos com o nome certo).
 		});
 	}
 
-	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta
+	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta; o filme, o do tipo de filmes
 	function matchIcon(m) {
 		if (m.isFilm) {
 			var film = filmBase();
@@ -1000,11 +912,7 @@ projetos com o nome certo).
 			return (film && PAD_UTIL.categoryIcon(film.icon)) || FILM_SVG;
 		}
 
-		var base = state.bases.filter(function (b) {
-			return b.label && m.category && aepName(b.label) === aepName(m.category);
-		})[0];
-
-		return (base && PAD_UTIL.categoryIcon(base.icon)) || FOLDER_SVG;
+		return ATR.iconFor(m, state.bases);
 	}
 
 	// troca o fim do campo (o nível sendo digitado) por uma pasta e abre o nível de dentro dela
@@ -1021,7 +929,6 @@ projetos com o nome certo).
 	function enterAttraction(match, keepOpen) {
 		if (match.noBase) return asNew(match);
 		flow.attr = match;
-		flow.choice = '';
 		$('claq').value = match.name.toUpperCase() + '/';
 		enter(keepOpen);
 	}
@@ -1055,18 +962,6 @@ projetos com o nome certo).
 		var list = $('atr-list');
 		var p = claqParts();
 		var hint = '';
-		var novaOn = flow.choice === 'new' && !p.deep;
-		var novaLabel = aepName(p.first) || 'o nome digitado';
-
-		// a atração nova toma o lugar do campo (o nome e a categoria); a seta de voltar (ou Esc) volta para a busca
-		$('claq-combo').hidden = novaOn;
-		$('atr-nova').hidden = !novaOn;
-		if (novaOn) {
-			list.hidden = true;
-			$('claq-hint').textContent = '';
-			return renderNova();
-		}
-
 		var closed = state.claqClosed; // fechada: depois do Enter
 
 		$('claq-combo').classList.toggle('is-open', !!flow.claquete && !closed);
@@ -1110,7 +1005,8 @@ projetos com o nome certo).
 				return;
 			}
 
-			// sem a barra: as atrações (o clique entra nela: a barra e as pastas dela), a nova e outra pasta
+			// sem a barra: as atrações (o clique entra nela: a barra e as pastas dela), a nova (os chips dos tipos) e
+			// outra pasta
 			var m = flow.matches.slice(0, LIST_MAX);
 			var shown = m.length; // as que aparecem (com as do Trello): o resto é o "continue digitando"
 
@@ -1173,14 +1069,16 @@ projetos com o nome certo).
 						renderAttractions();
 					}));
 				}
-			} else {
-				list.appendChild(ATR.row(PLUS_SVG, 'nova atração', novaLabel, flow.choice === 'new', function () {
-					chooseAttraction('new');
-				}));
 			}
-			list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', flow.choice === 'folder', function () {
-				chooseAttraction('folder');
-			}));
+			// sem tipos de projeto na configuração, a atração nova é outra pasta (e, com a barra, a pasta nova dentro)
+			var other = list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', false, pickOtherFolder));
+
+			// o Enter sem atração achada abriu os tipos: o primeiro chip (sem tipos, outra pasta…) fica em realce e o
+			// Enter cria nele (as setas andam pelos outros)
+			if (state.novaFocus) {
+				state.novaFocus = false;
+				(list.querySelector('.cat-chip') || other).classList.add('is-hover');
+			}
 			hint = ''; // sem frase de ajuda: a lista já diz o que achou
 		});
 		list.hidden = false;
@@ -1346,7 +1244,7 @@ projetos com o nome certo).
 		var name = aepName(nova.name);
 
 		if (!name) return $('claq').focus();
-		pref(PREF_BASE, base.label); // a categoria da atração nova fica lembrada
+		ATR.pref(ATR.PREF_BASE, base.label); // a categoria da atração nova fica lembrada (o seletor dos templates usa)
 		enterAttraction(novaAttr(name, base));
 
 		var input = $('claq');
@@ -1355,57 +1253,36 @@ projetos com o nome certo).
 		input.setSelectionRange(input.value.length, input.value.length);
 	}
 
-	// volta da atração nova para a busca (o que estava digitado fica)
-	// os dois campos são um só: o mesmo texto, o cursor no fim (sem seleção) e a busca refeita com o que está lá
-	function leaveNova() {
+	// abre os tipos da atração nova na lista (a linha "nova atração" com os chips), com o primeiro em realce: o Enter
+	// cria nele. again: o texto do campo mudou (a busca de novo)
+	function openNova(again) {
 		var input = $('claq');
 
-		flow.choice = '';
-		state.userChose = false;
-		input.value = $('nova-name').value;
-		renderAttractions();
+		state.novaFor = aepName(claqParts().first);
+		state.novaOpen = true;
+		state.novaFocus = true;
+		state.claqClosed = false;
+		if (again) lookup();
+		else renderAttractions();
 		input.focus();
 		input.setSelectionRange(input.value.length, input.value.length);
-		lookup();
 	}
 
-	async function chooseAttraction(key) {
-		flow.choice = key;
-		state.userChose = true;
-		state.claqClosed = false;
+	// outra pasta…: o navegador de pastas. a escolhida vira o começo do caminho, como uma atração: com a barra, as
+	// pastas dela
+	function pickOtherFolder() {
+		var picked = PAD_BRIDGE.pickFolder('Pasta do projeto');
 
-		if (key === 'folder') {
-			var picked = PAD_BRIDGE.pickFolder('Pasta do projeto');
+		if (!picked) return $('claq').focus();
 
-			if (!picked) {
-				flow.choice = '';
-				return renderAttractions();
-			}
+		var name = picked.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
 
-			// a pasta escolhida vira o começo do caminho, como uma atração: com a barra, as pastas dela
-			var name = picked.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
-
-			flow.choice = '';
-			state.userChose = false;
-			return enterAttraction({ name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true });
-		}
-
-		if (key === 'new') {
-			await ensureBases();
-			$('nova-name').value = $('claq').value.trim();
-		}
-		renderAttractions();
-		updatePick();
-		if (key === 'new') {
-			var input = $('nova-name');
-
-			input.focus();
-			input.setSelectionRange(input.value.length, input.value.length);
-		}
+		enterAttraction({ name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true });
 	}
 
 	// Enter no campo: com a barra, fica o caminho digitado (o que existe é usado, o resto é novo) e segue para o o que
-	// é; sem a barra, a atração de nome igual (entra nela) ou, sem ela, a nova com o nome digitado
+	// é; sem a barra, a atração de nome igual (entra nela), a nova no tipo digitado no começo (vt reunião) ou, sem
+	// nenhum dos dois, os tipos da atração nova abertos na lista (o Enter de novo cria no primeiro)
 	function claqEnter() {
 		var p = claqParts();
 
@@ -1437,19 +1314,16 @@ projetos com o nome certo).
 		var typed = state.bases.length ? novaFromText(p.first) : null;
 
 		if (typed && typed.base && aepName(typed.name)) return pickNovaCategory(typed, typed.base);
-		if (flow.choice !== 'new') return chooseAttraction('new');
-		if (novaReady()) {
-			state.claqClosed = true;
-			renderAttractions();
-			$('arq-what').focus();
-		}
+		openNova(false);
 	}
 
-	// a busca de agora (o Enter não espera a pausa da digitação)
+	// a busca de agora (o Enter não espera a pausa da digitação, mas espera a resposta: até 3 s)
 	function lookupNow() {
+		var tries = 0;
+
 		return new Promise(function (resolve) {
 			var wait = function () {
-				if (state.lookupTimer) return setTimeout(wait, 40);
+				if ((state.lookupTimer || state.lookupBusy) && ++tries < 75) return setTimeout(wait, 40);
 				resolve();
 			};
 
@@ -1458,7 +1332,7 @@ projetos com o nome certo).
 		});
 	}
 
-	/* ---------- o destino: a atração (a achada, a nova ou outra pasta) e as pastas ---------- */
+	/* ---------- o destino: a atração (a achada, a nova dos chips ou outra pasta) e as pastas ---------- */
 
 	function currentPick() {
 		var p = claqParts();
@@ -1472,7 +1346,6 @@ projetos com o nome certo).
 		}
 		// a atração escolhida, sem pastas abaixo (o campo só com o nome dela)
 		if (!p.deep && flow.attr && aepName(flow.attr.name) === aepName(p.first)) return { name: flow.attr.name, path: flow.attr.path, display: displayPath(flow.attr.path), out: flow.attr.out || '', quadro: '', segs: [], fileName: attrFileName(flow.attr), trello: flow.attr.trello || null };
-		if (!p.deep && flow.choice === 'new' && novaReady()) return novaTarget();
 
 		return null;
 	}
@@ -1515,14 +1388,14 @@ projetos com o nome certo).
 
 		state.pickKey = key;
 		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
+		state.openAuto = false;
+		state.sameOff = '';
 		state.filesAll = false;
 		$('claq-rest').classList.remove('is-opening');
 		flow.pick = pick;
 		state.plan = null;
-		flow.mode = '';
-		// a lista JÁ NA PASTA e o aviso do .aep repetido eram da pasta de antes: saem até o plano novo chegar
+		// a lista JÁ NA PASTA era da pasta de antes: sai até o plano novo chegar
 		$('arq-files').hidden = true;
-		$('arq-dup').hidden = true;
 		if (!pick) {
 			renderDest();
 			renderFile();
@@ -1624,7 +1497,7 @@ projetos com o nome certo).
 	}
 
 	function planArgs(extra) {
-		return Object.assign({ kind: 'program', atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.pick.out || '', fileName: flow.pick.fileName || '' }, extra || {});
+		return Object.assign({ atracao: flow.pick.name, quadro: flow.pick.quadro || '', path: flow.pick.path, what: flow.what, output: flow.pick.out || '', fileName: flow.pick.fileName || '' }, extra || {});
 	}
 
 	function planCriar() {
@@ -1660,10 +1533,16 @@ projetos com o nome certo).
 		var meta = $('criar-meta');
 		var user = el('span');
 
-		// o .aep que já existe: abrir ou salvar como … 2 (o padrão). pelo card do Trello, abrir: o card é de um projeto
-		// que já pode estar começado (JANEIRO NA GLOBO.aep)
-		if (!plan.exists) flow.mode = '';
-		else if (!flow.mode) flow.mode = flow.pick && flow.pick.trello ? 'open' : 'increment';
+		// o nome do .aep novo já existe na pasta: ele fica marcado no JÁ NA PASTA (Abrir projeto), a não ser que a
+		// pessoa tenha desmarcado esse nome; outro nome (o o que é mudou) tira a marca que veio sozinha
+		if (state.openAuto && state.openFile !== plan.fileName) {
+			state.openFile = '';
+			state.openAuto = false;
+		}
+		if (plan.exists && !state.openFile && state.sameOff !== plan.fileBase) {
+			state.openFile = plan.fileName;
+			state.openAuto = true;
+		}
 
 		meta.textContent = '';
 		meta.appendChild(yearChip());
@@ -1673,9 +1552,9 @@ projetos com o nome certo).
 
 		renderDest();
 		renderFile();
-		renderExisting(plan);
+		renderFiles(plan);
 		renderOut();
-		$('criar-go').textContent = state.openFile || (plan.exists && flow.mode === 'open') ? 'Abrir projeto' : 'Criar projeto';
+		$('criar-go').textContent = state.openFile ? 'Abrir projeto' : 'Criar projeto';
 	}
 
 	// o ano do projeto: um clique passa para o próximo (o de agora, o que vem, o anterior). o BBB do ano que vem
@@ -1712,18 +1591,18 @@ projetos com o nome certo).
 		updatePick();
 	}
 
-	// o nome do .aep (o último nível, ou a atração, + o que é)
+	// o nome do .aep (o último nível, ou a atração, + o que é); o que já existe e não vai ser aberto é salvo como … 2
 	function renderFile() {
 		var plan = state.plan;
 		var span = $('arq-file').querySelector('span');
-		var name = plan ? (plan.exists && flow.mode === 'increment' ? plan.fileBase + ' 2' : plan.fileBase) : '';
+		var name = plan ? (plan.exists && !state.openFile ? plan.fileBase + ' 2' : plan.fileBase) : '';
 
 		span.textContent = '';
 		span.appendChild(el('b', null, name || '\u200E…')); // a marca LTR segura o '…' antes do .aep (a linha corta pelo começo)
 		span.appendChild(document.createTextNode('.aep'));
 	}
 
-	/* ---------- nova atração: as categorias da configuração (aba PROJETO) e a saída livre ---------- */
+	/* ---------- as categorias da configuração (aba PROJETO): os tipos de projeto ---------- */
 
 	async function ensureBases() {
 		if (state.basesLoaded) return;
@@ -1734,97 +1613,13 @@ projetos com o nome certo).
 			state.bases = [];
 		}
 		state.basesLoaded = true;
-		buildBaseSelect();
-	}
-
-	function buildBaseSelect() {
-		var select = $('nova-base');
-		var free = !state.bases.length;
-		var last = pref(PREF_BASE);
-
-		// sem categorias na configuração: a pasta é livre (o botão no lugar da lista)
-		select.closest('.select').hidden = free;
-		$('nova-pick').hidden = !free;
-		$('nova-free').hidden = !free;
-		select.textContent = '';
-		state.bases.forEach(function (b, i) {
-			var opt = el('option', null, b.label);
-
-			opt.value = String(i);
-			if (b.label === last) opt.selected = true; // a última categoria usada
-			select.appendChild(opt);
-		});
-
-		var other = el('option', null, 'nenhum destes: escolher a pasta…'); // sempre: a saída livre, quando nenhuma categoria serve
-
-		other.value = 'pick';
-		select.appendChild(other);
-		PAD_DROPDOWN.enhance(select, function (value) {
-			var base = state.bases[+value];
-			var icon = value === 'pick' ? SEARCH_SVG : (base && PAD_UTIL.categoryIcon(base.icon)) || FOLDER_SVG; // o ícone escolhido para a categoria (aba PROJETO)
-
-			return icon.replace('<svg', '<svg class="dropdown-svg"');
-		});
-		PAD_DROPDOWN.refresh(select);
-	}
-
-	function novaBase() {
-		var v = $('nova-base').value;
-
-		if (!state.bases.length || v === 'pick') return state.pickedBase || null;
-
-		return state.bases[+v] || null;
-	}
-
-	function novaReady() {
-		return !!(aepName($('nova-name').value) && novaBase());
-	}
-
-	function renderNova() {
-		var base = novaBase();
-		var name = aepName($('nova-name').value);
-		var preview = $('nova-preview');
-
-		preview.innerHTML = '';
-		preview.hidden = !(base && base.offline); // o caminho fica na linha do destino; aqui, só o aviso da pasta deste computador
-
-		if (base && base.pattern) {
-			// o caminho com os tokens trocados; da pasta da atração em diante, em destaque
-			var full = displayPath(fillPattern(base.pattern, name || '…', base.label));
-			var head = displayPath(fillPattern(base.pattern.slice(0, base.pattern.indexOf('{atracao}')), name || '…', base.label));
-			var cut = full.indexOf(head) === 0 ? head.length - 1 : full.lastIndexOf('/');
-
-			preview.appendChild(el('span', null, full.slice(0, cut + 1)));
-			preview.appendChild(el('b', null, full.slice(cut + 1)));
-			if (base.offline) preview.appendChild(el('em', 'nova-offline', 'pasta deste computador: a do tipo não está acessível'));
-		} else if (base) {
-			preview.appendChild(el('span', null, base.display + '/'));
-			preview.appendChild(el('b', null, name || '…'));
-		}
-
-		updatePick();
-	}
-
-	// a atração nova: o caminho da categoria com os tokens trocados, ou uma pasta com o nome dela na escolhida
-	function novaTarget() {
-		var base = novaBase();
-		var name = $('nova-name').value.trim().toUpperCase(); // a atração nova em maiúsculas (com os acentos)
-
-		if (base.pattern) {
-			var path = fillPattern(base.pattern, name, base.label);
-
-			return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', isNew: true };
-		}
-
-		return { name: name, path: joinPath(base.path, aepName(name)), display: base.display + '/' + aepName(name), out: '', isNew: true };
 	}
 
 	/* ---------- o .aep que já existe ---------- */
 
-	// os .aep que já estão na pasta, numa linha (o último alterado primeiro); o repetido ganha as duas saídas
 	// os .aep / .aet que já estão na pasta de projetos, do mais novo para o mais velho, com a data à direita. um
-	// clique marca um (de novo, desmarca): o botão do rodapé vira "Abrir projeto" e a nota diz o que acontece. a
-	// confirmação é o próprio botão: nada abre no primeiro clique
+	// clique marca um (de novo, desmarca): o botão do rodapé vira "Abrir projeto". a confirmação é o próprio botão:
+	// nada abre no primeiro clique. o de nome igual ao do .aep novo vem marcado sozinho (renderPlan)
 	function renderFiles(plan) {
 		var box = $('arq-files');
 		var list = $('arq-files-list');
@@ -1858,7 +1653,10 @@ projetos com o nome certo).
 			row.appendChild(name);
 			row.appendChild(el('time', null, when(f.modified)));
 			row.addEventListener('click', function () {
+				// desmarcar o de nome igual: fica desmarcado (criar com outro o que é; com o mesmo, salva como … 2)
+				if (state.openFile === full && full === plan.fileName) state.sameOff = plan.fileBase;
 				state.openFile = state.openFile === full ? '' : full;
+				state.openAuto = false;
 				renderPlan(plan);
 			});
 			list.appendChild(row);
@@ -1880,8 +1678,9 @@ projetos com o nome certo).
 		// o marcado sumiu da pasta (outra atração, a lista relida): nada marcado
 		if (!picked) state.openFile = '';
 		list.classList.toggle('is-picking', !!picked);
-		// com um marcado (abrir), o "o que é" e o nome do arquivo novo saem: "criar um novo" volta para eles
-		$('claq-rest').classList.toggle('is-opening', !!picked);
+		// marcado na lista (abrir), o "o que é" e o nome do arquivo novo saem: "criar um novo" volta para eles. o que
+		// veio marcado pelo o que é (o nome já existe) deixa os dois à vista: é só mudar o o que é
+		$('claq-rest').classList.toggle('is-opening', !!picked && !state.openAuto);
 		note.hidden = !picked;
 		note.textContent = '';
 		if (picked) {
@@ -1889,10 +1688,13 @@ projetos com o nome certo).
 
 			fresh.type = 'button';
 			fresh.addEventListener('click', function () {
+				if (picked === plan.fileName) state.sameOff = plan.fileBase;
 				state.openFile = '';
+				state.openAuto = false;
 				renderPlan(plan);
 				$('arq-what').focus();
 			});
+			if (state.openAuto) note.appendChild(document.createTextNode('esse nome já existe · '));
 			note.appendChild(fresh);
 		}
 	}
@@ -1922,28 +1724,6 @@ projetos com o nome certo).
 			$('criar-go').disabled = false;
 			$('criar-go').textContent = 'Abrir projeto';
 			status(err.message, 'error');
-		}
-	}
-
-	function renderExisting(plan) {
-		var dup = $('arq-dup');
-		var same = (plan.existing || []).filter(function (f) {
-			return f.name === plan.fileBase && f.ext !== 'aet';
-		})[0];
-
-		renderFiles(plan);
-
-		dup.hidden = !plan.exists || !!state.openFile; // com um marcado na lista (abrir), o aviso não vale
-		if (plan.exists) {
-			var note = $('arq-dup-note');
-
-			note.textContent = '';
-			note.appendChild(el('b', null, plan.fileName));
-			note.appendChild(document.createTextNode(' já existe' + (same && same.modified ? ' (' + when(same.modified) + ')' : '')));
-			$('arq-increment').textContent = 'salvar como … 2';
-			Array.prototype.forEach.call(dup.querySelectorAll('input'), function (input) {
-				input.checked = input.value === flow.mode;
-			});
 		}
 	}
 
@@ -2131,7 +1911,8 @@ projetos com o nome certo).
 	/* ---------- criar ---------- */
 
 	function createArgs() {
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? flow.mode : '' }, outTarget()));
+		// o .aep que já existe e não foi aberto: salva como … 2
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '' }, outTarget()));
 	}
 
 	async function create(args) {
@@ -2139,11 +1920,6 @@ projetos com o nome certo).
 		if (!flow.pick) {
 			status('#PAD_090 - escolha a atração do projeto.', 'error');
 			return $('claq').focus();
-		}
-		if (flow.pick.isNew && flow.pick.name) {
-			var base = novaBase();
-
-			if (base && base.pattern) pref(PREF_BASE, base.label); // a categoria da atração nova fica lembrada
 		}
 
 		var done = false;
@@ -2162,8 +1938,8 @@ projetos com o nome certo).
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
 			// onde não dá para fechar (o navegador de teste), a janela vira o editor do projeto criado
 			done = true;
-			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
-			$('criar-go').textContent = res.opened ? 'Aberto' : 'Criado';
+			status('projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
+			$('criar-go').textContent = 'Criado';
 			setTimeout(async function () {
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
@@ -2185,14 +1961,13 @@ projetos com o nome certo).
 	   editor (projeto criado)
 	   --------------------------------------------------------------- */
 
-	// o editor: a atração (buscada como na etapa ATRAÇÃO) e o designer, o que é, e as pastas (o caminho no campo,
+	// o editor: a atração (buscada como no projeto novo) e o designer, o que é, e as pastas (o caminho no campo,
 	// a pastinha troca). Salvar grava os dados e leva o .aep para a pasta de projetos da estrutura, com o nome da
 	// atração + o que é. um projeto salvo sem os dados do padeiro (adopt) entra direto aqui: a busca roda sozinha
 	// com o nome do arquivo e a primeira atração achada já vem marcada (o resto do nome vai para o o que é).
 	function renderEditor(cur, adopt) {
 		var key = (adopt ? 'a|' : 'c|') + (cur.file || (cur.unsaved ? 'convertido|' + cur.atracao : ''));
 
-		state.adopt = !!adopt;
 		$('ed-hint').hidden = !adopt;
 		// com os dados, mas salvo fora da pasta dele (ex: "salvar como" na Área de Trabalho): Salvar leva o .aep de volta
 		// convertido: o After abriu um projeto antigo e converteu, sem salvar; os dados do padeiro vieram junto
@@ -2789,11 +2564,10 @@ projetos com o nome certo).
 		flow.pick = null;
 		flow.attr = null;
 		flow.walk = null;
-		flow.choice = '';
 		flow.claquete = '';
 		flow.what = '';
-		flow.mode = '';
-		state.userChose = false;
+		state.novaOpen = false;
+		state.novaFocus = false;
 		state.claqClosed = false;
 		state.pickKey = null;
 		state.plan = null;
@@ -2804,7 +2578,6 @@ projetos com o nome certo).
 		state.outOpen = false;
 		state.editorKey = null;
 		$('claq').value = typed || '';
-		$('nova-name').value = '';
 		$('arq-what').value = '';
 		$('out-in').value = '';
 		renderAttractions();
@@ -2812,7 +2585,7 @@ projetos com o nome certo).
 		show('claquete');
 		showShape();
 		ensureBases();
-		// o índice já carrega ao abrir a etapa: a primeira tecla não espera por ele
+		// o índice já carrega ao abrir a tela: a primeira tecla não espera por ele
 		candidates().catch(function () { });
 	}
 
@@ -2852,7 +2625,7 @@ projetos com o nome certo).
 			if (state.screen !== 'editor') show('editor');
 			renderEditor(cur);
 		} else if ((cur.file || cur.unsaved) && (changed || !state.screen || state.screen === 'editor')) {
-			// salvo, mas sem os dados do padeiro (ou fora da pasta dele): pula as etapas (a atração é o nome do
+			// salvo, mas sem os dados do padeiro (ou fora da pasta dele): direto no editor (a atração é o nome do
 			// arquivo, a pasta é a dele)
 			if (state.screen !== 'editor') show('editor');
 			renderEditor(cur, true);
@@ -2875,9 +2648,10 @@ projetos com o nome certo).
 
 			if (list.hidden && !(e.key === 'Tab' && !e.shiftKey && pending && pending())) return;
 
-			// a atração já escolhida (no topo da lista das pastas) fica fora: as setas andam pelas opções
-			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item'), function (it) {
-				return it.offsetParent !== null && !it.classList.contains('is-on');
+			// a atração já escolhida (no topo da lista das pastas) fica fora: as setas andam pelas opções (os chips
+			// dos tipos da atração nova também)
+			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item, .cat-chip'), function (it) {
+				return it.offsetParent !== null && !(it.classList.contains('combo-item') && it.classList.contains('is-on'));
 			});
 			var at = items.findIndex(function (it) {
 				return it.classList.contains('is-hover');
@@ -3007,8 +2781,6 @@ projetos com o nome certo).
 
 			input.value = '';
 			flow.attr = null;
-			flow.choice = '';
-			state.userChose = false;
 			lookup();
 			input.focus();
 		});
@@ -3030,7 +2802,7 @@ projetos com o nome certo).
 		// clique fora do campo e da lista: recolhe (a lista fecha, a barra do fim sai)
 		$('claq').addEventListener('blur', function () {
 			setTimeout(function () {
-				if ($('claq-combo').contains(document.activeElement) || $('claq-combo').hidden || state.claqClosed || !flow.claquete) return;
+				if ($('claq-combo').contains(document.activeElement) || state.claqClosed || !flow.claquete) return;
 				collapseClaq(false);
 			}, 150);
 		});
@@ -3044,43 +2816,12 @@ projetos com o nome certo).
 			renderAttractions();
 		});
 
-		// nova atração: o nome é o mesmo texto do campo da busca (o que se digita num vale no outro) e a categoria
-		$('nova-name').addEventListener('input', function () {
-			$('claq').value = this.value;
-			flow.claquete = this.value.trim();
-			if (!flow.claquete) return leaveNova(); // apagou tudo: volta para a busca, vazia
-			renderNova();
-		});
-		onEnter('nova-name', claqEnter);
-		$('nova-back').addEventListener('click', leaveNova);
-		$('nova-name').addEventListener('keydown', function (e) {
-			if (e.key === 'Escape') {
-				e.preventDefault();
-				leaveNova();
-			}
-		});
-		$('nova-pick').addEventListener('click', function () {
-			var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
-
-			if (picked) state.pickedBase = { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked };
-			$('nova-pick').querySelector('span').textContent = state.pickedBase ? state.pickedBase.display : 'escolher a pasta…';
-			renderNova();
-		});
-		$('nova-base').addEventListener('change', function () {
-			if (this.value === 'pick') {
-				var picked = PAD_BRIDGE.pickFolder('Dentro de qual pasta');
-
-				state.pickedBase = picked ? { label: picked.split(/[\\\/]/).pop(), path: picked, display: picked } : null;
-			}
-
-			renderNova();
-		});
-
-		// o que é (o nome do .aep muda enquanto digita) e o .aep repetido; Enter cria
+		// o que é (o nome do .aep muda enquanto digita; o de nome repetido fica marcado no JÁ NA PASTA); Enter faz o
+		// que o botão do rodapé faz (criar ou abrir)
 		$('arq-what').addEventListener('input', function () {
 			state.openFile = ''; // digitar o o que é é criar: o projeto marcado na lista sai
+			state.openAuto = false;
 			flow.what = this.value;
-			flow.mode = '';
 			// só o nome do .aep muda: conta aqui, sem o host (o plano é refeito quando a pasta muda)
 			if (state.plan && flow.pick) {
 				localFile(state.plan);
@@ -3088,11 +2829,8 @@ projetos com o nome certo).
 			}
 		});
 		onEnter('arq-what', function () {
-			create();
-		});
-		$('arq-dup').addEventListener('change', function (e) {
-			flow.mode = e.target.value;
-			if (state.plan) renderPlan(state.plan);
+			if (state.openFile) openPicked();
+			else create();
 		});
 
 		// o output: digitar (e as barras) abre as pastas; Enter fica com o digitado; de novo, cria

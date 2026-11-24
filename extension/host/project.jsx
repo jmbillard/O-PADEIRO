@@ -11,7 +11,7 @@ arquivos é do botão COLETAR (collect.jsx).
 
 'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
-               projeto e o do output, opcional: a pasta de output proposta na etapa CRIAR) levam tokens:
+               projeto e o do output, opcional: a pasta de output proposta no projeto novo) levam tokens:
                {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
                {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes) {ano_producao} (o ano de produção do filme escolhido: NAO NAO OLHE
@@ -394,7 +394,7 @@ PADX.projectOpenFolder = function () {
 /*
 
 ---------------------------------------------------------------
-> novo projeto pela claquete (janela PROJETO em etapas)
+> novo projeto pela claquete (janela PROJETO, numa tela)
 ---------------------------------------------------------------
 
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
@@ -403,8 +403,8 @@ estrutura do coletar (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA…), aproveitando a que
   - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
     pasta da letra é só o token {letra} do caminho da categoria)
 No projeto ficam os dados do padeiro (padeiro:, em 'dados do projeto aberto'): a atração, o que é, o designer,
-a pasta da estrutura e a de output (a da categoria ou a da atração no índice, quando ela existe ou é criada na
-etapa CRIAR: pular não grava).
+a pasta da estrutura e a de output (a da categoria ou a da atração no índice, quando ela existe ou é criada com
+o projeto: sem output, não grava).
 
 */
 
@@ -810,7 +810,7 @@ function padAepList(folderPath) {
 // áudio e dados o coletar cria quando aparecerem.
 var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 
-// A estrutura de pastas de um projeto (configuração > coletar), para a árvore animada da etapa ATRAÇÃO: cada pasta
+// A estrutura de pastas de um projeto (configuração > coletar), para a árvore animada do projeto novo: cada pasta
 // com a profundidade e o que ela recebe. → { folders: [{ name, depth, contents: ['projeto', 'imagens', …] }] }
 /*
 
@@ -935,22 +935,16 @@ PADX.projectShape = function () {
 	return { folders: out };
 };
 
-// O que vai ser criado (para a etapa CRIAR e o aviso de arquivo existente). Não cria nada.
+// O que vai ser criado (a pasta, o nome do .aep, os .aep que já estão na pasta e o output). Não cria nada.
 PADX.projectPlan = function (a) {
 	var plan = padNewProjectPlan(a);
 	var existing = plan.projectsExists ? padAepList(plan.projects) : [];
 	var rootFolder = new Folder(plan.root);
 	var exists = false;
-	var folders = [];
-	var list = padStructureFolders(plan.settings, PAD_PROJECT_KINDS);
 
 	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet') exists = true;
-	for (var j = 0; j < list.length; j++) if (!list[j].projects) folders.push({ name: list[j].name, depth: list[j].depth });
 
 	var outputPath = a.output ? padMountedPath(padPath(padCleanSpaces(a.output))) : '';
-	// a subpasta do "o que é" dentro da de output (…/2026/SERVICO): a outra opção da etapa CRIAR, conferida de fato
-	var subName = a.what ? padAepName(a.what) : '';
-	var subPath = outputPath && subName ? outputPath + '/' + subName : '';
 
 	return {
 		root: padDisplayPath(plan.root),
@@ -963,16 +957,12 @@ PADX.projectPlan = function (a) {
 		fileName: plan.fileBase + '.aep',
 		existing: existing,
 		exists: exists,
-		folders: folders,
 		user: padMachineUser(),
-		output: outputPath ? padDisplayPath(outputPath) : '',
-		outputExists: outputPath ? new Folder(outputPath).exists : false,
-		outputSub: subPath ? padDisplayPath(subPath) : '',
-		outputSubExists: subPath ? new Folder(subPath).exists : false
+		output: outputPath ? padDisplayPath(outputPath) : ''
 	};
 };
 
-// Abre um projeto que já está na pasta (a lista "já na pasta" da claquete). a: { path } → { file }
+// Abre um projeto que já está na pasta (a lista JÁ NA PASTA do projeto novo). a: { path } → { file }
 PADX.projectOpenFile = function (a) {
 	var file = new File(padMountedPath(padPath(a.path)));
 
@@ -1024,7 +1014,8 @@ function padFolderPeek(folder) {
 	return ' [o After Effects vê: ' + (names.join(', ') || 'nada') + ' | o sistema vê: ' + (shell || 'nada') + ']';
 }
 
-// Cria a estrutura e salva o .aep. a: plano + { output, outputCreate, mode: '' | 'open' | 'increment' }
+// Cria a estrutura e salva o .aep. a: plano + { output, outputCreate, mode: '' | 'increment' }
+// (o .aep que já existe: 'increment' salva como … 2; sem mode, erro. abrir o existente é o projectOpenFile)
 PADX.projectCreate = function (a) {
 	padLastMkdir = '';
 
@@ -1038,19 +1029,13 @@ PADX.projectCreate = function (a) {
 
 	padCheckWritable(projects);
 
-	if (file.exists && a.mode == 'open') {
-		app.open(file);
-
-		return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: true };
-	}
-
 	if (file.exists && a.mode == 'increment') {
 		for (var n = 2; file.exists && n < 100; n++) file = new File(projects + '/' + base + ' ' + n + '.aep');
 	} else if (file.exists) {
 		throw new Error('#PAD_092 - já existe ' + base + '.aep em ' + decodeURI(new Folder(projects).name) + '.');
 	}
 
-	// a pasta de output: criada se pedido (etapa CRIAR); vai para os metadados só a que existir (pular: não grava)
+	// a pasta de output: criada se pedido (outputCreate); vai para os metadados só a que existir (pular: não grava)
 	var output = a.output ? new Folder(padMountedPath(padPath(padCleanSpaces(a.output)))) : null;
 
 	if (output && !output.exists && a.outputCreate) padEnsureFolder(output.fsName);
@@ -1082,7 +1067,7 @@ PADX.projectCreate = function (a) {
 		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?)' + padMacPrivacyHint() + '.');
 	}
 
-	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root), opened: false };
+	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root) };
 };
 
 // O .aep está dentro da pasta gravada no projeto (padeiro:pasta)? sem pasta gravada, vale. o volume com sufixo

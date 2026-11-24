@@ -27,17 +27,17 @@ async function filesFolder(page) {
 }
 
 async function projectTo(page, screen) {
-	// o campo do projeto: digita e Enter sem categoria abre a atração nova (o nome e a categoria embaixo; os chips das
-	// categorias ficam na lista)
+	// o campo do projeto: digita e Enter sem atração achada nem tipo no começo abre os tipos da atração nova na
+	// lista (os chips, o primeiro em realce)
 	await page.fill('#claq', 'TESTE NOVO');
 	await page.waitForTimeout(800);
 	await page.press('#claq', 'Enter');
 	await page.waitForTimeout(500);
 	if (screen === 'nova') return;
 
-	// o resto da tela: Enter fecha a lista, o que é e a lista do output aberta
-	await page.press('#nova-name', 'Enter');
-	await page.waitForTimeout(600);
+	// o resto da tela: Enter cria no chip em realce (a lista recolhe), o que é e a lista do output aberta
+	await page.press('#claq', 'Enter');
+	await page.waitForTimeout(1000);
 	await page.fill('#arq-what', 'vt');
 	await page.waitForTimeout(600);
 	await page.click('#out-card');
