@@ -1961,11 +1961,137 @@ p.wz-exist b {
   opacity: 1;
 }
 
-/* a atração com card novo no Trello: o logo, o nome, o card embaixo e a etiqueta */
+/* um card novo no Trello, numa linha: o ícone num quadrado, a claquete e quando entrou */
 .combo-item.card-row {
   gap: 10px;
 }
 
-.combo-item.card-row .film-text .combo-title {
+.card-row .card-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--blue-100, #e8eeff);
+  color: var(--blue-500);
+}
+
+.card-row .card-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.card-row .card-icon svg rect + rect {
+  fill: currentColor;
+  stroke: none;
+}
+
+.combo-item.card-row .combo-title {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* com a lista aberta, a tela fica só com ela: o resto aparece depois de escolher */
+#sc-claquete.is-choosing #claq-rest,
+#sc-claquete.is-choosing #claq-out,
+#sc-claquete.is-choosing #claq-dest,
+#sc-claquete.is-choosing #claq-hint {
+  display: none;
+}
+
+/* sem o output (que empurrava o rodapé), o botão continua embaixo */
+#sc-claquete.is-choosing > .wz-foot {
+  margin-top: auto;
+}
+
+/* com um .aep marcado (abrir): sem o "o que é" e o nome do novo; "criar um novo" volta para eles */
+#claq-rest.is-opening > .wz-title:first-child,
+#claq-rest.is-opening > .has-field-icon,
+#claq-rest.is-opening > #arq-file {
+  display: none;
+}
+
+.wz-files-more,
+.wz-files-new {
+  align-self: flex-start;
+  margin: 2px 8px 0;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--blue-500);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.wz-files-new {
+  margin: 0;
+}
+
+.wz-files-more:hover,
+.wz-files-new:hover {
+  text-decoration: underline;
+}
+
+/* o output numa linha: "output …/caminho · mudar" (sem o cartão grande) */
+#claq-out > .wz-title {
+  display: none;
+}
+
+#claq-out .out-card {
+  gap: 8px;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+#claq-out .out-card-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+#claq-out .out-card-text {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+#claq-out .out-card-text::before {
+  content: "output";
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+#claq-out .out-card-title {
+  display: none;
+}
+
+#claq-out .out-card-text small {
   color: var(--text-primary);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+#claq-out .out-card.is-muted .out-card-text small {
+  color: var(--text-tertiary);
+}
+
+#claq-out .out-card-edit {
+  padding: 3px 9px;
+}
+
+#claq-out.wz-out {
+  padding-top: 14px;
+  padding-bottom: 18px; /* um respiro entre o output e o botão do rodapé */
 }

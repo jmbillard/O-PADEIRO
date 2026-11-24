@@ -70,6 +70,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - **opções em cartões** (`wz-opt`) → ícone antes, título e caminho / explicação, **bolinha à direita**. o escolhido fica destacado. é o mesmo cartão em todas as etapas.
 - **menus radiais** (`log-radio`) para poucas opções curtas na mesma linha; **toggles** para ligar / desligar.
 - **o que depende de uma escolha aparece embaixo dela, animado** (ex: "outra pasta…" abre o campo com a pastinha) e some animado quando sai.
+- **o item escolhido ou em foco numa lista** → fundo suave (e a cor do texto), nunca uma faixa de cor num lado só (`border-left`, `box-shadow: inset 2px 0 0`): num item arredondado ela vira uma "unha".
 - **nada fica pela metade na tela**: uma opção que ainda não existe fica desabilitada com "em breve", não escondida pela metade.
 
 ## 📍 ícones

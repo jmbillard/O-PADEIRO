@@ -1,0 +1,49 @@
+# O PADEIRO: instruções para os agentes
+
+Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTML/JS fica em `extension/client`, o host em ExtendScript (ES3) em
+`extension/host`, o instalador é `INSTALAR O PADEIRO.jsx` na raiz e a documentação fica em `README.md` e `docs/`. Tudo em pt-BR: textos, comentários, commits e documentos.
+
+## Papel do agente principal: gestor do projeto
+
+- O agente principal coordena: entende o pedido, decide o plano e delega a execução a subagentes. Ele mesmo não faz
+  o trabalho longo.
+- Cada subagente recebe o contexto completo: o objetivo, os arquivos envolvidos, as regras deste repositório (abaixo)
+  e o que já foi decidido. Ele começa sem saber nada da conversa.
+- Os subagentes rodam em segundo plano. O agente principal fica livre para conversar, responder dúvidas e acompanhar.
+- Ao voltar, o resultado de cada subagente é conferido pelo gestor (diff, testes, capturas) antes de ser apresentado
+  ou enviado.
+- Tarefa pequena, de poucos passos, o gestor faz direto: delegar custa mais que fazer.
+- Mudança de interface: mockup primeiro, aprovado antes de implementar.
+- Respostas em português.
+
+## Regras do código
+
+- **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna. `node extension/scripts/check-ternary.js`
+  confere.
+- **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
+  `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
+  `ui-states.js`.
+- **Guia de UI:** `docs/guia-ui.md` vale para toda janela e todo mockup. Ex.: item escolhido numa lista ganha fundo
+  suave, nunca uma faixa de cor num lado só.
+- **Teste:** tudo roda no navegador com `extension/client/js/mock-host.js` no lugar do After Effects. Nada disso é
+  teste no After de verdade: dizer isso ao relatar.
+
+## Skills dos agentes
+
+As skills do Matt Pocock, traduzidas para pt-BR, ficam em `.claude/skills/` (veja `.claude/skills/README.md`).
+O fluxo do dia a dia: `/grill-with-docs` (interrogatório + glossário) → `/to-spec` → `/to-tickets` → `/implement`.
+
+### Rastreador de issues
+
+As issues ficam nas Issues do GitHub de jmbillard/O-PADEIRO, usadas pelo `gh api` (REST). Veja
+`docs/agents/issue-tracker.md`.
+
+### Rótulos de triagem
+
+Os cinco papéis da triagem, com os rótulos em português (`precisa-triagem`, `precisa-info`, `pronto-para-agente`,
+`pronto-para-humano`, `wontfix`). Veja `docs/agents/triage-labels.md`.
+
+### Documentos de domínio
+
+Contexto único: um `CONTEXT.md` (o glossário; é ele quando uma skill fala em `GLOSSARY.md`) e `docs/adr/` na raiz.
+Veja `docs/agents/domain.md`.
