@@ -27,7 +27,8 @@ aparece e a claquete segue funcionando como antes.
       "ano": 2022,
       "exibicao": "2026-12-05",
       "sessao": "Corujão",
-      "poster": "https://…/nao-nao-olhe_sm.webp?token=…"
+      "poster": "https://…/nao-nao-olhe_sm.webp?token=…",
+      "trello": "https://trello.com/c/6750aa11bb22cc33dd44ee55/412-tela-quente-nao-nao-olhe"
     }
   ]
 }
@@ -37,13 +38,15 @@ aparece e a claquete segue funcionando como antes.
 | --- | --- | --- |
 | `titulo` | sim | o título do filme, como deve aparecer (com acentos e pontuação). a claquete tira acentos e símbolos para o nome das pastas e do `.aep`. |
 | `ano` | não | o ano de produção, com 4 algarismos (número ou texto). vai para o token `{ano_producao}` e para o nome do `.aep`. sem ano, os parênteses somem. |
-| `exibicao` | não | a data da exibição, `AAAA-MM-DD` (aparece como `05/12`). |
+| `exibicao` | não | a data da exibição, `AAAA-MM-DD` (aparece como `05/12`). a lista põe a exibição mais próxima em cima. |
 | `sessao` | não | a sessão (Corujão, Supercine…). |
 | `poster` | não | o endereço de uma **miniatura pública**, aberta sem login (uns 200 × 300 px). sem pôster, aparece o ícone de filme. |
+| `trello` | não | o link do card do filme no Trello. o card do índice da busca com o mesmo id (`card`) vira, no grupo **NO TRELLO**, o **card de filme**: com o pôster, e leva ao filme (o filme não repete em FILMES). |
 
-- **Quais filmes:** um por filme, pela próxima exibição, de 2 dias atrás a 45 dias à frente (sem as canceladas); os
-  próximos primeiro. A ordem da resposta é a ordem da lista, com os que já têm projeto depois. O workflow manda
-  também `filme_id`, `pasta`, `projeto`, `output`, `inedito` e `trello`; o painel ainda não usa esses campos.
+- **Quais filmes:** um por filme, pela próxima exibição, de 2 dias atrás a 45 dias à frente (sem as canceladas). No
+  grupo **FILMES**, os **A PRODUZIR** vêm primeiro e depois os que **JÁ TÊM PROJETO**, cada parte com a exibição mais
+  próxima em cima. O workflow manda também `filme_id`, `pasta`, `projeto`, `output` e `inedito`; o painel ainda não
+  usa esses campos.
 - **O pôster:** a miniatura do anexo do Teable, com um link assinado que expira. Se ele falhar, aparece o ícone.
 - **Também aceito:** a lista direto (`[ {…}, {…} ]`), embrulhada pelo n8n (`[{ "filmes": [...] }]`) ou um item por
   filme (`[{ "json": {…} }]`). Os nomes em inglês (`name`, `year`) também valem.
@@ -77,8 +80,8 @@ filme.
 
 - `extension/host/lib/acessorista.js`: `PS_FILMS_URL`, o endereço.
 - `extension/client/js/attractions.js`: `recentFilms()` baixa e `parseFilms()` lê a resposta.
-- `extension/client/js/project.js`: `loadFilms()` confere as pastas, `renderFilms()` mostra a lista e `filmRow()`
-  desenha cada linha.
+- `extension/client/js/project.js`: `loadFilms()` confere as pastas, `pickGroups()` monta o grupo FILMES (e o card de
+  filme, pelo `cardFilm()`) e `filmRow()` desenha cada linha.
 - `extension/host/project.jsx`: `PADX.projectFilmsParents` converte as pastas das letras; `PADX.projectFilmsDone`
   confere quais filmes já têm pasta (o plano B, sem o Node).
 - `extension/client/js/mock-host.js`: `projectFilmsRecent`, os filmes de exemplo do modo de teste.
