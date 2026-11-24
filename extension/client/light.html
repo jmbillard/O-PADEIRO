@@ -29,7 +29,7 @@
 		<div class="lt-head" id="lt-head">
 			<label class="cfg-title" for="lt-input">INPUT</label>
 			<!-- com 2 layers ou mais: a linha que separa o texto de cada layer (vazio: uma linha por layer) -->
-			<label class="lt-sep" id="lt-sep-box" title="a linha que separa o texto de cada layer numa versão (vazio: uma linha por layer)" hidden>separador<input type="text" id="lt-sep" spellcheck="false" autocomplete="off" maxlength="12" aria-label="Separador"></label>
+			<label class="lt-sep" id="lt-sep-box" title="a linha que separa o texto de cada layer num bloco (vazio: uma linha por layer)" hidden>separador<input type="text" id="lt-sep" spellcheck="false" autocomplete="off" maxlength="12" aria-label="Separador"></label>
 			<div class="lt-cases" role="group" aria-label="Caixa do texto">
 				<button type="button" class="lt-case" data-case="upper" title="todo o texto em CAIXA ALTA" aria-label="caixa alta">AA</button>
 				<button type="button" class="lt-case" data-case="lower" title="todo o texto em caixa baixa" aria-label="caixa baixa">aa</button>
@@ -37,7 +37,7 @@
 			</div>
 		</div>
 		<!-- o campo: o contorno fica na caixa de fora, para a barra de rolagem do texto terminar antes das quinas -->
-		<div class="lt-input-box" id="lt-input-box"><textarea class="lt-input" id="lt-input" spellcheck="false" placeholder="uma linha por layer · linha vazia separa as versões"></textarea></div>
+		<div class="lt-input-box" id="lt-input-box"><textarea class="lt-input" id="lt-input" spellcheck="false" placeholder="uma linha por layer · linha vazia separa os blocos"></textarea></div>
 
 		<!-- duplicando: o andamento (a barra padrão), no lugar do input -->
 		<div class="progress-section lt-progress" id="lt-progress" hidden>

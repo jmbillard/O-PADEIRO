@@ -34,7 +34,7 @@ as abas ficam em três grupos, separados por uma linha:
 
 | aba | neste computador |
 | --- | --- |
-| templates | produções locais · pasta de saída |
+| templates | produções locais · output local |
 | projeto | pasta dos projetos |
 | buscar | de onde vêm os caminhos (webhook ou índice local) |
 | links | meus links |
@@ -75,7 +75,7 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 
 - **produções locais** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, a **lixeira** à direita exclui; os pontinhos reordenam); '*+ nova produção local*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
   > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
-- **pasta de saída** → para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
+- **output local** → a pasta deste computador para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 - **lista de templates** → as seções do topo do [painel de templates](templates.md#fixados-e-recentes): **recentes** (quantos templates aparecem, de 0 a 30; padrão 5) e **novos** (criados há até quantos dias, de 0 a 90; padrão 15). 0 esconde a seção. vale ao reabrir o painel de templates.
 <br>
 
@@ -117,7 +117,7 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
 
 **👤 neste computador** (embaixo):
 
-- **presets de render** → os dois templates de output do **seu** After Effects que o botão **Render** da barra (O FORNO) usa: **render final** (o clique: na pasta de output do projeto, com o nome da comp) e **preview** (o clique direito: na pasta de previews das saídas, `COMP_prev_v01`, `_v02`…, sem substituir o anterior). cada pessoa tem a sua lista de presets, por isso ficam só neste computador. sem preset escolhido, a fila usa o padrão do After. se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para a [pasta de saída](#-produções) deste computador (vazia: a Área de Trabalho). a lista é lida do After quando a aba abre.
+- **presets de render** → os dois presets de render do **seu** After Effects que o botão **Render** da barra (O FORNO) usa: **render final** (o clique: na pasta de output do projeto, com o nome da comp) e **preview** (o clique direito: na pasta de previews das saídas, `COMP_prev_v01`, `_v02`…, sem substituir o anterior). cada pessoa tem a sua lista de presets, por isso ficam só neste computador. sem preset escolhido, a fila usa o padrão do After. se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para o [output local](#-templates) deste computador (vazio: a Área de Trabalho). a lista é lida do After quando a aba abre.
 - **pasta dos projetos** → para onde vai o projeto de uma atração nova quando a pasta do tipo não pode ser acessada (rede fora ou modo local), na estrutura `{tipo}/{atracao}`. vazia, a Área de Trabalho.
 
 > 🚩 *obs:* uma atração que já existe (achada pelo nome) continua indo para a pasta dela; os caminhos dos tipos valem só para a atração nova.
@@ -188,7 +188,7 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 - **tipos de item** → comps de render, comps editáveis, outras comps, vídeos, imagens, sequências de imagens (na pasta das imagens, por padrão), áudio, sólidos, dados e arquivos ausentes. arraste um tipo (o cartão da direita ou a etiqueta na árvore) para a pasta que deve recebê-lo; uma pasta pode receber mais de um tipo. cada cartão mostra onde o tipo está. o **×** da etiqueta (ou soltar o tipo na raiz) tira o tipo da pasta.
 - **comps de render** → a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
 - **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
-- **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às comps criadas pelos templates. precisa conter um dos termos de render.
+- **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às versões criadas ao preencher um template. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
 - **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC). os campos de termos desta aba mostram cada termo como um **chip**.
 - **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
@@ -334,7 +334,7 @@ a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma fer
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
   - as atrações novas vão para a [pasta dos projetos](#-projeto) daqui (sem ela, a Área de Trabalho).
-  - **todos** os renders da fila vão para a [pasta de saída](#-templates) daqui (sem ela, a Área de Trabalho).
+  - **todos** os renders da fila vão para o [output local](#-templates) daqui (sem ele, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
   - o ícone na ponta da barra oposta à do pãozinho (à esquerda; na vertical, no topo) mostra o modo: **servidor** na rede, **servidor com o alerta amarelo** quando a rede caiu e **notebook** no modo local ligado por você. um clique no servidor abre a aba **rede**; no notebook, esta aba. a aba meu usuário também avisa quando a rede caiu.
 

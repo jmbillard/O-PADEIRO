@@ -139,14 +139,14 @@ PADX.renderQueue = function (a) {
 			var settings = padReadCollect();
 
 			folder = padCollectRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
-		} else warnings.push('o projeto ainda não foi salvo: o preview vai para a pasta de saída deste computador.');
+		} else warnings.push('o projeto ainda não foi salvo: o preview vai para o output local.');
 	} else if (padLocalMode()) {
-		warnings.push('modo local: o render vai para a pasta de saída deste computador.');
+		warnings.push('modo local: o render vai para o output local.');
 	} else {
 		var output = padMetaRead().output;
 
 		if (output) folder = padMountedPath(padPath(output));
-		else warnings.push('o projeto não tem pasta de output (A CLAQUETE grava): o render vai para a pasta de saída deste computador.');
+		else warnings.push('o projeto não tem pasta de output (A CLAQUETE grava): o render vai para o output local.');
 	}
 
 	// a pasta que ainda não existe é criada (na rede, só dentro de um volume montado de verdade)
@@ -158,7 +158,7 @@ PADX.renderQueue = function (a) {
 		}
 
 		if (!new Folder(folder).exists) {
-			warnings.push('#PAD_019 - a pasta não pode ser acessada (vai para a pasta de saída deste computador): ' + padDisplayPath(folder));
+			warnings.push('#PAD_019 - a pasta não pode ser acessada (vai para o output local): ' + padDisplayPath(folder));
 			folder = '';
 		}
 	}

@@ -14,20 +14,20 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 | :---: | --- | :---: | --- |
 | ❶ | **busca**: filtra enquanto você digita | ❶ | o template **selecionado** |
 | ❷ | **fixados, recentes e novos** em cartões, com a prévia grande (a ★ fixa) | ❷ | **preview** (imagem ou vídeo) |
-| ❸ | na lista, a **miniatura** cresce até o tamanho dos cartões no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por informação, linha vazia separa as versões |
+| ❸ | na lista, a **miniatura** cresce até o tamanho dos cartões no template escolhido e ao passar o mouse | ❸ | **input**: uma linha por campo, linha vazia separa os blocos |
 | ❹ | **atualizar**: lê a pasta de novo | ❹ | **dicas** de preenchimento |
 | ❺ | **abrir a pasta** de templates | ❺ | **importar** sem preencher |
 | ❻ | **produção**: a pasta de templates mostrada | ❻ | **pasta de output** do template |
 | ❼ | **⋯**: configuração, ajuda e recarregar | ❼ | **Preencher** (`Ctrl/Cmd+Enter`) |
 
-**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que [A FORMA](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse, até o tamanho das dos cartões; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. prévias com transparência ficam sobre um quadriculado. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
+**as prévias na lista** → cada template mostra a prévia dele, o `<template>_preview.png` que o [criar](criador.md) grava ao lado do `.aep` / `.aet`: na lista, uma miniatura pequena que cresce no template escolhido e ao passar o mouse, até o tamanho das dos cartões; nos fixados, recentes e novos, cartões em três colunas, com a prévia grande. prévias com transparência ficam sobre um quadriculado. sem prévia, fica o ícone de arquivo. as imagens carregam só quando aparecem na lista e ficam guardadas pelo painel: a lista continua abrindo na hora.
 
 1. `◖ clique esquerdo` em **templates**, na barra, e em **preencher**, na gaveta que abre.
 2. busque ou navegue pelas pastas.
 3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
 5. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
-6. o botão '*Preencher… e pôr na fila*' preenche e já cria a fila de render, com o preset lembrado (o do template, o último usado ou o H.264). para revisar antes a ordem, o que fica de fora e o preset, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila pede o template de output e '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). sem preset nenhum, a tela da fila aparece mesmo desligada.
+6. o botão '*Preencher… e pôr na fila*' preenche e já cria a fila de render, com o preset lembrado (o do template, o último usado ou o H.264). para revisar antes a ordem, o que fica de fora e o preset, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila pede o preset de render e '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). sem preset nenhum, a tela da fila aparece mesmo desligada.
 
 ### a lista
 
@@ -62,7 +62,7 @@ no topo da lista, antes das pastas, ficam três atalhos:
   - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **neste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos que o limite.
 - **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **neste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
-- **preset de render** → fixados e recentes lembram o último template de output usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
+- **preset de render** → fixados e recentes lembram o último preset de render usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 
 > 🚩 *obs:*\
@@ -73,7 +73,7 @@ no topo da lista, antes das pastas, ficam três atalhos:
 ### o template
 
 - **preview** → a imagem `_preview.png` do template (transparências aparecem sobre um fundo xadrez). se existir um vídeo `_preview.webm` (ou `.mp4`), ele toca em loop e o mouse passa pelos quadros, como o thumbnail do Premiere.
-- **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma comp (o contador mostra quantos itens o texto tem).
+- **input** → o texto que preenche o template. cada bloco separado por uma **linha vazia** vira uma versão (uma por variação de layout, se o template tiver). o contador mostra quantos blocos o texto tem.
 - **dicas** → como preencher esse template.
 - **abrir output** (o botão redondo com a pastinha, no rodapé) → abre as pastas de output do template (com os tokens de data, como `{ano}`, já trocados).
 - **avisos** → com o template à vista, os avisos (erros de output, config salva, fontes) aparecem logo abaixo do preview, sem repetir mensagens iguais, e fecham no ×.
@@ -97,11 +97,11 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![fila de render](images/templates-fila.webp)
 
-depois de preencher, o padeiro mostra cada comp criada e pede o **template de output** (os presets do After Effects). as saídas vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), a saída vai para a pasta de saída deste computador ([configuração > meu usuário](producoes.md)) e aparece o aviso `#PAD_019`. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
+depois de preencher, o padeiro mostra cada versão criada e pede o **preset de render** (os presets de output module do After Effects). os outputs vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), o output vai para o **output local**, uma pasta deste computador ([configuração > templates](producoes.md#-templates)) e aparece o aviso `#PAD_019`. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
 
 - **ordem** → arraste cada comp pelo puxador (os pontinhos à esquerda) para mudar a ordem da fila; os números acompanham.
 - **lixeira** (à direita de cada comp) → tira a comp da fila de render; ela continua no projeto. '*desfazer*', logo abaixo da lista, devolve.
-- **voltar e desfazer** (a seta no rodapé, à esquerda) → antes de criar a fila, desfaz o preenchimento inteiro: o template importado e as comps criadas saem do projeto, as pastas e as configurações voltam a como estavam, e o painel volta para o input, com o texto digitado (é só ajustar e preencher de novo).
+- **voltar e desfazer** (a seta no rodapé, à esquerda) → antes de criar a fila, desfaz o preenchimento inteiro: o template importado e as versões criadas saem do projeto, as pastas e as configurações voltam a como estavam, e o painel volta para o input, com o texto digitado (é só ajustar e preencher de novo).
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
 
@@ -130,14 +130,14 @@ o padeiro executa as seguintes tarefas, em ordem:
 sem script nenhum, o template também pode decidir o nome das comps: o **último layer** da comp principal sendo um layer de **texto** chamado `script_template_name`, o texto dele vira o nome da comp. sem esse layer, o nome segue o padrão (`PREFIXO - INFORMAÇÕES SUFIXO`).
 
 - o nome sai em maiúsculas e sem acentos.
-- o padeiro lê o texto depois de preencher os layers editáveis: com uma **expressão** no texto do layer, o nome pode juntar as informações do jeito que o template quiser.
-- vale também para o **renomear** da barra: as comps (`◖`) e as saídas de render (`◗`) com esse layer recebem o nome dele.
+- o padeiro lê o texto depois de preencher os layers editáveis: com uma **expressão** no texto do layer, o nome pode juntar os campos do jeito que o template quiser.
+- vale também para o **renomear** da barra: as comps (`◖`) e os outputs da fila (`◗`) com esse layer recebem o nome dele.
 - deixe o layer como **guide layer** (ou com o olho desligado): ele está lá só para o nome, não aparece no render.
 - com o nome vindo do layer, o sufixo das [variações de layout](criador.md#variações-de-layout) **não** entra sozinho: se precisar, a expressão monta (exemplo 3).
 
 **exemplos** (a expressão vai no *Source Text* do layer `script_template_name`):
 
-**1 · o nome com as informações em outra ordem**: o cargo antes do nome.
+**1 · o nome com os campos em outra ordem**: o cargo antes do nome.
 
 ```js
 "RDP - " + thisComp.layer("CARGO").text.sourceText + " " + thisComp.layer("NOME").text.sourceText
@@ -160,7 +160,7 @@ var lado = thisComp.layer("CTRL").effect("layout")("Menu").value == 1 ? "ESQ" : 
 ```
 → `TARJA - JOAO BOSCO ESQ` e `TARJA - JOAO BOSCO DIR`
 
-**4 · um nome fixo com a informação que varia**: o mesmo nome para todas as versões, mudando só o número.
+**4 · um nome fixo com o campo que varia**: o mesmo nome para todas as versões, mudando só o número.
 
 ```js
 "PLACAR RODADA " + thisComp.layer("RODADA").text.sourceText
@@ -169,7 +169,7 @@ var lado = thisComp.layer("CTRL").effect("layout")("Menu").value == 1 ? "ESQ" : 
 
 ### script do template (`_script.js`)
 
-um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO.aet` → `RODAPE CONVIDADO_script.js`. o padeiro roda esse script **no fim do preenchimento**, depois de criar e organizar as comps e montar a fila de render (ou de concluir sem fila). serve para o que é específico de um template: mexer num efeito a partir do texto, mudar a cor de um label, ajustar a saída de render, ou fazer o preenchimento inteiro de um jeito próprio.
+um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO.aet` → `RODAPE CONVIDADO_script.js`. o padeiro roda esse script **no fim do preenchimento**, depois de criar e organizar as comps e montar a fila de render (ou de concluir sem fila). serve para o que é específico de um template: mexer num efeito a partir do texto, mudar a cor de um label, ajustar um output da fila, ou fazer o preenchimento inteiro de um jeito próprio.
 
 - o script roda dentro do After Effects, em **ExtendScript** (JavaScript antigo, ES3: `var`, `function`, sem `let`, `const`, arrow functions ou template strings), com acesso a tudo do After Effects (`app`, `app.project`…).
 - um erro no script aparece no painel com o código `#PAD_021`; o preenchimento fica feito, e o painel fica aberto para mostrar o erro.
@@ -180,8 +180,8 @@ um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO
 | variável | o que tem | exemplo |
 | --- | --- | --- |
 | `templateData` | a configuração do template (o `_config.json`, já com os valores padrão do que faltar) | `templateData.configName` → `'CONVIDADO'` |
-| `inputTextArray` | o input do painel, uma posição por **versão** (separadas por linha vazia), já na caixa do template | `['ANA MARIA\nAPRESENTADORA', 'JOÃO\nCONVIDADO']` |
-| `newCompsArray` | as comps criadas, na ordem do preenchimento (cada versão × cada variação de layout) | `newCompsArray[0].name` → `'RDP - ANA MARIA APRESENTADORA'` |
+| `inputTextArray` | o input do painel, uma posição por **bloco** (separados por linha vazia), já na caixa do template | `['ANA MARIA\nAPRESENTADORA', 'JOÃO\nCONVIDADO']` |
+| `newCompsArray` | as versões criadas, na ordem do preenchimento (cada bloco × cada variação de layout) | `newCompsArray[0].name` → `'RDP - ANA MARIA APRESENTADORA'` |
 | `newOutputsArray` | os módulos de output criados na fila de render (um por comp e pasta de output). **vazio** quando o preenchimento termina sem fila | `newOutputsArray[0].file` |
 
 **`templateData`** tem os campos do `_config.json`:
@@ -194,20 +194,20 @@ um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO
 | `prefix` | o prefixo do nome das comps (ex: `'RDP'`); com `ignore` no prefixo, o padeiro não duplica nem preenche nada (veja o exemplo 5) |
 | `refTime` | o tempo de referência, em segundos (o frame do preview) |
 | `textCase` | a caixa: `'upperCase'`, `'lowerCase'`, `'titleCase'` ou `'freeCase'` |
-| `separator` | o separador de informações (`'\n'` = quebra de linha) |
+| `separator` | o separador de campos (`'\n'` = quebra de linha) |
 | `inputLayers` | os layers editáveis: `[{ layerIndex, method }]` (`method`: `'textContent'` ou `'layerName'`) |
 | `inputFx` | as variações de layout, se houver: `{ layerIndex, fxName, optionIndex, options, kind }` |
 | `exemple` / `tip` | o exemplo de preenchimento e as dicas |
-| `importPath` / `outputPath` | a pasta de mídias e as pastas de output (`outputPath` é uma lista) |
+| `importPath` / `outputPath` | a pasta de import e as pastas de output (`outputPath` é uma lista) |
 
 > 🚩 *obs:*\
-> • para separar as informações de uma versão, use o mesmo separador do template: `inputTextArray[0].split(templateData.separator == '\n' ? /[\n\r]/ : templateData.separator)`.\
-> • com variações de layout, `newCompsArray` tem uma comp por versão **e** por opção: com 2 versões e as opções `E` e `D`, são 4 comps (versão 1 E, versão 1 D, versão 2 E, versão 2 D).\
+> • para separar os campos de um bloco, use o mesmo separador do template: `inputTextArray[0].split(templateData.separator == '\n' ? /[\n\r]/ : templateData.separator)`.\
+> • com variações de layout, `newCompsArray` tem uma versão por bloco **e** por opção: com 2 blocos e as opções `E` e `D`, são 4 versões (bloco 1 E, bloco 1 D, bloco 2 E, bloco 2 D).\
 > • as variáveis são as mesmas do padeiro antigo (v1): os scripts que já existem continuam funcionando.
 
 #### exemplos
 
-**1 · a cor do label e um comentário nas comps criadas**
+**1 · a cor do label e um comentário nas versões criadas**
 
 ```js
 for (var i = 0; i < newCompsArray.length; i++) {
@@ -216,7 +216,7 @@ for (var i = 0; i < newCompsArray.length; i++) {
 }
 ```
 
-**2 · desligar o fundo quando a 2ª informação vem vazia** (ex: só o nome, sem o cargo)
+**2 · desligar o fundo quando o 2º campo vem vazio** (ex: só o nome, sem o cargo)
 
 ```js
 var sep = templateData.separator == '\n' ? /[\n\r]/ : templateData.separator;
@@ -244,7 +244,7 @@ for (var i = 0; i < newCompsArray.length; i++) {
 }
 ```
 
-**4 · a saída de render com a data no nome do arquivo**
+**4 · o output da fila com a data no nome do arquivo**
 
 ```js
 var d = new Date();
@@ -294,7 +294,7 @@ o lápis ao lado do nome do template abre um formulário para o `_config.json`: 
 
 ## a forminha
 
-**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma duplicata por versão do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto.
+**A FORMINHA** é o preenchimento **leve**: duplica a **comp aberta** e preenche os **layers de texto selecionados**, uma versão por bloco do input. não precisa de template, não importa nada e não grava nenhum arquivo: tudo acontece no projeto aberto.
 
 abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 
@@ -305,19 +305,19 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 | ❶ | **a comp aberta**: o nome de hoje, com o trecho que muda marcado (a dica explica a regra do nome) |
 | ❷ | **os layers de texto selecionados**, numerados na ordem em que recebem as linhas (de cima para baixo na comp); o de contorno azul está no nome da comp |
 | ❸ | **a caixa**: `AA`, `aa` e `Aa` passam todo o texto do input para caixa alta, baixa ou de título |
-| ❹ | **o input**: linha vazia separa as versões. com 1 layer, a versão inteira (pode ter várias linhas) vai para ele; com 2 ou mais, o texto de cada layer é separado por uma linha com o **separador** (`---` por padrão, no campo ao lado da caixa) |
+| ❹ | **o input**: linha vazia separa os blocos. com 1 layer, o bloco inteiro (pode ter várias linhas) vai para ele; com 2 ou mais, o texto de cada layer é separado por uma linha com o **separador** (`---` por padrão, no campo ao lado da caixa) |
 | ❺ | **o nome da comp** de cada versão, **editável** |
 | ❻ | **a situação**: ✓ tudo certo ou ⚠ atenção, com o motivo na dica |
 | ❼ | **Duplicar**: cria as comps (`Ctrl/Cmd+Enter`) |
 
 1. abra a comp e selecione os layers de texto que mudam de uma versão para a outra. a janela acompanha a seleção (o botão redondo do rodapé lê de novo na hora).
-2. digite o input. cada versão vira uma linha da tabela, com o texto dela em chips e o nome que a duplicata vai ter.
-3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as duplicatas ficam na mesma pasta do projeto que a comp original, que não muda.
+2. digite o input. cada bloco vira uma linha da tabela, com o texto dele em chips e o nome que a versão vai ter.
+3. confira os nomes (dá para trocar qualquer um) e clique em **Duplicar**. as versões ficam na mesma pasta do projeto que a comp original, que não muda.
 4. a janela mostra o **andamento**: a barra de progresso e, na tabela, cada comp na fila (–), sendo criada (o anel girando) e criada (✓). no fim, o botão ao lado de cada uma abre a comp; a **seta** do rodapé volta para um preenchimento novo, com o input limpo.
 
 > 🚩 *obs:* para a barra andar, as comps são criadas uma por vez: cada uma é um passo de desfazer do After (`Ctrl/Cmd+Z` desfaz a última criada).
 
-- **texto com várias linhas** → o texto de um layer pode ter quantas linhas quiser. com **1 layer**, cada versão inteira vai para ele. com **2 ou mais**, separe o texto de cada layer com uma linha só com o separador:
+- **texto com várias linhas** → o texto de um layer pode ter quantas linhas quiser. com **1 layer**, cada bloco inteiro vai para ele. com **2 ou mais**, separe o texto de cada layer com uma linha só com o separador:
 
   ```
   JOÃO GOMES
@@ -332,22 +332,22 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 
   o separador fica no campo ao lado da caixa do texto (o último usado volta na próxima vez). **vazio**, vale uma linha por layer, sem separador.
 - **parte vazia** → uma parte sem texto entre dois separadores (ou antes do primeiro) fica no lugar dela: o layer dela é **escondido** e os textos seguintes continuam nos layers certos.
-- **partes a menos** → o layer que fica sem texto é **escondido** naquela duplicata (como no preenchimento completo).
+- **partes a menos** → o layer que fica sem texto é **escondido** naquela versão (como no preencher).
 - **partes a mais** → as que sobram são **ignoradas** e aparecem riscadas entre os chips da versão.
 - **os avisos** → ficam no ícone de cada linha da tabela, com o motivo na dica: linha ignorada, layer escondido, nome que já existia.
 
-### o nome das duplicatas
+### o nome das versões
 
 - **pelo nome da comp** → o padeiro compara o nome da comp com o texto dos layers selecionados. cada trecho do nome que é o texto de um layer vira a parte que muda; o resto (o prefixo, o separador) fica como está. `RDP - ANA MARIA` com o layer "ANA MARIA" selecionado dá `RDP - JOAO GOMES`; com dois layers no nome (`RDP - ANA MARIA APRESENTADORA`), os dois trechos mudam. o layer escondido (sem linha) sai do nome.
-- **sem trecho nenhum** → se o nome da comp não tem o texto de nenhum layer selecionado, a duplicata leva o nome da comp, o separador e a primeira linha da versão.
+- **sem trecho nenhum** → se o nome da comp não tem o texto de nenhum layer selecionado, a versão leva o nome da comp, o separador e a primeira linha do bloco.
 - **a regra do renomear** → o texto que entra no nome passa pela regra da [configuração > renomear](producoes.md#-renomear) (caixa, acentos, separador). o texto do layer fica como foi digitado: `João Gomes` no layer, `RDP - JOAO GOMES` no nome.
 - **nome que já existe** → ganha um sufixo (`_2`, `_3`…), avisado no ícone da linha.
-- **o layer de nome** → a comp com o layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name) leva o texto dele, como no preenchimento completo. o campo do nome aparece vazio ("pelo layer de nome"), porque o texto só existe depois de preencher.
+- **o layer de nome** → a comp com o layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name) leva o texto dele, como no preencher. o campo do nome aparece vazio ("pelo layer de nome"), porque o texto só existe depois de preencher.
 - **o nome digitado é absoluto** → o que você digitar no campo do nome vale como está: sem a regra, sem sufixo e por cima até do layer de nome. a seta ao lado volta ao nome sugerido.
 
 > 🚩 *obs:*\
-> • a forminha não cria fila de render, não confere fontes e não roda script de template: para isso, use o preenchimento completo.\
-> • a comparação do nome ignora a caixa e os acentos, mas o texto do layer precisa estar inteiro no nome da comp. um nome abreviado à mão (`RDP - ANA M`) não é reconhecido, e a duplicata cai na regra "sem trecho nenhum".
+> • a forminha não cria fila de render, não confere fontes e não roda script de template: para isso, use o preencher.\
+> • a comparação do nome ignora a caixa e os acentos, mas o texto do layer precisa estar inteiro no nome da comp. um nome abreviado à mão (`RDP - ANA M`) não é reconhecido, e a versão cai na regra "sem trecho nenhum".
 
 ## 📍 teclado
 
@@ -374,10 +374,10 @@ abre pelo botão **Duplicar**, na gaveta **Templates** da barra.
 
 `CONFIRA SEMPRE AS COMPOSIÇÕES CRIADAS, SEU CONTEÚDO E O CAMINHO DO OUTPUT!`
 
-os layouts dos templates podem variar para exibir ou omitir informações, então o resultado final pode ficar diferente do preview.
+os layouts dos templates podem variar para exibir ou omitir campos, então o resultado final pode ficar diferente do preview.
 
 > 📋 *exemplo:*\
-> as comps criadas podem ter layers omitidos por falta de conteúdo ou elementos com cores diferentes das do preview.
+> as versões criadas podem ter layers omitidos por falta de conteúdo ou elementos com cores diferentes das do preview.
 
 cada template deve ter uma imagem com o **mesmo nome exato** do template seguido de '*_preview.png*' e um arquivo de configuração '*_config.json*'.
 
@@ -389,7 +389,7 @@ sem um caminho de output (ou se a pasta não existir) e sem separador, valem os 
 > • **output padrão** → '*~/Desktop*'.\
 > • **separador padrão** → '*---*'.
 
-a quebra de linha '*\n*' também pode ser o separador: útil para dividir a mesma informação em layers com formatações diferentes.
+a quebra de linha '*\n*' também pode ser o separador: útil para dividir o mesmo texto em layers com formatações diferentes.
 
 > 📋 *exemplo:*\
 > o nome *"Lima\nDuarte"*, em duas linhas, com *"Lima"* em uma fonte light e *"Duarte"* em uma fonte bold.

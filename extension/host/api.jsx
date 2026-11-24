@@ -1096,8 +1096,8 @@ PADX.saveTemplateConfig = function (a) {
 	for (var l = 0; l < cfg.inputLayers.length; l++) {
 		var layer = cfg.inputLayers[l];
 
-		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('#PAD_044 - índice de layer inválido na informação ' + (l + 1));
-		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('#PAD_044 - método inválido na informação ' + (l + 1));
+		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('#PAD_044 - índice de layer inválido no campo ' + (l + 1));
+		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('#PAD_044 - método inválido no campo ' + (l + 1));
 	}
 
 	// efeito de variações é opcional
@@ -1825,7 +1825,7 @@ PADX.queueBegin = function (a) {
 	var run = PADX_run;
 
 	if (!run) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
-	if (!a.outputTemplate) throw new Error('#PAD_048 - selecione um template de output');
+	if (!a.outputTemplate) throw new Error('#PAD_048 - selecione um preset de render');
 
 	var warnings = [];
 	var outputs = [];
@@ -1855,7 +1855,7 @@ PADX.queueBegin = function (a) {
 		}
 
 		if (!new Folder(outputPath).exists) {
-			warnings.push('#PAD_019 - output não pode ser acessado (vai para a pasta deste computador): ' + padDisplayPath(outputPath));
+			warnings.push('#PAD_019 - output não pode ser acessado (vai para o output local): ' + padDisplayPath(outputPath));
 			outputPath = padPath(localOutput);
 		}
 
