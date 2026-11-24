@@ -23,6 +23,8 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
 - **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
   `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
   `ui-states.js`.
+- **Guia de UI:** `docs/guia-ui.md` vale para toda janela e todo mockup. Ex.: item escolhido numa lista ganha fundo
+  suave, nunca uma faixa de cor num lado só.
 - **Teste:** tudo roda no navegador com `extension/client/js/mock-host.js` no lugar do After Effects. Nada disso é
   teste no After de verdade: dizer isso ao relatar.
 
