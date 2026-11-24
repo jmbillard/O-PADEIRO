@@ -176,6 +176,26 @@ body.project-page {
   width: 150px;
   min-width: 0;
   flex: 0 1 auto;
+  transition:
+    width 220ms var(--ease-soft, ease),
+    margin 220ms var(--ease-soft, ease),
+    opacity 160ms ease;
+}
+
+/* com a lista da atração aberta (os cards, os filmes), ela fica com a largura toda: o designer recolhe (e sai do
+   Tab enquanto isso) */
+.ed-row.is-listing .ed-user {
+  width: 0;
+  margin-left: -8px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    width 220ms var(--ease-soft, ease),
+    margin 220ms var(--ease-soft, ease),
+    opacity 160ms ease,
+    visibility 0s linear 220ms;
 }
 
 .ed-row .cfg-input {
@@ -722,41 +742,61 @@ body.project-page {
   padding-right: 52px;
 }
 
-/* o ano do projeto (na linha do título, antes do designer): um clique troca; outro ano que não o de agora, em destaque */
-.wz-year {
+/* as regras automáticas (passo 2): chips perto do caminho, cada um com de onde veio (pelo card, este ano, produção…);
+   um clique troca. trocado à mão, em destaque */
+.wz-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.wz-rules[hidden] {
+  display: none;
+}
+
+.wz-rule {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border: 0;
+  gap: 5px;
+  padding: 4px 10px 4px 8px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  background: var(--surface-soft);
-  color: var(--text-secondary);
+  background: var(--surface);
+  color: var(--text-primary);
   cursor: pointer;
   font: inherit;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.66rem;
+  font-weight: 750;
   transition:
     background-color 140ms ease,
+    border-color 140ms ease,
     color 140ms ease;
 }
 
-.wz-year svg {
+.wz-rule svg {
   width: 13px;
   height: 13px;
   fill: none;
-  stroke: currentcolor;
+  stroke: var(--blue-500);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
 }
 
-.wz-year:hover {
-  background: var(--surface-muted);
+.wz-rule span {
+  color: var(--text-tertiary);
+  font-weight: 600;
 }
 
-.wz-year.is-on {
+.wz-rule:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-soft);
+}
+
+.wz-rule.is-on {
+  border-color: var(--blue-300);
   background: var(--blue-50);
   color: var(--blue-500);
 }
@@ -1415,4 +1455,214 @@ body.project-page {
 #claq-out.wz-out {
   padding-top: 14px;
   padding-bottom: 18px; /* um respiro entre o output e o botão do rodapé */
+}
+
+/* =========================================================
+   os grupos da busca (NO TRELLO, FILMES, ATRAÇÕES, NOVA): o "+N outros" de cada grupo
+   ========================================================= */
+.combo-more {
+  margin: 0;
+  padding: 1px 14px 5px 46px;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* o card numa linha: o nome da atração em destaque, a claquete embaixo, "seu" e o status como etiqueta */
+.card-row .film-text {
+  gap: 1px;
+}
+
+.card-row .combo-title {
+  color: var(--text-primary);
+}
+
+.card-mine {
+  margin-left: 6px;
+  color: var(--blue-500);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.card-who,
+.card-none {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.card-status {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.card-status.is-doing {
+  background: var(--blue-50);
+  color: var(--blue-500);
+}
+
+.card-status.is-wait {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+/* o card de filme: o pôster no lugar do ícone */
+.combo-item.card-row.is-film {
+  gap: 12px;
+  padding-block: 6px;
+}
+
+/* o card escolhido, embaixo do campo (só como referência): o ícone, a claquete, quem e a atração, e o status */
+.card-info {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px; /* concêntrico: raio do ícone (6) + respiro (13) + borda (1) */
+  background: var(--surface-soft);
+}
+
+.card-info[hidden],
+.card-nova[hidden] {
+  display: none;
+}
+
+.card-info .card-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--blue-100, #e8eeff);
+  color: var(--blue-500);
+}
+
+.card-info .card-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.card-info .card-icon svg rect + rect {
+  fill: currentColor;
+  stroke: none;
+}
+
+.card-info-text {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.card-info-text > b {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-info-sub {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-info-sub b {
+  color: var(--text-primary);
+}
+
+/* o card sem atração: o nome sugerido (editável) e os tipos */
+.card-nova {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.card-nova .cat-chips {
+  padding: 0;
+}
+
+.card-nova .cat-path {
+  padding: 0 2px;
+}
+
+/* sem o tipo da atração nova do card, o resto da tela espera */
+#sc-claquete.is-novatype #claq-rest,
+#sc-claquete.is-novatype #claq-out {
+  display: none;
+}
+
+#sc-claquete.is-novatype > .wz-foot {
+  margin-top: auto;
+}
+
+/* JÁ NA PASTA: a subpasta antes do nome, os do card em destaque (fundo suave e a etiqueta CARD) */
+.wz-file-name small {
+  font-size: inherit;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.wz-file.is-card {
+  background: var(--waiting-bg);
+  color: var(--text-primary);
+}
+
+.wz-file.is-card svg {
+  stroke: var(--waiting);
+  opacity: 1;
+}
+
+.wz-file.is-card.is-on {
+  background: rgb(var(--accent-rgb) / 14%);
+}
+
+.wz-file.is-card.is-on svg {
+  stroke: var(--blue-500);
+}
+
+.wz-file-tag {
+  flex: 0 0 auto;
+  color: var(--waiting);
+  font-size: 0.55rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.wz-files-sep {
+  flex: 0 0 auto;
+  width: calc(100% - 16px);
+  height: 1px;
+  margin: 4px 8px;
+  border: 0;
+  background: var(--border);
+}
+
+.wz-files-hint {
+  flex: 0 0 auto;
+  margin: 0 8px 2px;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
 }

@@ -17,7 +17,18 @@ const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
 // index.html?lists: dois fixados e um recente na lista de templates do mock
 const LISTS = { 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/mock/RODAPES/RODAPE PLACAR.aep'], recents: ['/mock/TEMPLATES PADEIRO/LETTERING SOLTO.aep'], renderPresets: {} } };
 
-const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'film' }] };
+// os tipos de projeto: um com {atracao}, o de filmes e um fixo (MOOD MENSAL: o tipo é a atração, o mês pelo card)
+const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}/{ano}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'pelicula' }, { name: 'MOOD MENSAL', path: '/Volumes/VFX/MOOD MENSAL/{ano_proximo_mes}/{proximo_mes_num} {proximo_mes}', output: '/Volumes/OUT/MOOD MENSAL/{ano_proximo_mes}', file: '{proximo_mes} NA GLOBO {o_que_e}', icon: 'calendario' }] };
+
+// a janela de projeto: digita no campo (como uma pessoa, para a busca responder) e escolhe a linha da lista
+async function projectPick(page, text, row) {
+	await page.click('#claq');
+	await page.type('#claq', text, { delay: 20 });
+	await page.waitForTimeout(1300);
+	if (!row) return;
+	await page.locator('#atr-list ' + row).first().click();
+	await page.waitForTimeout(1500);
+}
 
 // O ARQUIVISTA abre vazio: a pasta é digitada no campo (o mock responde com uma pasta de exemplo)
 async function filesFolder(page) {
@@ -127,6 +138,38 @@ const CHECKS = [
 	['projeto: pastas da atração', 'project.html', async (p) => {
 		await p.fill('#claq', 'domingao com huck/');
 		await p.waitForTimeout(1000);
+	}],
+	// os três passos: os grupos (NO TRELLO com "seu" e o status, a NOVA), o card escolhido (dois .aep em destaque, o
+	// chip do ano pelo card), o card sem atração (o nome sugerido e os tipos), o card de filme (o pôster) e o tipo fixo
+	['projeto: no trello', 'project.html', (p) => projectPick(p, 'premio')],
+	['projeto: card escolhido', 'project.html', (p) => projectPick(p, 'premio', '.card-row')],
+	['projeto: card escolhido, ano trocado', 'project.html', async (p) => {
+		await projectPick(p, 'premio', '.card-row');
+		await p.click('.wz-rule');
+		await p.waitForTimeout(1200);
+	}],
+	['projeto: card sem atração', 'project.html', (p) => projectPick(p, 'summer', '.card-row')],
+	['projeto: card sem atração, tipo escolhido', 'project.html', async (p) => {
+		await projectPick(p, 'summer', '.card-row');
+		await p.locator('#card-nova .cat-chip').first().click();
+		await p.waitForTimeout(1500);
+	}],
+	['projeto: card de filme', 'project.html', (p) => projectPick(p, 'encanto')],
+	['projeto: card de filme escolhido', 'project.html', (p) => projectPick(p, 'encanto', '.card-row')],
+	['projeto: filmes a produzir e já tem projeto', 'project.html', (p) => projectPick(p, 'de')],
+	['projeto: filme com subpasta', 'project.html', (p) => projectPick(p, 'flores', '.film-row')],
+	['projeto: tipo fixo pelo card', 'project.html', (p) => projectPick(p, 'mood', '.card-row')],
+	['projeto: editor com a lista', 'project.html?mock=created', async (p) => {
+		await p.fill('#ed-atracao', '');
+		await p.type('#ed-atracao', 'premio', { delay: 20 });
+		await p.waitForTimeout(1300);
+	}],
+	['projeto: editor trocado por um card', 'project.html?mock=created', async (p) => {
+		await p.fill('#ed-atracao', '');
+		await p.type('#ed-atracao', 'premio', { delay: 20 });
+		await p.waitForTimeout(1300);
+		await p.locator('#ed-atr-list .card-row').first().click();
+		await p.waitForTimeout(800);
 	}],
 	['busca', 'finder.html'],
 	['conversor', 'converter.html', async (p) => {

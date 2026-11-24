@@ -25,6 +25,8 @@
 			</div>
 			<!-- a pasta do projeto (com a atração escolhida): o clique abre a pasta -->
 			<button type="button" class="wz-path" id="claq-path" hidden></button>
+			<!-- as regras automáticas em chips trocáveis: o ano do projeto, o ano do filme, o mês do tipo fixo -->
+			<div class="wz-rules" id="claq-rules" hidden></div>
 			<!-- a busca e a lista na mesma caixa (a lista com busca, js/attractions.js) -->
 			<div class="combo combo-claq" id="claq-combo">
 			<div class="has-field-icon wz-claq combo-field">
@@ -37,6 +39,10 @@
 			</div>
 			<!-- o filme escolhido: o pôster, o título com o ano, a exibição e a etiqueta (só para conferir) -->
 			<div class="film-card" id="film-card" hidden></div>
+			<!-- o card do Trello escolhido, só como referência (a claquete, o designer, a atração e o status) -->
+			<div class="card-info" id="card-info" hidden></div>
+			<!-- o card sem atração: a atração nova com o nome tirado da claquete e os tipos -->
+			<div class="card-nova" id="card-nova" hidden></div>
 			<p class="wz-preview wz-dest" id="claq-dest"></p>
 			<p class="wz-hint" id="claq-hint"></p>
 			<!-- o resto aparece quando há algo digitado (com o campo vazio, a estrutura animada ocupa o lugar) -->

@@ -129,6 +129,33 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		return { categories: saved && saved.categories ? saved.categories : [] };
 	}
 
+	// os cards do Trello (o índice da busca, 'trello'): o designer ('des'), o status ('st') e a atração ligada no banco
+	// ('atr'). J M Billard é o designer do usuário do mock (JMBILLARD): os cards dele vêm primeiro, com "seu". um sem
+	// atração (vira atração nova), um de filme (o mesmo card do link do ENCANTO no webhook dos filmes), um do tipo fixo
+	// (MOOD MENSAL, o mês pelo card), um antigo e um finalizado (ficam de fora)
+	var MOCK_FILM_CARD = '6750aa11bb22cc33dd44ee55';
+
+	function mockCards() {
+		var at = function (days) {
+			return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+		};
+
+		return [
+			{ claq: 'Premio 2026 Ch Jor Esp G5', atr: 'Prêmio Rede Globo', des: 'J M Billard', st: 'EM APROVAÇÃO', red: 'Felipe Souza', card: '6750aa11bb22cc33dd44ee01', at: at(1) },
+			{ claq: 'VEM AI(2027)', atr: 'Vem Aí', des: 'J M Billard', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee02', at: at(2) },
+			{ claq: 'RIO SUMMER BEATS 5-12', atr: '', des: 'Ana Paula Reis', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee03', at: at(0) },
+			{ claq: 'PREMIO 2026 CH PGM LOCAL G5', atr: 'Prêmio Rede Globo', des: 'Carla Souza', st: '', card: '6750aa11bb22cc33dd44ee04', at: at(0) },
+			{ claq: 'Premio 2026 Ch Jor Esp Afil', atr: 'Prêmio Rede Globo', des: 'Cristina Vianna', st: 'EM APROVAÇÃO', card: '6750aa11bb22cc33dd44ee05', at: at(2) },
+			{ claq: 'Premio 2026 Ch Pgm Local Afil', atr: 'Prêmio Rede Globo', des: 'Bruno Lima', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee06', at: at(3) },
+			{ claq: 'Premio 2026 Conteudo Rede', atr: 'Prêmio Rede Globo', des: 'Diego Prado', st: 'EM APROVAÇÃO', card: '6750aa11bb22cc33dd44ee07', at: at(4) },
+			{ claq: 'TELA QUENTE ENCANTO 29-11', atr: '', fil: true, des: 'Fernanda Lima', st: 'PRODUZINDO', card: MOCK_FILM_CARD, at: at(1) },
+			{ claq: 'DOMINGAO 25/11', atr: 'Domingão com Huck', des: 'Ana Paula Reis', st: 'PRODUZINDO', red: 'ANA', ed: 'BETO', card: '6750aa11bb22cc33dd44ee09', at: at(2) },
+			{ claq: 'JANEIRO NA GLOBO', atr: 'MOOD MENSAL', des: 'J M Billard', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee10', at: at(1) },
+			{ claq: 'CARNAVAL 2026 ESCOLAS', atr: 'Carnaval', des: 'Diego Prado', st: 'FINALIZADO', fim: true, card: '6750aa11bb22cc33dd44ee11', at: at(1) },
+			{ claq: 'PREMIO 2025 VINHETA', atr: 'Prêmio Rede Globo', des: 'J M Billard', st: '', card: '6750aa11bb22cc33dd44ee12', at: at(30) }
+		];
+	}
+
 	function mockMachine() {
 		return JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
 	}
@@ -1220,11 +1247,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			}) };
 		},
 
-		// os filmes recentes (o webhook dos filmes): ?mock=nofilms, nenhum
+		// os filmes recentes (o webhook dos filmes): ?mock=nofilms, nenhum. o ENCANTO tem card no Trello (o 'trello' é
+		// o link do mesmo card do mockCards: o card de filme leva a ele)
 		projectFilmsRecent: function () {
 			if (/mock=nofilms/.test(location.search)) return { data: { filmes: [] } };
 
+			var day = function (n) {
+				return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+			};
+
 			return { data: { filmes: [
+				{ titulo: 'Encanto', ano: 2021, exibicao: day(5), sessao: 'Tela Quente', poster: '', trello: 'https://trello.com/c/' + MOCK_FILM_CARD + '/412-tela-quente-encanto' },
+				{ titulo: 'Flores de Aço', ano: 1989, exibicao: day(6), sessao: 'Sessão da Tarde', poster: '' },
 				{ titulo: 'Não! Não Olhe!', ano: 2022, exibicao: '2026-12-05', sessao: 'Corujão', poster: '' },
 				{ titulo: 'O Repórter da Meia-Noite', ano: 2023, exibicao: '2026-12-12', sessao: 'Supercine', poster: '' },
 				{ titulo: '90 Decibéis', ano: 2025, exibicao: '2026-11-28', sessao: 'Sessão da Tarde', poster: '' },
@@ -1240,14 +1274,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { paths: (a.parents || []).slice() };
 		},
 
-		// a pasta de cada filme já existe? (o mock: ANNA já tem)
+		// a pasta de cada filme já existe? (o mock: ANNA, numa pasta antiga sem ano, e FLORES DE AÇO já têm)
 		projectFilmsDone: function (a) {
 			var done = (a.items || []).map(function (it) {
-				return /^ANNA/i.test(it.title);
+				return /^(ANNA|FLORES)/i.test(it.title);
 			});
 
 			return { done: done, paths: (a.items || []).map(function (it, i) {
-				return done[i] ? it.parent + '/ANNA - O PERIGO TEM NOME' : '';
+				if (!done[i]) return '';
+
+				return /^ANNA/i.test(it.title) ? it.parent + '/ANNA - O PERIGO TEM NOME' : it.parent + '/FLORES DE ACO (1989)';
 			}) };
 		},
 
@@ -1256,8 +1292,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var list = [
 				{ name: 'Mais Você', pat: ['MAIS VOCE'], path: '/Volumes/PROMO_BER/BACKUP/artes/PROGRAMAS GLOBO/MAIS VOCE/2021-2026' },
 				{ name: 'Chef de Alto Nível', pat: ['CHEF'], path: V + '/PROGRAMAS/CHEF DE ALTO NIVEL/01 PROJETOS', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/CHEF DE ALTO NIVEL' },
-				// com card novo no Trello (a sugestão da claquete)
-				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026', trello: { claq: 'DOMINGAO 25/11', red: 'ANA', ed: 'BETO', card: 'aB12cD', at: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10), more: 1 } },
+				// com card novo no Trello (os cards ficam em mockCards)
+				{ name: 'Domingão com Huck', pat: ['DOMINGAO'], path: V + '/PROGRAMAS/DOMINGAO COM HUCK/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026' },
+				{ name: 'Prêmio Rede Globo', pat: ['PREMIO'], path: V + '/SHOWS/PREMIO REDE GLOBO/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/SHOWS/PREMIO REDE GLOBO/2026' },
+				{ name: 'Vem Aí', pat: ['VEM AI'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_2/PROGRAMAS/VEM AI/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/VEM AI/2026' },
+				{ name: 'Carnaval', pat: ['CARNAVAL'], path: V + '/SHOWS/CARNAVAL/2026', out: '' },
 				{ name: 'Chef Especial', pat: ['CHEF QUEM'], path: V + '/PROGRAMAS/CHEF ESPECIAL' },
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
@@ -1277,6 +1316,25 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			});
 
 			var out = [];
+			var cards = mockCards();
+			// o card de uma atração (o mais novo): o tipo fixo (MOOD MENSAL) tira o mês dele
+			var cardOf = function (m) {
+				var c = cards.filter(function (x) {
+					return x.atr && key(x.atr) === key(m.name) && !x.fim;
+				})[0];
+
+				return c ? { claq: c.claq, red: c.red || '', ed: c.ed || '', card: c.card, at: c.at, more: 0 } : null;
+			};
+			// cada palavra digitada é o começo de uma palavra do texto (como a claquete procura os cards)
+			var hits = function (text) {
+				var hw = key(text).split(' ');
+
+				return words.filter(Boolean).length && words.filter(Boolean).every(function (w) {
+					return hw.some(function (h) {
+						return h.indexOf(w) === 0;
+					});
+				});
+			};
 
 			list.forEach(function (m) {
 				var score = 0;
@@ -1286,13 +1344,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.trello || null });
+				// pela claquete de um card ligado a ela, como no índice de verdade ('summer' não; 'premio 2026 ch' sim)
+				if (!score && cards.some(function (c) {
+					return c.atr && key(c.atr) === key(m.name) && hits(c.claq);
+				})) score = 1;
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.isFilm ? null : cardOf(m) });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;
 			});
 
-			return { claquete: key(a.claquete), matches: a.claquete ? out : [] };
+			return { claquete: key(a.claquete), matches: a.claquete ? out : [], cards: cards };
 		},
 
 		projectBases: function () {
@@ -1321,18 +1383,27 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE CHROMA', modified: now - 26 * H },
 				{ name: 'MAIS VOCE SERVICO PASCOA', modified: now - 9 * 24 * H },
 				{ name: 'MAIS VOCE APRESENTACAO', modified: now - 40 * 24 * H },
-				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H }
+				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H },
+				{ name: 'MAIS VOCE RECEITA DE NATAL', sub: 'RECEITAS', modified: now - 60 * H }
 			] : !film && /PREMIO REDE GLOBO/.test(root) ? [
-				// um .aep por categoria do prêmio (o card de cada uma marca o dele)
-				{ name: 'MELHOR CHAMADA DE JORNALISMO E ESPORTE G5', modified: now - 20 * H },
-				{ name: 'MELHOR CHAMADA DE JORNALISMO E ESPORTE AFILIADA', modified: now - 22 * H },
-				{ name: 'MELHOR CHAMADA DE PROGRAMA LOCAL AFILIADA', modified: now - 30 * H },
-				{ name: 'MELHOR CHAMADA DE CONTEUDO REDE', modified: now - 70 * H }
+				// um .aep por categoria do prêmio, alguns nas subpastas da pasta de projetos (o card de cada uma destaca
+				// os dele: o PREMIO 2026 CH JOR ESP G5 tem dois)
+				{ name: 'PREMIO 2026 CH PGM LOCAL G5', modified: now - 2 * H },
+				{ name: 'PREMIO 2026 VINHETA', modified: now - 5 * 24 * H },
+				{ name: 'PREMIO 2026 CH PGM LOCAL AFIL', sub: 'AFILIADAS', modified: now - 26 * H },
+				{ name: 'PREMIO 2026 CH JOR ESP AFIL', sub: 'AFILIADAS', modified: now - 50 * H },
+				{ name: 'PREMIO 2026 CH JOR ESP G5', sub: 'CHAMADAS', modified: now - 74 * H },
+				{ name: 'PREMIO 2026 CH JOR ESP G5 V2', sub: 'CHAMADAS', modified: now - 3 * H }
+			] : /ANNA - O PERIGO/.test(root) ? [
+				{ name: 'ANNA - O PERIGO TEM NOME (2019) CHAMADA', modified: now - 30 * H }
+			] : /FLORES DE ACO/.test(root) ? [
+				{ name: 'FLORES DE ACO (1989) CHAMADA', modified: now - 4 * 24 * H },
+				{ name: 'FLORES DE ACO (1989) SERVICO', sub: 'VERSOES', modified: now - 4 * 24 * H - H }
 			] : !film && /MOOD MENSAL/.test(root) ? [
 				// o mood do mês já começado (o card do Trello abre ele)
 				{ name: 'JANEIRO NA GLOBO', modified: now - 3 * H }
 			] : [];
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base && f.ext !== 'aet'; }), user: 'JMBILLARD', output: a.output || '' };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO|ANNA - O PERIGO|FLORES DE ACO/.test(root), projectsFs: '', listed: true, fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base && f.ext !== 'aet' && !f.sub; }), user: 'JMBILLARD', output: a.output || '' };
 		},
 
 		projectCreate: function (a) {

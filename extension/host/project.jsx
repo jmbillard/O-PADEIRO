@@ -785,25 +785,36 @@ function padNewProjectPlan(a) {
 	return { settings: settings, root: root, rootExists: rootExists, projectsSub: sub, projects: projects, projectsExists: found, fileBase: fileBase };
 }
 
-// Os .aep da pasta, o último alterado primeiro: [{ name, modified (ms) }]
-function padAepList(folderPath) {
-	var folder = new Folder(folderPath);
+// Os .aep (e .aet) da pasta e das subpastas logo dentro dela (um nível só), o último alterado primeiro:
+// [{ name, ext, sub (a subpasta, '' no topo), modified (ms) }]. as pastas de autosave, logs, OLD… ficam de fora. é
+// o plano B do JÁ NA PASTA: com o Node do painel, quem lê é o painel (a rede lenta não trava o After, ADR 0003)
+function padAepList(folderPath, depth) {
 	var out = [];
 
-	if (!folder.exists) return out;
-
-	var items = folder.getFiles();
-
-	for (var i = 0; i < items.length; i++) {
-		var name = decodeURI(items[i].name);
-
-		// os .aep e os .aet (ext: a lista da claquete mostra os dois; só o .aep conta como nome repetido)
-		if (items[i] instanceof File && /\.ae[pt]$/i.test(name)) out.push({ name: name.replace(/\.ae[pt]$/i, ''), ext: /\.aet$/i.test(name) ? 'aet' : 'aep', modified: items[i].modified ? items[i].modified.getTime() : 0 });
-	}
+	padAepListInto(new Folder(folderPath), '', depth || 0, out);
 
 	return out.sort(function (a, b) {
 		return b.modified - a.modified;
 	});
+}
+
+function padAepListInto(folder, sub, depth, out) {
+	if (!folder.exists) return;
+
+	var items = folder.getFiles() || [];
+
+	for (var i = 0; i < items.length; i++) {
+		var name = decodeURI(items[i].name);
+
+		if (/^\./.test(name)) continue;
+
+		// os .aep e os .aet (ext: a lista da claquete mostra os dois; só o .aep do topo conta como nome repetido)
+		if (items[i] instanceof File && /\.ae[pt]$/i.test(name)) {
+			out.push({ name: name.replace(/\.ae[pt]$/i, ''), ext: /\.aet$/i.test(name) ? 'aet' : 'aep', sub: sub, modified: items[i].modified ? items[i].modified.getTime() : 0 });
+		} else if (depth > 0 && items[i] instanceof Folder && !padIsJunkFolder(name)) {
+			padAepListInto(items[i], name, depth - 1, out);
+		}
+	}
 }
 
 // As pastas criadas junto com o projeto novo: o .aep, as fontes, as imagens e os vídeos (e as sem tipo);
@@ -936,13 +947,15 @@ PADX.projectShape = function () {
 };
 
 // O que vai ser criado (a pasta, o nome do .aep, os .aep que já estão na pasta e o output). Não cria nada.
+// a.list === false: o painel lê os .aep da pasta pelo Node (ADR 0003); o plano vem sem a lista (existing vazio) e
+// com projectsFs, o caminho da pasta de projetos como o sistema o vê (o volume montado)
 PADX.projectPlan = function (a) {
 	var plan = padNewProjectPlan(a);
-	var existing = plan.projectsExists ? padAepList(plan.projects) : [];
+	var existing = plan.projectsExists && a.list !== false ? padAepList(plan.projects, 1) : [];
 	var rootFolder = new Folder(plan.root);
 	var exists = false;
 
-	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet') exists = true;
+	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet' && !existing[i].sub) exists = true;
 
 	var outputPath = a.output ? padMountedPath(padPath(padCleanSpaces(a.output))) : '';
 
@@ -953,6 +966,8 @@ PADX.projectPlan = function (a) {
 		projects: padDisplayPath(plan.projects),
 		projectsName: decodeURI(new Folder(plan.projects).name),
 		projectsExists: plan.projectsExists,
+		projectsFs: plan.projectsExists ? new Folder(plan.projects).fsName : '',
+		listed: a.list !== false,
 		fileBase: plan.fileBase,
 		fileName: plan.fileBase + '.aep',
 		existing: existing,
@@ -1196,13 +1211,15 @@ PADX.projectSaveNow = function () {
 
 // Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura (criada se
 // faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
-// a: { atracao, quadro, what, designer, root, output, fileBase } → projectCurrent + { moved: caminho antigo }
+// a: { atracao, quadro, what, designer, root, output, fileBase, fileName } → projectCurrent + { moved: caminho antigo }
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
+// fileName: o nome do tipo (aba PROJETO > ARQUIVO, com {o_que_e}), como no projeto novo: o tipo fixo (MOOD MENSAL)
+// mantém o nome pelo padrão dele ao salvar, em vez de virar a atração + o que é
 PADX.projectSave = function (a) {
 	padLastMkdir = '';
 
 	var file = app.project.file;
-	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root });
+	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root, fileName: a.fileName });
 
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 
