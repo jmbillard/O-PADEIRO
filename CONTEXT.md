@@ -54,8 +54,8 @@ O texto que identifica uma peça, como vem no card do Trello ou no Teams (`DOMIN
 _Avoid_: claquete para a janela de projeto
 
 **O que é**:
-A parte do nome do projeto que diz qual peça ele é (SERVIÇO, CHAMADA, CONVIDADO).
-_Avoid_: formato, peça (para esse campo)
+A parte do nome que diz qual peça é (SERVIÇO, CHAMADA, CONVIDADO), num projeto ou num template.
+_Avoid_: formato, peça (para esse campo), nome do template
 
 **Janela de projeto**:
 A janela do painel onde se escolhe a atração (ou o filme, ou o card), a pasta do projeto e o **o que é**, e se cria ou
@@ -89,19 +89,80 @@ _Avoid_: saída
 A pasta `03_SAIDA`, dentro da pasta do projeto, com os renders para avaliação e os previews.
 _Avoid_: output
 
+**Output local**:
+A pasta deste computador para onde vai o render quando o output da rede não está acessível.
+_Avoid_: pasta de saída
+
 ### Templates
 
 **Template**:
-Um projeto modelo (`.aep` ou `.aet`) com os textos que mudam e as regras de nome e render, de onde saem as versões.
-_Avoid_: modelo, base
+Um projeto modelo (`.aep` ou `.aet`) com os arquivos que andam junto com ele (a configuração, o preview, as fontes e o
+script), de onde saem as versões.
+_Avoid_: modelo, base; template para a comp ou para o preset do After
+
+**Comp principal**:
+A comp do template que é duplicada e preenchida a cada versão.
+_Avoid_: template (para a comp)
 
 **Produção**:
-Uma coleção de templates de uma frente de trabalho (DIA-A-DIA, um evento), escolhida no painel de templates.
-_Avoid_: lista, pasta de templates
+Uma frente de trabalho (DIA-A-DIA, um evento) com nome, ícone e uma pasta de templates.
+_Avoid_: lista
+
+**Pasta de templates**:
+A pasta de uma produção, onde ficam os templates dela.
 
 **Versão**:
-Cada cópia preenchida de um template (ou de uma comp), com o seu texto (ANA MARIA, JOÃO GOMES).
-_Avoid_: variação, cópia; versão sozinha para o After Effects
+Cada comp criada a partir de um template (ou de uma comp), com o seu texto (ANA MARIA, JOÃO GOMES).
+_Avoid_: item, duplicata, cópia; versão sozinha para o After Effects
+
+**Preencher**:
+Gerar versões de um template a partir do input.
+_Avoid_: gerar, A FORMA (para a ação)
+
+**Duplicar**:
+Gerar versões da comp aberta, sem template, a partir do input.
+_Avoid_: preencher (para isso), A FORMINHA (para a ação)
+
+**Criar** (um template):
+Fazer um template novo a partir da comp aberta.
+_Avoid_: A FORMA (para a ação)
+
+**Importar**:
+Trazer um template ou um `.aep` para o projeto aberto, como está, sem preencher.
+
+**Input**:
+O texto digitado para preencher um template, com os blocos de todas as peças.
+_Avoid_: input para um campo ou um layer
+
+**Bloco**:
+O texto de uma peça no input, separado dos outros por uma linha vazia (ANA MARIA / APRESENTADORA). Cada bloco gera
+uma versão por variação de layout.
+_Avoid_: item, entrada
+
+**Campo**:
+Cada parte de um bloco que vai para um layer editável (o nome, o cargo).
+_Avoid_: informação, input
+
+**Layer editável**:
+Um layer do template que recebe um campo.
+_Avoid_: input
+
+**Variação de layout**:
+Uma opção de layout do template; cada bloco gera uma versão por opção.
+
+**Layer de nome**:
+O último layer de texto de uma comp, chamado `script_template_name`, cujo texto vira o nome da versão.
+
+**Fila de render**:
+As versões postas para renderizar no After, cada uma com um preset de render e o output.
+
+**Registro de uso**:
+A linha gravada a cada preenchimento: quando, a produção, o template, quantas versões, quem e o projeto.
+_Avoid_: log, telemetria (para a linha)
+
+**Preset de render**:
+A configuração de saída do After escolhida para a fila de render (H.264, ProRes…).
+_Avoid_: template de output
 
 **Versão do After**:
 O After Effects em que um projeto foi salvo (After 2025, After 2026).
@@ -126,4 +187,6 @@ O painel da busca de caminhos: as pastas das atrações, do Teams e do Trello.
   sem ano**, que continua valendo.
 - Um **card** traz a **claquete** e pode virar várias **peças**; um **projeto** costuma gerar várias peças.
 - Um **card** só aponta a **atração** (e, no **tipo fixo**, o mês); o **projeto** não guarda nada do card.
-- Uma **produção** reúne **templates**; cada template gera **versões**.
+- O **output** das versões vem do **template**; quando o **projeto** ainda não tem output, ele passa a ser o do template.
+- Uma **produção** tem uma **pasta de templates** e reúne os **templates** dela; cada template gera **versões** a partir da
+  **comp principal**.
