@@ -174,7 +174,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('f-separator').disabled = !many;
 		// a explicação do separador fica no balão do campo
 		$('sep-field').title = many
-			? 'use \\n para uma informação por linha (cada uma vai para um layer).'
+			? 'use \\n para um campo por linha (cada um vai para um layer).'
 			: 'com 1 layer só, o texto inteiro vai para ele (o separador fica desligado).';
 	}
 
@@ -234,7 +234,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			});
 
 			row.appendChild(PAD_SORT.handle());
-			row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
+			row.appendChild(el('span', 'cfg-row-label', 'campo ' + (i + 1)));
 			row.appendChild(name);
 			row.appendChild(selWrap);
 			row.appendChild(remove);
@@ -357,7 +357,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 				label: 'exemplo',
 				ok: infos > 0 && (state.layers.length < 2 || infos === state.layers.length),
 				target: 'f-example',
-				tip: infos === 0 ? 'exemplo vazio' : state.layers.length > 1 && infos !== state.layers.length ? 'o exemplo tem ' + plural(infos, 'informação', 'informações') + ' e a lista tem ' + plural(state.layers.length, 'layer', 'layers') : 'o exemplo bate com os layers'
+				tip: infos === 0 ? 'exemplo vazio' : state.layers.length > 1 && infos !== state.layers.length ? 'o exemplo tem ' + plural(infos, 'campo', 'campos') + ' e a lista tem ' + plural(state.layers.length, 'layer', 'layers') : 'o exemplo bate com os layers'
 			},
 			state.fx ? { key: 'layout', label: 'layout', ok: !fxProblem(), target: 'fx-card', tip: fxProblem() || plural(state.fx.options.length, 'variação', 'variações') } : null,
 			{ key: 'output', label: 'output', ok: outputs > 0, target: 'outputs', tip: outputs ? plural(outputs, 'pasta de output', 'pastas de output') : 'nenhuma pasta de output' }
@@ -1177,7 +1177,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			});
 		});
 		$('pick-import').addEventListener('click', function () {
-			pickPathInto($('f-import'), 'Selecione a pasta de mídias');
+			pickPathInto($('f-import'), 'Selecione a pasta de import');
 		});
 		animateDetails(document.querySelector('.maker-help'));
 		$('btn-save').addEventListener('click', save);

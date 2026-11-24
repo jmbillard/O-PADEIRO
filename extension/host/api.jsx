@@ -1096,8 +1096,8 @@ PADX.saveTemplateConfig = function (a) {
 	for (var l = 0; l < cfg.inputLayers.length; l++) {
 		var layer = cfg.inputLayers[l];
 
-		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('#PAD_044 - índice de layer inválido na informação ' + (l + 1));
-		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('#PAD_044 - método inválido na informação ' + (l + 1));
+		if (typeof layer.layerIndex !== 'number' || layer.layerIndex < 1) throw new Error('#PAD_044 - índice de layer inválido no campo ' + (l + 1));
+		if (layer.method != 'textContent' && layer.method != 'layerName') throw new Error('#PAD_044 - método inválido no campo ' + (l + 1));
 	}
 
 	// efeito de variações é opcional
@@ -1429,6 +1429,46 @@ PADX.fillBegin = function (a) {
 	});
 };
 
+// os nomes de comp que o projeto já tem, em maiúsculas (menos os ids de 'skip': a versão em criação e a comp do
+// template, que sai no fim) → { NOME: true }
+function padFillTaken(skip) {
+	var taken = {};
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!(item instanceof CompItem)) continue;
+
+		var skipIt = false;
+
+		for (var s = 0; s < skip.length; s++) {
+			if (item.id == skip[s]) skipIt = true;
+		}
+
+		if (!skipIt) taken[String(item.name).toUpperCase()] = true;
+	}
+
+	return taken;
+}
+
+// o nome sem repetir: livre, fica como está; tomado, ganha _2, _3… (o primeiro livre). Anota o nome em 'taken'.
+// (sem nada do After: o teste em Node carrega só esta função)
+function padUniqueName(name, taken) {
+	var out = String(name);
+
+	if (taken[out.toUpperCase()]) {
+		var n = 2;
+
+		while (taken[(out + '_' + n).toUpperCase()]) n++;
+
+		out = out + '_' + n;
+	}
+
+	taken[out.toUpperCase()] = true;
+
+	return out;
+}
+
 // Passo 2: cria e preenche uma comp (item 'index' de jobs).
 PADX.fillStep = function (a) {
 	var run = PADX_run;
@@ -1485,7 +1525,11 @@ PADX.fillStep = function (a) {
 					continue;
 				}
 
-				if (infoArray[l] == '') continue;
+				// campo vazio: o layer fica escondido (como no duplicar), não com o texto de exemplo do template
+				if (infoArray[l].trim() == '') {
+					inputLayer.enabled = false;
+					continue;
+				}
 
 				// Conteúdo do layer (apenas layers de texto)
 				if (inputLayerList[l].method == 'textContent') {
@@ -1493,11 +1537,23 @@ PADX.fillStep = function (a) {
 
 					infoArray[l] = infoArray[l].trim();
 
-					var text = inputLayer.property('ADBE Text Properties');
-					var textDoc = text.property('ADBE Text Document').value;
+					var textProp = inputLayer.property('ADBE Text Properties').property('ADBE Text Document');
 
-					textDoc.text = infoArray[l];
-					text.property('ADBE Text Document').setValue(textDoc);
+					// com keyframes no texto, todos eles (cada um com o seu estilo): senão a versão volta ao texto do
+					// template no keyframe seguinte
+					if (textProp.numKeys > 0) {
+						for (var k = 1; k <= textProp.numKeys; k++) {
+							var keyDoc = textProp.keyValue(k);
+
+							keyDoc.text = infoArray[l];
+							textProp.setValueAtKey(k, keyDoc);
+						}
+					} else {
+						var textDoc = textProp.value;
+
+						textDoc.text = infoArray[l];
+						textProp.setValue(textDoc);
+					}
 				}
 
 				// Nome do layer (qualquer layer)
@@ -1516,6 +1572,10 @@ PADX.fillStep = function (a) {
 
 				template.name = ((prefix ? prefix + globalSeparator : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 			}
+
+			// nome repetido (com uma comp do projeto ou uma versão dos passos anteriores): ganha _2, _3…
+			// a lista sai do projeto a cada passo, então já conta as versões criadas antes nesta fila
+			template.name = padUniqueName(template.name, padFillTaken([template.id, run.templateComp.id]));
 
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
@@ -1765,7 +1825,7 @@ PADX.queueBegin = function (a) {
 	var run = PADX_run;
 
 	if (!run) throw new Error('#PAD_047 - nenhum preenchimento em andamento');
-	if (!a.outputTemplate) throw new Error('#PAD_048 - selecione um template de output');
+	if (!a.outputTemplate) throw new Error('#PAD_048 - selecione um preset de render');
 
 	var warnings = [];
 	var outputs = [];
@@ -1795,7 +1855,7 @@ PADX.queueBegin = function (a) {
 		}
 
 		if (!new Folder(outputPath).exists) {
-			warnings.push('#PAD_019 - output não pode ser acessado (vai para a pasta deste computador): ' + padDisplayPath(outputPath));
+			warnings.push('#PAD_019 - output não pode ser acessado (vai para o output local): ' + padDisplayPath(outputPath));
 			outputPath = padPath(localOutput);
 		}
 

@@ -488,7 +488,7 @@ PADX.makerRenderPreview = function (a) {
 		var om = item.outputModule(1);
 		var h264 = padPreferredH264(om.templates);
 
-		if (!h264) throw new Error('#PAD_076 - nenhum template de output H.264 no After Effects para gerar o preview em .mp4.');
+		if (!h264) throw new Error('#PAD_076 - nenhum preset de render H.264 no After Effects para gerar o preview em .mp4.');
 
 		om.applyTemplate(h264);
 

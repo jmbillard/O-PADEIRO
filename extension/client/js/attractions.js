@@ -297,8 +297,29 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				return k.f;
 			}) };
 		}));
+		guessCardAttractions(source.cards, source.list);
 
 		return source.list;
+	}
+
+	// o card sem vínculo no banco (sem 'atr') aponta a atração pelo começo da claquete, com o nome e os padrões dela
+	// (DOMINGAO 25/11 → DOMINGÃO COM HUCK, padrão DOMINGAO). sem nenhuma, o card fica sem atração (vira atração nova
+	// na claquete). o de filme ('fil') vai pelo filme (o link do card no webhook dos filmes)
+	function guessCardAttractions(cards, list) {
+		(cards || []).forEach(function (c) {
+			if (c.atr || c.fil) return;
+
+			var it = (list || []).filter(function (x) {
+				return !x.isFilm && x.keys.some(function (k) {
+					return scoreKey(k, c.words) >= 1000;
+				});
+			})[0];
+
+			if (it) {
+				c.atr = aepName(it.name);
+				c.guess = true;
+			}
+		});
 	}
 
 	/* ---------------------------------------------------------------
@@ -331,8 +352,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				name: String(f.titulo || f.name || '').trim(),
 				year: /^\d{4}$/.test(year) ? year : '',
 				exib: iso ? iso[3] + '/' + iso[2] : exib, // 2026-12-05 → 05/12
+				exibIso: iso ? iso[0] : '', // para pôr em ordem (a exibição mais próxima em cima)
 				sessao: String(f.sessao || '').trim(),
-				poster: /^https?:\/\//i.test(String(f.poster || '')) ? String(f.poster) : ''
+				poster: /^https?:\/\//i.test(String(f.poster || '')) ? String(f.poster) : '',
+				trello: String(f.trello || '').trim() // o link do card do filme no Trello (o card de filme leva a ele)
 			};
 		}).filter(function (f) {
 			return f && f.name;
@@ -400,10 +423,11 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	/* ---------------------------------------------------------------
-	   os cards do Trello como referência: a atração com card novo (a claquete do card começa com o nome ou um
-	   padrão dela: DOMINGAO 25/11 → DOMINGÃO COM HUCK) vem primeiro na busca, para abrir o projeto dela. só os cards
-	   que entraram nos últimos 7 dias ('at', a data) e não estão finalizados ('fim'). o índice de antes (sem 'at')
-	   não sugere nada.
+	   os cards do Trello: o grupo NO TRELLO da claquete (um card por linha, com o designer e o status) e a
+	   referência para abrir o projeto da atração. só os cards que entraram nos últimos 7 dias ('at', a data) e não
+	   estão finalizados ('fim'). o índice de antes (sem 'at') não sugere nada. os de filme ('fil') vêm marcados: a
+	   claquete liga cada um ao filme pelo link do card (o 'trello' do webhook dos filmes).
+	   → [{ claq, red, ed, des (o designer), st (o status: PRODUZINDO, EM APROVAÇÃO…), card, at, time, atr, fil, words }]
 	   --------------------------------------------------------------- */
 
 	function recentCards(list) {
@@ -412,10 +436,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return (list || []).filter(function (c) {
 			var at = c && c.at ? Date.parse(String(c.at)) : NaN;
 
-			// os cards de filme ('fil') ficam de fora: os filmes têm a lista deles
-			return c && c.claq && !c.fim && !c.fil && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
+			return c && c.claq && !c.fim && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
 		}).map(function (c) {
-			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), atr: c.atr ? aepName(c.atr) : '', words: aepName(c.claq).split(' ').filter(Boolean) };
+			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', des: String(c.des || '').trim(), st: String(c.st || '').trim(), card: String(c.card || ''), at: String(c.at), time: Date.parse(String(c.at)), atr: c.atr ? aepName(c.atr) : '', fil: !!c.fil, words: aepName(c.claq).split(' ').filter(Boolean) };
 		}).sort(function (a, b) {
 			return b.time - a.time; // o mais novo primeiro
 		});
@@ -427,6 +450,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	function cardFor(it, cards) {
 		var name = aepName(it.name);
 		var hits = (cards || []).filter(function (c) {
+			if (c.fil) return false; // o card de filme leva ao filme, não a uma atração
 			if (c.atr) return c.atr === name;
 
 			return it.keys.some(function (k) {
@@ -472,11 +496,17 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return local ? localCandidates() : await webhookCandidates(fs);
 	}
 
-	// → { claquete, matches: [{ name, category, path, out, display, score }] } (o mesmo formato do host)
+	// → { claquete, matches: [{ name, category, path, out, display, score }], cards } (o mesmo formato do host). cards:
+	// os cards recentes do Trello (todos: a claquete escolhe os que batem com o digitado, js/project.js)
 	async function findAttractions(claq) {
 		var list = await candidates();
 
-		if (!list) return call('projectLookup', { claquete: claq });
+		if (!list) {
+			// navegador de teste (ou sem o Node): o host responde; os cards passam pelo mesmo filtro dos do índice
+			var res = await call('projectLookup', { claquete: claq });
+
+			return { claquete: res.claquete, matches: res.matches || [], cards: recentCards(res.cards) };
+		}
 
 		var local = source.info.mode === 'local';
 		var words = aepName(claq).split(' ').filter(Boolean);
@@ -496,7 +526,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		// o digitado (fut → o card FUT FEM AMIS 29/11 → AMISTÓSOS DA SELEÇÃO FEMININA, ao lado do FUTEBOL)
 		if (!local) {
 			(source.cards || []).forEach(function (c) {
-				if (!c.atr || !scoreAny(wordKey(c.claq), words)) return;
+				if (!c.atr || c.fil || !scoreAny(wordKey(c.claq), words)) return;
 
 				var it = list.filter(function (x) {
 					return !x.isFilm && aepName(x.name) === c.atr;
@@ -534,11 +564,11 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 			seen[key] = true;
 			return true;
-		}).slice(0, 6).map(function (f) {
+		}).slice(0, 40).map(function (f) {
 			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
 		});
 
-		return { claquete: aepName(claq), matches: matches };
+		return { claquete: aepName(claq), matches: matches, cards: local ? [] : source.cards || [] };
 	}
 
 	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
@@ -1073,6 +1103,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		letterOf: letterOf,
 		resolveNew: resolveNew,
 		iconFor: iconFor,
+		LIST_MAX: LIST_MAX,
+		PREF_BASE: PREF_BASE,
+		pref: pref,
 		row: comboRow,
 		group: group,
 		sep: sep,

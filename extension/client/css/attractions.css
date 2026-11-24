@@ -24,86 +24,6 @@
   padding: 4px;
 }
 
-.wz-opt {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.wz-opt:hover {
-  border-color: var(--border-hover);
-}
-
-.wz-opt.is-selected {
-  border-color: var(--blue-300);
-  background: var(--blue-50);
-}
-
-.wz-opt svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: var(--blue-500);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.wz-opt-text {
-  display: grid;
-  min-width: 0;
-  flex: 1;
-  gap: 2px;
-}
-
-.wz-opt-text b {
-  overflow: hidden;
-  font-size: 0.8rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wz-opt-text small {
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* caminho: o "…" no começo (o fim é o que importa) */
-.wz-opt-text small.is-path {
-  direction: rtl;
-  text-align: left;
-}
-
-.wz-radio {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  box-sizing: border-box;
-  border: 1.5px solid var(--border-strong);
-  border-radius: 50%;
-}
-
-.wz-opt.is-selected .wz-radio {
-  border: 5px solid var(--blue-500);
-}
-
 /* NOVA: a pasta que vai ser criada */
 .wz-preview {
   display: flex;
@@ -126,18 +46,6 @@
 
 .wz-preview b {
   color: var(--text-primary);
-}
-
-/* a pasta da categoria fora do alcance: vai para a pasta dos projetos deste computador (linha de baixo) */
-.wz-preview:has(.nova-offline) {
-  flex-wrap: wrap;
-}
-
-.nova-offline {
-  flex: 1 0 100%;
-  padding-left: 22px;
-  color: var(--text-tertiary);
-  font-style: normal;
 }
 
 /* NOVA sem categorias: escolher a pasta (no lugar da lista) */
@@ -518,7 +426,9 @@
   stroke-width: 1.8;
 }
 
-.cat-chip:hover {
+/* is-hover: o realce do teclado (as setas, ou o Enter sem atração achada, que abre os tipos) */
+.cat-chip:hover,
+.cat-chip.is-hover {
   border-color: var(--border-hover);
   background: var(--surface-soft);
 }

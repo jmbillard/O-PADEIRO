@@ -1056,7 +1056,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var parts = [plural(res.moved + (res.project ? 1 : 0), 'arquivo migrado', 'arquivos migrados')];
 
 			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
-			if (res.queue) parts.push(plural(res.queue, 'saída da fila apontada', 'saídas da fila apontadas') + ' para a pasta nova');
+			if (res.queue) parts.push(plural(res.queue, 'output da fila apontado', 'outputs da fila apontados') + ' para a pasta nova');
 			if (res.folders) parts.push(plural(res.folders, 'pasta vazia apagada', 'pastas vazias apagadas'));
 			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde ser movido', 'não puderam ser movidos'));
 

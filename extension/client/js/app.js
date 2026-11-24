@@ -1299,7 +1299,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		if (info.configError) return showReadonly(info.configError);
 		if (!info.hasConfig) return showReadonly('Esse template ainda não tem config. Use o lápis ao lado do nome para criar uma, ou importe o template e edite manualmente.');
-		if (!info.hasInputLayers) return showReadonly('Esse template não possui inputs. Clique em “importar template” e edite manualmente.');
+		if (!info.hasInputLayers) return showReadonly('Esse template não tem layers editáveis. Clique em “importar template” e edite manualmente.');
 
 		var cfg = info.config;
 		var textarea = $('input');
@@ -1425,7 +1425,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	function updateInputCount() {
 		var n = countInputs();
 
-		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'item', 'itens');
+		$('input-count').textContent = n === 0 ? 'vazio' : plural(n, 'bloco', 'blocos');
 		// o texto ainda é o exemplo do template (ninguém digitou): o botão avisa o que vai ser preenchido
 		var sample = n && state.example && $('input').value === state.example;
 
@@ -1782,7 +1782,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('run-footer').hidden = true;
 		showView('run');
 		setStage('3 · preenchendo', state.info.name, begin.templateName);
-		setProgress(0, begin.total, 'Preenchendo templates');
+		setProgress(0, begin.total, 'Criando as versões');
 
 		var hostIndex = 0;
 
@@ -1794,7 +1794,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 				var res = await call('fillStep', { index: i });
 
 				runItem(i).hostIndex = hostIndex++;
-				setItem(i, 'success', { name: res.name, meta: 'comp criada no projeto', message: '' });
+				setItem(i, 'success', { name: res.name, meta: 'versão criada no projeto', message: '' });
 			} catch (err) {
 				setItem(i, 'error', { meta: 'não foi possível preencher', message: err.message });
 			}
@@ -1862,7 +1862,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			outputs.appendChild(PAD_UTIL.pathLine(path, 'li'));
 		});
 
-		setProgress(state.run.total, state.run.total, 'Templates preenchidos');
+		setProgress(state.run.total, state.run.total, 'Preenchimento concluído');
 
 		// sem a revisão (o padrão): a fila sai direto, com o preset lembrado (o do template, o último ou o H.264).
 		// a tela de ordem e preset só aparece com 'Revisar a fila antes de criar' ligado (menu ⋯) ou sem preset
@@ -1871,7 +1871,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			return;
 		}
 
-		setStage('4 · render', null, 'selecione o template de output para continuar');
+		setStage('4 · render', null, 'selecione o preset de render para continuar');
 		$('render-options').hidden = false;
 		$('queue-footer').hidden = false;
 		editQueue();
@@ -2077,7 +2077,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			notify('error', err.message);
 		}
 
-		var summary = message || plural(ok, 'template processado', 'templates processados') + (failed ? ' · ' + plural(failed, 'erro', 'erros') : '');
+		var summary = message || plural(ok, 'versão criada', 'versões criadas') + (failed ? ' · ' + plural(failed, 'erro', 'erros') : '');
 
 		setProgress(run.total, run.total, run.queued ? 'Fila de render criada' : 'Concluído');
 		setStage('concluído', null, summary);

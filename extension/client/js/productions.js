@@ -2237,7 +2237,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
-		renomear: ['Renomear', 'renomear comps · renomear as saídas de render', 'rename'],
+		renomear: ['Renomear', 'renomear comps · renomear os outputs da fila', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
 		arquivos: ['Arquivos', 'O ARQUIVISTA: renomear os arquivos e as pastas de uma pasta', 'files'],
 		importar: ['Importar AEP', 'O VERSIONADOR: importar um projeto de qualquer versão · salvar em versões mais velhas', 'import'],
@@ -3115,7 +3115,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		$('btn-index-now').addEventListener('click', indexNow);
 
-		[['machine-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['machine-outputs-pick', 'outputs', 'Pasta de saída neste computador']].forEach(function (k) {
+		[['machine-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['machine-outputs-pick', 'outputs', 'Output local (pasta deste computador)']].forEach(function (k) {
 			$(k[0]).addEventListener('click', async function () {
 				var picked = PAD_BRIDGE.pickFolder(k[2], state.machine[k[1]]);
 

@@ -323,8 +323,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			var res = await call('renameOutputs');
 			var n = res && res.data ? res.data.count : null;
 
-			if (n === 0) report(res, 'nenhuma saída mudou: a fila de render já estava no padrão.');
-			else report(res, (n ? counted(n, 'saída de render renomeada', 'saídas de render renomeadas') : 'saídas de render renomeadas') + ' · ' + UNDO_KEY + ' desfaz');
+			if (n === 0) report(res, 'nenhum output mudou: a fila de render já estava no padrão.');
+			else report(res, (n ? counted(n, 'output renomeado', 'outputs renomeados') : 'outputs renomeados') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
 		// organizar: sem nenhuma comp selecionada nem com comentário, nada iria para as comps de render (tudo
@@ -580,7 +580,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Renomear',
 			icon: 'rename',
 			name: 'O ETIQUETADOR',
-			tips: [L_CLICK + 'renomear as comps selecionadas', R_CLICK + 'renomear todas as saídas da fila de render'],
+			tips: [L_CLICK + 'renomear as comps selecionadas', R_CLICK + 'renomear todos os outputs da fila de render'],
 			left: actions.renameComps,
 			right: actions.renameOutputs
 		},

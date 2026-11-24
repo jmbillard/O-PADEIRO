@@ -418,8 +418,35 @@ desliga o que não deve mudar e renomeia.
 		status(note, kind);
 	}
 
-	// A lista da pasta num .csv: o nome de cada item e o caminho dele (como estão agora, todos os da lista, sem os
-	// filtros). separado por ';' e com o BOM do UTF-8: o Excel em português abre direto, com os acentos certos
+	// A data de criação de um item (AAAA-MM-DD HH:MM), lida pelo Node do painel na hora de exportar (sem passar pelo
+	// After). a sequência vale pelo primeiro quadro. '' quando não dá para ler (no navegador, ou o sistema não guarda)
+	function createdAt(fs, path, it) {
+		if (!fs) return '';
+
+		var real = path;
+
+		if (it.kind === 'seq') {
+			var first = /\[(\d+)-\d+\]/.exec(it.frames || '');
+
+			real = path.replace(/\[\d+-\d+\](?=\.[^.\\\/]*$|$)/, first ? first[1] : '');
+		}
+
+		try {
+			var st = fs.statSync(real);
+			var d = st.birthtimeMs > 0 ? st.birthtime : st.mtime; // sem a data de criação, a da última alteração
+			var two = function (n) {
+				return (n < 10 ? '0' : '') + n;
+			};
+
+			return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+		} catch (err) {
+			return '';
+		}
+	}
+
+	// A lista da pasta num .csv: o nome de cada item, o caminho dele e a data de criação (como estão agora, todos os
+	// da lista, sem os filtros). separado por ';' e com o BOM do UTF-8: o Excel em português abre direto, com os
+	// acentos certos
 	function exportCsv() {
 		if (!state.path || !state.items.length) return status('escolha uma pasta com itens para exportar a lista.', 'error');
 
@@ -427,13 +454,18 @@ desliga o que não deve mudar e renomeia.
 		var cell = function (text) {
 			return '"' + String(text).replace(/"/g, '""') + '"';
 		};
-		var rows = ['nome;caminho'];
+		var rows = ['nome;caminho;criado em'];
+		var fs = null;
+
+		try {
+			fs = typeof require === 'function' ? require('fs') : null;
+		} catch (err) { }
 
 		state.items.forEach(function (it) {
 			var name = it.name + tail(it);
 			var path = state.path.replace(/[\\\/]+$/, '') + (it.dir ? sep + it.dir.split('/').join(sep) : '') + sep + name;
 
-			rows.push(cell(name) + ';' + cell(path));
+			rows.push(cell(name) + ';' + cell(path) + ';' + cell(createdAt(fs, path, it)));
 		});
 
 		var text = '\ufeff' + rows.join('\r\n') + '\r\n';

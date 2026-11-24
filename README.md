@@ -294,23 +294,23 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 ### pastas
 
-`◖ clique esquerdo` → abre a pasta do primeiro arquivo de saída do último item da fila de render. se a pasta ainda não existir (antes do render), abre a mais próxima que existe.
+`◖ clique esquerdo` → abre a pasta do primeiro output do último item da fila de render. se a pasta ainda não existir (antes do render), abre a mais próxima que existe.
 
 `◗ clique direito` → abre o [conversor de caminhos](docs/conversor.md).
 
 ### renomear
 
-**O ETIQUETADOR**: dá a cada comp e a cada saída de render o nome no padrão da equipe.
+**O ETIQUETADOR**: dá a cada comp e a cada output da fila o nome no padrão da equipe.
 
 `◖ clique esquerdo` → renomeia as comps selecionadas no painel de projeto: remove caracteres especiais, passa para MAIÚSCULAS e acrescenta o prefixo do tipo (rodapé, cartão, lettering...).
 
 *o tipo vem do nome da pasta em que a comp está (ex: `RODAPES`, `LETTERING - JOGO`) ou de um prefixo / sufixo já presente no nome da comp. o nome da pasta tem prioridade.*
 
-`◗ clique direito` → aplica a mesma regra aos arquivos de saída de **todos** os itens da fila de render (o nome das comps não muda).
+`◗ clique direito` → aplica a mesma regra aos outputs de **todos** os itens da fila de render (o nome das comps não muda).
 
 > 🚩 *obs:*\
 > • com uma pasta do projeto selecionada, a pasta e todas as comps dentro dela são renomeadas.\
-> • cada saída continua na pasta em que estava; itens já renderizados não mudam e nomes repetidos na mesma pasta ganham um sufixo (`_2`, `_3`...).\
+> • cada output continua na pasta em que estava; itens já renderizados não mudam e nomes repetidos na mesma pasta ganham um sufixo (`_2`, `_3`...).\
 > • comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer ([como usar](docs/templates.md#o-nome-da-comp-pelo-layer-script_template_name)).
 
 **prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento, como palavras inteiras):
@@ -372,7 +372,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 - **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
 - **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
 - **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **de fora** da renomeação: o botão renomeia o que dá e eles continuam na lista, como estão, para você resolver depois (editar o novo nome ou desligar a linha).
-- **exportar a lista** → no **⋯**, *Exportar a lista (.csv)…* salva o nome e o caminho de cada item da lista (todos, como estão agora) numa planilha `.csv` que abre direto no Excel.
+- **exportar a lista** → no **⋯**, *Exportar a lista (.csv)…* salva o nome, o caminho e a data de criação de cada item da lista (todos, como estão agora) numa planilha `.csv` que abre direto no Excel. a sequência de imagens leva a data do primeiro quadro; onde o sistema não guarda a data de criação, vai a da última alteração.
 - **arrastar a pasta** → dá para arrastar uma pasta do Finder / Explorer para a janela: ela entra no campo e é lida (um arquivo solto traz a pasta em que ele está).
 - **o progresso** → a renomeação vai em lotes: uma barra fina abaixo da tabela e a contagem no botão (`20 de 120`) mostram o andamento; o desfazer volta todos os lotes de uma vez.
 - **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
@@ -449,10 +449,10 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_005` | o projeto não foi preenchido pelo padeiro (instalar fontes depende disso) |
 | `#PAD_006` `#PAD_035` | a pasta `FONTS` do template não existe ou não tem `.ttf` / `.otf` |
 | `#PAD_008` | a fila de render está vazia |
-| `#PAD_009` `#PAD_019` `#PAD_062` | pasta de output (ou caminho) não encontrada |
+| `#PAD_009` `#PAD_019` `#PAD_062` | pasta de output (ou caminho) não encontrada (no `#PAD_019`, o render vai para o output local) |
 | `#PAD_017` | o `_config.json` do template é inválido |
 | `#PAD_018` `#PAD_022` | o arquivo do template não foi encontrado |
-| `#PAD_021` | um layer editável da config não existe no template |
+| `#PAD_021` | erro no script do template (`_script.js`): o preenchimento fica feito |
 | `#PAD_023` `#PAD_025` `#PAD_026` `#PAD_028` `#PAD_031` `#PAD_063` | criador de templates: comp principal ou layers editáveis faltando |
 | `#PAD_027` | criador de templates: o teste de preenchimento falhou |
 | `#PAD_029` | criador de templates: falta a atração ou o que é |
@@ -462,7 +462,8 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_043` | o painel pediu uma ação que o host não conhece (painel e host de versões diferentes: reabra o painel) |
 | `#PAD_044` `#PAD_045` | editor de config: dado inválido / não foi possível gravar o arquivo |
 | `#PAD_046` | o input está vazio |
-| `#PAD_047` `#PAD_048` `#PAD_049` | preenchimento / fila de render fora de ordem (comece de novo) |
+| `#PAD_047` `#PAD_049` | preenchimento / fila de render fora de ordem (comece de novo) |
+| `#PAD_048` | fila de render: nenhum preset de render escolhido |
 | `#PAD_050` | o projeto está vazio |
 | `#PAD_051` a `#PAD_057` | lista de produções: dado inválido, falha ao gravar ou arquivo de importação inválido |
 | `#PAD_058` | não foi possível baixar o índice de caminhos do acessorista |
@@ -474,7 +475,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_070` `#PAD_071` `#PAD_072` `#PAD_PATH_001` `#PAD_PATH_002` | caminho de rede inválido, volume não montado ou pasta inacessível |
 | `#PAD_073` `#PAD_074` | banco de fontes: trocar fontes sem o After Effects 2024 / nenhum arquivo para instalar ou banco sem pasta |
 | `#PAD_075` | criador: a fila de render já está renderizando (preview .mp4) |
-| `#PAD_076` | criador: nenhum template de output H.264 para o preview .mp4 |
+| `#PAD_076` | criador: nenhum preset de render H.264 para o preview .mp4 |
 | `#PAD_077` | criador: o preview .mp4 não foi gerado |
 | `#PAD_078` | configuração: endereço do webhook do log inválido (vazio, sem http(s):// ou com espaços/aspas) |
 | `#PAD_079` | configuração: letra de drive inválida ou repetida |
