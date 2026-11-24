@@ -115,9 +115,11 @@ para criar um novo preset de output, acesse:\
 o padeiro executa as seguintes tarefas, em ordem:
 
 1. importar o projeto do template.
-2. duplicar a comp principal para cada item do input.
-3. preencher os textos.
-4. renomear as comps a partir do conteúdo (ou pelo layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name)).
+2. duplicar a comp principal para cada bloco do input (e cada variação de layout).
+3. preencher os layers editáveis com os campos do bloco. as mesmas regras do [duplicar](#a-forminha):
+   - **campo vazio ou a menos** → o layer dele fica **escondido** naquela versão (não fica com o texto de exemplo do template). vale para os dois métodos: o conteúdo do texto e o nome do layer.
+   - **texto com keyframes** → o texto entra em **todos os keyframes** do *Source Text*, cada um com o seu estilo (senão a versão volta ao texto do template no keyframe seguinte).
+4. renomear as comps a partir do conteúdo (ou pelo layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name)). **nome que já existe** no projeto (ou numa versão criada antes, no mesmo preenchimento) ganha um sufixo: `_2`, `_3`… (vale também para o nome vindo do layer de nome).
 5. organizar o projeto no padrão da PROMO.
 6. adicionar as comps à fila de render.
 7. definir os caminhos de output.
