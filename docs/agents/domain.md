@@ -1,51 +1,40 @@
-# Domain Docs
+# Documentos de domínio
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+Como as skills de engenharia leem a documentação de domínio deste repositório ao explorar o código.
 
-## Before exploring, read these
+## Antes de explorar, leia
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists: it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`**: read ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+- **`CONTEXT.md`** na raiz do repositório: o glossário do O PADEIRO. Quando uma skill falar em `GLOSSARY.md`, é
+  este arquivo.
+- **`docs/adr/`**: as ADRs que tocam a área em que você vai mexer.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
+Se algum desses arquivos não existir, **siga em frente em silêncio**. Não aponte a ausência nem sugira criá-los de
+antemão. A skill `/domain-modeling` (pelo `/grill-with-docs` e pelo `/improve-codebase-architecture`) cria quando
+termos ou decisões forem de fato resolvidos.
 
-## File structure
+## Estrutura
 
-Single-context repo (most repos):
+Contexto único (este repositório):
 
 ```
 /
 ├── CONTEXT.md
 ├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
-└── src/
+│   ├── 0001-card-so-aponta-a-atracao.md
+│   └── 0002-mes-do-card-vale-mais-que-hoje.md
+└── extension/ (client/, host/, scripts/)
 ```
 
-Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
+## Use o vocabulário do glossário
 
-```
-/
-├── CONTEXT-MAP.md
-├── docs/adr/                          ← system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  ← context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
-```
+Quando o que você escreve nomeia um conceito do domínio (título de issue, proposta de refatoração, hipótese, nome de
+teste), use o termo como está no `CONTEXT.md`. Não troque por sinônimos que o glossário manda evitar.
 
-## Use the glossary's vocabulary
+Se o conceito não está no glossário, é um sinal: ou você está inventando uma linguagem que o projeto não usa
+(repense) ou há uma lacuna de verdade (anote para o `/domain-modeling`).
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+## Aponte conflitos com ADRs
 
-If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
+Se o que você produz contradiz uma ADR, diga isso explicitamente em vez de passar por cima em silêncio:
 
-## Flag ADR conflicts
-
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
-
-> _Contradicts ADR-0007 (event-sourced orders), but worth reopening because…_
+> _Contradiz a ADR-0001 (o card só aponta a atração), mas vale reabrir porque…_

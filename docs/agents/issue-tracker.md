@@ -1,48 +1,53 @@
-# Issue tracker: GitHub
+# Rastreador de issues: GitHub
 
-Issues and specs for this repo live as GitHub issues in `jmbillard/O-PADEIRO`.
+As issues e as specs deste repositório ficam nas Issues do GitHub, em `jmbillard/O-PADEIRO`.
 
-Use `gh api` (the REST API) for every operation. In Claude Code cloud sessions the GraphQL API is refused, so the `gh issue …` and `gh pr …` porcelain fails there; `gh api` works both in the cloud and on a local machine.
+Use o `gh api` (a API REST) para tudo. Nas sessões do Claude Code na nuvem a API GraphQL é recusada, então os
+comandos `gh issue …` e `gh pr …` falham lá; o `gh api` funciona tanto na nuvem quanto na máquina local.
 
-## Conventions
+## Convenções
 
-- **Create an issue**: `gh api repos/jmbillard/O-PADEIRO/issues -f title="..." -F body=@body.md` (write multi-line bodies to a file first; add `-f "labels[]=needs-triage"` to label on creation).
-- **Read an issue**: `gh api repos/jmbillard/O-PADEIRO/issues/<n> --jq '{number, title, state, body, labels: [.labels[].name]}'` and its comments with `gh api repos/jmbillard/O-PADEIRO/issues/<n>/comments --jq '[.[] | {user: .user.login, body}]'`.
-- **List issues**: `gh api "repos/jmbillard/O-PADEIRO/issues?state=open&per_page=100" --jq '[.[] | select(.pull_request | not) | {number, title, labels: [.labels[].name]}]'` (add `&labels=<label>` to filter; the endpoint also returns PRs, hence the `select`).
-- **Comment on an issue**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/comments -F body=@comment.md`
-- **Apply a label**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/labels -f "labels[]=<label>"`
-- **Remove a label**: `gh api -X DELETE repos/jmbillard/O-PADEIRO/issues/<n>/labels/<label>`
-- **Close**: comment first, then `gh api -X PATCH repos/jmbillard/O-PADEIRO/issues/<n> -f state=closed`
+- **Criar uma issue**: `gh api repos/jmbillard/O-PADEIRO/issues -f title="..." -F body=@body.md` (escreva corpos de várias linhas num arquivo antes; acrescente `-f "labels[]=precisa-triagem"` para já criar com o rótulo).
+- **Ler uma issue**: `gh api repos/jmbillard/O-PADEIRO/issues/<n> --jq '{number, title, state, body, labels: [.labels[].name]}'` e os comentários com `gh api repos/jmbillard/O-PADEIRO/issues/<n>/comments --jq '[.[] | {user: .user.login, body}]'`.
+- **Listar issues**: `gh api "repos/jmbillard/O-PADEIRO/issues?state=open&per_page=100" --jq '[.[] | select(.pull_request | not) | {number, title, labels: [.labels[].name]}]'` (acrescente `&labels=<rótulo>` para filtrar; o endpoint também devolve PRs, daí o `select`).
+- **Comentar numa issue**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/comments -F body=@comment.md`
+- **Pôr um rótulo**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/labels -f "labels[]=<rótulo>"`
+- **Tirar um rótulo**: `gh api -X DELETE repos/jmbillard/O-PADEIRO/issues/<n>/labels/<rótulo>`
+- **Fechar**: comente antes, depois `gh api -X PATCH repos/jmbillard/O-PADEIRO/issues/<n> -f state=closed`
 
-If a write is refused in a cloud session (the proxy allows only some write paths), say so and give the user the exact title, body and labels to create the issue by hand.
+Se uma escrita for recusada numa sessão na nuvem (o proxy só libera alguns caminhos de escrita), diga isso e passe ao
+usuário o título, o corpo e os rótulos exatos para ele criar a issue à mão.
 
-## Pull requests as a triage surface
+Crie issues só no repositório do usuário. Nunca em `mattpocock/skills` (de onde vêm as skills).
 
-**PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
+## Pull requests como entrada de triagem
 
-When set to `yes`, PRs run through the same labels and states as issues, using the REST equivalents:
+**PRs como entrada de pedidos: não.** _(Mude para `sim` se este repositório tratar PRs externos como pedidos; o `/triage` lê esta marcação.)_
 
-- **Read a PR**: `gh api repos/jmbillard/O-PADEIRO/pulls/<n>` and the diff with `gh api repos/jmbillard/O-PADEIRO/pulls/<n> -H "Accept: application/vnd.github.diff"`.
-- **List external PRs for triage**: `gh api "repos/jmbillard/O-PADEIRO/pulls?state=open"`, keeping only `author_association` of `CONTRIBUTOR`, `FIRST_TIME_CONTRIBUTOR` or `NONE`.
-- **Comment / label / close**: the issue endpoints above work on PRs too (same number space).
+Com `sim`, os PRs passam pelos mesmos rótulos e estados das issues, com os equivalentes REST:
 
-GitHub shares one number space across issues and PRs, so a bare `#42` may be either: the issue endpoint returns a `pull_request` field when it is a PR.
+- **Ler um PR**: `gh api repos/jmbillard/O-PADEIRO/pulls/<n>` e o diff com `gh api repos/jmbillard/O-PADEIRO/pulls/<n> -H "Accept: application/vnd.github.diff"`.
+- **Listar PRs externos para a triagem**: `gh api "repos/jmbillard/O-PADEIRO/pulls?state=open"`, ficando só com os de `author_association` `CONTRIBUTOR`, `FIRST_TIME_CONTRIBUTOR` ou `NONE`.
+- **Comentar / rotular / fechar**: os endpoints de issue acima também valem para PRs (a numeração é a mesma).
 
-## When a skill says "publish to the issue tracker"
+O GitHub usa uma só numeração para issues e PRs, então um `#42` solto pode ser qualquer um dos dois: o endpoint de
+issue devolve um campo `pull_request` quando é um PR.
 
-Create a GitHub issue.
+## Quando uma skill diz "publicar no rastreador de issues"
 
-## When a skill says "fetch the relevant ticket"
+Crie uma issue no GitHub.
 
-Read the issue and its comments with the two `gh api` calls under **Read an issue**.
+## Quando uma skill diz "buscar o ticket"
 
-## Wayfinding operations
+Leia a issue e os comentários com as duas chamadas `gh api` de **Ler uma issue**.
 
-Used by `/wayfinder`. The **map** is a single issue with **child** issues as tickets.
+## Operações do wayfinder
 
-- **Map**: a single issue labelled `wayfinder:map`, holding the Notes / Decisions-so-far / Fog body.
-- **Child ticket**: an issue linked to the map as a GitHub sub-issue (`gh api` on the sub-issues endpoint). Where sub-issues aren't enabled, add the child to a task list in the map body and put `Part of #<map>` at the top of the child body. Labels: `wayfinder:<type>` (`research`/`prototype`/`grilling`/`task`). Once claimed, the ticket is assigned to the driving dev.
-- **Blocking**: GitHub's native issue dependencies: `gh api --method POST repos/jmbillard/O-PADEIRO/issues/<child>/dependencies/blocked_by -F issue_id=<blocker-db-id>`, where `<blocker-db-id>` is the blocker's numeric database id (`gh api repos/jmbillard/O-PADEIRO/issues/<n> --jq .id`, not the `#number`). Where dependencies aren't available, fall back to a `Blocked by: #<n>, #<n>` line at the top of the child body. A ticket is unblocked when every blocker is closed.
-- **Frontier query**: list the map's open children, drop any with an open blocker or an assignee; first in map order wins.
-- **Claim**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/assignees -f "assignees[]=<login>"`, the session's first write.
-- **Resolve**: comment the answer, close the issue, then append a context pointer (gist + link) to the map's Decisions-so-far.
+Usadas pelo `/wayfinder`. O **mapa** é uma única issue, com issues **filhas** como tickets.
+
+- **Mapa**: uma issue com o rótulo `wayfinder:map`, com o corpo Notas / Decisões até aqui / Neblina.
+- **Ticket filho**: uma issue ligada ao mapa como sub-issue do GitHub (`gh api` no endpoint de sub-issues). Onde não houver sub-issues, ponha a filha numa lista de tarefas no corpo do mapa e `Parte de #<mapa>` no topo do corpo da filha. Rótulos: `wayfinder:<tipo>` (`research`/`prototype`/`grilling`/`task`). Assumido, o ticket fica atribuído a quem conduz.
+- **Bloqueio**: as dependências nativas de issues do GitHub: `gh api --method POST repos/jmbillard/O-PADEIRO/issues/<child>/dependencies/blocked_by -F issue_id=<blocker-db-id>`, onde `<blocker-db-id>` é o id numérico do banco da bloqueadora (`gh api repos/jmbillard/O-PADEIRO/issues/<n> --jq .id`, não o `#número`). Onde não houver dependências, use uma linha `Bloqueada por: #<n>, #<n>` no topo do corpo da filha. Um ticket está livre quando todas as bloqueadoras estão fechadas.
+- **Fronteira**: liste as filhas abertas do mapa, tire as que têm bloqueadora aberta ou responsável; vale a primeira na ordem do mapa.
+- **Assumir**: `gh api repos/jmbillard/O-PADEIRO/issues/<n>/assignees -f "assignees[]=<login>"`, a primeira escrita da sessão.
+- **Resolver**: comente a resposta, feche a issue e acrescente um ponteiro (resumo + link) nas Decisões até aqui do mapa.

@@ -1,15 +1,15 @@
-# Triage Labels
+# Rótulos de triagem
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker.
+As skills falam em cinco papéis canônicos de triagem. Este arquivo liga esses papéis aos rótulos que existem nas
+Issues deste repositório.
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+| Rótulo em mattpocock/skills | Rótulo aqui          | Significado                                     |
+| --------------------------- | -------------------- | ----------------------------------------------- |
+| `needs-triage`              | `precisa-triagem`    | Alguém da equipe precisa avaliar a issue        |
+| `needs-info`                | `precisa-info`       | Esperando mais informação de quem pediu         |
+| `ready-for-agent`           | `pronto-para-agente` | Tudo especificado: um agente pode fazer sozinho |
+| `ready-for-human`           | `pronto-para-humano` | Precisa de uma pessoa para fazer                |
+| `wontfix`                   | `wontfix`            | Não vai ser feito                               |
 
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
-
-Edit the right-hand column to match whatever vocabulary you actually use.
+Quando uma skill citar um papel (ex.: "aplique o rótulo de pronto para agente"), use o rótulo correspondente desta
+tabela.

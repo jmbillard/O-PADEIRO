@@ -31,6 +31,10 @@ function findCrops(ring) {
 
 	fields.forEach(function (field) {
 		const r = field.getBoundingClientRect();
+
+		// sumiu no meio da conferência (o foco no campo de cima reabriu uma lista que esconde o resto): não está cortado
+		if (!r.width && !r.height) return;
+
 		const glow = { top: r.top - ring, bottom: r.bottom + ring, left: r.left - ring, right: r.right + ring };
 
 		field.focus({ preventScroll: true });
