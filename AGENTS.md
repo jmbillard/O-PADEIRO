@@ -1,7 +1,7 @@
 # O PADEIRO: instruções para os agentes
 
-Extensão CEP do After Effects: o painel em HTML/JS fica em `extension/client`, o host em ExtendScript (ES3) em
-`extension/host`, o instalador é `INSTALAR O PADEIRO.jsx` na raiz e a documentação fica em `README.md` e `docs/`.
+Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTML/JS fica em `extension/client`, o host em ExtendScript (ES3) em
+`extension/host`, o instalador é `INSTALAR O PADEIRO.jsx` na raiz e a documentação fica em `README.md` e `docs/`. Tudo em pt-BR: textos, comentários, commits e documentos.
 
 ## Papel do agente principal: gestor do projeto
 
@@ -21,20 +21,27 @@ Extensão CEP do After Effects: o painel em HTML/JS fica em `extension/client`, 
 - **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna. `node extension/scripts/check-ternary.js`
   confere.
 - **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
-  `check-focus-crop.js`, `check-scroll-corners.js`); as telas testadas ficam em `ui-states.js`.
+  `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
+  `ui-states.js`.
 - **Teste:** tudo roda no navegador com `extension/client/js/mock-host.js` no lugar do After Effects. Nada disso é
   teste no After de verdade: dizer isso ao relatar.
 
-## Agent skills
+## Skills dos agentes
 
-### Issue tracker
+As skills do Matt Pocock, traduzidas para pt-BR, ficam em `.claude/skills/` (veja `.claude/skills/README.md`).
+O fluxo do dia a dia: `/grill-with-docs` (interrogatório + glossário) → `/to-spec` → `/to-tickets` → `/implement`.
 
-Issues live in GitHub Issues for jmbillard/O-PADEIRO, used through `gh api` (REST). See `docs/agents/issue-tracker.md`.
+### Rastreador de issues
 
-### Triage labels
+As issues ficam nas Issues do GitHub de jmbillard/O-PADEIRO, usadas pelo `gh api` (REST). Veja
+`docs/agents/issue-tracker.md`.
 
-The five default labels (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+### Rótulos de triagem
 
-### Domain docs
+Os cinco papéis da triagem, com os rótulos em português (`precisa-triagem`, `precisa-info`, `pronto-para-agente`,
+`pronto-para-humano`, `wontfix`). Veja `docs/agents/triage-labels.md`.
 
-Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+### Documentos de domínio
+
+Contexto único: um `CONTEXT.md` (o glossário; é ele quando uma skill fala em `GLOSSARY.md`) e `docs/adr/` na raiz.
+Veja `docs/agents/domain.md`.
