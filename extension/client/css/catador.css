@@ -6,7 +6,8 @@
    cheia; desligada, só o contorno, apagada); o Coletar e a busca dos faltando só veem o que aparece */
 .cw-filter {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap; /* reserva: sem lugar (números grandes), a fileira quebra em vez de cortar */
+  gap: 4px;
 }
 
 .cw-filter[hidden] {
@@ -15,10 +16,10 @@
 
 .cw-chip {
   display: inline-flex;
-  height: 30px;
+  height: 28px;
   align-items: center;
-  gap: 7px;
-  padding: 0 13px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
+  gap: 4px;
+  padding: 0 9px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -35,13 +36,18 @@
 }
 
 .cw-chip .fw-state {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   font-size: 0.58rem;
 }
 
 .cw-chip b {
   font-weight: 800;
+}
+
+/* o nome da situação: só na etiqueta ligada; entra e sai pela largura (motion.js) */
+.cw-chip-label {
+  white-space: nowrap;
 }
 
 .cw-chip:hover:not(:disabled) {

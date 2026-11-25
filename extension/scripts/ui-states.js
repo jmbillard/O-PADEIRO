@@ -244,6 +244,19 @@ const CHECKS = [
 	}],
 	['fontes do projeto', 'fonts.html'],
 	['coletar', 'catador.html'],
+	// o filtro: o nome da situação só na etiqueta ligada (aqui, só neste computador; as outras ficam no sinal e no número)
+	['coletar: filtro só neste computador', 'catador.html', async (p) => {
+		await p.click('.cw-chip[data-filter="missing"]');
+		await p.click('.cw-chip[data-filter="net"]');
+		await p.waitForTimeout(400);
+	}],
+	// 28 em cada situação: números de dois dígitos na fileira
+	['coletar: filtro com 28', 'catador.html?mock=muitos'],
+	// 28 em cada e as quatro ligadas: a fileira quebra em vez de cortar
+	['coletar: filtro com 28, todas ligadas', 'catador.html?mock=muitos', async (p) => {
+		await p.click('.cw-chip[data-filter="ok"]');
+		await p.waitForTimeout(400);
+	}],
 	['coletar: migração', 'catador.html', async (p) => {
 		await p.setViewportSize({ width: 780, height: 660 });
 		await p.click('#app-menu summary');

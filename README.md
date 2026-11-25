@@ -249,7 +249,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | | | |
 | :---: | --- | --- |
 | ❶ | **o projeto** | o `.aep` e quantos arquivos ele usa. |
-| ❷ | **o filtro** | quantos arquivos em cada situação: '*faltando*', '*locais*' (fora das pastas de projetos, neste computador), '*na rede*' e '*no lugar*'. cada etiqueta liga e desliga a situação na lista. a janela abre mostrando só o que precisa de atenção (o que está no lugar fica escondido). **o filtro vale para as ações**: o Coletar só copia, e a busca só procura, o que está aparecendo. |
+| ❷ | **o filtro** | quantos arquivos em cada situação: '*faltando*', '*neste computador*' (fora das pastas de projetos), '*na rede*' e '*no lugar*'. cada etiqueta liga e desliga a situação na lista; mostra o sinal e o número, e o nome da situação só aparece na etiqueta ligada (nas outras, fica na dica). a janela abre mostrando só o que precisa de atenção (o que está no lugar fica escondido). **o filtro vale para as ações**: o Coletar só copia, e a busca só procura, o que está aparecendo. |
 | ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❻ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
 | ❹ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
 | ❺ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. (**✓**: já está na pasta do projeto; **–** cinza: tipo fora da árvore do coletar. os dois ficam em **no lugar**.) |

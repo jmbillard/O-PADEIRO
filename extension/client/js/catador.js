@@ -54,7 +54,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		return node;
 	}
 
-	var FILTERS = [['missing', 'nofile', '!', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'locais', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
+	var FILTERS = [['missing', 'nofile', '!', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'neste computador', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
 
 	// a situação do arquivo para o filtro: os de tipo fora da árvore (não coletados) contam como no lugar
 	function group(it) {
@@ -126,31 +126,44 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		} catch (err) { }
 	}
 
-	// o resumo no topo: quantos arquivos em cada situação; cada etiqueta liga e desliga a situação na lista
+	// o resumo no topo: quantos arquivos em cada situação; cada etiqueta liga e desliga a situação na lista. a etiqueta
+	// mostra o sinal e o número; o nome da situação só aparece na ligada (nas outras, fica na dica e no aria-label).
+	// as etiquetas são montadas uma vez e depois só atualizadas: o nome entra e sai pelo 'hidden', e o motion.js anima
+	// a largura
 	function renderFilter(count) {
 		var box = $('cw-filter');
 
-		box.textContent = '';
 		box.hidden = !(state.data && state.data.items.length);
 
 		FILTERS.forEach(function (f) {
 			var n = count[f[0]] || 0;
-			var chip = el('button', 'cw-chip' + (state.filter[f[0]] ? '' : ' is-off'));
-			var dot = el('span', 'fw-state is-' + f[1]);
+			var on = !!state.filter[f[0]];
+			var chip = box.querySelector('.cw-chip[data-filter="' + f[0] + '"]');
 
-			chip.type = 'button';
+			if (!chip) {
+				var dot = el('span', 'fw-state is-' + f[1]);
+
+				chip = el('button', 'cw-chip');
+				chip.type = 'button';
+				chip.setAttribute('data-filter', f[0]);
+				dot.appendChild(mark(f[2]));
+				chip.appendChild(dot);
+				chip.appendChild(el('b'));
+				chip.appendChild(el('span', 'cw-chip-label', f[3]));
+				chip.addEventListener('click', function () {
+					state.filter[f[0]] = !state.filter[f[0]];
+					render();
+				});
+				box.appendChild(chip);
+			}
+
+			chip.classList.toggle('is-off', !on);
 			chip.disabled = !n;
-			chip.setAttribute('aria-pressed', state.filter[f[0]] ? 'true' : 'false');
-			chip.title = f[4] + (n ? '\n(clique: ' + (state.filter[f[0]] ? 'esconde' : 'mostra') + ' na lista; o Coletar só copia o que aparece)' : '');
-			dot.appendChild(mark(f[2]));
-			chip.appendChild(dot);
-			chip.appendChild(el('b', null, String(n)));
-			chip.appendChild(document.createTextNode(' ' + f[3]));
-			chip.addEventListener('click', function () {
-				state.filter[f[0]] = !state.filter[f[0]];
-				render();
-			});
-			box.appendChild(chip);
+			chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+			chip.setAttribute('aria-label', n + ' ' + f[3]);
+			chip.title = n + ' ' + f[3] + ': ' + f[4] + (n ? '\n(clique: ' + (on ? 'esconde' : 'mostra') + ' na lista; o Coletar só copia o que aparece)' : '');
+			chip.querySelector('b').textContent = String(n);
+			chip.querySelector('.cw-chip-label').hidden = !on;
 		});
 	}
 

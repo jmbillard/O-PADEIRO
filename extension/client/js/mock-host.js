@@ -1542,6 +1542,17 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var D = location.pathname.replace(/\/extension\/client\/[^\/]*$/, '') + '/docs/images/';
 			var R = '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/02 ARQUIVOS';
 
+			// ?mock=muitos: 28 arquivos em cada situação (a fileira do filtro com números de dois dígitos)
+			if (mode === 'muitos') {
+				var many = [];
+
+				['missing', 'local', 'net', 'ok'].forEach(function (st, k) {
+					for (var i = 0; i < 28; i++) many.push({ id: 100 + k * 28 + i, name: st + '_' + i + '.png', file: '/Volumes/VFX/ANTIGO/' + st + '_' + i + '.png', kind: 'imagens', state: st, layers: 1 });
+				});
+
+				return { project: 'DOMINGAO COM HUCK SERVICO.aep', root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026', dests: { imagens: '02_ARQUIVOS/IMAGENS' }, items: many };
+			}
+
 			return {
 				project: 'DOMINGAO COM HUCK SERVICO.aep',
 				root: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026',
