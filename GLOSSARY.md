@@ -5,6 +5,43 @@ de cada atração.
 
 ## Language
 
+### O padeiro
+
+**Barra**:
+O painel do padeiro acoplado no After, com as ferramentas.
+
+**Ferramenta**:
+Um botão da barra, com uma ação no clique esquerdo e, às vezes, outra no direito.
+
+**Gaveta**:
+Um botão da barra que junta ferramentas (Templates, Projeto, Organização).
+
+**Apelido**:
+O nome de ofício de uma janela ou ferramenta (A FORMA, O PROJETISTA…), usado nos títulos e nas dicas.
+
+**Configuração**:
+A janela onde a equipe e cada designer ajustam o padeiro (apelido: O PRODUTOR).
+
+**Da equipe**:
+O que vale para todos, guardado na rede (as produções, os tipos de projeto, a regra do renomear…).
+_Avoid_: global
+
+**Deste computador**:
+O que vale só para um computador (a aparência, o layout da barra, o designer, o modo local…).
+_Avoid_: local (é do modo local e do output local)
+
+**Bolinha**:
+O sinal na ferramenta que diz se está tudo certo (verde) ou se falta algo (laranja).
+
+### A equipe
+
+**Designer**:
+A pessoa da equipe que faz as peças, identificada pela sigla (JMBILLARD); quem cria e quem salva os projetos.
+_Avoid_: usuário
+
+**Login**:
+O usuário do sistema da máquina, usado para reconhecer o designer quando a sigla não foi informada.
+
 ### Atrações e o que vai ao ar
 
 **Atração**:
@@ -92,6 +129,41 @@ _Avoid_: output
 **Output local**:
 A pasta deste computador para onde vai o render quando o output da rede não está acessível.
 _Avoid_: pasta de saída
+
+### Projeto aberto
+
+**Dados do padeiro**:
+O que o padeiro guarda dentro do projeto: a atração, o quadro, o "o que é", o designer que criou, quem salvou, a pasta
+do projeto e o output.
+
+**Estrutura padrão**:
+As pastas da equipe dentro da pasta do projeto (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`, `05_EXTERNOS`).
+
+**Coletar**:
+Copiar para a estrutura padrão os arquivos que o projeto usa, religar e salvar (apelido da janela: O CATADOR).
+_Avoid_: collect
+
+**Migrar**:
+Arrumar uma pasta de projeto antiga na estrutura padrão, com os projetos de dentro religados.
+
+**Banco de fontes**:
+A pasta da equipe na rede com as fontes que os projetos usam.
+
+**Resolver** (as fontes):
+Instalar as fontes que faltam no projeto, pela pasta de fontes do projeto e depois pelo banco de fontes.
+
+**Organizar**:
+Arrumar o painel Project do After nas pastas da equipe e pôr as etiquetas (apelido da janela: O CONTRARREGRA).
+
+**Etiqueta**:
+O comentário de um item do painel Project que diz o que ele é (EXPORTAR, TEMPLATE, FUNDO…).
+_Avoid_: comentário (para a etiqueta)
+
+**Render final**:
+O render que vai para o output.
+
+**Preview**:
+O render de avaliação, que vai para a saída; também a imagem ou o vídeo que mostra um template na lista.
 
 ### Templates
 
@@ -208,16 +280,16 @@ _Avoid_: relinkar
 O painel do botão Buscar, com a busca de caminhos e a busca nos textos.
 
 **Busca de caminhos**:
-A busca das pastas e dos pedidos da equipe pelas fontes: caminhos fixos, atrações, filmes, Teams e Trello.
+A busca das pastas e dos pedidos da equipe pelas origens: caminhos fixos, atrações, filmes, Teams e Trello.
 _Avoid_: busca (sozinha) para as outras buscas
 
 **Busca nos textos**:
 A busca nos textos dos layers do projeto aberto.
 
-**Fonte**:
+**Origem**:
 Cada origem de resultados da busca de caminhos (caminhos fixos, atrações, filmes, Teams, Trello), que dá para ligar e
 desligar.
-_Avoid_: categoria
+_Avoid_: categoria, fonte (é a tipografia)
 
 **Caminho fixo**:
 Uma pasta da equipe que sempre aparece na busca de caminhos, cadastrada na configuração (#INGEST, BASES VALENDO).
@@ -245,6 +317,26 @@ local.
 
 **Índice local**:
 O índice montado por um computador com as pastas que ele escolheu, no lugar do índice da busca.
+
+### Apelidos
+
+| ferramenta / janela | apelido |
+| --- | --- |
+| a barra | O PADEIRO |
+| preencher | A FORMA |
+| duplicar | A FORMINHA |
+| criar (template) | O CONFEITEIRO |
+| janela de projeto (Iniciar / Alterar) | O PROJETISTA |
+| fontes | O TIPÓGRAFO |
+| coletar | O CATADOR |
+| render | O FORNO |
+| renomear (comps e outputs) | O ETIQUETADOR |
+| organizar | O CONTRARREGRA |
+| arquivos | O ARQUIVISTA |
+| importar AEP (versões do After) | O VERSIONADOR |
+| pastas (e o conversor de caminhos) | O ADAPTADOR |
+| buscar | O ACESSORISTA |
+| configuração | O PRODUTOR |
 
 ## Relationships
 
