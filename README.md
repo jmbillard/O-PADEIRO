@@ -353,7 +353,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 ### arquivos
 
-**O ARQUIVISTA**: renomeia os arquivos e as pastas de um diretório com a mesma regra do [renomear](#renomear) das comps (a caixa, os acentos e o separador da [configuração > renomear](docs/producoes.md#-renomear)).
+**O ARQUIVISTA**: renomeia os arquivos e as pastas de um diretório com a mesma regra do [renomear](#renomear) das comps, a da [configuração > renomear](docs/producoes.md#-renomear): o formato pelos termos, o prefixo do formato, a caixa, o separador, a remoção dos especiais e os nomes fixos. **a única diferença**: o formato vem só do nome do próprio arquivo ou pasta, nunca da pasta onde ele está (na comp, a pasta do projeto tem prioridade).
 
 `◖ clique esquerdo` → abre a janela, **sempre vazia**: a pasta é você quem escolhe (nada vem do projeto aberto, da pasta de output ou da última vez).
 
@@ -362,27 +362,31 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 | | |
 | :---: | --- |
 | ❶ | **a pasta**: a pastinha, dentro do campo, ou o caminho colado e `Enter`. a janela abre sem pasta nenhuma |
-| ❷ | **as chaves**: renomear **arquivos**, **pastas**, **incluir as subpastas** (desligada: só a pasta escolhida) e o **prefixo do tipo**. ficam lembradas neste computador |
-| ❸ | **os filtros**: quantos itens em cada situação (todos, mudam, já no padrão, nome repetido ou inválido, desligados) e a busca pelo nome |
+| ❷ | **as chaves**: renomear **arquivos**, **pastas**, **incluir as subpastas** (desligada: só a pasta escolhida) e o **prefixo do formato**. ficam lembradas neste computador. ligar ou desligar as subpastas relê a pasta, mas os nomes que você editou continuam |
+| ❸ | **os filtros**: quantos itens em cada situação (todos, mudam, já no padrão, sem nome ou inválido, desligados) e a busca pelo nome. os que ganharam `_2` estão entre os que mudam |
 | ❹ | **o novo nome**: um campo. o que você edita fica marcado, e a seta ao lado volta para a sugestão. a extensão (e os números de uma sequência) ficam fora do campo: não mudam |
-| ❺ | **a situação**, em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode renomear), o elo (muda e é usado no projeto aberto) e o traço (desligado). a dica diz o motivo |
-| ❻ | **desfazer**: a última renomeação volta, mesmo depois de fechar a janela |
+| ❺ | **a situação**, em ícone: o lápis (muda), o visto (já no padrão), o aviso (ganhou `_2`: muda, mas confira), o alerta (não pode renomear), o elo (muda e é usado no projeto aberto, ou é uma pasta com um arquivo usado dentro) e o traço (desligado). a dica diz o motivo |
+| ❻ | **desfazer**: a última renomeação volta, mesmo depois de fechar a janela. o que não voltar fica guardado para tentar de novo |
 | ❼ | **Renomear**: o primeiro clique mostra quantos mudam e pede a confirmação; o segundo renomeia |
 
-- **o prefixo do tipo vem do próprio nome** do arquivo, nunca da pasta de cima: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`. o arquivo sem um termo de tipo no nome só ganha o formato (`fundo palco.png` → `FUNDO PALCO.png`). as pastas nunca ganham prefixo.
+- **o prefixo do formato vem do nome do próprio** arquivo ou pasta, nunca da pasta onde ele está: `_CRT_HOJE.mov` → `CRT - HOJE.mov`; `rodapé_anitta (final).mov` → `RDP - ANITTA FINAL.mov`; a pasta `rodapés jogo` → `RDP - JOGO`. o arquivo sem um termo de formato no nome só ganha a caixa e o separador (`fundo palco.png` → `FUNDO PALCO.png`), mesmo dentro de uma pasta `RODAPES`.
+- **nomes fixos** → o arquivo que tem o termo de um nome fixo sai sempre com ele, com ou sem o prefixo: `logo_globo_branco.png` → `LOGO GLOBO.png`.
 - **desligar um por um** → a caixa de cada linha; a do título liga e desliga todos.
-- **nome repetido ou inválido** → dois itens que dariam o mesmo nome na mesma pasta, um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) ficam com o alerta e **de fora** da renomeação: o botão renomeia o que dá e eles continuam na lista, como estão, para você resolver depois (editar o novo nome ou desligar a linha).
+- **nome repetido ganha `_2`** → o item que daria um nome que já existe na mesma pasta ganha sozinho o primeiro sufixo livre (`_2`, `_3`…: com `X` e `X_2` já lá, o novo vira `X_3`) e o aviso na linha, para você conferir antes de confirmar; ele **continua** na renomeação. contam os itens da lista (os desligados, com o nome de hoje), os nomes que já estão no disco e os nomes novos, sem diferenciar maiúsculas e com os acentos do Mac e do Windows tratados como iguais. nenhum arquivo é sobrescrito.
+- **nome inválido** → um nome vazio ou com um caractere que o sistema não aceita (`\ / : * ? " < > |`) fica com o alerta e **de fora** da renomeação: o botão renomeia o que dá e ele continua na lista, como está, para você resolver depois (editar o novo nome ou desligar a linha).
 - **exportar a lista** → no **⋯**, *Exportar a lista (.csv)…* salva o nome, o caminho e a data de criação de cada item da lista (todos, como estão agora) numa planilha `.csv` que abre direto no Excel. a sequência de imagens leva a data do primeiro quadro; onde o sistema não guarda a data de criação, vai a da última alteração.
 - **arrastar a pasta** → dá para arrastar uma pasta do Finder / Explorer para a janela: ela entra no campo e é lida (um arquivo solto traz a pasta em que ele está).
 - **o progresso** → a renomeação vai em lotes: uma barra fina abaixo da tabela e a contagem no botão (`20 de 120`) mostram o andamento; o desfazer volta todos os lotes de uma vez.
-- **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando.
-- **sequências de imagens** → uma linha só: o nome muda em todos os quadros e os números ficam como estão.
+- **em uso no projeto** → o arquivo que o projeto aberto usa é **religado** depois de renomeado (e os que estão dentro de uma pasta renomeada também), para não virar footage faltando. a pasta com um arquivo usado dentro mostra o elo e entra na contagem "em uso" do rodapé. o religar é **um passo só** do `Ctrl+Z` do After (*O ARQUIVISTA: religar*), no fim de todos os lotes.
+- **o desfazer** → guarda só a **última** renomeação (um nível), neste computador, e volta tudo de uma vez. se algum item não voltar (aberto em outro programa, sem permissão), a janela diz quantos voltaram e quantos ficaram faltando, e o que faltou **fica guardado**: o botão continua, para tentar de novo depois de resolver. o religar de volta também é um passo só do `Ctrl+Z`.
+- **sequências de imagens** → uma linha só: o nome muda em todos os quadros e os números ficam como estão. vira sequência um grupo de **3 imagens ou mais** com o mesmo nome, o mesmo separador, o número no fim com **3 dígitos ou mais** e a mesma extensão (`fundo_0001.png`, `fundo_0002.png`…); menos que isso, ou vídeo, cada arquivo é uma linha.
+- **até 3000 itens** → a lista lê até 3000 itens (com as subpastas); passou disso, ela para e o rodapé avisa que a pasta tem mais itens do que a lista mostra. os que ficaram de fora contam para o `_2`, mas não são renomeados.
 - **ficam de fora** → os projetos (`.aep`, `.aet` e os de outros programas), os arquivos escondidos e de sistema e as pastas de autosave e de logs do After.
 
 > 🚩 *obs:*\
 > • a ordem é sempre a mesma: os arquivos antes das pastas, e as pastas de dentro para fora.\
 > • um item que não pôde ser renomeado (em uso por outro programa, sem permissão) fica como estava, e o aviso do rodapé diz qual.\
-> • o desfazer do After (`Ctrl+Z`) não desfaz nomes de arquivos: use o botão de desfazer da janela.
+> • o desfazer do After (`Ctrl+Z`) não desfaz nomes de arquivos, só o religar no projeto: use o botão de desfazer da janela.
 
 <br>
 
@@ -503,11 +507,11 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |
 | `#PAD_101` | primeira vez (tour): o arquivo escolhido não é a configuração da equipe, não é um JSON válido, ou a pasta não aceita gravar |
 | `#PAD_110` | migrar: o registro não pôde ser gravado na pasta do projeto (sem permissão, ou a rede caiu no meio): sem registro, nada é movido |
-| `#PAD_113` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
 | `#PAD_114` | arquivos: não há renomeação para desfazer |
 | `#PAD_115` | a forminha: sem comp aberta, sem layer de texto selecionado ou sem texto no input |
 | `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
 | `#PAD_117` | arquivos: a lista (.csv) não pôde ser gravada no lugar escolhido |
+| `#PAD_118` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
 | `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |

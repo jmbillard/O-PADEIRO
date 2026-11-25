@@ -1768,6 +1768,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 				return clean(name);
 			};
+			// a regra do host (files.jsx → padRenameByRule) resumida: o nome fixo vale com e sem o prefixo, e as pastas
+			// também ganham o prefixo do formato (pelo próprio nome, nunca pela pasta de cima)
+			var fixed = function (name) {
+				return / LOGO GLOBO /.test(' ' + clean(name) + ' ') ? 'LOGO GLOBO' : '';
+			};
 			var list = (window.PAD_MOCK_FILES || (window.PAD_MOCK_FILES = [
 				{ dir: '', name: 'antigos', ext: '', kind: 'folder' },
 				{ dir: '', name: 'Sequência fundo', ext: '', kind: 'folder' },
@@ -1780,49 +1785,98 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ dir: '', name: 'tarja_patrocínio  v2', ext: 'png', kind: 'file', use: true },
 				{ dir: '', name: 'fundo palco', ext: 'png', kind: 'file', use: true },
 				{ dir: '', name: 'ref_palco', ext: 'jpg', kind: 'file' },
+				{ dir: '', name: 'logo_globo_branco', ext: 'png', kind: 'file' },
 				{ dir: 'Sequência fundo', name: 'textura_ouro', ext: 'png', kind: 'seq', sep: '_', pad: 4, frames: '_[0001-0120]', count: 120, use: true },
 				{ dir: 'antigos', name: '_CRT_ONTEM', ext: 'mov', kind: 'file' },
 				{ dir: 'antigos', name: 'passagem glitter', ext: 'mov', kind: 'file' }
-			])).filter(function (it) {
+			]));
+			// a pasta com um arquivo usado dentro (em qualquer nível) fica em uso, como no host
+			var inside = function (folder) {
+				var at = (folder.dir ? folder.dir + '/' : '') + folder.name;
+
+				return list.some(function (x) {
+					return x.use && (x.dir === at || x.dir.indexOf(at + '/') === 0);
+				});
+			};
+
+			list = list.filter(function (it) {
 				return a.sub || !it.dir;
 			}).map(function (it) {
-				return Object.assign({ use: false }, it, { plain: it.name === typed(it.name) ? it.name : clean(it.name), typed: it.kind === 'folder' ? clean(it.name) : typed(it.name) });
+				if (it.kind === 'folder') it = Object.assign({}, it, { use: inside(it) });
+
+				return Object.assign({ use: false }, it, { plain: fixed(it.name) || (it.name === typed(it.name) ? it.name : clean(it.name)), typed: fixed(it.name) || typed(it.name) });
 			});
 
 			return { path: a.path, name: String(a.path).split('/').pop(), items: list, truncated: false, undo: window.PAD_MOCK_FILES_UNDO || null };
 		},
 
+		// o registro do desfazer: as trocas de nome (ops), na ordem em que foram feitas. a pasta renomeada leva os de
+		// dentro (o dir deles muda junto)
 		filesRename: function (a) {
-			var before = JSON.stringify(window.PAD_MOCK_FILES);
 			var used = 0;
+			var ops = [];
+			var rename = function (it, from, to) {
+				if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
+					if (x.dir === from) x.dir = to;
+				});
+				it.name = to;
+			};
 
 			a.items.forEach(function (r) {
 				window.PAD_MOCK_FILES.forEach(function (it) {
 					if (it.dir === r.dir && it.name === r.name && it.ext === r.ext) {
 						if (it.use) used++;
-						// a pasta renomeada leva os de dentro
-						if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
-							if (x.dir === it.name) x.dir = r.to;
-						});
-						it.name = r.to;
+						rename(it, r.name, r.to);
+						ops.push({ dir: r.dir, ext: r.ext, kind: it.kind, from: r.name, to: r.to, use: !!it.use });
 					}
 				});
 			});
 			var prev = a.append ? window.PAD_MOCK_FILES_UNDO : null;
 
-			window.PAD_MOCK_FILES_UNDO = { count: a.items.length + (prev ? prev.count : 0), folder: a.path, when: Date.now(), before: prev ? prev.before : before };
+			window.PAD_MOCK_FILES_UNDO = { count: ops.length + (prev ? prev.count : 0), folder: a.path, when: Date.now(), ops: (prev ? prev.ops : []).concat(ops) };
 
-			return { count: a.items.length, relinked: used, errors: [], undo: window.PAD_MOCK_FILES_UNDO };
+			return { count: ops.length, relinked: a.relink === false ? 0 : used, errors: [], ops: ops, undo: window.PAD_MOCK_FILES_UNDO };
 		},
 
+		// o religar no fim dos lotes (um passo do Ctrl+Z): conta os usados no projeto
+		filesRelink: function (a) {
+			return { relinked: (a.ops || []).filter(function (op) {
+				return op.use;
+			}).length };
+		},
+
+		// PAD_MOCK_FILES_UNDO_FAIL = n: os n primeiros itens a voltar não voltam (travados) e ficam no registro
 		filesUndo: function () {
 			var u = window.PAD_MOCK_FILES_UNDO;
+			var fail = window.PAD_MOCK_FILES_UNDO_FAIL || 0;
+			var left = [];
+			var errors = [];
+			var back = 0;
 
 			if (!u) throw new Error('#PAD_114 - não há renomeação para desfazer.');
-			window.PAD_MOCK_FILES = JSON.parse(u.before);
-			window.PAD_MOCK_FILES_UNDO = null;
+			window.PAD_MOCK_FILES_UNDO_FAIL = 0;
 
-			return { count: u.count, relinked: 0, errors: [], folder: u.folder, undo: null };
+			u.ops.slice().reverse().forEach(function (op) {
+				var it = window.PAD_MOCK_FILES.filter(function (x) {
+					return x.dir === op.dir && x.name === op.to && x.ext === op.ext;
+				})[0];
+
+				if (!it || fail-- > 0) {
+					errors.push({ name: op.to + (op.ext ? '.' + op.ext : ''), error: it ? 'não foi possível renomear (em uso ou sem permissão)' : 'não está mais na pasta' });
+					left.unshift(op);
+
+					return;
+				}
+				if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
+					if (x.dir === op.to) x.dir = op.from;
+				});
+				it.name = op.from;
+				back++;
+			});
+
+			window.PAD_MOCK_FILES_UNDO = left.length ? { count: left.length, folder: u.folder, when: u.when, ops: left } : null;
+
+			return { count: back, missing: errors.length, relinked: 0, errors: errors, folder: u.folder, undo: window.PAD_MOCK_FILES_UNDO };
 		},
 
 		openFolder: function (a) {
@@ -1841,6 +1895,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			await wait(80);
 
 			if (typeof api[method] !== 'function') throw new Error('método desconhecido: ' + method);
+			// as chamadas do arquivista, para os testes conferirem a ordem (ex: o religar uma vez só, no fim)
+			if (/^files/.test(method)) (window.PAD_MOCK_FILES_CALLS = window.PAD_MOCK_FILES_CALLS || []).push(method);
 
 			return api[method](args);
 		}
