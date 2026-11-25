@@ -10,16 +10,16 @@
 	<link rel="stylesheet" href="css/attractions.css">
 	<link rel="stylesheet" href="css/icons.css">
 	<link rel="stylesheet" href="css/fonts.css">
-	<link rel="stylesheet" href="css/collect.css">
+	<link rel="stylesheet" href="css/catador.css">
 	<link rel="stylesheet" href="css/theme.css">
 </head>
 
-<body class="fonts-page collect-page">
+<body class="fonts-page coletar-page">
 	<!-- as mídias do projeto: uma linha por arquivo, com a miniatura, o tipo, os layers e o estado (na pasta do
 	     projeto, na rede, neste computador, faltando). clicar mostra o item no painel Project. Coletar copia para a
 	     estrutura do projeto; o triângulo procura os arquivos faltando
-	     (no volume certo e, pelo nome, nas pastas do projeto) e mostra onde achou; o botão principal relinka -->
-	<main class="fonts" id="collect">
+	     (no volume certo e, pelo nome, nas pastas do projeto) e mostra onde achou; o botão principal religa -->
+	<main class="fonts" id="coletar">
 		<p class="fw-file" id="fw-file"></p>
 		<!-- o resumo: quantos arquivos em cada situação; cada etiqueta liga e desliga a situação na lista -->
 		<div class="cw-filter" id="cw-filter" hidden></div>
@@ -27,12 +27,12 @@
 		<p class="fw-empty" id="fw-empty" hidden></p>
 
 		<!-- a migração (menu ⋯): a pasta de hoje à esquerda, a estrutura da configuração à direita e as faixas, por tipo
-		     de arquivo, ligando o que vai para onde (collect.js) -->
+		     de arquivo, ligando o que vai para onde (catador.js) -->
 		<div class="mg" id="mg" hidden></div>
 
 		<div class="action-bar is-anchored fw-bar">
 			<button type="button" class="io-button" id="mg-back" title="voltar para a lista de arquivos" aria-label="voltar para a lista de arquivos" hidden><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>
-			<button type="button" class="io-button cw-relink" id="cw-relink" title="procurar os arquivos faltando: nos volumes da rede (montando se precisar) e, pelo nome, nas pastas do projeto, na pasta de output e nas pastas da fila de render. mostra onde achou cada um, para relinkar" aria-label="resolver arquivos faltando" disabled><svg viewBox="0 0 24 24"><path class="relink-tri" d="M10.3 4.6a2 2 0 0 1 3.4 0l7.1 12.3a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" /><g class="relink-mark"><path d="M12 9.5v4.2" /><path d="M12 16.9v.1" /></g></svg></button>
+			<button type="button" class="io-button cw-religar" id="cw-religar" title="procurar os arquivos faltando: nos volumes da rede (montando se precisar) e, pelo nome, nas pastas do projeto, na pasta de output e nas pastas da fila de render. mostra onde achou cada um, para religar" aria-label="resolver arquivos faltando" disabled><svg viewBox="0 0 24 24"><path class="religar-tri" d="M10.3 4.6a2 2 0 0 1 3.4 0l7.1 12.3a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" /><g class="religar-mark"><path d="M12 9.5v4.2" /><path d="M12 16.9v.1" /></g></svg></button>
 			<details class="actions-menu fw-menu" id="app-menu">
 				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 				<div class="menu-popover">
@@ -55,7 +55,7 @@
 	<script src="icons/_snapshot.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
-	<script src="js/collect.js"></script>
+	<script src="js/catador.js"></script>
 </body>
 
 </html>

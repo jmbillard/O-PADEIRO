@@ -26,8 +26,10 @@ o painel de templates mostra os templates da produção escolhida no rodapé del
 2. busque ou navegue pelas pastas.
 3. selecione o template (clique ou `Enter`): o foco vai para o texto, com o exemplo selecionado. é só digitar por cima.
 4. preencha o **input** seguindo as **dicas**.
-5. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'.
-6. o botão '*Preencher… e pôr na fila*' preenche e já cria a fila de render, com o preset lembrado (o do template, o último usado ou o H.264). para revisar antes a ordem, o que fica de fora e o preset, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila pede o preset de render e '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). sem preset nenhum, a tela da fila aparece mesmo desligada.
+5. o **preset de render** fica no rodapé, entre os botões redondos e o '*Preencher*', e é escolhido antes de preencher (se quiser outro). ele já vem com o preset lembrado: o do template, o último usado ou, na primeira vez, o H.264 de 15 Mbps. quando o nome inteiro não cabe, o seletor mostra o nome curto, a primeira e a última parte (`H.264 · 15 Mbps`); o nome inteiro aparece na dica e na lista aberta (digite para filtrar). numa janela estreita, o seletor fica na linha dos botões redondos e o '*Preencher*' vai inteiro para a linha de baixo. template sem pasta de output: o seletor some, e as versões ficam no projeto, sem fila de render (a dica do botão diz isso).
+6. clique em '*Preencher*' (ou `Ctrl+Enter`, nos dois sistemas). com o texto ainda igual ao exemplo do template, o botão diz '*Preencher o exemplo*'. ele preenche e já cria a fila de render com o preset do rodapé, que fica lembrado no template. para revisar antes a ordem e o que fica de fora, ligue '*Revisar a fila antes de criar*' no menu **⋯** do painel (neste computador): aí o botão só preenche, e a tela da fila mostra o preset no título ('*fila de render · H.264 · 15 Mbps*') e espera '*Criar fila de render*' (o mesmo atalho, `Ctrl+Enter`). se o preset escolhido não estiver mais no After na hora de preencher, a tela da fila aparece mesmo desligada, com o preset lembrado no lugar dele.
+
+> 🚩 *obs:* a lista dos presets é a deste After, guardada pelo painel neste computador: ao abrir, ela aparece na hora, sem mexer no projeto. o padeiro só lê os presets do After quando não há lista guardada (com a fila de render vazia, uma comp de passagem entra na fila e sai, num passo só de desfazer); depois, cada preenchimento atualiza a lista.
 
 ### a lista
 
@@ -59,10 +61,10 @@ no topo da lista, antes das pastas, ficam três atalhos:
 - **recentes** → os templates usados por último.
   - um template entra nos recentes quando você **preenche** (ao clicar em '*Preencher*', quando o template começa a ser importado) ou **importa** (duplo clique na lista ou o botão de importar, no rodapé). só selecionar não conta.
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
-  - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **neste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
+  - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **deste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos que o limite.
-- **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **neste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
-- **preset de render** → fixados e recentes lembram o último preset de render usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
+- **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **deste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
+- **preset de render** → fixados e recentes lembram o último preset de render usado em cada um: na próxima vez, ele já vem escolhido no rodapé (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 
 > 🚩 *obs:*\
@@ -97,7 +99,7 @@ ao selecionar um template, o padeiro confere se as fontes da pasta `FONTS` dele 
 
 > ![fila de render](images/templates-fila.webp)
 
-depois de preencher, o padeiro mostra cada versão criada e pede o **preset de render** (os presets de output module do After Effects). os outputs vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), o output vai para o **output local**, uma pasta deste computador ([configuração > templates](producoes.md#-templates)) e aparece o aviso `#PAD_019`. o preset já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma).
+depois de preencher, o padeiro mostra cada versão criada e põe na fila com o **preset de render** escolhido no rodapé (os presets de output module do After Effects). os outputs vão para as pastas de output do template: no volume montado (`VFX`, `VFX-1` … `VFX-5`; sem nenhum, o padeiro monta o compartilhamento), e a pasta que ainda não existe é criada no servidor. sem acesso (rede fora, sem permissão), o output vai para o **output local**, uma pasta deste computador ([configuração > templates](producoes.md#-templates)) e aparece o aviso `#PAD_019`. o preset do rodapé já vem escolhido: o último usado neste template (se ele estiver nos fixados ou recentes), o último usado em geral ou, na primeira vez, o **H.264 de 15 Mbps** (o padrão do After Effects, em qualquer idioma). com '*Revisar a fila antes de criar*' ligado, a tela abaixo aparece antes, com o preset no título.
 
 - **ordem** → arraste cada comp pelo puxador (os pontinhos à esquerda) para mudar a ordem da fila; os números acompanham.
 - **lixeira** (à direita de cada comp) → tira a comp da fila de render; ela continua no projeto. '*desfazer*', logo abaixo da lista, devolve.
@@ -105,7 +107,7 @@ depois de preencher, o padeiro mostra cada versão criada e pede o **preset de r
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
 
-> 🚩 *obs:* com algum erro (um template que não preencheu, uma saída que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
+> 🚩 *obs:* com algum erro (um template que não preencheu, um output que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
 
 para criar um novo preset de output, acesse:\
 `Edit` > `Templates` > `Output Module...`
@@ -114,13 +116,15 @@ para criar um novo preset de output, acesse:\
 
 o padeiro executa as seguintes tarefas, em ordem:
 
-1. importar o projeto do template.
+1. importar o projeto do template. a comp principal é procurada **só entre os itens que esta importação trouxe**: uma comp com a etiqueta TEMPLATE e o mesmo nome que já estava no projeto (de outra rodada, de outro template) fica como está.
+   - **precomp de nome repetido** → uma comp do template com o nome de uma comp que já estava no projeto (a `BG` de outro template, a `BG` da rodada anterior do mesmo template) ganha `_2`, `_3`… e as expressões do template que a citam em `comp("BG")` (na transformação, nos efeitos, nas máscaras, no texto, em qualquer propriedade) passam a citar o nome novo. sem isso, o After leria a comp antiga: ele acha a primeira comp do projeto com o nome. só muda o nome inteiro, entre aspas, dentro de `comp(…)`: `comp("BG FUNDO")`, `thisComp.layer("BG")` e um nome calculado (`comp(nome)`) ficam como estão.
 2. duplicar a comp principal para cada bloco do input (e cada variação de layout).
+   - **precomp que lê a comp principal pelo nome** → uma precomp (em qualquer nível dentro da principal) com uma expressão como `comp("RODAPE").layer("TITULO")` é duplicada com cada versão, com o nome `PRECOMP (NOME DA VERSÃO)`, e a expressão passa a ler a versão. as precomps acima dela, no caminho até a principal, também (para a versão usar a dela). as expressões da própria versão que citam a principal também passam a citar a versão. as precomps sem essas expressões continuam as mesmas para todas as versões. no fim, a principal sai e as precomps de antes, sem uso, saem junto.
 3. preencher os layers editáveis com os campos do bloco. as mesmas regras do [duplicar](#a-forminha):
    - **campo vazio ou a menos** → o layer dele fica **escondido** naquela versão (não fica com o texto de exemplo do template). vale para os dois métodos: o conteúdo do texto e o nome do layer.
    - **texto com keyframes** → o texto entra em **todos os keyframes** do *Source Text*, cada um com o seu estilo (senão a versão volta ao texto do template no keyframe seguinte).
 4. renomear as comps a partir do conteúdo (ou pelo layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name)). **nome que já existe** no projeto (ou numa versão criada antes, no mesmo preenchimento) ganha um sufixo: `_2`, `_3`… (vale também para o nome vindo do layer de nome).
-5. organizar o projeto no padrão da PROMO.
+5. organizar **só o que entrou neste preenchimento** no padrão da PROMO (as pastas de [configuração > organizar](producoes.md#-organizar)): cada item novo (as versões, as precomps e os arquivos do template) vai para a pasta configurada, criada se faltar. as pastas e os itens que já estavam no projeto ficam como estavam (uma pasta vazia do designer também fica); saem só as pastas novas que ficaram vazias, como a do `.aep` importado. o botão **Organizar** da barra continua organizando o projeto inteiro.
 6. adicionar as comps à fila de render.
 7. definir os caminhos de output.
 8. rodar o script do template (`_script.js`), se existir ([abaixo](#script-do-template-_scriptjs)).
@@ -207,7 +211,7 @@ um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO
 
 #### exemplos
 
-**1 · a cor do label e um comentário nas versões criadas**
+**1 · a cor do label e uma etiqueta nas versões criadas**
 
 ```js
 for (var i = 0; i < newCompsArray.length; i++) {
@@ -279,7 +283,7 @@ for (var v = 0; v < inputTextArray.length; v++) {
 
 > ![editor de config](images/templates-config.webp)
 
-o lápis ao lado do nome do template abre um formulário para o `_config.json`: atração (a mesma busca do [criador](criador.md), obrigatória), o que é, comp principal, prefixo, tempo de referência, caixa de texto, separador, exemplo, dicas, layers editáveis (com a ordem), variações de layout (`inputFx`) e pastas de import e output. em um template sem config, o mesmo botão cria o arquivo.
+o lápis ao lado do template abre um formulário para o `_config.json`: atração (a mesma busca do [criador](criador.md), obrigatória), o que é, comp principal, prefixo, tempo de referência, caixa de texto, separador, exemplo, dicas, layers editáveis (com a ordem), variações de layout (`inputFx`) e pastas de import e output. em um template sem config, o mesmo botão cria o arquivo.
 
 > 🚩 *obs:*\
 > • o formulário mostra o nome final da comp com o exemplo e confere tudo antes de salvar.\

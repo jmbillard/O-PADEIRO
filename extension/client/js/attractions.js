@@ -1,12 +1,12 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> ATRAÇÕES — a busca e a atração nova (janela PROJETO e criador de templates)
+> ATRAÇÕES — a busca e a atração nova (O PROJETISTA e O CONFEITEIRO)
 ---------------------------------------------------------------
 
 A busca das atrações (o índice do webhook, a mesma cópia do acessorista, ou o índice local da configuração >
-buscar), as categorias da aba PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
-achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD_ATTRACTIONS
+buscar), os tipos da aba TIPOS DE PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
+achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTRACTIONS
 
 */
 
@@ -37,8 +37,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [] };
-	var CARD_DAYS = 7; // os cards do Trello que viram sugestão na claquete: os que entraram nos últimos 7 dias
+	var SEARCH_INDEX = window.PAD_SEARCH_INDEX; // qual índice, a cópia e o download (js/search-index.js)
+	// copyNote: no modo local, a linha com a data da cópia em uso ('' fora dele)
+	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [], copyNote: '' };
+	var CARD_DAYS = 7; // os cards do Trello que viram sugestão n'O PROJETISTA: os que entraram nos últimos 7 dias
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
 	function nodeFs() {
@@ -53,61 +55,16 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	function refreshIndex(fs) {
 		if (source.refreshing) return source.refreshing;
 
-		var url = source.info.url;
-		var file = source.info.cache;
+		var info = source.info;
 
-		source.refreshing = new Promise(function (resolve, reject) {
-			var https = require(/^https:/i.test(url) ? 'https' : 'http');
-			var zlib = require('zlib');
-			var req = https.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: 25000 }, function (res) {
-				if (res.statusCode !== 200) {
-					res.resume();
-					reject(new Error('HTTP ' + res.statusCode));
-					return;
-				}
-
-				var stream = /gzip/i.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
-				var chunks = [];
-
-				stream.on('data', function (c) {
-					chunks.push(c);
-				});
-				stream.on('error', reject);
-				stream.on('end', function () {
-					try {
-						var text = Buffer.concat(chunks).toString('utf8');
-
-						unwrapIndex(JSON.parse(text)); // confere antes de trocar a cópia
-						fs.writeFileSync(file + '.part', text, 'utf8');
-						fs.renameSync(file + '.part', file);
-						resolve();
-					} catch (err) {
-						reject(err);
-					}
-				});
-			});
-
-			req.on('timeout', function () {
-				req.destroy(new Error('tempo esgotado'));
-			});
-			req.on('error', reject);
+		source.refreshing = SEARCH_INDEX.download(info.url).then(function (text) {
+			SEARCH_INDEX.unwrap(JSON.parse(text)); // confere antes de trocar a cópia
+			SEARCH_INDEX.writeCopy(fs, info, text);
 		}).finally(function () {
 			source.refreshing = null;
 		});
 
 		return source.refreshing;
-	}
-
-	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
-	function unwrapIndex(data) {
-		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
-
-		var item = data instanceof Array ? data[0] : data;
-
-		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
-		if (item && item.indice && typeof item.indice === 'object') return item.indice;
-
-		return data;
 	}
 
 	// a pasta da atração no caminho do projeto, como mais um nome de busca: …/PROGRAMAS/BBB/BBB 2026/01 PROJETOS →
@@ -231,9 +188,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	// as atrações do índice do webhook (a cópia do acessorista). a cópia que existir vale na hora; velha, uma nova
 	// é baixada em segundo plano pelo Node do painel (o curl do host trava o After Effects e a digitação). só sem
-	// cópia nenhuma o host baixa (plano B).
+	// cópia nenhuma o host baixa (plano B). no modo local, só a cópia: nada de rede.
 	async function webhookCandidates(fs) {
-		var file = source.info.cache;
+		var copyOnly = SEARCH_INDEX.choice(source.info) === 'copia';
+		var file = SEARCH_INDEX.copyPath(fs, source.info);
 		var stat = null;
 
 		try {
@@ -242,13 +200,17 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		var text = '';
 
-		if (!stat) {
+		if (copyOnly) {
+			if (!stat) throw new Error('#PAD_058 - modo local: não há cópia do índice da busca neste computador. com a rede da equipe, desligue o modo local; ou escolha o índice local em configuração > buscar.');
+		} else if (!stat) {
 			try {
 				await refreshIndex(fs);
+				file = SEARCH_INDEX.copyPath(fs, source.info);
 				stat = fs.statSync(file);
 			} catch (err) {
 				try {
 					text = (await call('searchDownload', {})).text;
+					file = SEARCH_INDEX.copyPath(fs, source.info);
 					stat = fs.statSync(file);
 				} catch (err2) { }
 			}
@@ -256,7 +218,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			refreshIndex(fs).catch(function () { });
 		}
 
-		var stamp = 'webhook|' + (stat ? stat.mtimeMs : 0);
+		var stamp = 'webhook|' + file + '|' + (stat ? stat.mtimeMs : 0);
 
 		if (source.list && source.stamp === stamp) return source.list;
 
@@ -266,7 +228,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 		}
 
-		var data = unwrapIndex(JSON.parse(text));
+		var data = SEARCH_INDEX.unwrap(JSON.parse(text));
 		var roots = data.roots || {};
 		var full = function (p) {
 			var m = /^([a-z]+):(.*)$/.exec(p || '');
@@ -275,6 +237,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		};
 
 		source.stamp = stamp;
+		source.copyNote = copyOnly ? SEARCH_INDEX.copyNote(data.generated, stat ? stat.mtimeMs : 0) : '';
 		source.cards = recentCards(data.trello);
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
@@ -292,7 +255,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}).concat((data.filmes || []).filter(function (f) {
 			return f && f.name;
 		}).map(function (f) {
-			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela projeto)
+			// os filmes: o nome, o ano e o output; a pasta do projeto vem do tipo de filmes (janela de projeto)
 			return { name: f.name, cat: 'FILME', year: f.year ? String(f.year) : '', isFilm: true, path: '', out: full(f.out), depth: 1, keys: [wordKey(f.name)].filter(function (k) {
 				return k.f;
 			}) };
@@ -323,7 +286,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	/* ---------------------------------------------------------------
-	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). a claquete
+	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). O PROJETISTA
 	   mostra com o campo vazio, a produzir primeiro. baixados uma vez por janela aberta, pelo Node do painel (sem
 	   travar o After); sem o Node (navegador de teste), o host responde.
 	   → [{ name, year, exib, sessao, poster }]
@@ -423,10 +386,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	/* ---------------------------------------------------------------
-	   os cards do Trello: o grupo NO TRELLO da claquete (um card por linha, com o designer e o status) e a
+	   os cards do Trello: o grupo NO TRELLO d'O PROJETISTA (um card por linha, com o designer e o status) e a
 	   referência para abrir o projeto da atração. só os cards que entraram nos últimos 7 dias ('at', a data) e não
-	   estão finalizados ('fim'). o índice de antes (sem 'at') não sugere nada. os de filme ('fil') vêm marcados: a
-	   claquete liga cada um ao filme pelo link do card (o 'trello' do webhook dos filmes).
+	   estão finalizados ('fim'). o índice de antes (sem 'at') não sugere nada. os de filme ('fil') vêm marcados: O
+	   PROJETISTA liga cada um ao filme pelo link do card (o 'trello' do webhook dos filmes).
 	   → [{ claq, red, ed, des (o designer), st (o status: PRODUZINDO, EM APROVAÇÃO…), card, at, time, atr, fil, words }]
 	   --------------------------------------------------------------- */
 
@@ -460,25 +423,26 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		if (!hits.length) return null;
 
-		// all: todos os cards dela (o mais novo primeiro): a claquete mostra um por linha (o prêmio com um card por categoria)
+		// all: todos os cards dela (o mais novo primeiro): O PROJETISTA mostra um por linha (o prêmio, com um card para cada peça)
 		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1, all: hits.map(function (h) {
 			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at };
 		}) };
 	}
 
-	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
-	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
+	// a configuração da busca mudou com a janela aberta (js/search-index.js)? ao voltar para a janela, a próxima busca
+	// usa a origem nova (sem chamar o host a cada tecla)
 	async function watchSearchSource() {
 		if (document.hidden || !source.info) return;
 
 		try {
 			var info = await call('searchInfo');
 
-			if (info.mode === source.info.mode && info.url === source.info.url && String(info.folders) === String(source.info.folders)) return;
+			if (SEARCH_INDEX.signature(info) === SEARCH_INDEX.signature(source.info)) return;
 
 			source.info = info;
 			source.list = null;
 			source.stamp = '';
+			source.copyNote = '';
 		} catch (err) { }
 	}
 
@@ -488,7 +452,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		if (!source.info) source.info = await call('searchInfo');
 
 		var fs = nodeFs();
-		var local = source.info.mode === 'local';
+		var local = SEARCH_INDEX.choice(source.info) === 'indiceLocal';
 		var canLocal = local && window.PAD_LOCAL_INDEX && PAD_LOCAL_INDEX.available();
 
 		if (local ? !canLocal : !fs) return null; // navegador de teste: o host responde
@@ -496,8 +460,19 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return local ? localCandidates() : await webhookCandidates(fs);
 	}
 
-	// → { claquete, matches: [{ name, category, path, out, display, score }], cards } (o mesmo formato do host). cards:
-	// os cards recentes do Trello (todos: a claquete escolhe os que batem com o digitado, js/project.js)
+	// sem o Node do painel (navegador de teste), no modo local: a data da cópia que o host usa, lida uma vez
+	async function hostCopyNote() {
+		if (source.copyNote || SEARCH_INDEX.choice(source.info) !== 'copia') return;
+
+		try {
+			var copy = await call('searchCopy');
+
+			if (copy.text) source.copyNote = SEARCH_INDEX.copyNote(SEARCH_INDEX.unwrap(JSON.parse(copy.text)).generated, copy.modified);
+		} catch (err) { }
+	}
+
+	// → { claquete, matches: [{ name, tipo, path, out, display, score }], cards } (o mesmo formato do host). cards:
+	// os cards recentes do Trello (todos: O PROJETISTA escolhe os que batem com o digitado, js/projetista.js)
 	async function findAttractions(claq) {
 		var list = await candidates();
 
@@ -505,10 +480,12 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			// navegador de teste (ou sem o Node): o host responde; os cards passam pelo mesmo filtro dos do índice
 			var res = await call('projectLookup', { claquete: claq });
 
+			await hostCopyNote();
+
 			return { claquete: res.claquete, matches: res.matches || [], cards: recentCards(res.cards) };
 		}
 
-		var local = source.info.mode === 'local';
+		var local = SEARCH_INDEX.choice(source.info) === 'indiceLocal';
 		var words = aepName(claq).split(' ').filter(Boolean);
 		var found = [];
 
@@ -565,27 +542,27 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			seen[key] = true;
 			return true;
 		}).slice(0, 40).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
+			return { name: f.it.name, tipo: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
 		});
 
 		return { claquete: aepName(claq), matches: matches, cards: local ? [] : source.cards || [] };
 	}
 
-	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
-	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
-	function categoryBase(c, fallback) {
+	// Os tipos de projeto (configuração > TIPOS DE PROJETO): o caminho de cada um, com tokens. o que não pode ser
+	// acessado (rede fora ou modo local) vai para a pasta dos projetos deste computador: {tipo}/{atracao}
+	function tipoBase(c, fallback) {
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{tipo}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
 		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
-	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
-	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido na claquete) {categoria}
+	// O caminho do tipo com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
+	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido n'O PROJETISTA) {tipo} (e o nome antigo dele)
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
-	// o ano do projeto: o de agora, ou o escolhido na claquete (o BBB do ano que vem começa antes)
+	// o ano do projeto: o de agora, ou o escolhido n'O PROJETISTA (o BBB do ano que vem começa antes)
 	var yearOverride = 0;
 
 	function projectYear() {
@@ -608,16 +585,28 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}).join('');
 	}
 
+	// a sigla do designer deste computador ({designer}): a janela de projeto diz qual é (setDesigner), quando lê o
+	// projeto aberto
+	var designerSigla = '';
+
+	function setDesigner(sigla) {
+		designerSigla = aepName(sigla || '');
+	}
+
 	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
 	// month: o mês do card do Trello ({ index: 0-11, year }), que vale mais que a data de hoje (monthOf): JANEIRO NA
 	// GLOBO → os tokens de mês e de ano são os de janeiro (o próximo)
-	function fillPattern(pattern, name, category, year, month) {
+	function fillPattern(pattern, name, tipo, year, month) {
 		var d = new Date();
 
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name), ano_producao: year };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), letra: letterOf(name), ano_producao: year, designer: designerSigla };
+		// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo)
+		var TOKENS_ANTIGOS = { categoria: 'tipo', usuario: 'designer' };
+
+		for (var antigo in TOKENS_ANTIGOS) values[antigo] = values[TOKENS_ANTIGOS[antigo]];
 
 		if (month && month.index >= 0) {
 			var num = ('0' + (month.index + 1)).slice(-2);
@@ -632,16 +621,16 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		});
 	}
 
-	// as categorias da equipe (configuração > PROJETO); sem nenhuma, a pasta é livre (escolher a pasta…)
+	// os tipos de projeto da equipe (configuração > TIPOS DE PROJETO); sem nenhum, a pasta é livre (escolher a pasta…)
 	async function newBases() {
 		var cfg = null;
 
 		try {
-			cfg = await call('projectCategories');
+			cfg = await call('projectTypes');
 		} catch (err) { }
 
-		return (cfg && cfg.categories || []).map(function (c) {
-			return categoryBase(c, cfg.fallback);
+		return (cfg && cfg.tipos || []).map(function (c) {
+			return tipoBase(c, cfg.fallback);
 		});
 	}
 
@@ -677,7 +666,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 
 	/* ---------------------------------------------------------------
-	   a atração nova: o caminho da categoria com os tokens trocados (sem categoria: dentro da pasta escolhida)
+	   a atração nova: o caminho do tipo com os tokens trocados (sem tipo: dentro da pasta escolhida)
 	   --------------------------------------------------------------- */
 
 	function resolveNew(base, name) {
@@ -694,17 +683,17 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return { name: name, path: base.path.replace(/[\\\/]+$/, '') + sep + aepName(name), display: base.display + '/' + aepName(name), out: '', isNew: true };
 	}
 
-	// o ícone da categoria da atração (aba PROJETO), ou a pasta
+	// o ícone do tipo da atração (aba TIPOS DE PROJETO), ou a pasta
 	function iconFor(match, bases) {
 		var base = (bases || []).filter(function (b) {
-			return b.label && match.category && aepName(b.label) === aepName(match.category);
+			return b.label && match.tipo && aepName(b.label) === aepName(match.tipo);
 		})[0];
 
-		return (base && PAD_UTIL.categoryIcon(base.icon)) || ICONS.folder;
+		return (base && PAD_UTIL.tipoIcon(base.icon)) || ICONS.folder;
 	}
 
 	/* ---------------------------------------------------------------
-	   o seletor: o campo, os cartões (as achadas e a "nova atração") e a nova (nome + categoria) embaixo.
+	   o seletor: o campo, os cartões (as achadas e a "nova atração") e a nova (nome + tipo) embaixo.
 	   escolher uma achada fecha a lista; a nova fica aberta enquanto é preenchida.
 	   picker(root, { onChange(atr | null) }) → { get(), set(atr), focus() }
 	   atr: { name, path, out, display, isNew }
@@ -719,7 +708,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	};
 	var LIST_MAX = 4;
 	var LOOKUP_MS = 120;
-	var PREF_BASE = 'pad.project.base'; // a última categoria de uma atração nova (a mesma da janela PROJETO)
+	var PREF_BASE = 'pad.project.base'; // o último tipo de uma atração nova (o mesmo da janela de projeto)
 
 	function el(tag, className, text) {
 		var node = document.createElement(tag);
@@ -874,7 +863,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			if (window.PAD_DROPDOWN) {
 				PAD_DROPDOWN.enhance(select, function (value) {
 					var base = st.bases[+value];
-					var icon = value === 'pick' ? ICONS.search : (base && PAD_UTIL.categoryIcon(base.icon)) || ICONS.folder;
+					var icon = value === 'pick' ? ICONS.search : (base && PAD_UTIL.tipoIcon(base.icon)) || ICONS.folder;
 
 					return icon.replace('<svg', '<svg class="dropdown-svg"');
 				});
@@ -925,7 +914,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				list.textContent = '';
 				list.appendChild(group(shown.length ? 'atrações' : 'nenhuma atração com esse nome'));
 				shown.forEach(function (m, i) {
-					list.appendChild(comboRow(iconFor(m, st.bases), m.name.toUpperCase(), m.category || '', st.choice === 'm' + i, function () {
+					list.appendChild(comboRow(iconFor(m, st.bases), m.name.toUpperCase(), m.tipo || '', st.choice === 'm' + i, function () {
 						choose('m' + i);
 					}, m.display));
 				});
@@ -1094,11 +1083,12 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		displayPath: displayPath,
 		find: findAttractions,
 		candidates: candidates,
-		categories: newBases,
+		tipos: newBases,
 		fillPattern: fillPattern,
 		monthOf: monthOf,
 		projectYear: projectYear,
 		setYear: setYear,
+		setDesigner: setDesigner,
 		shiftYear: shiftYear,
 		letterOf: letterOf,
 		resolveNew: resolveNew,
@@ -1113,6 +1103,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		pathTail: pathTail,
 		mode: function () {
 			return source.info ? source.info.mode : '';
+		},
+		// no modo local: 'modo local · cópia do índice de …' (a cópia em uso na última busca); fora dele, ''
+		copyNote: function () {
+			return source.copyNote;
 		},
 		picker: picker
 	};

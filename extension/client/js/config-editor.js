@@ -28,7 +28,7 @@ são preservadas ao salvar.
 		['layerName', 'nome do layer']
 	];
 
-	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
+	var RENAME_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	/* =========================================================
 	   Utilidades
@@ -268,7 +268,7 @@ são preservadas ao salvar.
 		atrPicker.set(base.atracao || null);
 		fields.atracao = { wrap: atrWrap, control: atrPicker.input };
 		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: SERVIÇO, CONVIDADO, AESP. identifica o template no log.', 'file');
-		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
+		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (etiqueta TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */
 
@@ -575,7 +575,7 @@ são preservadas ao salvar.
 			}
 
 			if (!cfg.atracao) bad('atracao', 'escolha a atração do template (ou crie uma nova).');
-			if (cfg.configName === '') bad('configName', 'preencha o que é (o nome do template).');
+			if (cfg.configName === '') bad('configName', 'preencha o que é.');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 
@@ -649,7 +649,7 @@ são preservadas ao salvar.
 			if (kind === 'lowerCase') info = info.toLowerCase();
 
 			var prefix = text('prefix').trim();
-			var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+			var name = cleanName(((prefix ? prefix + RENAME_SEPARATOR : '') + info).toUpperCase());
 
 			namePreview.textContent = '';
 			namePreview.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));

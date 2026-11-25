@@ -163,7 +163,7 @@ async function type(p, text, ms) {
 
 // as fontes do projeto com arquivos deste computador (a prévia aparece escrita na própria fonte)
 const DOC_FONTS = `(() => {
-	window.PAD_MOCK_FONTS = { supported: true, bank: '/Volumes/VFX/BANCO DE FONTES', upload: true, machineUpload: true, projectFonts: '/Volumes/VFX/PROGRAMAS/DOMINGAO/02 ARQUIVOS/FONTS', project: 'DOMINGAO COM HUCK SERVICO.aep', user: 'JMBILLARD', machine: 'MAC',
+	window.PAD_MOCK_FONTS = { supported: true, bank: '/Volumes/VFX/BANCO DE FONTES', upload: true, uploadDesteComputador: true, projectFonts: '/Volumes/VFX/PROGRAMAS/DOMINGAO/02 ARQUIVOS/FONTS', project: 'DOMINGAO COM HUCK SERVICO.aep', user: 'JMBILLARD', machine: 'MAC',
 		fonts: [
 			{ name: 'Inter-Bold', family: 'Inter', style: 'Bold', location: '/usr/share/fonts/opentype/inter/Inter-Bold.otf', missing: false, layers: 4, state: 'ok' },
 			{ name: 'JetBrainsMono-Medium', family: 'JetBrains Mono', style: 'Medium', location: '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Medium.ttf', missing: false, layers: 2, state: 'up' },
@@ -203,7 +203,7 @@ const DOC_PREVIEWS = `(() => {
 	});
 })();`;
 
-const CATEGORIES = { categories: [
+const TIPOS_DE_PROJETO = { tipos: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
 	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
@@ -224,7 +224,8 @@ const SHOTS = {
 		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#drawer-projeto .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
 	] },
 	'barra-vertical': { w: 170, h: 640, url: 'bar.html' },
-	// as gavetas abertas: Projeto (Criar, Fontes, Coletar) e Templates (Preencher, Criar)
+	// as gavetas abertas: Projeto (Iniciar / Alterar, Fontes, Coletar, Render), Organização (Renomear, Organizar,
+	// Arquivos) e Templates (Preencher, Duplicar, Criar)
 	'barra-gaveta-projeto': { w: 1100, h: 110, url: 'bar.html?mock=localfiles', async run(p) {
 		await p.click('#drawer-projeto');
 		await p.waitForTimeout(700);
@@ -250,23 +251,23 @@ const SHOTS = {
 	'forninho-preencher': { w: 1080, h: 860, url: 'index.html', init: DOC_PREVIEWS, run: selectTemplate, marks: [
 		{ sel: '.tree-item.is-selected .tree-row' }, { sel: '#preview-card' }, { sel: '#input' }, { sel: '#tip' }, { sel: '#btn-import', round: true }, { sel: '#btn-output', round: true }, { sel: '#btn-fill' }
 	] },
-	forma: { w: 1180, h: 780, url: 'maker.html', marks: [
+	forma: { w: 1180, h: 780, url: 'confeiteiro.html', marks: [
 		{ sel: '#checklist' }, { sel: '#atr-picker' }, { sel: '#f-example' }, { sel: '#name-preview' }, { sel: '#preview-card' }, { sel: '#fonts' }, { sel: '#layers' }, { sel: '#fx-card' }, { sel: '#btn-test' }, { sel: '#btn-save' }
 	] },
-	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
+	'claquete-atracao': { w: 480, h: 640, url: 'projetista.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .cat-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
-	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .tipo-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
+	'claquete-editor': { w: 480, h: 520, url: 'projetista.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
 	tipografo: { w: 480, h: 760, url: 'fonts.html', init: DOC_FONTS, async run(p) {
 		await p.waitForTimeout(300);
 		await p.evaluate(() => { const l = document.getElementById('fw-list'); if (l) l.scrollTop = 0; window.scrollTo(0, 0); });
 		await p.waitForTimeout(300);
-	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
-	catador: { w: 540, h: 760, url: 'collect.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-copy', round: true }, { sel: '#fw-go' }] },
+	catador: { w: 540, h: 760, url: 'catador.html', marks: [
+		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-religar', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
 	// A FORMINHA: a comp, os layers, o input, a caixa, o nome (editável), a situação e o rodapé
@@ -283,7 +284,7 @@ const SHOTS = {
 	}, marks: [
 		{ sel: '.fl-path' }, { sel: '.fl-opts', pad: 3 }, { sel: '.fl-tools', pad: 3 }, { sel: '.fl-row:nth-of-type(3) .fl-new-wrap', pad: 2 }, { sel: '.fl-row.is-bad .fl-st', round: true }, { sel: '#fl-undo', round: true }, { sel: '#fl-go' }
 	] },
-	'catador-migracao': { w: 780, h: 660, url: 'collect.html', async run(p) {
+	'catador-migracao': { w: 780, h: 660, url: 'catador.html', async run(p) {
 		await p.click('#app-menu summary');
 		await p.waitForTimeout(300);
 		await p.click('[data-action="migrate"]');
@@ -305,7 +306,7 @@ const SHOTS = {
 		await p.waitForTimeout(800);
 	}, marks: [{ sel: '#cv-mac' }, { sel: '#cv-win' }, { sel: '#cv-copy-win', round: true }] },
 	produtor: { w: 1100, h: 720, url: 'productions.html', marks: [
-		{ sel: '.tab[data-tab="links"]' }, { sel: '.tab[data-tab="prods"]' }, { sel: '.tab[data-tab="network"]' }, { sel: '.tab[data-tab="machine"]' }, { sel: '#btn-reload', round: true }, { sel: '#btn-save', round: true }, { sel: '#scope-note', pad: 0 }
+		{ sel: '.tab[data-tab="links"]' }, { sel: '.tab[data-tab="prods"]' }, { sel: '.tab[data-tab="network"]' }, { sel: '.tab[data-tab="deste-computador"]' }, { sel: '#btn-reload', round: true }, { sel: '#btn-save', round: true }, { sel: '#scope-note', pad: 0 }
 	] }
 };
 
@@ -371,8 +372,8 @@ const SCENES = {
 		await hover(p, '#btn-fill', 1200);
 	} },
 
-	// A CLAQUETE: a atração pela busca, o que é e o nome do .aep
-	claquete: { w: 480, h: 680, url: 'project.html', async run(p) {
+	// O PROJETISTA: a atração pela busca, o que é e o nome do .aep
+	claquete: { w: 480, h: 680, url: 'projetista.html', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
@@ -388,24 +389,24 @@ const SCENES = {
 		await hover(p, '#criar-go', 900);
 	} },
 
-	// A CLAQUETE, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
-	'claquete-nova': { w: 480, h: 680, url: 'project.html', async run(p) {
+	// O PROJETISTA, atração nova: o tipo no começo do texto marca o chip; Enter cria nela
+	'claquete-nova': { w: 480, h: 680, url: 'projetista.html', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
 		await type(p, 'vt reunião', 120);
 		await p.waitForTimeout(1100);
-		await hover(p, p.locator('.cat-chip', { hasText: 'NOVELA' }).first(), 700);
-		await hover(p, p.locator('.cat-chip.is-on').first(), 800);
-		await tap(p, p.locator('.cat-chip.is-on').first(), { wait: 1100 });
+		await hover(p, p.locator('.tipo-chip', { hasText: 'NOVELA' }).first(), 700);
+		await hover(p, p.locator('.tipo-chip.is-on').first(), 800);
+		await tap(p, p.locator('.tipo-chip.is-on').first(), { wait: 1100 });
 		await tap(p, '#arq-what', { wait: 200 });
 		await type(p, 'abertura', 120);
 		await p.waitForTimeout(1300);
 		await hover(p, '#criar-go', 900);
 	} },
 
-	// O criador de templates: captura a comp, puxa os layers, dá o nome e salva
-	criador: { w: 1000, h: 700, url: 'maker.html', fps: 12, quality: 45, async run(p) {
+	// O CONFEITEIRO, o criador de templates: captura a comp, puxa os layers, dá o nome e salva
+	criador: { w: 1000, h: 700, url: 'confeiteiro.html', fps: 12, quality: 45, async run(p) {
 		mouse = [960, 660];
 		await p.waitForTimeout(700);
 		await tap(p, '#btn-capture', { wait: 1200 });
@@ -418,8 +419,8 @@ const SCENES = {
 		await hover(p, '#btn-save', 1100);
 	} },
 
-	// A CLAQUETE, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
-	dados: { w: 480, h: 680, url: 'project.html?mock=created', async run(p) {
+	// O PROJETISTA, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
+	dados: { w: 480, h: 680, url: 'projetista.html?mock=created', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(900);
 		await hover(p, '#ed-editors', 900);
@@ -452,12 +453,12 @@ const SCENES = {
 	} },
 
 	// O CATADOR (janela): resolve os faltando e coleta (as setas sobem)
-	catador: { w: 540, h: 640, url: 'collect.html', async run(p) {
+	catador: { w: 540, h: 640, url: 'catador.html', async run(p) {
 		mouse = [500, 600];
 		await p.waitForTimeout(900);
 		await hover(p, '.cw-row .fw-head', 500);
-		await tap(p, '#cw-relink', { wait: 2600 }); // procura: o achado vira →
-		await tap(p, '#cw-go', { wait: 2000 }); // Relinkar
+		await tap(p, '#cw-religar', { wait: 2600 }); // procura: o achado vira →
+		await tap(p, '#cw-go', { wait: 2000 }); // Religar
 		await tap(p, '#cw-go', { wait: 2200 }); // Coletar
 	} },
 
@@ -498,7 +499,7 @@ const SCENES = {
 	produtor: { w: 1000, h: 640, url: 'productions.html', async run(p) {
 		mouse = [600, 600];
 		await p.waitForTimeout(700);
-		for (const tab of ['fonts', 'project', 'collect', 'tools', 'appearance', 'machine']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
+		for (const tab of ['fonts', 'tipos-de-projeto', 'coletar', 'tools', 'appearance', 'deste-computador']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
 	} }
 };
 
@@ -506,7 +507,7 @@ const SCENES = {
    ícones das ferramentas (no degradê da barra)
    ========================================================= */
 
-const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'collect', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo', 'files', 'duplicate'];
+const ICONS = ['templates', 'fill', 'template-new', 'fonts', 'project', 'form', 'coletar', 'render', 'organization', 'import', 'rename', 'organize', 'folders', 'search', 'logo-globo', 'files', 'duplicate'];
 
 async function icons(b) {
 	const dir = path.join(OUT, 'icons');
@@ -559,9 +560,9 @@ async function shots(b, names) {
 		await ctx.addInitScript((c) => {
 			try {
 				localStorage.clear();
-				localStorage.setItem('pad.mock.project', JSON.stringify(c));
+				localStorage.setItem('pad.mock.tiposDeProjeto', JSON.stringify(c));
 			} catch (e) { }
-		}, CATEGORIES);
+		}, TIPOS_DE_PROJETO);
 		if (s.init) await ctx.addInitScript(s.init);
 
 		const p = await ctx.newPage();
@@ -602,9 +603,9 @@ async function gifs(b, names) {
 		await ctx.addInitScript((c) => {
 			try {
 				localStorage.clear();
-				localStorage.setItem('pad.mock.project', JSON.stringify(c));
+				localStorage.setItem('pad.mock.tiposDeProjeto', JSON.stringify(c));
 			} catch (e) { }
-		}, CATEGORIES);
+		}, TIPOS_DE_PROJETO);
 		if (s.init) await ctx.addInitScript(s.init);
 
 		const p = await ctx.newPage();

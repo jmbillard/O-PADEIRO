@@ -17,14 +17,16 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
 | O ADAPTADOR | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
 | O PRODUTOR | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
-| A FORMA | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
-| A CLAQUETE | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
+| O CONFEITEIRO | `com.jmbillard.opadeiro.confeiteiro` | `confeiteiro.html` | `js/confeiteiro.js` | 8093 |
+| O PROJETISTA | `com.jmbillard.opadeiro.projetista` | `projetista.html` | `js/projetista.js` | 8094 |
 | O TIPÓGRAFO | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
-| O CATADOR | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
+| O CATADOR | `com.jmbillard.opadeiro.catador` | `catador.html` | `js/catador.js` | 8096 |
 | O VERSIONADOR | `com.jmbillard.opadeiro.versioner` | `versioner.html` | `js/versioner.js` | 8097 |
 | O CONTRARREGRA | `com.jmbillard.opadeiro.labels` | `labels.html` | `js/labels.js` | 8098 |
 | O ARQUIVISTA | `com.jmbillard.opadeiro.files` | `files.html` | `js/files.js` | 8099 |
 | A FORMINHA | `com.jmbillard.opadeiro.light` | `light.html` | `js/light.js` | 8100 |
+
+os ids seguem o glossário: a janela de projeto é `projetista`, o criador de templates é `confeiteiro` e a janela do coletar é `catador`. id que muda de nome é outra janela para o After: o instalador tira as antigas (a lista `OLD_IDS` em `INSTALAR O PADEIRO.jsx`) e o que o After guardava delas (tamanho e posição) volta ao padrão. o `<Size>` de cada janela no manifest é o tamanho recomendado, o mesmo da tabela de tamanhos do [README principal](../README.md#-a-turma); as checagens de interface (`scripts/check-*.js`) abrem cada tela nele (`windowSize` em `scripts/ui-states.js`).
 
 <br>
 
@@ -36,7 +38,7 @@ O-PADEIRO/
 ├─ O_PADEIRO_GLOBAL_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
-   ├─ CSXS/manifest.xml          → os 7 painéis
+   ├─ CSXS/manifest.xml          → os 13 painéis (os ids, as páginas e o tamanho padrão de cada janela)
    ├─ .debug                     → portas de depuração (CEF)
    ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
@@ -44,10 +46,10 @@ O-PADEIRO/
    │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, folha branca, contornos finos)
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
-   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
-   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela PROJETO, criador e editor de config
+   │  ├─ css/<painel>.css        → bar, finder, converter, productions, confeiteiro, projetista, catador…
+   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela de projeto, criador e editor de config
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
-   │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
+   │  ├─ icons/                  → a biblioteca de ícones (seletor dos tipos e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
    │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
@@ -55,7 +57,8 @@ O-PADEIRO/
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
    │     ├─ fontbank.js          → banco de fontes pelo Node (conferir e copiar para o banco e a pasta do projeto)
-   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
+   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), os tipos e o seletor (PAD_ATTRACTIONS)
+   │     ├─ search-index.js      → o índice da busca no painel, dividido pelo acessorista e pela janela de projeto: qual índice usar, a cópia e o download (PAD_SEARCH_INDEX)
    │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
@@ -67,12 +70,12 @@ O-PADEIRO/
    │  ├─ api.jsx                 → PADX_call e os métodos da barra e dos templates
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
-   │  ├─ maker.jsx               → criador de templates
+   │  ├─ confeiteiro.jsx         → criador de templates
    │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
-   │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
-   │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
-   │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js e check-focus-crop.js, com as telas em ui-states.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
+   │  ├─ project.jsx             → janela de projeto (dados no XMP, retranca, salvar na pasta da retranca)
+   │  ├─ coletar.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
+   │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes) e, em scripts-de-template.js, as funções globais do padeiro antigo que os _script.js dos templates chamam (não renomear)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js, check-focus-crop.js e check-scroll-corners.js, com as telas em ui-states.js), a do glossário (check-glossario.js), o teste das regras (test-regras.js), o dos scripts de template (test-scripts-de-template.js: as funções globais do padeiro antigo que os _script.js chamam), o do preenchimento (test-preenchimento.js: o fillBegin, o fillStep e o fillFinish num modelo do projeto do After) e a do ternário (check-ternary.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>
@@ -108,8 +111,8 @@ o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_c
 var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
-- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`, `collect.jsx`).
-- **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `confeiteiro.jsx`, `project.jsx`, `coletar.jsx`).
+- **avisos das libs** → as libs avisam com `alert()`. dentro de `padGatherAlerts(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:
   - pasta de templates → `listDir` (uma pasta por chamada);
@@ -123,13 +126,13 @@ cada painel é uma página separada. eles combinam o que fazer por arquivos pequ
 
 | arquivo | quem grava | quem lê |
 | --- | --- | --- |
-| `selected_production.json` | barra (produção escolhida) | templates |
-| `finder_tab.json` | barra (botão buscar) | O ACESSORISTA (aba a abrir) |
-| `converter_request.json` | barra (botão pastas) | conversor (caminho a mostrar) |
+| `selected_production.json` | templates (produção escolhida, no rodapé) | host (o preenchimento e o registro de uso) |
+| `finder_tab.json` | barra (Buscar) | O ACESSORISTA (aba a abrir) |
+| `converter_request.json` | barra (Pastas, clique direito) | conversor (caminho a mostrar) |
 | `shared_config.txt` | instaladores | host (onde está a lista compartilhada) |
 | `temp/template_lists.json` | templates | templates (fixados e recentes, por produção) |
 
-a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
+a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe uma cópia deste computador. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
 
 <br>
 
@@ -175,12 +178,13 @@ no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta 
 
 ### checagens de UI
 
-antes de enviar uma mudança de tela, confira o [guia de UI](../docs/guia-ui.md) e rode as três checagens. elas abrem todas as janelas no modo de teste, passam pelas telas de `extension/scripts/ui-states.js` (a barra, o tour, cada etapa e cada aba) e saem com erro quando acham algo fora:
+antes de enviar uma mudança de tela, confira o [guia de UI](../docs/guia-ui.md) e rode as quatro checagens. elas abrem todas as janelas no modo de teste, passam pelas telas de `extension/scripts/ui-states.js` (a barra, o tour, cada etapa e cada aba) e saem com erro quando acham algo fora:
 
 ```bash
 node extension/scripts/check-corners.js
 node extension/scripts/check-footers.js
 node extension/scripts/check-focus-crop.js
+node extension/scripts/check-scroll-corners.js
 ```
 
 | checagem | confere |
@@ -188,8 +192,17 @@ node extension/scripts/check-focus-crop.js
 | `check-corners.js` | **cantos concêntricos**: todo canto arredondado dentro de outro fecha a conta (raio de fora = raio de dentro + respiro + borda); diz o raio que o de fora pede |
 | `check-footers.js` | **rodapés na mesma linha**: o centro de cada botão de rodapé a `--footer-center` (35 px) do fundo, e todo `⋯` com 38 px |
 | `check-focus-crop.js` | **foco inteiro**: o contorno do foco (3 px em volta) não é cortado por um bloco que rola ou recolhe |
+| `check-scroll-corners.js` | **rolagem fora das quinas**: a barra de rolagem de uma área que rola começa e termina antes da curva dos cantos |
 
-tela ou etapa nova → acrescente o passo para chegar nela em `ui-states.js`: vale para as três.
+tela ou etapa nova → acrescente o passo para chegar nela em `ui-states.js`: vale para as quatro.
+
+### checagem do glossário
+
+```bash
+node extension/scripts/check-glossario.js
+```
+
+procura os termos que o [glossário](../GLOSSARY.md) manda evitar (as linhas `_Avoid_`) no código, no texto visível e nos documentos, sem diferenciar caixa e com fronteira de palavra; sai com erro quando acha algum. a lista vem do próprio glossário. os termos que o glossário evita só num sentido (uma nota "para …"), os que também são termos do glossário e os de sentido geral não são procurados; as exceções ficam declaradas e comentadas no começo do script. `--termos` mostra como cada termo foi tratado.
 
 ### imagens da documentação
 
@@ -213,15 +226,14 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 
 ## 📍 onde mudar o quê
 
-- **botões da barra** → `SECTIONS` em `client/js/bar.js` (rótulo, ícone, dicas e ações dos cliques esquerdo e direito). as ações ficam em `actions`, no mesmo arquivo.
-- **link do apontamento** → `APONTAMENTO_URL` em `client/js/bar.js`.
+- **ferramentas da barra** → `TOOLS` em `client/js/bar.js` (rótulo, ícone, apelido, dicas e ações dos cliques esquerdo e direito; o botão do projeto diz **Iniciar** ou **Alterar**) e `GROUPS`, as gavetas **Templates**, **Projeto** e **Organização**. as ações ficam em `actions`, no mesmo arquivo. quem fica em cada gaveta e a ordem padrão: `BARRA_GAVETAS` e `BARRA_PADRAO` em `regras/configuracao.js` (e `BAR_GROUPS` em `client/js/util.js`, a mesma lista para o painel).
+- **links da barra** → a aba **links** da configuração (os da equipe e os deste computador).
 - **documentação de cada painel** → `docs/<painel>.md` (templates, criador, produções, acessorista, conversor); o `DOCS_URL` de cada `client/js/<painel>.js` aponta para ela (o ⋯ > ajuda abre).
-- **tipos de renomeação** (prefixos e termos) → `renameRefArray` em `host/lib/globals.js`; a lógica em `host/lib/functions/rename lib.js`.
-- **letras de drive da rede** → `DRIVE_MAP` em `host/lib/globals.js`.
+- **formatos do renomear** (prefixos e termos) → o padrão na seção `regraDoRenomear` de `regras/configuracao.js` (a tabela de seções; a aba renomear da configuração substitui); a regra do renomear em `regras/regra-do-renomear.js` (a mesma no host, na prévia da configuração e no host de teste), as chamadas do After em `host/lib/functions/rename lib.js`.
+- **letras de drive da rede** → o padrão na seção `mapaDeDrives` de `regras/configuracao.js` (vira `DRIVE_MAP` em `host/lib/globals.js`).
 - **config padrão dos templates** → `defaultTemplateConfigObj` em `host/lib/globals.js`.
 - **estrutura de pastas do projeto** → `PROJECT_FOLDERS` em `host/lib/functions/project lib.js`.
-- **categorias do acessorista** → `PS_CATEGORIES` (ordem e rótulos) e `PS_LOCAL_SOURCES` (listas fixas, como `servidor`) em `host/lib/acessorista.js`. qualquer lista nova no JSON do workflow vira uma categoria e um filtro automaticamente.
-- **quantas atrações aparecem** → `MAX_RESULTS` em `client/js/finder.js`.
+- **origens do acessorista** → `TEAM_ORIGINS` em `client/js/finder.js` (ordem, rótulos e quantos resultados de cada uma); os caminhos fixos padrão (sem a aba buscar da configuração) → a seção `buscaDeCaminhos` da tabela de seções, em `regras/configuracao.js`.
 - **cores, raios e sombras** → os tokens em `:root`, no início de `client/css/styles.css`.
 - **versão** → `ExtensionBundleVersion` em `CSXS/manifest.xml` e `PADX_VERSION` em `host/index.jsx`.
 

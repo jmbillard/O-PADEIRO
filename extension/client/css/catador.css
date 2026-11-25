@@ -6,7 +6,8 @@
    cheia; desligada, só o contorno, apagada); o Coletar e a busca dos faltando só veem o que aparece */
 .cw-filter {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap; /* reserva: sem lugar (números grandes), a fileira quebra em vez de cortar */
+  gap: 4px;
 }
 
 .cw-filter[hidden] {
@@ -15,10 +16,10 @@
 
 .cw-chip {
   display: inline-flex;
-  height: 30px;
+  height: 28px;
   align-items: center;
-  gap: 7px;
-  padding: 0 13px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
+  gap: 4px;
+  padding: 0 9px 0 5px; /* a bolinha com o mesmo respiro em cima, embaixo e do lado */
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -35,13 +36,18 @@
 }
 
 .cw-chip .fw-state {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   font-size: 0.58rem;
 }
 
 .cw-chip b {
   font-weight: 800;
+}
+
+/* o nome da situação: só na etiqueta ligada; entra e sai pela largura (motion.js) */
+.cw-chip-label {
+  white-space: nowrap;
 }
 
 .cw-chip:hover:not(:disabled) {
@@ -206,7 +212,7 @@
 }
 
 /* fora da árvore do coletar: neutro */
-/* faltando, mas achado pela busca: a seta para o lugar novo (o Relinkar leva para lá) */
+/* faltando, mas achado pela busca: a seta para o lugar novo (o Religar leva para lá) */
 /* o triângulo de atenção do arquivo que falta */
 .fw-state i svg {
   display: block;
@@ -221,7 +227,7 @@
 }
 
 /* o mesmo no botão do triângulo, no rodapé */
-.cw-relink svg {
+.cw-religar svg {
   transform: translateY(-1.5px);
 }
 
@@ -237,24 +243,24 @@
 
 /* resolver arquivos faltando (rodapé): no hover o triângulo balança e o ponto de exclamação pula; catando,
    o triângulo pulsa e as linhas que faltam piscam o ✕ */
-.cw-relink svg * {
+.cw-religar svg * {
   transform-box: fill-box;
 }
 
-.cw-relink .relink-tri {
+.cw-religar .religar-tri {
   transform-origin: 50% 100%;
 }
 
-.cw-relink:hover:not(:disabled) .relink-tri {
+.cw-religar:hover:not(:disabled) .religar-tri {
   animation: cw-wobble 520ms var(--ease-soft);
 }
 
-.cw-relink:hover:not(:disabled) .relink-mark {
+.cw-religar:hover:not(:disabled) .religar-mark {
   animation: cw-hop 520ms var(--ease-soft);
 }
 
-.cw-relink.is-working .relink-tri,
-.cw-relink.is-working .relink-mark {
+.cw-religar.is-working .religar-tri,
+.cw-religar.is-working .religar-mark {
   animation: cw-pulse 900ms ease-in-out infinite;
 }
 
@@ -285,8 +291,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cw-relink .relink-tri,
-  .cw-relink .relink-mark,
+  .cw-religar .religar-tri,
+  .cw-religar .religar-mark,
   .fw-state.is-searching i {
     animation: none !important;
   }
@@ -500,7 +506,7 @@
   fill: none;
 }
 
-/* as esperas, nas próprias faixas (collect.js: migWait) */
+/* as esperas, nas próprias faixas (catador.js: migWait) */
 .mg-fill,
 .mg-lit {
   display: none;

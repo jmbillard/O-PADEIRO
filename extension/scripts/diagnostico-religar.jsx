@@ -10,7 +10,7 @@ Rode no After Effects, com o projeto aberto e a barra do padeiro aberta:
 
 Para cada arquivo faltando (até 15), mostra o caminho guardado no projeto, como o padeiro o entende neste
 computador, o volume e o servidor que ele tentaria montar, e se o arquivo existe depois disso. No fim, roda a busca
-do CATADOR (collectRelinkFind) e mostra o que ela achou. Pode montar um volume da rede (como o botão do CATADOR), mas
+do CATADOR (coletarReligarFind) e mostra o que ela achou. Pode montar um volume da rede (como o botão do CATADOR), mas
 não muda nada no projeto. O resultado aparece num campo de texto para copiar.
 
 */
@@ -34,7 +34,7 @@ não muda nada no projeto. O resultado aparece num campo de texto para copiar.
 		return app.version + ' · ' + $.os;
 	});
 	line('host carregado', function () {
-		return typeof PADX != 'undefined' && typeof PADX.collectRelinkFind == 'function' ? 'sim' : 'NÃO (abra a barra do padeiro antes)';
+		return typeof PADX != 'undefined' && typeof PADX.coletarReligarFind == 'function' ? 'sim' : 'NÃO (abra a barra do padeiro antes)';
 	});
 	line('mapa de drives', function () {
 		return typeof DRIVE_MAP != 'undefined' ? json(DRIVE_MAP) : '(nenhum)';
@@ -73,7 +73,7 @@ não muda nada no projeto. O resultado aparece num campo de texto para copiar.
 			var clean = '';
 
 			line('  normalizado', function () {
-				norm = padRelinkNormalize(raw);
+				norm = padReligarNormalize(raw);
 
 				return norm;
 			});
@@ -111,8 +111,8 @@ não muda nada no projeto. O resultado aparece num campo de texto para copiar.
 	if (!shown) out.push('', 'nenhum arquivo faltando no projeto aberto.');
 
 	out.push('');
-	line('busca do CATADOR (collectRelinkFind)', function () {
-		var res = PADX.collectRelinkFind({});
+	line('busca do CATADOR (coletarReligarFind)', function () {
+		var res = PADX.coletarReligarFind({});
 
 		return json({ achados: res.found.length, faltando: res.still.length, parcial: res.partial, primeiros: res.found.slice(0, 5) });
 	});

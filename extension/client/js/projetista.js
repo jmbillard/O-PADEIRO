@@ -1,7 +1,7 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> PROJETO — um projeto novo pela atração, numa tela, e o editor
+> O PROJETISTA — um projeto novo pela atração, numa tela, e o editor
 ---------------------------------------------------------------
 
 Projeto nunca salvo: uma tela, em três passos.
@@ -24,6 +24,7 @@ projetos com o nome certo).
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/projeto.md';
 	var LOOKUP_MS = 90; // espera depois da última tecla para procurar a atração (a busca é na memória)
+	var SERVIDOR_FORA = /não responde: ele só abre na rede da Globo/; // o aviso do host (lib/acessorista.js) quando não monta
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
@@ -61,13 +62,32 @@ projetos com o nome certo).
 	function status(text, kind) {
 		var node = $('proj-status');
 
+		// o servidor que só abre na rede da Globo (não respondeu: não foi montado): aviso amarelo, não erro
+		if (kind === 'error' && SERVIDOR_FORA.test(String(text || ''))) {
+			kind = 'warn';
+			text = String(text).split('\n').filter(function (line) {
+				return SERVIDOR_FORA.test(line);
+			}).join(' · ');
+		}
 		clearTimeout(state.statusTimer);
 		node.textContent = kind === 'error' ? PAD_UTIL.errorText(text) : text || '';
 		node.title = node.textContent;
 		node.className = 'proj-status' + (kind ? ' is-' + kind : '');
 
-		if (text && kind !== 'error') state.statusTimer = setTimeout(status, 4200);
+		// o verde some sozinho; o erro e o amarelo (o que não foi feito) ficam
+		if (text && kind !== 'error' && kind !== 'warn') state.statusTimer = setTimeout(status, 4200);
 	}
+
+	// o aviso que o host mandou junto de uma resposta (o servidor fora da rede, que não foi montado): amarelo, no rodapé
+	window.addEventListener('pad-notes', function (e) {
+		var notes = e.detail && e.detail.notes ? e.detail.notes.filter(function (n) {
+			return SERVIDOR_FORA.test(n);
+		}) : [];
+
+		if (!notes.length) return;
+		e.preventDefault();
+		status(notes.join(' · '), 'warn');
+	});
 
 	// nome de arquivo: sem acentos e símbolos, em maiúsculas (o mesmo do host)
 	function aepName(text) {
@@ -96,14 +116,14 @@ projetos com o nome certo).
 	}
 
 	/* ---------------------------------------------------------------
-	   a busca das atrações e as categorias: js/attractions.js (a mesma do criador de templates)
+	   a busca das atrações e os tipos: js/attractions.js (a mesma do criador de templates)
 	   --------------------------------------------------------------- */
 
 	var ATR = window.PAD_ATTRACTIONS;
 	var findAttractions = ATR.find;
 	var candidates = ATR.candidates;
 	var displayPath = ATR.displayPath;
-	var newBases = ATR.categories;
+	var newBases = ATR.tipos;
 	var fillPattern = ATR.fillPattern;
 
 	/* ---------------------------------------------------------------
@@ -157,6 +177,62 @@ projetos com o nome certo).
 		return String(text || '').toUpperCase().replace(/\s+/g, ' ').trim();
 	}
 
+	/* ---------- as pastas lidas pelo Node do painel (ADR 0003): o host só converte o caminho e filtra os nomes ---------- */
+
+	var NODE_READ_MS = 5000; // a rede lenta: passou disso, a pasta fica sem as de dentro (o After nunca espera)
+
+	function nodeFsOk() {
+		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
+
+		return fs && fs.promises ? fs : null;
+	}
+
+	function withTimeout(promise, ms, late) {
+		return Promise.race([promise, new Promise(function (resolve) {
+			setTimeout(function () {
+				resolve(late);
+			}, ms);
+		})]);
+	}
+
+	// as pastas logo dentro de dir, pelo Node: { exists, names } (exists false: não existe ou não está acessível;
+	// slow: a rede não respondeu a tempo)
+	async function nodeDirs(fs, dir) {
+		if (!dir) return { exists: false, names: [] };
+
+		var items = await withTimeout(fs.promises.readdir(dir, { withFileTypes: true }).catch(function () {
+			return null;
+		}), NODE_READ_MS, 'slow');
+
+		if (items === 'slow') return { exists: false, names: [], slow: true };
+		if (!items) return { exists: false, names: [] };
+
+		return { exists: true, names: items.filter(function (d) {
+			return d.isDirectory();
+		}).map(function (d) {
+			return d.name;
+		}) };
+	}
+
+	// as pastas de um nível: com o Node, ele lê e o host só converte o caminho e tira as que não entram na lista (nada
+	// de ler a rede no host, que trava o After). sem o Node (o navegador de teste), o host lê. nunca monta
+	async function readFolders(path, plain) {
+		var fs = nodeFsOk();
+
+		if (fs) {
+			var conv = await call('projectFolders', { path: path, plain: !!plain, list: false });
+
+			if (conv.listed === false) {
+				var dirs = await nodeDirs(fs, conv.rootFs);
+				var res = dirs.names.length ? await call('projectFolders', { path: path, plain: !!plain, names: dirs.names }) : { root: conv.root, rootName: conv.rootName, folders: [] };
+
+				return Object.assign({}, res, { exists: dirs.exists, slow: !!dirs.slow });
+			}
+		}
+
+		return call('projectFolders', { path: path, plain: !!plain });
+	}
+
 	// as pastas de um nível (lidas na hora, uma vez por caminho). plain: o output (sem tirar a estrutura do coletar)
 	async function listFolders(path, plain) {
 		var cache = state.folderCache || (state.folderCache = {});
@@ -164,7 +240,13 @@ projetos com o nome certo).
 
 		if (!cache[key]) {
 			try {
-				cache[key] = await call('projectFolders', { path: path, plain: !!plain });
+				cache[key] = await readFolders(path, plain);
+				if (cache[key].slow) {
+					var slow = cache[key];
+
+					delete cache[key]; // a rede lenta: lê de novo da próxima vez
+					return slow;
+				}
 			} catch (err) {
 				cache[key] = { root: '', rootName: '', exists: false, folders: [] };
 				status(err.message, 'error');
@@ -392,7 +474,7 @@ projetos com o nome certo).
 					if (!custom && (!flow.attr || !flow.matches.some(function (m) {
 						return m.path === flow.attr.path;
 					}))) flow.attr = exact.length === 1 ? exact[0] : flow.matches.length === 1 ? flow.matches[0] : null;
-					if (flow.attr && flow.attr.noBase) flow.attr = null; // sem categoria: escolher na lista (vira atração nova)
+					if (flow.attr && flow.attr.noBase) flow.attr = null; // sem tipo: escolher na lista (vira atração nova)
 					flow.walk = flow.attr ? await walkPath(flow.attr.path, p.levels, p.last, false) : null;
 					// o primeiro nível abaixo da atração: os quadros de outros anos, como exemplos
 					if (flow.walk && !p.levels.length) flow.walk.examples = await quadroExamples(flow.attr, flow.walk.info ? flow.walk.info.folders : []);
@@ -447,7 +529,7 @@ projetos com o nome certo).
 			});
 
 			// o filme do índice fica com o ano dele (o do índice manda); a pasta achada pelo host vale para o novo
-			if (at >= 0) out[at] = Object.assign({}, out[at], extra, { year: out[at].year || f.year, category: 'FILME' + ((out[at].year || f.year) ? ' · ' + (out[at].year || f.year) : '') });
+			if (at >= 0) out[at] = Object.assign({}, out[at], extra, { year: out[at].year || f.year, tipo: 'FILME' + ((out[at].year || f.year) ? ' · ' + (out[at].year || f.year) : '') });
 			else add.push(filmMatch(f));
 		});
 
@@ -461,7 +543,7 @@ projetos com o nome certo).
 
 	// um filme dos recentes como uma atração achada (a pasta vem do tipo FILME: resolveFilms)
 	function filmMatch(f) {
-		return Object.assign({ name: f.name, category: 'FILME' + (f.year ? ' · ' + f.year : ''), path: f.path || '', out: '', display: f.path ? displayPath(f.path) : '', isFilm: true, score: 0 }, filmExtra(f));
+		return Object.assign({ name: f.name, tipo: 'FILME' + (f.year ? ' · ' + f.year : ''), path: f.path || '', out: '', display: f.path ? displayPath(f.path) : '', isFilm: true, score: 0 }, filmExtra(f));
 	}
 
 	// os filmes dos cards que batem com o digitado entram na busca, mesmo sem o título bater (TELA QUENTE ENCANTO →
@@ -903,8 +985,8 @@ projetos com o nome certo).
 		return item;
 	}
 
-	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
-	// configuração (aba PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
+	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem do tipo de filmes da
+	// configuração (aba TIPOS DE PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
 	function filmBase() {
 		var base = state.bases.filter(function (b) {
 			return b.pattern && /^FILMES?( |$)/.test(aepName(b.label));
@@ -934,7 +1016,7 @@ projetos com o nome certo).
 			if (!m.isFilm || !base) return m;
 
 			var name = m.name.toUpperCase();
-			// o .aep do filme: o nome do tipo (aba PROJETO > ARQUIVO) ou o título com o ano (NAO NAO OLHE (2022))
+			// o .aep do filme: o nome do tipo (aba TIPOS DE PROJETO > ARQUIVO) ou o título com o ano (NAO NAO OLHE (2022))
 			var file = base.filePattern ? fillPattern(base.filePattern, name, base.label, m.year) : name + (m.year ? ' (' + m.year + ')' : '');
 
 			// a pasta já achada (o filme dos recentes que já tem projeto): fica, e o .aep leva o ano do mesmo jeito
@@ -961,10 +1043,10 @@ projetos com o nome certo).
 		});
 	}
 
-	/* ---------- a organização nova: a atração que já existe dá o nome, a pasta vem da categoria ---------- */
+	/* ---------- a organização nova: a atração que já existe dá o nome, a pasta vem do tipo ---------- */
 
-	// as pastas fixas do caminho da categoria, depois da raiz (PROJETOS ou o Fileserver): …/PROJETOS/ESPORTES/FUTEBOL/
-	// {atracao}/{ano} → ['ESPORTES', 'FUTEBOL']. é por elas que a pasta antiga de uma atração diz de que categoria ela é
+	// as pastas fixas do caminho do tipo, depois da raiz (PROJETOS ou o Fileserver): …/PROJETOS/ESPORTES/FUTEBOL/
+	// {atracao}/{ano} → ['ESPORTES', 'FUTEBOL']. é por elas que a pasta antiga de uma atração diz de que tipo ela é
 	function baseSegments(base) {
 		var head = String(base.pattern || '').split('{atracao}')[0].replace(/\\/g, '/').split('/');
 		var out = [];
@@ -979,8 +1061,8 @@ projetos com o nome certo).
 		return out;
 	}
 
-	// a categoria de uma atração achada no índice: a que tem as pastas fixas mais parecidas com o caminho antigo
-	// (…/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2026/… → FUTEBOL); sem nenhuma, pelo nome da categoria do índice
+	// o tipo de uma atração achada no índice: o que tem as pastas fixas mais parecidas com o caminho antigo
+	// (…/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2026/… → FUTEBOL); sem nenhuma, pelo nome do tipo do índice
 	function baseForMatch(m) {
 		var parts = String(m.path || '').replace(/\\/g, '/').split('/').map(aepName);
 		var best = null;
@@ -1009,22 +1091,22 @@ projetos com o nome certo).
 
 		return state.bases.filter(function (b) {
 			var label = aepName(b.label);
-			var cat = aepName(m.category);
+			var tipo = aepName(m.tipo);
 
-			return !b.offline && b.pattern && cat && (label === cat || label + 'S' === cat || label === cat + 'S');
+			return !b.offline && b.pattern && tipo && (label === tipo || label + 'S' === tipo || label === tipo + 'S');
 		})[0] || null;
 	}
 
-	// as atrações achadas, com a pasta da organização nova: o caminho da categoria com os tokens (a pasta antiga fica
-	// em oldPath, para os exemplos de quadros). sem categoria que sirva: noBase (escolher a categoria, como uma nova)
+	// as atrações achadas, com a pasta da organização nova: o caminho do tipo com os tokens (a pasta antiga fica
+	// em oldPath, para os exemplos de quadros). sem tipo que sirva: noBase (escolher o tipo, como uma nova)
 	async function toNewOrg(matches) {
 		await ensureBases(); // também para os chips da atração nova (com ou sem atrações achadas)
 		if (!matches.length) return matches;
 
-		if (!state.bases.length) return matches; // sem categorias na configuração: o jeito de antes (a pasta do índice)
+		if (!state.bases.length) return matches; // sem tipos na configuração: o jeito de antes (a pasta do índice)
 
 		return matches.filter(function (m) {
-			return m.isCustom || m.newOrg || !isCategoryFolder(m);
+			return m.isCustom || m.newOrg || !isTipoFolder(m);
 		}).map(function (m) {
 			if (m.isCustom || m.newOrg) return m;
 
@@ -1032,25 +1114,25 @@ projetos com o nome certo).
 			var name = m.name.toUpperCase();
 
 			// a atração que já tem pasta de projeto no índice: a pasta dela, como está (BBB/BBB 2026), no ano do
-			// projeto; a categoria só dá o ícone e, sem output no índice, o output
+			// projeto; o tipo só dá o ícone e, sem output no índice, o output
 			if (m.path && m.path !== m.out) {
 				var here = ATR.shiftYear(m.path);
 				var outHere = m.out ? ATR.shiftYear(m.out) : base && base.outPattern ? fillPattern(base.outPattern, name, base.label) : '';
 
-				return Object.assign({}, m, { oldPath: m.path, oldOut: m.out || '', path: here, display: displayPath(here), out: outHere, base: base, category: base ? base.label : m.category, fromIndex: true });
+				return Object.assign({}, m, { oldPath: m.path, oldOut: m.out || '', path: here, display: displayPath(here), out: outHere, base: base, tipo: base ? base.label : m.tipo, fromIndex: true });
 			}
 
 			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha o tipo', noBase: true });
 
 			var path = fillPattern(base.pattern, name, base.label);
 
-			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true });
+			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, tipo: base.label, newOrg: true });
 		});
 	}
 
-	// a pasta achada é a pasta de uma categoria, não uma atração: a que guarda as atrações dela (INSTITUCIONAL/VTs é a
-	// categoria VT; a pasta VTs, onde todos os VTs ficavam juntos, não vira a atração VTS)
-	function isCategoryFolder(m) {
+	// a pasta achada é a pasta de um tipo, não uma atração: a que guarda as atrações dela (INSTITUCIONAL/VTs é o
+	// tipo VT; a pasta VTs, onde todos os VTs ficavam juntos, não vira a atração VTS)
+	function isTipoFolder(m) {
 		var parts = String(m.path || '').replace(/\\/g, '/').replace(/\/+$/, '').split('/').map(aepName);
 
 		return state.bases.some(function (b) {
@@ -1060,22 +1142,22 @@ projetos com o nome certo).
 			var tail = parts.slice(-segs.length);
 			var root = parts[parts.length - segs.length - 1] || '';
 
-			// logo depois da raiz (PROJETOS ou o Fileserver), como no caminho da categoria
+			// logo depois da raiz (PROJETOS ou o Fileserver), como no caminho do tipo
 			return segs.length && tail.length === segs.length && /^(PROJETOS|FILESERVER ?\d+)$/.test(root) && segs.every(function (s, k) {
 				return tail[k] === s || tail[k] + 'S' === s || tail[k] === s + 'S';
 			});
 		});
 	}
 
-	// a atração sem categoria que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe o tipo nos chips)
+	// a atração sem tipo que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe o tipo nos chips)
 	function asNew(match) {
 		$('claq').value = match.name.toUpperCase();
 		flow.attr = null;
 		openNova(true);
 	}
 
-	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} da categoria, qualquer valor:
-	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem
+	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} do tipo, qualquer valor:
+	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho do tipo tem
 	// pastas depois da atração ({atracao}/{ano}); as pastas antigas da atração ficam de fora
 	async function quadroExamples(attr, current) {
 		if (!attr || !attr.base || attr.fromIndex) return [];
@@ -1091,9 +1173,13 @@ projetos com o nome certo).
 		var seen = {};
 		var out = [];
 
-		// o host lê as pastas e fica só com as que têm a estrutura do padeiro dentro (as antigas da atração ficam de fora)
+		// as pastas com a estrutura do padeiro dentro (as antigas da atração ficam de fora): com o Node, ele lê e o host
+		// só converte os caminhos (ADR 0003); sem ele, o host lê
 		try {
-			res = await call('projectQuadros', { root: root, depth: tail.length, here: attr.path });
+			var fs = nodeFsOk();
+			var conv = fs ? await call('projectQuadros', { root: root, depth: tail.length, here: attr.path, list: false }) : null;
+
+			res = conv && conv.listed === false ? { names: await nodeQuadros(fs, conv) } : await call('projectQuadros', { root: root, depth: tail.length, here: attr.path });
 		} catch (err) { }
 
 		(current || []).forEach(function (f) {
@@ -1113,12 +1199,77 @@ projetos com o nome certo).
 		});
 	}
 
-	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta; o filme, o do tipo de filmes
+	// os quadros pelo Node (o mesmo do host em projectQuadros): as pastas 'depth' níveis abaixo da atração e, dentro
+	// delas (menos a do ano de agora), as que têm a pasta de projetos da estrutura. no máximo 120 leituras e
+	// NODE_READ_MS no total: os exemplos são um atalho, não uma lista completa
+	async function nodeQuadros(fs, conv) {
+		var pathMod = require('path');
+		var until = Date.now() + NODE_READ_MS;
+		var reads = 0;
+		var key = function (p) {
+			return String(p || '').replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+		};
+		// as pastas de dentro de cada uma (só as que entram nas listas: o host filtra os nomes, sem ler nada)
+		var inside = async function (list) {
+			var read = await Promise.all(list.map(function (dir) {
+				if (++reads > 120 || Date.now() > until) return { names: [] };
+
+				return nodeDirs(fs, dir);
+			}));
+			var all = [];
+
+			read.forEach(function (r) {
+				all = all.concat(r.names);
+			});
+
+			var useful = all.length ? (await call('pastasUteis', { names: all, plain: true })).names : [];
+
+			return list.map(function (dir, i) {
+				return read[i].names.filter(function (n) {
+					return useful.indexOf(n) >= 0;
+				}).map(function (n) {
+					return { name: n, path: pathMod.join(dir, n) };
+				});
+			});
+		};
+		var level = [conv.rootFs];
+
+		for (var d = 0; d < conv.depth; d++) {
+			level = (await inside(level)).reduce(function (all, kids) {
+				return all.concat(kids.map(function (k) {
+					return k.path;
+				}));
+			}, []);
+		}
+
+		level = level.filter(function (p) {
+			return key(p) !== key(conv.hereFs);
+		});
+
+		var kids = (await inside(level)).reduce(function (all, list) {
+			return all.concat(list);
+		}, []);
+		var names = [];
+
+		await Promise.all(kids.map(async function (k) {
+			if (Date.now() > until) return;
+
+			var st = await withTimeout(fs.promises.stat(pathMod.join(k.path, conv.sub)).catch(function () {
+				return null;
+			}), Math.max(0, until - Date.now()), null);
+
+			if (st && st.isDirectory()) names.push(k.name);
+		}));
+
+		return names;
+	}
+
+	// o ícone do tipo da atração (o mesmo da aba TIPOS DE PROJETO), ou a pasta; o filme, o do tipo de filmes
 	function matchIcon(m) {
 		if (m.isFilm) {
 			var film = filmBase();
 
-			return (film && PAD_UTIL.categoryIcon(film.icon)) || FILM_SVG;
+			return (film && PAD_UTIL.tipoIcon(film.icon)) || FILM_SVG;
 		}
 
 		return ATR.iconFor(m, state.bases);
@@ -1138,8 +1289,12 @@ projetos com o nome certo).
 	function enterAttraction(match, keepOpen) {
 		if (match.noBase) return asNew(match);
 		flow.attr = match;
+		flow.walk = null;
 		$('claq').value = match.name.toUpperCase() + '/';
 		enter(keepOpen);
+		// a lista mostra já a atração escolhida ("procurando as pastas…"), não a da busca de antes: o cabeçalho da
+		// atração nova com o texto velho (NOVA ATRAÇÃO · SUMM com o campo em SUMMER BEATS/) não fica parado na tela
+		renderAttractions();
 	}
 
 	function enter(keepOpen) {
@@ -1191,7 +1346,7 @@ projetos com o nome certo).
 
 					list.appendChild(ATR.group(found.length ? 'escolha a atração' : 'nenhuma atração com esse nome'));
 					found.forEach(function (match) {
-						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.tipo || '', false, function () {
 							if (match.noBase) return asNew(match);
 							$('claq').value = match.name.toUpperCase() + '/' + p.parts.slice(1).join('/');
 							flow.attr = match;
@@ -1202,7 +1357,7 @@ projetos com o nome certo).
 					list.appendChild(ATR.group('atração'));
 					// clicar na atração escolhida confirma: fica só com ela (sem pasta abaixo) e segue para o o que é.
 					// para trocar de atração: o × do campo, ou apagar o nome
-					list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.category || '', true, function () {
+					list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.tipo || '', true, function () {
 						$('claq').value = flow.attr.name.toUpperCase();
 						flow.walk = null;
 						collapseClaq(true);
@@ -1223,7 +1378,7 @@ projetos com o nome certo).
 					enterAttraction(match, keepOpen);
 				},
 				card: pickCard,
-				nova: pickNovaCategory,
+				nova: pickNovaTipo,
 				tail: function () {
 					// sem tipos de projeto na configuração, a atração nova é outra pasta (e, com a barra, a pasta nova dentro)
 					other = list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', false, pickOtherFolder));
@@ -1234,7 +1389,7 @@ projetos com o nome certo).
 			// Enter cria nele (as setas andam pelos outros)
 			if (state.novaFocus) {
 				state.novaFocus = false;
-				(list.querySelector('.cat-chip') || other).classList.add('is-hover');
+				(list.querySelector('.tipo-chip') || other).classList.add('is-hover');
 			}
 			hint = ''; // sem frase de ajuda: a lista já diz o que achou
 		});
@@ -1312,7 +1467,7 @@ projetos com o nome certo).
 				var pick = function () {
 					h.attr(m);
 				};
-				var row = m.recent ? filmRow(m, pick) : ATR.row(matchIcon(m), m.name.toUpperCase(), m.category || '', false, pick, m.display);
+				var row = m.recent ? filmRow(m, pick) : ATR.row(matchIcon(m), m.name.toUpperCase(), m.tipo || '', false, pick, m.display);
 
 				take(function () {
 					h.attr(m, true);
@@ -1338,12 +1493,14 @@ projetos com o nome certo).
 				take(function () {
 					h.attr(m, true); // o Tab completa e fica aberto (as pastas dela)
 				});
-				list.appendChild(ATR.row(matchIcon(m), m.name.toUpperCase(), m.category || '', false, pick, m.display));
+				list.appendChild(ATR.row(matchIcon(m), m.name.toUpperCase(), m.tipo || '', false, pick, m.display));
 			});
 			more(attrs.length - LIST_MAX);
 		}
 
 		if (!cards.length && !films.length && !attrs.length) list.appendChild(ATR.group(ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome'));
+		// modo local: de quando é a cópia do índice em uso (como no acessorista)
+		if (ATR.copyNote()) list.appendChild(el('p', 'combo-more', ATR.copyNote()));
 		list.appendChild(ATR.sep());
 
 		// NOVA: só os chips dos tipos; o tipo digitado no começo (vt …) vem marcado
@@ -1359,16 +1516,16 @@ projetos com o nome certo).
 		return first;
 	}
 
-	/* ---------- a atração nova direto na categoria (os chips embaixo da lista) ---------- */
+	/* ---------- a atração nova direto no tipo (os chips embaixo da lista) ---------- */
 
-	// a categoria digitada no começo (o nome ou o plural dela, com mais alguma palavra depois) marca o chip; o nome
-	// da atração é sempre o texto todo: "novela guerreiros" → NOVELA GUERREIROS, com a categoria NOVELA marcada
+	// o tipo digitado no começo (o nome ou o plural dele, com mais alguma palavra depois) marca o chip; o nome
+	// da atração é sempre o texto todo: "novela guerreiros" → NOVELA GUERREIROS, com o tipo NOVELA marcado
 	function novaFromText(text) {
 		var raw = String(text || '').trim();
 		var words = raw.split(/\s+/);
 		var best = null;
 
-		// o nome da categoria (uma ou mais palavras: MOOD MENSAL; a última pode vir no plural) e mais alguma depois
+		// o nome do tipo (uma ou mais palavras: MOOD MENSAL; a última pode vir no plural) e mais alguma depois
 		state.bases.forEach(function (b) {
 			var label = aepName(b.label).split(' ');
 
@@ -1383,14 +1540,14 @@ projetos com o nome certo).
 			if (ok) best = { base: b, size: label.length };
 		});
 
-		// a categoria no começo só marca o chip: o nome da atração é o texto todo, como foi digitado (vt reunião →
+		// o tipo no começo só marca o chip: o nome da atração é o texto todo, como foi digitado (vt reunião →
 		// VT REUNIAO em VT; novela guerreiros → NOVELA GUERREIROS em NOVELA)
 		if (best) return { name: raw.toUpperCase(), base: best.base };
 
 		return { name: raw.toUpperCase(), base: null };
 	}
 
-	// a categoria sem {atracao} no caminho é a própria atração (MOOD MENSAL → …/MOOD MENSAL/2026/12 DEZEMBRO): entra
+	// o tipo sem {atracao} no caminho é a própria atração (MOOD MENSAL → …/MOOD MENSAL/2026/12 DEZEMBRO): entra
 	// na busca quando o digitado bate com o nome dela (cada palavra é o começo de uma palavra do nome), antes das
 	// achadas e no lugar da de mesmo nome do índice
 	function fixedBases() {
@@ -1442,15 +1599,15 @@ projetos com o nome certo).
 		}));
 	}
 
-	// a atração nova numa categoria, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
+	// a atração nova num tipo, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
 	// barra fica dentro dele (ATRAÇÃO/2026/QUADRO)
 	function novaAttr(name, base, month) {
 		var path = fillPattern(base.pattern, name, base.label, '', month);
 
-		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label, '', month) : '', base: base, category: base.label, newOrg: true, isNewAttr: true };
+		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label, '', month) : '', base: base, tipo: base.label, newOrg: true, isNewAttr: true };
 	}
 
-	// o caminho de uma categoria para a atração nova, com a pasta da atração em diante em destaque
+	// o caminho de um tipo para a atração nova, com a pasta da atração em diante em destaque
 	function novaPathLine(node, nova, base) {
 		node.textContent = '';
 		if (!base) {
@@ -1477,8 +1634,8 @@ projetos com o nome certo).
 	// onPick(nova, base): o clique num chip (sem ele, cria a atração nova na claquete). keep: os chips na ordem da
 	// configuração (o escolhido não sobe)
 	function catChips(list, nova, onPick, keep) {
-		var grid = el('div', 'cat-chips');
-		var line = el('p', 'cat-path');
+		var grid = el('div', 'tipo-chips');
+		var line = el('p', 'tipo-path');
 		var bases = state.bases.filter(function (b) {
 			return b.pattern;
 		});
@@ -1488,10 +1645,10 @@ projetos com o nome certo).
 			return b !== nova.base;
 		}));
 		bases.forEach(function (b) {
-			var chip = el('button', 'cat-chip' + (b === nova.base ? ' is-on' : ''));
+			var chip = el('button', 'tipo-chip' + (b === nova.base ? ' is-on' : ''));
 
 			chip.type = 'button';
-			chip.innerHTML = (PAD_UTIL.categoryIcon(b.icon) || FOLDER_SVG) + '<span></span>';
+			chip.innerHTML = (PAD_UTIL.tipoIcon(b.icon) || FOLDER_SVG) + '<span></span>';
 			chip.lastChild.textContent = b.label;
 			chip.title = b.offline ? 'a pasta do tipo não está acessível: vai para a pasta deste computador' : '';
 			chip.addEventListener('mousedown', function (e) {
@@ -1504,7 +1661,7 @@ projetos com o nome certo).
 				novaPathLine(line, nova, nova.base);
 			});
 			chip.addEventListener('click', function () {
-				(onPick || pickNovaCategory)(nova, b);
+				(onPick || pickNovaTipo)(nova, b);
 			});
 			grid.appendChild(chip);
 		});
@@ -1513,14 +1670,14 @@ projetos com o nome certo).
 		list.appendChild(line);
 	}
 
-	// escolher a categoria: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
-	function pickNovaCategory(nova, base) {
+	// escolher o tipo: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
+	function pickNovaTipo(nova, base) {
 		if (base.pattern.indexOf('{atracao}') < 0) return enterAttraction(Object.assign(novaAttr(base.label, base), { isNewAttr: false, isFixed: true }));
 
 		var name = aepName(nova.name);
 
 		if (!name) return $('claq').focus();
-		ATR.pref(ATR.PREF_BASE, base.label); // a categoria da atração nova fica lembrada (o seletor dos templates usa)
+		ATR.pref(ATR.PREF_BASE, base.label); // o tipo da atração nova fica lembrado (o seletor dos templates usa)
 		enterAttraction(novaAttr(name, base));
 
 		var input = $('claq');
@@ -1553,7 +1710,7 @@ projetos com o nome certo).
 
 		var name = picked.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
 
-		enterAttraction({ name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true });
+		enterAttraction({ name: name, path: picked, display: picked, out: '', tipo: 'outra pasta', isCustom: true });
 	}
 
 	/* ---------- o card escolhido (passo 2): a atração, o filme ou a atração nova tirada da claquete ---------- */
@@ -1576,8 +1733,11 @@ projetos com o nome certo).
 		}
 		if (target.kind === 'nova') return startCardNova(c, target.name);
 
+		var seq = state.lookupSeq;
 		var attr = target.kind === 'film' ? target.attr : await cardAttr(c, target);
 
+		// o campo mudou (ou foi limpo) enquanto a atração do card era procurada: o clique não vale mais
+		if (seq !== state.lookupSeq || state.card !== c) return;
 		if (!attr) return startCardNova(c, target.kind === 'film' ? aepName(target.film.name) : suggestName(c.claq));
 		state.settleAll = true;
 		enterAttraction(atYear(attr));
@@ -1780,7 +1940,7 @@ projetos com o nome certo).
 
 		var typed = state.bases.length ? novaFromText(p.first) : null;
 
-		if (typed && typed.base && aepName(typed.name)) return pickNovaCategory(typed, typed.base);
+		if (typed && typed.base && aepName(typed.name)) return pickNovaTipo(typed, typed.base);
 		openNova(false);
 	}
 
@@ -1817,7 +1977,7 @@ projetos com o nome certo).
 		return null;
 	}
 
-	// o nome do .aep da categoria (aba PROJETO > ARQUIVO, com tokens): na atração criada pela categoria (a fixa, a
+	// o nome do .aep do tipo (aba TIPOS DE PROJETO > ARQUIVO, com tokens): na atração criada pelo tipo (a fixa, a
 	// nova dos chips); a que já existe no índice fica com o nome dela
 	function attrFileName(attr) {
 		var filled = attr && attr.filmFile ? attr.filmFile : ''; // o filme: o título com o ano (resolveFilms)
@@ -1829,7 +1989,7 @@ projetos com o nome certo).
 		return filled.split(WHAT_TOKEN).map(ATR.aepFileName).join(filled.indexOf(WHAT_TOKEN) >= 0 ? ' ' + WHAT_TOKEN + ' ' : '').trim();
 	}
 
-	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba PROJETO > ARQUIVO) e na pasta de output
+	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba TIPOS DE PROJETO > ARQUIVO) e na pasta de output
 	var WHAT_TOKEN = '{o_que_e}';
 
 	// a pasta de output com o o que é no lugar do token; sem o que é, o pedaço some (…/ATRACAO/{o_que_e} → …/ATRACAO)
@@ -1854,6 +2014,10 @@ projetos com o nome certo).
 		if (key === state.pickKey) return renderDest();
 
 		state.pickKey = key;
+		// o plano que ainda não voltou era da escolha de antes: não vale mais (planCriar confere)
+		clearTimeout(state.planTimer);
+		state.planTimer = null;
+		state.planSeq++;
 		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
 		state.openAuto = false;
 		state.sameOff = '';
@@ -1869,7 +2033,7 @@ projetos com o nome certo).
 			return renderOut();
 		}
 
-		// a pasta de output da atração (o índice ou a categoria): a de partida do campo do output
+		// a pasta de output da atração (o índice ou o tipo): a de partida do campo do output
 		if (state.outBaseFrom !== (pick.out || '')) {
 			state.outBaseFrom = pick.out || '';
 			state.outCustom = '';
@@ -1957,6 +2121,8 @@ projetos com o nome certo).
 	// conta do host); a lista dos .aep da pasta veio no plano. digitar o o que é não chama o host (ele lê a rede e
 	// travava a digitação)
 	function localFile(plan) {
+		if (!flow.pick) return;
+
 		var levels = String(flow.pick.quadro || '').split('/');
 		var custom = flow.pick.fileName || '';
 		var base = !levels[levels.length - 1].trim() && custom.indexOf(WHAT_TOKEN) >= 0
@@ -2022,19 +2188,26 @@ projetos com o nome certo).
 		if (!flow.pick) return;
 
 		var seq = ++state.planSeq;
+		var pick = flow.pick;
+		// o plano vale só para a escolha de agora: a escolha mudou ou saiu (o campo limpo) enquanto o host ou o Node
+		// respondia, a resposta é descartada em silêncio
+		var stale = function () {
+			return seq !== state.planSeq || flow.pick !== pick;
+		};
 
 		state.planTimer = setTimeout(async function () {
 			state.planTimer = null;
+			if (stale()) return;
 			try {
 				// com o Node do painel, os .aep da pasta são lidos aqui (sem travar o After: ADR 0003); sem ele, pelo host
 				var fs = ATR.nodeFs ? ATR.nodeFs() : null;
 				var node = !!(fs && fs.promises);
 				var plan = await call('projectPlan', planArgs({ list: !node }));
 
-				if (seq !== state.planSeq) return;
+				if (stale()) return;
 				if (node && plan.listed === false) {
 					plan.existing = plan.projectsFs ? await listAeps(fs, plan.projectsFs) : [];
-					if (seq !== state.planSeq) return;
+					if (stale()) return;
 				}
 				state.plan = plan;
 				// veio pelo card do Trello: os .aep que batem com a claquete ficam em destaque; só um, fica marcado (Abrir
@@ -2048,7 +2221,7 @@ projetos com o nome certo).
 				localFile(plan);
 				renderPlan(plan);
 			} catch (err) {
-				if (seq === state.planSeq) status(err.message, 'error');
+				if (!stale()) status(err.message, 'error');
 			}
 		}, state.plan ? 140 : 0);
 	}
@@ -2213,7 +2386,7 @@ projetos com o nome certo).
 		span.appendChild(document.createTextNode('.aep'));
 	}
 
-	/* ---------- as categorias da configuração (aba PROJETO): os tipos de projeto ---------- */
+	/* ---------- os tipos de projeto da configuração (aba TIPOS DE PROJETO) ---------- */
 
 	async function ensureBases() {
 		if (state.basesLoaded) return;
@@ -2326,7 +2499,9 @@ projetos com o nome certo).
 
 	var FILE_ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 
-	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
+	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto). escolhido por um
+	// card: o host devolve o envio ao webhook do projeto (o designer no card, momento aberto), que sai em segundo plano
+	// depois de abrir; a janela fecha depois dos avisos
 	async function openPicked() {
 		if (state.busy || !state.openFile || !state.plan) return;
 
@@ -2334,11 +2509,18 @@ projetos com o nome certo).
 		$('criar-go').disabled = true;
 		$('criar-go').textContent = 'Abrindo…';
 		try {
-			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
+			var attr = flow.attr || {};
+
+			await PAD_BRIDGE.prepararMontagem([state.plan.projects]);
+
+			var res = await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile, atracao: flow.pick ? flow.pick.name : '', quadro: flow.pick ? flow.pick.quadro || '' : '', tipo: attr.tipo || '', pasta: state.plan.root || '', card: cardDoEnvio() });
+			var sending = startEnvio(res);
+
 			status('projeto aberto: ' + state.openFile, 'success');
 			$('criar-go').textContent = 'Aberto';
 			state.openFile = '';
-			setTimeout(function () {
+			setTimeout(async function () {
+				await waitAvisos(sending);
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
 				state.currentKey = null;
@@ -2381,7 +2563,7 @@ projetos com o nome certo).
 			var o = outParts();
 			var walk = await walkPath(base, o.levels, o.last, true);
 
-			if (seq !== state.outSeq) return;
+			if (seq !== state.outSeq || !flow.pick) return; // a escolha saiu enquanto as pastas eram lidas
 			state.outWalk = walk;
 
 			// escolhida na lista: sem pastas dentro, a barra sai e volta o cartão
@@ -2518,8 +2700,110 @@ projetos com o nome certo).
 	/* ---------- criar ---------- */
 
 	function createArgs() {
-		// o .aep que já existe e não foi aberto: salva como … 2
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '' }, outTarget()));
+		// o .aep que já existe e não foi aberto: salva como … 2. tipo, atracaoNova e card: só para o envio ao webhook do
+		// projeto (o host o monta junto do .aep salvo: regras/webhook-do-projeto.js). o card escolhido vai só no envio,
+		// nunca no projeto (ADR 0001): o host não o grava
+		var attr = flow.attr || {};
+
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: cardDoEnvio() }, outTarget()));
+	}
+
+	// o card escolhido, como vai no envio ({ id, claquete }), ou null. só no envio, nunca no projeto (ADR 0001)
+	function cardDoEnvio(c) {
+		c = c === undefined ? state.card : c;
+
+		return c && c.card ? { id: String(c.card), claquete: String(c.claq || '') } : null;
+	}
+
+	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova e do card (docs/webhook-projeto.md) ---------- */
+
+	var WEBHOOK = window.PAD_WEBHOOK_DO_PROJETO; // o envio e os avisos (regras/webhook-do-projeto.js)
+	var WEBHOOK_TIMEOUT = 8000; // ms: o n8n que não responde nisso vira o aviso amarelo
+	var WEBHOOK_READ = { success: 2200, warn: 6000 }; // ms: o aviso à vista antes de a janela fechar
+
+	// o POST do envio pelo Node do painel → o texto da resposta (rejeita no HTTP de erro, sem rede ou no tempo esgotado)
+	function postJson(url, corpo) {
+		return new Promise(function (resolve, reject) {
+			var body = Buffer.from(JSON.stringify(corpo), 'utf8');
+			var req = require(/^https:/i.test(url) ? 'https' : 'http').request(url, { method: 'POST', timeout: WEBHOOK_TIMEOUT, headers: { 'Content-Type': 'application/json', 'Content-Length': body.length, Accept: 'application/json', 'User-Agent': 'O PADEIRO' } }, function (res) {
+				var chunks = [];
+
+				res.on('data', function (c) {
+					chunks.push(c);
+				});
+				res.on('error', reject);
+				res.on('end', function () {
+					if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error('HTTP ' + res.statusCode));
+					resolve(Buffer.concat(chunks).toString('utf8'));
+				});
+			});
+
+			req.on('timeout', function () {
+				req.destroy(new Error('tempo esgotado'));
+			});
+			req.on('error', reject);
+			req.end(body);
+		});
+	}
+
+	// envia em segundo plano: o Node do painel primeiro; sem ele, o curl do host (o plano B, ADR 0003) → a resposta
+	// (o texto) ou null (sem resposta)
+	async function sendEnvio(envio) {
+		try {
+			if (ATR.nodeFs && ATR.nodeFs()) return await postJson(envio.url, envio.corpo);
+
+			var res = await call('projectWebhook', { envio: envio });
+
+			return res && res.status >= 200 && res.status < 300 ? res.texto : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// o envio e a resposta virando os avisos → { avisos, copiaVelha }. a atração entrou no banco: a cópia do índice fica
+	// velha (a próxima busca baixa o índice de novo e já a acha). nunca rejeita
+	async function webhookDoProjeto(envio) {
+		var lido = WEBHOOK.avisos(await sendEnvio(envio), envio);
+		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
+
+		if (lido.copiaVelha && fs) {
+			try {
+				window.PAD_SEARCH_INDEX.markStale(fs, await call('searchInfo'));
+			} catch (err) { }
+		}
+
+		return lido;
+	}
+
+	// os avisos na linha do rodapé: verde quando todos deram certo, amarelo quando algum não. antes: um texto que fica
+	// na frente (o "salvo como" do Alterar)
+	function showAvisos(lido, antes) {
+		var warn = lido.avisos.some(function (a) {
+			return a.kind !== 'success';
+		});
+
+		status((antes ? [antes] : []).concat(lido.avisos.map(function (a) {
+			return a.texto;
+		})).join(' · '), warn ? 'warn' : 'success');
+
+		return warn ? 'warn' : 'success';
+	}
+
+	// o envio que o host devolveu (criar, abrir, salvar) sai em segundo plano → a promessa dos avisos, ou null (nada a
+	// enviar)
+	function startEnvio(res) {
+		return res && res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
+	}
+
+	// mostra os avisos do envio e os deixa à vista um instante (antes de a janela fechar); sem envio, não espera
+	async function waitAvisos(sending, antes) {
+		if (!sending) return;
+
+		var kind = showAvisos(await sending, antes);
+
+		await new Promise(function (resolve) {
+			setTimeout(resolve, WEBHOOK_READ[kind]);
+		});
 	}
 
 	async function create(args) {
@@ -2540,14 +2824,23 @@ projetos com o nome certo).
 				setTimeout(resolve, 300);
 			});
 
-			var res = await call('projectCreate', args || createArgs());
+			var cargs = args || createArgs();
+
+			await PAD_BRIDGE.prepararMontagem([cargs.path, cargs.output]);
+
+			var res = await call('projectCreate', cargs);
+			// a atração nova ou escolhida por um card: o aviso ao n8n, em segundo plano (a criação já terminou e não
+			// espera por ele)
+			var sending = startEnvio(res);
 
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
+			// com o envio, ela fecha depois de mostrar os avisos dele (no máximo o tempo do envio + a leitura).
 			// onde não dá para fechar (o navegador de teste), a janela vira o editor do projeto criado
 			done = true;
 			status('projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 			$('criar-go').textContent = 'Criado';
 			setTimeout(async function () {
+				await waitAvisos(sending);
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
 				$('criar-go').textContent = 'Criar projeto';
@@ -2595,6 +2888,7 @@ projetos com o nome certo).
 			ensureBases().then(edFile);
 			state.edPicked = '';
 			state.edAttr = null;
+			state.edCard = null;
 			state.edWalk = null;
 			state.edLevelsDone = !!cur.quadro;
 			state.edRoot = cur.root || '';
@@ -2746,7 +3040,7 @@ projetos com o nome certo).
 		if (!has) {
 			var empty = el('div', 'pd-empty');
 
-			empty.appendChild(el('b', null, 'Este projeto ainda não passou pela claquete'));
+			empty.appendChild(el('b', null, 'Este projeto ainda não passou pel\'O PROJETISTA'));
 			empty.appendChild(document.createTextNode('Sem atração, pasta nem output gravados. Volte e salve para dar os dados a ele.'));
 			body.appendChild(empty);
 
@@ -2811,6 +3105,8 @@ projetos com o nome certo).
 		}));
 		if (cur.output) body.appendChild(pdPath(PD_OUT, cur.output, async function () {
 			try {
+				await PAD_BRIDGE.prepararMontagem([cur.output]);
+
 				var res = await call('openOutputs', { paths: [cur.output] });
 
 				if (res && res.missing && res.missing.length) status('#PAD_019 - output não pode ser acessado: ' + res.missing[0], 'error');
@@ -2905,7 +3201,7 @@ projetos com o nome certo).
 		return ATR.aepFileName(p.first + ' (' + state.edYear + ') ' + $('ed-what').value);
 	}
 
-	// o nome do .aep pelo tipo (aba PROJETO > ARQUIVO), como no projeto novo: a atração escolhida que é de um tipo com
+	// o nome do .aep pelo tipo (aba TIPOS DE PROJETO > ARQUIVO), como no projeto novo: a atração escolhida que é de um tipo com
 	// ARQUIVO próprio (a nova dos chips, o tipo fixo) ou o projeto aberto de um tipo fixo (MOOD MENSAL: o mês vem do
 	// nome de hoje do .aep, JANEIRO NA GLOBO, não da data de hoje). sem pastas abaixo; '' quando não vale
 	function edTypeName() {
@@ -3012,7 +3308,7 @@ projetos com o nome certo).
 
 					list.appendChild(ATR.group(m.length ? 'escolha a atração' : 'nenhuma atração com esse nome'));
 					m.forEach(function (match) {
-						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.tipo || '', false, function () {
 							state.edAttr = match;
 							$('ed-atracao').value = match.name.toUpperCase() + '/' + p.parts.slice(1).join('/');
 							edLookup($('ed-atracao').value, false);
@@ -3022,14 +3318,14 @@ projetos com o nome certo).
 				}
 
 				list.appendChild(ATR.group('atração'));
-				list.appendChild(ATR.row(matchIcon(state.edAttr), state.edAttr.name.toUpperCase(), state.edAttr.category || '', true, function () { }, state.edAttr.display));
+				list.appendChild(ATR.row(matchIcon(state.edAttr), state.edAttr.name.toUpperCase(), state.edAttr.tipo || '', true, function () { }, state.edAttr.display));
 				list.appendChild(ATR.sep());
 				if (!state.edWalk) return list.appendChild(ATR.group('procurando as pastas…'));
 				levelRows(list, state.edWalk, p.last, edEnterLevel, edEnterLevel);
 				return;
 			}
 
-			// a mesma lista do projeto novo; no fim, o projeto novo com o que foi digitado (nova atração, categoria e
+			// a mesma lista do projeto novo; no fim, o projeto novo com o que foi digitado (nova atração, tipo e
 			// pasta, como num projeto do zero)
 			state.edFirst = pickGroups(list, p.first, res, {
 				attr: function (match) {
@@ -3053,8 +3349,13 @@ projetos com o nome certo).
 	}
 
 	// um card na lista do editor: como no projeto novo, ele só aponta a atração (o filme; sem atração, o nome sugerido
-	// vai para o campo e a lista mostra os tipos da atração nova). o ano da claquete vale para a pasta
+	// vai para o campo e a lista mostra os tipos da atração nova). o ano da claquete vale para a pasta. o card fica
+	// guardado (edCard) só para o envio ao Salvar (o designer no card, momento alterado), enquanto a atração do campo
+	// for a dele; escolher o card, sem salvar, não envia nada. o Alterar nunca cadastra a atração nova do card: só
+	// liga o projeto ao card (o cadastro é só ao criar o projeto)
 	async function edPickCard(c, target) {
+		var picked = state.edCard = { card: cardDoEnvio(c), name: target.kind === 'nova' ? target.name : '' };
+
 		if (target.kind === 'nova') {
 			$('ed-atracao').value = target.name;
 			state.edPicked = '';
@@ -3073,7 +3374,15 @@ projetos com o nome certo).
 		if (y) ATR.setYear(y);
 		attr = atYear(attr);
 		ATR.setYear(keep === new Date().getFullYear() ? 0 : keep);
+		picked.name = attr.name;
 		edPick(attr);
+	}
+
+	// o card do envio do Alterar: o escolhido na lista, se a atração do campo ainda é a dele; senão, null
+	function edCardDoEnvio(atracao) {
+		var c = state.edCard;
+
+		return c && c.card && aepName(c.name) && aepName(c.name) === aepName(atracao) ? c.card : null;
 	}
 
 	// uma pasta da lista (clique ou Enter): entra nela e, com pastas dentro, mostra o nível de dentro; sem pastas, a
@@ -3174,6 +3483,9 @@ projetos com o nome certo).
 
 	// salvar: grava os dados, leva o .aep para a pasta dele com o nome certo e fecha a janela
 	async function editorSave() {
+		// os avisos do envio ainda à vista: o projeto já foi salvo
+		if (state.busy) return;
+
 		var p = edParts();
 
 		// as pastas digitadas e ainda não aceitas: fica o digitado (o que existe é usado, o resto é novo)
@@ -3191,15 +3503,31 @@ projetos com o nome certo).
 
 		try {
 			// o nome do .aep: o de hoje fora do padrão (edKeep), o filme com o ano ou o do tipo (MOOD MENSAL: o tipo fixo
-			// mantém o nome pelo padrão dele, com o mês do nome de hoje); senão, o host faz o último nível + o que é
-			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() || edTypeName() });
+			// mantém o nome pelo padrão dele, com o mês do nome de hoje); senão, o host faz o último nível + o que é.
+			// tipo e card: só para o envio ao webhook do projeto (o card escolhido na lista: o designer no card); o host
+			// não grava o card no projeto (ADR 0001)
+			await PAD_BRIDGE.prepararMontagem([state.edRoot || $('ed-root').value, state.edOutput]);
 
+			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() || edTypeName(), tipo: state.edAttr ? state.edAttr.tipo || '' : '', card: edCardDoEnvio(atracao) });
+			// ligado a um card: o aviso ao n8n, em segundo plano (o projeto já foi salvo)
+			var sending = startEnvio(cur);
+			var moved = cur.moved ? 'salvo como ' + cur.fileName + '. o arquivo antigo continua em ' + cur.moved + '.' : '';
+
+			delete cur.envio;
 			state.editorKey = null;
 			state.current = cur;
 			renderEditor(cur);
 			// salvo com outro nome ou em outro lugar: o arquivo antigo continua lá (a janela fica aberta para avisar)
-			if (cur.moved) status('salvo como ' + cur.fileName + '. o arquivo antigo continua em ' + cur.moved + '.', 'success');
-			else PAD_BRIDGE.closePanel();
+			if (moved) status(moved, 'success');
+			if (sending) {
+				state.busy = true; // a atualização a cada 1,5 s não redesenha enquanto os avisos estão à vista
+				try {
+					await waitAvisos(sending, moved);
+				} finally {
+					state.busy = false;
+				}
+			}
+			if (!moved) PAD_BRIDGE.closePanel();
 		} catch (err) {
 			status(err.message, 'error');
 		}
@@ -3278,6 +3606,7 @@ projetos com o nome certo).
 
 		state.current = cur;
 		state.currentKey = key;
+		ATR.setDesigner(cur.user || cur.defaultUser); // o {designer} dos caminhos dos tipos de projeto
 
 		// começou o projeto novo à mão (do editor): fica no fluxo enquanto o projeto aberto for o mesmo
 		if (state.manualNew) {
@@ -3319,7 +3648,7 @@ projetos com o nome certo).
 
 			// a atração já escolhida (no topo da lista das pastas) fica fora: as setas andam pelas opções (os chips
 			// dos tipos da atração nova também)
-			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item, .cat-chip'), function (it) {
+			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item, .tipo-chip'), function (it) {
 				return it.offsetParent !== null && !(it.classList.contains('combo-item') && it.classList.contains('is-on'));
 			});
 			var at = items.findIndex(function (it) {

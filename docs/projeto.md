@@ -1,14 +1,14 @@
-# 🎬 A CLAQUETE · projeto
+# 🎬 O PROJETISTA · projeto
 
 [← O PADEIRO](../README.md)
 
-a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas, e mostra **quem criou e quem salvou** o projeto.
+a janela de projeto, **O PROJETISTA**, cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas, e mostra **quem criou e quem salvou** o projeto.
 
-> 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
+> 🚩 *coletar os arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
-abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
+abra pela gaveta **projeto** da barra, no botão **Iniciar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **Alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
-<p align="center"><img src="images/anim/claquete.webp" alt="A CLAQUETE: a atração pela busca, o que é e o nome do .aep" width="480"></p>
+<p align="center"><img src="images/anim/claquete.webp" alt="O PROJETISTA: a atração pela busca, o que é e o nome do .aep" width="480"></p>
 
 <table><tr><td align="center"><img src="images/anim/claquete-nova.webp" alt="uma atração nova: vt reunião marca o chip do tipo VT e se chama VT REUNIAO" width="400"><br><sub>atração nova: o texto digitado é o nome; o tipo no começo só marca o chip</sub></td><td align="center"><img src="images/anim/dados.webp" alt="os dados do projeto: quem criou, quem salvou e as pastas" width="400"><br><sub>os dados do projeto: quem criou, quem salvou e as pastas</sub></td></tr></table>
 
@@ -38,11 +38,11 @@ um campo só (**atração, filme ou caminho**). com ele vazio, a lista não apar
    - **card de filme** → o card ligado a um filme (o `trello` do filme no webhook dos filmes é o link do mesmo card) aparece com o **pôster** e o título com o ano, e leva ao filme.
    - **card sem atração** → o card sem atração ligada no banco (`RIO SUMMER BEATS 5-12`) aparece com o nome sugerido e *sem atração*: vira uma atração nova (passo 2).
 2. **FILMES** → os filmes recentes que batem com o texto, com o pôster, o título com o ano de produção e a exibição: primeiro os **A PRODUZIR** (ainda sem pasta de projeto), a exibição mais próxima em cima; depois os que **JÁ TÊM PROJETO**, também pela exibição; por último, os filmes do índice que não estão entre os recentes.
-3. **ATRAÇÕES** → as do índice, com o ícone do tipo (o da [configuração > projeto](producoes.md#-projeto)). o **tipo fixo** (o tipo sem `{atracao}` no caminho, como MOOD MENSAL) entra aqui quando o texto bate com o nome dele.
+3. **ATRAÇÕES** → as do índice, com o ícone do tipo (o da [configuração > tipos de projeto](producoes.md#-tipos-de-projeto)). o **tipo fixo** (o tipo sem `{atracao}` no caminho, como MOOD MENSAL) entra aqui quando o texto bate com o nome dele.
 4. **NOVA** → só os **chips dos tipos**, cada um com o seu ícone: um clique cria a atração nova **direto no tipo**, com o texto digitado como nome. com o mouse num chip, a linha embaixo mostra o caminho que ele dá. o tipo escrito no começo (`vt reunião`) só **marca o chip**, que vem primeiro: o nome é sempre o texto todo (`VT REUNIAO` no tipo VT); `Enter` cria no tipo marcado.
 5. **outra pasta…** → o navegador de pastas: a pasta escolhida vira o começo do caminho, como uma atração (`2026/`), e a barra mostra as pastas dela.
 
-cada grupo mostra **até 4 linhas**; com mais, uma linha discreta diz *+N outros: continue digitando*. as regras dos grupos (a ordem, o **seu**, o status, esconder a atração que tem card, o card de filme) ficam num ponto só, depois da busca (`pickGroups`, em `js/project.js`): valem igual com o índice de verdade (o Node do painel) e no modo de teste do navegador (o `projectLookup` do `mock-host.js`), e no **editor**.
+cada grupo mostra **até 4 linhas**; com mais, uma linha discreta diz *+N outros: continue digitando*. as regras dos grupos (a ordem, o **seu**, o status, esconder a atração que tem card, o card de filme) ficam num ponto só, depois da busca (`pickGroups`, em `js/projetista.js`): valem igual com o índice de verdade (o Node do painel) e no modo de teste do navegador (o `projectLookup` do `mock-host.js`), e no **editor**.
 
 **o "seu"** → o padeiro adivinha se o card é seu comparando o **login desta máquina** (o usuário do padeiro, ex: `JMBILLARD`) com o **designer do card** (`des`, o nome completo, ex: *J M Billard*), os dois sem acento, em maiúsculas e sem espaços nem símbolos. o login bate quando é:
 
@@ -80,15 +80,15 @@ escolhida a linha, a lista recolhe e, em cima do campo, aparece a **pasta do pro
 
 ### 3 · abrir ou criar?
 
-- **JÁ NA PASTA** → os `.aep` e `.aet` da pasta de projetos **e das subpastas logo dentro dela** (um nível só), do mais novo para o mais velho, com a subpasta escrita antes do nome (`CHAMADAS/PREMIO 2026 CH JOR ESP G5.aep`) e há quanto tempo à direita (**hoje**, **ontem**, **há 3 dias**; a data inteira na dica). vale igual para a atração, o filme e o card. ficam de fora as pastas de autosave, logs, `OLD`, `NÃO VALE` e as escondidas. mostra os do card e mais 3 (o resto num **+ N**). **um clique marca um projeto** (de novo, desmarca): o botão do rodapé vira **Abrir projeto** e embaixo aparece **criar um novo em vez de abrir**. o segundo passo é o botão: nada abre no primeiro clique. abrir não cria nada e fecha a janela.
+- **JÁ NA PASTA** → os `.aep` e `.aet` da pasta de projetos **e das subpastas logo dentro dela** (um nível só), do mais novo para o mais velho, com a subpasta escrita antes do nome (`CHAMADAS/PREMIO 2026 CH JOR ESP G5.aep`) e há quanto tempo à direita (**hoje**, **ontem**, **há 3 dias**; a data inteira na dica). vale igual para a atração, o filme e o card. ficam de fora as pastas de autosave, logs, `OLD`, `NÃO VALE` e as escondidas. mostra os do card e mais 3 (o resto num **+ N**). **um clique marca um projeto** (de novo, desmarca): o botão do rodapé vira **Abrir projeto** e embaixo aparece **criar um novo em vez de abrir**. o segundo passo é o botão: nada abre no primeiro clique. abrir não cria nada e fecha a janela. com a atração escolhida por um **card** do Trello e o [webhook do projeto](webhook-projeto.md) na configuração, depois de abrir o padeiro avisa o n8n em segundo plano para pôr você no card (a linha de baixo mostra o resultado e só então a janela fecha); só olhar o card na lista, sem abrir nem criar, não envia nada.
   - **sem travar o After** → com o Node do painel, quem lê a pasta (e as subpastas) é o painel, sem bloquear o After nem com a rede lenta ([ADR 0003](adr/0003-pastas-lidas-pelo-node-do-painel.md)): o host só monta o plano (a pasta, o nome) e devolve o caminho como o sistema o vê. sem o Node (o navegador de teste), o host lê como plano B.
 - **vindo de um card** → os `.aep` que batem com a claquete do card (cada palavra da claquete é o começo de uma palavra do nome do arquivo; valem os que batem com mais palavras) ficam **no topo, em destaque** (fundo suave e a etiqueta **CARD**), e você escolhe. **só um** bate: ele vem marcado (**Abrir projeto**). **dois ou mais**: nenhum marcado. **nenhum**: nada marcado e a janela fica pronta para criar, com o **o que é** vazio.
 - **O QUE É** → ex: `SERVIÇO`, `ELENCO`, `AESP`. o `.aep` é o **último nível do caminho** (o quadro, ou a atração, sem pastas) + o que é, sem acentos e caracteres especiais, em maiúsculas: `DOMINGÃO/DANÇA DOS FAMOSOS` + `ABERTURA` → `DANCA DOS FAMOSOS ABERTURA.aep`; o filme leva o título com o ano (`NAO NAO OLHE (2022) CHAMADA.aep`); o card sem atração, o nome sugerido. **o nome do `.aep` nunca vem da claquete**. o nome muda enquanto você digita.
-  - **tipo com `{o_que_e}`** → se o tipo de projeto usa o token no **arquivo** ou no **output** ([configuração > projeto](producoes.md#-projeto)), o o que é entra no lugar dele: o nome do `.aep` e a pasta de output mudam enquanto você digita.
+  - **tipo com `{o_que_e}`** → se o tipo de projeto usa o token no **arquivo** ou no **output** ([configuração > tipos de projeto](producoes.md#-tipos-de-projeto)), o o que é entra no lugar dele: o nome do `.aep` e a pasta de output mudam enquanto você digita.
   - **nome repetido** → quando o o que é dá o nome de um `.aep` que já está na pasta, ele vem marcado no **JÁ NA PASTA** e o botão vira **Abrir projeto** (o `Enter` no o que é também abre); o o que é fica à vista e embaixo da lista aparece *esse nome já existe · criar um novo em vez de abrir*. para criar outro, mude o o que é; desmarcado com o mesmo nome, o novo é salvo como `… 2`.
   - digitar o o que é ou trocar a atração desmarca o projeto marcado.
 - **o output** → embaixo, logo acima do rodapé (separado das pastas do projeto), um cartão com a pasta escolhida: a pasta de output da atração (do caminho de output do tipo, ou a do índice) em destaque e o caminho embaixo. **mudar** (ou o clique no cartão) abre o campo, que funciona como o do projeto: a lista mostra as subpastas, a barra desce, **nova pasta** cria uma no fim. de um clique: **pasta com o o que é** (`…/2026/SERVICO`), **outra pasta…** (o navegador de pastas) e **sem output** (não cria nem grava nada; dá para escolher depois, no editor). `Enter`, `Esc` ou sair do campo voltam para o cartão, com o escolhido (as pastas em negrito).
-- **um botão só**, que diz o que vai fazer: **Criar projeto** (ou `Enter` no o que é; o **o que é** é opcional; com um `.aep` marcado, o botão e o `Enter` abrem ele) cria as pastas novas, a estrutura (`01_PROJETOS` com o `.aep`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`…) e salva o `.aep`. no macOS, se o volume da rede do caminho (ex: `/Volumes/VFX`) não estiver montado, o padeiro monta antes, como o acessorista faz ao abrir uma pasta. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados. criado o projeto, o botão vira **Criado**, a linha de baixo confirma o nome do `.aep` e a janela fecha sozinha (para editar depois, abra a janela de novo: ela vira o editor).
+- **um botão só**, que diz o que vai fazer: **Criar projeto** (ou `Enter` no o que é; o **o que é** é opcional; com um `.aep` marcado, o botão e o `Enter` abrem ele) cria as pastas novas, a estrutura (`01_PROJETOS` com o `.aep`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`…) e salva o `.aep`. no macOS, se o volume da rede do caminho (ex: `/Volumes/VFX`) não estiver montado, o padeiro monta antes, como o acessorista faz ao abrir uma pasta. `AUDIOS` e `DADOS` o [coletar](#-coletar-os-arquivos) cria quando o projeto usar áudio ou dados. criado o projeto, o botão vira **Criado**, a linha de baixo confirma o nome do `.aep` e a janela fecha sozinha (para editar depois, abra a janela de novo: ela vira o editor). com uma **atração nova**, ou escolhida por um **card** do Trello, e o [webhook do projeto](webhook-projeto.md) na configuração, o padeiro avisa o n8n em segundo plano para cadastrá-la no banco das atrações e pôr você no card (o card só vai no envio, nunca no projeto): a linha de baixo mostra o resultado (verde: cadastrada, já existia, card ligado, você entrou no card; amarelo: o que não foi feito, ou você fora da tabela de designers) e só então a janela fecha. a criação não espera nem falha por isso; no modo local, nada é enviado.
 
 
 > 🚩 *obs:* se a pasta da atração já tem uma pasta de projetos (`01 PROJETOS`, `01PROJETOS`, `PROJETOS`…), ela é usada.
@@ -99,12 +99,12 @@ os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metada
 
 | campo | exemplo | quem grava |
 |---|---|---|
-| `padeiro:atracao` | LÁ NA MINHA TERRA | janela projeto |
-| `padeiro:quadro` | DANÇA DOS FAMOSOS/FINAL | janela projeto (opcional: as pastas abaixo da atração; o `.aep` é o último nível + o que é) |
-| `padeiro:oQueE` | SERVIÇO | janela projeto |
-| `padeiro:designer` | JBILLARD | janela projeto (quem criou) |
-| `padeiro:pasta` | a raiz da estrutura | janela projeto |
-| `padeiro:output` | a pasta de output | janela projeto; o template grava se faltar |
+| `padeiro:atracao` | LÁ NA MINHA TERRA | janela de projeto |
+| `padeiro:quadro` | DANÇA DOS FAMOSOS/FINAL | janela de projeto (opcional: as pastas abaixo da atração; o `.aep` é o último nível + o que é) |
+| `padeiro:oQueE` | SERVIÇO | janela de projeto |
+| `padeiro:designer` | JBILLARD | janela de projeto (quem criou) |
+| `padeiro:pasta` | a raiz da estrutura | janela de projeto |
+| `padeiro:output` | a pasta de output | janela de projeto; o template grava se faltar |
 | `padeiro:criado` | 2026-11-05 | o primeiro que gravar |
 | `padeiro:editores` | quem já salvou o projeto e o último dia de cada um (`USUARIO` e `2026-11-16`, um por linha, na ordem em que salvaram por último; a hora do último salvamento entra na linha de quem deixou de ser o último) | cada salvamento (abaixo) |
 | `padeiro:salvo` | o dia do último salvamento | cada salvamento |
@@ -126,7 +126,7 @@ projeto de antes desta versão: os campos antigos (`dc:coverage`, `dc:relation`,
 
 ao abrir a janela com um projeto criado por ela:
 
-- **atração** e **designer** (bonequinho) → a atração é buscada **como no projeto novo, com a mesma lista**: os grupos **NO TRELLO** (com o **seu** e o status), **FILMES**, **ATRAÇÕES** e a **NOVA** (os chips dos tipos), na mesma ordem e com as mesmas regras; com a lista aberta, ela fica com a largura toda (o designer recolhe). a escolhida fica com o nome oficial e a pasta dela; o card leva à atração dele (o filme, a pasta do filme; o ano escrito na claquete vale para a pasta); o card sem atração põe o nome sugerido no campo e a lista mostra os tipos da atração nova. o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
+- **atração** e **designer** (bonequinho) → a atração é buscada **como no projeto novo, com a mesma lista**: os grupos **NO TRELLO** (com o **seu** e o status), **FILMES**, **ATRAÇÕES** e a **NOVA** (os chips dos tipos), na mesma ordem e com as mesmas regras; com a lista aberta, ela fica com a largura toda (o designer recolhe). a escolhida fica com o nome oficial e a pasta dela; o card leva à atração dele (o filme, a pasta do filme; o ano escrito na claquete vale para a pasta); o card sem atração põe o nome sugerido no campo e a lista mostra os tipos da atração nova. o designer vazio vale o da [configuração > deste computador](producoes.md#-deste-computador) (por padrão, o login do computador, completo).
 - **o que é** → embaixo, o nome do `.aep` (a atração + o que é) e, quando muda, o nome de hoje. o **tipo com ARQUIVO próprio** (ex: MOOD MENSAL, `{proximo_mes} NA GLOBO {o_que_e}`) mantém o nome pelo padrão do tipo ao salvar, com o mês do nome de hoje do `.aep` (`JANEIRO NA GLOBO SERVICO` → `JANEIRO NA GLOBO CHAMADA`), em vez de virar a atração + o que é. um projeto antigo com o nome fora desse padrão fica com o nome dele até a atração ou o o que é mudarem.
 - **pasta do projeto** → o caminho do projeto. o botão de pasta dentro do campo escolhe outra pasta.
 - **salvo por** → embaixo, quem já salvou o projeto, o mais recente primeiro (`salvo por: TMARTA 16/11 · JMBILLARD 14/11`).
@@ -142,13 +142,15 @@ ao abrir a janela com um projeto criado por ela:
 
 no editor, `Enter` na atração com a lista aberta fica com o **nome digitado** (para usar uma atração da lista, clique nela); `Enter` de novo salva.
 
+**um card no editor** → a lista da atração mostra os cards do Trello, como no projeto novo. escolhido um card e salvo, com o [webhook do projeto](webhook-projeto.md) na configuração, o padeiro avisa o n8n em segundo plano para pôr você no card (a linha de baixo mostra o resultado). escolher o card sem salvar, ou trocar depois a atração do campo por outra, não envia nada. o card não vai para o projeto. o editor nunca cadastra a atração no banco das atrações, nem a do card sem atração: só liga o projeto ao card (o cadastro é só ao criar o projeto).
+
 **projeto já salvo, mas sem os dados do padeiro** (um `.aep` antigo, por exemplo) → a janela abre direto no editor. a busca roda sozinha com o nome do arquivo: a primeira atração achada já vem marcada (com a pasta dela) e o resto do nome vai para o **o que é**. sem nenhuma, fica o nome do arquivo e o aviso. confira e **Salvar**.
 
 abrir outro projeto troca os dados da janela.
 
 ### bolinha na barra
 
-o botão **criar / alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
+o botão **Iniciar / Alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
 
 - 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro, dentro da pasta dele.
 - 🟠 **laranja** → falta algo, e a dica do botão diz o quê: **ainda sem atração** (o projeto não foi criado pela janela: clique para iniciar) ou **salvo fora da pasta dele** (ex: um "salvar como" na Área de Trabalho: o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta). um **projeto antigo convertido** (o After abre, converte e deixa "(converted)", sem salvar) também fica laranja, mas com o botão **Alterar**: a janela mostra os dados que ele já tinha, antes mesmo de salvar; ao salvar, se o original ainda estiver na pasta com o mesmo nome, mude o "o que é" para gravar o convertido ao lado dele.

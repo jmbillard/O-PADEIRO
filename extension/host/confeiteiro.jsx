@@ -11,12 +11,12 @@ e o host resolve o índice na hora de testar e salvar.
 
 */
 
-var PADX_MAKER_METHODS = { textContent: true, layerName: true };
+var PADX_CONFEITEIRO_METHODS = { textContent: true, layerName: true };
 
 // Caminho do preview (png) capturado mais recentemente.
-var PADX_makerPreview = null;
+var PADX_confeiteiroPreview = null;
 
-function padMakerComp(compId) {
+function padConfeiteiroComp(compId) {
 	var comp = app.project.itemByID(compId);
 
 	if (!(comp instanceof CompItem)) throw new Error('#PAD_028 - comp principal não encontrada. abra a comp e capture o preview de novo.');
@@ -47,7 +47,7 @@ function padLayerInfo(layer) {
 }
 
 // Estado do After Effects para o painel: comp ativa e layers selecionados nela.
-PADX.makerState = function () {
+PADX.confeiteiroState = function () {
 	var item = app.project.activeItem;
 
 	if (!(item instanceof CompItem)) return { hasComp: false };
@@ -64,7 +64,7 @@ PADX.makerState = function () {
 // Fontes usadas no projeto (a leitura pode demorar em projetos grandes): { name (PostScript), family,
 // style, location (arquivo da fonte, para a prévia), source }. source: 'local' (instalada neste
 // computador), 'adobe' (Adobe Fonts / Creative Cloud) ou 'missing' (não existe neste computador).
-PADX.makerFonts = function () {
+PADX.confeiteiroFonts = function () {
 	var fonts = getProjectFonts();
 
 	for (var f = 0; f < fonts.length; f++) {
@@ -87,7 +87,7 @@ PADX.makerFonts = function () {
 };
 
 // Confere se dá para criar um template agora (barra principal).
-PADX.makerReady = function () {
+PADX.confeiteiroReady = function () {
 	if (!(app.project.activeItem instanceof CompItem)) {
 		throw new Error('#PAD_031 - abra a comp principal do template antes de criar um novo template.');
 	}
@@ -139,7 +139,7 @@ function padWaitForPng(path) {
 }
 
 // Salva o frame atual da comp ativa como preview e define a comp principal / tempo de referência.
-PADX.makerCapture = function () {
+PADX.confeiteiroCapture = function () {
 	var comp = app.project.activeItem;
 
 	if (!(comp instanceof CompItem)) throw new Error('#PAD_025 - abra a comp principal do template para capturar o preview.');
@@ -151,34 +151,34 @@ PADX.makerCapture = function () {
 
 	comp.saveFrameToPng(comp.time, previewFile);
 
-	PADX_makerPreview = padWaitForPng(previewFile.fsName) ? previewFile.fsName : null;
+	PADX_confeiteiroPreview = padWaitForPng(previewFile.fsName) ? previewFile.fsName : null;
 
 	return {
 		compId: comp.id,
 		compName: comp.name,
 		time: comp.time,
 		frameRate: comp.frameRate,
-		preview: PADX_makerPreview,
-		selected: PADX.makerState().selected
+		preview: PADX_confeiteiroPreview,
+		selected: PADX.confeiteiroState().selected
 	};
 };
 
 // Layers selecionados na comp principal. a: { compId }
-PADX.makerSelection = function (a) {
+PADX.confeiteiroSelection = function (a) {
 	var item = app.project.activeItem;
 
 	if (!(item instanceof CompItem) || item.id != a.compId) {
-		throw new Error('#PAD_023 - selecione os layers editáveis na comp principal (' + padMakerComp(a.compId).name + ').');
+		throw new Error('#PAD_023 - selecione os layers editáveis na comp principal (' + padConfeiteiroComp(a.compId).name + ').');
 	}
 
 	if (item.selectedLayers.length == 0) throw new Error('#PAD_023 - selecione os layers editáveis na comp principal.');
 
-	return PADX.makerState();
+	return PADX.confeiteiroState();
 };
 
 // Seleciona / deseleciona um layer na comp (clique no nome do layer). a: { compId, layerId }
-PADX.makerToggleLayer = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroToggleLayer = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 	var layer = padLayerById(comp, a.layerId);
 
 	if (!layer) throw new Error('#PAD_063 - o layer não existe mais na comp.');
@@ -189,8 +189,8 @@ PADX.makerToggleLayer = function (a) {
 };
 
 // Nome e posição atuais dos layers (a ordem pode ter mudado na comp). a: { compId, layerIds }
-PADX.makerLayers = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroLayers = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 	var layers = [];
 
 	for (var i = 0; i < a.layerIds.length; i++) {
@@ -206,8 +206,8 @@ PADX.makerLayers = function (a) {
 // menu (Dropdown Menu Control: uma comp por opção) ou um checkbox (Checkbox Control: desligado e ligado).
 // → { layerId, layerIndex, layerName, fxName, optionIndex, count, kind } (count: o total de opções, 0 se não deu
 // para saber; kind: 'menu' ou 'checkbox')
-PADX.makerPickEffect = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroPickEffect = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 	var props = comp.selectedProperties;
 	var menu = null;
 
@@ -291,8 +291,8 @@ function padMenuCount(menu) {
 }
 
 // Preenche os layers editáveis com o texto de teste, como no preenchimento real. a: { compId, layers: [{id, method}], inputs: [] }
-PADX.makerTest = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroTest = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 
 	if (a.layers.length == 0) throw new Error('#PAD_026 - adicione pelo menos um layer editável para testar.');
 
@@ -315,7 +315,7 @@ PADX.makerTest = function (a) {
 		}
 	});
 
-	return PADX.makerCapture(); // o preview acompanha o teste
+	return PADX.confeiteiroCapture(); // o preview acompanha o teste
 };
 
 // Marca a comp como template, salva o projeto (janela do After Effects) e grava o config, o preview e as fontes.
@@ -324,7 +324,7 @@ PADX.makerTest = function (a) {
 // O arquivo proposto para salvar o template: '<PREFIXO> <O QUE É>' (a janela põe o .aet) (a atração já é o nome da pasta e aparece
 // na busca), na pasta do projeto aberto (já salvo) ou, sem ela, na pasta de templates da produção escolhida (sem
 // acesso: a Área de Trabalho)
-function padMakerSaveTarget(cfg) {
+function padConfeiteiroSaveTarget(cfg) {
 	var name = padAepName((cfg.prefix || '') + ' ' + cfg.configName) || 'TEMPLATE';
 	var folder = app.project.file ? app.project.file.parent : null;
 
@@ -343,16 +343,16 @@ function padMakerSaveTarget(cfg) {
 }
 
 // no macOS, o filtro da janela é uma função: só pastas e projetos do After Effects
-function padMakerSaveFilter(f) {
+function padConfeiteiroSaveFilter(f) {
 	return f instanceof Folder || /\.ae[pt]$/i.test(f.name);
 }
 
-PADX.makerSave = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroSave = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 	var cfg = a.config;
 
 	if (!cfg || String(cfg.configName).replace(/^\s+|\s+$/g, '') == '' || cfg.configName == defaultTemplateConfigObj.configName) {
-		throw new Error('#PAD_029 - preencha o que é (o nome do template).');
+		throw new Error('#PAD_029 - preencha o que é.');
 	}
 
 	// a atração do template (o seletor do criador: a do índice ou uma nova): { name, path, out }
@@ -365,7 +365,7 @@ PADX.makerSave = function (a) {
 	for (var i = 0; i < a.layers.length; i++) {
 		var layer = padLayerById(comp, a.layers[i].id);
 
-		if (!layer || !PADX_MAKER_METHODS[a.layers[i].method]) continue;
+		if (!layer || !PADX_CONFEITEIRO_METHODS[a.layers[i].method]) continue;
 
 		cfg.inputLayers.push({ layerIndex: layer.index, method: a.layers[i].method });
 	}
@@ -396,8 +396,8 @@ PADX.makerSave = function (a) {
 	try {
 		comp.comment = 'TEMPLATE';
 
-		// a janela do sistema já com o nome (a atração + o que é, como o .aep da CLAQUETE) e na pasta certa
-		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Template do After Effects:*.aet;*.aep' : padMakerSaveFilter);
+		// a janela do sistema já com o nome (a atração + o que é, como o .aep d'O PROJETISTA) e na pasta certa
+		var target = padConfeiteiroSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Template do After Effects:*.aet;*.aep' : padConfeiteiroSaveFilter);
 
 		if (target) {
 			// a extensão uma vez só (a janela pode repetir: '.aet.aet'); sem nenhuma, .aet
@@ -421,41 +421,32 @@ PADX.makerSave = function (a) {
 	var folder = decodeURI(project.parent.fsName);
 	var base = decodeURI(project.fsName).replace(/\.ae[pt]$/i, '');
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		saveTextFile(JSON.stringify(cfg, null, '\t'), base + '_config.json');
 
-		if (PADX_makerPreview && new File(PADX_makerPreview).exists) {
-			new File(PADX_makerPreview).copy(new File(base + '_preview.png'));
+		if (PADX_confeiteiroPreview && new File(PADX_confeiteiroPreview).exists) {
+			new File(PADX_confeiteiroPreview).copy(new File(base + '_preview.png'));
 		}
 
-		fontCollect(folder + '/FONTS');
+		fontCopyTo(folder + '/FONTS');
 		// a pasta abre pelo painel, depois de gerar (ou não) o preview em vídeo
 
 		return { saved: true, path: base + '_config.json', base: base, folder: folder };
 	});
 };
 
-// O template de output H.264 preferido: o de 15 Mbps ("H.264 - Match Render Settings - 15 Mbps", o padrão
-// do After Effects). O meio do nome muda com o idioma, então compara só o começo (H.264) e o fim (15 Mbps).
-// Sem ele, qualquer H.264 de 15 Mbps e, por fim, qualquer H.264. '' se não houver nenhum.
+// O preset de render H.264 preferido (o de 15 Mbps, o padrão do After): a regra compartilhada
+// (regras/preset-de-render.js), também usada pelo painel. '' se não houver nenhum.
 function padPreferredH264(templates) {
-	var rules = [/^H\.?264\b.*\b15\s*Mbps\s*$/i, /H\.?264.*15\s*Mbps/i, /H\.?264/i];
-
-	for (var r = 0; r < rules.length; r++) {
-		for (var t = 0; t < templates.length; t++) {
-			if (!/^_HIDDEN/.test(templates[t]) && rules[r].test(templates[t])) return templates[t];
-		}
-	}
-
-	return '';
+	return PAD_PRESET_DE_RENDER.preferredH264(templates);
 }
 
 // Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):
-// renderiza a comp principal pela fila de render com um template de output H.264, em meia resolução.
-// As saídas que já estavam na fila ficam de fora durante a renderização e voltam depois.
+// renderiza a comp principal pela fila de render com um preset de render H.264, em meia resolução.
+// Os outputs que já estavam na fila ficam de fora durante a renderização e voltam depois.
 // a: { compId, base }
-PADX.makerRenderPreview = function (a) {
-	var comp = padMakerComp(a.compId);
+PADX.confeiteiroRenderPreview = function (a) {
+	var comp = padConfeiteiroComp(a.compId);
 	var rq = app.project.renderQueue;
 	var target = new File(a.base + '_preview.mp4');
 

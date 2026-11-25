@@ -65,7 +65,7 @@ function netAccess() {
 	return app.preferences.getPrefAsLong('Main Pref Section', 'Pref_SCRIPTING_FILE_NETWORK_SECURITY') == 1;
 }
 
-// As libs avisam o usuário com alert(). Aqui as mensagens são recolhidas
+// As libs avisam o designer com alert(). Aqui as mensagens são recolhidas
 // (sem emoticons) e devolvidas ao painel, que mostra no próprio visual.
 var PADX_alerts = null;
 var PADX_nativeAlert = alert;
@@ -78,7 +78,7 @@ $.global.alert = function (msg) {
 };
 
 // Executa 'fn' recolhendo os alerts. Retorna { messages, data }.
-function padCollect(fn) {
+function padGatherAlerts(fn) {
 	var data;
 	var messages;
 	var outer = PADX_alerts; // a chamada (PADX_call) já recolhe: volta para ela no fim
@@ -150,55 +150,23 @@ function padDisplayPaths(list) {
 /*
 
 ---------------------------------------------------------------
-> este computador (configuração > LOCAL > computador)
+> deste computador (configuração > DESTE COMPUTADOR)
 ---------------------------------------------------------------
 
-'machine_config.json' na pasta de dados do usuário:
-  user       → a sigla do designer ({usuario} no nome do projeto); vazia: o usuário do computador
-  projects   → a pasta dos projetos neste computador: a atração nova vai para ela ({categoria}/{atracao})
-               quando a pasta da categoria não pode ser acessada (rede fora ou modo local)
-  outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
-  templates  → { 'produção': pasta } a pasta de templates de cada produção neste computador
-  localMode  → modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem
-               da última cópia guardada neste computador, os templates das pastas daqui, os projetos vão
-               para 'projects' (ou a Área de Trabalho), os renders para 'outputs' (ou a Área de Trabalho)
-               e os logs esperam a volta para a rede
+As seções deste computador ficam na tabela de seções (regras/configuracao.js): 'computador_config.json' na pasta de
+dados do usuário, com a sigla do designer, a pasta dos projetos, o output local, os presets de render, as produções
+deste computador, o modo local, o registro de uso ligado, o índice local, a lista dos templates e as fontes. O
+adaptador dos arquivos é o de host/productions.jsx (padLerSecao / padGravarSecoes).
+
+Modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem da última cópia guardada
+neste computador, os templates das pastas daqui, os projetos vão para a pasta dos projetos (ou a Área de Trabalho), os
+renders para o output local (ou a Área de Trabalho) e os registros de uso esperam a volta para a rede.
 
 */
 
-var PAD_MACHINE_CACHE = { stamp: -1, data: {} };
-
-function padMachineFile() {
-	return new File(scriptPreferencesPath + '/machine_config.json');
-}
-
-function padMachineData() {
-	var file = padMachineFile();
-	var stamp = 0;
-
-	try {
-		stamp = file.exists ? file.modified.getTime() : 0;
-	} catch (err) { }
-
-	if (stamp != PAD_MACHINE_CACHE.stamp) {
-		PAD_MACHINE_CACHE.stamp = stamp;
-		PAD_MACHINE_CACHE.data = {};
-
-		if (stamp) {
-			try {
-				PAD_MACHINE_CACHE.data = JSON.parse(readFileContent(file)) || {};
-			} catch (err) { }
-		}
-	}
-
-	return PAD_MACHINE_CACHE.data;
-}
-
-// O modo local ligado à mão (configuração > meu usuário). 'homeOffice' é o nome antigo da chave.
+// O modo local ligado à mão (configuração > DESTE COMPUTADOR).
 function padLocalForced() {
-	var d = padMachineData();
-
-	return d.localMode === true || d.homeOffice === true;
+	return padLerSecao('modoLocal');
 }
 
 // Modo local: ligado à mão ou a rede fora (a configuração da equipe só existe como a cópia deste
@@ -207,118 +175,62 @@ function padLocalMode() {
 	return padLocalForced() || padConfigIsCopy();
 }
 
-// Caminho de pasta digitado: barras normais, sem barra no fim.
-function padMachinePath(path) {
-	return padNoVolumeSuffix(String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1'));
+// a sigla que vem do login, completa (quem quiser uma sigla muda na configuração > DESTE COMPUTADOR)
+function padSiglaDoLogin() {
+	return PAD_CONFIGURACAO.limpar('sigla', system.userName || '');
 }
 
-// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas
-function padCleanUser(user) {
-	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9._-]/g, '').substring(0, 24).toUpperCase();
+// Sigla do designer: a deste computador ou, sem ela, a do login.
+function padSigla() {
+	return padLerSecao('sigla') || padSiglaDoLogin();
 }
 
-// o padrão: o usuário do computador, completo (quem quiser uma sigla muda na configuração > meu usuário)
-function padDefaultUser() {
-	return padCleanUser(system.userName || '');
-}
-
-// Sigla do designer: a deste computador; sem ela, a antiga (project_user.json) ou a padrão.
-function padMachineUser() {
-	var user = padCleanUser(padMachineData().user);
-
-	if (user) return user;
-
-	var legacy = new File(scriptPreferencesPath + '/project_user.json');
-
-	if (legacy.exists) {
-		try {
-			user = padCleanUser(JSON.parse(readFileContent(legacy)).user);
-		} catch (err) { }
-	}
-
-	return user || padDefaultUser();
-}
-
-// Busca de caminhos neste computador: { mode: 'webhook' | 'local', folders: [], foldersOnly, daily }.
-//   mode        → de onde vêm os caminhos: o webhook da equipe ou o índice local (as pastas abaixo, indexadas aqui)
-//   folders     → as pastas lidas com todas as subpastas
-//   foldersOnly → só pastas (sem arquivos)
-//   daily       → refaz o índice uma vez por dia, ao abrir a busca
-function padMachineSearch(o) {
-	o = o && typeof o == 'object' ? o : {};
-
-	var folders = [];
-	var list = o.folders && typeof o.folders.length == 'number' ? o.folders : [];
-
-	for (var i = 0; i < list.length; i++) {
-		var path = padMachinePath(list[i]);
-
-		if (path) folders.push(path);
-	}
-
-	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
-}
-
-// A lista de templates neste computador (configuração > templates): quantos recentes aparecem (0 a 30, padrão 5)
-// e há quantos dias um template ainda é novo (0 a 90, padrão 15). 0 esconde a seção
-function padMachineLists(d) {
-	var o = d && d.lists && typeof d.lists == 'object' ? d.lists : {};
-
-	function num(v, def, max) {
-		var n = parseInt(v, 10);
-
-		if (isNaN(n)) return def;
-
-		// sem ternário encadeado (o ExtendScript agrupa errado)
-		if (n < 0) return 0;
-
-		return n > max ? max : n;
-	}
-
-	return { recents: num(o.recents, 5, 30), newDays: num(o.newDays, 15, 90) };
-}
-
-PADX.machinePrefs = function () {
-	var d = padMachineData();
+PADX.prefsDesteComputador = function () {
+	var sigla = padLerSecao('sigla');
 
 	return {
-		user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(),
-		defaultUser: padDefaultUser(),
-		projects: padMachinePath(d.projects),
-		outputs: padMachinePath(d.outputs),
-		render: padMachineRender(d),
-		productions: padMachineProductions(d),
-		log: padMachineLog(),
+		user: sigla == padSiglaDoLogin() ? '' : sigla,
+		defaultUser: padSiglaDoLogin(),
+		projects: padLerSecao('pastaDosProjetos'),
+		outputs: padLerSecao('outputLocal'),
+		render: padLerSecao('presetsDeRender'),
+		productions: padProducoesDesteComputador(),
+		log: padLerSecao('registroDeUsoLigado'),
 		localMode: padLocalForced(),
-		search: padMachineSearch(d.search),
-		fontsUpload: padMachineFontsUpload(),
-		fontsCheck: padMachineFontsCheck(),
-		lists: padMachineLists(d),
+		search: padLerSecao('indiceLocal'),
+		fontsUpload: padLerSecao('fontesNoBanco'),
+		fontsCheck: padLerSecao('fontesConferir'),
+		lists: padLerSecao('listaDosTemplates'),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists } (só os campos enviados mudam)
-PADX.saveMachinePrefs = function (a) {
-	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck(), lists: padMachineLists(d) };
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
+// (só os campos enviados mudam; o computador_config.json é regravado inteiro pela tabela, limpo, sem as chaves
+// antigas; o arquivo antigo fica no lugar no beta)
+PADX.savePrefsDesteComputador = function (a) {
+	var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
+	// as produções deste computador vão sempre: sem a lista guardada, a convertida das pastas de antes ('templates', que
+	// sai do arquivo nesta gravação)
+	var valores = { producoesDesteComputador: padProducoesDesteComputador() };
 
-	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
-	if (a.projects != null) data.projects = padMachinePath(a.projects);
-	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
-	if (a.render != null) data.render = padMachineRender({ render: a.render });
-	if (a.log != null) data.log = a.log !== false;
+	for (var campo in campos) {
+		if (campos.hasOwnProperty(campo) && campos[campo] != null) valores[campo] = campos[campo];
+	}
+
+	// a sigla igual à do login fica vazia (vale a do login, mesmo se o login mudar)
+	if (a.user != null) {
+		var sigla = PAD_CONFIGURACAO.limpar('sigla', a.user);
+
+		valores.sigla = sigla == padSiglaDoLogin() ? '' : sigla;
+	}
 
 	if (a.productions != null) {
-		var team = [];
+		var team = padLerSecao('producoes');
 		var names = {};
 		var p;
-
-		try {
-			team = padConfigData().PRODUCTIONS || [];
-		} catch (err) { }
 
 		for (p = 0; p < team.length; p++) if (!padIsLocalPath(team[p].templatesPath)) names[team[p].name.toUpperCase()] = true;
 
@@ -327,21 +239,17 @@ PADX.saveMachinePrefs = function (a) {
 			var ppath = String(a.productions[p].path || '').replace(/^\s+|\s+$/g, '');
 
 			if (!pname && !ppath) continue;
-			if (!pname || !ppath) throw new Error('#PAD_098 - produção local ' + (p + 1) + ': precisa de um nome e de uma pasta.');
-			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção local "' + pname + '": já existe uma produção da equipe com esse nome.');
+			if (!pname || !ppath) throw new Error('#PAD_098 - produção deste computador ' + (p + 1) + ': precisa de um nome e de uma pasta.');
+			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção deste computador "' + pname + '": já existe uma produção da equipe com esse nome.');
 
 			names[pname.toUpperCase()] = true;
 		}
 
-		data.productions = padMachineProductions({ productions: a.productions });
+		valores.producoesDesteComputador = a.productions;
 	}
-	if (a.localMode != null) data.localMode = a.localMode === true;
-	if (a.search != null) data.search = padMachineSearch(a.search);
-	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
-	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
-	if (a.lists != null) data.lists = padMachineLists({ lists: a.lists });
+	if (a.localMode != null) valores.modoLocal = a.localMode === true;
 
-	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
+	if (valores.modoLocal && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
 		try {
 			padConfigData();
@@ -350,20 +258,10 @@ PADX.saveMachinePrefs = function (a) {
 		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - modo local: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
 	}
 
-	var folder = new Folder(scriptPreferencesPath);
-
-	if (!folder.exists) folder.create();
-
-	saveTextFile(JSON.stringify(data, null, '\t'), padMachineFile().fsName);
-	PAD_MACHINE_CACHE.stamp = -1;
+	padGravarSecoes(valores);
 	padConfigInvalidate();
 
-	// a sigla antiga sai: agora fica aqui
-	var legacy = new File(scriptPreferencesPath + '/project_user.json');
-
-	if (legacy.exists) legacy.remove();
-
-	return PADX.machinePrefs();
+	return PADX.prefsDesteComputador();
 };
 
 
@@ -380,48 +278,38 @@ function padIsLocalPath(path) {
 	return !!drive && !(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
 }
 
-// Produções locais (configuração > templates, neste computador): [{ name, path }], só deste computador, independentes das da
-// equipe. Sem a lista ainda (versão anterior): as pastas deste computador escolhidas para as produções da
-// equipe com caminho local (ex: Ω PASTA LOCAL) viram produções locais.
-function padMachineProductions(d) {
-	var out = [];
-	var seen = {};
-	var i;
+// Produções deste computador (configuração > templates): [{ name, path }], independentes das da equipe. Sem a lista
+// ainda (versão anterior): as pastas deste computador escolhidas para as produções da equipe com caminho deste
+// computador ('templates': { 'produção': pasta }, ex: Ω MINHA PASTA) viram produções deste computador, gravadas na
+// primeira gravação deste computador (savePrefsDesteComputador, que tira 'templates'). Não é um nome antigo da tabela de
+// seções: a conversão depende das produções da equipe e do mapa de drives.
+function padProducoesDesteComputador() {
+	var list = padLerSecao('producoesDesteComputador');
 
-	if (d.productions && typeof d.productions.length == 'number') {
-		for (i = 0; i < d.productions.length; i++) {
-			var row = d.productions[i] || {};
-			var name = String(row.name == null ? '' : row.name).replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
-			var path = padMachinePath(row.path);
+	if (list) return list;
 
-			if (!name || !path || seen[name.toUpperCase()]) continue;
+	// as pastas de antes: o primeiro arquivo da seção que ainda as tenha (o deste computador ou o de antes,
+	// machine_config.json, que fica no lugar no beta), pela tabela
+	var secao = PAD_CONFIGURACAO.secao('producoesDesteComputador');
+	var arquivos = [secao.arquivo].concat(secao.arquivosAntigos || []);
+	var d = null;
 
-			seen[name.toUpperCase()] = true;
-			out.push({ name: name, path: path });
-		}
+	for (var a = 0; a < arquivos.length; a++) {
+		d = PAD_CONFIG_ADAPTADOR.ler(arquivos[a]);
 
-		return out;
+		if (d && d.templates) break;
 	}
 
+	d = d || {};
 	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
-	var team = [];
+	var team = padLerSecao('producoes');
+	var rows = [];
 
-	try {
-		team = padConfigData().PRODUCTIONS || [];
-	} catch (err) { }
-
-	for (i = 0; i < team.length; i++) {
-		var local = padMachinePath(old[team[i].name]);
-
-		if (local && padIsLocalPath(team[i].templatesPath)) out.push({ name: team[i].name, path: local });
+	for (var i = 0; i < team.length; i++) {
+		if (padIsLocalPath(team[i].templatesPath)) rows.push({ name: team[i].name, path: old[team[i].name] });
 	}
 
-	return out;
-}
-
-// O registro de uso deste computador (configuração > meu usuário): ligado, segue o da equipe (aba rede).
-function padMachineLog() {
-	return padMachineData().log !== false;
+	return PAD_CONFIGURACAO.limpar('producoesDesteComputador', rows);
 }
 
 // Cópia da configuração da equipe guardada neste computador (para o modo local).
@@ -430,7 +318,7 @@ function padConfigCopyFile() {
 }
 
 // Configuração da equipe COMPARTILHADA ('O_PADEIRO_GLOBAL_config.json'): fica na pasta do padeiro na rede,
-// ao lado da pasta da extensão. o nome GLOBAL separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
+// ao lado da pasta da extensão. o nome O_PADEIRO_GLOBAL_config.json separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
 // que continuam lendo e gravando o seu sem estragar este. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário; um caminho com o
 //      nome antigo vale como a mesma pasta com o nome novo);
@@ -571,7 +459,7 @@ function padConfigInvalidate() {
 }
 
 function padNoSharedListError() {
-	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > meu usuário) com a rede conectada.';
+	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > DESTE COMPUTADOR) com a rede conectada.';
 
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
@@ -656,6 +544,23 @@ PADX.ping = function () {
 	};
 };
 
+// o instalador (Shift + clique direito no pãozinho da barra): INSTALAR O PADEIRO.jsx, na pasta do padeiro na rede,
+// ao lado da pasta extension (host → extension → pasta do padeiro, como a configuração da equipe). dentro do
+// $.evalFile, o $.fileName é o do próprio instalador (é assim que o index.jsx acha o PADX_HOST_PATH), e ele acha a
+// pasta extension ao lado dele. a janela do instalador não é modal: a chamada volta logo depois de abri-la
+// → { path }
+var PAD_INSTALLER_NAME = 'INSTALAR O PADEIRO.jsx';
+
+PADX.runInstaller = function () {
+	var file = new File(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/' + PAD_INSTALLER_NAME);
+
+	if (!file.exists) throw new Error('#PAD_119 - instalador: ' + PAD_INSTALLER_NAME + ' não foi encontrado na pasta do padeiro (' + padDisplayPath(file.fsName) + ')');
+
+	$.evalFile(file);
+
+	return { path: padDisplayPath(file.fsName) };
+};
+
 // Lista de produções (nome, pasta de templates e ícone).
 PADX.productions = function () {
 	var configFile = padConfigFile();
@@ -665,11 +570,12 @@ PADX.productions = function () {
 	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
-		list = padConfigData().PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
+		padConfigData();
 	} catch (err) {
 		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
-		list = [];
 	}
+
+	list = padLerSecao('producoes'); // na ordem do arquivo (o editor arrasta para reordenar)
 
 	var productions = [];
 
@@ -688,21 +594,22 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
-		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
-		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
-		lists: padMachineLists(padMachineData()), // quantos recentes e quantos dias de novos (neste computador)
-		log: padReadLogSettings(),
-		drives: padReadDrives(),
-		rename: padReadRename(),
-		organize: padReadOrganize(),
-		search: padReadSearch(),
-		links: padReadLinks(),
-		appearance: padReadTeamAppearance(), // o padrão da equipe (a pessoa pode personalizar: personal)
-		project: padReadProject(),
-		collect: padReadCollect(),
-		bar: padReadTeamBar(),
+		localProductions: padProducoesDesteComputador(), // as produções deste computador (configuração > templates)
+		localMode: padLocalMode(), // no modo local, o painel mostra só as deste computador
+		lists: padLerSecao('listaDosTemplates'), // quantos recentes e quantos dias de novos (neste computador)
+		log: padLerSecao('registroDeUso'),
+		drives: padLerSecao('mapaDeDrives'),
+		rename: padLerSecao('regraDoRenomear'),
+		organize: padLerSecao('organizar'),
+		search: padLerSecao('buscaDeCaminhos'),
+		links: padLerSecao('links'),
+		appearance: padLerSecao('aparencia'), // a da equipe (cada computador pode personalizar: personalizadas)
+		tiposDeProjeto: padLerSecao('tiposDeProjeto'),
+		webhookDoProjeto: padLerSecao('webhookDoProjeto'), // aba TIPOS DE PROJETO: o webhook do projeto (vazio: nada é enviado)
+		coletar: padLerSecao('coletar'),
+		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),
-		personal: PADX.personalPrefs(),
+		personalizadas: PADX.prefsPersonalizadas(),
 		localMode: padLocalMode(),
 		localForced: padLocalForced(),
 		fromCopy: padConfigIsCopy(),
@@ -713,12 +620,13 @@ PADX.productions = function () {
 /*
 
 ---------------------------------------------------------------
-> log dos preenchimentos
+> registro de uso dos preenchimentos
 ---------------------------------------------------------------
 
-Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel de
-produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
-templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo: o webhook de sempre.
+O da equipe é a seção registroDeUso da tabela de seções ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel
+de produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
+templates da produção usada), 'csvEquipe' (ao lado da configuração da equipe; antes 'csvGlobal') ou 'off' (nenhum registro). Sem 'LOG' no
+arquivo: o webhook de sempre. Neste computador, registroDeUsoLigado desliga só aqui.
 
 */
 
@@ -726,62 +634,25 @@ var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
 // colunas do CSV (o webhook recebe também atracao, quadro, o_que_e, pasta, output e versao_padeiro)
 var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
 
-function padDefaultLog() {
-	return { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
-}
-
-// Valida a config de log vinda do painel. Lança Error com a mensagem.
-function padCleanLog(log) {
-	var clean = padDefaultLog();
-
-	if (!log) return clean;
-
-	clean.mode = log.mode == 'csv' || log.mode == 'csvGlobal' || log.mode == 'off' ? log.mode : 'webhook';
-	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
-
-	// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
-	if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
-		throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-	}
-
-	return clean;
-}
-
-function padReadLogSettings() {
-	try {
-		var data = padConfigData();
-
-		return data.LOG ? padCleanLog(data.LOG) : padDefaultLog();
-	} catch (err) {
-		return padDefaultLog();
-	}
-}
-
 function padCsvValue(value) {
 	return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 }
 
 // Pasta de templates de uma produção da lista (onde fica o CSV do log).
 function padProductionFolder(name) {
-	var config = padConfigFile();
-
 	if (!name) return null;
 
-	var list = [];
-
-	try {
-		if (config && config.exists) list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
-	} catch (err) { }
+	var list = padLerSecao('producoes');
 
 	for (var i = 0; i < list.length; i++) {
 		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
 	}
 
-	// as produções locais (configuração > templates, neste computador)
-	var personal = padMachineProductions(padMachineData());
+	// as produções deste computador (configuração > templates)
+	var desteComputador = padProducoesDesteComputador();
 
-	for (var p = 0; p < personal.length; p++) {
-		if (personal[p].name == name) return new Folder(padPath(personal[p].path));
+	for (var p = 0; p < desteComputador.length; p++) {
+		if (desteComputador[p].name == name) return new Folder(padPath(desteComputador[p].path));
 	}
 
 	return null;
@@ -817,16 +688,16 @@ function padPendingLogFile() {
 }
 
 function padWriteLog(record) {
-	var settings = padReadLogSettings();
+	var settings = padLerSecao('registroDeUso');
 
-	if (settings.mode == 'off' || !padMachineLog()) return; // desligado pela equipe ou neste computador
+	if (settings.mode == 'off' || !padLerSecao('registroDeUsoLigado')) return; // desligado pela equipe ou neste computador
 	var local = padLocalMode();
 
 	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
 
-	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
+	// CSV da equipe: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
 	var config = local ? new File(padSharedConfigPath()) : padConfigFile();
-	var folder = settings.mode == 'csvGlobal' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
+	var folder = settings.mode == 'csvEquipe' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
@@ -873,7 +744,7 @@ function padWriteLog(record) {
 	else if (pendingFile.exists) pendingFile.remove();
 }
 
-// Produção escolhida na barra principal, gravada em 'selected_production.json'.
+// Produção escolhida no rodapé do painel de templates, gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
 	var file = new File(scriptPreferencesPath + '/selected_production.json');
 	var list = padConfigFile();
@@ -889,14 +760,14 @@ PADX.selectedProduction = function () {
 	return { name: name, stamp: stamp };
 };
 
-// Grava a produção escolhida (a barra principal escolhe, o painel de templates acompanha).
+// Grava a produção escolhida (o painel de templates escolhe; os outros painéis e o registro de uso leem).
 PADX.setProduction = function (a) {
 	saveTextFile(JSON.stringify({ name: a.name }), scriptPreferencesPath + '/selected_production.json');
 
 	return { name: a.name };
 };
 
-// Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp local
+// Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp deste computador
 // ({ "<produção>": { favorites: [uri], recents: [uri], renderPresets: { uri: preset } } }), com o
 // último preset de render usado em cada um. A lista de produções é que é compartilhada.
 function padTemplateListsFile() {
@@ -934,7 +805,7 @@ PADX.saveTemplateLists = function (a) {
 	return { ok: true };
 };
 
-// Cópia da última árvore de templates lida de cada produção (pasta temp local): a janela de templates
+// Cópia da última árvore de templates lida de cada produção (pasta temp deste computador): a janela de templates
 // mostra a lista na hora ao abrir e relê a pasta em segundo plano. A árvore vai e volta como texto
 // (JSON feito pelo painel), sem passar pelo JSON do ExtendScript, que é lento com listas grandes.
 function padTreeCacheFile(production) {
@@ -1021,6 +892,42 @@ PADX.mountInfo = function (a) {
 	return { mountable: appOs == 'Mac' && !!m, volume: m ? m[1] : '' };
 };
 
+// Os servidores que uma ação vai precisar montar (os caminhos em /Volumes fora dos volumes montados), sem montar nem
+// testar nada: o painel testa eles pelo Node (sem travar o After) e avisa os que não responderam (servidorFora).
+// no modo local (ligado à mão) e no Windows, nenhum. a: { paths } → { servidores: [{ servidor, share }] }
+PADX.servidoresParaMontar = function (a) {
+	var paths = a && a.paths instanceof Array ? a.paths : [];
+	var out = [];
+	var seen = {};
+
+	if (appOs != 'Mac' || padLocalForced()) return { servidores: out };
+
+	for (var i = 0; i < paths.length; i++) {
+		var path = padPath(paths[i]) || String(paths[i] || '');
+		var where = psServidorDoCaminho(path, '', '');
+
+		if (!where || seen[psServidorKey(where.server)] || psMountedSharePath(where.server, where.share)) continue;
+
+		seen[psServidorKey(where.server)] = true;
+		out.push({ servidor: where.server, share: where.share });
+	}
+
+	return { servidores: out };
+};
+
+// O painel testou os servidores pelo Node: os que não responderam não são montados (nem testados de novo pelo host)
+// por uns minutos; os que responderam, montam sem o teste do host. a: { servidores: [fora], ok: [responderam] }
+PADX.servidorFora = function (a) {
+	var fora = a && a.servidores instanceof Array ? a.servidores : [];
+	var ok = a && a.ok instanceof Array ? a.ok : [];
+	var i;
+
+	for (i = 0; i < fora.length; i++) psMarcarServidor(fora[i], false);
+	for (i = 0; i < ok.length; i++) psMarcarServidor(ok[i], true);
+
+	return { ok: true };
+};
+
 // Monta o share da pasta (quem abre a janela de templates pediu: é um clique). a: { path } → { mounted }
 PADX.mountPath = function (a) {
 	var path = padMountedPath(padPath(a.path) || String(a.path || ''));
@@ -1085,7 +992,7 @@ PADX.saveTemplateConfig = function (a) {
 
 	if (!cfg || typeof cfg !== 'object') throw new Error('#PAD_044 - configuração inválida');
 	if (!cfg.atracao || String(cfg.atracao.name || '').trim() == '') throw new Error('#PAD_044 - escolha a atração do template');
-	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é (o nome do template)');
+	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é');
 	if (String(cfg.compName).trim() == '') throw new Error('#PAD_044 - preencha o nome da comp principal');
 	if (cases.indexOf(cfg.textCase) < 0) throw new Error('#PAD_044 - tipo de caixa de texto inválido: ' + cfg.textCase);
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
@@ -1289,24 +1196,55 @@ PADX.importTemplate = function (a) {
 
 // A letra e o acento num caractere só (E + ´ → É): o texto que chega com o acento separado (NFD) é desenhado com o
 // acento na fonte padrão (Myriad) quando a fonte do template não tem o acento solto. o painel já manda junto
-// (normalize); aqui vale para o que vem de outros lugares (scripts). só as letras do português e do espanhol
-var PAD_ACCENT_MARKS = { '\u0300': 'grave', '\u0301': 'acute', '\u0302': 'circ', '\u0303': 'tilde', '\u0308': 'uml', '\u0327': 'cedil' };
-var PAD_ACCENT_TABLE = {
-	grave: { a: '\u00E0', e: '\u00E8', i: '\u00EC', o: '\u00F2', u: '\u00F9', A: '\u00C0', E: '\u00C8', I: '\u00CC', O: '\u00D2', U: '\u00D9' },
-	acute: { a: '\u00E1', e: '\u00E9', i: '\u00ED', o: '\u00F3', u: '\u00FA', y: '\u00FD', A: '\u00C1', E: '\u00C9', I: '\u00CD', O: '\u00D3', U: '\u00DA', Y: '\u00DD' },
-	circ: { a: '\u00E2', e: '\u00EA', i: '\u00EE', o: '\u00F4', u: '\u00FB', A: '\u00C2', E: '\u00CA', I: '\u00CE', O: '\u00D4', U: '\u00DB' },
-	tilde: { a: '\u00E3', o: '\u00F5', n: '\u00F1', A: '\u00C3', O: '\u00D5', N: '\u00D1' },
-	uml: { a: '\u00E4', e: '\u00EB', i: '\u00EF', o: '\u00F6', u: '\u00FC', A: '\u00C4', E: '\u00CB', I: '\u00CF', O: '\u00D6', U: '\u00DC' },
-	cedil: { c: '\u00E7', C: '\u00C7' }
-};
-
+// (normalize); aqui vale para o que vem de outros lugares (scripts). só as letras do português e do espanhol. a tabela
+// mora na regra do renomear (regras/regra-do-renomear.js), que o arquivista também usa
 function padComposeAccents(text) {
-	return String(text).replace(/([A-Za-z])([\u0300\u0301\u0302\u0303\u0308\u0327])/g, function (all, letter, mark) {
-		var table = PAD_ACCENT_TABLE[PAD_ACCENT_MARKS[mark]];
-
-		return table && table[letter] ? table[letter] : all;
-	});
+	return PAD_REGRA_DO_RENOMEAR.composeAccents(text);
 }
+
+// Os presets de render de um item da fila (os templates de output module do After), sem os _HIDDEN (os internos do
+// After): a mesma lista no fillBegin e no renderPresets (regras/preset-de-render.js).
+function padRenderTemplates(rqItem) {
+	var all = rqItem.outputModule(1).templates;
+	var list = [];
+
+	for (var t = 0; t < all.length; t++) list.push(String(all[t]));
+
+	return PAD_PRESET_DE_RENDER.withoutHidden(list);
+}
+
+// Os presets de render deste After, antes de preencher (o seletor do rodapé do painel de templates) e na configuração
+// (os presets d'O FORNO). A lista só existe num item da fila: com a fila de render com algum item, lê dele, sem mexer
+// em nada; vazia, uma comp de passagem entra na fila, a lista é lida e as duas saem (no mesmo grupo de desfazer).
+// → { renderTemplates: [nome], preferredTemplate: o H.264 de 15 Mbps, final, preview: os dois d'O FORNO }
+PADX.renderPresets = function () {
+	var rq = app.project.renderQueue;
+	var list = [];
+
+	if (rq.numItems > 0) {
+		list = padRenderTemplates(rq.item(1));
+	} else {
+		padGroup('O PADEIRO: ler os presets de render', function () {
+			var temp = app.project.items.addComp('_padeiro', 16, 16, 1, 1, 1);
+
+			try {
+				var rqItem = rq.items.add(temp);
+
+				try {
+					list = padRenderTemplates(rqItem);
+				} finally {
+					rqItem.remove();
+				}
+			} finally {
+				temp.remove();
+			}
+		});
+	}
+
+	var presets = padLerSecao('presetsDeRender');
+
+	return { renderTemplates: list, preferredTemplate: padPreferredH264(list), 'final': presets['final'], preview: presets.preview };
+};
 
 // Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
 // a: { uri, text, quiet }
@@ -1345,11 +1283,15 @@ PADX.fillBegin = function (a) {
 		// Importação do arquivo de projeto
 		padImportProject(projectFile, a.quiet);
 
-		// Busca a comp original
+		// os itens que esta importação trouxe (os que não estavam no projeto antes)
+		var imported = padNewItems(snapshot);
+
+		// Busca a comp principal só entre eles: uma comp TEMPLATE de mesmo nome que já estava no projeto (de outra
+		// rodada, de outro template) não é a deste template
 		var templateComp = null;
 
-		for (var i = 1; i <= app.project.numItems; i++) {
-			var comp = app.project.item(i);
+		for (var i = 0; i < imported.length; i++) {
+			var comp = imported[i];
 
 			if (!(comp instanceof CompItem)) continue;
 			if (!comp.comment.match(/^TEMPLATE/)) continue;
@@ -1360,23 +1302,20 @@ PADX.fillBegin = function (a) {
 		}
 
 		if (!templateComp) {
-			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (comentário TEMPLATE) não encontrada no projeto');
+			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (etiqueta TEMPLATE) não encontrada no template');
 		}
 
-		// Extrai e filtra a lista de templates de render
-		var renderTemplates = [];
+		// as comps do template com o nome de uma comp que já estava no projeto ganham _2, _3… (e as expressões do
+		// template que as citam em comp("…") passam a citar o nome novo): senão leriam a comp antiga
+		// no prefixo 'ignore', a comp principal fica com o nome: o script externo do template a procura pelo compName
+		padRenameRepeatedComps(imported, String(templateData.prefix || '').match(/ignore/i) ? templateComp : null);
+
+		// a lista dos presets de render (sem os _HIDDEN): só existe num item da fila
+		var renderList = [];
 		var rqItem = app.project.renderQueue.items.add(templateComp);
 
 		try {
-			renderTemplates = rqItem.outputModule(1).templates;
-
-			var tIndex = renderTemplates.length - 1;
-
-			// Remove templates ocultos
-			while (tIndex >= 0 && renderTemplates[tIndex].toString().match(/^_HIDDEN\s/)) {
-				renderTemplates.pop();
-				tIndex--;
-			}
+			renderList = padRenderTemplates(rqItem);
 		} finally {
 			rqItem.remove();
 		}
@@ -1396,12 +1335,6 @@ PADX.fillBegin = function (a) {
 			}
 		}
 
-		var renderList = [];
-
-		for (var r = 0; r < renderTemplates.length; r++) {
-			renderList.push(renderTemplates[r].toString());
-		}
-
 		PADX_run = {
 			production: PADX.selectedProduction().name, // a produção do template (só dá para preencher os da produção escolhida)
 			projectFile: projectFile,
@@ -1416,6 +1349,8 @@ PADX.fillBegin = function (a) {
 			newOutputs: [],
 			renderTemplates: renderList,
 			snapshot: snapshot,
+			// as precomps que leem a comp principal pelo nome (ou que têm uma dessas dentro): cada versão ganha as suas
+			precompsDaVersao: ignore ? [] : padPrecompsReadingMain(templateComp),
 			count: 0
 		};
 
@@ -1428,6 +1363,290 @@ PADX.fillBegin = function (a) {
 		return { total: jobs.length, jobs: jobs, templateName: projectFile.displayName };
 	});
 };
+
+// Os itens que entraram no projeto depois do retrato 'snapshot' (padProjectSnapshot) → [item]
+function padNewItems(snapshot) {
+	var out = [];
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!snapshot.ids[item.id]) out.push(item);
+	}
+
+	return out;
+}
+
+// Cada propriedade com expressão dentro de 'group' (uma layer: a transformação, os efeitos, as máscaras, o texto…),
+// em qualquer profundidade: fn(propriedade, expressão)
+function padEachExpressionIn(group, fn) {
+	for (var i = 1; i <= group.numProperties; i++) {
+		var prop = null;
+
+		try {
+			prop = group.property(i);
+		} catch (err) { }
+
+		if (!prop) continue;
+
+		if (prop.propertyType != PropertyType.PROPERTY) {
+			padEachExpressionIn(prop, fn);
+			continue;
+		}
+
+		var text = '';
+
+		try {
+			if (prop.canSetExpression) text = prop.expression;
+		} catch (err) { }
+
+		if (text) fn(prop, text);
+	}
+}
+
+// Cada propriedade com expressão das layers de 'comp': fn(propriedade, expressão)
+function padEachExpression(comp, fn) {
+	for (var l = 1; l <= comp.numLayers; l++) padEachExpressionIn(comp.layer(l), fn);
+}
+
+// Reescreve as expressões de 'comp' que citam comp("ANTIGO") para o nome novo, pelo mapa { ANTIGO: 'NOVO' }
+// (regras/referencias-de-comp.js)
+function padRewriteCompRefs(comp, map) {
+	padEachExpression(comp, function (prop, text) {
+		var out = PAD_REFERENCIAS_DE_COMP.rewrite(text, map);
+
+		if (out === text) return;
+
+		try {
+			prop.expression = out;
+		} catch (err) { }
+	});
+}
+
+// Alguma expressão de 'comp' cita, em comp("…"), um dos nomes de 'names'?
+function padCitesComps(comp, names) {
+	var found = false;
+
+	padEachExpression(comp, function (prop, text) {
+		for (var n = 0; n < names.length && !found; n++) {
+			if (PAD_REFERENCIAS_DE_COMP.cites(text, names[n])) found = true;
+		}
+	});
+
+	return found;
+}
+
+// As comps importadas com o nome de uma comp que já estava no projeto ganham _2, _3… (padUniqueName), e as
+// expressões de todas as comps importadas que citam esse nome passam a citar o novo. Assim comp("BG") de um template
+// lê a "BG" dele, não a de outro template ou de outra rodada (o After lê a primeira comp do projeto com o nome).
+// → { ANTIGO: 'NOVO' }
+function padRenameRepeatedComps(imported, keep) {
+	var mine = {};
+	var before = {};
+	var map = {};
+	var renamed = false;
+	var i;
+
+	for (i = 0; i < imported.length; i++) mine[imported[i].id] = true;
+
+	for (i = 1; i <= app.project.numItems; i++) {
+		var old = app.project.item(i);
+
+		if (old instanceof CompItem && !mine[old.id]) before[String(old.name).toUpperCase()] = true; // como o padUniqueName, sem a caixa
+	}
+
+	var taken = padFillTaken([]);
+
+	for (i = 0; i < imported.length; i++) {
+		var comp = imported[i];
+
+		if (!(comp instanceof CompItem) || !before.hasOwnProperty(String(comp.name).toUpperCase())) continue;
+		if (keep && comp.id == keep.id) continue;
+
+		var name = comp.name;
+
+		comp.name = padUniqueName(name, taken);
+		if (!map.hasOwnProperty(name)) map[name] = comp.name;
+		renamed = true;
+	}
+
+	if (renamed) {
+		for (i = 0; i < imported.length; i++) {
+			if (imported[i] instanceof CompItem) padRewriteCompRefs(imported[i], map);
+		}
+	}
+
+	return map;
+}
+
+// A fonte da layer, se for uma comp (a precomp); senão null
+function padLayerComp(layer) {
+	var source = null;
+
+	try {
+		source = layer.source;
+	} catch (err) { }
+
+	return source instanceof CompItem ? source : null;
+}
+
+// As precomps da comp principal (a árvore inteira de precomps dentro dela) que precisam de uma por versão: as que
+// leem a principal pelo nome em comp("…"), as que leem uma dessas pelo nome e as que têm uma dessas dentro. As outras
+// continuam compartilhadas pelas versões. → [CompItem]
+function padPrecompsReadingMain(main) {
+	var tree = [];
+	var seen = {};
+	var queue = [main];
+
+	seen[main.id] = true;
+
+	while (queue.length) {
+		var comp = queue.shift();
+
+		for (var l = 1; l <= comp.numLayers; l++) {
+			var pre = padLayerComp(comp.layer(l));
+
+			if (!pre || seen[pre.id]) continue;
+
+			seen[pre.id] = true;
+			tree.push(pre);
+			queue.push(pre);
+		}
+	}
+
+	var needs = {};
+	var names = [main.name];
+	var out = [];
+	var changed = true;
+
+	while (changed) {
+		changed = false;
+
+		for (var t = 0; t < tree.length; t++) {
+			var p = tree[t];
+
+			if (needs[p.id]) continue;
+
+			var inside = false;
+
+			for (var k = 1; k <= p.numLayers && !inside; k++) {
+				var src = padLayerComp(p.layer(k));
+
+				if (src && needs[src.id]) inside = true;
+			}
+
+			if (inside || padCitesComps(p, names)) {
+				needs[p.id] = true;
+				names.push(p.name);
+				out.push(p);
+				changed = true;
+			}
+		}
+	}
+
+	return out;
+}
+
+// A versão ganha as suas precomps (as de 'precomps', padPrecompsReadingMain): cada uma duplicada com o nome
+// "PRECOMP (VERSÃO)", as layers da versão e das precomps dela passam a usar as novas (replaceSource) e as expressões
+// que citam a principal ou essas precomps passam a citar a versão e as dela. → [as precomps criadas]
+function padSplitPrecomps(versao, main, precomps) {
+	var map = {};
+	var made = [];
+	var byId = {};
+	var i;
+
+	map[main.name] = versao.name;
+
+	if (precomps.length) {
+		var taken = padFillTaken([]);
+
+		for (i = 0; i < precomps.length; i++) {
+			var pre = precomps[i];
+			var dup = pre.duplicate();
+
+			made.push(dup);
+			dup.name = padUniqueName(pre.name + ' (' + versao.name + ')', taken);
+			map[pre.name] = dup.name;
+			byId[pre.id] = dup;
+		}
+	}
+
+	var comps = [versao].concat(made);
+
+	for (i = 0; i < comps.length; i++) {
+		for (var l = 1; l <= comps[i].numLayers; l++) {
+			var layer = comps[i].layer(l);
+			var src = padLayerComp(layer);
+
+			if (src && byId[src.id]) layer.replaceSource(byId[src.id], false); // as expressões, aqui embaixo
+		}
+
+		padRewriteCompRefs(comps[i], map);
+	}
+
+	return made;
+}
+
+// No fim do preenchimento: as precomps de antes (as que cada versão ganhou as suas) saem quando ninguém mais as usa
+// (nenhuma layer e nenhuma expressão das comps que entraram na rodada). Elas leem a comp principal, que saiu.
+function padRemoveUnusedPrecomps(precomps, snapshot) {
+	var gone = {};
+	var changed = true;
+
+	while (changed) {
+		changed = false;
+
+		for (var i = 0; i < precomps.length; i++) {
+			var pre = precomps[i];
+
+			if (gone[pre.id]) continue;
+			if (pre.usedIn.length > 0) continue;
+
+			var cited = false;
+			var news = padNewItems(snapshot);
+
+			for (var n = 0; n < news.length && !cited; n++) {
+				if (news[n] instanceof CompItem && news[n].id != pre.id && padCitesComps(news[n], [pre.name])) cited = true;
+			}
+
+			if (cited) continue;
+
+			gone[pre.id] = true;
+			pre.remove();
+			changed = true;
+		}
+	}
+}
+
+// Organiza só os itens que entraram no projeto depois de 'snapshot': cada um vai para a pasta configurada (criada se
+// faltar); as pastas e os itens que já estavam ficam como estavam. Saem só as pastas novas que ficaram vazias (a do
+// .aep importado e as de dentro dele). O botão Organizar continua organizando tudo (organizeProject).
+function padOrganizeNewItems(snapshot) {
+	var items = padNewItems(snapshot);
+	var only = {};
+
+	for (var i = 0; i < items.length; i++) {
+		if (!(items[i] instanceof FolderItem)) only[items[i].id] = true;
+	}
+
+	populateProjectFolders(only);
+
+	var removed = true;
+
+	while (removed) {
+		removed = false;
+
+		for (var f = app.project.numItems; f >= 1; f--) {
+			var folder = app.project.item(f);
+
+			if (folder instanceof FolderItem && folder.numItems == 0 && !snapshot.ids[folder.id]) {
+				folder.remove();
+				removed = true;
+			}
+		}
+	}
+}
 
 // os nomes de comp que o projeto já tem, em maiúsculas (menos os ids de 'skip': a versão em criação e a comp do
 // template, que sai no fim) → { NOME: true }
@@ -1478,6 +1697,7 @@ PADX.fillStep = function (a) {
 	var job = run.jobs[a.index];
 	var templateData = run.templateData;
 	var template = null;
+	var made = [];
 
 	return padGroup('O PADEIRO: preencher template', function () {
 		try {
@@ -1565,21 +1785,24 @@ PADX.fillStep = function (a) {
 			var info = infoArray.join(' ').replace(/[\s\-]+/g, ' ');
 			var suffix = run.suffixArray[job.f];
 
-			// Define o nome do template
+			// Define o nome da versão
 			if (!overwriteCompName(template)) {
 				// sem prefixo, o nome é só a informação (ex: 'JOAO BOSCO D')
 				var prefix = String(templateData.prefix || '').replace(/^\s+|\s+$/g, '');
 
-				template.name = ((prefix ? prefix + globalSeparator : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
+				template.name = ((prefix ? prefix + PAD_RENAME_SEPARATOR : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 			}
 
 			// nome repetido (com uma comp do projeto ou uma versão dos passos anteriores): ganha _2, _3…
 			// a lista sai do projeto a cada passo, então já conta as versões criadas antes nesta fila
 			template.name = padUniqueName(template.name, padFillTaken([template.id, run.templateComp.id]));
 
+			// as precomps que leem a principal pelo nome: a versão ganha as suas, lendo a versão
+			made = padSplitPrecomps(template, run.templateComp, run.precompsDaVersao || []);
+
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
-			template.comment = PAD_ORGANIZE.autoComment; // comentário de render (configuração > organizar)
+			template.comment = PAD_ORGANIZE.autoComment; // etiqueta de render (configuração > organizar)
 
 			run.newComps.push(template);
 			run.count++;
@@ -1588,6 +1811,7 @@ PADX.fillStep = function (a) {
 		} catch (err) {
 			// não deixa uma comp pela metade no projeto
 			try {
+				for (var m = 0; m < made.length; m++) made[m].remove();
 				if (template) template.remove();
 			} catch (e) { }
 
@@ -1610,6 +1834,11 @@ PADX.fillFinish = function () {
 			try {
 				run.templateComp.remove();
 			} catch (err) { }
+
+			// as precomps que cada versão ganhou: as de antes, sem uso, saem com a principal
+			try {
+				padRemoveUnusedPrecomps(run.precompsDaVersao || [], run.snapshot);
+			} catch (err) { }
 		}
 
 		// Define a pasta de importação padrão do projeto
@@ -1617,10 +1846,8 @@ PADX.fillFinish = function () {
 			app.project.setDefaultImportFolder(new Folder(padMountedPath(padPath(run.templateData.importPath)))); // no volume montado (VFX-1…)
 		} catch (err) { }
 
-		// Organização do projeto
-		deleteProjectFolders();
-		populateProjectFolders();
-		deleteEmptyProjectFolders();
+		// Organização: só os itens desta rodada (as pastas e os itens que já estavam ficam como estavam)
+		padOrganizeNewItems(run.snapshot);
 
 		// os dados do padeiro: o template (as fontes saem da pasta dele), a produção e o que faltar
 		try {
@@ -1637,7 +1864,7 @@ PADX.fillFinish = function () {
 			return n < 10 ? '0' + n : String(n);
 		};
 
-		// os dados do projeto (A CLAQUETE) vão junto: o template e a produção não ficam mais no arquivo, só aqui
+		// os dados do projeto (O PROJETISTA) vão junto: o template e a produção não ficam mais no arquivo, só aqui
 		var meta = {};
 
 		try {
@@ -1666,7 +1893,7 @@ PADX.fillFinish = function () {
 	return {
 		count: run.count,
 		renderTemplates: run.renderTemplates,
-		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (maker.jsx)
+		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (regras/preset-de-render.js)
 		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};
@@ -1831,12 +2058,11 @@ PADX.queueBegin = function (a) {
 	var outputs = [];
 	var configured = run.templateData.outputPath;
 
-	var machine = padMachineData();
 	var localMode = padLocalMode();
-	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
+	var localOutput = padLerSecao('outputLocal') || defaultTemplateConfigObj.outputPath[0];
 
 	for (var o = 0; o < configured.length; o++) {
-		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
+		// modo local: tudo no output local (sem tocar na rede)
 		if (localMode) {
 			outputs.push(padPath(localOutput));
 			continue;
@@ -1924,7 +2150,7 @@ PADX.runEnd = function (a) {
 	try {
 		$.evalFile(run.files.script);
 	} catch (err) {
-		throw new Error('#PAD_021 - ' + err.message);
+		throw new Error('#PAD_021 - script do template (' + result.script + '): ' + err.message); // diz qual script falhou
 	}
 
 	return result;
@@ -1964,7 +2190,7 @@ Mesma lógica de PAD_ACTIONS ('main ui functions.js'). Cada uma devolve { messag
 
 */
 
-// Arquivo de saída do último item da fila de render que tem um (ou null).
+// O output do último item da fila de render que tem um (ou null).
 function getLastOutputFile() {
 	var rq = app.project.renderQueue;
 
@@ -2085,15 +2311,15 @@ PADX.installFonts = function () {
 	padRequireNetwork('PAD_004');
 
 	var m = padMetaRead();
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var file = app.project.file;
 	var folders = [];
 	// sem ternário encadeado (o ExtendScript agrupa errado: com a pasta gravada, caía na conta pelo arquivo)
 	var root = '';
 
 	if (m.pasta) root = padMountedPath(padPath(m.pasta));
-	else if (file) root = padCollectRoot(file, settings);
-	var sub = padCollectFolderPath(settings, 'fontes');
+	else if (file) root = padColetarRoot(file, settings);
+	var sub = padColetarFolderPath(settings, 'fontes');
 	var list = padTemplatesList(m.templates);
 
 	if (root && sub) {
@@ -2132,11 +2358,11 @@ PADX.installFonts = function () {
 };
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }
-PADX.collectFonts = function (a) {
+PADX.copyFonts = function (a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
-		var fontsPath = fontCollect(padPath(decodeURI(a.path)) + '/FONTS');
+	return padGatherAlerts(function () {
+		var fontsPath = fontCopyTo(padPath(decodeURI(a.path)) + '/FONTS');
 
 		if (fontsPath != '') openFolder(fontsPath);
 
@@ -2174,7 +2400,7 @@ function padItemChanges(before, key) {
 	return count;
 }
 
-// Os nomes dos arquivos de saída da fila de render, na ordem (item da fila / módulo de saída).
+// Os nomes dos outputs da fila de render, na ordem (item da fila / módulo de saída).
 function padOutputSnapshot() {
 	var names = [];
 	var rq = app.project.renderQueue;
@@ -2199,7 +2425,7 @@ function padOutputSnapshot() {
 PADX.renameComps = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padItemSnapshot('name');
 
 		padGroup('renomear comps', function () {
@@ -2211,7 +2437,7 @@ PADX.renameComps = function () {
 };
 
 PADX.renameOutputs = function () {
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padOutputSnapshot();
 
 		padGroup('renomear outputs', function () {
@@ -2232,21 +2458,21 @@ PADX.renameOutputs = function () {
 /*
 
 ---------------------------------------------------------------
-> etiquetas (O CONTRARREGRA, clique direito): comentários nos itens
+> etiquetas (O CONTRARREGRA, clique direito): as etiquetas nos itens
 ---------------------------------------------------------------
 
-As etiquetas são comentários que o organizar entende: as de render e das editáveis (configuração > organizar), os
-tipos de peça (os do renomear: a comp vai para uma subpasta com o tipo) e as dos arquivos (o comentário vira
+As etiquetas são os comentários do After que o organizar entende: as de render e das editáveis (configuração >
+organizar), as dos formatos (os do renomear: a comp vai para uma subpasta com o formato) e as dos arquivos (a etiqueta vira
 subpasta). A janela aplica no que está selecionado no painel Project; as pastas ficam de fora.
 
   tagsInfo        → { selection, groups: [{ id, tags: [{ name, count }] }], folders: { render, edit } }
   tagsSelection   → { selection } (a janela pergunta a cada instante)
   tagsApply       → { text } ('' limpa)                        → { count }
-  tagsClearAll    → limpa o comentário de todos os itens do projeto → { count }
+  tagsClearAll    → limpa a etiqueta de todos os itens do projeto → { count }
 
 */
 
-// O comentário como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
+// O comentário do After como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
 function padTagOf(comment) {
 	return padTrim(String(comment).split(':')[0]).toUpperCase();
 }
@@ -2279,7 +2505,7 @@ PADX.tagsSelection = function () {
 PADX.tagsInfo = function () {
 	var seen = {};
 	var render = [PAD_ORGANIZE.autoComment];
-	var types = [];
+	var formats = [];
 	var i;
 
 	// os de render que o automático já contém (EXPORT em EXPORTAR) ficam só no automático
@@ -2287,12 +2513,12 @@ PADX.tagsInfo = function () {
 		if (String(PAD_ORGANIZE.autoComment).indexOf(PAD_ORGANIZE.renderComments[i]) < 0) render.push(PAD_ORGANIZE.renderComments[i]);
 	}
 
-	for (i = 0; i < renameRefArray.length; i++) types.push(renameRefArray[i].comment);
+	for (i = 0; i < renameRefArray.length; i++) formats.push(renameRefArray[i].etiqueta);
 
 	var groups = [
 		{ id: 'render', tags: padTagList(render, [], seen) },
 		{ id: 'edit', tags: padTagList(PAD_ORGANIZE.editComments || [], [], seen) },
-		{ id: 'types', tags: padTagList(types, [], seen) },
+		{ id: 'formats', tags: padTagList(formats, [], seen) },
 		{ id: 'files', tags: padTagList(PAD_ORGANIZE.fileTags || [], [], {}) }
 	];
 
@@ -2319,7 +2545,7 @@ PADX.tagsInfo = function () {
 	};
 };
 
-// O comentário em cada item selecionado (sem as pastas). '' limpa.
+// A etiqueta em cada item selecionado (sem as pastas). '' limpa.
 PADX.tagsApply = function (a) {
 	var text = padTrim(a && a.text).replace(/\s+/g, ' ').toUpperCase();
 	var sel = app.project.selection;
@@ -2358,7 +2584,7 @@ PADX.tagsClearAll = function () {
 	return { count: count };
 };
 
-// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm comentário. Sem nenhuma das
+// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm etiqueta. Sem nenhuma das
 // duas, nada iria para as comps de render: a barra pergunta antes.
 PADX.organizeCheck = function () {
 	var selected = 0;
@@ -2385,12 +2611,12 @@ PADX.organizeCheck = function () {
 PADX.organizeProject = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padItemSnapshot('parent');
 
 		try {
 			padGroup('organização automática do projeto', function () {
-				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
+				organizeProject(); // comps selecionadas sem etiqueta recebem a etiqueta automática
 			});
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);
@@ -2483,7 +2709,7 @@ PADX.setupStatus = function () {
 		file = padConfigFile();
 	} catch (err) { }
 
-	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padMachineUser() };
+	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padSigla() };
 };
 
 function padSetupPointer(path) {
@@ -2497,22 +2723,16 @@ function padSetupPointer(path) {
 
 // O resumo da configuração que ficou valendo (para o balão): produções, links e letras de drive.
 function padSetupSummary() {
-	var data = padConfigData();
-	var links = 0;
+	padConfigData(); // lança se a configuração escolhida não for um JSON válido
+
+	var links = padLerSecao('links').length;
 	var drives = [];
+	var d = padLerSecao('mapaDeDrives').drives;
 	var i;
 
-	try {
-		links = padReadLinks().length;
-	} catch (err) { }
+	for (i = 0; i < d.length; i++) drives.push(d[i].letter);
 
-	try {
-		var d = padReadDrives().drives;
-
-		for (i = 0; i < d.length; i++) drives.push(d[i].letter);
-	} catch (err) { }
-
-	return { productions: (data.PRODUCTIONS || []).length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
+	return { productions: padLerSecao('producoes').length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
 }
 
 // Usa a configuração escolhida. a: { path } → resumo
@@ -2558,7 +2778,7 @@ PADX.setupCreateConfig = function (a) {
 	return res;
 };
 
-// Só neste computador: a cópia local com os padrões e o modo local ligado.
+// Só neste computador: a cópia deste computador com os padrões e o modo local ligado.
 PADX.setupLocal = function () {
 	var copy = padConfigCopyFile();
 	var folder = new Folder(scriptPreferencesPath);
@@ -2566,7 +2786,7 @@ PADX.setupLocal = function () {
 	if (!folder.exists) folder.create();
 	if (!copy.exists) saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), copy.fsName);
 
-	PADX.saveMachinePrefs({ localMode: true });
+	PADX.savePrefsDesteComputador({ localMode: true });
 
 	return { local: true };
 };

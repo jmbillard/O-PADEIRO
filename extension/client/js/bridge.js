@@ -86,6 +86,87 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		return res.data;
 	}
 
+	/* ---------- antes de montar: o servidor responde? (macOS) ---------- */
+
+	// No Mac, montar um compartilhamento cujo servidor não responde (o de SP, 10.193.48.13 / promo_ber, só abre na rede
+	// da Globo) abre o diálogo do macOS "There was a problem connecting to the server…" e trava o After até o OK. Antes
+	// de uma ação que pode montar (criar, abrir, salvar), o Node do painel testa a porta do compartilhamento (445) dos
+	// servidores que a ação vai precisar, sem travar o After, e avisa o host dos que não responderam: o host não monta
+	// eles (e não testa de novo; ele mesmo testa só sem o Node, o plano B: lib/acessorista.js). a resposta fica lembrada
+	// por uns minutos (a que respondeu, por um minuto)
+	var SERVIDOR_TESTE_MS = 1500;
+	var SERVIDOR_FORA_MS = 5 * 60 * 1000;
+	var SERVIDOR_OK_MS = 60 * 1000;
+	var servidores = {};
+
+	function nodeNet() {
+		try {
+			return typeof require === 'function' ? require('net') : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function servidorResponde(net, host) {
+		return new Promise(function (resolve) {
+			var done = false;
+			var socket;
+			var end = function (ok) {
+				if (done) return;
+				done = true;
+				try {
+					socket.destroy();
+				} catch (err) { }
+				resolve(ok);
+			};
+
+			try {
+				socket = net.createConnection({ host: host, port: 445 });
+			} catch (err) {
+				return resolve(false);
+			}
+			socket.setTimeout(SERVIDOR_TESTE_MS);
+			socket.on('connect', function () {
+				end(true);
+			});
+			socket.on('timeout', function () {
+				end(false);
+			});
+			socket.on('error', function () {
+				end(false);
+			});
+		});
+	}
+
+	// paths: os caminhos que a ação vai usar. → [{ servidor, share }] os que não responderam ([] sem o Node, no
+	// navegador de teste ou se algo falhou: o host testa, plano B)
+	async function prepararMontagem(paths) {
+		var net = nodeNet();
+
+		if (!net || window.PAD_MOCK_HOST) return [];
+
+		try {
+			var res = await call('servidoresParaMontar', { paths: (paths || []).filter(Boolean) });
+			var now = Date.now();
+			var fora = [];
+			var ok = [];
+
+			await Promise.all((res.servidores || []).map(async function (s) {
+				var known = servidores[s.servidor];
+				var up = known && now - known.at < (known.ok ? SERVIDOR_OK_MS : SERVIDOR_FORA_MS) ? known.ok : await servidorResponde(net, s.servidor);
+
+				servidores[s.servidor] = known && known.ok === up ? known : { ok: up, at: now };
+				if (up) ok.push(s.servidor);
+				else fora.push(s);
+			}));
+			if (fora.length || ok.length) await call('servidorFora', { servidores: fora.map(function (s) { return s.servidor; }), ok: ok });
+
+			return fora;
+		} catch (err) {
+			return [];
+		}
+	}
+
 	function inCep() {
 		return !!cep;
 	}
@@ -296,5 +377,5 @@ define window.PAD_MOCK_HOST e a ponte usa esse host de mentira.
 		}
 	}
 
-	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, writeTextFile: writeTextFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
+	window.PAD_BRIDGE = { mountedPath: startFolder, call: call, prepararMontagem: prepararMontagem, inCep: inCep, pickFile: pickFile, pickFolder: pickFolder, pickSaveFile: pickSaveFile, writeTextFile: writeTextFile, readFileBase64: readFileBase64, openPanel: openPanel, closePanel: closePanel, resizeWindow: resizeWindow, centerWindow: centerWindow, openUrl: openUrl };
 })();

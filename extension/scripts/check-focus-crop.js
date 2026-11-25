@@ -19,7 +19,7 @@ quando criar um passo novo numa janela, acrescente lá.
 */
 
 const { chromium } = require('playwright');
-const { CLIENT, CHECKS, prepareContext } = require('./ui-states');
+const { CLIENT, CHECKS, windowSize, prepareContext } = require('./ui-states');
 const RING = 3; // :focus-visible { outline: 1px solid …; outline-offset: 2px } (guia de UI: foco)
 
 // roda na página: foca cada campo visível e procura o primeiro bloco de cima que corta a folga do foco
@@ -75,6 +75,7 @@ function findCrops(ring) {
 		const errors = [];
 
 		page.on('pageerror', (err) => errors.push(err.message));
+		await page.setViewportSize(windowSize(url)); // o tamanho padrão da janela (manifest)
 		await page.goto(CLIENT + url);
 		await page.waitForTimeout(1500);
 		await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; }' });

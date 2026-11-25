@@ -1,6 +1,6 @@
-# cards do Trello na claquete
+# cards do Trello n'O PROJETISTA
 
-Digitando na claquete (janela **PROJETO**), os **cards novos no Trello** que batem com o texto vêm primeiro, no grupo
+Digitando n'**O PROJETISTA** (a janela de projeto), os **cards novos no Trello** que batem com o texto vêm primeiro, no grupo
 **NO TRELLO**: um card por linha, com o **nome da atração** em destaque, a claquete embaixo (e o designer, quando o card
 não é seu) e o **status** como etiqueta. Os cards do designer desta máquina vêm primeiro, marcados **seu** (a regra
 está em [projeto.md](projeto.md#1--qual-atração)). O card é só a referência: o clique abre a atração (a pasta dela e
@@ -24,7 +24,7 @@ Os cards já vêm no índice da busca (`GET …/webhook/buscar`, o campo `trello
 | `at` | a data em que o card entrou, `AAAA-MM-DD` (ou data e hora ISO). |
 | `fim` | `true` quando o card está finalizado (FINALIZADO ou CAIU, ou arquivado). |
 | `atr` | a atração ligada ao card no banco (ARTE_producao), quando tem. |
-| `des` | o designer do card, o nome completo (`Cristina Vianna`): a claquete mostra e compara com o login da máquina (o **seu**). |
+| `des` | o designer do card, o nome completo (`Cristina Vianna`): O PROJETISTA mostra e compara com o login da máquina (o **seu**). |
 | `st` | o status do card (`PRODUZINDO`, `EM APROVAÇÃO`…): vira a etiqueta da linha. sem status, sem etiqueta. |
 | `fil` | `true` nos cards de filme: o card vai para o filme cujo `trello` (no [webhook dos filmes](webhook-filmes.md)) é o link dele; sem o filme na lista dos recentes, fica de fora. |
 | `card` | o id do card no Trello: é por ele que o card de filme acha o filme (o id está no link do `trello` do filme). |
@@ -59,7 +59,7 @@ O card decide **qual atração**; a regra da atração decide **a pasta e o `.ae
 **criar ou abrir**:
 
 1. **atração** → o vínculo do card no banco (`atr`): `JANEIRO NA GLOBO` → **MOOD MENSAL**.
-2. **pasta e `.aep`** → a atração que é um tipo com regra na aba PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
+2. **pasta e `.aep`** → a atração que é um tipo com regra na aba TIPOS DE PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
    usa a regra, e **o mês escrito na claquete do card vale mais que a data de hoje** nos tokens de mês e de ano
    (`{mes}`, `{mes_extenso}`, `{proximo_mes}`, `{proximo_mes_num}`, `{ano}`, `{ano_proximo_mes}`): `JANEIRO NA GLOBO`
    → `…/MOOD MENSAL/2027/01 JANEIRO` e `JANEIRO NA GLOBO.aep` (sem o ano escrito, o próximo janeiro). Com o card de
@@ -76,7 +76,7 @@ Com vários cards da mesma atração, aparece **um card por linha** (até 4 no g
 
 - `extension/client/js/attractions.js`: `recentCards()` filtra os cards (com `des`, `st` e `fil`),
   `guessCardAttractions()` liga o card sem `atr` pela claquete e `findAttractions()` devolve os cards junto (`cards`).
-- `extension/client/js/project.js`: `pickGroups()` monta os grupos (as regras num ponto só, também no editor),
+- `extension/client/js/projetista.js`: `pickGroups()` monta os grupos (as regras num ponto só, também no editor),
   `cardTarget()` diz o que o card aponta, `loginMatches()` é a regra do **seu**, `cardRow()` desenha a linha e
   `cardFiles()` acha os `.aep` do card.
 - `extension/client/js/mock-host.js`: os cards de exemplo (`mockCards`: digite `premio`, `summer`, `encanto`, `vem ai`,

@@ -5,12 +5,61 @@ de cada atração.
 
 ## Language
 
+### O padeiro
+
+**Barra**:
+O painel do padeiro acoplado no After, com as ferramentas.
+
+**Ferramenta**:
+Um botão da barra, com uma ação no clique esquerdo e, às vezes, outra no direito.
+
+**Gaveta**:
+Um botão da barra que junta ferramentas (Templates, Projeto, Organização).
+
+**Apelido**:
+O nome de ofício de uma janela ou ferramenta (A FORMA, O PROJETISTA…), usado nos títulos e nas dicas.
+
+**Configuração**:
+A janela onde a equipe e cada designer ajustam o padeiro (apelido: O PRODUTOR).
+
+**Da equipe**:
+O que vale para todos, guardado na rede (as produções, os tipos de projeto, a regra do renomear…).
+_Avoid_: global
+
+**Deste computador**:
+O que vale só para um computador (a aparência, o layout da barra, o designer, o modo local…).
+_Avoid_: local (é do modo local e do output local)
+
+**Bolinha**:
+O sinal na ferramenta que diz se está tudo certo (verde) ou se falta algo (laranja).
+
+### A equipe
+
+**Designer**:
+A pessoa da equipe que faz as peças, identificada pela sigla (JMBILLARD); quem cria e quem salva os projetos.
+_Avoid_: usuário
+
+**Login**:
+O usuário do sistema da máquina, usado para reconhecer o designer quando a sigla não foi informada.
+
 ### Atrações e o que vai ao ar
 
 **Atração**:
 Um programa, novela, show, evento ou outro conteúdo com identidade visual própria, para o qual a equipe produz
 peças (DOMINGÃO COM HUCK, TELA QUENTE).
 _Avoid_: programa (quando o tipo não importa)
+
+**Atração nova**:
+Uma atração que ainda não está no índice da busca. Ao criar o projeto dela, a janela de projeto cria as pastas e o
+`.aep` e pede o cadastro dela no banco das atrações.
+
+**Banco das atrações**:
+Onde a equipe guarda as atrações, os cards e a relação de cada designer com os nomes dele no Teams e no Trello. O
+padeiro não o lê direto: lê o índice da busca e pede as mudanças ao n8n.
+
+**Webhook do projeto**:
+O webhook do n8n que a janela de projeto avisa, em segundo plano, quando cria o projeto de uma atração nova, para
+cadastrá-la no banco das atrações. Fica na configuração da equipe, na aba TIPOS DE PROJETO; vazio, nada é enviado.
 
 **Tipo**:
 A classe de uma atração que decide onde ficam as pastas dela: PROGRAMA, NOVELA, VT, FILME…
@@ -55,12 +104,12 @@ _Avoid_: claquete para a janela de projeto
 
 **O que é**:
 A parte do nome que diz qual peça é (SERVIÇO, CHAMADA, CONVIDADO), num projeto ou num template.
-_Avoid_: formato, peça (para esse campo), nome do template
+_Avoid_: peça (para esse campo), nome do template; formato (é o do renomear)
 
 **Janela de projeto**:
 A janela do painel onde se escolhe a atração (ou o filme, ou o card), a pasta do projeto e o **o que é**, e se cria ou
-abre o projeto.
-_Avoid_: claquete, wizard
+abre o projeto. O apelido dela é O PROJETISTA.
+_Avoid_: claquete, A CLAQUETE, wizard
 
 ### Pastas e arquivos
 
@@ -92,6 +141,41 @@ _Avoid_: output
 **Output local**:
 A pasta deste computador para onde vai o render quando o output da rede não está acessível.
 _Avoid_: pasta de saída
+
+### Projeto aberto
+
+**Dados do padeiro**:
+O que o padeiro guarda dentro do projeto: a atração, o quadro, o "o que é", o designer que criou, quem salvou, a pasta
+do projeto e o output.
+
+**Estrutura padrão**:
+As pastas da equipe dentro da pasta do projeto (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`, `05_EXTERNOS`).
+
+**Coletar**:
+Copiar para a estrutura padrão os arquivos que o projeto usa, religar e salvar (apelido da janela: O CATADOR).
+_Avoid_: collect
+
+**Migrar**:
+Arrumar uma pasta de projeto antiga na estrutura padrão, com os projetos de dentro religados.
+
+**Banco de fontes**:
+A pasta da equipe na rede com as fontes que os projetos usam.
+
+**Resolver** (as fontes):
+Instalar as fontes que faltam no projeto, pela pasta de fontes do projeto e depois pelo banco de fontes.
+
+**Organizar**:
+Arrumar o painel Project do After nas pastas da equipe e pôr as etiquetas (apelido da janela: O CONTRARREGRA).
+
+**Etiqueta**:
+O comentário de um item do painel Project que diz o que ele é (EXPORTAR, TEMPLATE, FUNDO…).
+_Avoid_: comentário (para a etiqueta)
+
+**Render final**:
+O render que vai para o output.
+
+**Preview**:
+O render de avaliação, que vai para a saída; também a imagem ou o vídeo que mostra um template na lista.
 
 ### Templates
 
@@ -168,15 +252,103 @@ _Avoid_: template de output
 O After Effects em que um projeto foi salvo (After 2025, After 2026).
 _Avoid_: versão (sem "do After")
 
+### Renomear
+
+**Regra do renomear**:
+A regra da equipe para o nome de comps, pastas do projeto, outputs da fila e arquivos: o prefixo do formato, a caixa,
+o separador e os nomes fixos.
+
+**Renomear**:
+Aplicar a regra do renomear a um alvo, dito junto: as comps, os outputs da fila ou os arquivos.
+
+**Formato**:
+A classe de uma peça ou de um arquivo no renomear (RODAPÉ, CRÉDITO, VINHETA), reconhecida pelos termos dela no nome.
+_Avoid_: tipo (é o da atração), tipo de peça
+
+**Prefixo do formato**:
+A sigla do formato que abre o nome (RDP, CRT).
+_Avoid_: prefixo do tipo
+
+**Nome fixo**:
+Um nome que a regra do renomear sempre escreve do mesmo jeito (LOGO GLOBO).
+
+**Arquivista**:
+O painel que renomeia os arquivos e as pastas de uma pasta, pela regra do renomear.
+
+**Item**:
+Cada arquivo, pasta ou sequência de imagens da lista do arquivista.
+_Avoid_: item para versão ou bloco
+
+**Sequência de imagens**:
+Os quadros de uma animação salvos como imagens numeradas, tratados como um item só.
+
+**Religar**:
+Trocar no projeto o caminho de um arquivo para o lugar novo dele, porque foi renomeado, movido ou achado.
+_Avoid_: relinkar
+
 ### Busca
 
+**Acessorista**:
+O painel do botão Buscar, com a busca de caminhos e a busca nos textos.
+
+**Busca de caminhos**:
+A busca das pastas e dos pedidos da equipe pelas origens: caminhos fixos, atrações, filmes, Teams e Trello.
+_Avoid_: busca (sozinha) para as outras buscas
+
+**Busca nos textos**:
+A busca nos textos dos layers do projeto aberto.
+
+**Origem**:
+Cada origem de resultados da busca de caminhos (caminhos fixos, atrações, filmes, Teams, Trello), que dá para ligar e
+desligar.
+_Avoid_: categoria, fonte (é a tipografia)
+
+**Caminho fixo**:
+Uma pasta da equipe que sempre aparece na busca de caminhos, cadastrada na configuração (#INGEST, BASES VALENDO).
+_Avoid_: servidor (para a fonte)
+
 **Índice da busca**:
-O conjunto de atrações, filmes, cards do Trello e pastas citadas no Teams em que o painel busca, renovado de tempos em
-tempos.
+O conjunto de atrações, filmes, cards do Trello e mensagens do Teams com caminhos, montado pela equipe e baixado pelo
+painel.
 _Avoid_: cache, base
 
-**Acessorista**:
-O painel da busca de caminhos: as pastas das atrações, do Teams e do Trello.
+**Cópia**:
+O índice da busca salvo no computador, que vale enquanto um novo não chega e quando não há rede.
+_Avoid_: cache
+
+**Mensagem do Teams**:
+Uma mensagem de um chat do Teams que cita um caminho, com quem mandou, o cargo e quando.
+
+**Mapa de drives**:
+A tabela da equipe que liga cada letra de drive do Windows ao caminho de rede, para os caminhos valerem no Mac e no
+Windows.
+
+**Modo local**:
+Trabalhar sem a rede da equipe: a busca usa só a cópia ou o índice local, e o que iria para a rede vai para o output
+local.
+
+**Índice local**:
+O índice montado por um computador com as pastas que ele escolheu, no lugar do índice da busca.
+
+### Apelidos
+
+| ferramenta / janela | apelido |
+| --- | --- |
+| a barra | O PADEIRO |
+| preencher | A FORMA |
+| duplicar | A FORMINHA |
+| criar (template) | O CONFEITEIRO |
+| janela de projeto (Iniciar / Alterar) | O PROJETISTA |
+| fontes | O TIPÓGRAFO |
+| coletar | O CATADOR |
+| render | O FORNO |
+| renomear (comps e outputs) | O ETIQUETADOR |
+| organizar | O CONTRARREGRA |
+| arquivos | O ARQUIVISTA |
+| importar AEP (versões do After) | O VERSIONADOR |
+| pastas (e o conversor de caminhos) | O ADAPTADOR |
+| buscar | O ACESSORISTA |
+| configuração | O PRODUTOR |
 
 ## Relationships
 

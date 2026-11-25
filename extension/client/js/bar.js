@@ -7,6 +7,16 @@
 Clique esquerdo e direito fazem ações diferentes, e a dica de cada botão lista as duas.
 Ações sem tela própria rodam no host; as outras abrem o painel correspondente.
 
+A barra de hoje (o padrão; a ordem e o que aparece vêm da aba LAYOUT da configuração):
+  - os links da equipe e os deste computador, no começo;
+  - a gaveta Templates: Preencher (A FORMA), Duplicar (A FORMINHA) e Criar (O CONFEITEIRO);
+  - a gaveta Projeto: Iniciar / Alterar (O PROJETISTA), Fontes (O TIPÓGRAFO), Coletar (O CATADOR) e Render (O FORNO);
+  - a gaveta Organização: Renomear (O ETIQUETADOR), Organizar (O CONTRARREGRA) e Arquivos (O ARQUIVISTA);
+  - soltas: Pastas (O ADAPTADOR), Buscar (O ACESSORISTA), Importar AEP (O VERSIONADOR) e Logo Globo;
+  - na ponta, o botão da rede (rede / modo local) e o pãozinho (ajuda e tour).
+O clique numa gaveta abre as ferramentas dela; o clique direito faz a primeira. A configuração (O PRODUTOR) abre
+pelo ⋯ do painel de templates e pelo botão da rede.
+
 */
 
 (function () {
@@ -17,16 +27,16 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
-	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
+	var CONFEITEIRO_PANEL_ID = 'com.jmbillard.opadeiro.confeiteiro';
 	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
-	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
+	var PROJETISTA_PANEL_ID = 'com.jmbillard.opadeiro.projetista';
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
-	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
+	var CATADOR_PANEL_ID = 'com.jmbillard.opadeiro.catador';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
 	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
 	var LIGHT_PANEL_ID = 'com.jmbillard.opadeiro.light';
-	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
+	var COLETAR_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
 	var L_CLICK = '◖  →  ';
@@ -327,7 +337,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			else report(res, (n ? counted(n, 'output renomeado', 'outputs renomeados') : 'outputs renomeados') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
-		// organizar: sem nenhuma comp selecionada nem com comentário, nada iria para as comps de render (tudo
+		// organizar: sem nenhuma comp selecionada nem com etiqueta, nada iria para as comps de render (tudo
 		// cairia nas precomps). a barra avisa e deixa organizar assim mesmo; force pula a conferência
 		organizeProject: async function (force) {
 			if (force !== true) {
@@ -372,10 +382,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(LIGHT_PANEL_ID);
 		},
 
-		// criador de templates: precisa da comp principal aberta (a comp ativa)
+		// O CONFEITEIRO, o criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
-			await call('makerReady');
-			PAD_BRIDGE.openPanel(MAKER_PANEL_ID);
+			await call('confeiteiroReady');
+			PAD_BRIDGE.openPanel(CONFEITEIRO_PANEL_ID);
 		},
 
 		// O ACESSORISTA, a busca de caminhos (esquerdo, aba principal), e a busca em layers de texto (direito):
@@ -393,21 +403,21 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar): em lotes pequenos,
 		// para a barra contar (e o After Effects respirar entre um e outro)
-		collect: async function (path) {
+		coletar: async function (path) {
 			var res;
 			var d;
 
 			progress('coletar', '…', null);
 
 			try {
-				var plan = await call('collectBegin', { path: path || '' });
+				var plan = await call('coletarBegin', { path: path || '' });
 				var total = plan.ids.length;
 				var sum = { target: plan.target, files: 0, sequences: 0, frames: 0, skipped: [], missing: plan.missing };
 
-				for (var i = 0; i < total; i += COLLECT_BATCH) {
+				for (var i = 0; i < total; i += COLETAR_BATCH) {
 					progress('coletar', Math.min(total, i + 1) + '/' + total, i / total);
 
-					var step = await call('collectStep', { target: plan.target, ids: plan.ids.slice(i, i + COLLECT_BATCH) });
+					var step = await call('coletarStep', { target: plan.target, ids: plan.ids.slice(i, i + COLETAR_BATCH) });
 
 					sum.files += step.files;
 					sum.sequences += step.sequences;
@@ -416,7 +426,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				}
 
 				progress('coletar', total ? total + '/' + total : 'salvando', total ? 1 : null);
-				res = await call('collectEnd', sum);
+				res = await call('coletarEnd', sum);
 				d = res.data || {};
 			} catch (err) {
 				progressEnd('coletar', false);
@@ -433,13 +443,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 			setTimeout(function () {
-				watchCollect(true);
+				watchColetar(true);
 			}, 300);
 		},
 
-		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
-		openCollect: function () {
-			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
+		// O CATADOR, a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
+		openColetar: function () {
+			PAD_BRIDGE.openPanel(CATADOR_PANEL_ID);
 		},
 
 		// O VERSIONADOR, clique esquerdo: importa um projeto do After (.aep / .aet) de qualquer versão no projeto aberto;
@@ -466,17 +476,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 
 
-		// janela do projeto: um projeto novo pela atração, ou o editor do atual
+		// O PROJETISTA, a janela de projeto: um projeto novo pela atração, ou o editor do atual
 		project: function () {
-			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+			PAD_BRIDGE.openPanel(PROJETISTA_PANEL_ID);
 		},
 
-		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre a janela PROJETO
+		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre O PROJETISTA
 		saveProject: async function () {
 			var cur = await call('projectCurrent');
 
 			if (!cur.created) {
-				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+				PAD_BRIDGE.openPanel(PROJETISTA_PANEL_ID);
 				return;
 			}
 
@@ -484,13 +494,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			toast('success', 'projeto salvo: ' + cur.fileName);
 		},
 
-		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
+		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta do último output da fila de render
 		convertPaths: async function () {
 			await call('requestConverter');
 			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
 		},
 
-		// a configuração, já na aba da ferramenta (2 cliques)
+		// a configuração, já na aba pedida (o botão da rede: a aba rede, ou a deste computador no modo local)
 		config: async function (tab) {
 			await call('requestConfigTab', { tab: tab });
 			PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
@@ -499,7 +509,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
 	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
-	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
+	['openColetar', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
 		actions[key].opensWindow = true;
 	});
 
@@ -509,10 +519,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba LAYOUT).
 	var TOOLS = [
-		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
+		// a gaveta Templates (GROUPS): Preencher (A FORMA), Duplicar (A FORMINHA) e Criar (O CONFEITEIRO)
 		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
 		{ key: 'duplicar', label: 'Duplicar', icon: 'duplicate', name: 'A FORMINHA', tips: [L_CLICK + 'duplicar a comp aberta e preencher os layers de texto selecionados'], left: actions.openLight },
-		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
+		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'O CONFEITEIRO', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
+		// a gaveta Projeto: Iniciar / Alterar (O PROJETISTA), Fontes (O TIPÓGRAFO), Coletar (O CATADOR) e Render
+		// (O FORNO); a ordem de dentro é a de GROUPS (util.js: barGroups), não a desta lista
 		{
 			key: 'fontes',
 			label: 'Fontes',
@@ -526,7 +538,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			key: 'projeto',
 			label: 'Iniciar', // Alterar quando o projeto aberto já tem os dados do padeiro (paintProjectDot)
 			icon: 'form',
-			name: 'A CLAQUETE',
+			name: 'O PROJETISTA',
 			tips: [L_CLICK + 'iniciar o projeto pela atração', R_CLICK + 'salvar o projeto na pasta dele'],
 			left: actions.project,
 			right: actions.saveProject
@@ -534,13 +546,13 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		{
 			key: 'coletar',
 			label: 'Coletar',
-			icon: 'collect',
+			icon: 'coletar',
 			name: 'O CATADOR',
 			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto e resolver os que faltam'],
 			left: function () {
-				return actions.collect('');
+				return actions.coletar('');
 			},
-			right: actions.openCollect
+			right: actions.openColetar
 		},
 		{
 			key: 'render',
@@ -589,7 +601,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Organizar',
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
-			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas nos itens do projeto'],
 			left: function () {
 				return actions.organizeProject();
 			},
@@ -1067,7 +1079,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		if (key === toolsLayout) return;
 
 		toolsLayout = key;
-		collectSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
+		coletarSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
 
 		var tools = $('tools');
 		var sections = [[]];
@@ -1206,7 +1218,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* ---------------------------------------------------------------
-	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (atração…);
+	   a bolinha do Iniciar / Alterar (na gaveta Projeto; com ela fechada, o botão da gaveta mostra a pior bolinha de
+	   dentro): verde = o projeto aberto está salvo com os dados do padeiro (atração…);
 	   laranja = sem eles (salvo sem a atração, ou com itens e sem arquivo); sem bolinha = projeto vazio
 	   --------------------------------------------------------------- */
 
@@ -1225,7 +1238,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Iniciar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Iniciar');
-		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'iniciar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
+		btn.dataset.baseTip = 'O PROJETISTA\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'iniciar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
 		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para iniciar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! ' + (projectWhy ? projectWhy + ': clique para ver os dados e salvar' : 'salvo fora da pasta dele: clique e Salvar leva o .aep de volta') : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
@@ -1265,7 +1278,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (count[k]) parts.push(count[k] + ' ' + FONT_LABELS[k]);
 		});
 		if (info.bank && !checked.bankOk) parts.push('banco fora do ar');
-		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado');
+		if (count.up && !(info.upload && info.uploadDesteComputador)) parts.push('envio desligado');
 
 		return parts.length ? '!# Fontes:\n' + parts.map(function (p) {
 			return '! ' + p;
@@ -1299,7 +1312,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 				paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
 
 				// o envio: uma fonte por vez, até não faltar nenhuma
-				if (info.upload && info.machineUpload) {
+				if (info.upload && info.uploadDesteComputador) {
 					var pending = checked.fonts.filter(function (f) {
 						return f.state === 'up';
 					});
@@ -1334,10 +1347,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	   (fora da rede), verde quando está tudo na rede; o balão diz quantos e quais
 	   ========================================================= */
 
-	var COLLECT_EVERY = 5000;
-	var collectSync = { state: null, timer: null };
+	var COLETAR_EVERY = 5000;
+	var coletarSync = { state: null, timer: null };
 
-	function paintCollectDot(res) {
+	function paintColetarDot(res) {
 		var btn = $('btn-coletar');
 
 		if (!btn) return;
@@ -1370,25 +1383,25 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// force: refaz a conta (ao abrir a barra e depois do coletar); de tempos em tempos, o host só refaz quando o
 	// projeto foi salvo (ou trocado): a conta passa por todas as mídias e não roda enquanto se trabalha
-	async function watchCollect(force) {
-		clearTimeout(collectSync.timer);
+	async function watchColetar(force) {
+		clearTimeout(coletarSync.timer);
 
 		if (!document.hidden) {
 			try {
-				var res = await call('collectStatus', { force: !!force });
+				var res = await call('coletarStatus', { force: !!force });
 				var key = JSON.stringify(res);
 
-				if (key !== collectSync.state) {
-					collectSync.state = key;
-					paintCollectDot(res);
+				if (key !== coletarSync.state) {
+					coletarSync.state = key;
+					paintColetarDot(res);
 				}
 			} catch (err) { }
 		}
 
-		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
+		coletarSync.timer = setTimeout(watchColetar, COLETAR_EVERY);
 	}
 
-	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (a claquete que acabou de
+	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (O PROJETISTA, que acabou de
 	// criar o projeto), o painel pode se dizer escondido e a bolinha ficava no estado de antes; por isso, escondida,
 	// a barra ainda confere, só que mais devagar (1 a cada 3 vezes), e sempre que o mouse entra nela
 	var projectSkips = 0;
@@ -1442,21 +1455,21 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var PERSON_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-bg" cx="5.5" cy="5.5" r="5.5" /><circle cx="5.5" cy="4" r="1.5" /><path d="M2.9 9.17C3.2 7.3 4.3 6.6 5.5 6.6S7.8 7.3 8.1 9.17A4.5 4.5 0 0 1 2.9 9.17z" /></svg>';
 
 	// os da equipe e, logo depois, os pessoais (com o selo)
-	function renderLinks(team, personal) {
+	function renderLinks(team, desteComputador) {
 		var box = $('links');
-		var links = team.concat(personal.map(function (l) {
-			return Object.assign({ personal: true }, l);
+		var links = team.concat(desteComputador.map(function (l) {
+			return Object.assign({ desteComputador: true }, l);
 		}));
 
 		box.textContent = '';
 
 		links.forEach(function (link) {
-			var btn = el('button', 'bar-icon bar-link' + (link.personal ? ' is-personal' : ''));
+			var btn = el('button', 'bar-icon bar-link' + (link.desteComputador ? ' is-deste-computador' : ''));
 			var img = el('img');
 			var custom = PAD_UTIL.decodeIcon(link.icon);
 
 			btn.type = 'button';
-			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
+			btn.title = link.name + (link.desteComputador ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
 			btn.setAttribute('aria-label', link.name);
 			img.alt = '';
 			img.src = custom || faviconUrl(link.url);
@@ -1468,7 +1481,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			btn.appendChild(img);
 
-			if (link.personal) {
+			if (link.desteComputador) {
 				var badge = el('span', 'bar-link-badge');
 
 				badge.innerHTML = PERSON_BADGE;
@@ -1477,7 +1490,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			bind(btn, async function () {
 				await requireNetwork('PAD_007');
 				PAD_BRIDGE.openUrl(link.url);
-			}, null, link.personal ? 'mylinks' : 'links');
+			}, null, link.desteComputador ? 'mylinks' : 'links');
 			box.appendChild(btn);
 		});
 
@@ -1534,11 +1547,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		var text = {
 			network: 'rede: configuração, templates e busca vêm da rede',
-			forced: 'modo local, ligado por você (configuração > meu usuário): nada tenta a rede',
+			forced: 'modo local, ligado por você (configuração > deste computador): nada tenta a rede',
 			offline: 'modo local: a rede não está respondendo. o padeiro usa as cópias deste computador e volta sozinho quando a rede voltar'
 		}[key];
 
-		btn.title = text + '\n' + L_CLICK + (key === 'forced' ? 'configuração > meu usuário' : 'configuração > rede');
+		btn.title = text + '\n' + L_CLICK + (key === 'forced' ? 'configuração > deste computador' : 'configuração > rede');
 		btn.setAttribute('aria-label', text);
 	}
 
@@ -1561,7 +1574,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			if (res.stamp === linksStamp) return;
 
 			linksStamp = res.stamp;
-			renderLinks(res.links, res.personal || []);
+			renderLinks(res.links, res.linksDesteComputador || []);
 			buildTools(res.items && res.items.length ? res.items : DEFAULT_ITEMS, res.hidden || []);
 			applyLinksHidden(res.hidden || []);
 		} catch (err) { }
@@ -1569,12 +1582,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	/* =========================================================
 	   O código novo: a barra é um painel que fica aberto o dia todo, e o código trocado na rede só entrava ao
-	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Projeto errava). ela confere a data dos
+	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Iniciar / Alterar errava). ela confere a data dos
 	   próprios arquivos (os da página e os do host) e se recarrega quando mudam: ao entrar o mouse (no máximo uma
 	   vez a cada 30 s) e a cada 5 minutos. sem a rede, ou trabalhando (coletar, fontes, tour), espera
 	   ========================================================= */
 
-	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/collect.jsx', 'host/productions.jsx'];
+	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/coletar.jsx', 'host/productions.jsx'];
 	var code = { stamp: null, at: 0, when: 0 };
 
 	// a pasta extension (a de cima da client desta página), como o cep.fs a entende
@@ -1792,7 +1805,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
-		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
+		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Iniciar / Alterar): abrir, salvar, criar pela atração
 		// as bolinhas ficam presas ao ícone (css); ao virar a barra, o lado redondo das gavetas é medido de novo
 		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);
@@ -1804,23 +1817,30 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		setInterval(watchCode, 5 * 60000);
 		document.documentElement.addEventListener('mouseenter', watchCode);
 		window.addEventListener('focus', syncFonts);
-		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
+		watchColetar(true); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', function () {
-			watchCollect(false);
+			watchColetar(false);
 		});
 
-		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), MEU USUÁRIO
+		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), DESTE COMPUTADOR
 		$('net-status').addEventListener('click', function () {
-			actions.config(netState === 'forced' ? 'machine' : 'network');
+			actions.config(netState === 'forced' ? 'deste-computador' : 'network');
 		});
 
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
-		// o tour da turma de novo (js/tour.js)
-		$('logo').addEventListener('contextmenu', function (e) {
+		// o tour da turma de novo (js/tour.js); com Shift, o instalador (INSTALAR O PADEIRO.jsx, na pasta do padeiro na rede)
+		$('logo').addEventListener('contextmenu', async function (e) {
 			e.preventDefault();
-			PAD_TOUR.start({});
+
+			if (!e.shiftKey) return PAD_TOUR.start({});
+
+			try {
+				await call('runInstaller');
+			} catch (err) {
+				toast('error', err.message);
+			}
 		});
 		// o tour achou (ou criou) a configuração: a barra relê os links e as ferramentas
 		document.addEventListener('pad-tour-setup', function () {
