@@ -17,6 +17,10 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 
 #include "lib/JSON lib.js"
 #include "lib/PROT lib.js"
+
+// a tabela de seções da configuração (regra compartilhada, ADR 0005): antes das libs, que tiram dela os padrões
+#include "../regras/configuracao.js"
+
 #include "lib/globals.js"
 
 #include "lib/functions/string lib.js"

@@ -21,25 +21,7 @@
 //   dataExtensions   → extensões tratadas como arquivos de dados
 //   commentSubfolders→ o comentário (antes de ':') vira subpasta
 //   fileTags         → as etiquetas dos arquivos na janela de etiquetas (O CONTRARREGRA, clique direito)
-var PAD_ORGANIZE = {
-	folders: [
-		{ name: '01 COMPS', parent: '', contents: ['render'] },
-		{ name: '02 PRECOMPS', parent: '', contents: ['precomps'] },
-		{ name: '03 ARQUIVOS', parent: '', contents: [] },
-		{ name: 'VIDEOS', parent: '03 ARQUIVOS', contents: ['videos'] },
-		{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'AUDIO', parent: '03 ARQUIVOS', contents: ['audio'] },
-		{ name: 'SOLIDOS', parent: '03 ARQUIVOS', contents: ['solidos'] },
-		{ name: 'DADOS', parent: '03 ARQUIVOS', contents: ['dados'] },
-		{ name: 'MISSING', parent: '', contents: ['missing'] }
-	],
-	renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
-	editComments: ['EDIT'],
-	autoComment: 'EXPORTAR',
-	dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
-	commentSubfolders: true,
-	fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
-};
+var PAD_ORGANIZE = PAD_CONFIGURACAO.padrao('organizar'); // o padrão da tabela de seções (regras/configuracao.js)
 
 // Pasta da árvore pelo nome (sem diferenciar maiúsculas).
 function padOrganizeFolder(name) {

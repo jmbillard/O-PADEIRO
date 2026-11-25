@@ -3,14 +3,14 @@
 
 // O índice da busca (workflow PROMO - BUSCAR): pronto, num GET. O painel do acessorista baixa sozinho (sem travar o
 // After Effects); o curl daqui é só o plano B.
-var PS_INDEX_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
+var PS_INDEX_DEFAULT_URL = PAD_CONFIGURACAO.padrao('buscaDeCaminhos').url; // o padrão da tabela de seções (regras/configuracao.js)
 var PS_INDEX_URL = PS_INDEX_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
 
 // Os filmes criados na base nos últimos dias (a claquete mostra com o campo vazio e marca os que ainda não têm
 // pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
 var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
 
-var PS_CAMINHOS_FIXOS = null; // os caminhos fixos: [{ name, path }] (configuração > buscar); null = os padrão
+var PS_CAMINHOS_FIXOS = null; // os caminhos fixos: [{ name, path }] (configuração > buscar); null = os padrão (a tabela de seções)
 
 var PS_COPY_MAX_AGE = 30 * 1000; // idade máxima (ms) da cópia do índice antes de a janela de projeto baixar de novo
 
@@ -25,12 +25,6 @@ var PS_SMB = {
 	cppHp: 'cpp-ml-hp.servicos.corp.tvglobo.com.br',
 	cppSp: 'cpp-ml-sp.servicos.corp.tvglobo.com.br'
 };
-
-// Os caminhos fixos padrão (sem 'SEARCH' na configuração): padDefaultSearch
-var PS_DEFAULT_CAMINHOS_FIXOS = [
-	{ name: '#INGEST', path: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' },
-	{ name: 'BASES VALENDO', path: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' }
-];
 
 function psSlashes(path) {
 	return String(path || '').replace(/\\/g, '/');

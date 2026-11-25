@@ -472,7 +472,7 @@
 	var UNDO_KEY = /Mac/i.test((navigator.platform || '') + ' ' + (navigator.userAgent || '')) ? 'Cmd+Z' : 'Ctrl+Z';
 
 	/* ---------------------------------------------------------------
-	   a barra: as gavetas e as ferramentas soltas (a mesma regra do host, productions.jsx: padCleanBar)
+	   a barra: as gavetas e as ferramentas soltas (a mesma regra da tabela de seções, regras/configuracao.js: limparBarra)
 	   items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
 	   hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'
 	   --------------------------------------------------------------- */
