@@ -46,8 +46,9 @@ renomeia.
 	};
 
 	// items: os do host, cada um com id, on (ligado) e custom (o nome editado, ou null). others: os nomes do disco que
-	// não estão na lista, por pasta (contam para o sufixo _2)
-	var state = { path: '', name: '', items: [], others: {}, filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
+	// não estão na lista, por pasta (contam para o sufixo _2). kept: o que a pessoa mexeu em cada item (o nome editado
+	// e a chave), pelo caminho relativo: sobrevive a ligar e desligar as subpastas na mesma pasta
+	var state = { path: '', name: '', items: [], others: {}, kept: {}, filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -318,7 +319,25 @@ renomeia.
 
 	/* ---------- ler, renomear, desfazer ---------- */
 
-	async function load(path) {
+	// o caminho relativo de um item (a pasta, o nome, a extensão e o tipo): o mesmo item depois de reler
+	function keyOf(it) {
+		return [it.dir, it.name, it.ext || '', it.kind].join('\n');
+	}
+
+	// guarda o que a pessoa mexeu nos itens da lista (o nome editado e a chave desligada)
+	function keep() {
+		state.items.forEach(function (it) {
+			if (it.custom != null || !it.on) state.kept[keyOf(it)] = { custom: it.custom, on: it.on };
+			else delete state.kept[keyOf(it)];
+		});
+	}
+
+	// keepEdits: reler a mesma pasta por causa das subpastas: os itens que continuam na lista ficam com o nome
+	// editado (e os novos chegam com a sugestão). sem keepEdits (outra pasta, depois de renomear ou desfazer), tudo
+	// volta para a sugestão
+	async function load(path, keepEdits) {
+		if (keepEdits) keep();
+		else state.kept = {};
 		state.note = '';
 		state.step = 0;
 		state.loaded = false;
@@ -334,9 +353,11 @@ renomeia.
 			state.others = res.others || {};
 			state.undo = res.undo || null;
 			state.items = (res.items || []).map(function (it, i) {
+				var was = state.kept[keyOf(it)];
+
 				it.id = i;
-				it.on = true;
-				it.custom = null;
+				it.on = was ? was.on : true;
+				it.custom = was ? was.custom : null;
 
 				return it;
 			});
@@ -546,10 +567,10 @@ renomeia.
 				render();
 			});
 		});
-		// as subpastas mudam a lista: a pasta é lida de novo
+		// as subpastas mudam a lista: a pasta é lida de novo, mantendo o que a pessoa editou
 		$('fl-o-sub').addEventListener('change', function () {
 			saveOpts();
-			if (state.path) load(state.path);
+			if (state.path) load(state.path, true);
 		});
 
 		Array.prototype.forEach.call(document.querySelectorAll('.fl-chip'), function (chip) {
