@@ -7,7 +7,7 @@
 
 A mesma regra do renomear das comps (configuração > renomear: o formato pelos termos, o prefixo do formato, a caixa,
 o separador, os especiais e os nomes fixos), aplicada aos nomes dos arquivos e das pastas de um diretório
-(padRenameByRule, rename lib.js). A única diferença: o formato vem do PRÓPRIO nome (_CRT_HOJE → CRT - HOJE; a pasta
+(PAD_REGRA_DO_RENOMEAR.suggest, regras/regra-do-renomear.js). A única diferença: o formato vem do PRÓPRIO nome (_CRT_HOJE → CRT - HOJE; a pasta
 RODAPES JOGO → RDP - JOGO), nunca da pasta onde o item está.
 
 - filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
@@ -50,23 +50,11 @@ function padFilesSplit(name, isFolder) {
 	return { base: name.slice(0, at), ext: name.slice(at + 1) };
 }
 
-// o nome novo de um item, pela regra do renomear (padRenameByRule, rename lib.js → regras/regra-do-renomear.js):
-// { plain (só o formato e os nomes fixos), typed (com o prefixo do formato) }. o formato vem só do PRÓPRIO nome
-// (arquivo ou pasta), nunca da pasta onde ele está: a única diferença em relação às comps
+// o nome novo de um item (sem a extensão e sem os quadros), pela regra do renomear da equipe que o host tem agora:
+// { plain (sem o prefixo do formato), prefixed (com ele) }. o formato vem só do PRÓPRIO nome (arquivo ou pasta),
+// nunca da pasta onde ele está: a única diferença em relação às comps (regras/regra-do-renomear.js, suggest)
 function padFilesSuggest(name) {
-	// o macOS guarda o nome com o acento separado da letra (a + ~): junta os dois antes da regra, senão a marca solta
-	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
-	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
-	var rule = padRenameByRule(base);
-	var typed = sanitizeFileName(rule.name);
-
-	// o nome fixo (rule.fixed: rule.name é ele) vale com ou sem o prefixo; o nome já no padrão (CRT - HOJE) não perde
-	// o separador no formato simples
-	if (rule.fixed) plain = typed;
-	else if (padRenameFormat(base) == typed) plain = typed;
-
-	return { plain: plain || base, typed: typed || base };
+	return PAD_REGRA_DO_RENOMEAR.suggest(padRenameRule(), name);
 }
 
 // os arquivos que o projeto aberto usa: caminho (minúsculas, barras normais) → true
@@ -144,7 +132,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 
 		listed[folders[i].name] = true;
 
-		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.typed, use: padFilesUsedInside(used, base + '/' + folders[i].name) });
+		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, prefixed: fs.prefixed, use: padFilesUsedInside(used, base + '/' + folders[i].name) });
 	}
 
 	// as sequências: prefixo + número (3 dígitos ou mais) + extensão, com pelo menos PAD_FILES_SEQ_MIN arquivos
@@ -201,7 +189,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 
 		for (i = 0; i < g.files.length; i++) listed[g.files[i]] = true;
 
-		out.push({ dir: dir, name: g.prefix, ext: g.ext, kind: 'seq', sep: g.sep, pad: g.pad, frames: g.sep + '[' + two(min) + '-' + two(max) + ']', count: g.files.length, plain: ss.plain, typed: ss.typed, use: inUse });
+		out.push({ dir: dir, name: g.prefix, ext: g.ext, kind: 'seq', sep: g.sep, pad: g.pad, frames: g.sep + '[' + two(min) + '-' + two(max) + ']', count: g.files.length, plain: ss.plain, prefixed: ss.prefixed, use: inUse });
 	}
 
 	solo.sort(function (a, b) {
@@ -221,7 +209,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 		listed[solo[i]] = true;
 		var sg = padFilesSuggest(sp.base);
 
-		out.push({ dir: dir, name: sp.base, ext: sp.ext, kind: 'file', plain: sg.plain, typed: sg.typed, use: !!used[(base + '/' + solo[i]).toLowerCase()] });
+		out.push({ dir: dir, name: sp.base, ext: sp.ext, kind: 'file', plain: sg.plain, prefixed: sg.prefixed, use: !!used[(base + '/' + solo[i]).toLowerCase()] });
 	}
 
 	finish();

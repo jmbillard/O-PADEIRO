@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> REGRA — a regra do renomear (o etiquetador, os outputs da fila, a prévia da configuração)
+> REGRA — a regra do renomear (o etiquetador, os outputs da fila, o arquivista, a prévia da configuração)
 ---------------------------------------------------------------
 
 O nome novo de uma comp (ou de um arquivo) pela regra do renomear da equipe. A regra vem como parâmetro, na forma
@@ -21,9 +21,13 @@ removeSpecial, textCase, separator }. Nada aqui lê a configuração nem variáv
 rename(regra, nome, opts) → { name, format: { prefix, comment } | null, comment (o do formato, ou null), fixed }.
 A regra pode vir crua ou preparada uma vez por compile(regra) (as expressões montadas), para muitos nomes.
 
+suggest(regra, nome) → { plain, prefixed }: a sugestão do arquivista para um item (o nome sem a extensão e sem os
+quadros da sequência de imagens), sem e com o prefixo do formato. Junta antes o acento separado da letra (macOS) e
+devolve um nome que o disco aceita (fileName).
+
 Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (o global
-PAD_REGRA_DO_RENOMEAR, usado por rename lib.js), o painel por <script> (a prévia da aba renomear, productions.js; o
-host de teste, mock-host.js) e o teste em Node por require: node extension/scripts/test-regras.js.
+PAD_REGRA_DO_RENOMEAR, usado por rename lib.js e files.jsx), o painel por <script> (a prévia da aba renomear,
+productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o teste em Node por require: node extension/scripts/test-regras.js.
 
 */
 
@@ -265,7 +269,57 @@ host de teste, mock-host.js) e o teste em Node por require: node extension/scrip
 		return result;
 	}
 
-	var api = { rename: rename, format: format, compile: compile, normalize: normalize, specials: specials };
+	// o acento separado da letra (o macOS guarda 'ã' como 'a' + '~', NFD) junto de novo na letra do português (NFC)
+	var MARKS = { '̀': 'grave', '́': 'acute', '̂': 'circ', '̃': 'tilde', '̈': 'uml', '̧': 'cedil' };
+	var COMPOSED = {
+		grave: { a: 'à', e: 'è', i: 'ì', o: 'ò', u: 'ù', A: 'À', E: 'È', I: 'Ì', O: 'Ò', U: 'Ù' },
+		acute: { a: 'á', e: 'é', i: 'í', o: 'ó', u: 'ú', y: 'ý', A: 'Á', E: 'É', I: 'Í', O: 'Ó', U: 'Ú', Y: 'Ý' },
+		circ: { a: 'â', e: 'ê', i: 'î', o: 'ô', u: 'û', A: 'Â', E: 'Ê', I: 'Î', O: 'Ô', U: 'Û' },
+		tilde: { a: 'ã', o: 'õ', n: 'ñ', A: 'Ã', O: 'Õ', N: 'Ñ' },
+		uml: { a: 'ä', e: 'ë', i: 'ï', o: 'ö', u: 'ü', A: 'Ä', E: 'Ë', I: 'Ï', O: 'Ö', U: 'Ü' },
+		cedil: { c: 'ç', C: 'Ç' }
+	};
+
+	function composeAccents(text) {
+		return String(text).replace(/([A-Za-z])([̧̀́̂̃̈])/g, function (all, letter, mark) {
+			var table = COMPOSED[MARKS[mark]];
+
+			return table && table[letter] ? table[letter] : all;
+		});
+	}
+
+	// o nome que o disco aceita (Windows e macOS): os caracteres proibidos viram _, os espaços repetidos viram um
+	function fileName(text) {
+		return trim(String(text).replace(/[\\\/:\*\?"<>\|]/g, '_').replace(/\s+/g, ' '));
+	}
+
+	// a sugestão do arquivista para o nome de um item (arquivo, pasta ou sequência de imagens), sem a extensão e sem
+	// os quadros: { plain (sem o prefixo do formato), prefixed (com ele) }. O formato vem só do nome do item, nunca da
+	// pasta onde ele está (itemOnly; opts.folders é ignorado). O nome fixo e o nome já no padrão (CRT - HOJE) saem
+	// iguais nas duas
+	function suggest(rule, name, opts) {
+		var r = compile(rule);
+		var base = trim(composeAccents(String(name == null ? '' : name)).replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' '));
+		var plain = fileName(format(r, base.replace(/[\-]+/g, ' ')));
+		var renamed = rename(r, base, { folders: opts && opts.folders, itemOnly: true });
+		var prefixed = fileName(renamed.name);
+
+		if (renamed.fixed) plain = prefixed;
+		else if (format(r, base) == prefixed) plain = prefixed;
+
+		return { plain: plain || base, prefixed: prefixed || base };
+	}
+
+	var api = {
+		rename: rename,
+		format: format,
+		compile: compile,
+		normalize: normalize,
+		specials: specials,
+		suggest: suggest,
+		composeAccents: composeAccents,
+		fileName: fileName
+	};
 
 	if (typeof module === 'object' && module && module.exports) module.exports = api;
 	else root.PAD_REGRA_DO_RENOMEAR = api;

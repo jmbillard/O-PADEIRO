@@ -92,7 +92,7 @@ renomeia.
 	/* ---------- o nome de cada item ---------- */
 
 	function suggest(it) {
-		return $('fl-o-prefix').checked ? it.typed : it.plain;
+		return $('fl-o-prefix').checked ? it.prefixed : it.plain;
 	}
 
 	function target(it) {

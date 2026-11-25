@@ -85,15 +85,6 @@ function overwriteCompName(comp) {
 	return true;
 }
 
-// A regra do renomear aplicada a um nome de arquivo ou pasta (o arquivista, files.jsx): o formato só pelo próprio
-// nome, nunca pela pasta onde ele está. Retorna { name, comment, fixed } — comment é null sem formato; fixed: veio
-// de um nome fixo.
-function padRenameByRule(name) {
-	var r = PAD_REGRA_DO_RENOMEAR.rename(padRenameRule(), name, { itemOnly: true });
-
-	return { name: r.name, comment: r.comment, fixed: r.fixed };
-}
-
 // Calcula o nome padronizado de uma comp, sem alterá-la: o formato pelas pastas da comp (da mais próxima para a
 // raiz) e depois pelo nome; o nome fixo pelo nome ou pelo comentário.
 // Retorna { name, comment } — comment é null quando nenhum formato foi identificado.
@@ -153,9 +144,9 @@ function renamePromoComps(items) {
 	}
 }
 
-// Caracteres que não podem existir em nomes de arquivo (Windows / macOS)
+// Caracteres que não podem existir em nomes de arquivo (Windows / macOS) viram _ (regras/regra-do-renomear.js)
 function sanitizeFileName(name) {
-	return name.replace(/[\\\/:\*\?"<>\|]/g, '_').replace(/\s+/g, ' ').trim();
+	return PAD_REGRA_DO_RENOMEAR.fileName(name);
 }
 
 // Renomeia os arquivos de saída de toda a fila de render com o nome padronizado da comp.
