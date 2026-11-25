@@ -1341,10 +1341,51 @@ REGRAS.push({
 			eq(api.envio(situacao({ url: '   ' })), null);
 		});
 
-		test('com card ou noutro momento (aberto, alterado): fica para a #50, não envia por enquanto', function () {
-			eq(api.envio(situacao({ card: { id: 'abc123', claquete: 'LA NA MINHA TERRA 25/11' } })), null);
+		// #50: a atração escolhida por um card do Trello. o card só vai no envio (ADR 0001)
+		const CARD = { id: '6650a1b2c3d4e5f6a7b8c9d0', claquete: 'LA NA MINHA TERRA 25/11' };
+
+		test('atração nova por card: envia o cadastro com o card (o n8n liga o card à atração nova) e o designer', function () {
+			eq(api.envio(situacao({ card: CARD })), {
+				url: URL_DO_PROJETO,
+				corpo: {
+					momento: 'criado',
+					atracao: { nome: 'Lá na Minha Terra', tipo: 'PROGRAMAS', nova: true, quadro: '', pasta: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA', output: '//srv/OUT/PROGRAMAS/LA NA MINHA TERRA', aep: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA/01_PROJETOS/LA NA MINHA TERRA CHAMADA.aep' },
+					card: { id: '6650a1b2c3d4e5f6a7b8c9d0', claquete: 'LA NA MINHA TERRA 25/11' },
+					designer: { login: 'jmbillard', sigla: 'JMBILLARD' },
+					versao: '2.0 beta9'
+				}
+			});
+		});
+
+		test('atração conhecida por card: envia (só para pôr o designer no card), com a atração nova: false', function () {
+			const e = api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), card: CARD }));
+
+			eq(e.url, URL_DO_PROJETO);
+			eq(e.corpo.atracao.nova, false);
+			eq(e.corpo.card, CARD);
+			eq(e.corpo.designer, { login: 'jmbillard', sigla: 'JMBILLARD' });
+		});
+
+		test('o card: só o id e a claquete (o resto do card fica fora), sem espaços nas pontas', function () {
+			const e = api.envio(situacao({ card: { id: ' abc ', claquete: ' X 01/12 ', atr: 'Y', des: 'TMARTA', lista: 'FAZENDO' } }));
+
+			eq(e.corpo.card, { id: 'abc', claquete: 'X 01/12' });
+		});
+
+		test('o card sem id é como sem card: a atração conhecida não envia; a nova envia sem card', function () {
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), card: { id: '', claquete: 'X' } })), null);
+			eq(api.envio(situacao({ card: { id: '  ', claquete: 'X' } })).corpo.card, null);
+		});
+
+		test('por card, no modo local ou sem a URL: não envia', function () {
+			eq(api.envio(situacao({ card: CARD, modoLocal: true })), null);
+			eq(api.envio(situacao({ card: CARD, url: '' })), null);
+		});
+
+		test('noutro momento (aberto, alterado): fica para a #51, não envia por enquanto', function () {
+			eq(api.envio(situacao({ momento: 'aberto', card: CARD })), null);
+			eq(api.envio(situacao({ momento: 'alterado', card: CARD })), null);
 			eq(api.envio(situacao({ momento: 'aberto' })), null);
-			eq(api.envio(situacao({ momento: 'alterado' })), null);
 		});
 
 		// a resposta do n8n: { itens: [{ codigo, texto }] }
@@ -1416,6 +1457,58 @@ REGRAS.push({
 			});
 		});
 
+		// #50: as respostas do card e do designer
+		const POR_CARD = api.envio(situacao({ card: CARD }));
+		const CONHECIDA_POR_CARD = api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), card: CARD }));
+
+		test('atração nova por card: cadastrada, card ligado e você entrou no card → verde; a cópia do índice fica velha', function () {
+			eq(api.avisos(resposta([
+				{ codigo: 'atracaoCadastrada', texto: '' },
+				{ codigo: 'cardLigado', texto: '' },
+				{ codigo: 'designerEntrouNoCard', texto: '' }
+			]), POR_CARD), {
+				avisos: [
+					{ kind: 'success', codigo: 'atracaoCadastrada', texto: 'Lá na Minha Terra cadastrada no banco das atrações' },
+					{ kind: 'success', codigo: 'cardLigado', texto: 'card ligado à atração' },
+					{ kind: 'success', codigo: 'designerEntrouNoCard', texto: 'você entrou no card' }
+				],
+				copiaVelha: true
+			});
+		});
+
+		test('atração conhecida por card: você entrou no card / já estava no card → verde; a cópia do índice continua valendo', function () {
+			eq(api.avisos(resposta([{ codigo: 'designerEntrouNoCard', texto: 'você entrou no card LA NA MINHA TERRA 25/11' }]), CONHECIDA_POR_CARD), {
+				avisos: [{ kind: 'success', codigo: 'designerEntrouNoCard', texto: 'você entrou no card LA NA MINHA TERRA 25/11' }],
+				copiaVelha: false
+			});
+			eq(api.avisos(resposta([{ codigo: 'designerJaEstavaNoCard' }]), CONHECIDA_POR_CARD), {
+				avisos: [{ kind: 'success', codigo: 'designerJaEstavaNoCard', texto: 'você já estava no card' }],
+				copiaVelha: false
+			});
+		});
+
+		test('cardLigado sozinho: a cópia do índice fica velha (o card do índice ganhou a atração)', function () {
+			eq(api.avisos(resposta([{ codigo: 'cardLigado' }]), POR_CARD).copiaVelha, true);
+		});
+
+		test('designerNaoEncontrado → amarelo (o cadastro, se houve, continua verde no mesmo aviso)', function () {
+			eq(api.avisos(resposta([{ codigo: 'designerNaoEncontrado' }]), CONHECIDA_POR_CARD), {
+				avisos: [{ kind: 'warn', codigo: 'designerNaoEncontrado', texto: 'o n8n não achou você na tabela de designers: peça para incluírem' }],
+				copiaVelha: false
+			});
+			eq(api.avisos(resposta([{ codigo: 'atracaoCadastrada' }, { codigo: 'cardLigado' }, { codigo: 'designerNaoEncontrado' }]), POR_CARD).avisos.map(function (a) { return a.kind; }), ['success', 'success', 'warn']);
+		});
+
+		test('sem resposta, por card: o aviso amarelo diz que você não entrou no card (e, na atração nova, que ela não foi cadastrada)', function () {
+			eq(api.avisos(null, CONHECIDA_POR_CARD), { avisos: [{ kind: 'warn', codigo: 'semResposta', texto: 'você não entrou no card LA NA MINHA TERRA 25/11 (o n8n não respondeu): o projeto foi criado; entre no card à mão' }], copiaVelha: false });
+			eq(api.avisos(null, POR_CARD), { avisos: [{ kind: 'warn', codigo: 'semResposta', texto: 'Lá na Minha Terra não foi cadastrada no banco das atrações e você não entrou no card LA NA MINHA TERRA 25/11 (o n8n não respondeu): o projeto foi criado; avise a equipe' }], copiaVelha: false });
+		});
+
+		test('fora do formato, por card: o aviso amarelo fala do card', function () {
+			eq(api.avisos({}, CONHECIDA_POR_CARD).avisos, [{ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi criado; confira no Trello' }]);
+			eq(api.avisos({}, POR_CARD).avisos, [{ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar o cadastro de Lá na Minha Terra no banco das atrações nem a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi criado; confira na busca e no Trello' }]);
+		});
+
 		test('um código desconhecido vira amarelo (com o texto do n8n, ou o código)', function () {
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa', texto: 'algo novo' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'algo novo' }]);
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'o n8n respondeu outraCoisa' }]);
@@ -1426,6 +1519,7 @@ REGRAS.push({
 		eq(api.envio(situacao({ modoLocal: true })), null);
 		eq(api.avisos('{"itens":[{"codigo":"atracaoCadastrada","texto":"ok"}]}', api.envio(situacao())).avisos[0].kind, 'success');
 		eq(api.avisos(null, api.envio(situacao())).avisos[0].kind, 'warn');
+		eq(api.envio(situacao({ atracao: { nome: 'X', nova: false }, card: { id: 'abc', claquete: 'X 01/12' } })).corpo.card.id, 'abc');
 	}
 });
 

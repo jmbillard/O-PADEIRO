@@ -4,22 +4,24 @@
 > REGRA — o webhook do projeto (o envio ao n8n e os avisos da resposta)
 ---------------------------------------------------------------
 
-A janela de projeto (O PROJETISTA) avisa o n8n, pelo webhook do projeto, quando cria o projeto de uma atração nova:
-o n8n cadastra a atração no banco das atrações (e não duplica a que já existir). O formato do envio e da resposta,
-com exemplos, fica em docs/webhook-projeto.md.
+A janela de projeto (O PROJETISTA) avisa o n8n, pelo webhook do projeto, quando cria o projeto de uma atração nova
+ou de uma atração escolhida por um card do Trello: o n8n cadastra a atração nova no banco das atrações (e não duplica
+a que já existir), liga o card à atração nova e põe o designer no card (achado na tabela de designers pelo login ou
+pela sigla). O formato do envio e da resposta, com exemplos, fica em docs/webhook-projeto.md.
 
   envio(situacao) → { url, corpo } ou null (nada a enviar)
     situacao: { momento, url, modoLocal, versao, atracao, card, designer }
-      momento  → 'criado' (o projeto criado; 'aberto' e 'alterado' ficam para o card, #50)
+      momento  → 'criado' (o projeto criado; 'aberto' e 'alterado' ficam para a #51)
       url      → o webhook do projeto (configuração da equipe, aba TIPOS DE PROJETO); vazia: nada é enviado
       modoLocal→ true: nada é enviado
       versao   → a versão do padeiro
       atracao  → { nome, tipo, nova, quadro, pasta, output, aep }: pasta é a pasta do projeto e aep o caminho do
                  .aep salvo
-      card     → o card do Trello de onde veio a atração ({ id, claquete }) ou null. o card só vai no envio, nunca
-                 no projeto (ADR 0001). com card, o caso é o da #50: por enquanto, nada é enviado
-      designer → { login, sigla }: o login da máquina e a sigla do designer
-    envia só a atração nova criada sem card. o corpo leva o momento, a atração, o card, o designer e a versão.
+      card     → o card do Trello de onde veio a atração ({ id, claquete }) ou null (sem id vale como null). o card
+                 só vai no envio, nunca no projeto (ADR 0001)
+      designer → { login, sigla }: o login da máquina e a sigla do designer (o n8n acha o usuário do Trello por eles)
+    envia a atração nova (com ou sem card: o cadastro) e a atração conhecida escolhida por um card (só o designer no
+    card). a atração conhecida sem card não envia. o corpo leva o momento, a atração, o card, o designer e a versão.
 
   avisos(resposta, envio) → { avisos: [{ kind, codigo, texto }], copiaVelha }
     resposta: o que o n8n devolveu, { itens: [{ codigo, texto }] } (o objeto, o JSON em texto ou embrulhado numa
@@ -27,9 +29,9 @@ com exemplos, fica em docs/webhook-projeto.md.
       kind       → 'success' (o aviso verde) ou 'warn' (o amarelo)
       codigo     → o código do item (CODIGOS, abaixo; um desconhecido vira amarelo)
       texto      → o texto do n8n ou, sem ele, o padrão do código
-      copiaVelha → true quando a atração entrou no banco (cadastrada ou já existia): a cópia do índice da busca fica
-                   marcada como velha, para a próxima busca baixar o índice de novo
-    sem resposta, ou fora do formato: um aviso amarelo só, dizendo o que não foi feito.
+      copiaVelha → true quando o banco mudou para a busca (a atração cadastrada ou que já existia, o card ligado):
+                   a cópia do índice da busca fica marcada como velha, para a próxima busca baixar o índice de novo
+    sem resposta, ou fora do formato: um aviso amarelo só, dizendo o que não foi feito (o cadastro, o card ou os dois).
 
 Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (a variável global
 PAD_WEBHOOK_DO_PROJETO: o envio, no projectCreate), o painel por <script> (window.PAD_WEBHOOK_DO_PROJETO: os avisos,
@@ -42,22 +44,31 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 		return String(value == null ? '' : value).replace(/^\s+|\s+$/g, '');
 	}
 
+	// o card do envio: só o id e a claquete (o resto do card do índice fica fora); sem id, null
+	function cardDo(c) {
+		if (!c || typeof c != 'object' || !texto(c.id)) return null;
+
+		return { id: texto(c.id), claquete: texto(c.claquete) };
+	}
+
 	function envio(s) {
 		s = s || {};
 
 		var a = s.atracao || {};
 		var d = s.designer || {};
 		var url = texto(s.url);
+		var card = cardDo(s.card);
+		var nova = a.nova === true;
 
 		if (!url || s.modoLocal === true) return null;
-		if (s.momento != 'criado' || a.nova !== true || s.card) return null;
+		if (s.momento != 'criado' || (!nova && !card)) return null;
 
 		return {
 			url: url,
 			corpo: {
 				momento: 'criado',
-				atracao: { nome: texto(a.nome), tipo: texto(a.tipo), nova: true, quadro: texto(a.quadro), pasta: texto(a.pasta), output: texto(a.output), aep: texto(a.aep) },
-				card: null,
+				atracao: { nome: texto(a.nome), tipo: texto(a.tipo), nova: nova, quadro: texto(a.quadro), pasta: texto(a.pasta), output: texto(a.output), aep: texto(a.aep) },
+				card: card,
 				designer: { login: texto(d.login), sigla: texto(d.sigla) },
 				versao: texto(s.versao)
 			}
@@ -68,8 +79,8 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 	var CODIGOS = {
 		atracaoCadastrada: { kind: 'success', copiaVelha: true, texto: function (nome) { return nome + ' cadastrada no banco das atrações'; } },
 		atracaoJaExistia: { kind: 'success', copiaVelha: true, texto: function (nome) { return nome + ' já estava no banco das atrações'; } },
-		// o card e o designer (#50): a cor já fica certa
-		cardLigado: { kind: 'success', texto: function () { return 'card ligado à atração'; } },
+		// o card e o designer (#50)
+		cardLigado: { kind: 'success', copiaVelha: true, texto: function () { return 'card ligado à atração'; } },
 		designerEntrouNoCard: { kind: 'success', texto: function () { return 'você entrou no card'; } },
 		designerJaEstavaNoCard: { kind: 'success', texto: function () { return 'você já estava no card'; } },
 		designerNaoEncontrado: { kind: 'warn', texto: function () { return 'o n8n não achou você na tabela de designers: peça para incluírem'; } },
@@ -78,6 +89,38 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 
 	function nomeDoEnvio(e) {
 		return (e && e.corpo && e.corpo.atracao && texto(e.corpo.atracao.nome)) || 'a atração';
+	}
+
+	// o que o envio pedia: o cadastro (a atração nova), o card (o designer no card) ou os dois. sem envio: o cadastro.
+	// noCard: 'no card <claquete>' (para os textos), ou '' sem card
+	function pedidoDo(e) {
+		var c = e && e.corpo ? e.corpo : {};
+		var temCard = !!(c.card && texto(c.card.id));
+		var noCard = '';
+
+		if (temCard) noCard = texto('no card ' + texto(c.card.claquete));
+
+		return { cadastro: !temCard || !!(c.atracao && c.atracao.nova === true), noCard: noCard };
+	}
+
+	// o aviso amarelo sem resposta (o n8n fora): o que não foi feito
+	function textoSemResposta(nome, p) {
+		var semResposta = ' (o n8n não respondeu): o projeto foi criado; ';
+
+		if (!p.cadastro) return 'você não entrou ' + p.noCard + semResposta + 'entre no card à mão';
+		if (p.noCard) return nome + ' não foi cadastrada no banco das atrações e você não entrou ' + p.noCard + semResposta + 'avise a equipe';
+
+		return nome + ' não foi cadastrada no banco das atrações' + semResposta + 'avise a equipe';
+	}
+
+	// o aviso amarelo da resposta fora do formato: o que não deu para confirmar
+	function textoForaDoFormato(nome, p) {
+		var fora = ' (a resposta do n8n veio fora do formato): o projeto foi criado; ';
+
+		if (!p.cadastro) return 'não deu para confirmar a sua entrada ' + p.noCard + fora + 'confira no Trello';
+		if (p.noCard) return 'não deu para confirmar o cadastro de ' + nome + ' no banco das atrações nem a sua entrada ' + p.noCard + fora + 'confira na busca e no Trello';
+
+		return 'não deu para confirmar o cadastro de ' + nome + ' no banco das atrações' + fora + 'confira na busca';
 	}
 
 	// a lista de itens da resposta ou null (fora do formato): o objeto, o JSON em texto ou embrulhado numa lista
@@ -104,17 +147,18 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 
 	function avisos(resposta, e) {
 		var nome = nomeDoEnvio(e);
+		var pedido = pedidoDo(e);
 		var itens = resposta == null ? null : itensDe(resposta);
 		var out = { avisos: [], copiaVelha: false };
 
 		if (resposta == null) {
-			out.avisos.push({ kind: 'warn', codigo: 'semResposta', texto: nome + ' não foi cadastrada no banco das atrações (o n8n não respondeu): o projeto foi criado; avise a equipe' });
+			out.avisos.push({ kind: 'warn', codigo: 'semResposta', texto: textoSemResposta(nome, pedido) });
 
 			return out;
 		}
 
 		if (!itens) {
-			out.avisos.push({ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar o cadastro de ' + nome + ' no banco das atrações (a resposta do n8n veio fora do formato): o projeto foi criado; confira na busca' });
+			out.avisos.push({ kind: 'warn', codigo: 'foraDoFormato', texto: textoForaDoFormato(nome, pedido) });
 
 			return out;
 		}

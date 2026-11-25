@@ -1033,14 +1033,15 @@ PADX.projectCreate = function (a) {
 	var aep = padDisplayPath(file.fsName);
 	var root = padDisplayPath(plan.root);
 
-	// envio: o aviso ao n8n pelo webhook do projeto (a atração nova), ou null. quem envia é o painel, em segundo plano
-	// (o Node primeiro, ADR 0003): a criação não espera nem falha por ele
+	// envio: o aviso ao n8n pelo webhook do projeto (a atração nova ou escolhida por um card), ou null. quem envia é o
+	// painel, em segundo plano (o Node primeiro, ADR 0003): a criação não espera nem falha por ele
 	return { file: aep, root: root, envio: padEnvioDoProjeto(a, root, output && output.exists ? padDisplayPath(output.fsName) : '', aep) };
 };
 
 // o envio ao webhook do projeto de um projeto recém-criado (regras/webhook-do-projeto.js; docs/webhook-projeto.md), ou
-// null: só a atração nova, fora do modo local e com a URL na configuração da equipe (aba TIPOS DE PROJETO).
-// a: os do projectCreate + { tipo, atracaoNova } (a janela de projeto manda). Um erro aqui não desfaz a criação: null
+// null: a atração nova ou a escolhida por um card, fora do modo local e com a URL na configuração da equipe (aba TIPOS
+// DE PROJETO). a: os do projectCreate + { tipo, atracaoNova, card } (a janela de projeto manda). o card ({ id,
+// claquete }) só vai no envio, nunca nos metadados do projeto (ADR 0001). Um erro aqui não desfaz a criação: null
 function padEnvioDoProjeto(a, pasta, output, aep) {
 	try {
 		return PAD_WEBHOOK_DO_PROJETO.envio({
@@ -1049,7 +1050,7 @@ function padEnvioDoProjeto(a, pasta, output, aep) {
 			modoLocal: padLocalMode(),
 			versao: PADX_VERSION,
 			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
-			card: null,
+			card: a.card || null,
 			designer: { login: String(system.userName || ''), sigla: padSigla() }
 		});
 	} catch (err) {

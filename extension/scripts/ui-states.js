@@ -305,6 +305,24 @@ const CHECKS = [
 		await p.click('#criar-go');
 		await p.waitForSelector('#proj-status.is-warn', { timeout: 6000 });
 	}],
+	// #50: criado por um card, os avisos do card (o cadastro, o card ligado e o designer fora da tabela de designers)
+	['projeto: aviso do webhook do projeto por card', 'projetista.html', async (p) => {
+		await p.evaluate(async () => {
+			const prods = await window.PAD_MOCK_HOST.call('productions', {});
+
+			await window.PAD_MOCK_HOST.call('saveProductions', { productions: prods.productions, webhookDoProjeto: { url: 'https://workflows.jmbillard.com/webhook/projeto' } });
+			window.PAD_MOCK_N8N = function () {
+				return { status: 200, texto: JSON.stringify({ itens: [{ codigo: 'atracaoCadastrada', texto: 'RIO SUMMER BEATS cadastrada no banco das atrações' }, { codigo: 'cardLigado' }, { codigo: 'designerNaoEncontrado' }] }) };
+			};
+		});
+		await projectPick(p, 'summer', '.card-row');
+		await p.locator('#card-nova .tipo-chip').first().click();
+		await p.waitForTimeout(1200);
+		await p.fill('#arq-what', 'teste card');
+		await p.waitForTimeout(900);
+		await p.click('#criar-go');
+		await p.waitForSelector('#proj-status.is-warn', { timeout: 6000 });
+	}],
 	['projeto: lista de atrações', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'dom');
 		await p.waitForTimeout(800);

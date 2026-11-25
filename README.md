@@ -50,7 +50,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
 | 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
 
-> 🔗 *os webhooks do n8n que o padeiro chama: a [busca](docs/acessorista.md), os [filmes recentes](docs/webhook-filmes.md), os [cards do Trello](docs/webhook-trello.md) e o [webhook do projeto](docs/webhook-projeto.md), que cadastra a atração nova no banco das atrações.*
+> 🔗 *os webhooks do n8n que o padeiro chama: a [busca](docs/acessorista.md), os [filmes recentes](docs/webhook-filmes.md), os [cards do Trello](docs/webhook-trello.md) e o [webhook do projeto](docs/webhook-projeto.md), que cadastra a atração nova no banco das atrações e põe o designer no card.*
 
 **tamanhos das janelas** (do manifest). o tamanho padrão de cada janela é o recomendado para ela: o After abre com ele quando não há um tamanho guardado (a primeira vez depois de instalar; as janelas que mudaram de id, como O PROJETISTA e O CONFEITEIRO, voltam a ele depois do instalador). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo. as checagens de interface (`extension/scripts/check-*.js`) olham cada janela neste tamanho padrão.
 

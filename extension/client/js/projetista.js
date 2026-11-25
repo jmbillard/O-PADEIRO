@@ -2521,14 +2521,16 @@ projetos com o nome certo).
 	/* ---------- criar ---------- */
 
 	function createArgs() {
-		// o .aep que já existe e não foi aberto: salva como … 2. tipo e atracaoNova: para o envio ao webhook do projeto
-		// (o host o monta, só para a atração nova: regras/webhook-do-projeto.js)
+		// o .aep que já existe e não foi aberto: salva como … 2. tipo, atracaoNova e card: só para o envio ao webhook do
+		// projeto (o host o monta junto do .aep salvo: regras/webhook-do-projeto.js). o card escolhido vai só no envio,
+		// nunca no projeto (ADR 0001): o host não o grava
 		var attr = flow.attr || {};
+		var card = state.card && state.card.card ? { id: String(state.card.card), claquete: String(state.card.claq || '') } : null;
 
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true }, outTarget()));
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: card }, outTarget()));
 	}
 
-	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova (docs/webhook-projeto.md) ---------- */
+	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova e do card (docs/webhook-projeto.md) ---------- */
 
 	var WEBHOOK = window.PAD_WEBHOOK_DO_PROJETO; // o envio e os avisos (regras/webhook-do-projeto.js)
 	var WEBHOOK_TIMEOUT = 8000; // ms: o n8n que não responde nisso vira o aviso amarelo
@@ -2620,7 +2622,8 @@ projetos com o nome certo).
 			});
 
 			var res = await call('projectCreate', args || createArgs());
-			// a atração nova: o aviso ao n8n, em segundo plano (a criação já terminou e não espera por ele)
+			// a atração nova ou escolhida por um card: o aviso ao n8n, em segundo plano (a criação já terminou e não
+			// espera por ele)
 			var sending = res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
 
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.

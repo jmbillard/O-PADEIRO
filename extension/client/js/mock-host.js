@@ -1461,7 +1461,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output || '' /* sem output: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
-			// o envio ao webhook do projeto, como no host (regras/webhook-do-projeto.js): só a atração nova, fora do modo local
+			// o envio ao webhook do projeto, como no host (regras/webhook-do-projeto.js): a atração nova ou escolhida por um
+			// card, fora do modo local. o card só vai no envio (PAD_MOCK_CUR, o projeto, não o guarda: ADR 0001)
 			var regra = window.PAD_WEBHOOK_DO_PROJETO;
 			var envio = regra ? regra.envio({
 				momento: 'criado',
@@ -1469,7 +1470,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				modoLocal: api.searchInfo().local,
 				versao: api.ping().version,
 				atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: plan.root, output: a.output || '', aep: window.PAD_MOCK_CUR.file },
-				card: null,
+				card: a.card || null,
 				designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
 			}) : null;
 
@@ -1477,15 +1478,22 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// o plano B do envio (o curl do host): o n8n de mentira. window.PAD_MOCK_N8N(url, corpo) → { status, texto } (os
-		// testes põem o deles: guardam o que chegou e respondem, ou caem); sem ele, um n8n que cadastra a atração
+		// testes põem o deles: guardam o que chegou e respondem, ou caem); sem ele, um n8n que cadastra a atração nova,
+		// liga o card a ela e põe o designer no card
 		projectWebhook: async function (a) {
 			var url = mockLer('webhookDoProjeto').url;
+			var corpo = a && a.envio ? a.envio.corpo : null;
+			var itens = [];
 
 			await wait(delay);
-			if (!url || api.searchInfo().local || !a.envio || !a.envio.corpo) return { status: 0, texto: '' };
-			if (window.PAD_MOCK_N8N) return window.PAD_MOCK_N8N(url, a.envio.corpo);
+			if (!url || api.searchInfo().local || !corpo) return { status: 0, texto: '' };
+			if (window.PAD_MOCK_N8N) return window.PAD_MOCK_N8N(url, corpo);
 
-			return { status: 200, texto: JSON.stringify({ itens: [{ codigo: 'atracaoCadastrada', texto: a.envio.corpo.atracao.nome + ' cadastrada no banco das atrações' }] }) };
+			if (corpo.atracao.nova) itens.push({ codigo: 'atracaoCadastrada', texto: corpo.atracao.nome + ' cadastrada no banco das atrações' });
+			if (corpo.card && corpo.atracao.nova) itens.push({ codigo: 'cardLigado', texto: 'card ligado à atração' });
+			if (corpo.card) itens.push({ codigo: 'designerEntrouNoCard', texto: 'você entrou no card' });
+
+			return { status: 200, texto: JSON.stringify({ itens: itens }) };
 		},
 
 		projectSaveNow: function () {
