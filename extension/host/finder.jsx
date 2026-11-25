@@ -94,6 +94,16 @@ PADX.searchInfo = function () {
 	};
 };
 
+// Modo local, sem o Node do painel: a cópia do índice salva neste computador, sem tocar na rede.
+// →  { text, modified } (text vazio: não há cópia; modified em ms)
+PADX.searchCopy = function () {
+	var cache = new File(tempFolder.fsName + '/busca_v2.json');
+
+	if (!cache.exists) return { text: '', modified: 0 };
+
+	return { text: readFileContent(cache), modified: cache.modified.getTime() };
+};
+
 // Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
 // a: { force }  →  { text, downloaded }
 PADX.searchDownload = function (a) {

@@ -311,9 +311,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   ========================================================= */
 
 	/* ---------------------------------------------------------------
-	   busca nova (v2): o índice pronto do workflow PROMO - BUSCAR (GET), baixado pelo próprio painel (Node,
-	   comprimido, em segundo plano: o After Effects não trava). a cópia salva aparece na hora e é trocada
-	   quando a resposta chega com outro 'stamp'. sem a busca nova (e sem cópia), volta para o índice antigo.
+	   o índice da busca: o do workflow PROMO - BUSCAR (GET), baixado pelo próprio painel (Node, comprimido, em
+	   segundo plano: o After Effects não trava). a cópia salva aparece na hora e é trocada quando a resposta
+	   chega com outro 'stamp'. no modo local, só a cópia, sem tentar a rede.
 	   --------------------------------------------------------------- */
 
 	// as fontes da busca de caminhos (a ordem é a dos resultados). a chave 'servidor' é a dos caminhos fixos
@@ -440,13 +440,14 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			})
 		};
 
-		return { stamp: data.stamp || '', cats: cats };
+		return { stamp: data.stamp || '', generated: data.generated || '', cats: cats };
 	}
 
 	function applyV2(parsed) {
 		var p = state.paths;
 
 		p.mode = 'v2';
+		p.copyNote = '';
 		p.v2 = parsed;
 		p.stamp = parsed.stamp;
 		p.ready = true;
@@ -513,14 +514,53 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return shown;
 	}
 
+	// modo local (sem a rede da equipe): só a cópia salva neste computador, na hora, sem tentar baixar (nem pelo
+	// painel, nem pelo curl do After Effects). sem o Node do painel, o host lê a cópia. → true quando há cópia
+	async function loadPathsCopy() {
+		var p = state.paths;
+		var info = p.info;
+		var api = nodeApi();
+		var text = '';
+		var modified = 0;
+
+		p.platform = info.platform;
+
+		if (api) {
+			text = readCacheV2(api, info.cache);
+
+			try {
+				modified = api.fs.statSync(info.cache).mtimeMs;
+			} catch (err) { }
+		} else {
+			var res = await call('searchCopy');
+
+			text = res.text;
+			modified = res.modified;
+		}
+
+		if (!text) return false;
+
+		var parsed = parseV2(text, info);
+
+		applyV2(parsed);
+		p.copyNote = 'modo local · cópia do índice de ' + when(parsed.generated || (modified ? new Date(modified).toISOString() : ''));
+		p.loading = false;
+		searchPaths();
+
+		return true;
+	}
+
 	async function loadPaths(force) {
 		var p = state.paths;
 
 		p.loading = true;
 		p.error = '';
 
+		var copyOnly = p.info && p.info.local && p.info.mode !== 'local';
+
 		if (!p.ready || force) {
-			showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
+			if (copyOnly) showLoader($('results-paths'), 'esquentando o índice…', 'modo local: a cópia salva neste computador');
+			else showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
 			await nextPaint();
 		}
 
@@ -528,7 +568,11 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		try {
 			if (!p.info || force) p.info = await call('searchInfo');
-			ok = p.info.mode === 'local' ? await loadPathsLocal(force) : await loadPathsV2(force);
+			copyOnly = p.info.local && p.info.mode !== 'local';
+
+			if (p.info.mode === 'local') ok = await loadPathsLocal(force);
+			else if (copyOnly) ok = await loadPathsCopy();
+			else ok = await loadPathsV2(force);
 		} catch (err) {
 			p.error = err.message;
 		}
@@ -538,7 +582,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		if (!ok) {
 			p.ready = false;
 			p.loaded = true;
-			showState($('results-paths'), 'índice de caminhos indisponível', p.error && !/HTTP|tempo/.test(p.error) ? p.error : 'sem conexão com o workflow e sem cópia salva neste computador. clique em atualizar para tentar de novo.');
+
+			if (copyOnly && !p.error) showState($('results-paths'), 'modo local: sem cópia do índice', 'no modo local a busca de caminhos não usa a rede: usa a cópia do índice salva neste computador, e ainda não há uma. com a rede da equipe, desligue o modo local e clique em atualizar; ou escolha o índice local em configuração > buscar.');
+			else showState($('results-paths'), 'índice de caminhos indisponível', p.error && !/HTTP|tempo/.test(p.error) ? p.error : 'sem conexão com o workflow e sem cópia salva neste computador. clique em atualizar para tentar de novo.');
 		}
 	}
 
@@ -979,8 +1025,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (typed.q.length < MIN_QUERY) {
 			showState(results, 'busca de caminhos', 'digite uma atração, claquete, pessoa, output ou caminho', true);
+			if (p.copyNote) results.appendChild(el('p', 'finder-also finder-copy', p.copyNote));
 			return;
 		}
+
+		// modo local: de quando é a cópia em uso (os caminhos podem estar desatualizados)
+		if (p.copyNote) results.appendChild(el('p', 'finder-also finder-copy', p.copyNote));
 
 		var expanded = expandQuery(typed);
 		var query = expanded.list;
@@ -1227,7 +1277,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	// a busca de caminhos mudou na configuração (webhook ↔ índice local, outro endereço, outras pastas) com esta
 	// janela aberta? ao voltar para ela, recarrega da fonte nova (antes ficava na antiga até clicar em atualizar)
 	function searchSignature(info) {
-		return info ? [info.mode, info.url, (info.folders || []).join('|'), info.foldersOnly, JSON.stringify(info.servidor || [])].join('\n') : '';
+		return info ? [info.mode, info.local, info.url, (info.folders || []).join('|'), info.foldersOnly, JSON.stringify(info.servidor || [])].join('\n') : '';
 	}
 
 	async function watchSearchSource() {

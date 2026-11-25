@@ -231,7 +231,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 	// as atrações do índice do webhook (a cópia do acessorista). a cópia que existir vale na hora; velha, uma nova
 	// é baixada em segundo plano pelo Node do painel (o curl do host trava o After Effects e a digitação). só sem
-	// cópia nenhuma o host baixa (plano B).
+	// cópia nenhuma o host baixa (plano B). no modo local, só a cópia: nada de rede.
 	async function webhookCandidates(fs) {
 		var file = source.info.cache;
 		var stat = null;
@@ -242,7 +242,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		var text = '';
 
-		if (!stat) {
+		if (source.info.local) {
+			if (!stat) throw new Error('#PAD_058 - modo local: não há cópia do índice da busca neste computador. com a rede da equipe, desligue o modo local; ou escolha o índice local em configuração > buscar.');
+		} else if (!stat) {
 			try {
 				await refreshIndex(fs);
 				stat = fs.statSync(file);
@@ -474,7 +476,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		try {
 			var info = await call('searchInfo');
 
-			if (info.mode === source.info.mode && info.url === source.info.url && String(info.folders) === String(source.info.folders)) return;
+			if (info.mode === source.info.mode && info.local === source.info.local && info.url === source.info.url && String(info.folders) === String(source.info.folders)) return;
 
 			source.info = info;
 			source.list = null;
