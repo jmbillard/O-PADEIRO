@@ -1229,11 +1229,15 @@ PADX.fillBegin = function (a) {
 		// Importação do arquivo de projeto
 		padImportProject(projectFile, a.quiet);
 
-		// Busca a comp original
+		// os itens que esta importação trouxe (os que não estavam no projeto antes)
+		var imported = padNewItems(snapshot);
+
+		// Busca a comp principal só entre eles: uma comp TEMPLATE de mesmo nome que já estava no projeto (de outra
+		// rodada, de outro template) não é a deste template
 		var templateComp = null;
 
-		for (var i = 1; i <= app.project.numItems; i++) {
-			var comp = app.project.item(i);
+		for (var i = 0; i < imported.length; i++) {
+			var comp = imported[i];
 
 			if (!(comp instanceof CompItem)) continue;
 			if (!comp.comment.match(/^TEMPLATE/)) continue;
@@ -1244,8 +1248,12 @@ PADX.fillBegin = function (a) {
 		}
 
 		if (!templateComp) {
-			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (etiqueta TEMPLATE) não encontrada no projeto');
+			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (etiqueta TEMPLATE) não encontrada no template');
 		}
+
+		// as comps do template com o nome de uma comp que já estava no projeto ganham _2, _3… (e as expressões do
+		// template que as citam em comp("…") passam a citar o nome novo): senão leriam a comp antiga
+		padRenameRepeatedComps(imported);
 
 		// a lista dos presets de render (sem os _HIDDEN): só existe num item da fila
 		var renderList = [];
@@ -1286,6 +1294,8 @@ PADX.fillBegin = function (a) {
 			newOutputs: [],
 			renderTemplates: renderList,
 			snapshot: snapshot,
+			// as precomps que leem a comp principal pelo nome (ou que têm uma dessas dentro): cada versão ganha as suas
+			precompsDaVersao: ignore ? [] : padPrecompsReadingMain(templateComp),
 			count: 0
 		};
 
@@ -1298,6 +1308,289 @@ PADX.fillBegin = function (a) {
 		return { total: jobs.length, jobs: jobs, templateName: projectFile.displayName };
 	});
 };
+
+// Os itens que entraram no projeto depois do retrato 'snapshot' (padProjectSnapshot) → [item]
+function padNewItems(snapshot) {
+	var out = [];
+
+	for (var i = 1; i <= app.project.numItems; i++) {
+		var item = app.project.item(i);
+
+		if (!snapshot.ids[item.id]) out.push(item);
+	}
+
+	return out;
+}
+
+// Cada propriedade com expressão dentro de 'group' (uma layer: a transformação, os efeitos, as máscaras, o texto…),
+// em qualquer profundidade: fn(propriedade, expressão)
+function padEachExpressionIn(group, fn) {
+	for (var i = 1; i <= group.numProperties; i++) {
+		var prop = null;
+
+		try {
+			prop = group.property(i);
+		} catch (err) { }
+
+		if (!prop) continue;
+
+		if (prop.propertyType != PropertyType.PROPERTY) {
+			padEachExpressionIn(prop, fn);
+			continue;
+		}
+
+		var text = '';
+
+		try {
+			if (prop.canSetExpression) text = prop.expression;
+		} catch (err) { }
+
+		if (text) fn(prop, text);
+	}
+}
+
+// Cada propriedade com expressão das layers de 'comp': fn(propriedade, expressão)
+function padEachExpression(comp, fn) {
+	for (var l = 1; l <= comp.numLayers; l++) padEachExpressionIn(comp.layer(l), fn);
+}
+
+// Reescreve as expressões de 'comp' que citam comp("ANTIGO") para o nome novo, pelo mapa { ANTIGO: 'NOVO' }
+// (regras/referencias-de-comp.js)
+function padRewriteCompRefs(comp, map) {
+	padEachExpression(comp, function (prop, text) {
+		var out = PAD_REFERENCIAS_DE_COMP.rewrite(text, map);
+
+		if (out === text) return;
+
+		try {
+			prop.expression = out;
+		} catch (err) { }
+	});
+}
+
+// Alguma expressão de 'comp' cita, em comp("…"), um dos nomes de 'names'?
+function padCitesComps(comp, names) {
+	var found = false;
+
+	padEachExpression(comp, function (prop, text) {
+		for (var n = 0; n < names.length && !found; n++) {
+			if (PAD_REFERENCIAS_DE_COMP.cites(text, names[n])) found = true;
+		}
+	});
+
+	return found;
+}
+
+// As comps importadas com o nome de uma comp que já estava no projeto ganham _2, _3… (padUniqueName), e as
+// expressões de todas as comps importadas que citam esse nome passam a citar o novo. Assim comp("BG") de um template
+// lê a "BG" dele, não a de outro template ou de outra rodada (o After lê a primeira comp do projeto com o nome).
+// → { ANTIGO: 'NOVO' }
+function padRenameRepeatedComps(imported) {
+	var mine = {};
+	var before = {};
+	var map = {};
+	var renamed = false;
+	var i;
+
+	for (i = 0; i < imported.length; i++) mine[imported[i].id] = true;
+
+	for (i = 1; i <= app.project.numItems; i++) {
+		var old = app.project.item(i);
+
+		if (old instanceof CompItem && !mine[old.id]) before[String(old.name).toUpperCase()] = true; // como o padUniqueName, sem a caixa
+	}
+
+	var taken = padFillTaken([]);
+
+	for (i = 0; i < imported.length; i++) {
+		var comp = imported[i];
+
+		if (!(comp instanceof CompItem) || !before.hasOwnProperty(String(comp.name).toUpperCase())) continue;
+
+		var name = comp.name;
+
+		comp.name = padUniqueName(name, taken);
+		if (!map.hasOwnProperty(name)) map[name] = comp.name;
+		renamed = true;
+	}
+
+	if (renamed) {
+		for (i = 0; i < imported.length; i++) {
+			if (imported[i] instanceof CompItem) padRewriteCompRefs(imported[i], map);
+		}
+	}
+
+	return map;
+}
+
+// A fonte da layer, se for uma comp (a precomp); senão null
+function padLayerComp(layer) {
+	var source = null;
+
+	try {
+		source = layer.source;
+	} catch (err) { }
+
+	return source instanceof CompItem ? source : null;
+}
+
+// As precomps da comp principal (a árvore inteira de precomps dentro dela) que precisam de uma por versão: as que
+// leem a principal pelo nome em comp("…"), as que leem uma dessas pelo nome e as que têm uma dessas dentro. As outras
+// continuam compartilhadas pelas versões. → [CompItem]
+function padPrecompsReadingMain(main) {
+	var tree = [];
+	var seen = {};
+	var queue = [main];
+
+	seen[main.id] = true;
+
+	while (queue.length) {
+		var comp = queue.shift();
+
+		for (var l = 1; l <= comp.numLayers; l++) {
+			var pre = padLayerComp(comp.layer(l));
+
+			if (!pre || seen[pre.id]) continue;
+
+			seen[pre.id] = true;
+			tree.push(pre);
+			queue.push(pre);
+		}
+	}
+
+	var needs = {};
+	var names = [main.name];
+	var out = [];
+	var changed = true;
+
+	while (changed) {
+		changed = false;
+
+		for (var t = 0; t < tree.length; t++) {
+			var p = tree[t];
+
+			if (needs[p.id]) continue;
+
+			var inside = false;
+
+			for (var k = 1; k <= p.numLayers && !inside; k++) {
+				var src = padLayerComp(p.layer(k));
+
+				if (src && needs[src.id]) inside = true;
+			}
+
+			if (inside || padCitesComps(p, names)) {
+				needs[p.id] = true;
+				names.push(p.name);
+				out.push(p);
+				changed = true;
+			}
+		}
+	}
+
+	return out;
+}
+
+// A versão ganha as suas precomps (as de 'precomps', padPrecompsReadingMain): cada uma duplicada com o nome
+// "PRECOMP (VERSÃO)", as layers da versão e das precomps dela passam a usar as novas (replaceSource) e as expressões
+// que citam a principal ou essas precomps passam a citar a versão e as dela. → [as precomps criadas]
+function padSplitPrecomps(versao, main, precomps) {
+	var map = {};
+	var made = [];
+	var byId = {};
+	var i;
+
+	map[main.name] = versao.name;
+
+	if (precomps.length) {
+		var taken = padFillTaken([]);
+
+		for (i = 0; i < precomps.length; i++) {
+			var pre = precomps[i];
+			var dup = pre.duplicate();
+
+			made.push(dup);
+			dup.name = padUniqueName(pre.name + ' (' + versao.name + ')', taken);
+			map[pre.name] = dup.name;
+			byId[pre.id] = dup;
+		}
+	}
+
+	var comps = [versao].concat(made);
+
+	for (i = 0; i < comps.length; i++) {
+		for (var l = 1; l <= comps[i].numLayers; l++) {
+			var layer = comps[i].layer(l);
+			var src = padLayerComp(layer);
+
+			if (src && byId[src.id]) layer.replaceSource(byId[src.id], false); // as expressões, aqui embaixo
+		}
+
+		padRewriteCompRefs(comps[i], map);
+	}
+
+	return made;
+}
+
+// No fim do preenchimento: as precomps de antes (as que cada versão ganhou as suas) saem quando ninguém mais as usa
+// (nenhuma layer e nenhuma expressão das comps que entraram na rodada). Elas leem a comp principal, que saiu.
+function padRemoveUnusedPrecomps(precomps, snapshot) {
+	var gone = {};
+	var changed = true;
+
+	while (changed) {
+		changed = false;
+
+		for (var i = 0; i < precomps.length; i++) {
+			var pre = precomps[i];
+
+			if (gone[pre.id]) continue;
+			if (pre.usedIn.length > 0) continue;
+
+			var cited = false;
+			var news = padNewItems(snapshot);
+
+			for (var n = 0; n < news.length && !cited; n++) {
+				if (news[n] instanceof CompItem && news[n].id != pre.id && padCitesComps(news[n], [pre.name])) cited = true;
+			}
+
+			if (cited) continue;
+
+			gone[pre.id] = true;
+			pre.remove();
+			changed = true;
+		}
+	}
+}
+
+// Organiza só os itens que entraram no projeto depois de 'snapshot': cada um vai para a pasta configurada (criada se
+// faltar); as pastas e os itens que já estavam ficam como estavam. Saem só as pastas novas que ficaram vazias (a do
+// .aep importado e as de dentro dele). O botão Organizar continua organizando tudo (organizeProject).
+function padOrganizeNewItems(snapshot) {
+	var items = padNewItems(snapshot);
+	var only = {};
+
+	for (var i = 0; i < items.length; i++) {
+		if (!(items[i] instanceof FolderItem)) only[items[i].id] = true;
+	}
+
+	populateProjectFolders(only);
+
+	var removed = true;
+
+	while (removed) {
+		removed = false;
+
+		for (var f = app.project.numItems; f >= 1; f--) {
+			var folder = app.project.item(f);
+
+			if (folder instanceof FolderItem && folder.numItems == 0 && !snapshot.ids[folder.id]) {
+				folder.remove();
+				removed = true;
+			}
+		}
+	}
+}
 
 // os nomes de comp que o projeto já tem, em maiúsculas (menos os ids de 'skip': a versão em criação e a comp do
 // template, que sai no fim) → { NOME: true }
@@ -1348,6 +1641,7 @@ PADX.fillStep = function (a) {
 	var job = run.jobs[a.index];
 	var templateData = run.templateData;
 	var template = null;
+	var made = [];
 
 	return padGroup('O PADEIRO: preencher template', function () {
 		try {
@@ -1447,6 +1741,9 @@ PADX.fillStep = function (a) {
 			// a lista sai do projeto a cada passo, então já conta as versões criadas antes nesta fila
 			template.name = padUniqueName(template.name, padFillTaken([template.id, run.templateComp.id]));
 
+			// as precomps que leem a principal pelo nome: a versão ganha as suas, lendo a versão
+			made = padSplitPrecomps(template, run.templateComp, run.precompsDaVersao || []);
+
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
 			template.comment = PAD_ORGANIZE.autoComment; // etiqueta de render (configuração > organizar)
@@ -1458,6 +1755,7 @@ PADX.fillStep = function (a) {
 		} catch (err) {
 			// não deixa uma comp pela metade no projeto
 			try {
+				for (var m = 0; m < made.length; m++) made[m].remove();
 				if (template) template.remove();
 			} catch (e) { }
 
@@ -1480,6 +1778,11 @@ PADX.fillFinish = function () {
 			try {
 				run.templateComp.remove();
 			} catch (err) { }
+
+			// as precomps que cada versão ganhou: as de antes, sem uso, saem com a principal
+			try {
+				padRemoveUnusedPrecomps(run.precompsDaVersao || [], run.snapshot);
+			} catch (err) { }
 		}
 
 		// Define a pasta de importação padrão do projeto
@@ -1487,10 +1790,8 @@ PADX.fillFinish = function () {
 			app.project.setDefaultImportFolder(new Folder(padMountedPath(padPath(run.templateData.importPath)))); // no volume montado (VFX-1…)
 		} catch (err) { }
 
-		// Organização do projeto
-		deleteProjectFolders();
-		populateProjectFolders();
-		deleteEmptyProjectFolders();
+		// Organização: só os itens desta rodada (as pastas e os itens que já estavam ficam como estavam)
+		padOrganizeNewItems(run.snapshot);
 
 		// os dados do padeiro: o template (as fontes saem da pasta dele), a produção e o que faltar
 		try {

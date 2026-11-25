@@ -263,13 +263,31 @@ function populateCompItemFolders(comps, folders, cache) {
 	}
 }
 
-// Organiza comps e footages na estrutura padrão de pastas.
-function populateProjectFolders() {
+// Só os itens de 'only' ({ id: true }); sem 'only', a lista inteira.
+function padOnlyItems(list, only) {
+	if (!only) return list;
+
+	var out = [];
+
+	for (var i = 0; i < list.length; i++) {
+		if (only[list[i].id]) out.push(list[i]);
+	}
+
+	return out;
+}
+
+// Organiza comps e footages na estrutura padrão de pastas. 'only' ({ id: true }, opcional): só esses itens (o
+// preenchimento organiza só o que entrou na rodada); sem ele, todos (o botão Organizar).
+function populateProjectFolders(only) {
 	var folders = projectTemplateFolders();
 	var footage = getFootage();
 	var cache = {};
 
-	populateCompItemFolders(getComps(), folders, cache);
+	for (var type in footage) {
+		if (footage.hasOwnProperty(type) && type != 'missingNames') footage[type] = padOnlyItems(footage[type], only);
+	}
+
+	populateCompItemFolders(padOnlyItems(getComps(), only), folders, cache);
 
 	populateFootageItemFolders(footage.videoArray, folders.videos, cache);
 	populateFootageItemFolders(footage.stillArray, folders.imagens, cache);

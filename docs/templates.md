@@ -116,13 +116,15 @@ para criar um novo preset de output, acesse:\
 
 o padeiro executa as seguintes tarefas, em ordem:
 
-1. importar o projeto do template.
+1. importar o projeto do template. a comp principal é procurada **só entre os itens que esta importação trouxe**: uma comp com a etiqueta TEMPLATE e o mesmo nome que já estava no projeto (de outra rodada, de outro template) fica como está.
+   - **precomp de nome repetido** → uma comp do template com o nome de uma comp que já estava no projeto (a `BG` de outro template, a `BG` da rodada anterior do mesmo template) ganha `_2`, `_3`… e as expressões do template que a citam em `comp("BG")` (na transformação, nos efeitos, nas máscaras, no texto, em qualquer propriedade) passam a citar o nome novo. sem isso, o After leria a comp antiga: ele acha a primeira comp do projeto com o nome. só muda o nome inteiro, entre aspas, dentro de `comp(…)`: `comp("BG FUNDO")`, `thisComp.layer("BG")` e um nome calculado (`comp(nome)`) ficam como estão.
 2. duplicar a comp principal para cada bloco do input (e cada variação de layout).
+   - **precomp que lê a comp principal pelo nome** → uma precomp (em qualquer nível dentro da principal) com uma expressão como `comp("RODAPE").layer("TITULO")` é duplicada com cada versão, com o nome `PRECOMP (NOME DA VERSÃO)`, e a expressão passa a ler a versão. as precomps acima dela, no caminho até a principal, também (para a versão usar a dela). as expressões da própria versão que citam a principal também passam a citar a versão. as precomps sem essas expressões continuam as mesmas para todas as versões. no fim, a principal sai e as precomps de antes, sem uso, saem junto.
 3. preencher os layers editáveis com os campos do bloco. as mesmas regras do [duplicar](#a-forminha):
    - **campo vazio ou a menos** → o layer dele fica **escondido** naquela versão (não fica com o texto de exemplo do template). vale para os dois métodos: o conteúdo do texto e o nome do layer.
    - **texto com keyframes** → o texto entra em **todos os keyframes** do *Source Text*, cada um com o seu estilo (senão a versão volta ao texto do template no keyframe seguinte).
 4. renomear as comps a partir do conteúdo (ou pelo layer [`script_template_name`](#o-nome-da-comp-pelo-layer-script_template_name)). **nome que já existe** no projeto (ou numa versão criada antes, no mesmo preenchimento) ganha um sufixo: `_2`, `_3`… (vale também para o nome vindo do layer de nome).
-5. organizar o projeto no padrão da PROMO.
+5. organizar **só o que entrou neste preenchimento** no padrão da PROMO (as pastas de [configuração > organizar](producoes.md#-organizar)): cada item novo (as versões, as precomps e os arquivos do template) vai para a pasta configurada, criada se faltar. as pastas e os itens que já estavam no projeto ficam como estavam (uma pasta vazia do designer também fica); saem só as pastas novas que ficaram vazias, como a do `.aep` importado. o botão **Organizar** da barra continua organizando o projeto inteiro.
 6. adicionar as comps à fila de render.
 7. definir os caminhos de output.
 8. rodar o script do template (`_script.js`), se existir ([abaixo](#script-do-template-_scriptjs)).
