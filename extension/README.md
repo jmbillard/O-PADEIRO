@@ -74,8 +74,8 @@ O-PADEIRO/
    │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
    │  ├─ project.jsx             → janela de projeto (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ coletar.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
-   │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js, check-focus-crop.js e check-scroll-corners.js, com as telas em ui-states.js), a do glossário (check-glossario.js), o teste das regras (test-regras.js) e a do ternário (check-ternary.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
+   │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes) e, em scripts-de-template.js, as funções globais do padeiro antigo que os _script.js dos templates chamam (não renomear)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js, check-focus-crop.js e check-scroll-corners.js, com as telas em ui-states.js), a do glossário (check-glossario.js), o teste das regras (test-regras.js), o dos scripts de template (test-scripts-de-template.js: as funções globais do padeiro antigo que os _script.js chamam) e a do ternário (check-ternary.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>

@@ -23,6 +23,9 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
 - **Regras compartilhadas (ADR 0005):** as regras puras do domínio ficam em `extension/regras/`, em ES3, sem After e
   sem DOM (o host inclui por `#include`, o painel por `<script>`). Antes de enviar, rodar
   `node extension/scripts/test-regras.js`; regra nova ganha uma entrada em `REGRAS` nesse teste.
+- **Scripts de template:** o `_script.js` de um template, na rede, roda no host (`PADX.runEnd`) e chama as funções
+  globais do padeiro antigo, que ficam em `extension/host/lib/scripts-de-template.js`: não renomear nem apagar. Antes
+  de enviar uma mudança no host, rodar `node extension/scripts/test-scripts-de-template.js`.
 - **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
   `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
   `ui-states.js`.

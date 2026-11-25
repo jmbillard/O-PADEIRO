@@ -34,6 +34,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "lib/functions/web lib.js"
 #include "lib/functions/fonts lib.js"
 #include "lib/acessorista.js"
+// as funções globais que os scripts de template (_script.js) do padeiro antigo chamam: depois das libs, que elas usam
+#include "lib/scripts-de-template.js"
 
 // as regras compartilhadas com o painel e o teste em Node (ADR 0005)
 #include "../regras/nomes-repetidos.js"

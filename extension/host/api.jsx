@@ -1763,7 +1763,7 @@ PADX.runEnd = function (a) {
 	try {
 		$.evalFile(run.files.script);
 	} catch (err) {
-		throw new Error('#PAD_021 - ' + err.message);
+		throw new Error('#PAD_021 - script do template (' + result.script + '): ' + err.message); // diz qual script falhou
 	}
 
 	return result;

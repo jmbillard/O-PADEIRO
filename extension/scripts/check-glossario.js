@@ -94,8 +94,10 @@ const SO_NO_TEXTO = {
 const EXPRESSOES_PERMITIDAS = {
 	// o comando do After (File > Dependencies > Collect Files)
 	collect: ['collect files'],
-	// a variável global do JavaScript (o jeito de cada regra compartilhada chegar ao host e ao painel)
-	global: ['variável global', 'variáveis globais']
+	// a variável global do JavaScript (o jeito de cada regra compartilhada chegar ao host e ao painel) e a função
+	// global, no mesmo sentido: as que os scripts de template (_script.js) do padeiro antigo chamam pelo nome
+	// (host/lib/scripts-de-template.js)
+	global: ['variável global', 'variáveis globais', 'função global', 'funções globais']
 };
 
 // As leituras de compatibilidade dos nomes antigos: o termo evitado vale numa linha que usa um destes nomes no
