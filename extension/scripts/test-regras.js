@@ -1046,11 +1046,11 @@ REGRAS.push({
 		});
 
 		// #49: a URL do webhook do projeto (o cadastro da atração nova no banco das atrações), na aba TIPOS DE PROJETO
-		test('webhook do projeto: na tabela (WEBHOOK_DO_PROJETO da equipe); vazio por padrão (nada é enviado)', function () {
+		test('webhook do projeto: na tabela (WEBHOOK_DO_PROJETO da equipe); o padrão é o workflow da equipe (vazio desliga o envio)', function () {
 			const s = api.secao('webhookDoProjeto');
 
 			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' WEBHOOK_DO_PROJETO');
-			eq(api.ler(memoria(), 'webhookDoProjeto'), { url: '' });
+			eq(api.ler(memoria(), 'webhookDoProjeto'), { url: 'https://workflows.jmbillard.com/webhook/projeto' });
 			eq(api.secoesDoPainel({ webhookDoProjeto: { url: 'https://a/b' } }), { producoes: [], webhookDoProjeto: { url: 'https://a/b' } });
 		});
 
@@ -1065,12 +1065,12 @@ REGRAS.push({
 			eq(api.ler(m, 'webhookDoProjeto').url, 'http://n8n.local:5678/webhook/projeto');
 		});
 
-		test('webhook do projeto: recusa a URL inválida ao salvar (#PAD_089, a mesma regra da URL do registro de uso); lida, vira a vazia', function () {
+		test('webhook do projeto: recusa a URL inválida ao salvar (#PAD_089, a mesma regra da URL do registro de uso); lida, vira o padrão', function () {
 			['ftp://x/y', 'workflows.jmbillard.com/webhook/projeto', 'https://a b/c', 'https://a/"b"', 'https://a/b;rm -rf', "https://a/'b'", 'https://a/$(x)'].forEach(function (url) {
 				lancaErro(function () { api.limpar('webhookDoProjeto', { url: url }); }, /^#PAD_089 - tipos de projeto: endereço do webhook do projeto inválido/);
 			});
 			lancaErro(function () { api.gravar(memoria(), { webhookDoProjeto: { url: 'a b' } }); }, /^#PAD_089/);
-			eq(api.ler(memoria({ [EQUIPE]: { WEBHOOK_DO_PROJETO: { url: 'ftp://x' } } }), 'webhookDoProjeto'), { url: '' });
+			eq(api.ler(memoria({ [EQUIPE]: { WEBHOOK_DO_PROJETO: { url: 'ftp://x' } } }), 'webhookDoProjeto'), { url: 'https://workflows.jmbillard.com/webhook/projeto' });
 		});
 
 		test('o token {designer} (a sigla do designer) vale nos caminhos; {usuario}, o nome antigo, continua aceito', function () {

@@ -21,8 +21,7 @@ POST https://workflows.jmbillard.com/webhook/projeto
 ```
 
 O endereço fica na configuração da equipe: configuração > **TIPOS DE PROJETO** > **webhook do projeto** (a chave
-`WEBHOOK_DO_PROJETO` do arquivo da equipe). **Vazio, nada é enviado**: é o padrão até o workflow existir; o endereço
-acima é só o exemplo que aparece no campo. A validação é a mesma da URL do registro de uso (`http://` ou `https://`,
+`WEBHOOK_DO_PROJETO` do arquivo da equipe). O padrão é o endereço acima, o workflow da equipe; **vazio, nada é enviado** (é assim que se desliga o envio). A validação é a mesma da URL do registro de uso (`http://` ou `https://`,
 sem espaços, aspas nem símbolos do terminal): uma URL inválida é recusada ao salvar (`#PAD_089`).
 
 ## quando o padeiro envia

@@ -875,7 +875,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	// ---------------------------------------------------------------------------------------------------------
 	// o webhook do projeto ('WEBHOOK_DO_PROJETO'; aba TIPOS DE PROJETO): { url }, o webhook do n8n que a janela de
 	// projeto avisa ao criar o projeto de uma atração nova (regras/webhook-do-projeto.js; docs/webhook-projeto.md)
-	//   url → vazia: nada é enviado (o padrão, até o workflow existir). a validação é a da URL do registro de uso: o
+	//   url → o padrão é o workflow da equipe (https://workflows.jmbillard.com/webhook/projeto); vazia: nada é
+	//         enviado. a validação é a da URL do registro de uso: o
 	//         endereço também vai para a linha de comando do curl (o plano B do host, sem o Node do painel)
 	// ---------------------------------------------------------------------------------------------------------
 
@@ -1050,7 +1051,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLETAR', antigos: ['COLLECT'], padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
 		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], camposAntigos: { tipos: ['categories'] }, padrao: function () { return { tipos: [] }; }, limpar: limparTiposDeProjeto },
-		{ nome: 'webhookDoProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'WEBHOOK_DO_PROJETO', padrao: function () { return { url: '' }; }, limpar: limparWebhookDoProjeto },
+		{ nome: 'webhookDoProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'WEBHOOK_DO_PROJETO', padrao: function () { return { url: 'https://workflows.jmbillard.com/webhook/projeto' }; }, limpar: limparWebhookDoProjeto },
 
 		// deste computador
 		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], padrao: function () { return ''; }, limpar: limparSigla },
