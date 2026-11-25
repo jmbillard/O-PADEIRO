@@ -59,7 +59,7 @@ O card decide **qual atração**; a regra da atração decide **a pasta e o `.ae
 **criar ou abrir**:
 
 1. **atração** → o vínculo do card no banco (`atr`): `JANEIRO NA GLOBO` → **MOOD MENSAL**.
-2. **pasta e `.aep`** → a atração que é um tipo com regra na aba PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
+2. **pasta e `.aep`** → a atração que é um tipo com regra na aba TIPOS DE PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
    usa a regra, e **o mês escrito na claquete do card vale mais que a data de hoje** nos tokens de mês e de ano
    (`{mes}`, `{mes_extenso}`, `{proximo_mes}`, `{proximo_mes_num}`, `{ano}`, `{ano_proximo_mes}`): `JANEIRO NA GLOBO`
    → `…/MOOD MENSAL/2027/01 JANEIRO` e `JANEIRO NA GLOBO.aep` (sem o ano escrito, o próximo janeiro). Com o card de

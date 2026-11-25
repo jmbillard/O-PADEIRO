@@ -1406,7 +1406,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
 			};
 			var film = a.kind === 'film';
-			// o nome do .aep do tipo (aba PROJETO > ARQUIVO), como no host: {o_que_e} no lugar do token, ou no fim
+			// o nome do .aep do tipo (aba TIPOS DE PROJETO > ARQUIVO), como no host: {o_que_e} no lugar do token, ou no fim
 			var custom = String(a.fileName || '');
 			var base = film ? key(a.title) : custom ? key(custom.indexOf('{o_que_e}') >= 0 ? custom.split('{o_que_e}').join(' ' + (a.what || '') + ' ') : custom + ' ' + (a.what || '')) : key((String(a.quadro || '').split('/').pop().trim() || a.atracao) + ' ' + (a.what || ''));
 			var root = film ? a.filmPath || a.path + '/_N_/' + key(a.title) : a.path;

@@ -2,7 +2,7 @@
 /*
 
 ---------------------------------------------------------------
-> projeto (janela de projeto e aba PROJETO da configuração)
+> projeto (janela de projeto e aba TIPOS DE PROJETO da configuração)
 ---------------------------------------------------------------
 
 A janela de projeto (O PROJETISTA) cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
@@ -685,7 +685,7 @@ function padNewProjectPlan(a) {
 	// com pastas abaixo da atração (quadro: DANÇA DOS FAMOSOS/FINAL): o último nível + o que é
 	var levels = padTrim(a.quadro).split('/');
 
-	// o nome do tipo (aba PROJETO > ARQUIVO) com {o_que_e}: o o que é entra no lugar do token, não no fim
+	// o nome do tipo (aba TIPOS DE PROJETO > ARQUIVO) com {o_que_e}: o o que é entra no lugar do token, não no fim
 	var custom = padTrim(a.fileName);
 
 	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepFileName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
@@ -1161,7 +1161,7 @@ PADX.projectSaveNow = function () {
 // faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
 // a: { atracao, quadro, what, designer, root, output, fileBase, fileName } → projectCurrent + { moved: caminho antigo }
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
-// fileName: o nome do tipo (aba PROJETO > ARQUIVO, com {o_que_e}), como no projeto novo: o tipo fixo (MOOD MENSAL)
+// fileName: o nome do tipo (aba TIPOS DE PROJETO > ARQUIVO, com {o_que_e}), como no projeto novo: o tipo fixo (MOOD MENSAL)
 // mantém o nome pelo padrão dele ao salvar, em vez de virar a atração + o que é
 PADX.projectSave = function (a) {
 	padLastMkdir = '';

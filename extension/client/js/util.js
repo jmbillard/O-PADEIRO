@@ -365,7 +365,7 @@
 		}).observe(document.documentElement, { childList: true, subtree: true });
 	}
 
-	// PAD_UTIL.tipoIcon(icon) → '<svg …>' do ícone escolhido para o tipo na aba PROJETO ('' = sem
+	// PAD_UTIL.tipoIcon(icon) → '<svg …>' do ícone escolhido para o tipo na aba TIPOS DE PROJETO ('' = sem
 	// ícone: quem chama usa a pasta). nada pelo nome: vale só o escolhido
 	function tipoIcon(icon) {
 		return icon ? iconMarkup(icon) : '';

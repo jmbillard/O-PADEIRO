@@ -5,7 +5,7 @@
 ---------------------------------------------------------------
 
 A busca das atrações (o índice do webhook, a mesma cópia do acessorista, ou o índice local da configuração >
-buscar), os tipos da aba PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
+buscar), os tipos da aba TIPOS DE PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
 achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTRACTIONS
 
 */
@@ -671,7 +671,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		return { name: name, path: base.path.replace(/[\\\/]+$/, '') + sep + aepName(name), display: base.display + '/' + aepName(name), out: '', isNew: true };
 	}
 
-	// o ícone do tipo da atração (aba PROJETO), ou a pasta
+	// o ícone do tipo da atração (aba TIPOS DE PROJETO), ou a pasta
 	function iconFor(match, bases) {
 		var base = (bases || []).filter(function (b) {
 			return b.label && match.tipo && aepName(b.label) === aepName(match.tipo);

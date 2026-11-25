@@ -904,7 +904,7 @@ projetos com o nome certo).
 	}
 
 	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem do tipo de filmes da
-	// configuração (aba PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
+	// configuração (aba TIPOS DE PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
 	function filmBase() {
 		var base = state.bases.filter(function (b) {
 			return b.pattern && /^FILMES?( |$)/.test(aepName(b.label));
@@ -934,7 +934,7 @@ projetos com o nome certo).
 			if (!m.isFilm || !base) return m;
 
 			var name = m.name.toUpperCase();
-			// o .aep do filme: o nome do tipo (aba PROJETO > ARQUIVO) ou o título com o ano (NAO NAO OLHE (2022))
+			// o .aep do filme: o nome do tipo (aba TIPOS DE PROJETO > ARQUIVO) ou o título com o ano (NAO NAO OLHE (2022))
 			var file = base.filePattern ? fillPattern(base.filePattern, name, base.label, m.year) : name + (m.year ? ' (' + m.year + ')' : '');
 
 			// a pasta já achada (o filme dos recentes que já tem projeto): fica, e o .aep leva o ano do mesmo jeito
@@ -1113,7 +1113,7 @@ projetos com o nome certo).
 		});
 	}
 
-	// o ícone do tipo da atração (o mesmo da aba PROJETO), ou a pasta; o filme, o do tipo de filmes
+	// o ícone do tipo da atração (o mesmo da aba TIPOS DE PROJETO), ou a pasta; o filme, o do tipo de filmes
 	function matchIcon(m) {
 		if (m.isFilm) {
 			var film = filmBase();
@@ -1819,7 +1819,7 @@ projetos com o nome certo).
 		return null;
 	}
 
-	// o nome do .aep do tipo (aba PROJETO > ARQUIVO, com tokens): na atração criada pelo tipo (a fixa, a
+	// o nome do .aep do tipo (aba TIPOS DE PROJETO > ARQUIVO, com tokens): na atração criada pelo tipo (a fixa, a
 	// nova dos chips); a que já existe no índice fica com o nome dela
 	function attrFileName(attr) {
 		var filled = attr && attr.filmFile ? attr.filmFile : ''; // o filme: o título com o ano (resolveFilms)
@@ -1831,7 +1831,7 @@ projetos com o nome certo).
 		return filled.split(WHAT_TOKEN).map(ATR.aepFileName).join(filled.indexOf(WHAT_TOKEN) >= 0 ? ' ' + WHAT_TOKEN + ' ' : '').trim();
 	}
 
-	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba PROJETO > ARQUIVO) e na pasta de output
+	// {o_que_e}: o que se digita depois da atração. vale no nome do .aep (aba TIPOS DE PROJETO > ARQUIVO) e na pasta de output
 	var WHAT_TOKEN = '{o_que_e}';
 
 	// a pasta de output com o o que é no lugar do token; sem o que é, o pedaço some (…/ATRACAO/{o_que_e} → …/ATRACAO)
@@ -2215,7 +2215,7 @@ projetos com o nome certo).
 		span.appendChild(document.createTextNode('.aep'));
 	}
 
-	/* ---------- os tipos de projeto da configuração (aba PROJETO) ---------- */
+	/* ---------- os tipos de projeto da configuração (aba TIPOS DE PROJETO) ---------- */
 
 	async function ensureBases() {
 		if (state.basesLoaded) return;
@@ -2907,7 +2907,7 @@ projetos com o nome certo).
 		return ATR.aepFileName(p.first + ' (' + state.edYear + ') ' + $('ed-what').value);
 	}
 
-	// o nome do .aep pelo tipo (aba PROJETO > ARQUIVO), como no projeto novo: a atração escolhida que é de um tipo com
+	// o nome do .aep pelo tipo (aba TIPOS DE PROJETO > ARQUIVO), como no projeto novo: a atração escolhida que é de um tipo com
 	// ARQUIVO próprio (a nova dos chips, o tipo fixo) ou o projeto aberto de um tipo fixo (MOOD MENSAL: o mês vem do
 	// nome de hoje do .aep, JANEIRO NA GLOBO, não da data de hoje). sem pastas abaixo; '' quando não vale
 	function edTypeName() {

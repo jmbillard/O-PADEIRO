@@ -125,7 +125,7 @@ function padJournalRead(root) {
 }
 
 // A pasta pode ser migrada? a migração arruma a pasta INTEIRA onde o .aep está: tem que ser a pasta de um projeto,
-// dentro das pastas de projetos da configuração (aba PROJETO), nunca uma pasta do sistema nem a pasta de uma
+// dentro das pastas de projetos da configuração (aba TIPOS DE PROJETO), nunca uma pasta do sistema nem a pasta de uma
 // tipo inteiro. isto é só sobre ONDE O .AEP ESTÁ SALVO: os arquivos que o projeto usa e estão espalhados por
 // aí (a Área de Trabalho de alguém, outra pasta da rede) continuam sendo copiados para a estrutura, como sempre.
 // → '' (pode) | o motivo
@@ -161,7 +161,7 @@ function padMigrateBlocked(rootPath) {
 		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de um tipo de projeto inteiro (configuração > projeto): a migração arrumaria todas as atrações dele';
 	}
 
-	if (roots.length && !padInProjects(rootPath, roots)) return 'a pasta do projeto está fora das pastas de projetos da configuração (aba PROJETO): a migração só arruma pastas que estão nelas';
+	if (roots.length && !padInProjects(rootPath, roots)) return 'a pasta do projeto está fora das pastas de projetos da configuração (aba TIPOS DE PROJETO): a migração só arruma pastas que estão nelas';
 
 	return '';
 }
