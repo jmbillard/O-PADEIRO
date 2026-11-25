@@ -206,17 +206,17 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 
 ## 📍 buscar
 
-a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações da janela [PROJETO](projeto.md).
+a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações da [janela de projeto](projeto.md).
 
 - **webhook** → o endereço do workflow **PROMO - BUSCAR**, que devolve o índice pronto (Teams, Trello, atrações e filmes). vazio, vale o padrão (`…/webhook/buscar`).
 - **caminhos fixos** → pastas que aparecem sempre na busca (a origem **CAMINHOS FIXOS** do acessorista, com o ícone de servidor e até 10 por busca), para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, a **lixeira** à direita exclui a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
 
-**👤 de onde vêm os caminhos** (neste computador, embaixo) → o que o [acessorista](acessorista.md) e a janela [PROJETO](projeto.md) usam aqui:
+**👤 de onde vêm os caminhos** (neste computador, embaixo) → o que o [acessorista](acessorista.md) e a [janela de projeto](projeto.md) usam aqui:
   - **webhook da equipe** → o índice do webhook acima.
   - **índice local** → as pastas da lista (a pastinha escolhe, a **lixeira** à direita exclui), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
   - uma janela do acessorista ou do projeto já aberta passa a usar a escolha nova quando você volta para ela.
 
-> 🚩 *obs:* no [modo local](#-meu-usuário), o webhook não é chamado: o acessorista e a janela PROJETO usam a cópia do índice salva neste computador (ou o índice local). o índice antigo (com as origens de antes e a escolha de um arquivo de índice) saiu do padeiro.
+> 🚩 *obs:* no [modo local](#-meu-usuário), o webhook não é chamado: o acessorista e a janela de projeto usam a cópia do índice salva neste computador (ou o índice local), mostrando de quando ela é. o índice antigo (com as origens de antes e a escolha de um arquivo de índice) saiu do padeiro.
 <br>
 
 ---

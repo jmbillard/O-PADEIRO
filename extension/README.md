@@ -56,6 +56,7 @@ O-PADEIRO/
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
    │     ├─ fontbank.js          → banco de fontes pelo Node (conferir e copiar para o banco e a pasta do projeto)
    │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
+   │     ├─ search-index.js      → o índice da busca no painel, dividido pelo acessorista e pela janela de projeto: qual índice usar, a cópia e o download (PAD_SEARCH_INDEX)
    │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)
    │     ├─ mock-host.js         → host de mentira, para abrir os painéis no navegador
@@ -220,7 +221,7 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 - **letras de drive da rede** → `DRIVE_MAP` em `host/lib/globals.js`.
 - **config padrão dos templates** → `defaultTemplateConfigObj` em `host/lib/globals.js`.
 - **estrutura de pastas do projeto** → `PROJECT_FOLDERS` em `host/lib/functions/project lib.js`.
-- **origens do acessorista** → `V2_CATS` em `client/js/finder.js` (ordem, rótulos e quantos resultados de cada uma); os caminhos fixos padrão (sem a aba buscar da configuração) → `PS_LOCAL_SOURCES` em `host/lib/acessorista.js`.
+- **origens do acessorista** → `TEAM_ORIGINS` em `client/js/finder.js` (ordem, rótulos e quantos resultados de cada uma); os caminhos fixos padrão (sem a aba buscar da configuração) → `PS_DEFAULT_CAMINHOS_FIXOS` em `host/lib/acessorista.js`.
 - **cores, raios e sombras** → os tokens em `:root`, no início de `client/css/styles.css`.
 - **versão** → `ExtensionBundleVersion` em `CSXS/manifest.xml` e `PADX_VERSION` em `host/index.jsx`.
 
