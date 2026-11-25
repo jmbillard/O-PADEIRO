@@ -846,8 +846,9 @@ button.tr-card:focus-visible {
 }
 
 .at-line em {
-  flex: 0 0 58px;
+  flex: 0 0 64px;
   color: var(--text-tertiary);
+  line-height: 1.2; /* PASTA DO PROJETO em duas linhas */
   font-size: 0.6rem;
   font-style: normal;
   font-weight: 800;

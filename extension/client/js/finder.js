@@ -242,7 +242,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 	var state = {
 		tab: null,
-		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' }, // hidden: as categorias desligadas nos interruptores (webhook)
+		paths: { ready: false, loading: false, loaded: false, platform: 'Mac', hidden: {}, error: '' }, // hidden: as fontes desligadas nos interruptores (webhook)
 		texts: { entries: [], comps: 0, ready: false, loading: false, loaded: false, loadId: 0, hint: '' },
 		lastTabStamp: 0
 	};
@@ -316,18 +316,19 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   quando a resposta chega com outro 'stamp'. sem a busca nova (e sem cópia), volta para o índice antigo.
 	   --------------------------------------------------------------- */
 
-	// as categorias da busca (a ordem é a dos resultados)
+	// as fontes da busca de caminhos (a ordem é a dos resultados). a chave 'servidor' é a dos caminhos fixos
+	// (o nome guardado na configuração)
 	var V2_CATS = [
-		{ key: 'servidor', label: 'SERVIDOR', max: 10 },
+		{ key: 'servidor', label: 'CAMINHOS FIXOS', max: 10 },
 		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
 		{ key: 'filmes', label: 'FILMES', max: 20 },
 		{ key: 'teams', label: 'TEAMS', max: 20 },
 		{ key: 'trello', label: 'TRELLO', max: 24 }
 	];
-	// índice local (configuração > buscar, neste computador): as pastas deste computador e o servidor
+	// índice local (configuração > buscar, neste computador): as pastas deste computador e os caminhos fixos
 	var LOCAL_CATS = [
 		{ key: 'pastas', label: 'PASTAS', max: 30 },
-		{ key: 'servidor', label: 'SERVIDOR', max: 10 }
+		{ key: 'servidor', label: 'CAMINHOS FIXOS', max: 10 }
 	];
 	var V2_TIMEOUT = 25000;
 
@@ -547,7 +548,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		$('opts-paths').textContent = text || '';
 	}
 
-	// Webhook: um interruptor por categoria que tem itens (SERVIDOR, ATRAÇÕES, FILMES, TEAMS, TRELLO). a escolha
+	// Webhook: um interruptor por fonte que tem itens (CAMINHOS FIXOS, ATRAÇÕES, FILMES, TEAMS, TRELLO). a escolha
 	// fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 	function buildCategoryFilters() {
 		var box = $('opts-paths');
@@ -562,7 +563,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			var chip = el('button', 'chip' + (p.hidden[cat.key] ? '' : ' is-on'));
 
 			chip.type = 'button';
-			chip.title = 'incluir ' + cat.label + ' na busca';
+			chip.title = 'fonte ' + cat.label + ': incluir na busca';
 			chip.setAttribute('aria-pressed', String(!p.hidden[cat.key]));
 			chip.appendChild(el('span', 'chip-check'));
 			chip.appendChild(document.createTextNode(cat.label));
@@ -786,7 +787,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	}
 
 	/* ---------------------------------------------------------------
-	   busca nova: o layout de cada categoria (sem títulos: o ícone diz de onde vem)
+	   o layout de cada fonte (sem títulos: o ícone diz de onde vem)
 	   --------------------------------------------------------------- */
 
 	var V2_ICONS = {
@@ -880,7 +881,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		return card;
 	}
 
-	// Atrações, filmes e servidor: o ícone e o nome; embaixo, uma linha por caminho (PROJETO, OUTPUT, CAMINHO)
+	// Atrações, filmes e caminhos fixos: o ícone e o nome; embaixo, uma linha por caminho (PASTA DO PROJETO, OUTPUT,
+	// CAMINHO)
 	function placeItem(icon, name, lines, query, group, year) {
 		var card = el('article', 'at-card');
 		var head = el('div', 'at-head');
@@ -1006,7 +1008,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			matches.slice(0, cat.max).forEach(function (item) {
 				if (cat.key === 'teams') list.appendChild(teamsItem(item, query));
 				else if (cat.key === 'trello') list._cards.push(trelloItem(item, query));
-				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PROJETO', item.proj], ['OUTPUT', item.out]], query));
+				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PASTA DO PROJETO', item.proj], ['OUTPUT', item.out]], query));
 				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
 				else if (cat.key === 'pastas') list.appendChild(placeItem(item.file ? V2_ICONS.arquivo : V2_ICONS.pasta, item.name, [['CAMINHO', item.file ? item.path.replace(/\/[^\/]+$/, '') : item.path]], query));
 				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
@@ -1022,7 +1024,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			return p.hidden[k];
 		});
 
-		if (!any) showState(results, 'nenhum resultado', 'nada tem “' + $('q-paths').value.trim() + '”: tente outro termo' + (off ? ' ou ligue mais categorias' : ''));
+		if (!any) showState(results, 'nenhum resultado', 'nada tem “' + $('q-paths').value.trim() + '”: tente outro termo' + (off ? ' ou ligue mais fontes' : ''));
 	}
 
 
