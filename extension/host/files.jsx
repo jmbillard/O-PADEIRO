@@ -83,6 +83,17 @@ function padFilesUsed() {
 	return used;
 }
 
+// a pasta tem algum arquivo usado no projeto aberto (em qualquer nível dentro dela)? renomeá-la também religa
+function padFilesUsedInside(used, path) {
+	var head = padFilesKey(path).toLowerCase() + '/';
+
+	for (var k in used) {
+		if (used.hasOwnProperty(k) && k.indexOf(head) == 0) return true;
+	}
+
+	return false;
+}
+
 // os itens de uma pasta: as pastas e os arquivos, com as sequências juntas. dir: o caminho relativo à pasta lida.
 // state.others[dir]: os nomes do disco que não viraram item (os de fora e os que passaram do limite): a janela conta
 // com eles para o nome novo não repetir um que já existe
@@ -92,6 +103,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	var files = [];
 	var names = [];
 	var listed = {};
+	var base = padFilesKey(folder.fsName);
 	var i;
 
 	var finish = function () {
@@ -131,7 +143,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 
 		listed[folders[i].name] = true;
 
-		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.typed, use: false });
+		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.typed, use: padFilesUsedInside(used, base + '/' + folders[i].name) });
 	}
 
 	// as sequências: prefixo + número (3 dígitos ou mais) + extensão, com pelo menos PAD_FILES_SEQ_MIN arquivos
@@ -157,7 +169,6 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 		}
 	}
 
-	var base = padFilesKey(folder.fsName);
 	var k;
 
 	for (k = 0; k < order.length; k++) {

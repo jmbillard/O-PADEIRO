@@ -13,7 +13,8 @@ renomeia.
   - nome repetido na mesma pasta ganha o primeiro sufixo livre (_2, _3…: files-names.js) e o aviso na linha, e é
     renomeado; vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em
     lotes, com a barra de progresso;
-  - o arquivo usado no projeto aberto é religado depois de renomeado;
+  - o arquivo usado no projeto aberto é religado depois de renomeado; a pasta com um arquivo usado dentro também
+    mostra o elo (renomeá-la religa os de dentro) e entra na contagem "em uso";
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);
   - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela; o que não
     voltar fica guardado e o botão continua, para tentar de novo;
@@ -125,7 +126,9 @@ renomeia.
 
 	function reason(it, fin) {
 		var st = fin.state;
-		var used = it.use ? ' · usado no projeto aberto: é religado depois de renomeado' : '';
+		var used = '';
+
+		if (it.use) used = it.kind === 'folder' ? ' · tem arquivo usado no projeto aberto: os de dentro são religados depois de renomear' : ' · usado no projeto aberto: é religado depois de renomeado';
 
 		if (st === 'bad') {
 			if (!target(it).trim()) return 'sem nome';

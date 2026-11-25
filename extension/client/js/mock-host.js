@@ -1780,9 +1780,21 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ dir: 'Sequência fundo', name: 'textura_ouro', ext: 'png', kind: 'seq', sep: '_', pad: 4, frames: '_[0001-0120]', count: 120, use: true },
 				{ dir: 'antigos', name: '_CRT_ONTEM', ext: 'mov', kind: 'file' },
 				{ dir: 'antigos', name: 'passagem glitter', ext: 'mov', kind: 'file' }
-			])).filter(function (it) {
+			]));
+			// a pasta com um arquivo usado dentro (em qualquer nível) fica em uso, como no host
+			var inside = function (folder) {
+				var at = (folder.dir ? folder.dir + '/' : '') + folder.name;
+
+				return list.some(function (x) {
+					return x.use && (x.dir === at || x.dir.indexOf(at + '/') === 0);
+				});
+			};
+
+			list = list.filter(function (it) {
 				return a.sub || !it.dir;
 			}).map(function (it) {
+				if (it.kind === 'folder') it = Object.assign({}, it, { use: inside(it) });
+
 				return Object.assign({ use: false }, it, { plain: fixed(it.name) || (it.name === typed(it.name) ? it.name : clean(it.name)), typed: fixed(it.name) || typed(it.name) });
 			});
 
