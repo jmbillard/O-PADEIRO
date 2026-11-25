@@ -19,8 +19,8 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | :---: | --- | --- | --- |
 | <img src="docs/images/icons/fill.png" width="40" alt="preencher"> | **Preencher** (gaveta **Templates**) | abre **[A FORMA](docs/templates.md)**: preencher um template e criar a fila de render | |
 | <img src="docs/images/icons/duplicate.png" width="40" alt="duplicar"> | **Duplicar** (gaveta **Templates**) | abre **[A FORMINHA](docs/templates.md#a-forminha)**: duplicar a comp aberta e preencher os layers de texto selecionados, sem template | |
-| <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[A FORMA · criar](docs/criador.md)**: criar um template a partir da comp aberta | |
-| <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Iniciar / Alterar** (gaveta **Projeto**) | abre **[A CLAQUETE](docs/projeto.md)**: **Iniciar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **A CLAQUETE** salva o projeto na pasta dele |
+| <img src="docs/images/icons/template-new.png" width="40" alt="criar template"> | **Criar** (gaveta **Templates**) | abre **[O CONFEITEIRO](docs/criador.md)**: criar um template a partir da comp aberta | |
+| <img src="docs/images/icons/form.png" width="40" alt="criar ou alterar"> | **Iniciar / Alterar** (gaveta **Projeto**) | abre **[O PROJETISTA](docs/projeto.md)**: **Iniciar** o projeto pela atração ou, quando o projeto já tem os dados do padeiro, **Alterar** | **O PROJETISTA** salva o projeto na pasta dele |
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
 | <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos e os que faltam |
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
@@ -38,8 +38,8 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | --- | --- | --- |
 | a barra | **O PADEIRO** | as ferramentas e os atalhos para as janelas ([abaixo](#-a-barra-principal)) |
 | 📄 [A FORMA](docs/templates.md) | **A FORMA** | os templates: buscar, selecionar e preencher, e criar a fila de render |
-| ✨ [A FORMA · criar](docs/criador.md) | **A FORMA · criar** | o criador de templates: transformar a comp aberta em um novo template |
-| 🎬 [A CLAQUETE](docs/projeto.md) | **A CLAQUETE** | o projeto: acha a pasta da atração, cria a estrutura, salva o `.aep` e guarda quem criou e quem salvou |
+| ✨ [O CONFEITEIRO](docs/criador.md) | **O CONFEITEIRO** | o criador de templates: transformar a comp aberta em um novo template |
+| 🎬 [O PROJETISTA](docs/projeto.md) | **O PROJETISTA** | o projeto: acha a pasta da atração, cria a estrutura, salva o `.aep` e guarda quem criou e quem salvou |
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
 | 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
@@ -50,21 +50,23 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
 | 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
 
-**tamanhos das janelas** (do manifest: valem depois de rodar o instalador de novo). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo.
+**tamanhos das janelas** (do manifest). o tamanho padrão de cada janela é o recomendado para ela: o After abre com ele quando não há um tamanho guardado (a primeira vez depois de instalar; as janelas que mudaram de id, como O PROJETISTA e O CONFEITEIRO, voltam a ele depois do instalador). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo. as checagens de interface (`extension/scripts/check-*.js`) olham cada janela neste tamanho padrão.
 
-| janela | abre com | mínimo |
+| janela | abre com (o padrão) | mínimo |
 | --- | --- | --- |
 | a barra | 800 × 84 | 86 × 56 (o After Effects não deixa um painel mais estreito que 86) |
-| Templates | 1100 × 1160 | 340 × 480 (uma coluna, com o rodapé preso) |
-| Criar template | 1260 × 960 | 1150 × 820 |
-| Projeto | 440 × 780 | 380 × 580 |
-| Configuração | 940 × 800 | 940 × 700 |
-| Fontes | 460 × 520 | 380 × 420 |
-| Coletar | 460 × 620 | 380 × 440 |
-| Etiquetas | 520 × 680 | 440 × 640 |
-| Versões | 560 × 580 | 420 × 300 |
-| Buscar | 720 × 280 | 420 × 150 |
-| Caminhos | 800 × 190 | 420 × 190 |
+| Templates (A FORMA) | 1100 × 1160 | 340 × 480 (uma coluna, com o rodapé preso) |
+| Criar template (O CONFEITEIRO) | 1260 × 960 | 1150 × 820 |
+| Projeto (O PROJETISTA) | 440 × 840 | 380 × 580 |
+| Configuração (O PRODUTOR) | 940 × 880 | 940 × 700 |
+| Fontes (O TIPÓGRAFO) | 460 × 520 | 380 × 420 |
+| Coletar (O CATADOR) | 460 × 620 | 380 × 440 |
+| Etiquetas (O CONTRARREGRA) | 520 × 680 | 440 × 640 |
+| Arquivos (O ARQUIVISTA) | 720 × 720 | 480 × 420 |
+| Duplicar (A FORMINHA) | 460 × 600 | 360 × 380 |
+| Versões (O VERSIONADOR) | 560 × 580 | 420 × 300 |
+| Buscar (O ACESSORISTA) | 720 × 280 | 420 × 150 |
+| Caminhos (O ADAPTADOR) | 800 × 190 | 420 × 190 |
 
 cada janela tem a sua documentação, também aberta pelo **⋯ > ajuda / documentação** da própria janela.
 
@@ -74,7 +76,7 @@ todas as janelas falam a mesma língua: o **degradê** à esquerda, com as lista
 
 <table><tr>
 <td width="34%"><a href="docs/templates.md"><img src="docs/images/forninho-preencher.webp" alt="A FORMA"></a><p align="center"><b>A FORMA</b></p></td>
-<td width="33%"><a href="docs/criador.md"><img src="docs/images/forma.webp" alt="A FORMA"></a><p align="center"><b>A FORMA</b></p></td>
+<td width="33%"><a href="docs/criador.md"><img src="docs/images/forma.webp" alt="O CONFEITEIRO"></a><p align="center"><b>O CONFEITEIRO</b></p></td>
 <td width="33%"><a href="docs/producoes.md"><img src="docs/images/produtor.webp" alt="O PRODUTOR"></a><p align="center"><b>O PRODUTOR</b></p></td>
 </tr></table>
 
@@ -118,7 +120,8 @@ requer After Effects **2022 (22.0)** ou mais novo, no macOS ou no Windows.
 > • **macOS, pasta em Documentos, Mesa ou Downloads** → o sistema protege essas pastas: o After abre o instalador que você escolheu, mas não enxerga a pasta `extension/` ao lado dele (a checagem falha mesmo com a pasta lá). libere em `Ajustes do Sistema` > `Privacidade e Segurança` > `Arquivos e Pastas` > `After Effects`, ou ponha a pasta do padeiro fora delas (na pasta do usuário, por exemplo). a mesma permissão vale para o padeiro rodar depois de instalado: o código é lido dessa pasta.\
 > • instale sempre **a partir da pasta do padeiro na rede**: o instalador grava onde está a lista de produções compartilhada, e é ela que mantém todo mundo com a lista mais atual.\
 > • o **código do padeiro fica na rede**: o computador recebe só um carregador, que abre os painéis direto da pasta do padeiro. por isso, **para atualizar, basta fechar e abrir o painel de novo** depois que os arquivos da rede forem trocados.\
-> • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, por exemplo). o mesmo instalador também **remove** a extensão.\
+> • o instalador só precisa rodar de novo quando a lista de painéis mudar (um painel novo, ou um id que mudou de nome). o mesmo instalador também **remove** a extensão.\
+> • **janelas que mudaram de nome** → a janela de projeto agora é **O PROJETISTA** e o criador de templates, **O CONFEITEIRO**; elas e O CATADOR (a janela do coletar) têm ids novos. rode o instalador de novo: ele tira as janelas com os ids antigos (o menu não fica com nenhuma delas) e apaga o que o After guardava delas; na primeira vez, cada janela abre no tamanho padrão ([os tamanhos](#-a-turma)). até rodar o instalador, os botões da barra que abrem essas janelas não abrem nada.\
 > • **janelas antigas duplicadas** → a cada instalação, o instalador apaga e grava de novo a pasta da extensão e também remove **outras cópias do padeiro** que encontrar nas pastas de extensões (a do usuário e a do sistema): as das primeiras versões beta, uma pasta copiada à mão ou um link de teste. ele reconhece pelo manifest, não pelo nome da pasta. se uma delas não puder ser apagada (a pasta do sistema pede permissão de administrador), o caminho aparece no fim da instalação para apagar à mão.\
 > • sem acesso à pasta do padeiro na rede, os painéis avisam e tentam de novo sozinhos.\
 > • o instalador roda dentro do After Effects, então o macOS não bloqueia (como acontece com scripts abertos pelo Finder).\
@@ -172,8 +175,8 @@ O ETIQUETADOR
 
 **Templates**, **Projeto** e **Organização** são gavetas, e por isso têm um **contorno fino** em volta do botão (as ferramentas soltas não têm): o `◖` abre, no lugar do botão, um contorno fino com as ferramentas dela (na barra vertical, abre para baixo). uma aberta por vez. o `◗` faz a **primeira ferramenta** da gaveta, sem abrir (o atalho de antes das gavetas); a dica marca qual é. a ordem de dentro e quais aparecem ficam na aba **layout**.
 
-- **Templates** → **Preencher** ([A FORMA](docs/templates.md)), **Duplicar** ([A FORMINHA](docs/templates.md#a-forminha)) e **Criar** ([A FORMA · criar](docs/criador.md)), cada um num botão.
-- **Projeto** → **Iniciar / Alterar** ([A CLAQUETE](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
+- **Templates** → **Preencher** ([A FORMA](docs/templates.md)), **Duplicar** ([A FORMINHA](docs/templates.md#a-forminha)) e **Criar** ([O CONFEITEIRO](docs/criador.md)), cada um num botão.
+- **Projeto** → **Iniciar / Alterar** ([O PROJETISTA](docs/projeto.md)), **Fontes** ([O TIPÓGRAFO](docs/fontes.md)) **Coletar** ([O CATADOR](#coletar)) e **Render** (O FORNO), cada uma com os seus dois cliques. o nome **Criar** vira **Alterar** quando o projeto aberto já tem os dados do padeiro.
 - **Organização** → **Renomear** (O ETIQUETADOR), **Organizar** (O CONTRARREGRA) e **Arquivos** ([O ARQUIVISTA](#arquivos)), cada uma com os seus dois cliques.
 - **a gaveta lembrada** → a que você deixou aberta volta aberta ao reabrir o painel (neste computador). um duplo clique no botão só abre: o segundo clique, de reflexo, não recolhe.
 - **o puxador** → no começo da gaveta, o ícone dela parado (a claquete aberta, as folhas dos templates separadas, os blocos encaixados); com o mouse em cima, vira a seta de recolher. a gaveta também fecha com um clique fora ou `Esc`.
@@ -400,9 +403,9 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 | --- | --- |
 | [🧩 instalação](#-instalação) | o instalador: checagem, instalar / atualizar e remover |
 | [📄 A FORMA](docs/templates.md) | templates: buscar, fixados e recentes, preview, fontes, input, fila de render e editor de config |
-| [✨ A FORMA](docs/criador.md) | criar template: formulário, nomenclatura, layers editáveis e arquivo de configuração |
+| [✨ O CONFEITEIRO](docs/criador.md) | criar template: formulário, nomenclatura, layers editáveis e arquivo de configuração |
 | [🔤 O TIPÓGRAFO](docs/fontes.md) | fontes: banco de fontes, o botão fontes e a janela de fontes do projeto |
-| [🎬 A CLAQUETE](docs/projeto.md) | projeto: projeto novo pela atração (tipos de projeto em chips, ano do projeto), estrutura de pastas, editor e os dados de quem criou e salvou |
+| [🎬 O PROJETISTA](docs/projeto.md) | projeto: projeto novo pela atração (tipos de projeto em chips, ano do projeto), estrutura de pastas, editor e os dados de quem criou e salvou |
 | [🗂️ O PRODUTOR](docs/producoes.md) | configuração: produções, links da barra, logs, drives da rede, renomear, organizar, coletar, busca, projeto e aparência (compartilhados pela equipe) |
 | [📦 O CATADOR](#coletar) | coletar: os arquivos do projeto e os que faltam |
 | [🔎 O ACESSORISTA](docs/acessorista.md) | busca de caminhos e busca nos textos do projeto |
@@ -512,7 +515,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
 | `#PAD_117` | arquivos: a lista (.csv) não pôde ser gravada no lugar escolhido |
 | `#PAD_118` | arquivos: a pasta escolhida no ARQUIVISTA não foi encontrada |
-| `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
+| `#PAD_112` | projeto: o `.aep` marcado na lista d'O PROJETISTA não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |
 | `#PAD_099` | erro inesperado: anote a mensagem e avise a equipe |

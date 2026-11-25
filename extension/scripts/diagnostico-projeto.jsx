@@ -56,7 +56,7 @@ da barra pergunta), num campo de texto para copiar. Não muda nada no projeto.
 	line('projectStatus de novo', function () {
 		return json(PADX.projectStatus());
 	});
-	line('projectCurrent (o que a claquete recebe)', function () {
+	line('projectCurrent (o que O PROJETISTA recebe)', function () {
 		var c = PADX.projectCurrent();
 
 		return json({ created: c.created, outside: c.outside, atracao: c.atracao, oQueE: c.oQueE, root: c.root, file: c.file });

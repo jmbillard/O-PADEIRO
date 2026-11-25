@@ -68,7 +68,7 @@ Buscar `EMP`, `em ponto` ou `jornais` encontra a pasta de Em Ponto. A última ca
 
 ### Projeto (PROJECT)
 
-A aba *project* do script vira a janela [PROJETO](../../projeto.md):
+A aba *project* do script vira a [janela de projeto](../../projeto.md):
 
 - **ID e nome do projeto** nos mesmos campos do XMP (`dc:identifier`, `dc:title`): projetos feitos na barra antiga abrem com os dados.
 - **Retrancas**: as 33 do `promoSubPath`, pelas 3 primeiras letras do ID (`EMP123456` → `JORNAIS/em ponto`), dentro de `…/GLOBONEWS/PROMO`.
@@ -101,7 +101,7 @@ Os volumes dos dois servidores do script: `cdesign` (egcdesign01) e `Arte_Ilha` 
 | `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | — | **fora**: específico demais da GNEWS; o renomear do padeiro segue os tipos de peça |
 | apoio + data/hora do end page no nome (`txt_apoio`, `txt_data e horario`) | — | **falta** |
 | hard news: `GNEWS projeto n - ID` | — | **falta** |
-| collect para `projPath/<grupo>/<retranca>/<projeto>` | janela PROJETO (salvar) + botão COLETAR | igual (e copia as sequências de imagens) |
+| collect para `projPath/<grupo>/<retranca>/<projeto>` | janela de projeto (salvar) + botão COLETAR | igual (e copia as sequências de imagens) |
 | botão de salvar com clique direito (Desktop) | `⋯ > salvar em outra pasta…` | equivalente |
 | pasta do dia (`DIARIOS/RJ/aaaa/mm_MÊS/dd`) | entrada fixa em `DIARIOS/RJ` | **parcial**: o caminho com a data não é calculado |
 | botões de pastas (shortcuts) | categoria PASTAS DA PROMO na busca | equivalente (links aceitam só http/https) |

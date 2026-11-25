@@ -13,7 +13,7 @@ quadros do trecho usado), cada uma na própria subpasta.
 a limpeza ficam lá):
   folders        → a árvore, dentro da pasta do projeto: [{ name, parent, contents: [...] }]
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
-                   'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de
+                   'projeto' marca a pasta do .aep: a janela de projeto salva ali e o coletar usa a pasta de
                    cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
 Sem 'COLLECT' no arquivo: a estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS).
 
@@ -610,7 +610,7 @@ function padCollectFinish(target, settings, res) {
 	var sub = padCollectFolderPath(settings, 'projeto');
 
 	// sem arquivo e já existe um .aep com esse nome na pasta (o original do projeto convertido): não salva por cima;
-	// os arquivos ficam coletados e o projeto continua sem salvar (a claquete salva com outro nome)
+	// os arquivos ficam coletados e o projeto continua sem salvar (O PROJETISTA salva com outro nome)
 	var saved = true;
 
 	if (file) {

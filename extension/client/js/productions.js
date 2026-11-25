@@ -2101,7 +2101,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rowHint: function (f, depth) {
 			var notes = [];
 
-			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: a janela projeto salva aqui');
+			if (f.contents.indexOf('projeto') >= 0) notes.push('o .aep: O PROJETISTA salva aqui');
 			if (f.contents.indexOf('sequencias') >= 0) notes.push('uma subpasta por sequência');
 			if (f.contents.indexOf('saidas') >= 0) notes.push('a migração traz os renders para cá');
 			if (f.contents.indexOf('externos') >= 0) notes.push('a migração traz para cá o que o projeto não usa');
@@ -2151,8 +2151,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TOOL_INFO = {
 		preencher: ['Preencher', 'A FORMA: preencher um template e criar a fila de render', 'fill'],
 		duplicar: ['Duplicar', 'A FORMINHA: duplicar a comp aberta e preencher os layers de texto selecionados', 'duplicate'],
-		'criar-template': ['Criar template', 'A FORMA: criar um template a partir da comp aberta', 'template-new'],
-		projeto: ['Iniciar / Alterar', 'A CLAQUETE: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
+		'criar-template': ['Criar template', 'O CONFEITEIRO: criar um template a partir da comp aberta', 'template-new'],
+		projeto: ['Iniciar / Alterar', 'O PROJETISTA: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
@@ -3620,7 +3620,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Projeto (janela PROJETO): as categorias da atração nova
+	   Projeto (janela de projeto): as categorias da atração nova
 	   ========================================================= */
 
 	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
@@ -4383,12 +4383,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 		}).observe(document.body, { childList: true, subtree: true });
 
-		// a janela não tem mais layout compacto (manifest: 940 × 800, mínimo 940 × 600): quem já tinha a
-		// janela menor ganha o tamanho novo uma vez
+		// a janela não tem mais layout compacto (manifest: 940 × 880, o tamanho padrão; mínimo 940 × 700): quem já
+		// tinha a janela menor ganha o tamanho padrão uma vez
 		try {
 			if (PAD_BRIDGE.inCep() && !localStorage.getItem('pad.productions.size940')) {
 				localStorage.setItem('pad.productions.size940', '1');
-				if (window.innerWidth < 940 || window.innerHeight < 800) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, 940), Math.max(window.innerHeight, 800));
+				if (window.innerWidth < 940 || window.innerHeight < 880) PAD_BRIDGE.resizeWindow(Math.max(window.innerWidth, 940), Math.max(window.innerHeight, 880));
 			}
 		} catch (err) { }
 		bindLog();

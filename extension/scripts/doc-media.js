@@ -250,14 +250,14 @@ const SHOTS = {
 	'forninho-preencher': { w: 1080, h: 860, url: 'index.html', init: DOC_PREVIEWS, run: selectTemplate, marks: [
 		{ sel: '.tree-item.is-selected .tree-row' }, { sel: '#preview-card' }, { sel: '#input' }, { sel: '#tip' }, { sel: '#btn-import', round: true }, { sel: '#btn-output', round: true }, { sel: '#btn-fill' }
 	] },
-	forma: { w: 1180, h: 780, url: 'maker.html', marks: [
+	forma: { w: 1180, h: 780, url: 'confeiteiro.html', marks: [
 		{ sel: '#checklist' }, { sel: '#atr-picker' }, { sel: '#f-example' }, { sel: '#name-preview' }, { sel: '#preview-card' }, { sel: '#fonts' }, { sel: '#layers' }, { sel: '#fx-card' }, { sel: '#btn-test' }, { sel: '#btn-save' }
 	] },
-	'claquete-atracao': { w: 480, h: 640, url: 'project.html', async run(p) {
+	'claquete-atracao': { w: 480, h: 640, url: 'projetista.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
 	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .cat-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
-	'claquete-editor': { w: 480, h: 520, url: 'project.html?mock=created', marks: [
+	'claquete-editor': { w: 480, h: 520, url: 'projetista.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
 	tipografo: { w: 480, h: 760, url: 'fonts.html', init: DOC_FONTS, async run(p) {
@@ -265,7 +265,7 @@ const SHOTS = {
 		await p.evaluate(() => { const l = document.getElementById('fw-list'); if (l) l.scrollTop = 0; window.scrollTo(0, 0); });
 		await p.waitForTimeout(300);
 	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
-	catador: { w: 540, h: 760, url: 'collect.html', marks: [
+	catador: { w: 540, h: 760, url: 'catador.html', marks: [
 		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
@@ -283,7 +283,7 @@ const SHOTS = {
 	}, marks: [
 		{ sel: '.fl-path' }, { sel: '.fl-opts', pad: 3 }, { sel: '.fl-tools', pad: 3 }, { sel: '.fl-row:nth-of-type(3) .fl-new-wrap', pad: 2 }, { sel: '.fl-row.is-bad .fl-st', round: true }, { sel: '#fl-undo', round: true }, { sel: '#fl-go' }
 	] },
-	'catador-migracao': { w: 780, h: 660, url: 'collect.html', async run(p) {
+	'catador-migracao': { w: 780, h: 660, url: 'catador.html', async run(p) {
 		await p.click('#app-menu summary');
 		await p.waitForTimeout(300);
 		await p.click('[data-action="migrate"]');
@@ -371,8 +371,8 @@ const SCENES = {
 		await hover(p, '#btn-fill', 1200);
 	} },
 
-	// A CLAQUETE: a atração pela busca, o que é e o nome do .aep
-	claquete: { w: 480, h: 680, url: 'project.html', async run(p) {
+	// O PROJETISTA: a atração pela busca, o que é e o nome do .aep
+	claquete: { w: 480, h: 680, url: 'projetista.html', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
@@ -388,8 +388,8 @@ const SCENES = {
 		await hover(p, '#criar-go', 900);
 	} },
 
-	// A CLAQUETE, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
-	'claquete-nova': { w: 480, h: 680, url: 'project.html', async run(p) {
+	// O PROJETISTA, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
+	'claquete-nova': { w: 480, h: 680, url: 'projetista.html', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
 		await tap(p, '#claq', { wait: 200 });
@@ -404,8 +404,8 @@ const SCENES = {
 		await hover(p, '#criar-go', 900);
 	} },
 
-	// O criador de templates: captura a comp, puxa os layers, dá o nome e salva
-	criador: { w: 1000, h: 700, url: 'maker.html', fps: 12, quality: 45, async run(p) {
+	// O CONFEITEIRO, o criador de templates: captura a comp, puxa os layers, dá o nome e salva
+	criador: { w: 1000, h: 700, url: 'confeiteiro.html', fps: 12, quality: 45, async run(p) {
 		mouse = [960, 660];
 		await p.waitForTimeout(700);
 		await tap(p, '#btn-capture', { wait: 1200 });
@@ -418,8 +418,8 @@ const SCENES = {
 		await hover(p, '#btn-save', 1100);
 	} },
 
-	// A CLAQUETE, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
-	dados: { w: 480, h: 680, url: 'project.html?mock=created', async run(p) {
+	// O PROJETISTA, os dados do projeto: o botão redondo do editor abre quem criou, quem salvou e as pastas
+	dados: { w: 480, h: 680, url: 'projetista.html?mock=created', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(900);
 		await hover(p, '#ed-editors', 900);
@@ -452,7 +452,7 @@ const SCENES = {
 	} },
 
 	// O CATADOR (janela): resolve os faltando e coleta (as setas sobem)
-	catador: { w: 540, h: 640, url: 'collect.html', async run(p) {
+	catador: { w: 540, h: 640, url: 'catador.html', async run(p) {
 		mouse = [500, 600];
 		await p.waitForTimeout(900);
 		await hover(p, '.cw-row .fw-head', 500);

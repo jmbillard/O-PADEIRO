@@ -6,7 +6,7 @@
 var PS_INDEX_DEFAULT_URL = PAD_CONFIGURACAO.padrao('buscaDeCaminhos').url; // o padrão da tabela de seções (regras/configuracao.js)
 var PS_INDEX_URL = PS_INDEX_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
 
-// Os filmes criados na base nos últimos dias (a claquete mostra com o campo vazio e marca os que ainda não têm
+// Os filmes criados na base nos últimos dias (O PROJETISTA mostra com o campo vazio e marca os que ainda não têm
 // pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
 var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
 

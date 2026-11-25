@@ -5,7 +5,7 @@
 ---------------------------------------------------------------
 
 Lê as pastas escolhidas e todas as subpastas pelo Node do painel (sem travar o After Effects) e guarda o
-índice neste computador. Usado pelo acessorista (busca), pela janela PROJETO (claquete) e pela configuração
+índice neste computador. Usado pelo acessorista (busca), pela janela de projeto (O PROJETISTA) e pela configuração
 (indexar agora).
 
 Arquivo (indice_local.json, na pasta de dados do usuário):

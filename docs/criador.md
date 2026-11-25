@@ -1,10 +1,10 @@
-# ✨ A FORMA · criar template
+# ✨ O CONFEITEIRO · criar template
 
 [← O PADEIRO](../README.md)
 
-o painel **A FORMA**: transforma a comp aberta em um novo template do padeiro.
+a janela **O CONFEITEIRO**: transforma a comp aberta em um novo template do padeiro.
 
-<p align="center"><img src="images/anim/criador.webp" alt="A FORMA criando um template: a comp capturada, os layers editáveis e o salvar" width="900"></p>
+<p align="center"><img src="images/anim/criador.webp" alt="O CONFEITEIRO criando um template: a comp capturada, os layers editáveis e o salvar" width="900"></p>
 
 um template do padeiro é um conjunto de arquivos:
 
@@ -13,7 +13,7 @@ um template do padeiro é um conjunto de arquivos:
 - `<nome>_preview.png` → a imagem de preview;
 - a pasta `FONTS` → os arquivos das fontes usadas no projeto.
 
-![A FORMA, com as partes numeradas](images/forma.webp)
+![O CONFEITEIRO, com as partes numeradas](images/forma.webp)
 
 | | | |
 | :---: | --- | --- |
@@ -56,11 +56,11 @@ ao salvar, o padeiro:
 3. grava o `_config.json` e o `_preview.png` ao lado do projeto.
 4. copia as fontes usadas para a pasta `FONTS`.
 5. abre a pasta do template, depois que você escolhe gerar ou não o preview em vídeo (no aviso de template salvo: '*gerar preview .mp4*', '*agora não*' ou o ×), para não interromper o processo.
-6. limpa o formulário e fecha A FORMA: o próximo template começa do zero.
+6. limpa o formulário e fecha O CONFEITEIRO: o próximo template começa do zero.
 
 ### formulário e nomenclatura
 
-- **atração** (obrigatória) → o template é dessa atração. digitar busca as atrações (no índice do webhook ou no índice local, como a [janela projeto](projeto.md)) e mostra os cartões logo abaixo; a escolhida fica com o nome oficial e, se tiver pasta de output, ela entra nas '*pastas de output*' (trocar de atração troca essa pasta). não achou? **nova atração**: o nome e a categoria (aba PROJETO da configuração) abrem embaixo.
+- **atração** (obrigatória) → o template é dessa atração. digitar busca as atrações (no índice do webhook ou no índice local, como a [janela de projeto](projeto.md)) e mostra os cartões logo abaixo; a escolhida fica com o nome oficial e, se tiver pasta de output, ela entra nas '*pastas de output*' (trocar de atração troca essa pasta). não achou? **nova atração**: o nome e a categoria (aba PROJETO da configuração) abrem embaixo.
 - **o que é** → o nome do template (ex: `SERVIÇO`, `CONVIDADO`, `AESP`); identifica o template no log e entra no nome do arquivo, depois do prefixo. embaixo, o template por inteiro: `DOMINGÃO COM HUCK · SERVIÇO`.
 - **exemplo de preenchimento** → idealmente, o texto usado no preview. o ícone de importar, no canto do campo, puxa dos layers: monta o exemplo com o texto atual dos layers editáveis.
 - **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.

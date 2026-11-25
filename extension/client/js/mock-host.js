@@ -1133,7 +1133,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { opened: 1, missing: [] };
 		},
 
-		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
+		// janela de projeto (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
 		projectCategories: function () {
 			return {
 				categories: mockLer('tiposDeProjeto').categories.map(function (c) {
@@ -1205,7 +1205,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { file: window.PAD_MOCK_SAVED, folder: a.path || info.target };
 		},
 
-		// janela PROJETO em etapas (?mock=created: projeto já criado)
+		// janela de projeto em etapas (?mock=created: projeto já criado)
 		// ?mock=saved: projeto salvo sem os dados do padeiro
 		projectStatus: function () {
 			if (window.PAD_MOCK_CUR || mode === 'created') return { state: 'ok' };
@@ -1344,7 +1344,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 				return c ? { claq: c.claq, red: c.red || '', ed: c.ed || '', card: c.card, at: c.at, more: 0 } : null;
 			};
-			// cada palavra digitada é o começo de uma palavra do texto (como a claquete procura os cards)
+			// cada palavra digitada é o começo de uma palavra do texto (como O PROJETISTA procura os cards)
 			var hits = function (text) {
 				var hw = key(text).split(' ');
 

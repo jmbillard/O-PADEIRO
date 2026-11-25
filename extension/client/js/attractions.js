@@ -1,7 +1,7 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> ATRAÇÕES — a busca e a atração nova (janela PROJETO e criador de templates)
+> ATRAÇÕES — a busca e a atração nova (O PROJETISTA e O CONFEITEIRO)
 ---------------------------------------------------------------
 
 A busca das atrações (o índice do webhook, a mesma cópia do acessorista, ou o índice local da configuração >
@@ -40,7 +40,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	var SEARCH_INDEX = window.PAD_SEARCH_INDEX; // qual índice, a cópia e o download (js/search-index.js)
 	// copyNote: no modo local, a linha com a data da cópia em uso ('' fora dele)
 	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [], copyNote: '' };
-	var CARD_DAYS = 7; // os cards do Trello que viram sugestão na claquete: os que entraram nos últimos 7 dias
+	var CARD_DAYS = 7; // os cards do Trello que viram sugestão n'O PROJETISTA: os que entraram nos últimos 7 dias
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
 	function nodeFs() {
@@ -255,7 +255,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}).concat((data.filmes || []).filter(function (f) {
 			return f && f.name;
 		}).map(function (f) {
-			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela projeto)
+			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela de projeto)
 			return { name: f.name, cat: 'FILME', year: f.year ? String(f.year) : '', isFilm: true, path: '', out: full(f.out), depth: 1, keys: [wordKey(f.name)].filter(function (k) {
 				return k.f;
 			}) };
@@ -286,7 +286,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	/* ---------------------------------------------------------------
-	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). a claquete
+	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). O PROJETISTA
 	   mostra com o campo vazio, a produzir primeiro. baixados uma vez por janela aberta, pelo Node do painel (sem
 	   travar o After); sem o Node (navegador de teste), o host responde.
 	   → [{ name, year, exib, sessao, poster }]
@@ -386,10 +386,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	/* ---------------------------------------------------------------
-	   os cards do Trello: o grupo NO TRELLO da claquete (um card por linha, com o designer e o status) e a
+	   os cards do Trello: o grupo NO TRELLO d'O PROJETISTA (um card por linha, com o designer e o status) e a
 	   referência para abrir o projeto da atração. só os cards que entraram nos últimos 7 dias ('at', a data) e não
-	   estão finalizados ('fim'). o índice de antes (sem 'at') não sugere nada. os de filme ('fil') vêm marcados: a
-	   claquete liga cada um ao filme pelo link do card (o 'trello' do webhook dos filmes).
+	   estão finalizados ('fim'). o índice de antes (sem 'at') não sugere nada. os de filme ('fil') vêm marcados: O
+	   PROJETISTA liga cada um ao filme pelo link do card (o 'trello' do webhook dos filmes).
 	   → [{ claq, red, ed, des (o designer), st (o status: PRODUZINDO, EM APROVAÇÃO…), card, at, time, atr, fil, words }]
 	   --------------------------------------------------------------- */
 
@@ -423,7 +423,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		if (!hits.length) return null;
 
-		// all: todos os cards dela (o mais novo primeiro): a claquete mostra um por linha (o prêmio com um card por categoria)
+		// all: todos os cards dela (o mais novo primeiro): O PROJETISTA mostra um por linha (o prêmio com um card por categoria)
 		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1, all: hits.map(function (h) {
 			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at };
 		}) };
@@ -472,7 +472,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	// → { claquete, matches: [{ name, category, path, out, display, score }], cards } (o mesmo formato do host). cards:
-	// os cards recentes do Trello (todos: a claquete escolhe os que batem com o digitado, js/project.js)
+	// os cards recentes do Trello (todos: O PROJETISTA escolhe os que batem com o digitado, js/projetista.js)
 	async function findAttractions(claq) {
 		var list = await candidates();
 
@@ -558,11 +558,11 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	}
 
 	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
-	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido na claquete) {categoria}
+	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido n'O PROJETISTA) {categoria}
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
-	// o ano do projeto: o de agora, ou o escolhido na claquete (o BBB do ano que vem começa antes)
+	// o ano do projeto: o de agora, ou o escolhido n'O PROJETISTA (o BBB do ano que vem começa antes)
 	var yearOverride = 0;
 
 	function projectYear() {
@@ -696,7 +696,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	};
 	var LIST_MAX = 4;
 	var LOOKUP_MS = 120;
-	var PREF_BASE = 'pad.project.base'; // a última categoria de uma atração nova (a mesma da janela PROJETO)
+	var PREF_BASE = 'pad.project.base'; // a última categoria de uma atração nova (a mesma da janela de projeto)
 
 	function el(tag, className, text) {
 		var node = document.createElement(tag);

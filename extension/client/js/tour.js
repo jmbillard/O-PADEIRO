@@ -48,9 +48,9 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 		// as ferramentas de dentro das gavetas (Templates e Projeto): o tour abre a gaveta de cada uma
 		preencher: { title: 'Preencher', l: ['A FORMA', 'preenche um template e cria a fila de render'] },
 		duplicar: { title: 'Duplicar', l: ['A FORMINHA', 'duplica a comp aberta e preenche os layers de texto selecionados'] },
-		'criar-template': { title: 'Criar template', l: ['A FORMA', 'cria um template a partir da comp aberta'] },
+		'criar-template': { title: 'Criar template', l: ['O CONFEITEIRO', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
-		projeto: { title: 'Iniciar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
+		projeto: { title: 'Iniciar / Alterar', l: ['O PROJETISTA', 'projeto novo pela atração, ou altera os dados do atual'], r: ['O PROJETISTA', 'salva o projeto na pasta dele'] },
 		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos e resolve os que faltam'] },
 		render: { title: 'Render', l: ['O FORNO', 'põe o render final das comps na fila, na pasta de output'], r: ['O FORNO', 'põe um preview na fila, na pasta de previews'] },
 		importar: { title: 'Importar AEP', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },

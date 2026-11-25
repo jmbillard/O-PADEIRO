@@ -85,19 +85,19 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 
 ## 📍 projeto
 
-a aba **projeto** define os **tipos de projeto** da atração nova: os **chips** que aparecem embaixo da busca da [janela PROJETO](projeto.md#-projeto-novo-numa-tela).
+a aba **projeto** define os **tipos de projeto** da atração nova: os **chips** que aparecem embaixo da busca d'[O PROJETISTA](projeto.md#-projeto-novo-numa-tela).
 
 - **tipos de projeto** → cada tipo num cartão:
   - **NOME** → o nome, com o **ícone** dentro do campo (clique para trocar); a **lixeira**, fora do campo, exclui o tipo;
   - **PROJETO** → o caminho da pasta da atração nova, com tokens;
-  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. **espaços a mais não passam**: em todo caminho de output (aqui, na claquete e nas pastas de output dos templates), dois ou mais espaços seguidos viram um e os espaços em volta das barras e nas pontas somem, ao salvar e na hora de usar. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
+  - **OUTPUT** → o caminho da pasta de output dela, com tokens (opcional: sem ele, a janela não propõe a pasta de output). com `{o_que_e}`, a pasta acompanha o que se digita (`…/VTs/{atracao}/{o_que_e}` → `…/VTs/VT REUNIAO/CHAMADA`); sem o que é, esse pedaço some. **espaços a mais não passam**: em todo caminho de output (aqui, n'O PROJETISTA e nas pastas de output dos templates), dois ou mais espaços seguidos viram um e os espaços em volta das barras e nas pontas somem, ao salvar e na hora de usar. o `{atracao}` não é obrigatório em nenhum dos dois caminhos.
 
   embaixo de cada caminho, a prévia; a pastinha escolhe a pasta do tipo (o `/{atracao}` entra no fim). os pontinhos reordenam (a ordem é a dos chips).
 - **tokens** → clique num token para pôr no caminho em foco (onde está o cursor):
 
   | token | vira |
   | --- | --- |
-  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, o tipo é a própria atração (MOOD MENSAL: digitar *mood* na claquete já leva para a pasta do mês) |
+  | `{atracao}` | o nome da atração nova, sem acentos, em maiúsculas. sem ele, o tipo é a própria atração (MOOD MENSAL: digitar *mood* n'O PROJETISTA já leva para a pasta do mês) |
   | `{ano}` | o ano atual (`2026`) |
   | `{mes}` | o mês atual (`01` a `12`) |
   | `{mes_extenso}` | o mês atual por extenso, em maiúsculas e sem acento (`NOVEMBRO`, `MARCO`) |
@@ -106,13 +106,13 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
   | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
   | `{tipo}` | o nome do tipo de projeto (`{categoria}`, o nome antigo, continua valendo nos caminhos já salvos) |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
-  | `{o_que_e}` | o **o que é**, digitado na claquete depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
+  | `{o_que_e}` | o **o que é**, digitado n'O PROJETISTA depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **arquivo** → opcional: o nome do `.aep` da atração criada pelo tipo, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). com `{o_que_e}`, o o que é entra **no lugar do token**, não no fim: `{o_que_e} DO {atracao}` → `CHAMADA DO VT REUNIAO.aep`. vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todos os tipos (o `.aep` é a atração + o que é).
-- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela PROJETO. o tipo novo começa com a pasta.
-- a ordem na janela PROJETO: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip do tipo; se nenhum serve, **outra pasta…** (livre). sem tipos de projeto na configuração, só o livre.
+- **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela de projeto. o tipo novo começa com a pasta.
+- a ordem na janela de projeto: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip do tipo; se nenhum serve, **outra pasta…** (livre). sem tipos de projeto na configuração, só o livre.
 
 
 **👤 neste computador** (embaixo):
@@ -129,7 +129,7 @@ a aba **projeto** define os **tipos de projeto** da atração nova: os **chips**
 
 ## 📍 coletar
 
-a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela **projeto** salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
+a aba **coletar** define a **estrutura de pastas de cada projeto**: onde o botão **coletar** (na barra) copia os arquivos usados e onde a janela de projeto (**O PROJETISTA**) salva o `.aep`. é uma árvore no mesmo jeito da aba organizar. vem com a estrutura padrão:
 
 ```
 01_PROJETOS        ← o .aep (tipo projeto)
@@ -259,7 +259,7 @@ define onde o padeiro registra cada preenchimento: data, produção, template, q
 
 ### cadastro no banco *(em breve, desligado)*
 
-reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela PROJETO **propõe** o cadastro (o nome, o tipo e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
+reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela de projeto **propõe** o cadastro (o nome, o tipo e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
 
 ### neste computador
 
@@ -329,7 +329,7 @@ a aba **layout** (👤 local) monta a **sua** barra (sem personalização, vale 
 
 a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma ferramenta, só nesta máquina (as opções locais de cada ferramenta ficam na aba dela, embaixo, em **neste computador**):
 
-- **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
+- **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela de projeto](projeto.md).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa na hora a **cópia do último índice baixado** (ou o índice local), sem tentar a rede e mostrando de quando é a cópia.

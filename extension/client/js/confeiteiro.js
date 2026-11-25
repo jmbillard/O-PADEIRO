@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> A FORMA — criar template
+> O CONFEITEIRO — criar template
 ---------------------------------------------------------------
 
 A comp ativa vira a comp principal, os layers
@@ -918,7 +918,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		PAD_UTIL.toast(box, 'finder-toast', 'success', 'template salvo: ' + data.path, 600000);
 
-		// o fim: abre a pasta do template, limpa o formulário e fecha A FORMA (o próximo template começa do zero)
+		// o fim: abre a pasta do template, limpa o formulário e fecha O CONFEITEIRO (o próximo template começa do zero)
 		function openTemplateFolder() {
 			if (opened) return;
 
@@ -1093,7 +1093,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		start();
 	}
 
-	// A FORMA abre grande: as duas colunas inteiras, sem rolar de cara (o tamanho do manifest só vale para quem
+	// O CONFEITEIRO abre grande: as duas colunas inteiras, sem rolar de cara (o tamanho do manifest só vale para quem
 	// reinstalar; aqui vale para todos). nunca maior que a tela, e nunca encolhe quem já abriu maior
 	var OPEN_WIDTH = 1260;
 	var OPEN_HEIGHT = 960;

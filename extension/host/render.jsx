@@ -6,7 +6,7 @@
 
 Um botão da barra, sem janela:
 
-  clique          → o render FINAL: na pasta de output do projeto (a que A CLAQUETE grava), com o nome da comp
+  clique          → o render FINAL: na pasta de output do projeto (a que O PROJETISTA grava), com o nome da comp
   clique direito  → um PREVIEW: na pasta de previews das saídas do projeto (03_SAIDA/PREVIEWS), com a versão no nome
                     (COMP_prev_v01, _v02…: um preview nunca substitui o anterior)
 
@@ -140,7 +140,7 @@ PADX.renderQueue = function (a) {
 		var output = padMetaRead().output;
 
 		if (output) folder = padMountedPath(padPath(output));
-		else warnings.push('o projeto não tem pasta de output (A CLAQUETE grava): o render vai para o output local.');
+		else warnings.push('o projeto não tem pasta de output (O PROJETISTA grava): o render vai para o output local.');
 	}
 
 	// a pasta que ainda não existe é criada (na rede, só dentro de um volume montado de verdade)

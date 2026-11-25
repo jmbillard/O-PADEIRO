@@ -2,10 +2,10 @@
 /*
 
 ---------------------------------------------------------------
-> projeto (janela PROJETO e aba PROJETO da configuração)
+> projeto (janela de projeto e aba PROJETO da configuração)
 ---------------------------------------------------------------
 
-A janela PROJETO cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
+A janela de projeto (O PROJETISTA) cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
 pastas). O collect dos
 arquivos é do botão COLETAR (collect.jsx).
 
@@ -60,11 +60,11 @@ PADX.projectCategories = function () {
 ---------------------------------------------------------------
 
 Os dados do padeiro ficam num grupo próprio do XMP do projeto (padeiro:), todos texto:
-  atracao    → a atração (LÁ NA MINHA TERRA)                       janela projeto
+  atracao    → a atração (LÁ NA MINHA TERRA)                       janela de projeto
   quadro     → as pastas abaixo da atração (DANÇA DOS FAMOSOS/FINAL), opcional: o .aep é o último nível + o que é
-  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o último nível) + o que é    janela projeto
+  oQueE      → o que é (SERVIÇO): o .aep é a atração (ou o último nível) + o que é    janela de projeto
   designer   → quem fez (JBILLARD)                                   projeto; o template grava se faltar
-  pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela projeto
+  pasta      → a raiz da estrutura (01 PROJETOS, 02 ARQUIVOS…)      janela de projeto
   output     → a pasta de output                                     projeto; o template grava se faltar
   producao   → (não é mais gravado: só nos arquivos de antes) a produção do último template preenchido
   templates  → (não é mais gravado: só nos arquivos de antes) os templates usados, um por linha: nome <tab> pasta
@@ -341,7 +341,7 @@ PADX.projectOpenFolder = function () {
 /*
 
 ---------------------------------------------------------------
-> novo projeto pela claquete (janela PROJETO, numa tela)
+> novo projeto pela claquete (janela de projeto, numa tela)
 ---------------------------------------------------------------
 
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
@@ -756,7 +756,7 @@ function padAepListInto(folder, sub, depth, out) {
 
 		if (/^\./.test(name)) continue;
 
-		// os .aep e os .aet (ext: a lista da claquete mostra os dois; só o .aep do topo conta como nome repetido)
+		// os .aep e os .aet (ext: a lista d'O PROJETISTA mostra os dois; só o .aep do topo conta como nome repetido)
 		if (items[i] instanceof File && /\.ae[pt]$/i.test(name)) {
 			out.push({ name: name.replace(/\.ae[pt]$/i, ''), ext: /\.aet$/i.test(name) ? 'aet' : 'aep', sub: sub, modified: items[i].modified ? items[i].modified.getTime() : 0 });
 		} else if (depth > 0 && items[i] instanceof Folder && !padIsJunkFolder(name)) {
@@ -774,7 +774,7 @@ var PAD_PROJECT_KINDS = ['projeto', 'fontes', 'imagens', 'videos'];
 /*
 
 ---------------------------------------------------------------
-> pastas de um nível (ATRAÇÃO/PASTA/PASTA… e o output na janela projeto)
+> pastas de um nível (ATRAÇÃO/PASTA/PASTA… e o output na janela de projeto)
 ---------------------------------------------------------------
 
 As pastas dentro de uma pasta, lidas na hora, para a lista que abre a cada barra digitada. na pasta de uma atração

@@ -1,7 +1,7 @@
 ﻿/*
 
 ---------------------------------------------------------------
-> PROJETO — um projeto novo pela atração, numa tela, e o editor
+> O PROJETISTA — um projeto novo pela atração, numa tela, e o editor
 ---------------------------------------------------------------
 
 Projeto nunca salvo: uma tela, em três passos.
@@ -2748,7 +2748,7 @@ projetos com o nome certo).
 		if (!has) {
 			var empty = el('div', 'pd-empty');
 
-			empty.appendChild(el('b', null, 'Este projeto ainda não passou pela claquete'));
+			empty.appendChild(el('b', null, 'Este projeto ainda não passou pel\'O PROJETISTA'));
 			empty.appendChild(document.createTextNode('Sem atração, pasta nem output gravados. Volte e salve para dar os dados a ele.'));
 			body.appendChild(empty);
 

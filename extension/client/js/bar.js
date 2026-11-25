@@ -17,11 +17,11 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var FINDER_PANEL_ID = 'com.jmbillard.opadeiro.finder';
 	var CONVERTER_PANEL_ID = 'com.jmbillard.opadeiro.converter';
-	var MAKER_PANEL_ID = 'com.jmbillard.opadeiro.maker';
+	var CONFEITEIRO_PANEL_ID = 'com.jmbillard.opadeiro.confeiteiro';
 	var CONFIG_PANEL_ID = 'com.jmbillard.opadeiro.productions';
-	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
+	var PROJETISTA_PANEL_ID = 'com.jmbillard.opadeiro.projetista';
 	var FONTS_PANEL_ID = 'com.jmbillard.opadeiro.fonts';
-	var COLLECT_PANEL_ID = 'com.jmbillard.opadeiro.collect';
+	var CATADOR_PANEL_ID = 'com.jmbillard.opadeiro.catador';
 	var VERSIONER_PANEL_ID = 'com.jmbillard.opadeiro.versioner';
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
 	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
@@ -372,10 +372,10 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(LIGHT_PANEL_ID);
 		},
 
-		// criador de templates: precisa da comp principal aberta (a comp ativa)
+		// O CONFEITEIRO, o criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
 			await call('makerReady');
-			PAD_BRIDGE.openPanel(MAKER_PANEL_ID);
+			PAD_BRIDGE.openPanel(CONFEITEIRO_PANEL_ID);
 		},
 
 		// O ACESSORISTA, a busca de caminhos (esquerdo, aba principal), e a busca em layers de texto (direito):
@@ -437,9 +437,9 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			}, 300);
 		},
 
-		// a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
+		// O CATADOR, a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
 		openCollect: function () {
-			PAD_BRIDGE.openPanel(COLLECT_PANEL_ID);
+			PAD_BRIDGE.openPanel(CATADOR_PANEL_ID);
 		},
 
 		// O VERSIONADOR, clique esquerdo: importa um projeto do After (.aep / .aet) de qualquer versão no projeto aberto;
@@ -466,17 +466,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		},
 
 
-		// janela do projeto: um projeto novo pela atração, ou o editor do atual
+		// O PROJETISTA, a janela de projeto: um projeto novo pela atração, ou o editor do atual
 		project: function () {
-			PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+			PAD_BRIDGE.openPanel(PROJETISTA_PANEL_ID);
 		},
 
-		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre a janela PROJETO
+		// salvar: projeto com os dados do padeiro (na pasta dele) salva na hora; senão abre O PROJETISTA
 		saveProject: async function () {
 			var cur = await call('projectCurrent');
 
 			if (!cur.created) {
-				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
+				PAD_BRIDGE.openPanel(PROJETISTA_PANEL_ID);
 				return;
 			}
 
@@ -512,7 +512,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
 		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
 		{ key: 'duplicar', label: 'Duplicar', icon: 'duplicate', name: 'A FORMINHA', tips: [L_CLICK + 'duplicar a comp aberta e preencher os layers de texto selecionados'], left: actions.openLight },
-		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'A FORMA', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
+		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'O CONFEITEIRO', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
 		{
 			key: 'fontes',
 			label: 'Fontes',
@@ -526,7 +526,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			key: 'projeto',
 			label: 'Iniciar', // Alterar quando o projeto aberto já tem os dados do padeiro (paintProjectDot)
 			icon: 'form',
-			name: 'A CLAQUETE',
+			name: 'O PROJETISTA',
 			tips: [L_CLICK + 'iniciar o projeto pela atração', R_CLICK + 'salvar o projeto na pasta dele'],
 			left: actions.project,
 			right: actions.saveProject
@@ -1225,7 +1225,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 		if (label && !btn.classList.contains('is-running')) label.textContent = has ? 'Alterar' : 'Iniciar';
 		btn.setAttribute('aria-label', has ? 'Alterar' : 'Iniciar');
-		btn.dataset.baseTip = 'A CLAQUETE\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'iniciar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
+		btn.dataset.baseTip = 'O PROJETISTA\n\n' + L_CLICK + (has ? 'alterar os dados do projeto' : 'iniciar o projeto pela atração') + '\n' + R_CLICK + 'salvar o projeto na pasta dele';
 		setTip(btn, projectError ? '!# Projeto:\n! não consegui conferir: ' + projectError : projectState === 'missing' ? '!# Projeto:\n! ainda sem atração: clique para iniciar' + (projectWhy ? '\n! ' + projectWhy : '') : projectState === 'out' ? '!# Projeto:\n! ' + (projectWhy ? projectWhy + ': clique para ver os dados e salvar' : 'salvo fora da pasta dele: clique e Salvar leva o .aep de volta') : '');
 		setDot(btn, projectState);
 		if (projectState) btn.setAttribute('data-project', projectState);
@@ -1388,7 +1388,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
 	}
 
-	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (a claquete que acabou de
+	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (O PROJETISTA, que acabou de
 	// criar o projeto), o painel pode se dizer escondido e a bolinha ficava no estado de antes; por isso, escondida,
 	// a barra ainda confere, só que mais devagar (1 a cada 3 vezes), e sempre que o mouse entra nela
 	var projectSkips = 0;

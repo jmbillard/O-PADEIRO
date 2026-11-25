@@ -1465,7 +1465,7 @@ PADX.fillFinish = function () {
 			return n < 10 ? '0' + n : String(n);
 		};
 
-		// os dados do projeto (A CLAQUETE) vão junto: o template e a produção não ficam mais no arquivo, só aqui
+		// os dados do projeto (O PROJETISTA) vão junto: o template e a produção não ficam mais no arquivo, só aqui
 		var meta = {};
 
 		try {

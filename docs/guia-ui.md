@@ -179,7 +179,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
   }
   ```
 
-  veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
+  veja `.org-side` (`productions.css`) e `.out-reveal` (`projetista.css`).
 - **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas telas de `ui-states.js`, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
 
   ```bash

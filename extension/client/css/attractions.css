@@ -1,5 +1,5 @@
 /* =========================================================
-   Atrações: o seletor (a busca, os cartões e a atração nova), comum à janela PROJETO, ao criador de
+   Atrações: o seletor (a busca, os cartões e a atração nova), comum à janela de projeto, ao criador de
    templates e ao editor de config (js/attractions.js)
    ========================================================= */
 
@@ -148,7 +148,7 @@
   display: none;
 }
 
-/* fora da janela PROJETO, a lista e o aviso ficam logo embaixo do campo */
+/* fora da janela de projeto, a lista e o aviso ficam logo embaixo do campo */
 .atr-picker {
   display: grid;
   gap: 8px;

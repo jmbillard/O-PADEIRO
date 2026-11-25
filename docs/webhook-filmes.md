@@ -1,6 +1,6 @@
 # webhook dos filmes recentes
 
-O que a claquete (janela **PROJETO**) espera do workflow dos filmes. Digitando, os filmes criados na base nos últimos
+O que **O PROJETISTA** (a janela de projeto) espera do workflow dos filmes. Digitando, os filmes criados na base nos últimos
 dias que batem com o texto aparecem na busca, com o pôster, o ano de produção e a exibição (com o campo vazio, nada
 aparece). Os filmes que ainda não têm pasta de projeto ganham a etiqueta **A PRODUZIR**.
 
@@ -15,7 +15,7 @@ O workflow é o **PROMO: FILMES PARA O PADEIRO** (n8n). O endereço fica em `PS_
 
 O painel faz um `GET` simples, sem corpo e sem autenticação (tempo máximo de 15 s), e guarda a lista por 10 min: com
 a janela aberta o dia todo, os filmes novos e os pôsteres (o link expira) chegam sozinhos. Sem resposta, a lista não
-aparece e a claquete segue funcionando como antes.
+aparece e O PROJETISTA segue funcionando como antes.
 
 ## resposta
 
@@ -36,7 +36,7 @@ aparece e a claquete segue funcionando como antes.
 
 | campo | obrigatório | o que é |
 | --- | --- | --- |
-| `titulo` | sim | o título do filme, como deve aparecer (com acentos e pontuação). a claquete tira acentos e símbolos para o nome das pastas e do `.aep`. |
+| `titulo` | sim | o título do filme, como deve aparecer (com acentos e pontuação). O PROJETISTA tira acentos e símbolos para o nome das pastas e do `.aep`. |
 | `ano` | não | o ano de produção, com 4 algarismos (número ou texto). vai para o token `{ano_producao}` e para o nome do `.aep`. sem ano, os parênteses somem. |
 | `exibicao` | não | a data da exibição, `AAAA-MM-DD` (aparece como `05/12`). a lista põe a exibição mais próxima em cima. |
 | `sessao` | não | a sessão (Corujão, Supercine…). |
@@ -50,7 +50,7 @@ aparece e a claquete segue funcionando como antes.
 - **O pôster:** a miniatura do anexo do Teable, com um link assinado que expira. Se ele falhar, aparece o ícone.
 - **Também aceito:** a lista direto (`[ {…}, {…} ]`), embrulhada pelo n8n (`[{ "filmes": [...] }]`) ou um item por
   filme (`[{ "json": {…} }]`). Os nomes em inglês (`name`, `year`) também valem.
-- **A PRODUZIR:** não vem do webhook. A claquete lê a pasta da letra do filme (o caminho do tipo **FILME**, até o
+- **A PRODUZIR:** não vem do webhook. O PROJETISTA lê a pasta da letra do filme (o caminho do tipo **FILME**, até o
   `{atracao}`), cada letra uma vez, e marca o filme que ainda não tem pasta. Compara o título sem acento e sem
   pontuação: vale a pasta com o mesmo ano ou uma antiga sem ano (`NAO NAO OLHE`). A pasta de outro ano é outro filme
   (um remake: `ANNA (1987)` não é `ANNA (2019)`).
@@ -65,7 +65,7 @@ aparece e a claquete segue funcionando como antes.
 ## na configuração
 
 O ano entra sozinho na pasta e no output dos filmes: se o caminho do tipo **FILME** (configuração > PROJETO) termina
-em `{atracao}` e não tem o token `{ano_producao}`, a claquete acrescenta ` ({ano_producao})`. Para colocar o ano em
+em `{atracao}` e não tem o token `{ano_producao}`, O PROJETISTA acrescenta ` ({ano_producao})`. Para colocar o ano em
 outro lugar, use o token no caminho:
 
 ```
@@ -80,7 +80,7 @@ filme.
 
 - `extension/host/lib/acessorista.js`: `PS_FILMS_URL`, o endereço.
 - `extension/client/js/attractions.js`: `recentFilms()` baixa e `parseFilms()` lê a resposta.
-- `extension/client/js/project.js`: `loadFilms()` confere as pastas, `pickGroups()` monta o grupo FILMES (e o card de
+- `extension/client/js/projetista.js`: `loadFilms()` confere as pastas, `pickGroups()` monta o grupo FILMES (e o card de
   filme, pelo `cardFilm()`) e `filmRow()` desenha cada linha.
 - `extension/host/project.jsx`: `PADX.projectFilmsParents` converte as pastas das letras; `PADX.projectFilmsDone`
   confere quais filmes já têm pasta (o plano B, sem o Node).

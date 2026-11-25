@@ -42,7 +42,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de qual **
 em vez do webhook, cada computador pode ter o seu **índice local** ([configuração > buscar](producoes.md#-buscar), embaixo, em **neste computador**): as pastas escolhidas e todas as subpastas, lidas pelo painel e guardadas no computador. a busca procura pelo **nome** de cada pasta (ícone de pasta, nome e a linha **CAMINHO**; até 30) e mostra também os caminhos fixos. com **só pastas** desligado, o índice guarda também os arquivos: eles aparecem com o ícone de arquivo, e a linha **CAMINHO** é a pasta onde o arquivo está. funciona sem rede.
 
 - a última indexação aparece na hora; ela é refeita quando as pastas mudam, uma vez por dia (se ligado) ou no **atualizar**. enquanto indexa, a busca continua com o índice anterior.
-- a janela [PROJETO](projeto.md) procura a claquete pelo nome das pastas: vale a pasta cujo nome é o começo da claquete (*MAIS VOCE* para *MAIS VOCE 30 10*). acerta menos que as atrações do webhook (sem os *patterns*).
+- a [janela de projeto](projeto.md) procura a claquete pelo nome das pastas: vale a pasta cujo nome é o começo da claquete (*MAIS VOCE* para *MAIS VOCE 30 10*). acerta menos que as atrações do webhook (sem os *patterns*).
 
 ### modo local
 

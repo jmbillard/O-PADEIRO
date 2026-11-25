@@ -396,7 +396,7 @@ PADX.makerSave = function (a) {
 	try {
 		comp.comment = 'TEMPLATE';
 
-		// a janela do sistema já com o nome (a atração + o que é, como o .aep da CLAQUETE) e na pasta certa
+		// a janela do sistema já com o nome (a atração + o que é, como o .aep d'O PROJETISTA) e na pasta certa
 		var target = padMakerSaveTarget(cfg).saveDlg('Salvar o template', appOs == 'Win' ? 'Template do After Effects:*.aet;*.aep' : padMakerSaveFilter);
 
 		if (target) {

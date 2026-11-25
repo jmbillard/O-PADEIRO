@@ -1,14 +1,14 @@
-# 🎬 A CLAQUETE · projeto
+# 🎬 O PROJETISTA · projeto
 
 [← O PADEIRO](../README.md)
 
-a janela **A CLAQUETE** cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas, e mostra **quem criou e quem salvou** o projeto.
+a janela de projeto, **O PROJETISTA**, cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas, e mostra **quem criou e quem salvou** o projeto.
 
 > 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
 abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
-<p align="center"><img src="images/anim/claquete.webp" alt="A CLAQUETE: a atração pela busca, o que é e o nome do .aep" width="480"></p>
+<p align="center"><img src="images/anim/claquete.webp" alt="O PROJETISTA: a atração pela busca, o que é e o nome do .aep" width="480"></p>
 
 <table><tr><td align="center"><img src="images/anim/claquete-nova.webp" alt="uma atração nova: vt reunião marca o chip do tipo VT e se chama VT REUNIAO" width="400"><br><sub>atração nova: o texto digitado é o nome; o tipo no começo só marca o chip</sub></td><td align="center"><img src="images/anim/dados.webp" alt="os dados do projeto: quem criou, quem salvou e as pastas" width="400"><br><sub>os dados do projeto: quem criou, quem salvou e as pastas</sub></td></tr></table>
 
@@ -42,7 +42,7 @@ um campo só (**atração, filme ou caminho**). com ele vazio, a lista não apar
 4. **NOVA** → só os **chips dos tipos**, cada um com o seu ícone: um clique cria a atração nova **direto no tipo**, com o texto digitado como nome. com o mouse num chip, a linha embaixo mostra o caminho que ele dá. o tipo escrito no começo (`vt reunião`) só **marca o chip**, que vem primeiro: o nome é sempre o texto todo (`VT REUNIAO` no tipo VT); `Enter` cria no tipo marcado.
 5. **outra pasta…** → o navegador de pastas: a pasta escolhida vira o começo do caminho, como uma atração (`2026/`), e a barra mostra as pastas dela.
 
-cada grupo mostra **até 4 linhas**; com mais, uma linha discreta diz *+N outros: continue digitando*. as regras dos grupos (a ordem, o **seu**, o status, esconder a atração que tem card, o card de filme) ficam num ponto só, depois da busca (`pickGroups`, em `js/project.js`): valem igual com o índice de verdade (o Node do painel) e no modo de teste do navegador (o `projectLookup` do `mock-host.js`), e no **editor**.
+cada grupo mostra **até 4 linhas**; com mais, uma linha discreta diz *+N outros: continue digitando*. as regras dos grupos (a ordem, o **seu**, o status, esconder a atração que tem card, o card de filme) ficam num ponto só, depois da busca (`pickGroups`, em `js/projetista.js`): valem igual com o índice de verdade (o Node do painel) e no modo de teste do navegador (o `projectLookup` do `mock-host.js`), e no **editor**.
 
 **o "seu"** → o padeiro adivinha se o card é seu comparando o **login desta máquina** (o usuário do padeiro, ex: `JMBILLARD`) com o **designer do card** (`des`, o nome completo, ex: *J M Billard*), os dois sem acento, em maiúsculas e sem espaços nem símbolos. o login bate quando é:
 
@@ -99,12 +99,12 @@ os dados do padeiro ficam **no próprio projeto**, num grupo próprio dos metada
 
 | campo | exemplo | quem grava |
 |---|---|---|
-| `padeiro:atracao` | LÁ NA MINHA TERRA | janela projeto |
-| `padeiro:quadro` | DANÇA DOS FAMOSOS/FINAL | janela projeto (opcional: as pastas abaixo da atração; o `.aep` é o último nível + o que é) |
-| `padeiro:oQueE` | SERVIÇO | janela projeto |
-| `padeiro:designer` | JBILLARD | janela projeto (quem criou) |
-| `padeiro:pasta` | a raiz da estrutura | janela projeto |
-| `padeiro:output` | a pasta de output | janela projeto; o template grava se faltar |
+| `padeiro:atracao` | LÁ NA MINHA TERRA | janela de projeto |
+| `padeiro:quadro` | DANÇA DOS FAMOSOS/FINAL | janela de projeto (opcional: as pastas abaixo da atração; o `.aep` é o último nível + o que é) |
+| `padeiro:oQueE` | SERVIÇO | janela de projeto |
+| `padeiro:designer` | JBILLARD | janela de projeto (quem criou) |
+| `padeiro:pasta` | a raiz da estrutura | janela de projeto |
+| `padeiro:output` | a pasta de output | janela de projeto; o template grava se faltar |
 | `padeiro:criado` | 2026-11-05 | o primeiro que gravar |
 | `padeiro:editores` | quem já salvou o projeto e o último dia de cada um (`USUARIO` e `2026-11-16`, um por linha, na ordem em que salvaram por último; a hora do último salvamento entra na linha de quem deixou de ser o último) | cada salvamento (abaixo) |
 | `padeiro:salvo` | o dia do último salvamento | cada salvamento |

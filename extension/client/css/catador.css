@@ -500,7 +500,7 @@
   fill: none;
 }
 
-/* as esperas, nas próprias faixas (collect.js: migWait) */
+/* as esperas, nas próprias faixas (catador.js: migWait) */
 .mg-fill,
 .mg-lit {
   display: none;

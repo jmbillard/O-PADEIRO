@@ -17,14 +17,16 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O ACESSORISTA | `com.jmbillard.opadeiro.finder` | `finder.html` | `js/finder.js` | 8090 |
 | O ADAPTADOR | `com.jmbillard.opadeiro.converter` | `converter.html` | `js/converter.js` | 8091 |
 | O PRODUTOR | `com.jmbillard.opadeiro.productions` | `productions.html` | `js/productions.js` | 8092 |
-| A FORMA | `com.jmbillard.opadeiro.maker` | `maker.html` | `js/maker.js` | 8093 |
-| A CLAQUETE | `com.jmbillard.opadeiro.project` | `project.html` | `js/project.js` | 8094 |
+| O CONFEITEIRO | `com.jmbillard.opadeiro.confeiteiro` | `confeiteiro.html` | `js/confeiteiro.js` | 8093 |
+| O PROJETISTA | `com.jmbillard.opadeiro.projetista` | `projetista.html` | `js/projetista.js` | 8094 |
 | O TIPÓGRAFO | `com.jmbillard.opadeiro.fonts` | `fonts.html` | `js/fonts.js` | 8095 |
-| O CATADOR | `com.jmbillard.opadeiro.collect` | `collect.html` | `js/collect.js` | 8096 |
+| O CATADOR | `com.jmbillard.opadeiro.catador` | `catador.html` | `js/catador.js` | 8096 |
 | O VERSIONADOR | `com.jmbillard.opadeiro.versioner` | `versioner.html` | `js/versioner.js` | 8097 |
 | O CONTRARREGRA | `com.jmbillard.opadeiro.labels` | `labels.html` | `js/labels.js` | 8098 |
 | O ARQUIVISTA | `com.jmbillard.opadeiro.files` | `files.html` | `js/files.js` | 8099 |
 | A FORMINHA | `com.jmbillard.opadeiro.light` | `light.html` | `js/light.js` | 8100 |
+
+os ids seguem o glossário: a janela de projeto é `projetista`, o criador de templates é `confeiteiro` e a janela do coletar é `catador`. id que muda de nome é outra janela para o After: o instalador tira as antigas (a lista `OLD_IDS` em `INSTALAR O PADEIRO.jsx`) e o que o After guardava delas (tamanho e posição) volta ao padrão. o `<Size>` de cada janela no manifest é o tamanho recomendado, o mesmo da tabela de tamanhos do [README principal](../README.md#-a-turma); as checagens de interface (`scripts/check-*.js`) abrem cada tela nele (`windowSize` em `scripts/ui-states.js`).
 
 <br>
 
@@ -36,7 +38,7 @@ O-PADEIRO/
 ├─ O_PADEIRO_GLOBAL_config.json         → lista de produções COMPARTILHADA pela equipe
 ├─ docs/images/                  → imagens da documentação
 └─ extension/
-   ├─ CSXS/manifest.xml          → os 7 painéis
+   ├─ CSXS/manifest.xml          → os 13 painéis (os ids, as páginas e o tamanho padrão de cada janela)
    ├─ .debug                     → portas de depuração (CEF)
    ├─ loader/stub.html           → modelo da página instalada em cada computador (abre a página da rede)
    ├─ client/                    → painéis (HTML / CSS / JS)
@@ -44,8 +46,8 @@ O-PADEIRO/
    │  ├─ css/styles.css          → tokens e componentes da linguagem visual (degradê, folha branca, contornos finos)
    │  ├─ css/panel.css           → componentes comuns (busca, árvore, dropdown, foco) e o painel de templates
    │  ├─ css/loader.css          → o forninho (loader)
-   │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
-   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela PROJETO, criador e editor de config
+   │  ├─ css/<painel>.css        → bar, finder, converter, productions, confeiteiro, projetista, catador…
+   │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela de projeto, criador e editor de config
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
    │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
    │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
@@ -70,7 +72,7 @@ O-PADEIRO/
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
    │  ├─ maker.jsx               → criador de templates
    │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
-   │  ├─ project.jsx             → janela PROJETO (dados no XMP, retranca, salvar na pasta da retranca)
+   │  ├─ project.jsx             → janela de projeto (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
    └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js e check-focus-crop.js, com as telas em ui-states.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
