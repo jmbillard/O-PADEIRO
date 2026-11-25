@@ -14,15 +14,15 @@ a janela abre com 720 px de largura (ou mais, se os interruptores precisarem: el
 | :---: | --- | --- |
 | ❶ | **abas** | **caminhos** e **textos** (o mesmo painel). |
 | ❷ | **busca** | atração, claquete, quem mandou, pasta do projeto, output ou caminho (a partir de 2 caracteres). |
-| ❸ | **fontes da busca** | liga e desliga cada uma: caminhos fixos, atrações, filmes, Teams e Trello. a seta relê o índice. |
+| ❸ | **origens da busca** | liga e desliga cada uma: caminhos fixos, atrações, filmes, Teams e Trello. a seta relê o índice. |
 | ❹ | **resultados** | o ícone diz de onde vem; o trecho achado fica marcado. clique numa pasta do caminho para abri-la. |
 
 
 `◖ clique esquerdo` em **buscar**, na barra. pesquise por atração, claquete, quem mandou, pasta do projeto, output ou caminho (a partir de 2 caracteres) e abra as pastas direto no Finder / Explorer.
 
-os resultados vêm sem títulos de seção: o ícone de cada item diz de qual **fonte** ele vem. em todos, cada pasta do caminho é um botão: o clique abre **aquela** pasta (a do meio também, não só a última).
+os resultados vêm sem títulos de seção: o ícone de cada item diz de qual **origem** ele vem. em todos, cada pasta do caminho é um botão: o clique abre **aquela** pasta (a do meio também, não só a última).
 
-| ícone | fonte | o que mostra | até | o clique |
+| ícone | origem | o que mostra | até | o clique |
 | --- | --- | --- | :---: | --- |
 | servidor | **caminhos fixos** (as pastas da equipe da [configuração > buscar](producoes.md#-buscar)) | o nome e a linha **CAMINHO** | 10 | cada pasta do caminho abre aquela pasta |
 | TV de tubo | **atrações** | o nome e as linhas **PASTA DO PROJETO** e **OUTPUT** | 20 | cada pasta do caminho abre aquela pasta |
@@ -32,7 +32,7 @@ os resultados vêm sem títulos de seção: o ícone de cada item diz de qual **
 
 - **como a busca compara** → sem acentos, maiúsculas e pontuação, sempre a partir do começo de uma palavra: '*não*' acha '*NAO APAGAR*', mas não '*an**NA - O***'; '*3/11*' acha '*3/11*' e '*3 11*', mas não '*31/10*'.
 - **apelidos das atrações** → quando o que você digita é o começo do nome ou de um *pattern* de uma atração (com 3 letras ou mais), a busca também procura os outros nomes dela: '*GREP*' ou '*G REP*' trazem também o que tem **GLOBO REPORTER** e **G REPORTER** (mensagens, cards, pastas). em cima dos resultados aparece '*também: Globo Repórter*'.
-- **interruptores** (ao lado do atualizar) → um por fonte: **CAMINHOS FIXOS**, **ATRAÇÕES**, **FILMES**, **TEAMS** e **TRELLO** (a mesma ordem dos resultados). desligada, a fonte sai da busca (só aparecem as que têm itens). a escolha fica ao atualizar. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
+- **interruptores** (ao lado do atualizar) → um por origem: **CAMINHOS FIXOS**, **ATRAÇÕES**, **FILMES**, **TEAMS** e **TRELLO** (a mesma ordem dos resultados). desligada, a origem sai da busca (só aparecem as que têm itens). a escolha fica ao atualizar. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
 - **⋯** → ajuda (esta página) e recarregar o painel.
 - **caminho** → aparece em breadcrumb: clique em qualquer pasta para abri-la. a pasta que contém o termo buscado fica destacada em amarelo. quando o caminho não cabe, as pastas iniciais saem (com '*…*'); a última e a destacada ficam sempre.
 - **atualizar** (o botão redondo, abaixo da busca) → baixa os caminhos de novo (no índice local, indexa as pastas de novo; no modo local, relê a cópia, sem a rede). ao lado dele aparece de onde vêm os caminhos no índice local ('*índice local · 18.430 itens · 09:12 HOJE*') ou o andamento da indexação.
@@ -52,7 +52,7 @@ no [modo local](producoes.md#-meu-usuário) (sem a rede da equipe, ligado à mã
 > • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão, vale a cópia salva (avisando '*usando o último índice salvo*'). a resposta pode vir como o JSON do índice, como o JSON em texto ou embrulhada pelo n8n (`[{ "indice": "…" }]`): o painel entende as três.\
 > • o endereço do workflow e os caminhos fixos ficam na [configuração > buscar](producoes.md#-buscar).\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
-> • cada fonte mostra no máximo o número da coluna **até** da tabela: refine o termo para ver os demais.
+> • cada origem mostra no máximo o número da coluna **até** da tabela: refine o termo para ver os demais.
 
 ### textos
 

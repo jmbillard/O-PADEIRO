@@ -220,7 +220,7 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 - **letras de drive da rede** → `DRIVE_MAP` em `host/lib/globals.js`.
 - **config padrão dos templates** → `defaultTemplateConfigObj` em `host/lib/globals.js`.
 - **estrutura de pastas do projeto** → `PROJECT_FOLDERS` em `host/lib/functions/project lib.js`.
-- **fontes do acessorista** → `V2_CATS` em `client/js/finder.js` (ordem, rótulos e quantos resultados de cada uma); os caminhos fixos padrão (sem a aba buscar da configuração) → `PS_LOCAL_SOURCES` em `host/lib/acessorista.js`.
+- **origens do acessorista** → `V2_CATS` em `client/js/finder.js` (ordem, rótulos e quantos resultados de cada uma); os caminhos fixos padrão (sem a aba buscar da configuração) → `PS_LOCAL_SOURCES` em `host/lib/acessorista.js`.
 - **cores, raios e sombras** → os tokens em `:root`, no início de `client/css/styles.css`.
 - **versão** → `ExtensionBundleVersion` em `CSXS/manifest.xml` e `PADX_VERSION` em `host/index.jsx`.
 

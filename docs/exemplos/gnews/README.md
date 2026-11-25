@@ -106,11 +106,11 @@ Os volumes dos dois servidores do script: `cdesign` (egcdesign01) e `Arte_Ilha` 
 | pasta do dia (`DIARIOS/RJ/aaaa/mm_MÊS/dd`) | entrada fixa em `DIARIOS/RJ` | **parcial**: o caminho com a data não é calculado |
 | botões de pastas (shortcuts) | categoria PASTAS DA PROMO na busca | equivalente (links aceitam só http/https) |
 | cor do menu claro `#3E50B4` / escuro `#8FF7A7` | uma cor de destaque | **parcial**: a mesma cor nos dois modos |
-| fonte CAMINHOS FIXOS da busca | — | **sobra**: as pastas fixas da PROMO JB (`#INGEST`, `BASES VALENDO`) sempre aparecem |
+| origem CAMINHOS FIXOS da busca | — | **sobra**: as pastas fixas da PROMO JB (`#INGEST`, `BASES VALENDO`) sempre aparecem |
 
 Resumindo: **organização de pastas (com as editáveis), barra, busca de caminhos, projeto (ID, nome, retranca, salvar) e collect chegam bem perto**. Ficaram de fora, por serem específicos da GNEWS, a nomenclatura `USR PROMO - ID` das comps, os dados do end page no nome e o modo hard news.
 
 Próximos passos sugeridos:
 
 1. **End pages** no ORGANIZE (pasta própria) e a tag `ignore`.
-2. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a fonte CAMINHOS FIXOS.
+2. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a origem CAMINHOS FIXOS.
