@@ -466,7 +466,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_048` | fila de render: nenhum preset de render escolhido |
 | `#PAD_050` | o projeto está vazio |
 | `#PAD_051` a `#PAD_057` | lista de produções: dado inválido, falha ao gravar ou arquivo de importação inválido |
-| `#PAD_058` | não foi possível baixar o índice de caminhos do acessorista |
+| `#PAD_058` | não foi possível carregar o índice da busca (sem rede e sem cópia salva; no modo local, sem cópia) |
 | `#PAD_059` `#PAD_060` `#PAD_069` | busca de textos: a comp ou o layer não existe mais (atualize a busca) |
 | `#PAD_061` | conversor: nenhum caminho informado |
 | `#PAD_064` | a lista de produções compartilhada (na rede) não está acessível |
@@ -485,7 +485,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
 | `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
 | `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
-| `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
+| `#PAD_086` | configuração: endereço do webhook da busca inválido, ou caminho fixo sem nome, sem caminho ou repetido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
 | `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |

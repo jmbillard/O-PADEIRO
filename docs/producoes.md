@@ -209,14 +209,14 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 a aba **buscar** ajusta a busca de caminhos (**O ACESSORISTA**) e as atrações da janela [PROJETO](projeto.md).
 
 - **webhook** → o endereço do workflow **PROMO - BUSCAR**, que devolve o índice pronto (Teams, Trello, atrações e filmes). vazio, vale o padrão (`…/webhook/buscar`).
-- **servidor · caminhos fixos** → pastas que aparecem sempre na busca, com o ícone de servidor, para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, a **lixeira** à direita exclui a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
+- **caminhos fixos** → pastas que aparecem sempre na busca (a fonte **CAMINHOS FIXOS** do acessorista, com o ícone de servidor e até 10 por busca), para todo mundo. cada linha tem um **nome** e um **caminho** (do Mac, `/Volumes/...`, ou da rede do Windows, `\\servidor\share\...`); a pastinha escolhe a pasta, a **lixeira** à direita exclui a linha e os pontinhos reordenam. o servidor e o share saem do próprio caminho (ou do mapa da aba **rede**), e o volume é montado ao abrir.
 
 **👤 de onde vêm os caminhos** (neste computador, embaixo) → o que o [acessorista](acessorista.md) e a janela [PROJETO](projeto.md) usam aqui:
   - **webhook da equipe** → o índice do webhook acima.
   - **índice local** → as pastas da lista (a pastinha escolhe, a **lixeira** à direita exclui), lidas com todas as subpastas e guardadas neste computador. **só pastas** deixa o índice mais leve (sem os arquivos); **atualizar sozinho uma vez por dia** refaz o índice ao abrir a busca. **indexar agora** refaz na hora e mostra a última indexação (quando, quantos itens e o tamanho).
   - uma janela do acessorista ou do projeto já aberta passa a usar a escolha nova quando você volta para ela.
 
-> 🚩 *obs:* o índice antigo (com categorias e arquivo de índice) ficou só para o padeiro legacy.
+> 🚩 *obs:* no [modo local](#-meu-usuário), o webhook não é chamado: o acessorista e a janela PROJETO usam a cópia do índice salva neste computador (ou o índice local). o índice antigo (com as fontes de antes e a escolha de um arquivo de índice) saiu do padeiro.
 <br>
 
 ---
@@ -332,7 +332,7 @@ a aba **meu usuário** (👤 local) guarda o que é seu e não é de nenhuma fer
 - **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o usuário do sistema, completo. é o mesmo do bonequinho da [janela projeto](projeto.md).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
-  - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa o **último índice baixado** (ou o índice local).
+  - só as [produções locais](#-templates) aparecem no painel de templates, e a busca de caminhos usa na hora a **cópia do último índice baixado** (ou o índice local), sem tentar a rede e mostrando de quando é a cópia.
   - as atrações novas vão para a [pasta dos projetos](#-projeto) daqui (sem ela, a Área de Trabalho).
   - **todos** os renders da fila vão para o [output local](#-templates) daqui (sem ele, a Área de Trabalho).
   - os logs esperam a volta para a rede (o webhook não é chamado).
