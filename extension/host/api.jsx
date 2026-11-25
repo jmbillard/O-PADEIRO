@@ -312,13 +312,9 @@ PADX.saveMachinePrefs = function (a) {
 	if (a.log != null) data.log = a.log !== false;
 
 	if (a.productions != null) {
-		var team = [];
+		var team = padLerSecao('producoes');
 		var names = {};
 		var p;
-
-		try {
-			team = padConfigData().PRODUCTIONS || [];
-		} catch (err) { }
 
 		for (p = 0; p < team.length; p++) if (!padIsLocalPath(team[p].templatesPath)) names[team[p].name.toUpperCase()] = true;
 
@@ -404,11 +400,7 @@ function padMachineProductions(d) {
 	}
 
 	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
-	var team = [];
-
-	try {
-		team = padConfigData().PRODUCTIONS || [];
-	} catch (err) { }
+	var team = padLerSecao('producoes');
 
 	for (i = 0; i < team.length; i++) {
 		var local = padMachinePath(old[team[i].name]);
@@ -665,11 +657,12 @@ PADX.productions = function () {
 	if (!configFile) return { configPath: padDisplayPath(padSharedConfigPath()), shared: false, stamp: 0, productions: [], error: padNoSharedListError() };
 
 	try {
-		list = padConfigData().PRODUCTIONS; // na ordem do arquivo (o editor arrasta para reordenar)
+		padConfigData();
 	} catch (err) {
 		error = configFile.exists ? err.message : 'arquivo de produções não encontrado';
-		list = [];
 	}
+
+	list = padLerSecao('producoes'); // na ordem do arquivo (o editor arrasta para reordenar)
 
 	var productions = [];
 
@@ -692,15 +685,15 @@ PADX.productions = function () {
 		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
 		lists: padMachineLists(padMachineData()), // quantos recentes e quantos dias de novos (neste computador)
 		log: padReadLogSettings(),
-		drives: padReadDrives(),
-		rename: padReadRename(),
-		organize: padReadOrganize(),
-		search: padReadSearch(),
-		links: padReadLinks(),
+		drives: padLerSecao('mapaDeDrives'),
+		rename: padLerSecao('regraDoRenomear'),
+		organize: padLerSecao('organizar'),
+		search: padLerSecao('buscaDeCaminhos'),
+		links: padLerSecao('links'),
 		appearance: padReadTeamAppearance(), // o padrão da equipe (a pessoa pode personalizar: personal)
 		project: padReadProject(),
 		collect: padReadCollect(),
-		bar: padReadTeamBar(),
+		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),
 		personal: PADX.personalPrefs(),
 		localMode: padLocalMode(),
@@ -763,15 +756,9 @@ function padCsvValue(value) {
 
 // Pasta de templates de uma produção da lista (onde fica o CSV do log).
 function padProductionFolder(name) {
-	var config = padConfigFile();
-
 	if (!name) return null;
 
-	var list = [];
-
-	try {
-		if (config && config.exists) list = JSON.parse(readFileContent(config)).PRODUCTIONS || [];
-	} catch (err) { }
+	var list = padLerSecao('producoes');
 
 	for (var i = 0; i < list.length; i++) {
 		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
@@ -2497,22 +2484,16 @@ function padSetupPointer(path) {
 
 // O resumo da configuração que ficou valendo (para o balão): produções, links e letras de drive.
 function padSetupSummary() {
-	var data = padConfigData();
-	var links = 0;
+	padConfigData(); // lança se a configuração escolhida não for um JSON válido
+
+	var links = padLerSecao('links').length;
 	var drives = [];
+	var d = padLerSecao('mapaDeDrives').drives;
 	var i;
 
-	try {
-		links = padReadLinks().length;
-	} catch (err) { }
+	for (i = 0; i < d.length; i++) drives.push(d[i].letter);
 
-	try {
-		var d = padReadDrives().drives;
-
-		for (i = 0; i < d.length; i++) drives.push(d[i].letter);
-	} catch (err) { }
-
-	return { productions: (data.PRODUCTIONS || []).length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
+	return { productions: padLerSecao('producoes').length, links: links, drives: drives, folder: padDisplayPath(PAD_CONFIG_CACHE.path).replace(/[\\\/][^\\\/]*$/, '') };
 }
 
 // Usa a configuração escolhida. a: { path } → resumo

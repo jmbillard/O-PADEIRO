@@ -44,7 +44,7 @@ PADX.requestedTab = function () {
 // do índice (onde o painel grava); copiaAntiga: a do nome de antes, lida enquanto não há a de agora.
 // → { url, films, copia, copiaAntiga, local, platform, caminhosFixos, mode, folders, foldersOnly, daily, localIndex }
 PADX.searchInfo = function () {
-	var list = PS_CAMINHOS_FIXOS || padDefaultSearch().caminhosFixos;
+	var list = PS_CAMINHOS_FIXOS || PAD_CONFIGURACAO.padrao('buscaDeCaminhos').caminhosFixos;
 	var caminhosFixos = [];
 
 	// o servidor e o share saem do caminho de rede (//servidor/share/...); no Mac (/Volumes/SHARE/...), o share

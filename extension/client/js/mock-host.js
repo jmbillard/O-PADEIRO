@@ -17,6 +17,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var mode = (location.search.match(/mock=(\w+)/) || [])[1] || '';
 
+	// a tabela de seções da configuração (regras/configuracao.js, ADR 0005): o host de teste lê e grava as seções da
+	// equipe por ela, como o host. As páginas não carregam a regra (no After o painel não precisa dela): o host de
+	// teste a põe logo depois de si, antes dos scripts do painel
+	if (!window.PAD_CONFIGURACAO) document.write('<script src="../regras/configuracao.js"><\/script>');
+
 	// índice local de mentira (o de verdade lê as pastas pelo Node): guardado no localStorage
 	{
 		window.PAD_LOCAL_INDEX = {
@@ -117,12 +122,81 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
-	// a busca da configuração da equipe como o host devolve (padCleanSearch): a chave dos caminhos fixos já foi
-	// 'servidor' (lida quando não há 'caminhosFixos'); devolve e grava só 'caminhosFixos'
-	function mockSearch(search) {
-		var s = search || {};
+	// a configuração da equipe do host de teste: um documento por arquivo no localStorage ('pad.mock.arquivo.<nome>'),
+	// o adaptador da tabela de seções. Sem nada guardado, o arquivo da equipe começa com a semente abaixo (e a barra da
+	// equipe que o host de teste guardava antes em 'pad.mock.bar', se houver: lida, e a gravação seguinte vai para o
+	// arquivo)
+	function mockSemente() {
+		var bar = null;
 
-		return { url: s.url || '', caminhosFixos: JSON.parse(JSON.stringify(s.caminhosFixos || s.servidor || [])) };
+		try {
+			bar = JSON.parse(localStorage.getItem('pad.mock.bar') || 'null');
+		} catch (err) { }
+
+		var doc = {
+			PRODUCTIONS: [
+				{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: 'tv' },
+				{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
+				{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: 'alvo' }
+			],
+			DRIVES: {
+				drives: [{ letter: 'L', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l' }, { letter: 'T', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign' }, { letter: 'V', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE' }],
+				shares: [{ share: 'VFX', server: 'vfx-ml-sp.servicos.corp.tvglobo.com.br' }, { share: 'promo_ber', server: '10.193.48.13' }],
+				defaultServer: 'vfx-ml-sp.servicos.corp.tvglobo.com.br'
+			},
+			RENAME: window.PAD_CONFIGURACAO.padrao('regraDoRenomear'), // a regra do renomear da equipe, como vem de fábrica
+			ORGANIZE: {
+				folders: [
+					{ name: '01 COMPS', parent: '', content: 'render' },
+					{ name: '02 PRECOMPS', parent: '', content: 'precomps' },
+					{ name: '03 ARQUIVOS', parent: '', content: '' },
+					{ name: 'VIDEOS', parent: '03 ARQUIVOS', content: 'videos' },
+					{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens', 'sequencias'] },
+					{ name: 'AUDIO', parent: '03 ARQUIVOS', content: 'audio' },
+					{ name: 'SOLIDOS', parent: '03 ARQUIVOS', content: 'solidos' },
+					{ name: 'DADOS', parent: '03 ARQUIVOS', content: 'dados' },
+					{ name: 'MISSING', parent: '', content: 'missing' }
+				],
+				renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
+				autoComment: 'EXPORTAR',
+				dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
+				commentSubfolders: true,
+				fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
+			},
+			LINKS: [
+				{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' },
+				{ name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }
+			],
+			SEARCH: {
+				url: 'https://workflows.jmbillard.com/webhook/buscar',
+				caminhosFixos: [
+					{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
+					{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
+				]
+			}
+		};
+
+		if (bar) doc.BAR = bar;
+
+		return doc;
+	}
+
+	var mockAdaptador = {
+		ler: function (arquivo) {
+			var text = localStorage.getItem('pad.mock.arquivo.' + arquivo);
+
+			if (text == null) return arquivo === window.PAD_CONFIGURACAO.EQUIPE ? mockSemente() : null;
+
+			return JSON.parse(text);
+		},
+		gravar: function (arquivo, doc) {
+			localStorage.setItem('pad.mock.arquivo.' + arquivo, JSON.stringify(doc));
+		}
+	};
+
+	// uma seção da configuração da equipe, limpa e completa (pela tabela)
+	function mockLer(nome) {
+		return window.PAD_CONFIGURACAO.ler(mockAdaptador, nome);
 	}
 
 	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
@@ -170,10 +244,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	function mockPrefs() {
 		return JSON.parse(localStorage.getItem('pad.mock.prefs') || 'null') || { appearance: null, bar: null };
-	}
-
-	function mockBar() {
-		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'], hidden: [] };
 	}
 
 	// o arquivista: o caminho relativo de um item (a pasta dele + o nome)
@@ -231,25 +301,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		});
 	}
 
-	// a regra do renomear da equipe, como vem de fábrica (padDefaultRename, host/productions.jsx ← host/lib/globals.js)
-	var MOCK_RENAME = {
-		types: [
-			{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
-			{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
-			{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
-			{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
-			{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
-			{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
-			{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
-			{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
-			{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
-		],
-		fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }],
-		removeSpecial: true,
-		textCase: 'upperCase',
-		separator: ' - '
-	};
-
 	// as comps selecionadas do etiquetador de teste: o nome, as pastas (da mais próxima para a raiz) e o comentário
 	function mockComps() {
 		return window.PAD_MOCK_COMPS || (window.PAD_MOCK_COMPS = [
@@ -269,44 +320,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		productions: function (a) {
 			if (!window.PAD_MOCK_LIST) {
+				// o que ainda não está na tabela de seções (a configuração da equipe guardada só na memória desta janela)
 				window.PAD_MOCK_LIST = {
 					stamp: 1000,
 					log: { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' },
-					drives: {
-						drives: [{ letter: 'L', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l' }, { letter: 'T', path: '//egcdesign01.servicos.corp.tvglobo.com.br/cdesign' }, { letter: 'V', path: '//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE' }],
-						shares: [{ share: 'VFX', server: 'vfx-ml-sp.servicos.corp.tvglobo.com.br' }, { share: 'promo_ber', server: '10.193.48.13' }],
-						defaultServer: 'vfx-ml-sp.servicos.corp.tvglobo.com.br'
-					},
-					rename: JSON.parse(JSON.stringify(MOCK_RENAME)),
-					organize: {
-						folders: [
-							{ name: '01 COMPS', parent: '', content: 'render' },
-							{ name: '02 PRECOMPS', parent: '', content: 'precomps' },
-							{ name: '03 ARQUIVOS', parent: '', content: '' },
-							{ name: 'VIDEOS', parent: '03 ARQUIVOS', content: 'videos' },
-							{ name: 'IMAGENS', parent: '03 ARQUIVOS', contents: ['imagens', 'sequencias'] },
-							{ name: 'AUDIO', parent: '03 ARQUIVOS', content: 'audio' },
-							{ name: 'SOLIDOS', parent: '03 ARQUIVOS', content: 'solidos' },
-							{ name: 'DADOS', parent: '03 ARQUIVOS', content: 'dados' },
-							{ name: 'MISSING', parent: '', content: 'missing' }
-						],
-						renderComments: ['EXPORT', 'LOGO GLOBO', 'TEMPLATE'],
-						autoComment: 'EXPORTAR',
-						dataExtensions: ['.csv', '.json', '.jsx', '.mgjson', '.tsv', '.txt'],
-						commentSubfolders: true,
-						fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
-					},
-					links: [
-						{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' },
-						{ name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }
-					],
-					search: {
-						url: 'https://workflows.jmbillard.com/webhook/buscar',
-						caminhosFixos: [
-							{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
-							{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
-						]
-					},
 					project: mockProject(), // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
 					collect: {
 						folders: [
@@ -322,12 +339,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 							{ name: '04_REFS', parent: '', contents: [] },
 							{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 						]
-					},
-					items: [
-						{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: 'tv' },
-						{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
-						{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: 'alvo' }
-					]
+					}
 				};
 			}
 
@@ -342,19 +354,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
 				log: Object.assign({}, window.PAD_MOCK_LIST.log),
-				drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)),
-				rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)),
-				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
-				search: mockSearch(window.PAD_MOCK_LIST.search),
-				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
+				drives: mockLer('mapaDeDrives'),
+				rename: mockLer('regraDoRenomear'),
+				organize: mockLer('organizar'),
+				search: mockLer('buscaDeCaminhos'),
+				links: mockLer('links'),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
 				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '', upload: true }),
-				bar: mockBar(),
+				bar: mockLer('barra'),
 				personal: mockPrefs(),
 				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
-				productions: window.PAD_MOCK_LIST.items.map(function (p) {
-					return Object.assign({}, p, { ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
+				productions: mockLer('producoes').map(function (p) {
+					return Object.assign({}, p, { icon: p.icon || null, ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
 				}),
 				localProductions: ((JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).productions || []).slice(),
 				localMode: !!(JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).localMode,
@@ -399,9 +411,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
 
-			var bar = mockPrefs().bar || mockBar(); // as janelas do navegador não dividem o host de mentira: a barra fica no localStorage
+			var bar = mockPrefs().bar || mockLer('barra'); // as janelas do navegador não dividem o host de mentira: a configuração fica no localStorage
+			var links = mockLer('links');
 
-			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar), links: list ? JSON.parse(JSON.stringify(list.links)) : [{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/planilha', icon: '' }, { name: 'github', url: 'https://github.com/jmbillard/O-PADEIRO', icon: '' }], personal: personal, localMode: !!(mockMachine().localMode || localStorage.getItem('pad.mock.offline')), localForced: !!mockMachine().localMode };
+			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar) + '|' + JSON.stringify(links), links: links, personal: personal, localMode: !!(mockMachine().localMode || localStorage.getItem('pad.mock.offline')), localForced: !!mockMachine().localMode };
 		},
 
 		personalLinks: function () {
@@ -436,32 +449,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			if (mode === 'conflict') throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
 
-			window.PAD_MOCK_LIST.items = a.productions.slice();
+			// as seções da tabela, como o host: limpas (a mensagem da limpeza sai sem gravar nada) e gravadas de uma vez;
+			// as que não vierem ficam como estão
+			var equipe = window.PAD_CONFIGURACAO.EQUIPE;
+			var doc = window.PAD_CONFIGURACAO.aplicar(mockAdaptador.ler(equipe), { producoes: a.productions || [], mapaDeDrives: a.drives, regraDoRenomear: a.rename, organizar: a.organize, buscaDeCaminhos: a.search, links: a.links, barra: a.bar });
+
+			mockAdaptador.gravar(equipe, doc);
 			window.PAD_MOCK_LIST.stamp += 1000;
 			if (a.log) window.PAD_MOCK_LIST.log = Object.assign({}, a.log);
-			if (a.drives) {
-				var bad = a.drives.drives.filter(function (d) { return !/^[A-Z]$/.test(d.letter) || !/^\/\/[^/]+\/.+/.test(d.path.replace(/\\/g, '/')); })[0];
-
-				if (bad) throw new Error('#PAD_080 - drives: o caminho de ' + (bad.letter || '?') + ': precisa ser de rede (//servidor/share/...).');
-				window.PAD_MOCK_LIST.drives = JSON.parse(JSON.stringify(a.drives));
-			}
-			if (a.rename) {
-				var noTerms = a.rename.types.filter(function (t) { return !t.prefix || !t.comment || !t.terms.length; })[0];
-
-				if (noTerms) throw new Error('#PAD_082 - renomear: "' + (noTerms.prefix || '?') + '" precisa de prefixo, comentário e ao menos um termo.');
-				window.PAD_MOCK_LIST.rename = JSON.parse(JSON.stringify(a.rename));
-			}
-			if (a.organize) window.PAD_MOCK_LIST.organize = JSON.parse(JSON.stringify(a.organize));
 			if (a.fonts) localStorage.setItem('pad.mock.fonts', JSON.stringify(a.fonts));
 			if (a.appearance) {
 				if (!['accent', 'gradientStart', 'gradientEnd'].every(function (k) { return /^#[0-9a-f]{6}$/i.test(a.appearance[k]); })) throw new Error('#PAD_088 - aparência: cor inválida (use #rrggbb).');
 				localStorage.setItem('pad.mock.appearance', JSON.stringify(a.appearance));
-			}
-			if (a.links) {
-				var badLink = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
-
-				if (badLink) throw new Error('#PAD_087 - links: "' + (badLink.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
-				window.PAD_MOCK_LIST.links = JSON.parse(JSON.stringify(a.links));
 			}
 			if (a.project) {
 				// como o host (padCleanProject)
@@ -483,15 +482,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				}) };
 				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}
-			if (a.bar) {
-				// como o host: sem separador no começo, no fim ou dois seguidos
-				var items = a.bar.items.filter(function (k, i, all) {
-					return k !== 'divider' || (i > 0 && all[i - 1] !== 'divider');
-				});
-
-				while (items[items.length - 1] === 'divider') items.pop();
-				localStorage.setItem('pad.mock.bar', JSON.stringify({ items: items, hidden: a.bar.hidden }));
-			}
 			if (a.collect) {
 				var seenType = {};
 
@@ -504,15 +494,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				});
 				window.PAD_MOCK_LIST.collect = JSON.parse(JSON.stringify(a.collect));
 			}
-			if (a.search) {
-				if (a.search.url && !/^https?:\/\/\S+$/.test(a.search.url)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-				a.search.caminhosFixos.forEach(function (r, i) {
-					if (!r.name !== !r.path) throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
-				});
-				window.PAD_MOCK_LIST.search = mockSearch(a.search); // grava só a chave nova
-			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: mockSearch(window.PAD_MOCK_LIST.search), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockLer('barra'), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -652,14 +635,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { path: '/mock/FONTS' } };
 		},
 
-		// o etiquetador: a regra do renomear (regras/regra-do-renomear.js, a mesma do host) com a regra guardada nas comps
+		// o etiquetador: a regra do renomear (regras/regra-do-renomear.js, a mesma do host) com a regra guardada (a tabela de seções) nas comps
 		// de teste. data.names: os nomes que ficaram (o After só devolve a contagem)
 		renameComps: async function () {
 			await wait(delay);
 
 			if (mode === 'fail') throw new Error('#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
 
-			var rule = window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.rename : MOCK_RENAME;
+			var rule = mockLer('regraDoRenomear');
 			var comps = mockComps();
 
 			comps.forEach(function (c) {
@@ -756,7 +739,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				copiaAntiga: '/tmp/busca_v2.json', // o nome de antes da cópia (lido quando não há a de agora)
 				local: !!(machine.localMode || localStorage.getItem('pad.mock.offline') || mode === 'modolocal' || mode === 'nocopy'),
 				platform: 'Mac',
-				caminhosFixos: ((window.PAD_MOCK_LIST && mockSearch(window.PAD_MOCK_LIST.search).caminhosFixos) || [
+				caminhosFixos: ((window.PAD_MOCK_LIST && mockLer('buscaDeCaminhos').caminhosFixos) || [
 					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
 					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
 				]).map(function (r) {
