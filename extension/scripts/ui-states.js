@@ -177,6 +177,8 @@ const CHECKS = [
 		await p.fill('#q-paths', 'globo reporter');
 		await p.waitForTimeout(600);
 	}],
+	// modo local sem cópia do índice neste computador: o aviso no lugar dos resultados, sem tentar a rede
+	['busca: modo local sem cópia', 'finder.html?mock=nocopy'],
 	['conversor', 'converter.html', async (p) => {
 		// a janela fica com a altura do conteúdo (fitHeight no converter.js; no navegador, o mock só registra)
 		const h = await p.evaluate(() => Math.ceil(document.getElementById('converter').getBoundingClientRect().height));
