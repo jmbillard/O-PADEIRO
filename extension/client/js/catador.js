@@ -110,7 +110,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		if (state.mig) return; // a migração está na tela: a lista espera
 
 		try {
-			state.data = await call('collectList');
+			state.data = await call('coletarList');
 			render();
 		} catch (err) {
 			status(err.message, 'error');
@@ -190,7 +190,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		// com arquivos achados pela busca, o botão principal religa; sem, coleta (só o que aparece)
 		$('cw-go').disabled = (!n && !hits) || state.busy;
 		$('cw-go').textContent = hits ? 'Religar: ' + hits : n ? 'Coletar: ' + n : 'Coletar';
-		$('cw-relink').disabled = !missing || state.busy;
+		$('cw-religar').disabled = !missing || state.busy;
 
 		if (key === state.key) return; // nada mudou: as miniaturas não recarregam
 
@@ -200,7 +200,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		var all = (count.local || 0) + (count.net || 0);
 		var sections = [
 			['missing', 'FALTANDO', hits ? 'achados: o Religar aponta para eles' : 'o triângulo procura nas pastas'],
-			['collect', 'PARA COLETAR', n < all ? 'só os que aparecem são copiados' : 'o Coletar copia para a pasta do projeto'],
+			['coletar', 'PARA COLETAR', n < all ? 'só os que aparecem são copiados' : 'o Coletar copia para a pasta do projeto'],
 			['ok', 'NA PASTA DO PROJETO', '']
 		];
 
@@ -209,14 +209,14 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var rows = visible.filter(function (it) {
 				var g = group(it);
 
-				return s[0] === 'collect' ? g === 'local' || g === 'net' : g === s[0];
+				return s[0] === 'coletar' ? g === 'local' || g === 'net' : g === s[0];
 			});
 
 			if (!rows.length) return;
 
 			var head = el('p', 'cw-sec');
 
-			head.appendChild(document.createTextNode(s[1] + ' · ' + rows.length + (s[0] === 'collect' && rows.length < all ? ' de ' + all : '')));
+			head.appendChild(document.createTextNode(s[1] + ' · ' + rows.length + (s[0] === 'coletar' && rows.length < all ? ' de ' + all : '')));
 			if (s[2]) head.appendChild(el('small', null, s[2]));
 			list.appendChild(head);
 			rows.forEach(function (it) {
@@ -316,7 +316,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		dot.title = st[1];
 		head.appendChild(dot);
 		head.addEventListener('click', function () {
-			call('collectReveal', { id: it.id }).catch(function () { });
+			call('coletarReveal', { id: it.id }).catch(function () { });
 		});
 		box.appendChild(head);
 
@@ -324,7 +324,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	}
 
 	// coletar: as setas dos que vão ser copiados sobem enquanto o After Effects copia
-	async function collect(path) {
+	async function coletar(path) {
 		if (state.busy) return;
 
 		state.busy = true;
@@ -341,7 +341,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		try {
 			// só os que aparecem na lista (o filtro)
-			var res = await call('collectProject', { path: path || '', ids: pending().map(function (it) {
+			var res = await call('coletarProject', { path: path || '', ids: pending().map(function (it) {
 				return it.id;
 			}) });
 			var d = res.data || {};
@@ -373,7 +373,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		state.busy = true;
 		render();
 
-		var button = $('cw-relink');
+		var button = $('cw-religar');
 		var searching = Array.prototype.slice.call(document.querySelectorAll('.fw-state.is-nofile, .fw-state.is-found'));
 
 		button.classList.add('is-working');
@@ -384,7 +384,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 		try {
 			// só os faltando que aparecem na lista
-			var res = await call('collectRelinkFind', { ids: state.data.items.filter(function (it) {
+			var res = await call('coletarReligarFind', { ids: state.data.items.filter(function (it) {
 				return it.state === 'missing' && shown(it);
 			}).map(function (it) {
 				return it.id;
@@ -420,7 +420,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		await load();
 	}
 
-	async function relink() {
+	async function religar() {
 		var hits = found();
 
 		if (state.busy || !hits.length) return;
@@ -436,12 +436,12 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 				to[it.id] = state.finds.to[it.id].to;
 			});
 
-			var res = await call('collectRelink', { ids: hits.map(function (it) {
+			var res = await call('coletarReligar', { ids: hits.map(function (it) {
 				return it.id;
 			}), to: to });
 			var parts = [];
 
-			if (res.relinked) parts.push(plural(res.relinked, 'arquivo religado', 'arquivos religados') + ' · ' + PAD_UTIL.undoKey + ' desfaz');
+			if (res.religados) parts.push(plural(res.religados, 'arquivo religado', 'arquivos religados') + ' · ' + PAD_UTIL.undoKey + ' desfaz');
 			if (res.still && res.still.length) parts.push(plural(res.still.length, 'ainda faltando', 'ainda faltando'));
 			status((parts.join(' · ') || 'nada para religar') + '.', '');
 			if (res.still && res.still.length) $('fw-status').title = res.still.join('\n');
@@ -919,7 +919,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('fw-list').hidden = true;
 		$('fw-empty').hidden = true;
 		$('cw-filter').hidden = true;
-		$('cw-relink').hidden = true;
+		$('cw-religar').hidden = true;
 		$('mg-back').hidden = false;
 		$('mg').hidden = false;
 		$('cw-go').disabled = true;
@@ -957,7 +957,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		$('mg').textContent = '';
 		$('mg-back').hidden = true;
 		$('fw-list').hidden = false;
-		$('cw-relink').hidden = false;
+		$('cw-religar').hidden = false;
 		$('cw-go').classList.add('button-primary');
 		document.body.classList.remove('is-migrating');
 		migWait('');
@@ -1055,7 +1055,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var res = await call('migrateEnd');
 			var parts = [plural(res.moved + (res.project ? 1 : 0), 'arquivo migrado', 'arquivos migrados')];
 
-			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
+			if (res.religados) parts.push(plural(res.religados, 'item religado', 'itens religados'));
 			if (res.queue) parts.push(plural(res.queue, 'output da fila apontado', 'outputs da fila apontados') + ' para a pasta nova');
 			if (res.folders) parts.push(plural(res.folders, 'pasta vazia apagada', 'pastas vazias apagadas'));
 			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde ser movido', 'não puderam ser movidos'));
@@ -1115,7 +1115,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			var res = await call('migrateUndo');
 			var parts = [plural(res.restored, 'arquivo de volta', 'arquivos de volta') + ' ao lugar de antes'];
 
-			if (res.relinked) parts.push(plural(res.relinked, 'item religado', 'itens religados'));
+			if (res.religados) parts.push(plural(res.religados, 'item religado', 'itens religados'));
 			if (res.failed && res.failed.length) parts.push(plural(res.failed.length, 'não pôde voltar', 'não puderam voltar'));
 			if (res.newer && res.newer.length) parts.push(plural(res.newer.length, 'projeto salvo depois da migração ficou como está', 'projetos salvos depois da migração ficaram como estão') + ' (' + res.newer.join(', ') + '; o original de antes continua guardado nos arquivos externos)');
 
@@ -1135,7 +1135,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	}
 
 	function init() {
-		$('cw-relink').addEventListener('click', findMissing);
+		$('cw-religar').addEventListener('click', findMissing);
 		PAD_KEYS.primary($('cw-go')); // Cmd/Ctrl+Enter faz o botão principal
 		$('cw-go').addEventListener('click', function () {
 			if (state.mig) {
@@ -1161,8 +1161,8 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 
 				if (plan.undo) undoMigration();
 				else migrate();
-			} else if (found().length) relink();
-			else collect('');
+			} else if (found().length) religar();
+			else coletar('');
 		});
 		$('mg-back').addEventListener('click', closeMigration);
 		window.addEventListener('resize', function () {

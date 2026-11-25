@@ -32,7 +32,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		search: { url: '', caminhosFixos: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		tiposDeProjeto: { tipos: [] }, // aba TIPOS DE PROJETO: os tipos da atração nova [{ name, path e output (com tokens), icon }]
-		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
+		coletar: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
 		savedAppearance: null,
@@ -43,11 +43,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		editTeam: false,
 		custom: { appearance: false, bar: false }, // a pessoa personalizou (senão, segue o da equipe)
 		prefsSnapshot: '',
-		personal: [], // aba LINKS: os deste computador (gravados à parte, fora do arquivo da rede)
-		personalSnapshot: '[]',
-		machine: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, fontsCheck: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba DESTE COMPUTADOR
+		linksDesteComputador: [], // aba LINKS: os deste computador (gravados à parte, fora do arquivo da rede)
+		linksDesteComputadorSnapshot: '[]',
+		desteComputador: { user: '', projects: '', outputs: '', render: { 'final': '', preview: '' }, productions: [], log: true, localMode: false, fontsUpload: true, fontsCheck: true, search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }, // aba DESTE COMPUTADOR
 		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
-		machineSnapshot: '',
+		desteComputadorSnapshot: '',
 		defaultUser: '',
 		tab: 'prods'
 	};
@@ -295,7 +295,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return canvasToLiteral(canvas);
 	}
 
-	// Imagem escolhida pelo usuário → PNG 24 x 24 (recorte central, sem distorcer).
+	// Imagem escolhida pelo designer → PNG 24 x 24 (recorte central, sem distorcer).
 	// 'logo': a imagem inteira, sem cortar, dentro de 96 x 72 px (a logo da barra), com fundo transparente
 	function imageFileToIcon(path, logo) {
 		return new Promise(function (resolve, reject) {
@@ -426,8 +426,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	function personalForSave() {
-		return state.personal.map(function (l) {
+	function linksDesteComputadorForSave() {
+		return state.linksDesteComputador.map(function (l) {
 			return { name: l.name.trim(), url: l.url.trim(), icon: l.icon || '' };
 		});
 	}
@@ -444,8 +444,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return { bank: state.fonts.bank.trim(), upload: !!state.fonts.upload };
 	}
 
-	function collectForSave() {
-		var c = state.collect;
+	function coletarForSave() {
+		var c = state.coletar;
 
 		return {
 			folders: c.folders.map(function (f) {
@@ -465,7 +465,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -490,8 +490,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (JSON.stringify(barForSave(m.bar)) !== JSON.stringify(barForSave(t.bar))) state.custom.bar = true;
 	}
 
-	function machineForSave() {
-		var m = state.machine;
+	function desteComputadorForSave() {
+		var m = state.desteComputador;
 
 		var productions = m.productions.map(function (p) {
 			return { name: p.name.trim(), path: p.path.trim() };
@@ -511,8 +511,8 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		return { user: m.user.trim().toUpperCase(), projects: m.projects.trim(), outputs: m.outputs.trim(), render: { 'final': m.render['final'], preview: m.render.preview }, productions: productions, log: !!m.log, localMode: !!m.localMode, search: search, fontsUpload: m.fontsUpload !== false, fontsCheck: m.fontsCheck !== false, lists: { recents: m.lists.recents, newDays: m.lists.newDays } };
 	}
 
-	function personalDirty() {
-		return JSON.stringify(personalForSave()) !== state.personalSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot || (state.machineSnapshot !== '' && JSON.stringify(machineForSave()) !== state.machineSnapshot);
+	function desteComputadorDirty() {
+		return JSON.stringify(linksDesteComputadorForSave()) !== state.linksDesteComputadorSnapshot || JSON.stringify(prefsForSave()) !== state.prefsSnapshot || (state.desteComputadorSnapshot !== '' && JSON.stringify(desteComputadorForSave()) !== state.desteComputadorSnapshot);
 	}
 
 	// o que é deste computador (designer, presets, links, aparência e layout deste computador) salva sozinho, um
@@ -520,15 +520,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// um erro aqui (um campo ainda pela metade) fica calado: o ponto no disquete continua e o Salvar diz o que é
 	var AUTOSAVE_MS = 900;
 
-	function autosavePersonal() {
+	function autosaveDesteComputador() {
 		clearTimeout(state.autosaveTimer);
 		state.autosaveTimer = setTimeout(async function () {
-			if (state.saving || !personalDirty()) return;
+			if (state.saving || !desteComputadorDirty()) return;
 
 			state.autosaving = true;
 
 			try {
-				await savePersonal();
+				await saveDesteComputador();
 			} catch (err) { }
 
 			state.autosaving = false;
@@ -539,9 +539,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function updateDirty() {
 		markCustom();
 
-		if (personalDirty() && !state.autosaving) autosavePersonal();
+		if (desteComputadorDirty() && !state.autosaving) autosaveDesteComputador();
 
-		var dirty = currentSnapshot() !== state.snapshot || personalDirty();
+		var dirty = currentSnapshot() !== state.snapshot || desteComputadorDirty();
 
 		$('btn-save').classList.toggle('is-dirty', dirty); // o disquete ganha um ponto com alterações não salvas
 		renderScope();
@@ -824,7 +824,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderLinks();
 		renderAppearance();
 		renderTiposDeProjeto();
-		renderCollect();
+		renderColetar();
 		renderTools();
 	}
 
@@ -2040,7 +2040,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   organizar); tipo na raiz = não é coletado
 	   ========================================================= */
 
-	var COLLECT_TYPES = [
+	var COLETAR_TYPES = [
 		['projeto', 'projeto (.aep)', ['M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z', 'M13.5 3.5V8H18']],
 		['videos', 'vídeos', TYPES.filter(function (t) { return t[0] === 'videos'; })[0][2]],
 		['sequencias', 'sequências de imagens', TYPES.filter(function (t) { return t[0] === 'sequencias'; })[0][2]],
@@ -2054,7 +2054,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	];
 
 	// a estrutura padrão (a mesma da tabela de seções, regras/configuracao.js: a seção coletar): o .aep em 01, os arquivos em 02, as saídas em 03
-	var DEFAULT_COLLECT_FOLDERS = [
+	var DEFAULT_COLETAR_FOLDERS = [
 		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
 		{ name: '02_ARQUIVOS', parent: '', contents: [] },
 		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
@@ -2068,25 +2068,25 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
 	];
 
-	function setCollect(c) {
+	function setColetar(c) {
 		var data = c || {};
 
-		state.collect = {
+		state.coletar = {
 			folders: (data.folders || []).map(function (f) {
 				return { name: f.name || '', parent: f.parent || '', contents: (f.contents || []).slice() };
 			})
 		};
-		renderCollect();
+		renderColetar();
 	}
 
 	var colTree = makeTree({
 		model: function () {
-			return state.collect;
+			return state.coletar;
 		},
-		types: COLLECT_TYPES,
+		types: COLETAR_TYPES,
 		treeId: 'col-tree',
 		typesId: 'col-types',
-		paneId: 'pane-collect',
+		paneId: 'pane-coletar',
 		newBtnId: 'btn-new-col-folder',
 		rootLabel: 'pasta do projeto',
 		cleanNames: true,
@@ -2124,17 +2124,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		}
 	});
 
-	function renderCollect() {
+	function renderColetar() {
 		colTree.render();
 	}
 
-	function bindCollect() {
+	function bindColetar() {
 		colTree.bind();
 
 		// troca a árvore pela estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS); salvar grava
 		$('btn-col-default').addEventListener('click', function () {
-			state.collect.folders = JSON.parse(JSON.stringify(DEFAULT_COLLECT_FOLDERS));
-			renderCollect();
+			state.coletar.folders = JSON.parse(JSON.stringify(DEFAULT_COLETAR_FOLDERS));
+			renderColetar();
 			updateDirty();
 			toast('success', 'estrutura padrão na árvore. salve para gravar.');
 		});
@@ -2154,7 +2154,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		'criar-template': ['Criar template', 'O CONFEITEIRO: criar um template a partir da comp aberta', 'template-new'],
 		projeto: ['Iniciar / Alterar', 'O PROJETISTA: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
 		fontes: ['Fontes', 'instalar as fontes do template · coletar as fontes', 'fonts'],
-		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
+		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'coletar'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear os outputs da fila', 'rename'],
 		organizar: ['Organizar', 'organizar o projeto · aplicar as etiquetas', 'organize'],
@@ -2239,7 +2239,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// as abas das ferramentas seguem a ordem da barra (a do layout em uso: muda junto ao arrastar)
-	var BAR_TABS = { preencher: 'prods', fontes: 'fonts', projeto: 'tipos-de-projeto', coletar: 'collect', renomear: 'rename', organizar: 'organize', buscar: 'search' };
+	var BAR_TABS = { preencher: 'prods', fontes: 'fonts', projeto: 'tipos-de-projeto', coletar: 'coletar', renomear: 'rename', organizar: 'organize', buscar: 'search' };
 
 	function orderToolTabs() {
 		var nav = $('tabs');
@@ -2587,14 +2587,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function renderLinks() {
 		renderLinkList(state.links, 'link-list', false);
-		renderLinkList(state.personal, 'personal-list', true);
+		renderLinkList(state.linksDesteComputador, 'links-deste-computador-list', true);
 		$('btn-new-link').disabled = !state.available;
 	}
 
-	// 'personal': os links deste computador (editáveis mesmo sem a lista da rede)
-	function renderLinkList(links, listId, personal) {
+	// 'linksDesteComputador': os links deste computador (editáveis mesmo sem a lista da rede)
+	function renderLinkList(links, listId, desteComputador) {
 		var list = $(listId);
-		var enabled = personal || state.available;
+		var enabled = desteComputador || state.available;
 
 		list.textContent = '';
 
@@ -2623,7 +2623,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			});
 			iconWrap.appendChild(iconBtn);
 
-			if (personal) {
+			if (desteComputador) {
 				var badge = el('span', 'link-badge');
 
 				badge.innerHTML = PERSON_BADGE;
@@ -2664,7 +2664,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				updateDirty();
 			});
 
-			if (personal) {
+			if (desteComputador) {
 				url.querySelector('input').disabled = false;
 				url.querySelector('.row-del').disabled = false; // os meus links: editáveis mesmo sem a lista da rede
 			}
@@ -2678,7 +2678,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function bindLinks() {
-		[['btn-new-link', 'link-list', 'links'], ['btn-new-personal', 'personal-list', 'personal']].forEach(function (k) {
+		[['btn-new-link', 'link-list', 'links'], ['btn-new-link-deste-computador', 'links-deste-computador-list', 'linksDesteComputador']].forEach(function (k) {
 			$(k[0]).addEventListener('click', function () {
 				state[k[2]].push({ name: '', url: '', icon: '' });
 				renderLinks();
@@ -2700,10 +2700,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   Computador (sigla, pastas padrão e modo local)
 	   ========================================================= */
 
-	function setMachine(m) {
+	function setDesteComputador(m) {
 		var ms = m.search || {};
 
-		state.machine = {
+		state.desteComputador = {
 			user: m.user || '',
 			projects: m.projects || '',
 			outputs: m.outputs || '',
@@ -2721,45 +2721,45 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.localIndexFile = m.localIndex || '';
 		state.offline = !!m.offline;
 		state.defaultUser = m.defaultUser || '';
-		state.machineSnapshot = JSON.stringify(machineForSave());
-		renderMachine();
+		state.desteComputadorSnapshot = JSON.stringify(desteComputadorForSave());
+		renderDesteComputador();
 	}
 
 	// a lista de templates neste computador: [campo, chave, máximo, padrão]
-	var LIST_KEYS = [['machine-recents', 'recents', 30, 5], ['machine-new-days', 'newDays', 90, 15]];
+	var LIST_KEYS = [['deste-computador-recents', 'recents', 30, 5], ['deste-computador-new-days', 'newDays', 90, 15]];
 
-	function renderMachine() {
-		var m = state.machine;
+	function renderDesteComputador() {
+		var m = state.desteComputador;
 
-		[['machine-designer', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
+		[['deste-computador-designer', 'user'], ['deste-computador-projects', 'projects'], ['deste-computador-outputs', 'outputs']].forEach(function (pair) {
 			if (document.activeElement !== $(pair[0])) $(pair[0]).value = m[pair[1]];
 		});
 		LIST_KEYS.forEach(function (k) {
 			if (document.activeElement !== $(k[0])) $(k[0]).value = m.lists[k[1]];
 		});
 		renderPresets();
-		$('machine-designer').placeholder = state.defaultUser;
-		$('machine-projects').placeholder = '~/Desktop';
-		$('machine-local').checked = m.localMode;
-		$('machine-log').checked = m.log;
-		$('machine-fonts').checked = m.fontsUpload !== false;
-		$('machine-fonts-check').checked = m.fontsCheck !== false;
-		$('machine-offline').hidden = !state.offline;
-		renderMachineTemplates();
-		renderMachineIndex();
+		$('deste-computador-designer').placeholder = state.defaultUser;
+		$('deste-computador-projects').placeholder = '~/Desktop';
+		$('deste-computador-local').checked = m.localMode;
+		$('deste-computador-log').checked = m.log;
+		$('deste-computador-fonts').checked = m.fontsUpload !== false;
+		$('deste-computador-fonts-check').checked = m.fontsCheck !== false;
+		$('deste-computador-offline').hidden = !state.offline;
+		renderDesteComputadorTemplates();
+		renderDesteComputadorIndex();
 	}
 
 	// busca de caminhos neste computador: webhook ou índice local (as pastas, as opções e o "indexar agora")
-	function renderMachineIndex() {
-		var ms = state.machine.search;
-		var list = $('machine-index-list');
+	function renderDesteComputadorIndex() {
+		var ms = state.desteComputador.search;
+		var list = $('deste-computador-index-list');
 
-		Array.prototype.forEach.call(document.querySelectorAll('input[name="machine-search-mode"]'), function (radio) {
+		Array.prototype.forEach.call(document.querySelectorAll('input[name="deste-computador-search-mode"]'), function (radio) {
 			radio.checked = radio.value === ms.mode;
 		});
-		$('machine-index').hidden = ms.mode !== 'local';
-		$('machine-index-folders-only').checked = ms.foldersOnly;
-		$('machine-index-daily').checked = ms.daily;
+		$('deste-computador-index').hidden = ms.mode !== 'local';
+		$('deste-computador-index-folders-only').checked = ms.foldersOnly;
+		$('deste-computador-index-daily').checked = ms.daily;
 		list.textContent = '';
 
 		ms.folders.forEach(function (folder, i) {
@@ -2770,7 +2770,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				updateDirty();
 			}, function () {
 				ms.folders.splice(i, 1);
-				renderMachineIndex();
+				renderDesteComputadorIndex();
 				updateDirty();
 			});
 
@@ -2782,7 +2782,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function renderIndexStatus(progress) {
-		var box = $('machine-index-status');
+		var box = $('deste-computador-index-status');
 		var L = window.PAD_LOCAL_INDEX;
 
 		box.textContent = '';
@@ -2796,7 +2796,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var info = L && state.localIndexFile ? L.info(state.localIndexFile) : { exists: false };
 
 		if (!info.exists) {
-			box.appendChild(document.createTextNode(state.machine.search.folders.length ? 'ainda não indexado: clique em indexar agora (ou abra a busca).' : 'escolha as pastas para indexar.'));
+			box.appendChild(document.createTextNode(state.desteComputador.search.folders.length ? 'ainda não indexado: clique em indexar agora (ou abra a busca).' : 'escolha as pastas para indexar.'));
 			return;
 		}
 
@@ -2810,7 +2810,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	async function indexNow() {
 		var L = window.PAD_LOCAL_INDEX;
 		var btn = $('btn-index-now');
-		var folders = state.machine.search.folders.map(function (f) {
+		var folders = state.desteComputador.search.folders.map(function (f) {
 			return f.trim();
 		}).filter(Boolean);
 
@@ -2829,13 +2829,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		try {
 			var res = await L.build(state.localIndexFile, folders, {
-				foldersOnly: state.machine.search.foldersOnly,
+				foldersOnly: state.desteComputador.search.foldersOnly,
 				onProgress: function (count) {
 					renderIndexStatus(count);
 				}
 			});
 
-			var unsaved = JSON.stringify(machineForSave()) !== state.machineSnapshot;
+			var unsaved = JSON.stringify(desteComputadorForSave()) !== state.desteComputadorSnapshot;
 
 			toast('success', res.count.toLocaleString('pt-BR') + ' itens indexados.' + (unsaved ? ' clique no disquete para a busca usar o índice local.' : ' a busca já usa o índice novo.'));
 		} catch (err) {
@@ -2848,14 +2848,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// produções deste computador (só daqui, independentes das da equipe): pontinhos, ícone com o bonequinho,
 	// nome e pasta. aparecem no seletor do painel de templates depois das da equipe.
-	function renderMachineTemplates() {
-		var list = $('machine-templates');
+	function renderDesteComputadorTemplates() {
+		var list = $('deste-computador-templates');
 
 		if (!list) return;
 
 		list.textContent = '';
 
-		state.machine.productions.forEach(function (row, i) {
+		state.desteComputador.productions.forEach(function (row, i) {
 			var box = el('div', 'drive-row computador-prod-row');
 			var badge = el('span', 'computador-prod-icon');
 			var name = el('input', 'cfg-input');
@@ -2882,12 +2882,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				row.path = picked;
 				if (!row.name.trim()) {
 					row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
-					renderMachineTemplates();
+					renderDesteComputadorTemplates();
 				}
 				updateDirty();
 			}, function () {
-				state.machine.productions.splice(i, 1);
-				renderMachineTemplates();
+				state.desteComputador.productions.splice(i, 1);
+				renderDesteComputadorTemplates();
 				updateDirty();
 			});
 
@@ -2900,9 +2900,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	async function loadMachine() {
+	async function loadDesteComputador() {
 		try {
-			setMachine(await call('machinePrefs'));
+			setDesteComputador(await call('prefsDesteComputador'));
 		} catch (err) { }
 
 		updateDirty();
@@ -2910,12 +2910,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// os presets de render (aba TIPOS DE PROJETO, deste computador): os templates de output deste After, lidos na primeira
 	// vez que a aba aparece (ler mexe na fila de render do projeto aberto, por um instante)
-	var RENDER_KEYS = [['machine-render-final', 'final'], ['machine-render-preview', 'preview']];
+	var RENDER_KEYS = [['deste-computador-render-final', 'final'], ['deste-computador-render-preview', 'preview']];
 
 	function renderPresets() {
 		RENDER_KEYS.forEach(function (k) {
 			var select = $(k[0]);
-			var chosen = state.machine.render[k[1]];
+			var chosen = state.desteComputador.render[k[1]];
 			var list = (state.renderTemplates || []).slice();
 
 			// o escolhido que não está (mais) na lista deste After continua à vista
@@ -2950,18 +2950,18 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		renderPresets();
 	}
 
-	function bindMachine() {
+	function bindDesteComputador() {
 		RENDER_KEYS.forEach(function (k) {
 			$(k[0]).addEventListener('change', function () {
-				state.machine.render[k[1]] = this.value;
+				state.desteComputador.render[k[1]] = this.value;
 				updateDirty();
 			});
 		});
 
-		[['machine-designer', 'user'], ['machine-projects', 'projects'], ['machine-outputs', 'outputs']].forEach(function (pair) {
+		[['deste-computador-designer', 'user'], ['deste-computador-projects', 'projects'], ['deste-computador-outputs', 'outputs']].forEach(function (pair) {
 			$(pair[0]).addEventListener('input', function () {
 				if (pair[1] === 'user') this.value = this.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9._-]/g, '');
-				state.machine[pair[1]] = this.value;
+				state.desteComputador[pair[1]] = this.value;
 				updateDirty();
 			});
 		});
@@ -2971,72 +2971,72 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			$(k[0]).addEventListener('input', function () {
 				var n = parseInt(this.value, 10);
 
-				state.machine.lists[k[1]] = isNaN(n) ? k[3] : Math.max(0, Math.min(k[2], n));
+				state.desteComputador.lists[k[1]] = isNaN(n) ? k[3] : Math.max(0, Math.min(k[2], n));
 				updateDirty();
 			});
 			$(k[0]).addEventListener('blur', function () {
-				this.value = state.machine.lists[k[1]];
+				this.value = state.desteComputador.lists[k[1]];
 			});
 		});
 
-		$('machine-local').addEventListener('change', function () {
-			state.machine.localMode = this.checked;
+		$('deste-computador-local').addEventListener('change', function () {
+			state.desteComputador.localMode = this.checked;
 			updateDirty();
 		});
 
-		$('machine-log').addEventListener('change', function () {
-			state.machine.log = this.checked;
+		$('deste-computador-log').addEventListener('change', function () {
+			state.desteComputador.log = this.checked;
 			updateDirty();
 		});
 
-		$('machine-fonts').addEventListener('change', function () {
-			state.machine.fontsUpload = this.checked;
+		$('deste-computador-fonts').addEventListener('change', function () {
+			state.desteComputador.fontsUpload = this.checked;
 			updateDirty();
 		});
-		$('machine-fonts-check').addEventListener('change', function () {
-			state.machine.fontsCheck = this.checked;
+		$('deste-computador-fonts-check').addEventListener('change', function () {
+			state.desteComputador.fontsCheck = this.checked;
 			updateDirty();
 		});
 
 		$('btn-new-computador-prod').addEventListener('click', function () {
-			state.machine.productions.push({ name: '', path: '' });
-			renderMachineTemplates();
+			state.desteComputador.productions.push({ name: '', path: '' });
+			renderDesteComputadorTemplates();
 			updateDirty();
-			$('machine-templates').lastChild.querySelector('input').focus();
+			$('deste-computador-templates').lastChild.querySelector('input').focus();
 		});
 
-		PAD_SORT.enable($('machine-templates'), '.computador-prod-row', function (from, to) {
-			var moved = state.machine.productions.splice(from, 1)[0];
+		PAD_SORT.enable($('deste-computador-templates'), '.computador-prod-row', function (from, to) {
+			var moved = state.desteComputador.productions.splice(from, 1)[0];
 
-			state.machine.productions.splice(to, 0, moved);
-			renderMachineTemplates();
+			state.desteComputador.productions.splice(to, 0, moved);
+			renderDesteComputadorTemplates();
 			updateDirty();
 		});
 
-		$('machine-search-mode').addEventListener('change', function (e) {
-			if (e.target.name !== 'machine-search-mode') return;
+		$('deste-computador-search-mode').addEventListener('change', function (e) {
+			if (e.target.name !== 'deste-computador-search-mode') return;
 
-			state.machine.search.mode = e.target.value;
-			renderMachineIndex();
+			state.desteComputador.search.mode = e.target.value;
+			renderDesteComputadorIndex();
 			updateDirty();
 		});
-		[['machine-index-folders-only', 'foldersOnly'], ['machine-index-daily', 'daily']].forEach(function (k) {
+		[['deste-computador-index-folders-only', 'foldersOnly'], ['deste-computador-index-daily', 'daily']].forEach(function (k) {
 			$(k[0]).addEventListener('change', function () {
-				state.machine.search[k[1]] = this.checked;
+				state.desteComputador.search[k[1]] = this.checked;
 				updateDirty();
 			});
 		});
 		$('btn-new-index-folder').addEventListener('click', function () {
-			state.machine.search.folders.push('');
-			renderMachineIndex();
+			state.desteComputador.search.folders.push('');
+			renderDesteComputadorIndex();
 			updateDirty();
-			$('machine-index-list').lastChild.querySelector('input').focus();
+			$('deste-computador-index-list').lastChild.querySelector('input').focus();
 		});
 		$('btn-index-now').addEventListener('click', indexNow);
 
-		[['machine-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['machine-outputs-pick', 'outputs', 'Output local (pasta deste computador)']].forEach(function (k) {
+		[['deste-computador-projects-pick', 'projects', 'Pasta dos projetos neste computador'], ['deste-computador-outputs-pick', 'outputs', 'Output local (pasta deste computador)']].forEach(function (k) {
 			$(k[0]).addEventListener('click', async function () {
-				var picked = PAD_BRIDGE.pickFolder(k[2], state.machine[k[1]]);
+				var picked = PAD_BRIDGE.pickFolder(k[2], state.desteComputador[k[1]]);
 
 				if (!picked) return;
 
@@ -3044,41 +3044,41 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					picked = (await call('canonicalPath', { path: picked })).path || picked;
 				} catch (err) { }
 
-				state.machine[k[1]] = picked;
-				renderMachine();
+				state.desteComputador[k[1]] = picked;
+				renderDesteComputador();
 				updateDirty();
 			});
 		});
 	}
 
-	async function loadPersonal() {
-		loadMachine();
+	async function loadLinksDesteComputador() {
+		loadDesteComputador();
 
 		try {
-			state.personal = (await call('personalLinks')).links.map(function (l) {
+			state.linksDesteComputador = (await call('linksDesteComputador')).links.map(function (l) {
 				return { name: l.name || '', url: l.url || '', icon: l.icon || '' };
 			});
 		} catch (err) {
-			state.personal = [];
+			state.linksDesteComputador = [];
 		}
 
-		state.personalSnapshot = JSON.stringify(personalForSave());
+		state.linksDesteComputadorSnapshot = JSON.stringify(linksDesteComputadorForSave());
 		renderLinks();
 		updateDirty();
 	}
 
 	// grava os links pessoais (à parte da lista da rede). Lança o erro do host.
 	// grava o que é deste computador (os links e as preferências daqui). Lança o erro do host.
-	async function savePersonal() {
+	async function saveDesteComputador() {
 		var saved = false;
 
-		if (JSON.stringify(personalForSave()) !== state.personalSnapshot) {
-			var res = await call('savePersonalLinks', { links: personalForSave() });
+		if (JSON.stringify(linksDesteComputadorForSave()) !== state.linksDesteComputadorSnapshot) {
+			var res = await call('saveLinksDesteComputador', { links: linksDesteComputadorForSave() });
 
-			state.personal = res.links.map(function (l) {
+			state.linksDesteComputador = res.links.map(function (l) {
 				return { name: l.name, url: l.url, icon: l.icon || '' };
 			});
-			state.personalSnapshot = JSON.stringify(personalForSave());
+			state.linksDesteComputadorSnapshot = JSON.stringify(linksDesteComputadorForSave());
 			renderLinks();
 			saved = true;
 		}
@@ -3086,21 +3086,21 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var prefs = prefsForSave();
 
 		if (JSON.stringify(prefs) !== state.prefsSnapshot) {
-			await call('savePersonalPrefs', prefs);
+			await call('savePrefsPersonalizadas', prefs);
 			state.prefsSnapshot = JSON.stringify(prefs);
 			saved = true;
 		}
 
-		var machine = machineForSave();
+		var desteComputador = desteComputadorForSave();
 
-		if (state.machineSnapshot !== '' && JSON.stringify(machine) !== state.machineSnapshot) {
-			var wasLocal = JSON.parse(state.machineSnapshot).localMode;
+		if (state.desteComputadorSnapshot !== '' && JSON.stringify(desteComputador) !== state.desteComputadorSnapshot) {
+			var wasLocal = JSON.parse(state.desteComputadorSnapshot).localMode;
 
-			setMachine(await call('saveMachinePrefs', machine));
+			setDesteComputador(await call('savePrefsDesteComputador', desteComputador));
 			saved = true;
 
 			// o modo local troca de onde vem a configuração da equipe (rede ou a cópia deste computador)
-			if (wasLocal !== state.machine.localMode) setTimeout(load, 0);
+			if (wasLocal !== state.desteComputador.localMode) setTimeout(load, 0);
 		}
 
 		renderScope();
@@ -3120,7 +3120,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// as deste computador: sem personalização, uma cópia das da equipe
-	function setPersonal(p) {
+	function setPersonalizadas(p) {
 		var data = p || {};
 
 		state.custom = { appearance: !!data.appearance, bar: !!data.bar };
@@ -3625,9 +3625,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada tipo: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). um tipo com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao'];
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao', 'designer'];
 	// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo; regras/configuracao.js)
-	var TOKENS_ANTIGOS = { categoria: 'tipo' };
+	var TOKENS_ANTIGOS = { categoria: 'tipo', usuario: 'designer' };
 
 	Object.keys(TOKENS_ANTIGOS).forEach(function (k) {
 		PATH_TOKENS.push(k);
@@ -3656,7 +3656,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', letra: 'A', designer: 'DESIGNER' };
 
 		Object.keys(TOKENS_ANTIGOS).forEach(function (k) {
 			sample[k] = sample[TOKENS_ANTIGOS[k]];
@@ -3958,10 +3958,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	var CONFIG_TAB_TTL = 15000; // pedido mais velho que isso não vale ao abrir
-	var TAB_NAMES = ['prods', 'tipos-de-projeto', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'];
+	var TAB_NAMES = ['prods', 'tipos-de-projeto', 'coletar', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'deste-computador'];
 	// os nomes antigos (pedidos pela barra ou por um erro) → a aba de agora e a seção dela
 	var TAB_ALIASES = { logs: ['telemetry', ''], drives: ['network', 'drives-section'], mylinks: ['links', 'mylinks-section'], project: ['tipos-de-projeto', ''], 'prods-computador': ['prods', 'prods-computador'], localprods: ['prods', 'prods-computador'] };
-	var MINE_TABS = ['appearance', 'tools', 'machine']; // deste computador; as outras, da equipe (rede)
+	var MINE_TABS = ['appearance', 'tools', 'deste-computador']; // deste computador; as outras, da equipe (rede)
 	var SPLIT_TABS = ['prods', 'tipos-de-projeto', 'search', 'fonts', 'links', 'telemetry']; // da equipe, com a parte 'deste computador' embaixo
 
 	async function watchRequestedTab(initial) {
@@ -4010,7 +4010,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!box) return;
 
 		var mine = MINE_TABS.indexOf(tab) >= 0;
-		var team = !mine || (state.editTeam && tab !== 'machine');
+		var team = !mine || (state.editTeam && tab !== 'deste-computador');
 		var text = el('span', 'scope-text');
 
 		box.textContent = '';
@@ -4019,14 +4019,14 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		var split = SPLIT_TABS.indexOf(tab) >= 0 ? ' · embaixo, <b>deste computador</b>' : '';
 
-		if (!mine && (state.machine.localMode || state.fromCopy)) {
-			text.innerHTML = '<b>da equipe</b> · modo local' + (state.machine.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler' + split;
+		if (!mine && (state.desteComputador.localMode || state.fromCopy)) {
+			text.innerHTML = '<b>da equipe</b> · modo local' + (state.desteComputador.localMode ? '' : ' (sem a rede)') + ': a cópia guardada neste computador, só para ler' + split;
 		} else if (!mine) {
 			text.innerHTML = '<b>da equipe</b> · salvo na rede, vale para todo mundo' + split;
 		} else if (team) {
 			text.innerHTML = '<b>da equipe</b> · salvo na rede, vale para quem não personalizou';
-		} else if (tab === 'machine') {
-			text.innerHTML = '<b>deste computador</b> · salvo aqui, não muda nada para os outros' + (tab === 'machine' && (state.machine.localMode || state.offline) ? ' · <b>modo local</b>' : '');
+		} else if (tab === 'deste-computador') {
+			text.innerHTML = '<b>deste computador</b> · salvo aqui, não muda nada para os outros' + (tab === 'deste-computador' && (state.desteComputador.localMode || state.offline) ? ' · <b>modo local</b>' : '');
 		} else {
 			text.innerHTML = '<b>deste computador</b> · salvo aqui · ' + (isPersonalized(tab) ? 'personalizado' : 'usando o da equipe');
 		}
@@ -4040,7 +4040,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			box.appendChild(scopeButton('voltar às deste computador', function () {
 				setEditTeam(false);
 			}));
-		} else if (mine && tab !== 'machine' && isPersonalized(tab)) {
+		} else if (mine && tab !== 'deste-computador' && isPersonalized(tab)) {
 			box.appendChild(scopeButton('voltar ao da equipe', function () {
 				if (tab === 'appearance') state.custom.appearance = false;
 				if (tab === 'tools') state.custom.bar = false;
@@ -4061,10 +4061,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
 	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
-	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'coletar', search: 'search', 'tipos-de-projeto': 'project', fonts: 'fonts' };
+	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', coletar: 'coletar', search: 'search', 'tipos-de-projeto': 'project', fonts: 'fonts' };
 
 	var TAB_ICONS = {
-		machine: '<g class="ti-user"><circle class="ti-head" cx="12" cy="8.5" r="3.5" /><path class="ti-body" d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
+		'deste-computador': '<g class="ti-user"><circle class="ti-head" cx="12" cy="8.5" r="3.5" /><path class="ti-body" d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
 		network: '<g class="ti-server"><g class="ti-rack ti-k1"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 7.5h.01" /></g><g class="ti-rack ti-k2"><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path class="ti-led" d="M7.5 16.5h.01" /></g></g>',
 		links: '<g class="ti-link"><path class="ti-link-a" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path class="ti-link-b" d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></g>',
 		logs: '<g class="ti-log"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path class="ti-line" d="M8 8.5h8" /><path class="ti-line" d="M8 12h8" /><path class="ti-line" d="M8 15.5h5" /></g>',
@@ -4139,7 +4139,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (/#PAD_087/.test(message)) return 'links';
 		if (/#PAD_088/.test(message)) return 'appearance';
 		if (/#PAD_089/.test(message)) return 'tipos-de-projeto';
-		if (/#PAD_094/.test(message)) return 'collect';
+		if (/#PAD_094/.test(message)) return 'coletar';
 		if (/#PAD_098/.test(message)) return 'prods-computador'; // produção deste computador (aba templates, embaixo)
 
 		return null;
@@ -4150,7 +4150,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	   ========================================================= */
 
 	async function load() {
-		loadPersonal(); // os pessoais não dependem da rede
+		loadLinksDesteComputador(); // os pessoais não dependem da rede
 		$('list').classList.remove('is-settled'); // ao ler a lista, as linhas entram animadas de novo
 
 		try {
@@ -4175,16 +4175,16 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setSearch(res.search);
 			setLinks(res.links);
 			setTiposDeProjeto(res.tiposDeProjeto);
-			setCollect(res.collect);
+			setColetar(res.coletar);
 			setBar(res.bar);
 			setAppearance(res.appearance);
 			setFonts(res.fonts);
-			setPersonal(res.personal);
+			setPersonalizadas(res.personalizadas);
 			state.stamp = res.stamp;
 			state.rows = res.productions.map(newRow);
 			state.snapshot = currentSnapshot();
 			state.fromCopy = !!res.fromCopy;
-			renderMachine();
+			renderDesteComputador();
 
 			if (res.error) toast('error', res.error);
 			else if (res.fromCopy && !res.localForced) toast('error', 'sem a rede: o padeiro entrou no modo local (a configuração da equipe é a cópia deste computador, só para ler).');
@@ -4236,11 +4236,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		// só os links pessoais mudaram (ou a lista da rede está inacessível): grava só eles, no computador
 		if (!state.available || currentSnapshot() === state.snapshot) {
-			if (!personalDirty()) {
+			if (!desteComputadorDirty()) {
 				if (!state.available) return;
 			} else {
 				try {
-					await savePersonal();
+					await saveDesteComputador();
 					updateDirty();
 					toast('success', 'salvo: deste computador.');
 				} catch (err) {
@@ -4271,7 +4271,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('btn-save').classList.add('is-busy');
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), collect: collectForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -4281,7 +4281,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.search) setSearch(res.search);
 			if (res.links) setLinks(res.links);
 			if (res.tiposDeProjeto) setTiposDeProjeto(res.tiposDeProjeto);
-			if (res.collect) setCollect(res.collect);
+			if (res.coletar) setColetar(res.coletar);
 			if (res.bar) setBar(res.bar);
 			setAppearance(res.appearance || state.team.appearance);
 			state.rows = res.productions.map(newRow);
@@ -4292,7 +4292,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			var mine = false;
 
 			try {
-				mine = await savePersonal();
+				mine = await saveDesteComputador();
 			} catch (err) {
 				if (tabForError(err.message)) showTab(/#PAD_087/.test(err.message) ? 'mylinks' : tabForError(err.message));
 				toast('error', err.message);
@@ -4412,9 +4412,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindLinks();
 		bindAppearance();
 		bindTiposDeProjeto();
-		bindMachine();
+		bindDesteComputador();
 		bindFonts();
-		bindCollect();
+		bindColetar();
 		bindTools();
 
 		decorateTabs();

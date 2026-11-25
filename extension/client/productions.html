@@ -26,7 +26,7 @@
 							<button type="button" class="tab" role="tab" data-tab="prods" aria-selected="true">TEMPLATES</button>
 							<button type="button" class="tab" role="tab" data-tab="fonts" aria-selected="false">FONTES</button>
 							<button type="button" class="tab" role="tab" data-tab="tipos-de-projeto" aria-selected="false">TIPOS DE PROJETO</button>
-							<button type="button" class="tab" role="tab" data-tab="collect" aria-selected="false">COLETAR</button>
+							<button type="button" class="tab" role="tab" data-tab="coletar" aria-selected="false">COLETAR</button>
 							<button type="button" class="tab" role="tab" data-tab="rename" aria-selected="false">RENOMEAR</button>
 							<button type="button" class="tab" role="tab" data-tab="organize" aria-selected="false">ORGANIZAR</button>
 							<button type="button" class="tab" role="tab" data-tab="search" aria-selected="false">BUSCAR</button>
@@ -35,7 +35,7 @@
 							<button type="button" class="tab" role="tab" data-tab="telemetry" aria-selected="false">TELEMETRIA</button>
 							<button type="button" class="tab" role="tab" data-tab="appearance" aria-selected="false">APARÊNCIA</button>
 							<button type="button" class="tab" role="tab" data-tab="tools" aria-selected="false">LAYOUT</button>
-							<button type="button" class="tab" role="tab" data-tab="machine" aria-selected="false">DESTE COMPUTADOR</button>
+							<button type="button" class="tab" role="tab" data-tab="deste-computador" aria-selected="false">DESTE COMPUTADOR</button>
 						</div>
 					</nav>
 				</div>
@@ -95,21 +95,21 @@
 			</div>
 
 			<div class="prods-computador" id="prods-computador">
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
-				<p class="cfg-hint computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<p class="cfg-hint deste-computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
 				<p class="cfg-title prods-section-title">produções deste computador</p>
 				<p class="cfg-hint">produções <b>só suas</b>, com pastas deste computador: independentes das da equipe (nada é copiado da rede). aparecem no seletor de produção do painel de templates, depois das da equipe, com o bonequinho. no modo local, só elas aparecem.</p>
-				<div class="drive-rows" id="machine-templates"></div>
+				<div class="drive-rows" id="deste-computador-templates"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-computador-prod">+ nova produção deste computador</button>
 
 				<p class="cfg-title prods-section-title">output local</p>
 				<p class="cfg-hint">para onde vão os renders da fila quando a pasta do template não pode ser acessada. vazia: a Área de Trabalho.</p>
-				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Output local (pasta deste computador)"><button type="button" class="mini-button" id="machine-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta do output local"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="deste-computador-outputs" placeholder="~/Desktop" spellcheck="false" autocomplete="off" aria-label="Output local (pasta deste computador)"><button type="button" class="mini-button" id="deste-computador-outputs-pick" title="escolher a pasta" aria-label="escolher a pasta do output local"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 				<p class="cfg-title prods-section-title">lista de templates</p>
 				<p class="cfg-hint">as seções do topo do painel de templates. <b>0</b> esconde a seção.</p>
 				<div class="render-presets">
-					<label class="cfg-field" for="machine-recents"><span class="cfg-label">recentes · quantos templates</span><span class="cfg-number"><input type="number" class="cfg-input" id="machine-recents" min="0" max="30" step="1" inputmode="numeric" aria-label="Quantos templates recentes aparecem"><span class="cfg-hint">os últimos usados (padrão: 5)</span></span></label>
-					<label class="cfg-field" for="machine-new-days"><span class="cfg-label">novos · criados há até</span><span class="cfg-number"><input type="number" class="cfg-input" id="machine-new-days" min="0" max="90" step="1" inputmode="numeric" aria-label="Há quantos dias um template ainda é novo"><span class="cfg-hint">dias (padrão: 15)</span></span></label>
+					<label class="cfg-field" for="deste-computador-recents"><span class="cfg-label">recentes · quantos templates</span><span class="cfg-number"><input type="number" class="cfg-input" id="deste-computador-recents" min="0" max="30" step="1" inputmode="numeric" aria-label="Quantos templates recentes aparecem"><span class="cfg-hint">os últimos usados (padrão: 5)</span></span></label>
+					<label class="cfg-field" for="deste-computador-new-days"><span class="cfg-label">novos · criados há até</span><span class="cfg-number"><input type="number" class="cfg-input" id="deste-computador-new-days" min="0" max="90" step="1" inputmode="numeric" aria-label="Há quantos dias um template ainda é novo"><span class="cfg-hint">dias (padrão: 15)</span></span></label>
 				</div>
 			</div>
 			</div>
@@ -121,30 +121,30 @@
 				<div class="drive-rows" id="link-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link">+ novo link da equipe</button>
 
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
-				<p class="cfg-hint computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<p class="cfg-hint deste-computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
 				<div class="mylinks-section" id="mylinks-section">
 					<p class="cfg-title prods-section-title">meus links</p>
 					<p class="cfg-hint">aparecem na barra depois dos da equipe, com um bonequinho no canto do ícone.</p>
-					<div class="drive-rows" id="personal-list"></div>
-					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-personal">+ novo link meu</button>
+					<div class="drive-rows" id="links-deste-computador-list"></div>
+					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-link-deste-computador">+ novo link meu</button>
 				</div>
 			</div>
 
 			<!-- aba DESTE COMPUTADOR (designer e modo local; o resto de cada ferramenta fica na aba dela) -->
-			<div class="cfg-pane drives-pane" id="pane-machine" role="tabpanel" hidden>
+			<div class="cfg-pane drives-pane" id="pane-deste-computador" role="tabpanel" hidden>
 				<p class="cfg-title prods-section-title">designer</p>
-				<p class="cfg-hint">o seu nome nos projetos (<b>{usuario}</b>), ou uma sigla, se preferir. vazio: o login do computador.</p>
-				<div class="has-field-icon machine-designer"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="machine-designer" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
+				<p class="cfg-hint">o seu nome nos projetos (<b>{designer}</b>), ou uma sigla, se preferir. vazio: o login do computador.</p>
+				<div class="has-field-icon deste-computador-designer"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.2 7-5.2s6.2 1.8 7 5.2" /></svg><input type="text" class="cfg-input" id="deste-computador-designer" maxlength="24" spellcheck="false" autocomplete="off" aria-label="Designer"></div>
 
 
 				<p class="cfg-title prods-section-title">modo local</p>
 				<label class="cfg-switch">
-					<input type="checkbox" id="machine-local">
+					<input type="checkbox" id="deste-computador-local">
 					<span class="cfg-switch-track"></span>
 					<span class="cfg-switch-label">modo local: trabalhar sem a rede</span>
 				</label>
-				<p class="scope-note machine-offline" id="machine-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
+				<p class="scope-note deste-computador-offline" id="deste-computador-offline" hidden>a rede não está respondendo agora: o modo local já está valendo sozinho.</p>
 				<p class="cfg-hint">é o mesmo que acontece quando a rede cai, só que sem nem tentar a rede (bom em casa ou na VPN lenta): a configuração da equipe vem da última cópia guardada neste computador (atualizada sempre que você abre com a rede) e fica só para ler, os templates vêm só das produções deste computador (aba templates), a busca do último índice baixado, os projetos vão para a pasta dos projetos e todos os renders para o output local (sem eles, a Área de Trabalho). os logs esperam a volta para a rede.</p>
 			</div>
 
@@ -176,10 +176,10 @@
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg><input type="text" class="cfg-input" id="db-webhook" placeholder="https://workflows.jmbillard.com/webhook/…" disabled aria-label="Endereço do webhook do cadastro"></div>
 				</div>
 
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
 				<p class="cfg-hint">a equipe registra cada template preenchido (produção, template, quantidade, usuário e computador), como definido acima. desligado, nada sai deste computador.</p>
 				<label class="cfg-switch">
-					<input type="checkbox" id="machine-log">
+					<input type="checkbox" id="deste-computador-log">
 					<span class="cfg-switch-track"></span>
 					<span class="cfg-switch-label">enviar o meu registro de uso</span>
 				</label>
@@ -197,16 +197,16 @@
 				</label>
 				<p class="cfg-hint" id="fonts-count"></p>
 
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
 				<p class="cfg-hint">desligado, as fontes deste computador não vão para o banco (instalar a partir dele continua valendo).</p>
 				<label class="cfg-switch">
-					<input type="checkbox" id="machine-fonts">
+					<input type="checkbox" id="deste-computador-fonts">
 					<span class="cfg-switch-track"></span>
 					<span class="cfg-switch-label">enviar as fontes deste computador</span>
 				</label>
 				<p class="cfg-hint">ligado, a barra confere as fontes do projeto (a bolinha e o envio) quando ele é aberto ou salvo. desligado, só no clique em Fontes.</p>
 				<label class="cfg-switch">
-					<input type="checkbox" id="machine-fonts-check">
+					<input type="checkbox" id="deste-computador-fonts-check">
 					<span class="cfg-switch-track"></span>
 					<span class="cfg-switch-label">conferir as fontes sozinho</span>
 				</label>
@@ -331,20 +331,20 @@
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-tipo">+ novo tipo de projeto</button>
 
 
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
-				<p class="cfg-hint computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<p class="cfg-hint deste-computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
 				<p class="cfg-title prods-section-title">pasta dos projetos</p>
 				<p class="cfg-hint">para onde vai o projeto de uma atração nova quando a pasta do tipo não pode ser acessada (rede fora ou modo local), na estrutura <b>{tipo}/{atracao}</b>. vazia: a Área de Trabalho.</p>
-				<div class="cfg-path"><input type="text" class="cfg-input" id="machine-projects" spellcheck="false" autocomplete="off" placeholder="~/Desktop" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="machine-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
+				<div class="cfg-path"><input type="text" class="cfg-input" id="deste-computador-projects" spellcheck="false" autocomplete="off" placeholder="~/Desktop" aria-label="Pasta dos projetos neste computador"><button type="button" class="mini-button" id="deste-computador-projects-pick" title="escolher a pasta" aria-label="escolher a pasta dos projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 17z" /></svg></button></div>
 				<p class="cfg-title prods-section-title" id="render-presets">presets de render</p>
 				<p class="cfg-hint">os presets de render do <b>seu</b> After Effects, para o botão <b>Render</b> da barra.</p>
 				<div class="render-presets">
-					<label class="cfg-field" for="machine-render-final"><span class="cfg-label">render final · clique</span><span class="select select-large"><select id="machine-render-final" aria-label="Preset do render final"></select></span></label>
-					<label class="cfg-field" for="machine-render-preview"><span class="cfg-label">preview · clique direito</span><span class="select select-large"><select id="machine-render-preview" aria-label="Preset do preview"></select></span></label>
+					<label class="cfg-field" for="deste-computador-render-final"><span class="cfg-label">render final · clique</span><span class="select select-large"><select id="deste-computador-render-final" aria-label="Preset do render final"></select></span></label>
+					<label class="cfg-field" for="deste-computador-render-preview"><span class="cfg-label">preview · clique direito</span><span class="select select-large"><select id="deste-computador-render-preview" aria-label="Preset do preview"></select></span></label>
 				</div>
 			</div>
 
-			<div class="cfg-pane organize-pane" id="pane-collect" role="tabpanel" hidden>
+			<div class="cfg-pane organize-pane" id="pane-coletar" role="tabpanel" hidden>
 				<div class="org-card">
 					<div class="org-tree" id="col-tree"></div>
 				</div>
@@ -373,33 +373,33 @@
 				<div class="drive-rows" id="caminhos-fixos-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-caminho-fixo">+ novo caminho fixo</button>
 
-				<div class="computador-split"><span class="computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
-				<p class="cfg-hint computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
+				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
+				<p class="cfg-hint deste-computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>
 				<p class="cfg-title prods-section-title">de onde vêm os caminhos</p>
 				<p class="cfg-hint">o acessorista e a janela de projeto usam o webhook da equipe (acima) ou um índice das pastas deste computador. no modo local, o webhook não é chamado: vale a cópia do índice salva aqui.</p>
-				<div class="log-modes" id="machine-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
-					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="machine-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook da equipe</span></label>
-					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="machine-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
+				<div class="log-modes" id="deste-computador-search-mode" role="radiogroup" aria-label="De onde vêm os caminhos">
+					<label class="log-radio" title="o índice pronto do webhook da equipe (configuração > buscar)"><input type="radio" name="deste-computador-search-mode" value="webhook"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">webhook da equipe</span></label>
+					<label class="log-radio" title="as pastas abaixo, lidas neste computador"><input type="radio" name="deste-computador-search-mode" value="local"><span class="log-radio-dot" aria-hidden="true"></span><span class="log-radio-text">índice local</span></label>
 				</div>
-				<div class="machine-index" id="machine-index" hidden>
+				<div class="deste-computador-index" id="deste-computador-index" hidden>
 					<p class="cfg-hint">o padeiro lê as pastas abaixo e todas as subpastas, e guarda o índice <b>neste computador</b>. a busca procura pelo nome de cada pasta; sem rede, continua funcionando. a janela de projeto procura a claquete pelo nome das pastas.</p>
-					<div class="drive-rows" id="machine-index-list"></div>
+					<div class="drive-rows" id="deste-computador-index-list"></div>
 					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-index-folder">+ nova pasta para indexar</button>
-					<div class="machine-index-opts">
+					<div class="deste-computador-index-opts">
 						<label class="cfg-switch">
-							<input type="checkbox" id="machine-index-folders-only">
+							<input type="checkbox" id="deste-computador-index-folders-only">
 							<span class="cfg-switch-track"></span>
 							<span class="cfg-switch-label">só pastas (sem arquivos): mais rápido e mais leve</span>
 						</label>
 						<label class="cfg-switch">
-							<input type="checkbox" id="machine-index-daily">
+							<input type="checkbox" id="deste-computador-index-daily">
 							<span class="cfg-switch-track"></span>
 							<span class="cfg-switch-label">atualizar sozinho uma vez por dia (ao abrir a busca)</span>
 						</label>
 					</div>
-					<div class="machine-index-status">
+					<div class="deste-computador-index-status">
 						<button type="button" class="button button-primary button-compact" id="btn-index-now">indexar agora</button>
-						<span id="machine-index-status"></span>
+						<span id="deste-computador-index-status"></span>
 					</div>
 				</div>
 			</div>

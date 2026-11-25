@@ -181,7 +181,7 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 	// no Windows, um caminho do Mac (/Volumes/SHARE/...) vira o de rede pelo mapa de drives (configuração > rede)
 	if (appOs != 'Mac' && /^\/Volumes\//i.test(psSlashes(path))) folderPath = toWinPath(path);
 
-	// A montagem só é tentada depois do clique do usuário.
+	// A montagem só é tentada depois do clique do designer.
 	if (appOs == 'Mac') folderPath = psResolveOnMac(folderPath, fixedServer, fixedShare);
 
 	if (!new Folder(folderPath).exists) {

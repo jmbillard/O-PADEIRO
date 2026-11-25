@@ -358,7 +358,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 
 		if (action === 'save-user') {
 			return work('user', async function () {
-				var res = await call('saveMachinePrefs', { user: state.user });
+				var res = await call('savePrefsDesteComputador', { user: state.user });
 
 				state.user = res.user || res.defaultUser || state.user;
 				state.step = 'ask';

@@ -199,7 +199,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 		state.layers.forEach(function (layer, i) {
 			var row = el('div', 'cfg-row' + (layer.missing ? ' is-missing' : ''));
-			var name = el('button', 'maker-layer-name', '#' + layer.index + '  ' + layer.name);
+			var name = el('button', 'confeiteiro-layer-name', '#' + layer.index + '  ' + layer.name);
 			var selWrap = el('span', 'select select-large');
 			var select = el('select');
 			var options = layer.isText ? METHODS : [METHODS[1]]; // 'conteúdo' só para layers de texto
@@ -207,7 +207,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			name.type = 'button';
 			name.title = layer.missing ? 'o layer não existe mais na comp' : 'clique para selecionar / desselecionar o layer na comp';
 			name.addEventListener('click', function () {
-				call('makerToggleLayer', { compId: state.comp.id, layerId: layer.id }).catch(function (err) {
+				call('confeiteiroToggleLayer', { compId: state.comp.id, layerId: layer.id }).catch(function (err) {
 					toast('error', err.message);
 				});
 			});
@@ -266,7 +266,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		if (!state.comp) return toast('error', '#PAD_025 - capture o preview com a comp principal aberta primeiro.');
 
 		try {
-			var res = await call('makerSelection', { compId: state.comp.id });
+			var res = await call('confeiteiroSelection', { compId: state.comp.id });
 
 			if (!addLayerInfos(res.selected)) toast(null, 'esses layers já estão na lista.');
 		} catch (err) {
@@ -279,7 +279,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		if (!state.comp || !state.layers.length) return;
 
 		try {
-			var res = await call('makerLayers', { compId: state.comp.id, layerIds: state.layers.map(function (l) { return l.id; }) });
+			var res = await call('confeiteiroLayers', { compId: state.comp.id, layerIds: state.layers.map(function (l) { return l.id; }) });
 
 			res.layers.forEach(function (info, i) {
 				var layer = state.layers[i];
@@ -515,7 +515,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	async function loadFonts() {
 		try {
-			var res = await call('makerFonts');
+			var res = await call('confeiteiroFonts');
 			var list = $('fonts-list');
 
 			list.textContent = '';
@@ -532,7 +532,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 
 	async function capture(silent) {
 		try {
-			var res = await call('makerCapture');
+			var res = await call('confeiteiroCapture');
 
 			if (state.comp && state.comp.id !== res.compId && state.layers.length) {
 				state.layers = [];
@@ -628,7 +628,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('toast').hidden = true; // o aviso de antes sai: o resultado deste teste vem no lugar
 
 		try {
-			var res = await call('makerTest', {
+			var res = await call('confeiteiroTest', {
 				compId: state.comp.id,
 				layers: state.layers.map(function (l) {
 					return { id: l.id, method: l.method };
@@ -719,7 +719,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		if (!state.comp) return toast('error', '#PAD_028 - comp principal não encontrada: abra a comp e capture o preview.');
 
 		try {
-			var fx = await call('makerPickEffect', { compId: state.comp.id });
+			var fx = await call('confeiteiroPickEffect', { compId: state.comp.id });
 			var before = state.fx ? state.fx.options : [];
 			var total = fx.kind === 'checkbox' ? 2 : fx.count || Math.max(before.length, 2); // sem o total do menu: as linhas de antes (ou 2)
 
@@ -759,7 +759,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var swap = el('button', 'fx-swap');
 
 		row.insertAdjacentHTML('afterbegin', FX_SVG);
-		var fxName = el('span', 'maker-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName);
+		var fxName = el('span', 'confeiteiro-layer-name', '#' + fx.layerIndex + ' ' + fx.layerName + ' › ' + fx.fxName);
 
 		fxName.title = fxName.textContent; // o nome encolhe com reticências: inteiro na dica
 		row.appendChild(fxName);
@@ -944,7 +944,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 			render.textContent = 'renderizando…';
 
 			try {
-				var res = await call('makerRenderPreview', { compId: compId, base: data.base });
+				var res = await call('confeiteiroRenderPreview', { compId: compId, base: data.base });
 
 				toast('success', 'preview .mp4 gerado: ' + res.path);
 			} catch (err) {
@@ -1004,7 +1004,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('btn-save').textContent = 'Salvando…';
 
 		try {
-			var res = await call('makerSave', {
+			var res = await call('confeiteiroSave', {
 				compId: state.comp.id,
 				layers: state.layers.map(function (l) {
 					return { id: l.id, method: l.method };
@@ -1042,7 +1042,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	// Como o script ao abrir: captura o preview, traz os layers já selecionados e deixa um output vazio.
 	async function start() {
 		try {
-			var st = await call('makerState');
+			var st = await call('confeiteiroState');
 
 			showForm(st.hasComp);
 
@@ -1179,7 +1179,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		$('pick-import').addEventListener('click', function () {
 			pickPathInto($('f-import'), 'Selecione a pasta de import');
 		});
-		animateDetails(document.querySelector('.maker-help'));
+		animateDetails(document.querySelector('.confeiteiro-help'));
 		$('btn-save').addEventListener('click', save);
 		$('btn-save').title = PAD_KEYS.modLabel + '+S';
 		// começar de novo apaga o formulário inteiro: pede um segundo clique (em até 4 s), como o descartar da

@@ -135,7 +135,7 @@ PADX.searchDownload = function (a) {
 // Abre a pasta de um caminho (no macOS, monta o volume SMB se for preciso).
 // a: { path, server, share }
 PADX.openPath = function (a) {
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		psOpenFolder(a.path, a.server || '', a.share || '');
 	});
 };

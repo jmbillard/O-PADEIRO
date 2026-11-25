@@ -329,7 +329,7 @@ function padToday() {
 // Abre a pasta do projeto aberto: a da estrutura (gravada ao criar) ou a de cima da de projetos.
 PADX.projectOpenFolder = function () {
 	var file = app.project.file;
-	var path = padMountedPath(padPath(padMetaRead().pasta)) || (file ? padCollectRoot(file, padLerSecao('coletar')) : '');
+	var path = padMountedPath(padPath(padMetaRead().pasta)) || (file ? padColetarRoot(file, padLerSecao('coletar')) : '');
 
 	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
@@ -678,7 +678,7 @@ function padListedFolder(path) {
 
 function padNewProjectPlan(a) {
 	var settings = padLerSecao('coletar');
-	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
+	var sub = padColetarFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var root;
 	var fileBase;
 
@@ -828,7 +828,7 @@ PADX.projectFolders = function (a) {
 // → { names: [nome] }
 PADX.projectQuadros = function (a) {
 	var settings = padLerSecao('coletar');
-	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
+	var sub = padColetarFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var level = [new Folder(padMountedPath(padPath(a.root)))];
 	var depth = Math.max(1, Math.min(3, a.depth || 1));
 	var hereKey = a.here ? padPathKey(new Folder(padMountedPath(padPath(a.here))).fsName) : '';
@@ -984,9 +984,9 @@ PADX.projectCreate = function (a) {
 
 	var plan = padNewProjectPlan(a);
 
-	padCollectStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
+	padColetarStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
 
-	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : plan.projects;
+	var projects = plan.projectsSub ? padColetarResolve(plan.root, plan.projectsSub, true) : plan.projects;
 	var base = plan.fileBase;
 	var file = new File(projects + '/' + base + '.aep');
 
@@ -1138,7 +1138,7 @@ PADX.projectCurrent = function () {
 		salvo: padEditorsList(m.salvo)[0] || null,
 		defaultUser: padSiglaDoLogin(),
 		output: padNoVolumeSuffix(m.output),
-		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
+		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padColetarRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
 		modified: padFileTime(file), // o último salvamento do arquivo (a hora que os editores, por dia, não guardam)
@@ -1172,7 +1172,7 @@ PADX.projectSave = function (a) {
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 
 	// só a pasta de projetos (para o .aep): as outras da estrutura o coletar cria quando precisar
-	var projects = plan.projectsSub ? padCollectResolve(plan.root, plan.projectsSub, true) : padEnsureFolder(plan.projects).fsName;
+	var projects = plan.projectsSub ? padColetarResolve(plan.root, plan.projectsSub, true) : padEnsureFolder(plan.projects).fsName;
 	var dest = new File(projects + '/' + plan.fileBase + '.aep');
 	var same = !!file && padSamePath(file.fsName, dest.fsName);
 

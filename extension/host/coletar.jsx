@@ -9,23 +9,23 @@ Copia os arquivos usados no projeto para a pasta do projeto (a do .aep), numa á
 tipo, e troca os caminhos dos itens para as cópias. Sequências de imagens são copiadas inteiras (os
 quadros do trecho usado), cada uma na própria subpasta.
 
-'COLLECT' no O_PADEIRO_GLOBAL_config.json (a seção coletar da tabela de seções, regras/configuracao.js: o padrão e
+'COLETAR' no O_PADEIRO_GLOBAL_config.json (a seção coletar da tabela de seções, regras/configuracao.js: o padrão e
 a limpeza ficam lá):
   folders        → a árvore, dentro da pasta do projeto: [{ name, parent, contents: [...] }]
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
                    'projeto' marca a pasta do .aep: a janela de projeto salva ali e o coletar usa a pasta de
                    cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
-Sem 'COLLECT' no arquivo: a estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS).
+Sem 'COLETAR' no arquivo: a estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS).
 
 */
 
 // 'saidas' (os renders) e 'externos' (o que o projeto não usa) não são coletados: dizem para onde a migração leva
 // cada coisa (migrate.jsx), e a pasta deles é sempre criada com a estrutura
-var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
-var PAD_COLLECT_ALWAYS = ['saidas', 'externos'];
+var PAD_COLETAR_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
+var PAD_COLETAR_ALWAYS = ['saidas', 'externos'];
 
 // Caminho (relativo à pasta do projeto) da pasta que recebe o tipo; null = o tipo não é coletado.
-function padCollectFolderPath(settings, type) {
+function padColetarFolderPath(settings, type) {
 	var byName = {};
 	var def = null;
 	var i;
@@ -48,7 +48,7 @@ function padCollectFolderPath(settings, type) {
 }
 
 // Caminho de uma pasta da árvore (relativo à raiz do projeto).
-function padCollectPathOf(settings, folder) {
+function padColetarPathOf(settings, folder) {
 	var byName = {};
 	var parts = [];
 
@@ -176,7 +176,7 @@ function padProjectsVariant(parent, name) {
 
 // Caminho da árvore ('02 ARQUIVOS/VIDEOS') dentro da raiz, usando as pastas que já existem (com outra grafia, outro
 // número na frente ou sem o plural: padChildFolder).
-function padCollectResolve(root, relPath, isProjects) {
+function padColetarResolve(root, relPath, isProjects) {
 	var folder = padEnsureFolder(root);
 	var parts = String(relPath || '').split('/');
 
@@ -192,10 +192,10 @@ function padCollectResolve(root, relPath, isProjects) {
 // já existem com outra grafia.
 // kinds (opcional): só as pastas desses tipos (e as sem tipo, como a de saída); as outras o coletar cria
 // quando precisar.
-function padCollectStructure(root, settings, kinds) {
+function padColetarStructure(root, settings, kinds) {
 	var list = padStructureFolders(settings, kinds);
 
-	for (var i = 0; i < list.length; i++) padCollectResolve(root, list[i].path, list[i].projects);
+	for (var i = 0; i < list.length; i++) padColetarResolve(root, list[i].path, list[i].projects);
 }
 
 // As pastas da estrutura, pai antes dos filhos: [{ path, name, depth, projects }].
@@ -208,10 +208,10 @@ function padStructureFolders(settings, kinds) {
 		var f = settings.folders[i];
 		var ok = !kinds || f.contents.length == 0;
 
-		for (j = 0; kinds && !ok && j < f.contents.length; j++) if (padIndexOf(kinds, f.contents[j]) >= 0 || padIndexOf(PAD_COLLECT_ALWAYS, f.contents[j]) >= 0) ok = true;
+		for (j = 0; kinds && !ok && j < f.contents.length; j++) if (padIndexOf(kinds, f.contents[j]) >= 0 || padIndexOf(PAD_COLETAR_ALWAYS, f.contents[j]) >= 0) ok = true;
 		if (!ok) continue;
 
-		var parts = padCollectPathOf(settings, f).split('/');
+		var parts = padColetarPathOf(settings, f).split('/');
 
 		for (j = 1; j <= parts.length; j++) {
 			var path = parts.slice(0, j).join('/');
@@ -237,9 +237,9 @@ function padIndexOf(list, value) {
 
 // A raiz da estrutura de um .aep: a pasta de cima, se ele está na pasta do tipo 'projeto' (01 PROJETOS,
 // com as grafias do servidor); senão, a pasta dele.
-function padCollectRoot(file, settings) {
+function padColetarRoot(file, settings) {
 	var folder = file.parent;
-	var sub = padCollectFolderPath(settings, 'projeto');
+	var sub = padColetarFolderPath(settings, 'projeto');
 
 	if (!sub) return folder.fsName;
 
@@ -280,7 +280,7 @@ function padIsSequence(item) {
 	}
 }
 
-function padCollectKind(item) {
+function padColetarKind(item) {
 	var ext = padItemExt(item);
 	var data = PAD_ORGANIZE.dataExtensions || [];
 
@@ -483,17 +483,17 @@ function padCopySequence(item, folderPath) {
 }
 
 // As pastas de cada tipo na árvore do coletar ({ videos: 'caminho', … }; null: o tipo fica fora).
-function padCollectPaths(settings) {
+function padColetarPaths(settings) {
 	var paths = {};
 
-	for (var i = 0; i < PAD_COLLECT_CONTENTS.length; i++) paths[PAD_COLLECT_CONTENTS[i]] = padCollectFolderPath(settings, PAD_COLLECT_CONTENTS[i]);
+	for (var i = 0; i < PAD_COLETAR_CONTENTS.length; i++) paths[PAD_COLETAR_CONTENTS[i]] = padColetarFolderPath(settings, PAD_COLETAR_CONTENTS[i]);
 
 	return paths;
 }
 
 // Os itens que o coletar vai copiar (fora da pasta do projeto, com o tipo na árvore) e os que faltam.
 // → { ids, missing: [nome] }
-function padCollectQueue(root, paths) {
+function padColetarQueue(root, paths) {
 	var rootKey = padPathKey(root.fsName); // L:\… e \\servidor\…, VFX e VFX-1: a mesma pasta
 	var out = { ids: [], missing: [] };
 
@@ -507,7 +507,7 @@ function padCollectQueue(root, paths) {
 			continue;
 		}
 
-		if (paths[padCollectKind(item)] == null) continue; // tipo fora da árvore: não é coletado
+		if (paths[padColetarKind(item)] == null) continue; // tipo fora da árvore: não é coletado
 		if (padPathKey(item.file.fsName).indexOf(rootKey) == 0) continue; // já está na pasta do projeto
 
 		out.ids.push(item.id);
@@ -517,9 +517,9 @@ function padCollectQueue(root, paths) {
 }
 
 // Copia um item para a pasta do tipo dele e troca o caminho no projeto. soma em res.
-function padCollectItem(item, root, paths, res) {
-	var kind = padCollectKind(item);
-	var folderPath = padCollectResolve(root.fsName, paths[kind], false);
+function padColetarItem(item, root, paths, res) {
+	var kind = padColetarKind(item);
+	var folderPath = padColetarResolve(root.fsName, paths[kind], false);
 
 	try {
 		if (kind == 'sequencias') {
@@ -551,7 +551,7 @@ function padCollectItem(item, root, paths, res) {
 }
 
 // A pasta do projeto gravada nos dados do padeiro (padeiro:pasta), se ela existe; senão ''
-function padCollectMetaRoot() {
+function padColetarMetaRoot() {
 	try {
 		var pasta = padMetaRead().pasta;
 
@@ -566,12 +566,12 @@ function padCollectMetaRoot() {
 }
 
 // há para onde coletar: o .aep salvo ou a pasta do projeto nos dados (a barra apaga o botão sem isso)
-function padCollectReady() {
-	return !!app.project.file || padCollectMetaRoot() != '';
+function padColetarReady() {
+	return !!app.project.file || padColetarMetaRoot() != '';
 }
 
 // A pasta onde coletar (a escolhida ou a raiz do projeto) e a configuração, já conferidas.
-function padCollectTarget(a) {
+function padColetarTarget(a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
 	var settings = padLerSecao('coletar');
@@ -580,8 +580,8 @@ function padCollectTarget(a) {
 
 	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
 	if (a && a.path) target = padPath(a.path);
-	else if (file) target = padCollectRoot(file, settings);
-	else target = padCollectMetaRoot(); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
+	else if (file) target = padColetarRoot(file, settings);
+	else target = padColetarMetaRoot(); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
 
 	if (!target) throw new Error('#PAD_095 - inicie ou salve o projeto antes de coletar (os arquivos vão para a pasta dele).');
 
@@ -597,17 +597,17 @@ function padCollectTarget(a) {
 }
 
 // Depois de copiar: as fontes, a estrutura, salvar (sempre) e os avisos. → os números para o painel
-function padCollectFinish(target, settings, res) {
+function padColetarFinish(target, settings, res) {
 	var file = app.project.file;
-	var paths = padCollectPaths(settings);
+	var paths = padColetarPaths(settings);
 
 	padGroup('coletar fontes', function () {
-		if (paths.fontes != null) res.fonts = fontCollect(padCollectResolve(new Folder(target).fsName, paths.fontes, false));
-		padCollectStructure(target, settings); // coletar as fontes apaga a pasta delas se não houver nenhuma
+		if (paths.fontes != null) res.fonts = fontCopyTo(padColetarResolve(new Folder(target).fsName, paths.fontes, false));
+		padColetarStructure(target, settings); // coletar as fontes apaga a pasta delas se não houver nenhuma
 	});
 
 	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
-	var sub = padCollectFolderPath(settings, 'projeto');
+	var sub = padColetarFolderPath(settings, 'projeto');
 
 	// sem arquivo e já existe um .aep com esse nome na pasta (o original do projeto convertido): não salva por cima;
 	// os arquivos ficam coletados e o projeto continua sem salvar (O PROJETISTA salva com outro nome)
@@ -641,13 +641,13 @@ function padCollectFinish(target, settings, res) {
 
 // Coleta tudo numa chamada (a janela do CATADOR). a: { path, ids (opcional: só esses itens, os que a janela está
 // mostrando) } → { messages, data }
-PADX.collectProject = function (a) {
-	var t = padCollectTarget(a);
+PADX.coletarProject = function (a) {
+	var t = padColetarTarget(a);
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var root = padEnsureFolder(t.target);
-		var paths = padCollectPaths(t.settings);
-		var queue = padCollectQueue(root, paths);
+		var paths = padColetarPaths(t.settings);
+		var queue = padColetarQueue(root, paths);
 
 		if (a && a.ids) {
 			var only = [];
@@ -661,52 +661,52 @@ PADX.collectProject = function (a) {
 		var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: queue.missing, fonts: '' };
 
 		padGroup('coletar arquivos', function () {
-			padCollectStructure(t.target, t.settings);
+			padColetarStructure(t.target, t.settings);
 
-			for (var i = 0; i < queue.ids.length; i++) padCollectItem(app.project.itemByID(queue.ids[i]), root, paths, res);
+			for (var i = 0; i < queue.ids.length; i++) padColetarItem(app.project.itemByID(queue.ids[i]), root, paths, res);
 		});
 
-		return padCollectFinish(t.target, t.settings, res);
+		return padColetarFinish(t.target, t.settings, res);
 	});
 };
 
 // Coleta em partes, para a barra contar (O CATADOR): começar → copiar de lote em lote → terminar.
-// collectBegin: a: { path } → { target, ids, missing }
-PADX.collectBegin = function (a) {
-	var t = padCollectTarget(a);
+// coletarBegin: a: { path } → { target, ids, missing }
+PADX.coletarBegin = function (a) {
+	var t = padColetarTarget(a);
 	var root = padEnsureFolder(t.target);
 
-	padCollectStructure(t.target, t.settings);
+	padColetarStructure(t.target, t.settings);
 
-	var queue = padCollectQueue(root, padCollectPaths(t.settings));
+	var queue = padColetarQueue(root, padColetarPaths(t.settings));
 
 	return { target: t.target, ids: queue.ids, missing: queue.missing };
 };
 
-// collectStep: a: { target, ids } → { files, sequences, frames, skipped }
-PADX.collectStep = function (a) {
+// coletarStep: a: { target, ids } → { files, sequences, frames, skipped }
+PADX.coletarStep = function (a) {
 	var settings = padLerSecao('coletar');
 	var root = padEnsureFolder(a.target);
-	var paths = padCollectPaths(settings);
+	var paths = padColetarPaths(settings);
 	var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: [] };
 
 	padGroup('coletar arquivos', function () {
 		for (var i = 0; i < (a.ids || []).length; i++) {
 			var item = app.project.itemByID(a.ids[i]);
 
-			if (item && item.file && item.file.exists) padCollectItem(item, root, paths, res);
+			if (item && item.file && item.file.exists) padColetarItem(item, root, paths, res);
 		}
 	});
 
 	return res;
 };
 
-// collectEnd: a: { target, files, sequences, frames, skipped, missing } → { messages, data }
-PADX.collectEnd = function (a) {
+// coletarEnd: a: { target, files, sequences, frames, skipped, missing } → { messages, data }
+PADX.coletarEnd = function (a) {
 	var settings = padLerSecao('coletar');
 
-	return padCollect(function () {
-		return padCollectFinish(a.target, settings, { files: a.files || 0, sequences: a.sequences || 0, frames: a.frames || 0, skipped: a.skipped || [], missing: a.missing || [], fonts: '' });
+	return padGatherAlerts(function () {
+		return padColetarFinish(a.target, settings, { files: a.files || 0, sequences: a.sequences || 0, frames: a.frames || 0, skipped: a.skipped || [], missing: a.missing || [], fonts: '' });
 	});
 };
 
@@ -799,9 +799,9 @@ function padInProjects(path, roots) {
 //   'local' (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
 // a conta passa por todas as mídias do projeto: só é refeita quando o projeto é salvo (ou aberto outro). force:
 // refaz (ao abrir a barra e depois do coletar)
-var PAD_COLLECT_STATUS = { key: '', at: 0, res: null };
+var PAD_COLETAR_STATUS = { key: '', at: 0, res: null };
 
-PADX.collectStatus = function (a) {
+PADX.coletarStatus = function (a) {
 	var file0 = app.project.file;
 	var key = 'novo';
 
@@ -810,20 +810,20 @@ PADX.collectStatus = function (a) {
 	} catch (err) { }
 
 	var now = new Date().getTime();
-	var cache = PAD_COLLECT_STATUS;
+	var cache = PAD_COLETAR_STATUS;
 
 	if ((a && a.force) || !cache.res || cache.key != key) {
-		cache.res = padCollectStatusNow();
+		cache.res = padColetarStatusNow();
 		cache.key = key;
 		cache.at = now;
 	}
 
-	cache.res.ready = padCollectReady(); // conferido sempre (barato): o projeto sem arquivo pode ganhar a pasta nos dados
+	cache.res.ready = padColetarReady(); // conferido sempre (barato): o projeto sem arquivo pode ganhar a pasta nos dados
 
 	return cache.res;
 };
 
-function padCollectStatusNow() {
+function padColetarStatusNow() {
 	var total = 0;
 	var local = 0;
 	var names = [];
@@ -850,7 +850,7 @@ function padCollectStatusNow() {
 			var kind = 'videos';
 
 			try {
-				kind = padCollectKind(item);
+				kind = padColetarKind(item);
 			} catch (err) { }
 
 			kinds[kind] = (kinds[kind] || 0) + 1;
@@ -873,10 +873,10 @@ function padCollectStatusNow() {
 //   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
 // → { project, root, migrated, dests, items: [{ id, name, file, kind, state, layers, frames }] }
-PADX.collectList = function () {
+PADX.coletarList = function () {
 	var settings = padLerSecao('coletar');
 	var file = app.project.file;
-	var root = file ? padCollectRoot(file, settings) : '';
+	var root = file ? padColetarRoot(file, settings) : '';
 	var rootKey = root ? padPathKey(new Folder(root).fsName) : '';
 	var items = [];
 	var roots = padProjectsRoots();
@@ -893,12 +893,12 @@ PADX.collectList = function () {
 		if (!path) continue; // sólidos não têm arquivo
 
 		var missing = padFootageMissing(item);
-		var kind = missing ? padPathKind(item, path) : padCollectKind(item);
+		var kind = missing ? padPathKind(item, path) : padColetarKind(item);
 		var state;
 
 		if (missing) state = 'missing';
 		else if (rootKey && padPathKey(path).indexOf(rootKey) == 0) state = 'ok';
-		else if (padCollectFolderPath(settings, kind) == null) state = 'skip';
+		else if (padColetarFolderPath(settings, kind) == null) state = 'skip';
 		else if (!padInProjects(path, roots)) state = 'local';
 		else state = 'net';
 
@@ -917,7 +917,7 @@ PADX.collectList = function () {
 	var kinds = ['videos', 'sequencias', 'imagens', 'audio', 'dados'];
 
 	for (var k = 0; k < kinds.length; k++) {
-		var dest = padCollectFolderPath(settings, kinds[k]);
+		var dest = padColetarFolderPath(settings, kinds[k]);
 
 		if (dest != null) dests[kinds[k]] = dest;
 	}
@@ -965,7 +965,7 @@ function padFootageMissing(item) {
 // O tipo pelo caminho, para o arquivo que falta (sem o arquivo, item.file pode não existir).
 function padPathKind(item, path) {
 	try {
-		if (item.file) return padCollectKind(item);
+		if (item.file) return padColetarKind(item);
 	} catch (err) { }
 
 	var name = String(path).replace(/\\/g, '/').replace(/^.*\//, '');
@@ -996,7 +996,7 @@ function padPathKind(item, path) {
 // → o File que existe, ou null
 // O caminho guardado no projeto, como o After do macOS mostra um caminho que veio do Windows: \\servidor\share\…
 // vira /servidor/share/… (com uma barra só) e L:\… vira /L/…. de volta para o formato que o conversor entende.
-function padRelinkNormalize(path) {
+function padReligarNormalize(path) {
 	var p = String(path || '').replace(/\\/g, '/');
 
 	if (/^\/[A-Za-z]\//.test(p)) return p.charAt(1).toUpperCase() + ':' + p.substring(2); // /L/… → L:/…
@@ -1006,8 +1006,8 @@ function padRelinkNormalize(path) {
 	return p;
 }
 
-function padRelinkCandidate(path, tried) {
-	var clean = padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || String(path);
+function padReligarCandidate(path, tried) {
+	var clean = padPath(padNoVolumeSuffix(padReligarNormalize(path))) || String(path);
 	var file = new File(clean);
 
 	if (file.exists) return file;
@@ -1026,14 +1026,14 @@ function padRelinkCandidate(path, tried) {
    a busca dos arquivos faltando: pelo nome, em algumas pastas e alguns níveis para dentro
    --------------------------------------------------------------- */
 
-var PAD_RELINK_MS = 9000; // o tempo máximo da busca (a rede pode ser lenta): passou, devolve o que achou
-var PAD_RELINK_FILES = 40000; // e o máximo de arquivos lidos
+var PAD_RELIGAR_MS = 9000; // o tempo máximo da busca (a rede pode ser lenta): passou, devolve o que achou
+var PAD_RELIGAR_FILES = 40000; // e o máximo de arquivos lidos
 
 // Os arquivos de 'folder', até 'depth' níveis para dentro, no índice { nome em minúsculas: [caminhos] }. pula as
 // pastas que não interessam (autosave, OLD…) e as escondidas. state: { byName, files, until, partial, seen }
 // As pastas onde o projeto renderiza: a de output gravada no projeto e as dos outputs da fila de render (as que
 // existem, sem repetir). → [Folder]
-function padRelinkOutputs() {
+function padReligarOutputs() {
 	var list = [];
 	var seen = {};
 	var add = function (path) {
@@ -1069,7 +1069,7 @@ function padRelinkOutputs() {
 	return list;
 }
 
-function padRelinkScan(folder, depth, state) {
+function padReligarScan(folder, depth, state) {
 	var key = padPathKey(folder.fsName);
 
 	if (state.seen[key]) return;
@@ -1082,7 +1082,7 @@ function padRelinkScan(folder, depth, state) {
 	} catch (err) { }
 
 	for (var i = 0; i < list.length; i++) {
-		if (state.files >= PAD_RELINK_FILES || new Date().getTime() > state.until) {
+		if (state.files >= PAD_RELIGAR_FILES || new Date().getTime() > state.until) {
 			state.partial = true;
 			return;
 		}
@@ -1095,7 +1095,7 @@ function padRelinkScan(folder, depth, state) {
 		var isFolder = list[i] instanceof Folder || (!/\.[A-Za-z0-9]{1,5}$/.test(name) && new Folder(list[i].fsName).exists);
 
 		if (isFolder) {
-			if (depth > 0 && !padIsJunkFolder(name)) padRelinkScan(new Folder(list[i].fsName), depth - 1, state);
+			if (depth > 0 && !padIsJunkFolder(name)) padReligarScan(new Folder(list[i].fsName), depth - 1, state);
 			continue;
 		}
 
@@ -1109,8 +1109,8 @@ function padRelinkScan(folder, depth, state) {
 
 // A pasta mais próxima do caminho antigo que ainda existe (subindo até 6 níveis), sem chegar na raiz de um volume
 // ou perto dela (vasculhar o servidor inteiro não dá). → Folder ou null
-function padRelinkAncestor(path) {
-	var clean = String(padPath(padNoVolumeSuffix(padRelinkNormalize(path))) || path).replace(/\\/g, '/');
+function padReligarAncestor(path) {
+	var clean = String(padPath(padNoVolumeSuffix(padReligarNormalize(path))) || path).replace(/\\/g, '/');
 	var parts = clean.split('/');
 	// as partes do volume: /Volumes/VFX (3, com a vazia do começo), //servidor/share (4), L: (1); a busca fica pelo
 	// menos 2 pastas para dentro dele
@@ -1129,7 +1129,7 @@ function padRelinkAncestor(path) {
 }
 
 // Quantas pastas do fim dos dois caminhos são as mesmas (…/02 ARQUIVOS/IMAGENS = …/02_ARQUIVOS/IMAGENS).
-function padRelinkAlike(a, b) {
+function padReligarAlike(a, b) {
 	var x = String(a).replace(/\\/g, '/').split('/');
 	var y = String(b).replace(/\\/g, '/').split('/');
 	var n = 0;
@@ -1144,14 +1144,14 @@ function padRelinkAlike(a, b) {
 
 // O melhor candidato da lista para o caminho antigo: o que tem mais pastas iguais no fim do caminho; no empate,
 // o caminho mais curto. → { path, more (quantos outros com o mesmo nome) } ou null
-function padRelinkBest(list, old) {
+function padReligarBest(list, old) {
 	if (!list || !list.length) return null;
 
 	var best = list[0];
-	var score = padRelinkAlike(best, old);
+	var score = padReligarAlike(best, old);
 
 	for (var i = 1; i < list.length; i++) {
-		var s = padRelinkAlike(list[i], old);
+		var s = padReligarAlike(list[i], old);
 
 		if (s > score || (s == score && list[i].length < best.length)) {
 			best = list[i];
@@ -1166,7 +1166,7 @@ function padRelinkBest(list, old) {
 // depois pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda
 // existe (3 níveis). a: { ids } (opcional: só esses)
 // → { found: [{ id, name, from, to, how: 'volume' | 'busca', more }], still: [{ id, name }], partial }
-PADX.collectRelinkFind = function (a) {
+PADX.coletarReligarFind = function (a) {
 	var only = {};
 	var tried = {};
 	var missing = [];
@@ -1190,7 +1190,7 @@ PADX.collectRelinkFind = function (a) {
 		}
 		if (!path) continue;
 
-		var file = padRelinkCandidate(path, tried);
+		var file = padReligarCandidate(path, tried);
 
 		if (file) res.found.push({ id: item.id, name: item.name, from: padDisplayPath(path), to: file.fsName, how: 'volume', more: 0 });
 		else missing.push({ id: item.id, name: item.name, path: path });
@@ -1198,26 +1198,26 @@ PADX.collectRelinkFind = function (a) {
 
 	if (!missing.length) return res;
 
-	var state = { byName: {}, files: 0, until: new Date().getTime() + PAD_RELINK_MS, partial: false, seen: {} };
+	var state = { byName: {}, files: 0, until: new Date().getTime() + PAD_RELIGAR_MS, partial: false, seen: {} };
 	var projectFile = app.project.file;
 
-	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padLerSecao('coletar'))), 5, state);
+	if (projectFile) padReligarScan(new Folder(padColetarRoot(projectFile, padLerSecao('coletar'))), 5, state);
 
 	// a pasta de output do projeto e as pastas dos outputs da fila de render: o que foi renderizado e voltou para o
 	// projeto (um lettering, um pré-render) costuma estar lá
-	var outs = padRelinkOutputs();
+	var outs = padReligarOutputs();
 
-	for (i = 0; i < outs.length && !state.partial; i++) padRelinkScan(outs[i], 3, state);
+	for (i = 0; i < outs.length && !state.partial; i++) padReligarScan(outs[i], 3, state);
 
 	for (i = 0; i < missing.length && !state.partial; i++) {
-		var near = missing[i].lost ? null : padRelinkAncestor(missing[i].path);
+		var near = missing[i].lost ? null : padReligarAncestor(missing[i].path);
 
-		if (near) padRelinkScan(near, 3, state);
+		if (near) padReligarScan(near, 3, state);
 	}
 
 	for (i = 0; i < missing.length; i++) {
 		var fileName = String(missing[i].path).replace(/\\/g, '/').replace(/^.*\//, '').toLowerCase();
-		var best = padRelinkBest(state.byName[fileName], missing[i].path);
+		var best = padReligarBest(state.byName[fileName], missing[i].path);
 
 		if (best) res.found.push({ id: missing[i].id, name: missing[i].name, from: padDisplayPath(missing[i].path), to: best.path, how: 'busca', more: best.more });
 		else res.still.push({ id: missing[i].id, name: missing[i].name });
@@ -1230,11 +1230,11 @@ PADX.collectRelinkFind = function (a) {
 
 // Resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (VFX-1 …): cata o
 // caminho certo e religa (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses), to: { id: caminho } (opcional:
-// o lugar novo de cada um, achado pelo collectRelinkFind) → { relinked, still: [nome] }
-PADX.collectRelink = function (a) {
+// o lugar novo de cada um, achado pelo coletarReligarFind) → { religados, still: [nome] }
+PADX.coletarReligar = function (a) {
 	var only = {};
 	var tried = {};
-	var res = { relinked: 0, still: [] };
+	var res = { religados: 0, still: [] };
 	var i;
 
 	for (i = 0; a && a.ids && i < a.ids.length; i++) only[a.ids[i]] = true;
@@ -1261,7 +1261,7 @@ PADX.collectRelink = function (a) {
 				if (!file.exists) file = null;
 			}
 
-			if (!file && !lost) file = padRelinkCandidate(path, tried);
+			if (!file && !lost) file = padReligarCandidate(path, tried);
 
 			if (!file) {
 				res.still.push(item.name);
@@ -1271,7 +1271,7 @@ PADX.collectRelink = function (a) {
 			try {
 				if (padPathKind(item, path) == 'sequencias') padReplaceSequence(item, file);
 				else item.replace(file);
-				res.relinked++;
+				res.religados++;
 			} catch (err) {
 				res.still.push(item.name);
 			}
@@ -1305,7 +1305,7 @@ function padReplaceSequence(item, first) {
 }
 
 // Mostra o item no painel Project (seleciona só ele). a: { id }
-PADX.collectReveal = function (a) {
+PADX.coletarReveal = function (a) {
 	var item = app.project.itemByID(a.id);
 
 	if (!item) return false;

@@ -142,7 +142,7 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 	async function uploadPending(checked) {
 		var info = state.info;
 
-		if (state.uploading || !FB.available() || !info.upload || !info.machineUpload) return;
+		if (state.uploading || !FB.available() || !info.upload || !info.uploadDesteComputador) return;
 
 		var pending = checked.fonts.filter(function (f) {
 			return f.state === 'up';
@@ -653,13 +653,13 @@ banco) e troca as escolhidas no projeto inteiro (um Ctrl+Z desfaz).
 		$('fw-go').addEventListener('click', resolve);
 
 		// copiar todas as fontes do projeto para uma pasta qualquer (coletar as fontes)
-		$('fw-collect').addEventListener('click', async function () {
+		$('fw-copy').addEventListener('click', async function () {
 			var path = PAD_BRIDGE.pickFolder('Pasta para copiar as fontes do projeto');
 
 			if (!path) return;
 
 			try {
-				var res = await call('collectFonts', { path: path });
+				var res = await call('copyFonts', { path: path });
 
 				status(res.data && res.data.path ? 'fontes copiadas para ' + res.data.path : 'nenhuma fonte pôde ser copiada.', '');
 			} catch (err) {

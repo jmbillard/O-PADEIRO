@@ -139,7 +139,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), tiposDeProjeto: padLerSecao('tiposDeProjeto'), collect: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), tiposDeProjeto: padLerSecao('tiposDeProjeto'), coletar: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personalizadas: PADX.prefsPersonalizadas(), configPath: file.fsName };
 };
 
 // Carrega a lista de produções de um arquivo (no formato do arquivo da equipe). a: { path }
@@ -260,12 +260,12 @@ function padApplyConfig() {
 
 // Links deste computador: os do designer (a seção linksDesteComputador: 'computador_links.json' na pasta de dados
 // do usuário), mesma forma e mesma limpeza dos da equipe.
-PADX.personalLinks = function () {
+PADX.linksDesteComputador = function () {
 	return { links: padLerSecao('linksDesteComputador') };
 };
 
 // a: { links }
-PADX.savePersonalLinks = function (a) {
+PADX.saveLinksDesteComputador = function (a) {
 	try {
 		padGravarSecoes({ linksDesteComputador: a.links || [] });
 	} catch (err) {
@@ -301,7 +301,7 @@ function padReadBar() {
 
 // Links para a barra (os da equipe e os deste computador), com a data das duas listas (a barra só redesenha quando muda).
 PADX.barLinks = function () {
-	var personal = padArquivoDesteComputador(PAD_CONFIGURACAO.LINKS_DESTE_COMPUTADOR);
+	var arquivoDosLinks = padArquivoDesteComputador(PAD_CONFIGURACAO.LINKS_DESTE_COMPUTADOR);
 	var stamp = '';
 
 	// a data da configuração vem do cache (padConfigData): sem perguntar de novo à rede
@@ -310,12 +310,12 @@ PADX.barLinks = function () {
 	} catch (err) { }
 
 	try {
-		stamp = PAD_CONFIG_CACHE.stamp + '|' + (personal.exists ? personal.modified.getTime() : 0) + '|' + padPersonalStamp();
+		stamp = PAD_CONFIG_CACHE.stamp + '|' + (arquivoDosLinks.exists ? arquivoDosLinks.modified.getTime() : 0) + '|' + padPersonalizadasStamp();
 	} catch (err) { }
 
 	var bar = padReadBar();
 
-	return { stamp: stamp, links: padLerSecao('links'), personal: padLerSecao('linksDesteComputador'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
+	return { stamp: stamp, links: padLerSecao('links'), linksDesteComputador: padLerSecao('linksDesteComputador'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
 };
 
 // Pedido de aba feito pela barra (o botão da rede: a aba rede ou a deste computador): a configuração acompanha o
@@ -369,7 +369,7 @@ PADX.appearance = function () {
 		padConfigData();
 	} catch (err) { }
 
-	stamp = PAD_CONFIG_CACHE.stamp + '|' + padPersonalStamp();
+	stamp = PAD_CONFIG_CACHE.stamp + '|' + padPersonalizadasStamp();
 
 	return { stamp: stamp, appearance: padReadAppearance() };
 };
@@ -385,19 +385,19 @@ as que a pessoa personalizou. Sem elas, vale a da equipe (APPEARANCE e BAR do O_
 
 */
 
-function padPersonalStamp() {
+function padPersonalizadasStamp() {
 	return padDataDoArquivo(padArquivoDesteComputador(PAD_CONFIGURACAO.PERSONALIZADO));
 }
 
 // { appearance, bar }: as personalizadas (null = usa a da equipe)
-PADX.personalPrefs = function () {
+PADX.prefsPersonalizadas = function () {
 	return { appearance: padLerSecao('aparenciaDesteComputador'), bar: padLerSecao('barraDesteComputador') };
 };
 
 // a: { appearance, bar } (null = voltar à da equipe; sem o campo, fica como está). O arquivo guarda só as
 // personalizadas.
-PADX.savePersonalPrefs = function (a) {
+PADX.savePrefsPersonalizadas = function (a) {
 	padGravarSecoes({ aparenciaDesteComputador: a.appearance, barraDesteComputador: a.bar });
 
-	return PADX.personalPrefs();
+	return PADX.prefsPersonalizadas();
 };

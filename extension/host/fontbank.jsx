@@ -58,19 +58,19 @@ function padFontsSupported() {
 function padProjectFontsFolder(mount) {
 	var file = app.project.file;
 	var settings = padLerSecao('coletar');
-	var sub = padCollectFolderPath(settings, 'fontes');
+	var sub = padColetarFolderPath(settings, 'fontes');
 	var m = padMetaRead();
 	var root = '';
 
 	if (m.pasta) root = mount ? padMountedPath(padPath(m.pasta)) : padResolvedPath(padPath(m.pasta));
-	else if (file) root = padCollectRoot(file, settings);
+	else if (file) root = padColetarRoot(file, settings);
 
 	return root && sub ? new Folder(root + '/' + sub).fsName : '';
 }
 
 // As fontes usadas no projeto aberto e onde ficam as pastas. leve o bastante para a barra chamar de tempos
 // em tempos. → { supported, fonts: [{ name, family, style, location, missing, layers }], bank, upload,
-//   machineUpload, projectFonts, project, user, machine }
+//   uploadDesteComputador, projectFonts, project, user, machine }
 PADX.fontsProject = function () {
 	var cfg = padReadFonts();
 	var out = {
@@ -79,7 +79,7 @@ PADX.fontsProject = function () {
 		bank: padFontBankPath(cfg) ? padResolvedPath(padPath(padFontBankPath(cfg))) : '', // a barra lê de tempos em tempos: nunca monta
 		bankDisplay: padFontBankPath(cfg),
 		upload: cfg.upload,
-		machineUpload: padLerSecao('fontesNoBanco'), // configuração > FONTES, neste computador
+		uploadDesteComputador: padLerSecao('fontesNoBanco'), // configuração > FONTES, neste computador
 		projectFonts: '',
 		project: app.project.file ? decodeURI(app.project.file.name) : '',
 		user: padSigla(),

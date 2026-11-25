@@ -700,7 +700,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
-	// coletar ('COLLECT'): { folders: [{ name, parent, contents }] }, a árvore dentro da pasta do projeto
+	// coletar ('COLETAR'; a chave antiga, em antigos na tabela): { folders: [{ name, parent, contents }] }, a árvore dentro da pasta do projeto
 	//   tipos: projeto (a pasta do .aep), videos, sequencias, imagens, audio, dados, fontes, saidas e externos (esses
 	//   dois não são coletados: dizem para onde a migração leva cada coisa). 'projectFolders' e 'saveAfter' (antigos)
 	//   são ignorados
@@ -812,9 +812,9 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	// sem a seção (ou no formato antigo, com raiz e retrancas): sem tipos
 	// ---------------------------------------------------------------------------------------------------------
 
-	var TOKENS_DO_CAMINHO = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao'];
+	var TOKENS_DO_CAMINHO = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao', 'designer'];
 	// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo)
-	var TOKENS_ANTIGOS = { categoria: 'tipo' };
+	var TOKENS_ANTIGOS = { categoria: 'tipo', usuario: 'designer' };
 
 	for (var tokenAntigo in TOKENS_ANTIGOS) TOKENS_DO_CAMINHO.push(tokenAntigo);
 
@@ -857,7 +857,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - tipos de projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
 
 			while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-				if (indexOf(TOKENS_DO_CAMINHO, m[1]) < 0) throw new Error('#PAD_089 - tipos de projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
+				if (indexOf(TOKENS_DO_CAMINHO, m[1]) < 0) throw new Error('#PAD_089 - tipos de projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e}, {ano_producao} ou {designer}).');
 			}
 
 			seen[key] = true;
@@ -869,7 +869,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	// ---------------------------------------------------------------------------------------------------------
 	// deste computador ('computador_config.json', antes 'machine_config.json', na pasta de dados do usuário)
-	//   designer    → a sigla do designer (antes 'user') ({usuario} no nome do projeto); vazia: a do login
+	//   designer    → a sigla do designer (antes 'user') ({designer} nos caminhos dos tipos de projeto, antes {usuario}); vazia: a do login
 	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a do tipo não
 	//                 pode ser acessada: rede fora ou modo local)
 	//   outputs     → o output local (vale quando o output do template não pode ser acessado)
@@ -990,7 +990,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	var CAMPOS_DO_PAINEL = {
 		productions: 'producoes', drives: 'mapaDeDrives', rename: 'regraDoRenomear', organize: 'organizar', search: 'buscaDeCaminhos', links: 'links',
-		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', collect: 'coletar', fonts: 'bancoDeFontes', tiposDeProjeto: 'tiposDeProjeto'
+		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', coletar: 'coletar', fonts: 'bancoDeFontes', tiposDeProjeto: 'tiposDeProjeto'
 	};
 
 	// { campo do painel: valor } → { seção: valor }, só com os campos que vieram (sem as produções: a lista vazia, que
@@ -1019,7 +1019,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'barra', onde: 'equipe', arquivo: EQUIPE, chave: 'BAR', padrao: function () { return limparBarra({}); }, limpar: limparBarra },
 		{ nome: 'registroDeUso', onde: 'equipe', arquivo: EQUIPE, chave: 'LOG', padrao: function () { return PADRAO_REGISTRO; }, limpar: limparRegistro },
 		{ nome: 'aparencia', onde: 'equipe', arquivo: EQUIPE, chave: 'APPEARANCE', padrao: function () { return PADRAO_APARENCIA; }, limpar: limparAparencia },
-		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLLECT', padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
+		// antigos: a chave com o nome antigo (o termo evitado pelo glossário), lida por compatibilidade
+		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLETAR', antigos: ['COLLECT'], padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
 		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], camposAntigos: { tipos: ['categories'] }, padrao: function () { return { tipos: [] }; }, limpar: limparTiposDeProjeto },
 

@@ -348,11 +348,11 @@ body.fonts-page {
 }
 
 /* coletar as fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
-#fw-collect .fw-t {
+#fw-copy .fw-t {
   stroke-width: 2.1;
   transition: transform 300ms var(--ease-soft);
 }
 
-#fw-collect:hover:not(:disabled) .fw-t {
+#fw-copy:hover:not(:disabled) .fw-t {
   transform: translateY(-1.6px);
 }

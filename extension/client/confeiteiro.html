@@ -12,34 +12,34 @@
 	<link rel="stylesheet" href="css/theme.css">
 </head>
 
-<body class="maker-page">
-	<main class="maker" id="maker">
+<body class="confeiteiro-page">
+	<main class="confeiteiro" id="confeiteiro">
 		<!-- o formulário, no vidro (não depende do After Effects); o rodapé do vidro como o da lista de templates -->
-		<aside class="maker-side">
-			<header class="maker-top">
+		<aside class="confeiteiro-side">
+			<header class="confeiteiro-top">
 				<p class="eyebrow">criar template</p>
-				<div class="maker-check" id="checklist" aria-label="o que falta para salvar"></div>
+				<div class="confeiteiro-check" id="checklist" aria-label="o que falta para salvar"></div>
 			</header>
-			<div class="maker-glass">
-				<div class="maker-glass-body">
+			<div class="confeiteiro-glass">
+				<div class="confeiteiro-glass-body">
 				<!-- primeiro, a atração (buscada no índice, ou nova) e o que é: o template é dessa atração -->
-				<div class="maker-name">
-					<div class="maker-name-col">
-						<p class="cfg-title maker-name-title">ATRAÇÃO</p>
+				<div class="confeiteiro-name">
+					<div class="confeiteiro-name-col">
+						<p class="cfg-title confeiteiro-name-title">ATRAÇÃO</p>
 						<div class="atr-picker" id="atr-picker"></div>
 					</div>
-					<div class="maker-name-col">
-						<p class="cfg-title maker-name-title">O QUE É</p>
+					<div class="confeiteiro-name-col">
+						<p class="cfg-title confeiteiro-name-title">O QUE É</p>
 						<div class="has-field-icon" title="o que é: identifica o template no log">
 							<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
 							<input class="cfg-input" id="f-config" type="text" spellcheck="false" autocomplete="off" placeholder="ex: SERVIÇO, CONVIDADO, AESP" aria-label="O que é">
 						</div>
 					</div>
-					<p class="wz-preview maker-name-preview" id="name-full" hidden></p>
+					<p class="wz-preview confeiteiro-name-preview" id="name-full" hidden></p>
 				</div>
 						<section class="cfg-card">
 							<div class="cfg-card-head"><h3 class="cfg-title">Formulário</h3></div>
-<div class="maker-pair">
+<div class="confeiteiro-pair">
 							<div class="cfg-field">
 								<label class="cfg-label" for="f-example">Exemplo de preenchimento</label>
 								<div class="cfg-area">
@@ -108,7 +108,7 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 							</div>
 						</section>
 				</div>
-				<div class="maker-glass-foot">
+				<div class="confeiteiro-glass-foot">
 					<button type="button" class="icon-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
 						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M4.5 11.5a7.5 7.5 0 0 1 12.9-5.2l2.1 2.2" /><path d="M19.5 4v4.5H15" /><path d="M19.5 12.5a7.5 7.5 0 0 1-12.9 5.2l-2.1-2.2" /><path d="M4.5 20v-4.5H9" /></svg>
 					</button>
@@ -124,16 +124,16 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 		</aside>
 
 		<!-- o que vem do After Effects: o projeto (preview, comp, fontes), os layers e as variações -->
-		<section class="maker-sheet">
+		<section class="confeiteiro-sheet">
 			<!-- sem comp ativa -->
-			<div class="maker-state" id="state-nocomp" hidden>
+			<div class="confeiteiro-state" id="state-nocomp" hidden>
 				<strong>abra a comp principal do template</strong>
 				<span>o criador usa a comp ativa no After Effects como comp principal.</span>
 				<button type="button" class="button button-primary" id="btn-retry">Tentar de novo</button>
 			</div>
 
-			<div class="maker-scroll" id="form">
-				<details class="maker-help">
+			<div class="confeiteiro-scroll" id="form">
+				<details class="confeiteiro-help">
 					<summary>como criar um template</summary>
 					<ol>
 						<li>limpe o projeto: remova tudo o que não for necessário para a comp principal.</li>
@@ -144,8 +144,8 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 						<li>adicione a pasta de import e as pastas de output necessárias e salve.</li>
 					</ol>
 				</details>
-				<div class="maker-grid">
-					<div class="maker-col">
+				<div class="confeiteiro-grid">
+					<div class="confeiteiro-col">
 						<section class="cfg-card">
 							<div class="cfg-card-head"><h3 class="cfg-title">Projeto</h3></div>
 							<div class="preview-card" id="preview-card">
@@ -155,19 +155,19 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 									<span>capturar preview</span>
 								</button>
 							</div>
-							<div class="maker-comp">
-								<span class="maker-comp-label">comp principal</span>
+							<div class="confeiteiro-comp">
+								<span class="confeiteiro-comp-label">comp principal</span>
 								<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>
 								<strong id="comp-name">—</strong>
-								<span class="maker-comp-time" id="comp-time" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7.500V12l3 2" /></svg><span></span></span>
+								<span class="confeiteiro-comp-time" id="comp-time" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7.500V12l3 2" /></svg><span></span></span>
 							</div>
-							<div class="maker-fonts" id="fonts" hidden>
-								<span class="maker-comp-label">fontes usadas</span>
+							<div class="confeiteiro-fonts" id="fonts" hidden>
+								<span class="confeiteiro-comp-label">fontes usadas</span>
 								<ul id="fonts-list"></ul>
 							</div>
 						</section>
 					</div>
-					<div class="maker-col">
+					<div class="confeiteiro-col">
 						<section class="cfg-card">
 							<div class="cfg-card-head">
 								<h3 class="cfg-title">Layers editáveis</h3>
@@ -189,11 +189,11 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 				</div>
 			</div>
 
-			<div class="action-bar is-anchored maker-bar" id="bar">
-				<div class="maker-bar-left">
+			<div class="action-bar is-anchored confeiteiro-bar" id="bar">
+				<div class="confeiteiro-bar-left">
 					<button type="button" class="button button-secondary" id="btn-test" title="testar o preenchimento com o exemplo">Testar agora</button>
 				</div>
-				<span class="maker-hint" id="save-hint"></span>
+				<span class="confeiteiro-hint" id="save-hint"></span>
 				<button type="button" class="button button-primary" id="btn-save">Salvar template</button>
 			</div>
 		</section>

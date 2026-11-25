@@ -13,9 +13,9 @@ RODAPES JOGO → RDP - JOGO), nunca da pasta onde o item está.
 - filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
 - filesList   → os itens da pasta (e das subpastas, se pedido), com a sugestão de cada um
 - filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora) e guarda o registro para
-                desfazer; religa no projeto aberto o que mudou de caminho, ou devolve as trocas (relink: false) para a
+                desfazer; religa no projeto aberto o que mudou de caminho, ou devolve as trocas (religar: false) para a
                 janela religar tudo de uma vez no fim dos lotes
-- filesRelink → religa no projeto aberto as trocas de caminho dos lotes: um passo só do Ctrl+Z
+- filesReligar → religa no projeto aberto as trocas de caminho dos lotes: um passo só do Ctrl+Z
 - filesUndo   → desfaz a última renomeação (e religa de volta, num passo só do Ctrl+Z). o que não voltar fica no
                 registro, para tentar de novo
 
@@ -30,7 +30,7 @@ var PAD_FILES_MAX = 3000; // itens lidos numa pasta (com as subpastas): acima di
 var PAD_FILES_SKIP_EXT = /\.(aep|aet|aepx|prproj|c4d|blend|ma|mb|max|drp|nk|hip|hipnc|sesx|fcpxml)$/i;
 var PAD_FILES_SKIP_NAME = /^(\.|~\$)|^(thumbs\.db|desktop\.ini)$|^adobe after effects auto-save$|\.aep logs$|^tmpaetoameproject/i;
 var PAD_FILES_SEQ_MIN = 3; // a partir de quantos arquivos numerados um grupo é uma sequência
-var PAD_FILES_RELINK_LABEL = 'O ARQUIVISTA: religar'; // o passo do Ctrl+Z do After
+var PAD_FILES_RELIGAR_LABEL = 'O ARQUIVISTA: religar'; // o passo do Ctrl+Z do After
 
 function padFilesUndoFile() {
 	return new File(scriptPreferencesPath + '/arquivista_desfazer.json');
@@ -303,15 +303,15 @@ function padFilesMap(path, ops) {
 
 // religa no projeto aberto os arquivos que mudaram de caminho, num grupo de desfazer do After (um passo do Ctrl+Z).
 // devolve quantos foram religados
-function padFilesRelinkGroup(ops, label) {
+function padFilesReligarGroup(ops, label) {
 	if (!ops.length) return 0;
 
 	return padGroup(label, function () {
-		return padFilesRelink(ops);
+		return padFilesReligar(ops);
 	});
 }
 
-function padFilesRelink(ops) {
+function padFilesReligar(ops) {
 	var count = 0;
 
 	for (var i = 1; i <= app.project.numItems; i++) {
@@ -337,9 +337,9 @@ function padFilesRelink(ops) {
 	return count;
 }
 
-// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }], append, relink }
-//   → { count, relinked, errors: [{ name, error }], ops: [{ from, to, dir }], undo }
-// relink: false → não religa aqui: a janela junta as ops dos lotes e chama filesRelink no fim (um passo do Ctrl+Z)
+// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }], append, religar }
+//   → { count, religados, errors: [{ name, error }], ops: [{ from, to, dir }], undo }
+// religar: false → não religa aqui: a janela junta as ops dos lotes e chama filesReligar no fim (um passo do Ctrl+Z)
 PADX.filesRename = function (a) {
 	var root = new Folder(padMountedPath(padPath(a.path)));
 
@@ -421,10 +421,10 @@ PADX.filesRename = function (a) {
 		else count++;
 	}
 
-	var relinked = 0;
+	var religados = 0;
 
 	if (ops.length) {
-		if (a.relink !== false) relinked = padFilesRelinkGroup(ops, PAD_FILES_RELINK_LABEL);
+		if (a.religar !== false) religados = padFilesReligarGroup(ops, PAD_FILES_RELIGAR_LABEL);
 
 		// o registro para desfazer: as renomeações na ordem em que foram feitas
 		try {
@@ -451,14 +451,14 @@ PADX.filesRename = function (a) {
 		} catch (err) { }
 	}
 
-	return { count: count, relinked: relinked, errors: errors, ops: ops, undo: padFilesUndoInfo() };
+	return { count: count, religados: religados, errors: errors, ops: ops, undo: padFilesUndoInfo() };
 };
 
-// a: { ops: [{ from, to, dir }] } (as dos lotes de filesRename) → { relinked }
-PADX.filesRelink = function (a) {
+// a: { ops: [{ from, to, dir }] } (as dos lotes de filesRename) → { religados }
+PADX.filesReligar = function (a) {
 	var ops = a && a.ops instanceof Array ? a.ops : [];
 
-	return { relinked: padFilesRelinkGroup(ops, PAD_FILES_RELINK_LABEL) };
+	return { religados: padFilesReligarGroup(ops, PAD_FILES_RELIGAR_LABEL) };
 };
 
 // desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado).
@@ -501,12 +501,12 @@ PADX.filesUndo = function () {
 		}
 	}
 
-	var relinked = padFilesRelinkGroup(back, PAD_FILES_RELINK_LABEL + ' (desfazer)');
+	var religados = padFilesReligarGroup(back, PAD_FILES_RELIGAR_LABEL + ' (desfazer)');
 
 	try {
 		if (left.length) saveTextFile(JSON.stringify({ folder: data.folder, count: left.length, when: data.when || new Date().getTime(), ops: left }), file.fsName);
 		else file.remove();
 	} catch (err2) { }
 
-	return { count: back.length, missing: errors.length, relinked: relinked, errors: errors, folder: padDisplayPath(data.folder || ''), undo: padFilesUndoInfo() };
+	return { count: back.length, missing: errors.length, religados: religados, errors: errors, folder: padDisplayPath(data.folder || ''), undo: padFilesUndoInfo() };
 };

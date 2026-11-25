@@ -5,26 +5,26 @@
    ========================================================= */
 
 html,
-body.maker-page {
+body.confeiteiro-page {
   height: 100%;
   min-width: 0;
 }
 
-body.maker-page {
+body.confeiteiro-page {
   display: block;
   min-height: 0;
   padding: 0;
   overflow: hidden;
 }
 
-.maker {
+.confeiteiro {
   display: grid;
   height: 100%;
   grid-template-columns: minmax(400px, 0.85fr) minmax(0, 1.15fr);
 }
 
 /* a coluna do degradê: o título, o que falta e o vidro (como a lista de templates) */
-.maker-side {
+.confeiteiro-side {
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -32,24 +32,24 @@ body.maker-page {
   padding: 16px 16px calc(var(--footer-center) - 19px); /* 19 = meio botão do rodapé */
 }
 
-.maker-top {
+.confeiteiro-top {
   display: grid;
   gap: 8px;
   padding: 0 0 12px;
 }
 
-.maker-top .eyebrow {
+.confeiteiro-top .eyebrow {
   margin: 0;
 }
 
 /* o que falta para salvar: limpo sobre o degradê (só o texto; a bolinha esmaecida ou, pronta, preenchida) */
-.maker-top .maker-check {
+.confeiteiro-top .confeiteiro-check {
   justify-content: flex-start;
   gap: 2px 12px;
 }
 
-.maker-top .check-chip,
-.maker-top .check-chip.is-ok {
+.confeiteiro-top .check-chip,
+.confeiteiro-top .check-chip.is-ok {
   padding: 3px 2px;
   border: 0;
   background: transparent;
@@ -59,26 +59,26 @@ body.maker-page {
   white-space: nowrap;
 }
 
-.maker-top .check-chip:hover,
-.maker-top .check-chip.is-ok {
+.confeiteiro-top .check-chip:hover,
+.confeiteiro-top .check-chip.is-ok {
   color: rgb(var(--on-brand));
 }
 
-.maker-top .check-dot {
+.confeiteiro-top .check-dot {
   border-color: rgb(var(--on-brand) / 45%);
 }
 
-.maker-top .check-chip.is-ok .check-dot {
+.confeiteiro-top .check-chip.is-ok .check-dot {
   border-color: rgb(var(--on-brand));
   background: var(--surface);
 }
 
-.maker-top .check-chip.is-ok .check-dot::after {
+.confeiteiro-top .check-chip.is-ok .check-dot::after {
   border-color: var(--blue-500);
 }
 
 /* a coluna: sem vidro, o degradê é a primeira camada (os campos e os botões ficam direto nele) */
-.maker-glass {
+.confeiteiro-glass {
   position: relative;
   display: flex;
   min-height: 0;
@@ -88,7 +88,7 @@ body.maker-page {
   color: rgb(var(--on-brand));
 }
 
-.maker-glass-body {
+.confeiteiro-glass-body {
   display: grid;
   min-height: 0;
   flex: 1;
@@ -106,19 +106,19 @@ body.maker-page {
 }
 
 /* o rodapé do vidro: os botões redondos e o "⋯", como o da lista de templates */
-.maker-glass-foot {
+.confeiteiro-glass-foot {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 0 0;
 }
 
-.maker-glass-foot .actions-menu {
+.confeiteiro-glass-foot .actions-menu {
   position: relative;
   margin-left: auto;
 }
 
-.maker-glass-foot .menu-popover {
+.confeiteiro-glass-foot .menu-popover {
   top: auto;
   right: 0;
   bottom: calc(100% + 8px);
@@ -127,140 +127,140 @@ body.maker-page {
 }
 
 /* os cartões no vidro: sem a caixa, os títulos e textos na cor do vidro */
-.maker-glass .cfg-card {
+.confeiteiro-glass .cfg-card {
   padding: 0;
   border: 0;
   background: none;
   box-shadow: none;
 }
 
-.maker-glass .cfg-title,
-.maker-glass .cfg-label {
+.confeiteiro-glass .cfg-title,
+.confeiteiro-glass .cfg-label {
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .cfg-hint {
+.confeiteiro-glass .cfg-hint {
   color: rgb(var(--on-brand) / 88%);
 }
 
-.maker-glass .cfg-input {
+.confeiteiro-glass .cfg-input {
   border-color: rgb(var(--on-brand) / 32%);
   background: rgb(var(--on-brand) / 6%);
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .cfg-input::placeholder {
+.confeiteiro-glass .cfg-input::placeholder {
   color: rgb(var(--on-brand) / 62%);
 }
 
-.maker-glass .cfg-input:hover:not(:disabled) {
+.confeiteiro-glass .cfg-input:hover:not(:disabled) {
   border-color: rgb(var(--on-brand) / 55%);
 }
 
-.maker-glass .cfg-input:focus {
+.confeiteiro-glass .cfg-input:focus {
   border-color: rgb(var(--on-brand) / 80%);
 }
 
-.maker-glass .cfg-input:disabled {
+.confeiteiro-glass .cfg-input:disabled {
   opacity: 0.55;
 }
 
 /* a caixa de texto (lista) no vidro: igual aos campos do vidro, nos dois temas (não a pílula sólida da folha) */
-.maker-glass .dropdown-trigger {
+.confeiteiro-glass .dropdown-trigger {
   min-height: 42px; /* a altura dos campos ao lado */
   border-color: rgb(var(--on-brand) / 32%);
   background: rgb(var(--on-brand) / 6%);
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .dropdown-trigger:hover:not(:disabled) {
+.confeiteiro-glass .dropdown-trigger:hover:not(:disabled) {
   border-color: rgb(var(--on-brand) / 55%);
   background: rgb(var(--on-brand) / 10%);
 }
 
-.maker-glass .dropdown-trigger[aria-expanded="true"],
-.maker-glass .dropdown-trigger:focus-visible {
+.confeiteiro-glass .dropdown-trigger[aria-expanded="true"],
+.confeiteiro-glass .dropdown-trigger:focus-visible {
   border-color: rgb(var(--on-brand) / 80%);
 }
 
-.maker-glass .select::after {
+.confeiteiro-glass .select::after {
   border-color: rgb(var(--on-brand) / 85%);
 }
 
-.maker-glass .has-field-icon>.field-icon,
-.maker-glass .has-field-icon:focus-within>.field-icon {
+.confeiteiro-glass .has-field-icon>.field-icon,
+.confeiteiro-glass .has-field-icon:focus-within>.field-icon {
   stroke: rgb(var(--on-brand) / 85%);
 }
 
-.maker-glass .maker-name {
+.confeiteiro-glass .confeiteiro-name {
   margin: 0;
 }
 
-.maker-glass .cfg-textarea {
+.confeiteiro-glass .cfg-textarea {
   resize: none;
 }
 
-.maker-glass .cfg-preview {
+.confeiteiro-glass .cfg-preview {
   border-color: rgb(var(--on-brand) / 40%);
   background: rgb(var(--on-brand) / 8%);
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .cfg-preview-label {
+.confeiteiro-glass .cfg-preview-label {
   color: rgb(var(--on-brand) / 88%);
 }
 
-.maker-glass .add-button {
+.confeiteiro-glass .add-button {
   border-color: rgb(var(--on-brand) / 40%);
   background: none;
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .add-button:hover {
+.confeiteiro-glass .add-button:hover {
   border-color: rgb(var(--on-brand) / 75%);
   background: rgb(var(--on-brand) / 10%);
 }
 
-.maker-glass .mini-button {
+.confeiteiro-glass .mini-button {
   border-color: transparent;
   background: none;
   color: rgb(var(--on-brand) / 85%);
 }
 
-.maker-glass .mini-button:hover:not(:disabled) {
+.confeiteiro-glass .mini-button:hover:not(:disabled) {
   border-color: transparent;
   background: rgb(var(--on-brand) / 14%);
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .row-del {
+.confeiteiro-glass .row-del {
   color: rgb(var(--on-brand) / 88%);
 }
 
-.maker-glass .wz-preview,
-.maker-glass .wz-preview b,
-.maker-glass .wz-hint {
+.confeiteiro-glass .wz-preview,
+.confeiteiro-glass .wz-preview b,
+.confeiteiro-glass .wz-hint {
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .wz-preview svg {
+.confeiteiro-glass .wz-preview svg {
   stroke: rgb(var(--on-brand));
 }
 
-.maker-glass .cfg-grid {
+.confeiteiro-glass .cfg-grid {
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr) minmax(0, 0.85fr); /* a caixa de texto ("CAIXA ALTA") cabe inteira */
   align-items: end; /* um rótulo em duas linhas não desalinha os campos */
 }
 
 /* exemplo e dicas lado a lado */
-.maker-pair {
+.confeiteiro-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 /* a folha: o que vem do After Effects, em duas colunas */
-.maker-sheet {
+.confeiteiro-sheet {
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -268,7 +268,7 @@ body.maker-page {
   background: var(--surface);
 }
 
-.maker-scroll {
+.confeiteiro-scroll {
   min-height: 0;
   flex: 1;
   padding: 16px;
@@ -278,28 +278,28 @@ body.maker-page {
   scrollbar-width: thin;
 }
 
-.maker-scroll::-webkit-scrollbar {
+.confeiteiro-scroll::-webkit-scrollbar {
   width: 8px;
 }
 
-.maker-scroll::-webkit-scrollbar-thumb {
+.confeiteiro-scroll::-webkit-scrollbar-thumb {
   border-radius: var(--radius-pill);
   background: var(--border-strong);
 }
 
-.maker-scroll[hidden],
-.maker-state[hidden] {
+.confeiteiro-scroll[hidden],
+.confeiteiro-state[hidden] {
   display: none;
 }
 
-.maker-grid {
+.confeiteiro-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 10px;
 }
 
-.maker-col {
+.confeiteiro-col {
   display: grid;
   min-width: 0;
   gap: 10px;
@@ -307,7 +307,7 @@ body.maker-page {
 
 
 /* a atração e o que é: os primeiros campos, lado a lado (a lista da atração abre embaixo do campo dela) */
-.maker-name {
+.confeiteiro-name {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
@@ -315,28 +315,28 @@ body.maker-page {
   margin-bottom: 16px;
 }
 
-.maker-name-col {
+.confeiteiro-name-col {
   display: grid;
   min-width: 0;
   gap: 6px;
 }
 
-.maker-name-title {
+.confeiteiro-name-title {
   margin: 0;
 }
 
-.maker-name-preview {
+.confeiteiro-name-preview {
   grid-column: 1 / -1;
 }
 
-.maker-name-preview[hidden] {
+.confeiteiro-name-preview[hidden] {
   display: none;
 }
 
 
 
 /* como criar */
-.maker-help {
+.confeiteiro-help {
   margin-bottom: 16px;
   padding: 8px 12px;
   border: 1px solid var(--blue-200);
@@ -344,7 +344,7 @@ body.maker-page {
   background: var(--blue-50);
 }
 
-.maker-help summary {
+.confeiteiro-help summary {
   color: var(--blue-500);
   cursor: pointer;
   font-size: 0.68rem;
@@ -354,11 +354,11 @@ body.maker-page {
   text-transform: uppercase;
 }
 
-.maker-help summary::-webkit-details-marker {
+.confeiteiro-help summary::-webkit-details-marker {
   display: none;
 }
 
-.maker-help ol {
+.confeiteiro-help ol {
   display: grid;
   overflow: hidden;
   gap: 5px;
@@ -370,7 +370,7 @@ body.maker-page {
 }
 
 /* projeto */
-.maker .preview-card {
+.confeiteiro .preview-card {
   max-height: 260px;
 }
 
@@ -435,7 +435,7 @@ body.maker-page {
   opacity: 0.6;
 }
 
-.maker-comp {
+.confeiteiro-comp {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -444,7 +444,7 @@ body.maker-page {
 }
 
 /* ícone de comp (película, como na busca de textos) antes do nome; relógio antes do frame */
-.maker-comp .comp-icon {
+.confeiteiro-comp .comp-icon {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
@@ -456,17 +456,17 @@ body.maker-page {
   stroke-width: 1.7;
 }
 
-.maker-comp .comp-icon .film-holes {
+.confeiteiro-comp .comp-icon .film-holes {
   stroke-dasharray: 1.6 2.4;
   stroke-linecap: butt;
   transition: stroke-dashoffset 420ms var(--ease-soft);
 }
 
-.maker-comp:hover .comp-icon .film-holes {
+.confeiteiro-comp:hover .comp-icon .film-holes {
   stroke-dashoffset: -8;
 }
 
-.maker-comp-label {
+.confeiteiro-comp-label {
   color: var(--text-tertiary);
   font-size: 0.66rem;
   font-weight: 700;
@@ -474,7 +474,7 @@ body.maker-page {
   text-transform: uppercase;
 }
 
-.maker-comp strong {
+.confeiteiro-comp strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -483,7 +483,7 @@ body.maker-page {
   white-space: nowrap;
 }
 
-.maker-comp-time {
+.confeiteiro-comp-time {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -493,7 +493,7 @@ body.maker-page {
   font-variant-numeric: tabular-nums;
 }
 
-.maker-comp-time svg {
+.confeiteiro-comp-time svg {
   width: 13px;
   height: 13px;
   fill: none;
@@ -503,12 +503,12 @@ body.maker-page {
   stroke-width: 1.8;
 }
 
-.maker-fonts {
+.confeiteiro-fonts {
   display: grid;
   gap: 4px;
 }
 
-.maker-fonts ul {
+.confeiteiro-fonts ul {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -600,12 +600,12 @@ body.maker-page {
   font-weight: 700;
 }
 
-.maker .cfg-card>.button {
+.confeiteiro .cfg-card>.button {
   justify-self: start;
 }
 
 /* layers */
-.maker-layer-name {
+.confeiteiro-layer-name {
   min-width: 0;
   max-width: 190px;
   flex: 0 1 auto;
@@ -626,7 +626,7 @@ body.maker-page {
     color 180ms ease;
 }
 
-.maker-layer-name:hover {
+.confeiteiro-layer-name:hover {
   border-color: var(--blue-200);
   background: var(--blue-50);
   color: var(--blue-500);
@@ -637,12 +637,12 @@ body.maker-page {
   background: var(--danger-surface);
 }
 
-.maker .cfg-path .cfg-input {
+.confeiteiro .cfg-path .cfg-input {
   flex: 1;
 }
 
 /* sem comp */
-.maker-state {
+.confeiteiro-state {
   display: grid;
   min-height: 260px;
   flex: 1;
@@ -655,18 +655,18 @@ body.maker-page {
   text-align: center;
 }
 
-.maker-state strong {
+.confeiteiro-state strong {
   color: var(--text-primary);
   font-size: 1rem;
 }
 
-.maker-state .button {
+.confeiteiro-state .button {
   margin-top: 10px;
 }
 
 /* barra ancorada */
 /* o rodapé da folha: a transição é um degradê (como o dos templates), o centro dos botões alinhado com o da coluna */
-.maker-bar.is-anchored {
+.confeiteiro-bar.is-anchored {
   position: relative;
   margin: -24px 0 0;
   padding: 24px 16px calc(var(--footer-center) - 23px); /* 23 = meio botão */
@@ -674,19 +674,19 @@ body.maker-page {
   background: linear-gradient(to top, var(--surface) 72%, transparent);
 }
 
-.maker-bar .button-primary {
+.confeiteiro-bar .button-primary {
   margin-left: auto;
 }
 
 /* começar de novo e testar agora: canto esquerdo do rodapé */
-.maker-bar-left {
+.confeiteiro-bar-left {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
 }
 
-.maker-hint {
+.confeiteiro-hint {
   min-width: 0;
   color: var(--waiting);
   font-size: 0.72rem;
@@ -734,7 +734,7 @@ body.maker-page {
 
 
 /* o que falta para salvar */
-.maker-check {
+.confeiteiro-check {
   display: flex;
   min-width: 0;
   flex-wrap: wrap;
@@ -797,10 +797,10 @@ body.maker-page {
 }
 
 .cfg-card.is-pulse {
-  animation: maker-pulse 1100ms var(--ease-soft);
+  animation: confeiteiro-pulse 1100ms var(--ease-soft);
 }
 
-@keyframes maker-pulse {
+@keyframes confeiteiro-pulse {
   0% {
     box-shadow: 0 0 0 0 rgb(var(--accent-rgb) / 0%);
   }
@@ -888,7 +888,7 @@ body.maker-page {
   stroke-width: 1.8;
 }
 
-.fx-effect .maker-layer-name {
+.fx-effect .confeiteiro-layer-name {
   min-width: 0;
   flex: 0 1 auto; /* o nome do efeito encolhe (com reticências): o tipo ao lado fica inteiro */
   overflow: hidden;
@@ -1001,16 +1001,16 @@ body.maker-page {
 }
 
 /* os tokens das pastas de output, sobre o vidro */
-.maker-glass .out-tokens-label {
+.confeiteiro-glass .out-tokens-label {
   color: rgb(var(--on-brand) / 88%);
 }
 
-.maker-glass .out-token {
+.confeiteiro-glass .out-token {
   border-color: rgb(var(--on-brand) / 40%);
   color: rgb(var(--on-brand));
 }
 
-.maker-glass .out-token:hover {
+.confeiteiro-glass .out-token:hover {
   border-color: rgb(var(--on-brand) / 75%);
   background: rgb(var(--on-brand) / 10%);
 }

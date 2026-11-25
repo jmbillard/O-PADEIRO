@@ -2045,7 +2045,7 @@ body.is-org-dragging * {
    ========================================================= */
 
 /* na raiz ficam os tipos que não são coletados: riscados */
-#pane-collect .org-folder.is-root .org-chip {
+#pane-coletar .org-folder.is-root .org-chip {
   opacity: 0.6;
   text-decoration: line-through;
 }
@@ -2292,22 +2292,22 @@ body.is-org-dragging * {
 }
 
 /* dentro de uma aba da equipe: daqui para baixo, as opções só deste computador */
-.computador-split {
+.deste-computador-split {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 26px;
 }
 
-.computador-split::before,
-.computador-split::after {
+.deste-computador-split::before,
+.deste-computador-split::after {
   height: 1px;
   flex: 1;
   background: var(--border);
   content: "";
 }
 
-.computador-split-label {
+.deste-computador-split-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2318,7 +2318,7 @@ body.is-org-dragging * {
   text-transform: uppercase;
 }
 
-.computador-split-label svg {
+.deste-computador-split-label svg {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
@@ -2330,7 +2330,7 @@ body.is-org-dragging * {
   transform: translateY(-1.5px);
 }
 
-.computador-split-hint {
+.deste-computador-split-hint {
   margin-top: 2px;
   text-align: center;
 }
@@ -2445,23 +2445,23 @@ body.is-org-dragging * {
 }
 
 /* aba COMPUTADOR: a sigla é curta */
-.machine-designer {
+.deste-computador-designer {
   max-width: 220px;
 }
 
 /* aba COMPUTADOR: templates por produção (nome | pasta daqui | copiar) */
-.machine-sync.is-busy {
+.deste-computador-sync.is-busy {
   opacity: 0.6;
   pointer-events: none;
 }
 
 /* produção deste computador: sem "copiar", mas a coluna continua (os campos alinham) */
-.machine-sync.is-placeholder {
+.deste-computador-sync.is-placeholder {
   visibility: hidden;
 }
 
 /* aba COMPUTADOR: aviso de que a rede caiu (o modo local já vale) */
-.machine-offline {
+.deste-computador-offline {
   margin: 0;
   border-radius: var(--radius-small);
 }
@@ -2767,13 +2767,13 @@ body.is-org-dragging * {
 }
 
 /* deste computador: índice local da busca */
-.machine-index-opts {
+.deste-computador-index-opts {
   display: grid;
   gap: 10px;
   margin: 14px 0;
 }
 
-.machine-index-status {
+.deste-computador-index-status {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -2785,12 +2785,12 @@ body.is-org-dragging * {
   font-size: 0.74rem;
 }
 
-.machine-index-status b {
+.deste-computador-index-status b {
   color: var(--text-primary);
   font-weight: 700;
 }
 
-.machine-index-status .button {
+.deste-computador-index-status .button {
   flex: 0 0 auto;
 }
 

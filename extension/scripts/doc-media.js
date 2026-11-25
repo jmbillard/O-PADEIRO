@@ -163,7 +163,7 @@ async function type(p, text, ms) {
 
 // as fontes do projeto com arquivos deste computador (a prévia aparece escrita na própria fonte)
 const DOC_FONTS = `(() => {
-	window.PAD_MOCK_FONTS = { supported: true, bank: '/Volumes/VFX/BANCO DE FONTES', upload: true, machineUpload: true, projectFonts: '/Volumes/VFX/PROGRAMAS/DOMINGAO/02 ARQUIVOS/FONTS', project: 'DOMINGAO COM HUCK SERVICO.aep', user: 'JMBILLARD', machine: 'MAC',
+	window.PAD_MOCK_FONTS = { supported: true, bank: '/Volumes/VFX/BANCO DE FONTES', upload: true, uploadDesteComputador: true, projectFonts: '/Volumes/VFX/PROGRAMAS/DOMINGAO/02 ARQUIVOS/FONTS', project: 'DOMINGAO COM HUCK SERVICO.aep', user: 'JMBILLARD', machine: 'MAC',
 		fonts: [
 			{ name: 'Inter-Bold', family: 'Inter', style: 'Bold', location: '/usr/share/fonts/opentype/inter/Inter-Bold.otf', missing: false, layers: 4, state: 'ok' },
 			{ name: 'JetBrainsMono-Medium', family: 'JetBrains Mono', style: 'Medium', location: '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Medium.ttf', missing: false, layers: 2, state: 'up' },
@@ -265,9 +265,9 @@ const SHOTS = {
 		await p.waitForTimeout(300);
 		await p.evaluate(() => { const l = document.getElementById('fw-list'); if (l) l.scrollTop = 0; window.scrollTo(0, 0); });
 		await p.waitForTimeout(300);
-	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-collect', round: true }, { sel: '#fw-go' }] },
+	}, marks: [{ sel: '#fw-file', pad: 3 }, { sel: '.fw-row:nth-child(1) .fw-sample' }, { sel: '.fw-row:nth-child(1) .fw-state', round: true }, { sel: '.fw-row:nth-child(2) .fw-state', round: true }, { sel: '.fw-row:nth-child(3) .fw-state', round: true }, { sel: '.fw-row:nth-child(4) .fw-swap' }, { sel: '#fw-copy', round: true }, { sel: '#fw-go' }] },
 	catador: { w: 540, h: 760, url: 'catador.html', marks: [
-		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-relink', round: true }, { sel: '#cw-go' }
+		{ sel: '#fw-file', pad: 3 }, { sel: '#cw-filter', pad: 3 }, { sel: '.cw-row[data-state="missing"] .fw-state', round: true }, { sel: '.cw-row[data-state="local"] .fw-state', round: true }, { sel: '.cw-row[data-state="net"] .fw-state', round: true }, { sel: '#cw-religar', round: true }, { sel: '#cw-go' }
 	] },
 	// O ARQUIVISTA: a pasta, as chaves, os filtros, o novo nome (editável), a situação e o rodapé
 	// A FORMINHA: a comp, os layers, o input, a caixa, o nome (editável), a situação e o rodapé
@@ -306,7 +306,7 @@ const SHOTS = {
 		await p.waitForTimeout(800);
 	}, marks: [{ sel: '#cv-mac' }, { sel: '#cv-win' }, { sel: '#cv-copy-win', round: true }] },
 	produtor: { w: 1100, h: 720, url: 'productions.html', marks: [
-		{ sel: '.tab[data-tab="links"]' }, { sel: '.tab[data-tab="prods"]' }, { sel: '.tab[data-tab="network"]' }, { sel: '.tab[data-tab="machine"]' }, { sel: '#btn-reload', round: true }, { sel: '#btn-save', round: true }, { sel: '#scope-note', pad: 0 }
+		{ sel: '.tab[data-tab="links"]' }, { sel: '.tab[data-tab="prods"]' }, { sel: '.tab[data-tab="network"]' }, { sel: '.tab[data-tab="deste-computador"]' }, { sel: '#btn-reload', round: true }, { sel: '#btn-save', round: true }, { sel: '#scope-note', pad: 0 }
 	] }
 };
 
@@ -457,7 +457,7 @@ const SCENES = {
 		mouse = [500, 600];
 		await p.waitForTimeout(900);
 		await hover(p, '.cw-row .fw-head', 500);
-		await tap(p, '#cw-relink', { wait: 2600 }); // procura: o achado vira →
+		await tap(p, '#cw-religar', { wait: 2600 }); // procura: o achado vira →
 		await tap(p, '#cw-go', { wait: 2000 }); // Religar
 		await tap(p, '#cw-go', { wait: 2200 }); // Coletar
 	} },
@@ -499,7 +499,7 @@ const SCENES = {
 	produtor: { w: 1000, h: 640, url: 'productions.html', async run(p) {
 		mouse = [600, 600];
 		await p.waitForTimeout(700);
-		for (const tab of ['fonts', 'tipos-de-projeto', 'collect', 'tools', 'appearance', 'machine']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
+		for (const tab of ['fonts', 'tipos-de-projeto', 'coletar', 'tools', 'appearance', 'deste-computador']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
 	} }
 };
 

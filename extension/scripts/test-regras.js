@@ -719,7 +719,7 @@ REGRAS.push({
 			['registroDeUso', 'aparencia', 'coletar', 'bancoDeFontes'].forEach(function (nome) {
 				onde[nome] = api.secao(nome).onde + ' ' + api.secao(nome).arquivo + ' ' + api.secao(nome).chave;
 			});
-			eq(onde, { registroDeUso: 'equipe ' + EQUIPE + ' LOG', aparencia: 'equipe ' + EQUIPE + ' APPEARANCE', coletar: 'equipe ' + EQUIPE + ' COLLECT', bancoDeFontes: 'equipe ' + EQUIPE + ' FONTS' });
+			eq(onde, { registroDeUso: 'equipe ' + EQUIPE + ' LOG', aparencia: 'equipe ' + EQUIPE + ' APPEARANCE', coletar: 'equipe ' + EQUIPE + ' COLETAR', bancoDeFontes: 'equipe ' + EQUIPE + ' FONTS' });
 		});
 
 		// sem nada: o padrão
@@ -803,7 +803,7 @@ REGRAS.push({
 			eq(api.ler(memoria({ [EQUIPE]: { LOG: { mode: 'csv', webhook: ' x ' } } }), 'registroDeUso'), { mode: 'csv', webhook: 'x' });
 			eq(api.ler(memoria({ [EQUIPE]: { LOG: { mode: 'webhook', webhook: 'ftp://x' } } }), 'registroDeUso').webhook, 'https://workflows.jmbillard.com/webhook/log_db_padeiro');
 			lancaErro(function () { api.gravar(memoria(), { registroDeUso: { mode: 'webhook', webhook: 'a b' } }); }, /^#PAD_078/);
-			eq(api.ler(memoria({ [EQUIPE]: { COLLECT: { folders: [{ name: ' 01  PROJ ', contents: ['projeto'] }, { name: 'IMGS', parent: '01 proj', contents: ['imagens', ''] }], saveAfter: true } } }), 'coletar'),
+			eq(api.ler(memoria({ [EQUIPE]: { COLETAR: { folders: [{ name: ' 01  PROJ ', contents: ['projeto'] }, { name: 'IMGS', parent: '01 proj', contents: ['imagens', ''] }], saveAfter: true } } }), 'coletar'),
 				{ folders: [{ name: '01 PROJ', parent: '', contents: ['projeto'] }, { name: 'IMGS', parent: '01 PROJ', contents: ['imagens'] }] });
 			lancaErro(function () { api.gravar(memoria(), { coletar: { folders: [{ name: 'A', contents: ['x'] }] } }); }, /^#PAD_094 - coletar: tipo desconhecido/);
 			eq(api.ler(memoria({ [EQUIPE]: { FONTS: { bank: ' \\\\srv\\FONTES\\ ', upload: false } } }), 'bancoDeFontes'), { bank: '//srv/FONTES', upload: false });
@@ -847,6 +847,19 @@ REGRAS.push({
 
 			// os dois campos: vale o novo
 			eq(api.ler(memoria({ [EQUIPE]: { TIPOS_DE_PROJETO: { tipos: [{ name: 'A', path: '/a' }], categories: [{ name: 'B', path: '/b' }] } } }), 'tiposDeProjeto').tipos.map(function (t) { return t.name; }), ['A']);
+		});
+
+		test('coletar: a chave antiga (em inglês) é lida; gravar grava só "COLETAR"', function () {
+			const coletar = { folders: [{ name: '01 PROJ', parent: '', contents: ['projeto'] }] };
+			const antigos = ['COLLECT']; // a chave com o nome antigo, lida por compatibilidade
+			const m = memoria({ [EQUIPE]: { [antigos[0]]: coletar, OUTRA: 1 } });
+
+			eq(api.secao('coletar').antigos, antigos);
+
+			eq(api.ler(m, 'coletar'), coletar);
+			api.gravar(m, { coletar: api.ler(m, 'coletar') });
+			eq(m.doc(EQUIPE), { OUTRA: 1, COLETAR: coletar });
+			eq(api.secoesDoPainel({ coletar: coletar }), { producoes: [], coletar: coletar });
 		});
 
 		test('registro de uso: o modo "csvGlobal" (o nome antigo) é lido como "csvEquipe"; gravar grava "csvEquipe"', function () {
@@ -934,8 +947,14 @@ REGRAS.push({
 			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: antigo }] }).tipos[0].path, antigo);
 		});
 
+		test('o token {designer} (a sigla do designer) vale nos caminhos; {usuario}, o nome antigo, continua aceito', function () {
+			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a/{atracao}', file: '{atracao} {designer}' }] }).tipos[0].file, '{atracao} {designer}');
+			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a/{atracao}', file: '{atracao} {usuario}' }] }).tipos[0].file, '{atracao} {usuario}');
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /\{designer\}/); // a mensagem cita o token novo
+		});
+
 		test('os campos da configuração da equipe vindos do painel viram as seções (as que não vierem ficam de fora; sem produções, a lista vazia)', function () {
-			eq(api.secoesDoPainel({ productions: [1], drives: 2, rename: 3, organize: 4, search: 5, links: 6, bar: 7, log: 8, appearance: 9, collect: 10, fonts: 11, tiposDeProjeto: 12 }),
+			eq(api.secoesDoPainel({ productions: [1], drives: 2, rename: 3, organize: 4, search: 5, links: 6, bar: 7, log: 8, appearance: 9, coletar: 10, fonts: 11, tiposDeProjeto: 12 }),
 				{ producoes: [1], mapaDeDrives: 2, regraDoRenomear: 3, organizar: 4, buscaDeCaminhos: 5, links: 6, barra: 7, registroDeUso: 8, aparencia: 9, coletar: 10, bancoDeFontes: 11, tiposDeProjeto: 12 });
 			eq(api.secoesDoPainel({ links: [] }), { producoes: [], links: [] });
 

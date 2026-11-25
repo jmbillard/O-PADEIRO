@@ -45,7 +45,7 @@ Arquivo movido no disco não volta com o Ctrl+Z do After Effects: por isso o reg
 var PAD_MIGRATION_LOG = '_migracao_padeiro.json';
 var PAD_MIGRATION_MS = 15000; // o tempo máximo da leitura da pasta
 var PAD_MIGRATION_FILES = 30000; // e o máximo de arquivos
-var PAD_MIGRATION_DEPTH = 3; // até quantas pastas para dentro a leitura vai (as de saída e as que o usuário manda mover, inteiras)
+var PAD_MIGRATION_DEPTH = 3; // até quantas pastas para dentro a leitura vai (as de saída e as que o designer manda mover, inteiras)
 var PAD_MIGRATION_BULK = 100; // mais arquivos sem uso do que isto numa pasta: é um banco, fica como está
 var PAD_MIGRATION_FALLBACK = { projeto: '01_PROJETOS', saidas: '03_SAIDA', externos: '05_EXTERNOS' };
 var PAD_FONT_EXT = /\.(otf|ttf|ttc|otc|woff2?|pfb|pfm|dfont)$/i;
@@ -168,7 +168,7 @@ function padMigrateBlocked(rootPath) {
 
 // A pasta (relativa à raiz) que recebe o tipo; sem pasta na árvore, o padrão do tipo (ou a dos externos).
 function padMigrateDest(settings, type) {
-	var path = padCollectFolderPath(settings, type);
+	var path = padColetarFolderPath(settings, type);
 
 	if (path != null) return path;
 	if (PAD_MIGRATION_FALLBACK[type]) return PAD_MIGRATION_FALLBACK[type];
@@ -189,7 +189,7 @@ function padMigrateUsed() {
 
 		if (!path) continue;
 
-		var kind = padCollectKind(item);
+		var kind = padColetarKind(item);
 
 		if (kind == 'sequencias') {
 			var seq = padSequenceFrames(item);
@@ -269,14 +269,14 @@ function padIsFontsFolder(name) {
 // O plano: o que vai para onde. → { root, name, project, ops, stay, conflicts, others, outside, partial, sources, ... }
 // ops: [{ from, to (relativo à raiz), type, top, id (o item do After, se usado), first, project (o .aep aberto) }]
 // all: soma o que os outros projetos da pasta usam (lido pelo migrateRead*)
-// move: as pastas grandes que o usuário mandou mover também (as outras ficam como estão: plan.bulk, plan.kept)
+// move: as pastas grandes que o designer mandou mover também (as outras ficam como estão: plan.bulk, plan.kept)
 function padMigrateBuild(all, move) {
 	var file = app.project.file;
 
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
 
 	var settings = padLerSecao('coletar');
-	var root = new Folder(padCollectRoot(file, settings));
+	var root = new Folder(padColetarRoot(file, settings));
 	var rootKey = padPathKey(root.fsName);
 	var used = padMigrateUsed();
 	var state = { files: [], deep: [], until: new Date().getTime() + PAD_MIGRATION_MS, partial: false };
@@ -312,7 +312,7 @@ function padMigrateBuild(all, move) {
 
 	padMigrateScan(root, '', PAD_MIGRATION_DEPTH, state);
 
-	// as pastas fundas: as de saída e as das pastas que o usuário mandou mover são lidas inteiras; as outras marcam
+	// as pastas fundas: as de saída e as das pastas que o designer mandou mover são lidas inteiras; as outras marcam
 	// a pasta de segundo nível como grande (fica como está)
 	var deep = state.deep;
 
@@ -351,11 +351,11 @@ function padMigrateBuild(all, move) {
 	// os usados que estão fora da raiz: copiados para a pasta do tipo (o original fica onde está). 'top' = '..' é a
 	// origem "fora da pasta" no desenho; 'from' é o caminho inteiro
 	for (k in used) {
-		if (!used.hasOwnProperty(k) || k.indexOf(rootKey) == 0 || padCollectFolderPath(settings, used[k].kind) == null) continue;
+		if (!used.hasOwnProperty(k) || k.indexOf(rootKey) == 0 || padColetarFolderPath(settings, used[k].kind) == null) continue;
 
 		var outName = padSlash(used[k].path).replace(/^.*\//, '');
 
-		plan.ops.push({ from: used[k].path, to: padCollectFolderPath(settings, used[k].kind) + (used[k].seq ? '/' + used[k].seq : '') + '/' + outName, type: used[k].kind, top: '..', id: used[k].id, first: used[k].first, project: false, copy: true });
+		plan.ops.push({ from: used[k].path, to: padColetarFolderPath(settings, used[k].kind) + (used[k].seq ? '/' + used[k].seq : '') + '/' + outName, type: used[k].kind, top: '..', id: used[k].id, first: used[k].first, project: false, copy: true });
 		plan.outside++;
 	}
 
@@ -382,11 +382,11 @@ function padMigrateBuild(all, move) {
 			op.other = true;
 			op.to = padMigrateDest(settings, 'projeto') + '/' + below;
 			plan.others++;
-		} else if (u && padCollectFolderPath(settings, u.kind) != null) {
+		} else if (u && padColetarFolderPath(settings, u.kind) != null) {
 			op.type = u.kind;
 			op.id = u.id;
 			op.first = u.first;
-			op.to = padCollectFolderPath(settings, u.kind) + (u.seq ? '/' + u.seq : '') + '/' + name;
+			op.to = padColetarFolderPath(settings, u.kind) + (u.seq ? '/' + u.seq : '') + '/' + name;
 		} else if (f.top != '' && padIsOutputFolder(f.top, saidasKey)) {
 			op.type = 'saidas';
 			op.to = destSaidas + '/' + f.rel.split('/').slice(1).join('/');
@@ -418,7 +418,7 @@ function padMigrateBuild(all, move) {
 		plan.ops.push(op);
 	}
 
-	// as pastas grandes (muitos arquivos sem uso, ou fundas demais): ficam como estão, a não ser as que o usuário
+	// as pastas grandes (muitos arquivos sem uso, ou fundas demais): ficam como estão, a não ser as que o designer
 	// mandou mover
 	var heavy = {};
 	var kept = [];
@@ -517,7 +517,7 @@ PADX.migratePlan = function (a) {
 	// o tipo de cada pasta da árvore (a cor dela no desenho)
 	for (i = 0; i < plan.settings.folders.length; i++) {
 		var cf = plan.settings.folders[i];
-		var at = dstIndex[padCollectPathOf(plan.settings, cf)];
+		var at = dstIndex[padColetarPathOf(plan.settings, cf)];
 
 		if (at != null && cf.contents.length) res.dests[at].type = cf.contents[0];
 	}
@@ -642,7 +642,7 @@ function padRemoveEmpty(folder) {
 
 // Religa os itens do After que apontavam para 'fromKey → to' (o mapa { chave do caminho antigo: caminho novo }).
 // → quantos itens
-function padMigrateRelink(map) {
+function padMigrateReligar(map) {
 	var count = 0;
 
 	for (var i = 1; i <= app.project.numItems; i++) {
@@ -852,7 +852,7 @@ PADX.migrateStep = function (a) {
 };
 
 // Termina: religa, salva o .aep no lugar novo, aponta a fila de render, apaga as pastas vazias e grava o registro.
-// → { moved, failed: [nome], relinked, folders (apagadas), queue, project, others }
+// → { moved, failed: [nome], religados, folders (apagadas), queue, project, others }
 // com todos os projetos (o plano com all), as pastas vazias e o registro ficam para o migrateOthersEnd: 'others' diz
 // quantos projetos falta religar
 PADX.migrateEnd = function () {
@@ -866,7 +866,7 @@ PADX.migrateEnd = function () {
 	var tops = {};
 	var prefixes = [];
 	var log = { version: 1, date: new Date().getTime(), project: null, moves: [], copies: [], queue: [], backups: [] };
-	var res = { moved: plan.moved.length, failed: plan.failed, relinked: 0, folders: 0, queue: 0, project: '', others: 0 };
+	var res = { moved: plan.moved.length, failed: plan.failed, religados: 0, folders: 0, queue: 0, project: '', others: 0 };
 	var others = [];
 	var destSaidas = padMigrateDest(plan.settings, 'saidas');
 	var saidasKey = padFolderKey(destSaidas.split('/')[0]);
@@ -891,7 +891,7 @@ PADX.migrateEnd = function () {
 	padUndoBegin('PADEIRO - migrar a pasta do projeto');
 
 	try {
-		res.relinked = padMigrateRelink(map);
+		res.religados = padMigrateReligar(map);
 
 		// as pastas de saída antigas → a nova
 		for (var top in tops) {
@@ -984,7 +984,7 @@ PADX.migrateOthersStep = function () {
 		if (new File(path).copy(rest.plan.root + '/' + backup)) {
 			if (padMigrateOpen(path)) {
 				try {
-					padMigrateRelink(rest.map);
+					padMigrateReligar(rest.map);
 					padMigrateQueue(rest.prefixes);
 					app.project.save();
 					saved = true;
@@ -1037,7 +1037,7 @@ PADX.migrateState = function () {
 
 	if (!file) return { interrupted: false, undo: false };
 
-	var root = new Folder(padCollectRoot(file, padLerSecao('coletar'))).fsName;
+	var root = new Folder(padColetarRoot(file, padLerSecao('coletar'))).fsName;
 	var hasLog = new File(root + '/' + PAD_MIGRATION_LOG).exists;
 	var hasJournal = new File(root + '/' + PAD_MIGRATION_JOURNAL).exists;
 
@@ -1045,7 +1045,7 @@ PADX.migrateState = function () {
 };
 
 // Desfaz a última migração da pasta do projeto aberto, pelo registro: os arquivos voltam, os itens são religados,
-// o .aep volta para o lugar de antes e a fila de render também. → { restored, failed: [nome], relinked,
+// o .aep volta para o lugar de antes e a fila de render também. → { restored, failed: [nome], religados,
 // newer: [nome] (outros projetos salvos de novo depois da migração: ficam como estão, sem o original por cima) }
 PADX.migrateUndo = function () {
 	var file = app.project.file;
@@ -1053,7 +1053,7 @@ PADX.migrateUndo = function () {
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
 
 	var settings = padLerSecao('coletar');
-	var root = new Folder(padCollectRoot(file, settings)).fsName;
+	var root = new Folder(padColetarRoot(file, settings)).fsName;
 	var logFile = new File(root + '/' + PAD_MIGRATION_LOG);
 
 	var journalFile = new File(root + '/' + PAD_MIGRATION_JOURNAL);
@@ -1062,7 +1062,7 @@ PADX.migrateUndo = function () {
 
 	if (!log) throw new Error('#PAD_108 - migrar: não há um registro de migração nesta pasta para desfazer.');
 
-	var res = { restored: 0, failed: [], relinked: 0, newer: [] };
+	var res = { restored: 0, failed: [], religados: 0, newer: [] };
 	var map = {};
 	var dirs = {};
 	var i;
@@ -1103,10 +1103,10 @@ PADX.migrateUndo = function () {
 
 		// o projeto religado foi salvo de novo depois da migração (alguém trabalhou nele): não passa por cima. ele
 		// volta para o lugar de antes como está, e o original fica guardado onde estava (nos externos)
-		var relinked = new File(place);
+		var religados = new File(place);
 
-		if (relinked.exists && log.date && relinked.modified && relinked.modified.getTime() > log.date + 10 * 60 * 1000) {
-			res.newer.push(decodeURI(relinked.name));
+		if (religados.exists && log.date && religados.modified && religados.modified.getTime() > log.date + 10 * 60 * 1000) {
+			res.newer.push(decodeURI(religados.name));
 			continue;
 		}
 
@@ -1121,7 +1121,7 @@ PADX.migrateUndo = function () {
 	padUndoBegin('PADEIRO - desfazer a migração');
 
 	try {
-		res.relinked = padMigrateRelink(map);
+		res.religados = padMigrateReligar(map);
 
 		for (i = 0; i < (log.queue || []).length; i++) {
 			for (var q = 1; q <= app.project.renderQueue.numItems; q++) {

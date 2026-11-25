@@ -421,7 +421,7 @@ renomeia.
 		var note = '';
 		var kind = '';
 		var count = 0;
-		var relinked = 0;
+		var religados = 0;
 		var errors = [];
 
 		// em lotes: cada um volta do After e a barra anda (o registro do desfazer junta todos). só junta ao registro
@@ -432,7 +432,7 @@ renomeia.
 
 		try {
 			for (var at = 0; at < list.length; at += BATCH) {
-				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote, relink: false });
+				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote, religar: false });
 
 				if (res.count > 0) wrote = true;
 				count += res.count || 0;
@@ -447,13 +447,13 @@ renomeia.
 		// o religar de todos os lotes de uma vez, no fim: um passo só do Ctrl+Z do After (O ARQUIVISTA: religar)
 		if (ops.length) {
 			try {
-				relinked = (await call('filesRelink', { ops: ops })).relinked || 0;
+				religados = (await call('filesReligar', { ops: ops })).religados || 0;
 			} catch (err) {
 				errors.push({ name: 'o religar no projeto', error: err.message });
 			}
 		}
 
-		note = plural(count, 'renomeado', 'renomeados') + (relinked ? ' · ' + plural(relinked, 'religado', 'religados') + ' no projeto' : '');
+		note = plural(count, 'renomeado', 'renomeados') + (religados ? ' · ' + plural(religados, 'religado', 'religados') + ' no projeto' : '');
 		if (errors.length) {
 			note += ' · ' + plural(errors.length, 'não mudou', 'não mudaram') + ': ' + errors[0].name + ' (' + errors[0].error + ')';
 			kind = 'error';
@@ -540,7 +540,7 @@ renomeia.
 		try {
 			var res = await call('filesUndo');
 
-			note = plural(res.count, 'item voltou', 'itens voltaram') + ' ao nome de antes' + (res.relinked ? ' · ' + plural(res.relinked, 'religado', 'religados') + ' no projeto' : '');
+			note = plural(res.count, 'item voltou', 'itens voltaram') + ' ao nome de antes' + (res.religados ? ' · ' + plural(res.religados, 'religado', 'religados') + ' no projeto' : '');
 			// o que não voltou fica guardado: o botão continua, para tentar de novo
 			if (res.errors && res.errors.length) {
 				note += ' · ' + plural(res.errors.length, 'ficou faltando', 'ficaram faltando') + ' (' + res.errors[0].name + ': ' + res.errors[0].error + '): resolva e desfaça de novo';

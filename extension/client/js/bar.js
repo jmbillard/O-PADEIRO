@@ -36,7 +36,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 	var LABELS_PANEL_ID = 'com.jmbillard.opadeiro.labels';
 	var FILES_PANEL_ID = 'com.jmbillard.opadeiro.files';
 	var LIGHT_PANEL_ID = 'com.jmbillard.opadeiro.light';
-	var COLLECT_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
+	var COLETAR_BATCH = 1; // O CATADOR copia um arquivo por chamada: a barra conta cada um
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md';
 
 	var L_CLICK = '◖  →  ';
@@ -384,7 +384,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 		// O CONFEITEIRO, o criador de templates: precisa da comp principal aberta (a comp ativa)
 		createTemplate: async function () {
-			await call('makerReady');
+			await call('confeiteiroReady');
 			PAD_BRIDGE.openPanel(CONFEITEIRO_PANEL_ID);
 		},
 
@@ -403,21 +403,21 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 		// coletar os arquivos do projeto na pasta dele (árvore da configuração > coletar): em lotes pequenos,
 		// para a barra contar (e o After Effects respirar entre um e outro)
-		collect: async function (path) {
+		coletar: async function (path) {
 			var res;
 			var d;
 
 			progress('coletar', '…', null);
 
 			try {
-				var plan = await call('collectBegin', { path: path || '' });
+				var plan = await call('coletarBegin', { path: path || '' });
 				var total = plan.ids.length;
 				var sum = { target: plan.target, files: 0, sequences: 0, frames: 0, skipped: [], missing: plan.missing };
 
-				for (var i = 0; i < total; i += COLLECT_BATCH) {
+				for (var i = 0; i < total; i += COLETAR_BATCH) {
 					progress('coletar', Math.min(total, i + 1) + '/' + total, i / total);
 
-					var step = await call('collectStep', { target: plan.target, ids: plan.ids.slice(i, i + COLLECT_BATCH) });
+					var step = await call('coletarStep', { target: plan.target, ids: plan.ids.slice(i, i + COLETAR_BATCH) });
 
 					sum.files += step.files;
 					sum.sequences += step.sequences;
@@ -426,7 +426,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 				}
 
 				progress('coletar', total ? total + '/' + total : 'salvando', total ? 1 : null);
-				res = await call('collectEnd', sum);
+				res = await call('coletarEnd', sum);
 				d = res.data || {};
 			} catch (err) {
 				progressEnd('coletar', false);
@@ -443,12 +443,12 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
 			setTimeout(function () {
-				watchCollect(true);
+				watchColetar(true);
 			}, 300);
 		},
 
 		// O CATADOR, a janela do coletar: as mídias do projeto (miniatura, tipo, estado), os que faltam e a migração
-		openCollect: function () {
+		openColetar: function () {
 			PAD_BRIDGE.openPanel(CATADOR_PANEL_ID);
 		},
 
@@ -509,7 +509,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 	// as que só abrem uma janela (sem falar com o After Effects) rodam mesmo com o botão ocupado: o clique direito
 	// do coletar abre O CATADOR enquanto uma coleta (do clique esquerdo) ainda está andando ou travou no meio
-	['openCollect', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
+	['openColetar', 'openFonts', 'openVersioner', 'openLabels', 'project', 'openLight'].forEach(function (key) {
 		actions[key].opensWindow = true;
 	});
 
@@ -550,9 +550,9 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 			name: 'O CATADOR',
 			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto e resolver os que faltam'],
 			left: function () {
-				return actions.collect('');
+				return actions.coletar('');
 			},
-			right: actions.openCollect
+			right: actions.openColetar
 		},
 		{
 			key: 'render',
@@ -1079,7 +1079,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 		if (key === toolsLayout) return;
 
 		toolsLayout = key;
-		collectSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
+		coletarSync.state = null; // os botões são refeitos: a bolinha do coletar volta na próxima leitura
 
 		var tools = $('tools');
 		var sections = [[]];
@@ -1278,7 +1278,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 			if (count[k]) parts.push(count[k] + ' ' + FONT_LABELS[k]);
 		});
 		if (info.bank && !checked.bankOk) parts.push('banco fora do ar');
-		if (count.up && !(info.upload && info.machineUpload)) parts.push('envio desligado');
+		if (count.up && !(info.upload && info.uploadDesteComputador)) parts.push('envio desligado');
 
 		return parts.length ? '!# Fontes:\n' + parts.map(function (p) {
 			return '! ' + p;
@@ -1312,7 +1312,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 				paintFontsDot(bad ? 'missing' : 'ok', fontsSummary(checked, info));
 
 				// o envio: uma fonte por vez, até não faltar nenhuma
-				if (info.upload && info.machineUpload) {
+				if (info.upload && info.uploadDesteComputador) {
 					var pending = checked.fonts.filter(function (f) {
 						return f.state === 'up';
 					});
@@ -1347,10 +1347,10 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 	   (fora da rede), verde quando está tudo na rede; o balão diz quantos e quais
 	   ========================================================= */
 
-	var COLLECT_EVERY = 5000;
-	var collectSync = { state: null, timer: null };
+	var COLETAR_EVERY = 5000;
+	var coletarSync = { state: null, timer: null };
 
-	function paintCollectDot(res) {
+	function paintColetarDot(res) {
 		var btn = $('btn-coletar');
 
 		if (!btn) return;
@@ -1383,22 +1383,22 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 	// force: refaz a conta (ao abrir a barra e depois do coletar); de tempos em tempos, o host só refaz quando o
 	// projeto foi salvo (ou trocado): a conta passa por todas as mídias e não roda enquanto se trabalha
-	async function watchCollect(force) {
-		clearTimeout(collectSync.timer);
+	async function watchColetar(force) {
+		clearTimeout(coletarSync.timer);
 
 		if (!document.hidden) {
 			try {
-				var res = await call('collectStatus', { force: !!force });
+				var res = await call('coletarStatus', { force: !!force });
 				var key = JSON.stringify(res);
 
-				if (key !== collectSync.state) {
-					collectSync.state = key;
-					paintCollectDot(res);
+				if (key !== coletarSync.state) {
+					coletarSync.state = key;
+					paintColetarDot(res);
 				}
 			} catch (err) { }
 		}
 
-		collectSync.timer = setTimeout(watchCollect, COLLECT_EVERY);
+		coletarSync.timer = setTimeout(watchColetar, COLETAR_EVERY);
 	}
 
 	// force: confere mesmo com a barra "escondida". com outra janela do padeiro na frente (O PROJETISTA, que acabou de
@@ -1455,21 +1455,21 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 	var PERSON_BADGE = '<svg viewBox="0 0 11 11" aria-hidden="true"><circle class="badge-bg" cx="5.5" cy="5.5" r="5.5" /><circle cx="5.5" cy="4" r="1.5" /><path d="M2.9 9.17C3.2 7.3 4.3 6.6 5.5 6.6S7.8 7.3 8.1 9.17A4.5 4.5 0 0 1 2.9 9.17z" /></svg>';
 
 	// os da equipe e, logo depois, os pessoais (com o selo)
-	function renderLinks(team, personal) {
+	function renderLinks(team, desteComputador) {
 		var box = $('links');
-		var links = team.concat(personal.map(function (l) {
-			return Object.assign({ personal: true }, l);
+		var links = team.concat(desteComputador.map(function (l) {
+			return Object.assign({ desteComputador: true }, l);
 		}));
 
 		box.textContent = '';
 
 		links.forEach(function (link) {
-			var btn = el('button', 'bar-icon bar-link' + (link.personal ? ' is-personal' : ''));
+			var btn = el('button', 'bar-icon bar-link' + (link.desteComputador ? ' is-deste-computador' : ''));
 			var img = el('img');
 			var custom = PAD_UTIL.decodeIcon(link.icon);
 
 			btn.type = 'button';
-			btn.title = link.name + (link.personal ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
+			btn.title = link.name + (link.desteComputador ? ' (meu link, só neste computador)' : ''); // só o nome: o endereço e os 2 cliques ficam de fora
 			btn.setAttribute('aria-label', link.name);
 			img.alt = '';
 			img.src = custom || faviconUrl(link.url);
@@ -1481,7 +1481,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 
 			btn.appendChild(img);
 
-			if (link.personal) {
+			if (link.desteComputador) {
 				var badge = el('span', 'bar-link-badge');
 
 				badge.innerHTML = PERSON_BADGE;
@@ -1490,7 +1490,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 			bind(btn, async function () {
 				await requireNetwork('PAD_007');
 				PAD_BRIDGE.openUrl(link.url);
-			}, null, link.personal ? 'mylinks' : 'links');
+			}, null, link.desteComputador ? 'mylinks' : 'links');
 			box.appendChild(btn);
 		});
 
@@ -1574,7 +1574,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 			if (res.stamp === linksStamp) return;
 
 			linksStamp = res.stamp;
-			renderLinks(res.links, res.personal || []);
+			renderLinks(res.links, res.linksDesteComputador || []);
 			buildTools(res.items && res.items.length ? res.items : DEFAULT_ITEMS, res.hidden || []);
 			applyLinksHidden(res.hidden || []);
 		} catch (err) { }
@@ -1817,14 +1817,14 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 		setInterval(watchCode, 5 * 60000);
 		document.documentElement.addEventListener('mouseenter', watchCode);
 		window.addEventListener('focus', syncFonts);
-		watchCollect(true); // os arquivos fora da rede (a bolinha do coletar)
+		watchColetar(true); // os arquivos fora da rede (a bolinha do coletar)
 		window.addEventListener('focus', function () {
-			watchCollect(false);
+			watchColetar(false);
 		});
 
 		// o servidor (rede, ou rede fora) abre a aba REDE; o notebook (modo local ligado por você), DESTE COMPUTADOR
 		$('net-status').addEventListener('click', function () {
-			actions.config(netState === 'forced' ? 'machine' : 'network');
+			actions.config(netState === 'forced' ? 'deste-computador' : 'network');
 		});
 
 		$('logo').addEventListener('click', function () {

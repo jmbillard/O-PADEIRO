@@ -112,7 +112,7 @@ var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
 - **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `confeiteiro.jsx`, `project.jsx`, `coletar.jsx`).
-- **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
+- **avisos das libs** → as libs avisam com `alert()`. dentro de `padGatherAlerts(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:
   - pasta de templates → `listDir` (uma pasta por chamada);

@@ -9,7 +9,7 @@ Procura os termos que o GLOSSARY.md manda evitar (as linhas "_Avoid_: termo1, te
 um, no código (extension/**, menos node_modules e a biblioteca de terceiros em client/lib), no texto visível (o HTML
 e as strings dos JS) e nos documentos (README.md, extension/README.md e docs/*.md). Sem diferenciar caixa e com
 fronteira de palavra: letras e dígitos fazem a palavra; o "_" e o "-" separam ({categoria} e indice_local têm o
-termo; padCollect não tem "collect").
+termo; padLocalMode não tem "local").
 
 A lista dos termos vem do próprio glossário (não se repete aqui). Nem todo termo evitado dá para procurar com uma
 busca de texto: o glossário evita muitos só num sentido. A regra, termo a termo:
@@ -81,9 +81,6 @@ const SENTIDO_GERAL = {
 // chamadas ao host, o código citado entre crases ou aspas). Trocar esses nomes mudaria chaves guardadas e
 // chamadas sem ganho para quem usa.
 const SO_NO_TEXTO = {
-	// o nome do coletar no código: collect.jsx, a chamada 'collect', a classe anim-collect, a chave 'COLLECT' da
-	// configuração da equipe
-	collect: 'o nome do coletar no código (collect.jsx, a chamada e a chave COLLECT)',
 	// o inglês do código: var local, o modo do índice ('local' | 'webhook', gravado neste computador), o estado
 	// 'local' do coletar (fora das pastas de projetos), o PAD_LOCAL_INDEX e o local() das fontes no CSS
 	local: 'o inglês do código (var local, o modo \'local\' do índice, o local() do CSS)',
@@ -104,9 +101,10 @@ const EXPRESSOES_PERMITIDAS = {
 // As leituras de compatibilidade dos nomes antigos: o termo evitado vale numa linha que usa um destes nomes no
 // código (fora do comentário), desde que a linha (ou a de cima) tenha um comentário que diga que é o nome antigo
 // lido por compatibilidade. antigos, camposAntigos e arquivosAntigos são as colunas da tabela de seções
-// (regras/configuracao.js), OLD_IDS são os ids das janelas que o instalador tira, e TOKENS_ANTIGOS são os tokens do
-// caminho com o nome antigo ({categoria} é o {tipo}), que os caminhos já salvos usam.
-const COMPATIBILIDADE = ['antigos', 'camposAntigos', 'arquivosAntigos', 'OLD_IDS', 'TOKENS_ANTIGOS'];
+// (regras/configuracao.js), OLD_IDS são os ids das janelas que o instalador tira, TOKENS_ANTIGOS são os tokens do
+// caminho com o nome antigo ({categoria} é o {tipo}), que os caminhos já salvos usam, e ICONES_ANTIGOS são os ícones
+// com o nome antigo (barra-collect é o barra-coletar, client/js/util.js), que as produções e os tipos já salvos usam.
+const COMPATIBILIDADE = ['antigos', 'camposAntigos', 'arquivosAntigos', 'OLD_IDS', 'TOKENS_ANTIGOS', 'ICONES_ANTIGOS'];
 const COMENTARIO_DE_COMPATIBILIDADE = /(\/\/|\/\*|#).*(nome antigo|nomes antigos|compatibilidade|ids antigos|chave antiga|chaves antigas)/i;
 
 // fora da busca: as bibliotecas de terceiros, os ícones e imagens, e esta checagem (que cita os termos)
@@ -464,8 +462,8 @@ function procurar(termos) {
 			});
 		}
 
-		// no meio do texto, um nome de código: colado por _ . / - = $ \ (collect.jsx, PAD_LOCAL_INDEX, is-local),
-		// entre aspas sem espaço ('COLLECT', ou '*locais*', o texto de um botão citado no documento) ou dentro de
+		// no meio do texto, um nome de código: colado por _ . / - = $ \ (coletar.jsx, PAD_LOCAL_INDEX, is-local),
+		// entre aspas sem espaço ('local', ou '*locais*', o texto de um botão citado no documento) ou dentro de
 		// { … } numa linha só ({ mode, local, folders }), sempre
 		// dentro do mesmo trecho (o mesmo comentário, a mesma string)
 		function nome(p, pos, fim) {

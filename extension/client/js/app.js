@@ -108,10 +108,10 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		treeStatus: 'loading', // loading | ok | missing | empty | error
 		templatesPath: '',
 		query: '',
-		folderOverride: {}, // chave da pasta → aberta / fechada (escolha do usuário)
+		folderOverride: {}, // chave da pasta → aberta / fechada (escolha do designer)
 		selected: null, // nó do template selecionado
 		info: null, // retorno de templateInfo
-		example: '', // texto de exemplo atual (para saber se o usuário digitou algo)
+		example: '', // texto de exemplo atual (para saber se o designer digitou algo)
 		run: null, // execução em andamento
 		editor: null, // editor de config aberto
 		byUri: {} // uri → nó do template (fixados e recentes)
@@ -202,11 +202,11 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var team = res.localMode ? [] : (res.productions || []).filter(function (p) {
 			return !p.ignored;
 		});
-		var personal = (res.localProductions || []).map(function (p) {
-			return { name: p.name, templatesPath: p.path, path: p.path, personal: true, icon: null };
+		var desteComputador = (res.localProductions || []).map(function (p) {
+			return { name: p.name, templatesPath: p.path, path: p.path, desteComputador: true, icon: null };
 		});
 
-		return team.concat(personal);
+		return team.concat(desteComputador);
 	}
 
 	function renderProductionSelect() {
@@ -221,7 +221,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			option.value = prod.name;
 
-			if (prod.personal) {
+			if (prod.desteComputador) {
 				option.dataset.badge = 'person';
 				if (!groupDone && state.productions[0] !== prod) option.dataset.group = 'neste computador';
 				groupDone = true;
@@ -238,7 +238,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		var trigger = select._dropdownTrigger;
 
-		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.personal ? '\nsó deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
+		if (trigger) trigger.title = (current ? 'produção: ' + current.name + (current.desteComputador ? '\nsó deste computador: ' + current.path : '') + '\n\n' : '') + 'abra e digite para filtrar';
 	}
 
 	// Troca a produção mostrada (escolhida aqui ou em outro painel).
@@ -1307,7 +1307,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		state.example = cfg.exemple;
 
-		// o que o usuário já digitou é mantido ao trocar de template 
+		// o que o designer já digitou é mantido ao trocar de template 
 		if (!typed) setInputValue(cfg.exemple);
 
 		var tipList = $('tip');

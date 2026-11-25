@@ -585,6 +585,14 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		}).join('');
 	}
 
+	// a sigla do designer deste computador ({designer}): a janela de projeto diz qual é (setDesigner), quando lê o
+	// projeto aberto
+	var designerSigla = '';
+
+	function setDesigner(sigla) {
+		designerSigla = aepName(sigla || '');
+	}
+
 	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
 	// month: o mês do card do Trello ({ index: 0-11, year }), que vale mais que a data de hoje (monthOf): JANEIRO NA
 	// GLOBO → os tokens de mês e de ano são os de janeiro (o próximo)
@@ -594,9 +602,9 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), letra: letterOf(name), ano_producao: year };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), letra: letterOf(name), ano_producao: year, designer: designerSigla };
 		// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo)
-		var TOKENS_ANTIGOS = { categoria: 'tipo' };
+		var TOKENS_ANTIGOS = { categoria: 'tipo', usuario: 'designer' };
 
 		for (var antigo in TOKENS_ANTIGOS) values[antigo] = values[TOKENS_ANTIGOS[antigo]];
 
@@ -1080,6 +1088,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		monthOf: monthOf,
 		projectYear: projectYear,
 		setYear: setYear,
+		setDesigner: setDesigner,
 		shiftYear: shiftYear,
 		letterOf: letterOf,
 		resolveNew: resolveNew,

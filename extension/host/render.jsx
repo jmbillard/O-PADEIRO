@@ -132,7 +132,7 @@ PADX.renderQueue = function (a) {
 		if (app.project.file) {
 			var settings = padLerSecao('coletar');
 
-			folder = padCollectRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
+			folder = padColetarRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
 		} else warnings.push('o projeto ainda não foi salvo: o preview vai para o output local.');
 	} else if (padLocalMode()) {
 		warnings.push('modo local: o render vai para o output local.');

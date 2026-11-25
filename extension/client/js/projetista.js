@@ -3280,6 +3280,7 @@ projetos com o nome certo).
 
 		state.current = cur;
 		state.currentKey = key;
+		ATR.setDesigner(cur.user || cur.defaultUser); // o {designer} dos caminhos dos tipos de projeto
 
 		// começou o projeto novo à mão (do editor): fica no fluxo enquanto o projeto aberto for o mesmo
 		if (state.manualNew) {

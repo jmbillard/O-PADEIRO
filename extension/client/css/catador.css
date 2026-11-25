@@ -221,7 +221,7 @@
 }
 
 /* o mesmo no botão do triângulo, no rodapé */
-.cw-relink svg {
+.cw-religar svg {
   transform: translateY(-1.5px);
 }
 
@@ -237,24 +237,24 @@
 
 /* resolver arquivos faltando (rodapé): no hover o triângulo balança e o ponto de exclamação pula; catando,
    o triângulo pulsa e as linhas que faltam piscam o ✕ */
-.cw-relink svg * {
+.cw-religar svg * {
   transform-box: fill-box;
 }
 
-.cw-relink .relink-tri {
+.cw-religar .religar-tri {
   transform-origin: 50% 100%;
 }
 
-.cw-relink:hover:not(:disabled) .relink-tri {
+.cw-religar:hover:not(:disabled) .religar-tri {
   animation: cw-wobble 520ms var(--ease-soft);
 }
 
-.cw-relink:hover:not(:disabled) .relink-mark {
+.cw-religar:hover:not(:disabled) .religar-mark {
   animation: cw-hop 520ms var(--ease-soft);
 }
 
-.cw-relink.is-working .relink-tri,
-.cw-relink.is-working .relink-mark {
+.cw-religar.is-working .religar-tri,
+.cw-religar.is-working .religar-mark {
   animation: cw-pulse 900ms ease-in-out infinite;
 }
 
@@ -285,8 +285,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cw-relink .relink-tri,
-  .cw-relink .relink-mark,
+  .cw-religar .religar-tri,
+  .cw-religar .religar-mark,
   .fw-state.is-searching i {
     animation: none !important;
   }

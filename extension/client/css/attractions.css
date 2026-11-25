@@ -199,7 +199,7 @@
 }
 
 .combo.is-open .combo-field > .field-icon,
-.maker-glass .combo.is-open .combo-field > .field-icon {
+.confeiteiro-glass .combo.is-open .combo-field > .field-icon {
   stroke: var(--blue-500);
 }
 
@@ -329,40 +329,40 @@
 
 /* dentro da lista aberta (opaca), os campos são os normais, mesmo sobre o vidro */
 .combo-panel .cfg-input,
-.maker-glass .combo-panel .cfg-input {
+.confeiteiro-glass .combo-panel .cfg-input {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text-primary);
 }
 
 .combo-panel .cfg-input::placeholder,
-.maker-glass .combo-panel .cfg-input::placeholder {
+.confeiteiro-glass .combo-panel .cfg-input::placeholder {
   color: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .has-field-icon > .field-icon {
+.confeiteiro-glass .combo-panel .has-field-icon > .field-icon {
   stroke: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .wz-preview,
-.maker-glass .combo-panel .wz-preview b {
+.confeiteiro-glass .combo-panel .wz-preview,
+.confeiteiro-glass .combo-panel .wz-preview b {
   color: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .wz-preview b {
+.confeiteiro-glass .combo-panel .wz-preview b {
   color: var(--text-primary);
 }
 
-.maker-glass .combo-panel .wz-preview svg {
+.confeiteiro-glass .combo-panel .wz-preview svg {
   stroke: var(--blue-500);
 }
 
 .combo-panel .cfg-input:focus,
-.maker-glass .combo-panel .cfg-input:focus {
+.confeiteiro-glass .combo-panel .cfg-input:focus {
   border-color: var(--blue-500);
 }
 
-.maker-glass .combo-panel .has-field-icon:focus-within > .field-icon {
+.confeiteiro-glass .combo-panel .has-field-icon:focus-within > .field-icon {
   stroke: var(--blue-500);
 }
 

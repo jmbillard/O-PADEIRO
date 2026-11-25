@@ -381,7 +381,7 @@ body {
 .picker-list::-webkit-scrollbar-thumb,
 .org-tree::-webkit-scrollbar-thumb,
 .tools-bar::-webkit-scrollbar-thumb,
-.maker-glass-body::-webkit-scrollbar-thumb,
+.confeiteiro-glass-body::-webkit-scrollbar-thumb,
 .wz-screen::-webkit-scrollbar-thumb {
   background: rgb(var(--on-brand) / 34%);
 }

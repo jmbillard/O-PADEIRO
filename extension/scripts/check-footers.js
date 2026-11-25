@@ -10,7 +10,7 @@ e o "⋯" sempre do mesmo tamanho (38 px). Lista cada botão fora da linha.
 
   node extension/scripts/check-footers.js
 
-Rodapé é o bloco com "foot" ou "action-bar" / "maker-bar" no nome da classe. Os itens de um menu aberto não contam.
+Rodapé é o bloco com "foot" ou "action-bar" / "confeiteiro-bar" no nome da classe. Os itens de um menu aberto não contam.
 
 Precisa do Playwright. Sai com código 1 quando acha algum botão fora.
 
@@ -28,7 +28,7 @@ function findFooters(opts) {
 	const out = [];
 
 	document.querySelectorAll('button, summary, .dropdown-trigger').forEach(function (e) {
-		const foot = e.closest('[class*="foot"], .action-bar, .maker-bar');
+		const foot = e.closest('[class*="foot"], .action-bar, .confeiteiro-bar');
 		const r = e.getBoundingClientRect();
 
 		if (!foot || !r.width || getComputedStyle(e).visibility === 'hidden') return;

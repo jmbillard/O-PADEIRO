@@ -536,11 +536,11 @@ body.bar-page {
   }
 }
 
-.bar-btn.is-running .anim-collect .f1 {
+.bar-btn.is-running .anim-coletar .f1 {
   animation: bar-run-f1 1.1s var(--ease-soft) infinite;
 }
 
-.bar-btn.is-running .anim-collect .f2 {
+.bar-btn.is-running .anim-coletar .f2 {
   animation: bar-run-f2 1.1s var(--ease-soft) 120ms infinite;
 }
 

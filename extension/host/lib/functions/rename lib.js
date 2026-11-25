@@ -101,7 +101,7 @@ function getPromoRename(comp) {
 }
 
 // Coleta as comps de uma lista de itens; pastas entram com todo o conteúdo (e têm o nome em maiúsculas).
-function collectRenameComps(items, compArray) {
+function coletarRenameComps(items, compArray) {
 	for (var i = 0; i < items.length; i++) {
 		var aItem = items[i];
 
@@ -115,7 +115,7 @@ function collectRenameComps(items, compArray) {
 			for (var f = 1; f <= aItem.numItems; f++) {
 				children.push(aItem.item(f));
 			}
-			collectRenameComps(children, compArray);
+			coletarRenameComps(children, compArray);
 		}
 	}
 
@@ -124,7 +124,7 @@ function collectRenameComps(items, compArray) {
 
 // Renomeia as comps (e o conteúdo das pastas) da lista; sem lista, usa a seleção do projeto.
 function renamePromoComps(items) {
-	var compArray = collectRenameComps(items || app.project.selection, []);
+	var compArray = coletarRenameComps(items || app.project.selection, []);
 
 	if (compArray.length == 0) {
 		alert(lol + '#PAD_032 - selecione as comps ou pastas que serão renomeadas.');

@@ -65,7 +65,7 @@ function netAccess() {
 	return app.preferences.getPrefAsLong('Main Pref Section', 'Pref_SCRIPTING_FILE_NETWORK_SECURITY') == 1;
 }
 
-// As libs avisam o usuário com alert(). Aqui as mensagens são recolhidas
+// As libs avisam o designer com alert(). Aqui as mensagens são recolhidas
 // (sem emoticons) e devolvidas ao painel, que mostra no próprio visual.
 var PADX_alerts = null;
 var PADX_nativeAlert = alert;
@@ -78,7 +78,7 @@ $.global.alert = function (msg) {
 };
 
 // Executa 'fn' recolhendo os alerts. Retorna { messages, data }.
-function padCollect(fn) {
+function padGatherAlerts(fn) {
 	var data;
 	var messages;
 	var outer = PADX_alerts; // a chamada (PADX_call) já recolhe: volta para ela no fim
@@ -185,7 +185,7 @@ function padSigla() {
 	return padLerSecao('sigla') || padSiglaDoLogin();
 }
 
-PADX.machinePrefs = function () {
+PADX.prefsDesteComputador = function () {
 	var sigla = padLerSecao('sigla');
 
 	return {
@@ -210,7 +210,7 @@ PADX.machinePrefs = function () {
 // a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
 // (só os campos enviados mudam; o computador_config.json é regravado inteiro pela tabela, limpo, sem as chaves e os
 // arquivos antigos)
-PADX.saveMachinePrefs = function (a) {
+PADX.savePrefsDesteComputador = function (a) {
 	var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
 	// as produções deste computador vão sempre: sem a lista guardada, a convertida das pastas de antes ('templates', que
 	// sai do arquivo nesta gravação)
@@ -261,7 +261,7 @@ PADX.saveMachinePrefs = function (a) {
 	padGravarSecoes(valores);
 	padConfigInvalidate();
 
-	return PADX.machinePrefs();
+	return PADX.prefsDesteComputador();
 };
 
 
@@ -281,7 +281,7 @@ function padIsLocalPath(path) {
 // Produções deste computador (configuração > templates): [{ name, path }], independentes das da equipe. Sem a lista
 // ainda (versão anterior): as pastas deste computador escolhidas para as produções da equipe com caminho deste
 // computador ('templates': { 'produção': pasta }, ex: Ω MINHA PASTA) viram produções deste computador, gravadas na
-// primeira gravação deste computador (saveMachinePrefs, que tira 'templates'). Não é um nome antigo da tabela de
+// primeira gravação deste computador (savePrefsDesteComputador, que tira 'templates'). Não é um nome antigo da tabela de
 // seções: a conversão depende das produções da equipe e do mapa de drives.
 function padProducoesDesteComputador() {
 	var list = padLerSecao('producoesDesteComputador');
@@ -581,12 +581,12 @@ PADX.productions = function () {
 		organize: padLerSecao('organizar'),
 		search: padLerSecao('buscaDeCaminhos'),
 		links: padLerSecao('links'),
-		appearance: padLerSecao('aparencia'), // a da equipe (cada computador pode personalizar: personal)
+		appearance: padLerSecao('aparencia'), // a da equipe (cada computador pode personalizar: personalizadas)
 		tiposDeProjeto: padLerSecao('tiposDeProjeto'),
-		collect: padLerSecao('coletar'),
+		coletar: padLerSecao('coletar'),
 		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),
-		personal: PADX.personalPrefs(),
+		personalizadas: PADX.prefsPersonalizadas(),
 		localMode: padLocalMode(),
 		localForced: padLocalForced(),
 		fromCopy: padConfigIsCopy(),
@@ -626,10 +626,10 @@ function padProductionFolder(name) {
 	}
 
 	// as produções deste computador (configuração > templates)
-	var personal = padProducoesDesteComputador();
+	var desteComputador = padProducoesDesteComputador();
 
-	for (var p = 0; p < personal.length; p++) {
-		if (personal[p].name == name) return new Folder(padPath(personal[p].path));
+	for (var p = 0; p < desteComputador.length; p++) {
+		if (desteComputador[p].name == name) return new Folder(padPath(desteComputador[p].path));
 	}
 
 	return null;
@@ -1926,8 +1926,8 @@ PADX.installFonts = function () {
 	var root = '';
 
 	if (m.pasta) root = padMountedPath(padPath(m.pasta));
-	else if (file) root = padCollectRoot(file, settings);
-	var sub = padCollectFolderPath(settings, 'fontes');
+	else if (file) root = padColetarRoot(file, settings);
+	var sub = padColetarFolderPath(settings, 'fontes');
 	var list = padTemplatesList(m.templates);
 
 	if (root && sub) {
@@ -1966,11 +1966,11 @@ PADX.installFonts = function () {
 };
 
 // Copia as fontes usadas no projeto para '<pasta>/FONTS' e abre a pasta. a: { path }
-PADX.collectFonts = function (a) {
+PADX.copyFonts = function (a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
-		var fontsPath = fontCollect(padPath(decodeURI(a.path)) + '/FONTS');
+	return padGatherAlerts(function () {
+		var fontsPath = fontCopyTo(padPath(decodeURI(a.path)) + '/FONTS');
 
 		if (fontsPath != '') openFolder(fontsPath);
 
@@ -2033,7 +2033,7 @@ function padOutputSnapshot() {
 PADX.renameComps = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padItemSnapshot('name');
 
 		padGroup('renomear comps', function () {
@@ -2045,7 +2045,7 @@ PADX.renameComps = function () {
 };
 
 PADX.renameOutputs = function () {
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padOutputSnapshot();
 
 		padGroup('renomear outputs', function () {
@@ -2219,7 +2219,7 @@ PADX.organizeCheck = function () {
 PADX.organizeProject = function () {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	return padCollect(function () {
+	return padGatherAlerts(function () {
 		var before = padItemSnapshot('parent');
 
 		try {
@@ -2394,7 +2394,7 @@ PADX.setupLocal = function () {
 	if (!folder.exists) folder.create();
 	if (!copy.exists) saveTextFile(JSON.stringify({ PRODUCTIONS: [] }, null, '\t'), copy.fsName);
 
-	PADX.saveMachinePrefs({ localMode: true });
+	PADX.savePrefsDesteComputador({ localMode: true });
 
 	return { local: true };
 };

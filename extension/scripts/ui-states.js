@@ -249,7 +249,7 @@ const CHECKS = [
 		await p.waitForTimeout(300);
 	}],
 	['criador: caixa de texto aberta', 'confeiteiro.html', async (p) => {
-		await p.locator('.maker-glass .dropdown-trigger').first().click();
+		await p.locator('.confeiteiro-glass .dropdown-trigger').first().click();
 		await p.waitForTimeout(300);
 	}],
 	['projeto: lista de atrações', 'projetista.html', async (p) => {
@@ -263,7 +263,7 @@ const CHECKS = [
 		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(800);
 	}]
-].concat(['prods', 'tipos-de-projeto', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
+].concat(['prods', 'tipos-de-projeto', 'coletar', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'deste-computador'].map(function (tab) {
 	return ['configuração: ' + tab, 'productions.html', async (p) => {
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 

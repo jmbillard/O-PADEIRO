@@ -97,22 +97,22 @@
 }
 
 /* coletar: as folhas saem um pouco da pasta e abrem em leque (movimento rígido: o traço não deforma) */
-.anim-collect .collect-file {
+.anim-coletar .coletar-file {
   transform-origin: 50% 100%;
   transition: transform 340ms var(--ease-soft);
 }
 
-.anim-collect .f2 {
+.anim-coletar .f2 {
   transition-delay: 50ms;
 }
 
-.bar-btn:hover:not(:disabled) .anim-collect .f1,
-.tab:hover .anim-collect .f1 {
+.bar-btn:hover:not(:disabled) .anim-coletar .f1,
+.tab:hover .anim-coletar .f1 {
   transform: translateY(-1.6px) rotate(-6deg);
 }
 
-.bar-btn:hover:not(:disabled) .anim-collect .f2,
-.tab:hover .anim-collect .f2 {
+.bar-btn:hover:not(:disabled) .anim-coletar .f2,
+.tab:hover .anim-coletar .f2 {
   transform: translateY(-1.2px) rotate(5deg);
 }
 

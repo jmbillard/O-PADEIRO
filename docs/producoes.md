@@ -128,6 +128,7 @@ a aba **tipos de projeto** define os **tipos de projeto** da atração nova: os 
   | `{tipo}` | o nome do tipo de projeto (o nome antigo do token continua valendo nos caminhos já salvos) |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
   | `{o_que_e}` | o **o que é**, digitado n'O PROJETISTA depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
+  | `{designer}` | a sigla do designer deste computador (`JMBILLARD`), a da aba **deste computador** (o nome antigo do token, `{usuario}`, continua valendo nos caminhos já salvos) |
 
   ex: `…/SHOWS/{atracao}/{ano}` → `…/SHOWS/DOMINGAO/2026` (na configuração, a prévia mostra `ATRACAO` no lugar do nome); `…/FILMES/TITULOS/_{letra}_/{atracao}` → `…/_T_/OS TRES PATETAS`.
 - **arquivo** → opcional: o nome do `.aep` da atração criada pelo tipo, com os mesmos tokens (MOOD MENSAL: `{proximo_mes} NA GLOBO` → `DEZEMBRO NA GLOBO.aep`; o o que é entra depois). com `{o_que_e}`, o o que é entra **no lugar do token**, não no fim: `{o_que_e} DO {atracao}` → `CHAMADA DO VT REUNIAO.aep`. vazio: a atração (ou o último nível) + o que é. a atração que já existe no índice fica com o nome dela.
@@ -355,7 +356,7 @@ a aba **layout** (👤 deste computador) monta a **sua** barra (sem personaliza�
 
 a aba **deste computador** (👤) guarda o que é seu e não é de nenhuma ferramenta, só neste computador (as opções deste computador de cada ferramenta ficam na aba dela, embaixo, em **deste computador**):
 
-- **designer** → o seu nome nos projetos (variável `{usuario}`), ou uma sigla, se preferir. vazio, vale o login do sistema, completo. é o mesmo do bonequinho d'[O PROJETISTA](projeto.md).
+- **designer** → o seu nome nos projetos (o token `{designer}`), ou uma sigla, se preferir. vazio, vale o login do sistema, completo. é o mesmo do bonequinho d'[O PROJETISTA](projeto.md).
 - **modo local** → trabalhar **sem a rede**. é exatamente o que o padeiro faz sozinho quando a rede cai; ligar à mão só evita que ele tente a rede (bom em casa ou numa VPN lenta).
   - a configuração da equipe vem da **última cópia** guardada neste computador (atualizada sempre que o padeiro lê a configuração com a rede) e fica só para leitura.
   - só as [produções deste computador](#-templates) aparecem no painel de templates, e a busca de caminhos usa na hora a **cópia do último índice baixado** (ou o índice local), sem tentar a rede e mostrando de quando é a cópia.
