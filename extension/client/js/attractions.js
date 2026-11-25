@@ -423,7 +423,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 
 		if (!hits.length) return null;
 
-		// all: todos os cards dela (o mais novo primeiro): O PROJETISTA mostra um por linha (o prêmio com um card por categoria)
+		// all: todos os cards dela (o mais novo primeiro): O PROJETISTA mostra um por linha (o prêmio, com um card para cada peça)
 		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1, all: hits.map(function (h) {
 			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at };
 		}) };
@@ -548,8 +548,8 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		return { claquete: aepName(claq), matches: matches, cards: local ? [] : source.cards || [] };
 	}
 
-	// Os tipos de projeto (configuração > PROJETO): o caminho de cada um, com tokens. o que não pode ser
-	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
+	// Os tipos de projeto (configuração > TIPOS DE PROJETO): o caminho de cada um, com tokens. o que não pode ser
+	// acessado (rede fora ou modo local) vai para a pasta dos projetos deste computador: {tipo}/{atracao}
 	function tipoBase(c, fallback) {
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{tipo}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
@@ -558,7 +558,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 	}
 
 	// O caminho do tipo com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
-	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido n'O PROJETISTA) {categoria}
+	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido n'O PROJETISTA) {tipo} (e o nome antigo dele)
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
@@ -594,7 +594,11 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), categoria: aepName(tipo), letra: letterOf(name), ano_producao: year };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), letra: letterOf(name), ano_producao: year };
+		// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo)
+		var TOKENS_ANTIGOS = { categoria: 'tipo' };
+
+		for (var antigo in TOKENS_ANTIGOS) values[antigo] = values[TOKENS_ANTIGOS[antigo]];
 
 		if (month && month.index >= 0) {
 			var num = ('0' + (month.index + 1)).slice(-2);
@@ -609,7 +613,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		});
 	}
 
-	// os tipos de projeto da equipe (configuração > PROJETO); sem nenhum, a pasta é livre (escolher a pasta…)
+	// os tipos de projeto da equipe (configuração > TIPOS DE PROJETO); sem nenhum, a pasta é livre (escolher a pasta…)
 	async function newBases() {
 		var cfg = null;
 

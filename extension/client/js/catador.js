@@ -21,7 +21,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 	var STATES = {
 		ok: ['✓', 'na pasta do projeto'],
 		net: ['↑', 'nas pastas de projetos, fora da pasta deste projeto: o coletar copia'],
-		local: ['↑', 'fora das pastas de projetos (configuração > projeto): o coletar copia'],
+		local: ['↑', 'fora das pastas de projetos (configuração > tipos de projeto): o coletar copia'],
 		missing: ['!', 'o arquivo não existe'],
 		skip: ['–', 'tipo fora da árvore do coletar (configuração > coletar)']
 	};

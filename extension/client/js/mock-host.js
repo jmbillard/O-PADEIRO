@@ -146,7 +146,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		var doc = {
 			PRODUCTIONS: [
 				{ name: 'DIA-A-DIA', templatesPath: '//vfx-ml-hp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/TEMPLATES/TEMPLATES PADEIRO', icon: 'tv' },
-				{ name: 'Ω PASTA LOCAL', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
+				{ name: 'Ω MINHA PASTA', templatesPath: '~/Downloads/TEMP_PADEIRO', icon: null },
 				{ name: 'Ω TESTES (vazia)', templatesPath: '//servidor/TESTES', icon: 'alvo' }
 			],
 			DRIVES: {
@@ -317,9 +317,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			{ claq: 'Premio 2026 Ch Jor Esp G5', atr: 'Prêmio Rede Globo', des: 'J M Billard', st: 'EM APROVAÇÃO', red: 'Felipe Souza', card: '6750aa11bb22cc33dd44ee01', at: at(1) },
 			{ claq: 'VEM AI(2027)', atr: 'Vem Aí', des: 'J M Billard', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee02', at: at(2) },
 			{ claq: 'RIO SUMMER BEATS 5-12', atr: '', des: 'Ana Paula Reis', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee03', at: at(0) },
-			{ claq: 'PREMIO 2026 CH PGM LOCAL G5', atr: 'Prêmio Rede Globo', des: 'Carla Souza', st: '', card: '6750aa11bb22cc33dd44ee04', at: at(0) },
+			{ claq: 'PREMIO 2026 CH PGM REGIONAL G5', atr: 'Prêmio Rede Globo', des: 'Carla Souza', st: '', card: '6750aa11bb22cc33dd44ee04', at: at(0) },
 			{ claq: 'Premio 2026 Ch Jor Esp Afil', atr: 'Prêmio Rede Globo', des: 'Cristina Vianna', st: 'EM APROVAÇÃO', card: '6750aa11bb22cc33dd44ee05', at: at(2) },
-			{ claq: 'Premio 2026 Ch Pgm Local Afil', atr: 'Prêmio Rede Globo', des: 'Bruno Lima', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee06', at: at(3) },
+			{ claq: 'Premio 2026 Ch Pgm Regional Afil', atr: 'Prêmio Rede Globo', des: 'Bruno Lima', st: 'PRODUZINDO', card: '6750aa11bb22cc33dd44ee06', at: at(3) },
 			{ claq: 'Premio 2026 Conteudo Rede', atr: 'Prêmio Rede Globo', des: 'Diego Prado', st: 'EM APROVAÇÃO', card: '6750aa11bb22cc33dd44ee07', at: at(4) },
 			{ claq: 'TELA QUENTE ENCANTO 29-11', atr: '', fil: true, des: 'Fernanda Lima', st: 'PRODUZINDO', card: MOCK_FILM_CARD, at: at(1) },
 			{ claq: 'DOMINGAO 25/11', atr: 'Domingão com Huck', des: 'Ana Paula Reis', st: 'PRODUZINDO', red: 'ANA', ed: 'BETO', card: '6750aa11bb22cc33dd44ee09', at: at(2) },
@@ -465,7 +465,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// como o host: só os campos enviados mudam (o arquivo deste computador é regravado inteiro pela tabela)
 		saveMachinePrefs: function (a) {
 			(a.productions || []).forEach(function (p, i) {
-				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
+				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção deste computador ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
 
 			var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
@@ -1424,11 +1424,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MAIS VOCE ABERTURA', modified: now - 400 * 24 * H },
 				{ name: 'MAIS VOCE RECEITA DE NATAL', sub: 'RECEITAS', modified: now - 60 * H }
 			] : !film && /PREMIO REDE GLOBO/.test(root) ? [
-				// um .aep por categoria do prêmio, alguns nas subpastas da pasta de projetos (o card de cada uma destaca
+				// um .aep por card do prêmio, alguns nas subpastas da pasta de projetos (o card de cada um destaca
 				// os dele: o PREMIO 2026 CH JOR ESP G5 tem dois)
-				{ name: 'PREMIO 2026 CH PGM LOCAL G5', modified: now - 2 * H },
+				{ name: 'PREMIO 2026 CH PGM REGIONAL G5', modified: now - 2 * H },
 				{ name: 'PREMIO 2026 VINHETA', modified: now - 5 * 24 * H },
-				{ name: 'PREMIO 2026 CH PGM LOCAL AFIL', sub: 'AFILIADAS', modified: now - 26 * H },
+				{ name: 'PREMIO 2026 CH PGM REGIONAL AFIL', sub: 'AFILIADAS', modified: now - 26 * H },
 				{ name: 'PREMIO 2026 CH JOR ESP AFIL', sub: 'AFILIADAS', modified: now - 50 * H },
 				{ name: 'PREMIO 2026 CH JOR ESP G5', sub: 'CHAMADAS', modified: now - 74 * H },
 				{ name: 'PREMIO 2026 CH JOR ESP G5 V2', sub: 'CHAMADAS', modified: now - 3 * H }

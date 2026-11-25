@@ -239,7 +239,7 @@
   }
 }
 
-/* criar / alterar projeto (a ferramenta do projeto, na gaveta Projeto): a folha sobe um pouco e a última linha
+/* Iniciar / Alterar (a ferramenta do projeto, na gaveta Projeto): a folha sobe um pouco e a última linha
    termina de ser escrita, e fica */
 .anim-form .form-sheet {
   transition: transform 360ms var(--ease-soft);

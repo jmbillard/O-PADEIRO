@@ -96,7 +96,7 @@ function fontCollect(savePath) {
 	for (var f = 0; f < fonts.length; f++) {
 		var fontSrcFile = new File(fonts[f].location);
 
-		// fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas
+		// fontes sem arquivo no computador (ex: Adobe Fonts) não podem ser copiadas
 		if (!fonts[f].location || !fontSrcFile.exists) {
 			failArray.push(fonts[f].name);
 			continue;

@@ -38,7 +38,7 @@ Instalar / atualizar:
 
 	var here = new File($.fileName).parent;
 	var src = new Folder(here.fsName + '/extension');
-	// a configuração da equipe: o nome novo (GLOBAL) separa do arquivo das versões antigas, que continuam com o seu
+	// a configuração da equipe: o nome novo (O_PADEIRO_GLOBAL_config.json) separa do arquivo das versões antigas, que continuam com o seu
 	var sharedList = new File(here.fsName + '/O_PADEIRO_GLOBAL_config.json');
 	var oldList = new File(here.fsName + '/O_PADEIRO_config.json');
 	var userData = Folder.userData.fsName; // macOS: ~/Library/Application Support | Windows: %APPDATA%

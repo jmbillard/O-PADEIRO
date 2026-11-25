@@ -10,7 +10,7 @@ com outra grafia (02 ARQUIVOS, 02_ARQUIVOS) se juntam e nada fica solto.
 
   o .aep aberto e os outros .aep da pasta      → a pasta do tipo 'projeto' (os outros, sem religar)
   os arquivos usados pelo projeto no After     → a pasta do tipo de cada um (vídeos, imagens, sequências, áudio, dados)
-  o que está numa pasta de saída               → a pasta do tipo 'saidas', com as subpastas
+  o que está numa pasta de renders             → a pasta do tipo 'saidas', com as subpastas
   as fontes de uma pasta de fontes             → a pasta do tipo 'fontes'
   todo o resto                                 → a pasta do tipo 'externos', com o caminho de antes dentro dela
   as pastas grandes de arquivos sem uso        → FICAM COMO ESTÃO (banco de presets, stock footage…): a pasta de segundo
@@ -158,7 +158,7 @@ function padMigrateBlocked(rootPath) {
 
 	for (i = 0; i < roots.length; i++) {
 		// a própria pasta de um tipo (…/PROGRAMAS), ou uma acima dela: lá dentro estão as atrações todas
-		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de um tipo de projeto inteiro (configuração > projeto): a migração arrumaria todas as atrações dele';
+		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de um tipo de projeto inteiro (configuração > tipos de projeto): a migração arrumaria todas as atrações dele';
 	}
 
 	if (roots.length && !padInProjects(rootPath, roots)) return 'a pasta do projeto está fora das pastas de projetos da configuração (aba TIPOS DE PROJETO): a migração só arruma pastas que estão nelas';

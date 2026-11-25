@@ -4,9 +4,9 @@
 
 a janela de projeto, **O PROJETISTA**, cria um projeto novo a partir da **atração**: acha a atração e a pasta dela, cria a estrutura (`01_PROJETOS`, `02_ARQUIVOS`, `03_SAIDA`, `04_REFS`) e salva o `.aep` com o nome padronizado. depois de criado, a mesma janela vira um **editor** simples da atração, do o que é, do designer e das pastas, e mostra **quem criou e quem salvou** o projeto.
 
-> 🚩 *o collect dos arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
+> 🚩 *coletar os arquivos é do botão **coletar** da barra ([abaixo](#-coletar-os-arquivos)).*
 
-abra pela gaveta **projeto** da barra, no botão **criar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
+abra pela gaveta **projeto** da barra, no botão **Iniciar** (`◖`); quando o projeto aberto já tem os dados do padeiro, o botão se chama **Alterar** e abre o editor. o `◗ clique direito` no mesmo botão salva o projeto (se ainda não foi criado pela janela, abre a janela).
 
 <p align="center"><img src="images/anim/claquete.webp" alt="O PROJETISTA: a atração pela busca, o que é e o nome do .aep" width="480"></p>
 
@@ -126,7 +126,7 @@ projeto de antes desta versão: os campos antigos (`dc:coverage`, `dc:relation`,
 
 ao abrir a janela com um projeto criado por ela:
 
-- **atração** e **designer** (bonequinho) → a atração é buscada **como no projeto novo, com a mesma lista**: os grupos **NO TRELLO** (com o **seu** e o status), **FILMES**, **ATRAÇÕES** e a **NOVA** (os chips dos tipos), na mesma ordem e com as mesmas regras; com a lista aberta, ela fica com a largura toda (o designer recolhe). a escolhida fica com o nome oficial e a pasta dela; o card leva à atração dele (o filme, a pasta do filme; o ano escrito na claquete vale para a pasta); o card sem atração põe o nome sugerido no campo e a lista mostra os tipos da atração nova. o designer vazio vale o da [configuração > meu usuário](producoes.md#-meu-usuário) (por padrão, o usuário do computador, completo).
+- **atração** e **designer** (bonequinho) → a atração é buscada **como no projeto novo, com a mesma lista**: os grupos **NO TRELLO** (com o **seu** e o status), **FILMES**, **ATRAÇÕES** e a **NOVA** (os chips dos tipos), na mesma ordem e com as mesmas regras; com a lista aberta, ela fica com a largura toda (o designer recolhe). a escolhida fica com o nome oficial e a pasta dela; o card leva à atração dele (o filme, a pasta do filme; o ano escrito na claquete vale para a pasta); o card sem atração põe o nome sugerido no campo e a lista mostra os tipos da atração nova. o designer vazio vale o da [configuração > deste computador](producoes.md#-deste-computador) (por padrão, o login do computador, completo).
 - **o que é** → embaixo, o nome do `.aep` (a atração + o que é) e, quando muda, o nome de hoje. o **tipo com ARQUIVO próprio** (ex: MOOD MENSAL, `{proximo_mes} NA GLOBO {o_que_e}`) mantém o nome pelo padrão do tipo ao salvar, com o mês do nome de hoje do `.aep` (`JANEIRO NA GLOBO SERVICO` → `JANEIRO NA GLOBO CHAMADA`), em vez de virar a atração + o que é. um projeto antigo com o nome fora desse padrão fica com o nome dele até a atração ou o o que é mudarem.
 - **pasta do projeto** → o caminho do projeto. o botão de pasta dentro do campo escolhe outra pasta.
 - **salvo por** → embaixo, quem já salvou o projeto, o mais recente primeiro (`salvo por: TMARTA 16/11 · JMBILLARD 14/11`).
@@ -148,7 +148,7 @@ abrir outro projeto troca os dados da janela.
 
 ### bolinha na barra
 
-o botão **criar / alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
+o botão **Iniciar / Alterar** (na gaveta **projeto**) mostra uma bolinha; com a gaveta fechada, o botão **projeto** mostra a pior das bolinhas de dentro (projeto, fontes e coletar):
 
 - 🟢 **verde** → o projeto aberto está salvo com os dados do padeiro, dentro da pasta dele.
 - 🟠 **laranja** → falta algo, e a dica do botão diz o quê: **ainda sem atração** (o projeto não foi criado pela janela: clique para iniciar) ou **salvo fora da pasta dele** (ex: um "salvar como" na Área de Trabalho: o editor avisa e o **Salvar** leva o `.aep` de volta para a pasta). um **projeto antigo convertido** (o After abre, converte e deixa "(converted)", sem salvar) também fica laranja, mas com o botão **Alterar**: a janela mostra os dados que ele já tinha, antes mesmo de salvar; ao salvar, se o original ainda estiver na pasta com o mesmo nome, mude o "o que é" para gravar o convertido ao lado dele.

@@ -575,7 +575,7 @@ são preservadas ao salvar.
 			}
 
 			if (!cfg.atracao) bad('atracao', 'escolha a atração do template (ou crie uma nova).');
-			if (cfg.configName === '') bad('configName', 'preencha o que é (o nome do template).');
+			if (cfg.configName === '') bad('configName', 'preencha o que é.');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 

@@ -2,7 +2,7 @@
 /*
 
 ---------------------------------------------------------------
-> coletar (botão COLETAR da barra e aba COLETAR da configuração)
+> coletar (botão Coletar da gaveta Projeto da barra e aba COLETAR da configuração)
 ---------------------------------------------------------------
 
 Copia os arquivos usados no projeto para a pasta do projeto (a do .aep), numa árvore de pastas por
@@ -603,7 +603,7 @@ function padCollectFinish(target, settings, res) {
 
 	padGroup('coletar fontes', function () {
 		if (paths.fontes != null) res.fonts = fontCollect(padCollectResolve(new Folder(target).fsName, paths.fontes, false));
-		padCollectStructure(target, settings); // o collect das fontes apaga a pasta delas se não houver nenhuma
+		padCollectStructure(target, settings); // coletar as fontes apaga a pasta delas se não houver nenhuma
 	});
 
 	// projeto sem arquivo, coletado numa pasta escolhida: salva lá (na pasta do .aep da estrutura)
@@ -748,7 +748,7 @@ function padPathKey(path) {
 	return p.replace(/\/+/g, '/').replace(/\/$/, '').toLowerCase() + '/';
 }
 
-// As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada tipo, antes do
+// As pastas de projetos (configuração > TIPOS DE PROJETO): o começo fixo do caminho de cada tipo, antes do
 // primeiro token (…/PROGRAMAS/{atracao} → …/PROGRAMAS). [] sem tipos.
 function padProjectsRoots() {
 	var list = padLerSecao('tiposDeProjeto').tipos;
@@ -794,9 +794,9 @@ function padInProjects(path, roots) {
 	return false;
 }
 
-// Os arquivos do projeto fora das pastas de projetos (configuração > PROJETO; VFX-1 … vale como VFX). leve: só
+// Os arquivos do projeto fora das pastas de projetos (configuração > TIPOS DE PROJETO; VFX-1 … vale como VFX). leve: só
 // os caminhos dos itens. → { state: '' (sem arquivos) | 'ok' (tudo nas pastas) | 'out' (algum fora), total,
-//   local (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
+//   'local' (quantos fora), names, kinds: quantos fora de cada tipo ({ imagens: 1, audio: 1 }) }
 // a conta passa por todas as mídias do projeto: só é refeita quando o projeto é salvo (ou aberto outro). force:
 // refaz (ao abrir a barra e depois do coletar)
 var PAD_COLLECT_STATUS = { key: '', at: 0, res: null };
@@ -869,7 +869,7 @@ function padCollectStatusNow() {
 */
 
 // As mídias do projeto e o estado de cada uma, para a janela do coletar:
-//   ok       já na pasta do projeto       local    fora das pastas de projetos (configuração > PROJETO)
+//   'ok'     já na pasta do projeto       'local'  fora das pastas de projetos (configuração > TIPOS DE PROJETO)
 //   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
 // → { project, root, migrated, dests, items: [{ id, name, file, kind, state, layers, frames }] }

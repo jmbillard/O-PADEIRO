@@ -203,7 +203,7 @@ function writeFileContent(newFile, fileContent) {
  * @param {Object} options.serverMap - Mapa de shares para servidores específicos
  * @returns {string} Caminho normalizado ou string vazia se inválido
  * Normaliza caminhos de rede entre sistemas operacionais
- * Utiliza as globais DRIVE_MAP e UNC_TO_DRIVE definidas no arquivo de configuração
+ * Utiliza as variáveis globais DRIVE_MAP e UNC_TO_DRIVE definidas no arquivo de configuração
  * @param {string} pathStr - Caminho a ser normalizado
  * @param {object} options - Opções de configuração
  * @param {boolean} options.forceWin - Força conversão para formato Windows
@@ -241,7 +241,7 @@ function normalizeNetworkPath(pathStr, options) {
 	var isUNC = /^\\\\|^\/\//.test(path);
 	var isMacVolumes = /^\/Volumes\//i.test(path);
 
-	// CONVERSÃO: DRIVE LETTER → UNC (usando DRIVE_MAP global)
+	// CONVERSÃO: DRIVE LETTER → UNC (pela variável global DRIVE_MAP)
 	if (isWindowsDrive) {
 		var driveMatch = path.match(/^([A-Z]):/i);
 		if (driveMatch) {
@@ -318,7 +318,7 @@ function normalizeNetworkPath(pathStr, options) {
 		var shareName = macParts[1].replace(/-[1-5]$/, '');
 		var subPathParts = macParts.slice(2);
 
-		// Procura o servidor correto nas globais DRIVE_MAP
+		// Procura o servidor correto nas variáveis globais DRIVE_MAP
 		var serverName = findServerForShare(shareName);
 
 		if (!serverName) {
@@ -378,7 +378,7 @@ function applyBackslash(path, apply) {
 }
 
 /**
- * Encontra o servidor correspondente a um share usando as globais
+ * Encontra o servidor correspondente a um share usando as variáveis globais
  * @param {string} shareName - Nome do share/volume
  * @returns {string|null} Nome do servidor ou null se não encontrado
  */
@@ -410,7 +410,7 @@ function findServerForShare(shareName) {
 }
 
 /**
- * Converte caminho UNC para letra de drive usando UNC_TO_DRIVE global
+ * Converte caminho UNC para letra de drive pela variável global UNC_TO_DRIVE
  * @param {string} uncPath - Caminho UNC
  * @returns {string} Caminho com letra de drive ou original se não mapeado
  */

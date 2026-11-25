@@ -280,7 +280,7 @@ function padIsLocalPath(path) {
 
 // Produções deste computador (configuração > templates): [{ name, path }], independentes das da equipe. Sem a lista
 // ainda (versão anterior): as pastas deste computador escolhidas para as produções da equipe com caminho deste
-// computador ('templates': { 'produção': pasta }, ex: Ω PASTA LOCAL) viram produções deste computador, gravadas na
+// computador ('templates': { 'produção': pasta }, ex: Ω MINHA PASTA) viram produções deste computador, gravadas na
 // primeira gravação deste computador (saveMachinePrefs, que tira 'templates'). Não é um nome antigo da tabela de
 // seções: a conversão depende das produções da equipe e do mapa de drives.
 function padProducoesDesteComputador() {
@@ -313,7 +313,7 @@ function padConfigCopyFile() {
 }
 
 // Configuração da equipe COMPARTILHADA ('O_PADEIRO_GLOBAL_config.json'): fica na pasta do padeiro na rede,
-// ao lado da pasta da extensão. o nome GLOBAL separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
+// ao lado da pasta da extensão. o nome O_PADEIRO_GLOBAL_config.json separa do arquivo das versões antigas ('O_PADEIRO_config.json'),
 // que continuam lendo e gravando o seu sem estragar este. Procura, nesta ordem:
 //   1. o caminho gravado pelo instalador em 'shared_config.txt' (pasta de dados do usuário; um caminho com o
 //      nome antigo vale como a mesma pasta com o nome novo);
@@ -572,8 +572,8 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
-		localProductions: padProducoesDesteComputador(), // as produções locais (configuração > templates, neste computador)
-		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
+		localProductions: padProducoesDesteComputador(), // as produções deste computador (configuração > templates)
+		localMode: padLocalMode(), // no modo local, o painel mostra só as deste computador
 		lists: padLerSecao('listaDosTemplates'), // quantos recentes e quantos dias de novos (neste computador)
 		log: padLerSecao('registroDeUso'),
 		drives: padLerSecao('mapaDeDrives'),
@@ -625,7 +625,7 @@ function padProductionFolder(name) {
 		if (list[i].name == name && !padIsLocalPath(list[i].templatesPath)) return new Folder(padPath(list[i].templatesPath));
 	}
 
-	// as produções locais (configuração > templates, neste computador)
+	// as produções deste computador (configuração > templates)
 	var personal = padProducoesDesteComputador();
 
 	for (var p = 0; p < personal.length; p++) {
@@ -721,7 +721,7 @@ function padWriteLog(record) {
 	else if (pendingFile.exists) pendingFile.remove();
 }
 
-// Produção escolhida na barra principal, gravada em 'selected_production.json'.
+// Produção escolhida no rodapé do painel de templates, gravada em 'selected_production.json'.
 PADX.selectedProduction = function () {
 	var file = new File(scriptPreferencesPath + '/selected_production.json');
 	var list = padConfigFile();
@@ -737,14 +737,14 @@ PADX.selectedProduction = function () {
 	return { name: name, stamp: stamp };
 };
 
-// Grava a produção escolhida (a barra principal escolhe, o painel de templates acompanha).
+// Grava a produção escolhida (o painel de templates escolhe; os outros painéis e o registro de uso leem).
 PADX.setProduction = function (a) {
 	saveTextFile(JSON.stringify({ name: a.name }), scriptPreferencesPath + '/selected_production.json');
 
 	return { name: a.name };
 };
 
-// Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp local
+// Fixados e recentes dos templates: preferência de cada máquina, num arquivo da pasta temp deste computador
 // ({ "<produção>": { favorites: [uri], recents: [uri], renderPresets: { uri: preset } } }), com o
 // último preset de render usado em cada um. A lista de produções é que é compartilhada.
 function padTemplateListsFile() {
@@ -782,7 +782,7 @@ PADX.saveTemplateLists = function (a) {
 	return { ok: true };
 };
 
-// Cópia da última árvore de templates lida de cada produção (pasta temp local): a janela de templates
+// Cópia da última árvore de templates lida de cada produção (pasta temp deste computador): a janela de templates
 // mostra a lista na hora ao abrir e relê a pasta em segundo plano. A árvore vai e volta como texto
 // (JSON feito pelo painel), sem passar pelo JSON do ExtendScript, que é lento com listas grandes.
 function padTreeCacheFile(production) {
@@ -933,7 +933,7 @@ PADX.saveTemplateConfig = function (a) {
 
 	if (!cfg || typeof cfg !== 'object') throw new Error('#PAD_044 - configuração inválida');
 	if (!cfg.atracao || String(cfg.atracao.name || '').trim() == '') throw new Error('#PAD_044 - escolha a atração do template');
-	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é (o nome do template)');
+	if (String(cfg.configName).trim() == '') throw new Error('#PAD_044 - preencha o que é');
 	if (String(cfg.compName).trim() == '') throw new Error('#PAD_044 - preencha o nome da comp principal');
 	if (cases.indexOf(cfg.textCase) < 0) throw new Error('#PAD_044 - tipo de caixa de texto inválido: ' + cfg.textCase);
 	if (typeof cfg.refTime !== 'number' || isNaN(cfg.refTime) || cfg.refTime < 0) throw new Error('#PAD_044 - tempo de referência inválido');
@@ -1400,7 +1400,7 @@ PADX.fillStep = function (a) {
 			var info = infoArray.join(' ').replace(/[\s\-]+/g, ' ');
 			var suffix = run.suffixArray[job.f];
 
-			// Define o nome do template
+			// Define o nome da versão
 			if (!overwriteCompName(template)) {
 				// sem prefixo, o nome é só a informação (ex: 'JOAO BOSCO D')
 				var prefix = String(templateData.prefix || '').replace(/^\s+|\s+$/g, '');
@@ -1670,7 +1670,7 @@ PADX.queueBegin = function (a) {
 	var localOutput = padLerSecao('outputLocal') || defaultTemplateConfigObj.outputPath[0];
 
 	for (var o = 0; o < configured.length; o++) {
-		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
+		// modo local: tudo no output local (sem tocar na rede)
 		if (localMode) {
 			outputs.push(padPath(localOutput));
 			continue;
@@ -2386,7 +2386,7 @@ PADX.setupCreateConfig = function (a) {
 	return res;
 };
 
-// Só neste computador: a cópia local com os padrões e o modo local ligado.
+// Só neste computador: a cópia deste computador com os padrões e o modo local ligado.
 PADX.setupLocal = function () {
 	var copy = padConfigCopyFile();
 	var folder = new Folder(scriptPreferencesPath);

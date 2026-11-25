@@ -208,7 +208,7 @@ function toMacPath(str) {
 
 	if (path == '') return '';
 
-	// caminho local do Windows (C:\Users\...) → /Users/...
+	// caminho do disco do Windows (C:\Users\...) → /Users/...
 	if (/^[a-z]:[\\\/]/i.test(path) && !DRIVE_MAP[path.charAt(0).toUpperCase()]) {
 		return path.substring(2).replace(/\\/g, '/');
 	}

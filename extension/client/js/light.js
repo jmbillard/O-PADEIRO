@@ -5,10 +5,10 @@
 ---------------------------------------------------------------
 
 Duplica a comp aberta e preenche os layers de texto selecionados, só na memória (sem template, sem arquivo). O host
-(light.jsx) lê a comp e a seleção, diz o nome de cada duplicata e faz o trabalho; aqui a pessoa digita o input (o
+(light.jsx) lê a comp e a seleção, diz o nome de cada versão e faz o trabalho; aqui a pessoa digita o input (o
 mesmo do preenchimento completo: uma linha por layer, linha vazia separa as versões), confere os nomes e duplica.
 
-  - o nome de cada duplicata segue o da comp de hoje: o trecho que é o texto de um layer selecionado muda; a regra
+  - o nome de cada versão segue o da comp de hoje: o trecho que é o texto de um layer selecionado muda; a regra
     do renomear (configuração > renomear) dá a caixa, os acentos e o separador;
   - o texto de um layer pode ter várias linhas: com 1 layer, a versão inteira vai para ele; com 2 ou mais, as partes
     de cada versão são separadas por uma linha com o separador (--- por padrão; vazio: uma linha por layer);
@@ -195,7 +195,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		});
 	}
 
-	// a situação de uma linha: o que fica de fora ou some nesta duplicata, e o nome que já existe
+	// a situação de uma linha: o que fica de fora ou some nesta versão, e o nome que já existe
 	function notesOf(lines, name, custom, planned, seen) {
 		var count = state.info.layers.length;
 		var extra = lines.length - count;
@@ -454,7 +454,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 
 	/* ---------- ler, planejar, duplicar ---------- */
 
-	// os nomes que as duplicatas vão ter: o host aplica a regra do renomear e confere o que já existe no projeto
+	// os nomes que as versões vão ter: o host aplica a regra do renomear e confere o que já existe no projeto
 	async function plan() {
 		var seq = ++planSeq;
 		var list = ready() ? versions() : [];

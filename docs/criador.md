@@ -61,7 +61,7 @@ ao salvar, o padeiro:
 ### formulário e nomenclatura
 
 - **atração** (obrigatória) → o template é dessa atração. digitar busca as atrações (no índice do webhook ou no índice local, como a [janela de projeto](projeto.md)) e mostra os cartões logo abaixo; a escolhida fica com o nome oficial e, se tiver pasta de output, ela entra nas '*pastas de output*' (trocar de atração troca essa pasta). não achou? **nova atração**: o nome e o tipo (aba TIPOS DE PROJETO da configuração) abrem embaixo.
-- **o que é** → o nome do template (ex: `SERVIÇO`, `CONVIDADO`, `AESP`); identifica o template no log e entra no nome do arquivo, depois do prefixo. embaixo, o template por inteiro: `DOMINGÃO COM HUCK · SERVIÇO`.
+- **o que é** → o que o template é (ex: `SERVIÇO`, `CONVIDADO`, `AESP`); identifica o template no log e entra no nome do arquivo, depois do prefixo. embaixo, o template por inteiro: `DOMINGÃO COM HUCK · SERVIÇO`.
 - **exemplo de preenchimento** → idealmente, o texto usado no preview. o ícone de importar, no canto do campo, puxa dos layers: monta o exemplo com o texto atual dos layers editáveis.
 - **dicas** → cada linha vira um item da lista de dicas. seja claro: inclua instruções para footages, controles de expressão e tudo o que for preciso.
 - **prefixo** (opcional) → começo do nome de todas as versões criadas. vazio, o nome da versão é só o texto dos campos (ex: `JOAO BOSCO REPORTER` em vez de `TARJA - JOAO BOSCO REPORTER`).

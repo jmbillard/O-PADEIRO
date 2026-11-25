@@ -194,7 +194,7 @@ PADX.checkFolders = function (a) {
 
 As seções da configuração da equipe (produções, mapa de drives, regra do renomear, organizar, busca de caminhos,
 links e barra) ficam na tabela de seções (regras/configuracao.js): onde cada uma mora, o padrão, a limpeza e os
-nomes antigos. Aqui, o que o host faz com elas: as globais do host (padApplyConfig) e os pedidos do painel.
+nomes antigos. Aqui, o que o host faz com elas: as variáveis globais do host (padApplyConfig) e os pedidos do painel.
 
 */
 
@@ -204,7 +204,7 @@ function padTrim(value) {
 	return String(value == null ? '' : value).replace(/^\s+|\s+$/g, '');
 }
 
-// Aplica a configuração compartilhada nas globais do host (drives e renomear). Confere o arquivo no
+// Aplica a configuração compartilhada nas variáveis globais do host (drives e renomear). Confere o arquivo no
 // máximo a cada 5 s, e só relê quando ele mudou.
 function padApplyConfig() {
 	var now = new Date().getTime();
@@ -318,7 +318,8 @@ PADX.barLinks = function () {
 	return { stamp: stamp, links: padLerSecao('links'), personal: padLerSecao('linksDesteComputador'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
 };
 
-// Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.
+// Pedido de aba feito pela barra (o botão da rede: a aba rede ou a deste computador): a configuração acompanha o
+// arquivo.
 PADX.requestConfigTab = function (a) {
 	saveTextFile(JSON.stringify({ tab: a.tab, stamp: new Date().getTime() }), scriptPreferencesPath + '/config_tab.json');
 

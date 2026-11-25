@@ -40,8 +40,8 @@ PADX.requestedTab = function () {
 
 */
 
-// O que o painel precisa para baixar o índice sozinho. local: o modo local (só a cópia, sem a rede). copia: a cópia
-// do índice (onde o painel grava); copiasAntigas: as dos nomes de antes (regras/configuracao.js: COPIA_DA_BUSCA), lidas
+// O que o painel precisa para baixar o índice sozinho. 'local': o modo local (só a cópia, sem a rede). 'copia': a cópia
+// do índice (onde o painel grava); 'copiasAntigas': as dos nomes de antes (regras/configuracao.js: COPIA_DA_BUSCA), lidas
 // enquanto não há a de agora.
 // → { url, films, copia, copiasAntigas, local, platform, caminhosFixos, mode, folders, foldersOnly, daily, localIndex }
 PADX.searchInfo = function () {

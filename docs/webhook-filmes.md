@@ -64,7 +64,7 @@ aparece e O PROJETISTA segue funcionando como antes.
 
 ## na configuração
 
-O ano entra sozinho na pasta e no output dos filmes: se o caminho do tipo **FILME** (configuração > PROJETO) termina
+O ano entra sozinho na pasta e no output dos filmes: se o caminho do tipo **FILME** (configuração > TIPOS DE PROJETO) termina
 em `{atracao}` e não tem o token `{ano_producao}`, O PROJETISTA acrescenta ` ({ano_producao})`. Para colocar o ano em
 outro lugar, use o token no caminho:
 

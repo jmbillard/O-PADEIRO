@@ -577,7 +577,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function dotTitle(row) {
-		if (isLocalPath(row.path)) return 'caminho deste computador: a produção é ignorada (cada um cria as suas em produções locais, embaixo)';
+		if (isLocalPath(row.path)) return 'caminho deste computador: a produção é ignorada (cada um cria as suas em produções deste computador, embaixo)';
 
 		return row.exists === true ? 'pasta de templates encontrada' : row.exists === false ? 'pasta de templates não localizada' : 'verificando a pasta…';
 	}
@@ -809,7 +809,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		info.hidden = false;
 	}
 
-	// Sem a lista compartilhada não há o que editar: a lista é uma só para a equipe (nada de cópia local).
+	// Sem a lista compartilhada não há o que editar: a lista é uma só para a equipe (nada de cópia neste computador).
 	function setAvailable(available) {
 		state.available = available;
 		['btn-carregar', 'btn-salvar-copia'].forEach(function (id) {
@@ -2153,7 +2153,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		duplicar: ['Duplicar', 'A FORMINHA: duplicar a comp aberta e preencher os layers de texto selecionados', 'duplicate'],
 		'criar-template': ['Criar template', 'O CONFEITEIRO: criar um template a partir da comp aberta', 'template-new'],
 		projeto: ['Iniciar / Alterar', 'O PROJETISTA: iniciar o projeto pela atração (ou alterar os dados) · salvar o projeto', 'form'],
-		fontes: ['Fontes', 'instalar as fontes do template · collect das fontes', 'fonts'],
+		fontes: ['Fontes', 'instalar as fontes do template · coletar as fontes', 'fonts'],
 		coletar: ['Coletar', 'coletar na pasta do projeto · ver os arquivos e os que faltam', 'collect'],
 		render: ['Render', 'O FORNO: o render final na fila, na pasta de output · um preview na pasta de previews', 'render'],
 		renomear: ['Renomear', 'renomear comps · renomear os outputs da fila', 'rename'],
@@ -2846,7 +2846,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		}
 	}
 
-	// produções locais (só deste computador, independentes das da equipe): pontinhos, ícone com o bonequinho,
+	// produções deste computador (só daqui, independentes das da equipe): pontinhos, ícone com o bonequinho,
 	// nome e pasta. aparecem no seletor do painel de templates depois das da equipe.
 	function renderMachineTemplates() {
 		var list = $('machine-templates');
@@ -3625,7 +3625,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// cada tipo: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
 	// (do seletor, ou '' = o automático pelo nome). um tipo com {letra} ganha a etapa dos parecidos.
-	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao']; // {categoria}: o nome antigo do {tipo}, ainda aceito
+	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao'];
+	// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo; regras/configuracao.js)
+	var TOKENS_ANTIGOS = { categoria: 'tipo' };
+
+	Object.keys(TOKENS_ANTIGOS).forEach(function (k) {
+		PATH_TOKENS.push(k);
+	});
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var TIPO_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 
@@ -3650,7 +3656,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' }; // {categoria}: o nome antigo do {tipo}
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
+
+		Object.keys(TOKENS_ANTIGOS).forEach(function (k) {
+			sample[k] = sample[TOKENS_ANTIGOS[k]];
+		});
+
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);

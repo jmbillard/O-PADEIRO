@@ -11,10 +11,10 @@ As regras puras do domínio ficam em extension/regras/, em ES3, sem After e sem 
 Cada regra é carregada de dois jeitos (e o host tem de incluí-la em host/index.jsx):
   - em Node, por require (module.exports): os casos da regra;
   - como no ExtendScript: num contexto à parte, sem module e sem os métodos do ES5 que o ExtendScript não tem
-    (forEach, map, filter, indexOf, Object.keys, trim, normalize…). A regra tem de carregar, virar um global e
+    (forEach, map, filter, indexOf, Object.keys, trim, normalize…). A regra tem de carregar, virar uma variável global e
     responder a um caso simples.
 
-Para acrescentar uma regra: uma entrada em REGRAS (o arquivo, o global e os casos). Para acrescentar casos: mais
+Para acrescentar uma regra: uma entrada em REGRAS (o arquivo, a variável global e os casos). Para acrescentar casos: mais
 uma chamada a test() dentro dos casos da regra.
 
 uso: node extension/scripts/test-regras.js   (sai com 1 se algum caso falhar)
@@ -46,7 +46,7 @@ function eq(got, want, msg) {
 	assert.deepStrictEqual(got, want, msg);
 }
 
-// carrega a regra como o ExtendScript: sem module, o global no lugar de window, sem os métodos do ES5
+// carrega a regra como o ExtendScript: sem module, a variável global no lugar de window, sem os métodos do ES5
 function loadEs3(file, globalName) {
 	const ctx = vm.createContext({});
 
@@ -831,7 +831,7 @@ REGRAS.push({
 
 		// #45: as chaves guardadas da configuração passam aos termos do glossário. Cada uma: a antiga é lida, a nova é
 		// gravada (e a antiga sai)
-		// e #46: "tipo", e não "categoria": o campo guardado 'categories' vira 'tipos'
+		// e #46: "tipo" no lugar do nome antigo: o campo guardado 'categories' vira 'tipos'
 		test('tipos de projeto: "PROJECT" e "categories" (os nomes antigos) são lidos; gravar grava só "TIPOS_DE_PROJETO.tipos"', function () {
 			const tipos = { tipos: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: 'tv' }] };
 			const m = memoria({ [EQUIPE]: { PROJECT: { categories: [{ name: 'novela', path: '/n/', icon: 'tv' }] }, OUTRA: 1 } });
@@ -926,6 +926,12 @@ REGRAS.push({
 			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A precisa de um caminho\./);
 			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
 			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - tipos de projeto: \{nada\} não é um token do caminho/);
+
+			// o token com o nome antigo do {tipo} continua valendo nos caminhos já salvos
+			const TOKENS_ANTIGOS = ['categoria']; // o nome antigo do {tipo}, lido por compatibilidade
+			const antigo = '/x/{' + TOKENS_ANTIGOS[0] + '}/{atracao}';
+
+			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: antigo }] }).tipos[0].path, antigo);
 		});
 
 		test('os campos da configuração da equipe vindos do painel viram as seções (as que não vierem ficam de fora; sem produções, a lista vazia)', function () {
@@ -1028,10 +1034,10 @@ REGRAS.forEach(function (r) {
 	});
 	if (api) r.casos(api);
 
-	test('carrega como no ExtendScript (ES3, global ' + r.global + ')', function () {
+	test('carrega como no ExtendScript (ES3, variável global ' + r.global + ')', function () {
 		const g = loadEs3(file, r.global);
 
-		assert.ok(g, 'o global ' + r.global + ' não existe');
+		assert.ok(g, 'a variável global ' + r.global + ' não existe');
 		r.es3(g);
 	});
 

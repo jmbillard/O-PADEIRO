@@ -342,12 +342,12 @@ body.fonts-page {
   }
 }
 
-/* o collect das fontes: o botão redondo no canto esquerdo do rodapé */
+/* coletar as fontes: o botão redondo no canto esquerdo do rodapé */
 .fw-bar .io-button {
   flex: 0 0 auto;
 }
 
-/* o collect das fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
+/* coletar as fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
 #fw-collect .fw-t {
   stroke-width: 2.1;
   transition: transform 300ms var(--ease-soft);

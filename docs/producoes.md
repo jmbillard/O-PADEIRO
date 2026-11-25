@@ -12,7 +12,7 @@ a janela **O PRODUTOR** (a configuração) (`⋯` → '*Configuração*', no pai
 | :---: | --- | --- |
 | ❶ | **links** | os links da barra (o primeiro, como na barra). |
 | ❷ | **as ferramentas** | uma aba por ferramenta, na ordem da barra (templates, fontes, tipos de projeto, coletar, renomear, organizar, buscar). |
-| ❸ | **rede** | os drives e volumes da rede, os logs e o resto. |
+| ❸ | **rede e o resto** | os drives da rede (rede), o registro de uso (telemetria), a aparência e o layout. |
 | ❹ | **deste computador** | só deste computador: a sigla, as pastas, o modo local. |
 | ❺ | **recarregar** | lê a configuração do arquivo de novo. |
 | ❻ | **salvar** | grava (`Ctrl/Cmd+S`). |
@@ -23,8 +23,8 @@ as abas ficam em três grupos, separados por uma linha:
 | grupo | abas |
 | --- | --- |
 | **links** | links (o primeiro, como na barra) |
-| **ferramentas** | templates, tipos de projeto, coletar, renomear, organizar, buscar |
-| **o resto** | rede, aparência, layout, deste computador |
+| **ferramentas** | templates, fontes, tipos de projeto, coletar, renomear, organizar, buscar |
+| **o resto** | rede, telemetria, aparência, layout, deste computador |
 
 **nas listas** → os pontinhos à esquerda reordenam; a **lixeira**, à direita da linha e fora dos campos, exclui a linha (a tampa levanta ao passar o mouse). os campos de caminho mostram o fim do caminho.
 
@@ -35,9 +35,11 @@ as abas ficam em três grupos, separados por uma linha:
 | aba | deste computador |
 | --- | --- |
 | templates | produções deste computador · output local |
+| fontes | enviar as fontes deste computador · conferir as fontes sozinho |
 | tipos de projeto | pasta dos projetos · presets de render |
 | buscar | de onde vêm os caminhos (webhook ou índice local) |
 | links | meus links |
+| telemetria | enviar o meu registro de uso |
 
 uma faixa no topo de cada aba repete onde ela é salva (🌐 *da equipe · salvo na rede · embaixo, deste computador* ou 👤 *deste computador · salvo aqui*).
 
@@ -74,9 +76,28 @@ a lista de produções é **uma só para a equipe**: o arquivo `O_PADEIRO_GLOBAL
 **👤 deste computador** (embaixo, só suas):
 
 - **produções deste computador** → produções **só suas**, com pastas deste computador, independentes das da equipe (nada é copiado da rede). cada linha tem o nome e a pasta (a pastinha escolhe, a **lixeira** à direita exclui; os pontinhos reordenam); '*+ nova produção deste computador*' acrescenta. aparecem no seletor de produção do painel de templates depois das da equipe, no grupo **neste computador**, com o bonequinho. o nome não pode repetir o de uma produção da equipe.
-  > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção local com essa pasta.
+  > 🚩 *obs:* produções da equipe com caminho deste computador (`~/...`, `/Users/...`, `C:\...` ou uma letra fora do mapa de drives) são **ignoradas**: não aparecem para ninguém (na lista da equipe, ficam riscadas). quem tinha escolhido uma pasta para elas ganhou uma produção deste computador com essa pasta.
 - **output local** → a pasta deste computador para onde vão os renders da fila quando a pasta de output do template não pode ser acessada. vazia, a Área de Trabalho.
 - **lista de templates** → as seções do topo do [painel de templates](templates.md#fixados-e-recentes): **recentes** (quantos templates aparecem, de 0 a 30; padrão 5) e **novos** (criados há até quantos dias, de 0 a 90; padrão 15). 0 esconde a seção. vale ao reabrir o painel de templates.
+<br>
+
+---
+
+<br>
+
+## 📍 fontes
+
+a aba **fontes** (🌐 equipe) aponta o **[banco de fontes](fontes.md#-banco-de-fontes)**: a pasta da equipe na rede para onde vão as fontes dos projetos abertos e de onde o botão **Fontes** da barra instala as que faltam.
+
+- **banco de fontes** → a pasta do banco na rede (digite o caminho ou escolha na pastinha ao lado). vazia, vale a **padrão**, `BANCO DE FONTES`, no mesmo nível da pasta `extension` do padeiro na rede (o campo mostra qual). embaixo, quantas fontes o banco já tem, ou o aviso de que a pasta não está acessível agora.
+- **enviar as fontes dos projetos abertos** → ligada (o padrão), as fontes de cada projeto aberto vão sozinhas, em segundo plano, para o banco e para a pasta de fontes do projeto. desligada, nenhum computador envia; instalar a partir do banco continua valendo.
+
+**👤 deste computador** (embaixo, só suas):
+
+- **enviar as fontes deste computador** → desligada, as fontes deste computador não vão para o banco (instalar a partir dele continua valendo).
+- **conferir as fontes sozinho** → ligada, a barra confere as fontes do projeto (a bolinha e o envio) quando ele é aberto ou salvo; desligada, só no clique em **Fontes**.
+
+> 🚩 *obs:* o que o banco guarda e como cada fonte é registrada está em [O TIPÓGRAFO · banco de fontes](fontes.md#-banco-de-fontes).
 <br>
 
 ---
@@ -104,7 +125,7 @@ a aba **tipos de projeto** define os **tipos de projeto** da atração nova: os 
   | `{proximo_mes}` | o próximo mês por extenso (`DEZEMBRO`; em dezembro, `JANEIRO`) |
   | `{proximo_mes_num}` | o número do próximo mês (`12`; em dezembro, `01`) |
   | `{ano_proximo_mes}` | o ano do próximo mês (em dezembro, o ano que vem) |
-  | `{tipo}` | o nome do tipo de projeto (`{categoria}`, o nome antigo, continua valendo nos caminhos já salvos) |
+  | `{tipo}` | o nome do tipo de projeto (o nome antigo do token continua valendo nos caminhos já salvos) |
   | `{letra}` | a primeira letra do nome, sem o artigo (*Os Três Patetas* → `T`; números → `#`) |
   | `{o_que_e}` | o **o que é**, digitado n'O PROJETISTA depois da atração (`SERVICO`). vale só no **OUTPUT** e no **ARQUIVO**: a pasta do projeto é decidida antes de ele existir |
 
@@ -238,33 +259,6 @@ cada link tem um **nome** (aparece na dica), o **endereço** e o **ícone**: por
 
 <br>
 
-## 📍 telemetria
-
-a aba **telemetria** concentra o que sai do padeiro para fora: em cima, o da equipe (o registro de uso e o cadastro no banco, em breve); embaixo, **deste computador**, se este computador envia o registro dele.
-
-### registro de uso (equipe)
-
-define onde o padeiro registra cada preenchimento: data, produção, template, quantidade, usuário, máquina e o arquivo do template. pelo **webhook** vão também a atração do template (a da lista de atrações), os dados do projeto (quadro, o que é, pasta e output, os mesmos d'O PROJETISTA) e a versão do padeiro (`versao_padeiro`); o CSV continua com as colunas de sempre.
-
-| opção | o que faz |
-| --- | --- |
-| **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
-| **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
-| **CSV da equipe** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_GLOBAL_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
-| **desligado** | não registra nada |
-
-> 🚩 *obs:*\
-> • o endereço do webhook fica guardado mesmo com o CSV ou o log desligado: basta voltar para "webhook".\
-> • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
-
-### cadastro no banco *(em breve, desligado)*
-
-reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela de projeto **propõe** o cadastro (o nome, o tipo e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
-
-### deste computador
-
-'*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu acima (inclusive nas produções deste computador); desligado, nada sai daqui.
-
 ## 📍 rede
 
 a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca muda: o mapa dos drives.
@@ -280,6 +274,38 @@ a aba **rede** junta o que é configurado uma vez para a equipe e quase nunca mu
 > 🚩 *obs:*\
 > • a letra pode ser digitada com ou sem `:`; caminhos com `\` são convertidos para `/` ao salvar.\
 > • os painéis passam a usar o mapa novo em alguns segundos, sem reiniciar o After Effects.
+<br>
+
+---
+
+<br>
+
+## 📍 telemetria
+
+a aba **telemetria** concentra o que sai do padeiro para fora: em cima, o 🌐 da equipe (o **registro de uso** e o **cadastro no banco**, em breve); embaixo, 👤 **deste computador**, se este computador envia o registro dele.
+
+### registro de uso (da equipe)
+
+define onde o padeiro registra cada preenchimento (uma opção por vez; embaixo, uma linha diz o que a escolhida faz): data, produção, template, quantidade, usuário, máquina e o arquivo do template. pelo **webhook** vão também a atração do template (a da lista de atrações), os dados do projeto (quadro, o que é, pasta e output, os mesmos d'O PROJETISTA) e a versão do padeiro (`versao_padeiro`); o CSV continua com as colunas de sempre.
+
+| opção | o que faz |
+| --- | --- |
+| **webhook** | envia cada registro para o endereço do campo (`http://` ou `https://`) |
+| **CSV por produção** | um arquivo só por produção, `O_PADEIRO_log.csv`, na pasta de templates dela: cada preenchimento acrescenta uma nova linha (o arquivo é criado na primeira vez, com cabeçalho; separador `;`, abre direto no Excel) |
+| **CSV da equipe** | um arquivo só para a equipe toda, `O_PADEIRO_log.csv`, na mesma pasta da lista de produções (`O_PADEIRO_GLOBAL_config.json`): cada preenchimento de qualquer produção acrescenta uma nova linha |
+| **desligado** | não registra nada |
+
+> 🚩 *obs:*\
+> • o endereço do webhook fica guardado mesmo com o CSV ou o registro desligado: basta voltar para "webhook".\
+> • se o CSV não puder ser gravado na hora (aberto no Excel, rede fora), a linha fica guardada na máquina e entra no arquivo no próximo preenchimento.
+
+### cadastro no banco *(em breve, desligado)*
+
+reservado: ao criar o projeto de uma atração ou de um filme novo, a etapa CRIAR da janela de projeto **propõe** o cadastro (o nome, o tipo e a pasta vão para um webhook que atualiza o banco das atrações e a busca). na hora, **pular** (o padrão, para testes) ou **cadastrar**.
+
+### deste computador
+
+'*enviar o meu registro de uso*': ligado, este computador registra cada template preenchido como a equipe definiu acima (inclusive nas produções deste computador); desligado, nada sai daqui.
 <br>
 
 ---

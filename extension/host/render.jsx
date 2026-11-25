@@ -12,7 +12,7 @@ Um botão da barra, sem janela:
 
 As comps: as selecionadas no painel de projeto; sem seleção, a comp aberta. Só põe na fila: não renderiza.
 
-Os presets (os templates de output do After) são de cada um, deste computador (configuração > projeto > neste
+Os presets (os templates de output do After) são de cada um, deste computador (configuração > tipos de projeto > deste
 computador): cada pessoa tem a sua lista. Sem preset escolhido, a comp entra na fila com o padrão do After.
 
 Se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para
@@ -174,7 +174,7 @@ PADX.renderQueue = function (a) {
 		for (i = 0; i < comps.length; i++) {
 			var item = app.project.renderQueue.items.add(comps[i]);
 			var om = item.outputModule(1);
-			// o nome padronizado da saída (a mesma regra do Renomear > outputs da fila): a camada de nome do template ou o
+			// o nome padronizado da saída (a mesma regra do Renomear > outputs da fila): o layer de nome (script_template_name) ou o
 			// nome da comp no padrão da promo
 			var nameLayer = getTemplateNameLayer(comps[i]);
 			var base = sanitizeFileName(nameLayer ? templateNameValue(nameLayer) : getPromoRename(comps[i]).name) || sanitizeFileName(comps[i].name);
@@ -217,9 +217,9 @@ PADX.renderQueue = function (a) {
 		padUndoEnd();
 	}
 
-	if (badPreset) warnings.push('o preset "' + preset + '" não existe mais no After: escolha outro em configuração > projeto > neste computador.');
+	if (badPreset) warnings.push('o preset "' + preset + '" não existe mais no After: escolha outro em configuração > tipos de projeto > deste computador.');
 
-	if (auto) warnings.push(preset ? 'preset: ' + preset + ' (escolha o seu em configuração > projeto > neste computador)' : 'sem preset escolhido nem H.264 no After: a fila usa o padrão do After.');
+	if (auto) warnings.push(preset ? 'preset: ' + preset + ' (escolha o seu em configuração > tipos de projeto > deste computador)' : 'sem preset escolhido nem H.264 no After: a fila usa o padrão do After.');
 
 	return { count: comps.length, folder: padDisplayPath(folder), local: local, preview: preview, names: names, warnings: warnings, preset: preset };
 };

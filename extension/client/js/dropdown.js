@@ -86,7 +86,7 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 
 			return svg('<path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6L21 12l-8.5 8.5z" /><circle cx="8" cy="8" r="1.4" />');
 		},
-		// template de output: pelo nome do preset (sem match: vídeo)
+		// preset de render: pelo nome dele (sem match: vídeo)
 		renderTemplate: function (value, text) {
 			var name = String(text || value).toLowerCase();
 

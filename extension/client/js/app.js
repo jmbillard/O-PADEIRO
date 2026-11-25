@@ -197,7 +197,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// A produção é escolhida no rodapé deste painel: a escolha fica num arquivo compartilhado
 	// (host: PADX.setProduction / selectedProduction), que o log e os outros painéis também leem.
 	// A lista do painel: as da equipe (menos as com caminho deste computador; no modo local, nenhuma) e as
-	// produções locais de cada um (configuração > templates, neste computador), com o bonequinho.
+	// produções deste computador de cada um (configuração > templates, neste computador), com o bonequinho.
 	function productionList(res) {
 		var team = res.localMode ? [] : (res.productions || []).filter(function (p) {
 			return !p.ignored;
@@ -316,9 +316,9 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('search').placeholder = prod ? 'buscar em ' + prod.name : 'buscar template';
 	}
 
-	// Acompanha a produção escolhida na barra e a conexão com o After Effects.
+	// Acompanha a produção escolhida (no rodapé deste painel) e a conexão com o After Effects.
 	// A lista mudou: atualiza o que o painel conhece. Só relê a pasta de templates se a produção atual mudou.
-	// a pasta de templates que vale neste computador (a cópia local, no modo local)
+	// a pasta de templates que vale neste computador (a cópia deste computador, no modo local)
 	function prodPath(prod) {
 		return prod ? prod.path || prod.templatesPath : '';
 	}
@@ -394,7 +394,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   Árvore de templates
 	   ========================================================= */
 
-	// A lista aparece na hora a partir da cópia da última leitura (pasta temp local) e a pasta é relida em
+	// A lista aparece na hora a partir da cópia da última leitura (pasta temp deste computador) e a pasta é relida em
 	// segundo plano: se algo mudou, a lista se atualiza sozinha. 'force' (botão atualizar) relê com o loader.
 	async function loadTree(force) {
 		var prod = state.productions[state.production];

@@ -1,4 +1,4 @@
-﻿// Constantes globais: mapa das letras de drive da rede, termos de renomeação e config padrão dos templates.
+﻿// Variáveis globais: mapa das letras de drive da rede, termos de renomeação e config padrão dos templates.
 
 // O mapa de drives, os volumes sem letra e o servidor padrão: os padrões da tabela de seções (regras/configuracao.js,
 // a seção mapaDeDrives); a configuração da equipe troca (padApplyConfig, productions.jsx).

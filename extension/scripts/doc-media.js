@@ -224,7 +224,8 @@ const SHOTS = {
 		{ sel: '#net-status' }, { sel: '#links', pad: 3 }, { sel: '#tools', pad: 2 }, { sel: '#drawer-projeto .bar-dot', pad: 6, round: true, at: 'right' }, { sel: '#logo' }
 	] },
 	'barra-vertical': { w: 170, h: 640, url: 'bar.html' },
-	// as gavetas abertas: Projeto (Criar, Fontes, Coletar) e Templates (Preencher, Criar)
+	// as gavetas abertas: Projeto (Iniciar / Alterar, Fontes, Coletar, Render), Organização (Renomear, Organizar,
+	// Arquivos) e Templates (Preencher, Duplicar, Criar)
 	'barra-gaveta-projeto': { w: 1100, h: 110, url: 'bar.html?mock=localfiles', async run(p) {
 		await p.click('#drawer-projeto');
 		await p.waitForTimeout(700);

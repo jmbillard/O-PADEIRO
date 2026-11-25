@@ -13,7 +13,7 @@ e os nomes finais já dados. A comparação não diferencia a caixa (os discos t
 macOS (NFD) com o junto (NFC), do mesmo jeito em todas as comparações (onde houver normalize: o ExtendScript não tem).
 
 Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O painel carrega por <script> (window.PAD_NOMES_REPETIDOS,
-usado pelo arquivista, files.js), o host por #include (o global PAD_NOMES_REPETIDOS) e o teste em Node por require
+usado pelo arquivista, files.js), o host por #include (a variável global PAD_NOMES_REPETIDOS) e o teste em Node por require
 (module.exports): node extension/scripts/test-regras.js.
 
 */
@@ -107,7 +107,7 @@ usado pelo arquivista, files.js), o host por #include (o global PAD_NOMES_REPETI
 
 	var api = { resolve: resolve, tail: tail, BAD_CHARS: BAD_CHARS };
 
-	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	// a variável global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
 	root.PAD_NOMES_REPETIDOS = api;
 
 	if (typeof module === 'object' && module && module.exports) module.exports = api;

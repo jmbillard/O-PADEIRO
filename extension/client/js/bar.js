@@ -7,6 +7,16 @@
 Clique esquerdo e direito fazem ações diferentes, e a dica de cada botão lista as duas.
 Ações sem tela própria rodam no host; as outras abrem o painel correspondente.
 
+A barra de hoje (o padrão; a ordem e o que aparece vêm da aba LAYOUT da configuração):
+  - os links da equipe e os deste computador, no começo;
+  - a gaveta Templates: Preencher (A FORMA), Duplicar (A FORMINHA) e Criar (O CONFEITEIRO);
+  - a gaveta Projeto: Iniciar / Alterar (O PROJETISTA), Fontes (O TIPÓGRAFO), Coletar (O CATADOR) e Render (O FORNO);
+  - a gaveta Organização: Renomear (O ETIQUETADOR), Organizar (O CONTRARREGRA) e Arquivos (O ARQUIVISTA);
+  - soltas: Pastas (O ADAPTADOR), Buscar (O ACESSORISTA), Importar AEP (O VERSIONADOR) e Logo Globo;
+  - na ponta, o botão da rede (rede / modo local) e o pãozinho (ajuda e tour).
+O clique numa gaveta abre as ferramentas dela; o clique direito faz a primeira. A configuração (O PRODUTOR) abre
+pelo ⋯ do painel de templates e pelo botão da rede.
+
 */
 
 (function () {
@@ -490,7 +500,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
 		},
 
-		// a configuração, já na aba da ferramenta (2 cliques)
+		// a configuração, já na aba pedida (o botão da rede: a aba rede, ou a deste computador no modo local)
 		config: async function (tab) {
 			await call('requestConfigTab', { tab: tab });
 			PAD_BRIDGE.openPanel(CONFIG_PANEL_ID);
@@ -509,10 +519,12 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// As ferramentas da barra; a ordem e os grupos vêm da configuração (aba LAYOUT).
 	var TOOLS = [
-		// a gaveta Templates (GROUPS): os dois cliques de antes, cada um num botão
+		// a gaveta Templates (GROUPS): Preencher (A FORMA), Duplicar (A FORMINHA) e Criar (O CONFEITEIRO)
 		{ key: 'preencher', label: 'Preencher', icon: 'fill', name: 'A FORMA', tips: [L_CLICK + 'preencher um template e criar a fila de render'], left: actions.templates },
 		{ key: 'duplicar', label: 'Duplicar', icon: 'duplicate', name: 'A FORMINHA', tips: [L_CLICK + 'duplicar a comp aberta e preencher os layers de texto selecionados'], left: actions.openLight },
 		{ key: 'criar-template', label: 'Criar', icon: 'template-new', name: 'O CONFEITEIRO', tips: [L_CLICK + 'criar um template a partir da comp aberta'], left: actions.createTemplate },
+		// a gaveta Projeto: Iniciar / Alterar (O PROJETISTA), Fontes (O TIPÓGRAFO), Coletar (O CATADOR) e Render
+		// (O FORNO); a ordem de dentro é a de GROUPS (util.js: barGroups), não a desta lista
 		{
 			key: 'fontes',
 			label: 'Fontes',
@@ -1206,7 +1218,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 	}
 
 	/* ---------------------------------------------------------------
-	   a bolinha do botão Projeto: verde = o projeto aberto está salvo com os dados do padeiro (atração…);
+	   a bolinha do Iniciar / Alterar (na gaveta Projeto; com ela fechada, o botão da gaveta mostra a pior bolinha de
+	   dentro): verde = o projeto aberto está salvo com os dados do padeiro (atração…);
 	   laranja = sem eles (salvo sem a atração, ou com itens e sem arquivo); sem bolinha = projeto vazio
 	   --------------------------------------------------------------- */
 
@@ -1569,7 +1582,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	/* =========================================================
 	   O código novo: a barra é um painel que fica aberto o dia todo, e o código trocado na rede só entrava ao
-	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Projeto errava). ela confere a data dos
+	   reiniciar o After (a barra seguia com o de antes, e a bolinha do Iniciar / Alterar errava). ela confere a data dos
 	   próprios arquivos (os da página e os do host) e se recarrega quando mudam: ao entrar o mouse (no máximo uma
 	   vez a cada 30 s) e a cada 5 minutos. sem a rede, ou trabalhando (coletar, fontes, tour), espera
 	   ========================================================= */
@@ -1792,7 +1805,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		});
 		setInterval(loadLinks, 4000); // a lista é da equipe: acompanha quem editar
 		watchProject();
-		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Projeto): abrir, salvar, criar pela atração
+		setInterval(watchProject, 2000); // o projeto aberto (a bolinha do Iniciar / Alterar): abrir, salvar, criar pela atração
 		// as bolinhas ficam presas ao ícone (css); ao virar a barra, o lado redondo das gavetas é medido de novo
 		window.addEventListener('resize', roundDrawers);
 		window.addEventListener('focus', watchProject);

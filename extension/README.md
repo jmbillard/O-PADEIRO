@@ -75,7 +75,7 @@ O-PADEIRO/
    │  ├─ project.jsx             → janela de projeto (dados no XMP, retranca, salvar na pasta da retranca)
    │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
-   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js e check-focus-crop.js, com as telas em ui-states.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
+   └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js, check-focus-crop.js e check-scroll-corners.js, com as telas em ui-states.js), a do glossário (check-glossario.js), o teste das regras (test-regras.js) e a do ternário (check-ternary.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
 
 <br>
@@ -126,13 +126,13 @@ cada painel é uma página separada. eles combinam o que fazer por arquivos pequ
 
 | arquivo | quem grava | quem lê |
 | --- | --- | --- |
-| `selected_production.json` | barra (produção escolhida) | templates |
-| `finder_tab.json` | barra (botão buscar) | O ACESSORISTA (aba a abrir) |
-| `converter_request.json` | barra (botão pastas) | conversor (caminho a mostrar) |
+| `selected_production.json` | templates (produção escolhida, no rodapé) | host (o preenchimento e o registro de uso) |
+| `finder_tab.json` | barra (Buscar) | O ACESSORISTA (aba a abrir) |
+| `converter_request.json` | barra (Pastas, clique direito) | conversor (caminho a mostrar) |
 | `shared_config.txt` | instaladores | host (onde está a lista compartilhada) |
 | `temp/template_lists.json` | templates | templates (fixados e recentes, por produção) |
 
-a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe cópia local. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
+a **lista de produções** é sempre o `O_PADEIRO_GLOBAL_config.json` compartilhado: o caminho de `shared_config.txt` ou, sem ele, o arquivo na pasta acima de `extension/`. não existe uma cópia deste computador. a data de modificação do arquivo (`stamp`) avisa os painéis quando a lista muda e impede que o editor sobrescreva o trabalho de outra pessoa.
 
 <br>
 
@@ -178,12 +178,13 @@ no mock, o template **TARJA DUPLA** tem fontes faltando (para testar a pergunta 
 
 ### checagens de UI
 
-antes de enviar uma mudança de tela, confira o [guia de UI](../docs/guia-ui.md) e rode as três checagens. elas abrem todas as janelas no modo de teste, passam pelas telas de `extension/scripts/ui-states.js` (a barra, o tour, cada etapa e cada aba) e saem com erro quando acham algo fora:
+antes de enviar uma mudança de tela, confira o [guia de UI](../docs/guia-ui.md) e rode as quatro checagens. elas abrem todas as janelas no modo de teste, passam pelas telas de `extension/scripts/ui-states.js` (a barra, o tour, cada etapa e cada aba) e saem com erro quando acham algo fora:
 
 ```bash
 node extension/scripts/check-corners.js
 node extension/scripts/check-footers.js
 node extension/scripts/check-focus-crop.js
+node extension/scripts/check-scroll-corners.js
 ```
 
 | checagem | confere |
@@ -191,8 +192,17 @@ node extension/scripts/check-focus-crop.js
 | `check-corners.js` | **cantos concêntricos**: todo canto arredondado dentro de outro fecha a conta (raio de fora = raio de dentro + respiro + borda); diz o raio que o de fora pede |
 | `check-footers.js` | **rodapés na mesma linha**: o centro de cada botão de rodapé a `--footer-center` (35 px) do fundo, e todo `⋯` com 38 px |
 | `check-focus-crop.js` | **foco inteiro**: o contorno do foco (3 px em volta) não é cortado por um bloco que rola ou recolhe |
+| `check-scroll-corners.js` | **rolagem fora das quinas**: a barra de rolagem de uma área que rola começa e termina antes da curva dos cantos |
 
-tela ou etapa nova → acrescente o passo para chegar nela em `ui-states.js`: vale para as três.
+tela ou etapa nova → acrescente o passo para chegar nela em `ui-states.js`: vale para as quatro.
+
+### checagem do glossário
+
+```bash
+node extension/scripts/check-glossario.js
+```
+
+procura os termos que o [glossário](../GLOSSARY.md) manda evitar (as linhas `_Avoid_`) no código, no texto visível e nos documentos, sem diferenciar caixa e com fronteira de palavra; sai com erro quando acha algum. a lista vem do próprio glossário. os termos que o glossário evita só num sentido (uma nota "para …"), os que também são termos do glossário e os de sentido geral não são procurados; as exceções ficam declaradas e comentadas no começo do script. `--termos` mostra como cada termo foi tratado.
 
 ### imagens da documentação
 
@@ -216,8 +226,8 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 
 ## 📍 onde mudar o quê
 
-- **botões da barra** → `SECTIONS` em `client/js/bar.js` (rótulo, ícone, dicas e ações dos cliques esquerdo e direito). as ações ficam em `actions`, no mesmo arquivo.
-- **link do apontamento** → `APONTAMENTO_URL` em `client/js/bar.js`.
+- **ferramentas da barra** → `TOOLS` em `client/js/bar.js` (rótulo, ícone, apelido, dicas e ações dos cliques esquerdo e direito; o botão do projeto diz **Iniciar** ou **Alterar**) e `GROUPS`, as gavetas **Templates**, **Projeto** e **Organização**. as ações ficam em `actions`, no mesmo arquivo. quem fica em cada gaveta e a ordem padrão: `BARRA_GAVETAS` e `BARRA_PADRAO` em `regras/configuracao.js` (e `BAR_GROUPS` em `client/js/util.js`, a mesma lista para o painel).
+- **links da barra** → a aba **links** da configuração (os da equipe e os deste computador).
 - **documentação de cada painel** → `docs/<painel>.md` (templates, criador, produções, acessorista, conversor); o `DOCS_URL` de cada `client/js/<painel>.js` aponta para ela (o ⋯ > ajuda abre).
 - **formatos do renomear** (prefixos e termos) → o padrão na seção `regraDoRenomear` de `regras/configuracao.js` (a tabela de seções; a aba renomear da configuração substitui); a regra do renomear em `regras/regra-do-renomear.js` (a mesma no host, na prévia da configuração e no host de teste), as chamadas do After em `host/lib/functions/rename lib.js`.
 - **letras de drive da rede** → o padrão na seção `mapaDeDrives` de `regras/configuracao.js` (vira `DRIVE_MAP` em `host/lib/globals.js`).

@@ -26,7 +26,7 @@ suggest(regra, nome) → { plain, prefixed }: a sugestão do arquivista para um 
 quadros da sequência de imagens), sem e com o prefixo do formato. Junta antes o acento separado da letra (macOS) e
 devolve um nome que o disco aceita (fileName).
 
-Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (o global
+Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (a variável global
 PAD_REGRA_DO_RENOMEAR, usado por rename lib.js e files.jsx), o painel por <script> (a prévia da aba renomear,
 productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o teste em Node por require: node extension/scripts/test-regras.js.
 
@@ -321,7 +321,7 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 		fileName: fileName
 	};
 
-	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	// a variável global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
 	root.PAD_REGRA_DO_RENOMEAR = api;
 
 	if (typeof module === 'object' && module && module.exports) module.exports = api;

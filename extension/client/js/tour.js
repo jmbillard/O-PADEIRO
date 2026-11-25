@@ -45,7 +45,8 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 
 	// cada clique com o nome de quem faz
 	var TOOLS = {
-		// as ferramentas de dentro das gavetas (Templates e Projeto): o tour abre a gaveta de cada uma
+		// as ferramentas, as de dentro das gavetas (Templates, Projeto e Organização) e as soltas: o tour abre a
+		// gaveta de cada uma
 		preencher: { title: 'Preencher', l: ['A FORMA', 'preenche um template e cria a fila de render'] },
 		duplicar: { title: 'Duplicar', l: ['A FORMINHA', 'duplica a comp aberta e preenche os layers de texto selecionados'] },
 		'criar-template': { title: 'Criar template', l: ['O CONFEITEIRO', 'cria um template a partir da comp aberta'] },
@@ -185,7 +186,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 			return { spot: t.id, kicker: '<span class="tour-head">a turma ' + (state.tool + 1) + '/' + n + ' · clique na ferramenta ' + dots(n, state.tool) + '</span>', title: t.title + names(t), extra: '<span class="tour-lines"><span data-k="l"><i>' + ML + '</i><em>' + who(t.l) + '</em></span>' + (t.r ? '<span data-k="r"><i>' + MR + '</i><em>' + who(t.r) + '</em></span>' : '') + '</span>', actions: skip('sair', 'done') + round('prev', true) + round('next') };
 		},
 		done: function () {
-			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: '2 cliques numa ferramenta abrem O PRODUTOR na aba dela; ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
+			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: 'O PRODUTOR abre no ⋯ do painel de templates; ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
 		}
 	};
 

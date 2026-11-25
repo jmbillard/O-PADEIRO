@@ -6,7 +6,7 @@
 ---------------------------------------------------------------
 
 A janela de projeto (O PROJETISTA) cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
-pastas). O collect dos
+pastas). Coletar os
 arquivos é do botão COLETAR (collect.jsx).
 
 'TIPOS_DE_PROJETO' (antes 'PROJECT') no O_PADEIRO_GLOBAL_config.json (aba TIPOS DE PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
@@ -14,7 +14,7 @@ arquivos é do botão COLETAR (collect.jsx).
   tipos      → [{ name, path, output, icon }] (o nome antigo: categories): a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta no projeto novo) levam tokens:
                {atracao} (sem ele, o tipo é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
-               {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {tipo} ({categoria}, o nome antigo, ainda vale) {letra} (a primeira letra do nome sem o
+               {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {tipo} (o nome antigo do token ainda vale) {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes) {ano_producao} (o ano de produção do filme escolhido: NAO NAO OLHE
                (2022); sem ano, o token sai junto dos parênteses em volta). icon: um ícone do seletor (js/util.js)
 Sem a seção (ou no formato antigo, com raiz e retrancas): sem tipos, e o "dentro de" vem das
@@ -1056,11 +1056,11 @@ function padInRoot(file) {
 	}
 }
 
-// O estado do projeto aberto para a bolinha do botão Projeto (barra): 'ok' (salvo com os dados do padeiro, na
-// pasta dele), 'out' (com eles, mas salvo fora da pasta dele), 'missing' (sem eles: salvo sem a atração, ou com
-// itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
-// state: a bolinha do Projeto. key: muda quando o projeto muda (outro projeto, ou salvo de novo): a barra confere
-// as fontes só nessa hora (fontsCheck: a chave deste computador)
+// O estado do projeto aberto para a bolinha do botão Iniciar / Alterar (gaveta Projeto da barra): 'ok' (salvo com
+// os dados do padeiro, na pasta dele), 'out' (com eles, mas salvo fora da pasta dele), 'missing' (sem eles: salvo
+// sem a atração, ou com itens e sem arquivo) ou '' (projeto vazio). leve: só o XMP.
+// state: a bolinha do Iniciar / Alterar. key: muda quando o projeto muda (outro projeto, ou salvo de novo): a barra
+// confere as fontes só nessa hora (fontsCheck: a chave deste computador)
 PADX.projectStatus = function () {
 	var file = app.project.file;
 	var key = '';

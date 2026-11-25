@@ -27,7 +27,7 @@ usuário (COMPUTADOR, PERSONALIZADO e LINKS_DESTE_COMPUTADOR).
 O host tem o adaptador com os arquivos (host/productions.jsx), o host de teste o do localStorage (client/js/mock-host.js)
 e o teste em Node um em memória. O JSON fica com o adaptador.
 
-Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (o global PAD_CONFIGURACAO), o
+Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O host carrega por #include (a variável global PAD_CONFIGURACAO), o
 painel por <script> (window.PAD_CONFIGURACAO) e o teste em Node por require: node extension/scripts/test-regras.js.
 
 Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na linha da seção e o antigo em antigos
@@ -812,8 +812,11 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	// sem a seção (ou no formato antigo, com raiz e retrancas): sem tipos
 	// ---------------------------------------------------------------------------------------------------------
 
-	// {categoria}: o nome antigo do {tipo}, ainda aceito
-	var TOKENS_DO_CAMINHO = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao'];
+	var TOKENS_DO_CAMINHO = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'letra', 'o_que_e', 'ano_producao'];
+	// os tokens com o nome antigo, lidos por compatibilidade nos caminhos já salvos (antigo → novo)
+	var TOKENS_ANTIGOS = { categoria: 'tipo' };
+
+	for (var tokenAntigo in TOKENS_ANTIGOS) TOKENS_DO_CAMINHO.push(tokenAntigo);
 
 	// um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
 	// barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). Vale em todo caminho de output (o host usa
@@ -1246,7 +1249,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	var api = criar(TABELA);
 
-	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	// a variável global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
 	root.PAD_CONFIGURACAO = api;
 
 	if (typeof module === 'object' && module && module.exports) module.exports = api;

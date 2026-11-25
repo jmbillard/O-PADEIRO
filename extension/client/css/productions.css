@@ -2280,7 +2280,7 @@ body.is-org-dragging * {
 }
 
 /* =========================================================
-   equipe (rede) × local (este computador)
+   da equipe (rede) × deste computador
    ========================================================= */
 
 /* os grupos da barra lateral (ferramentas · links · o resto): só uma linha entre eles */
@@ -2335,7 +2335,7 @@ body.is-org-dragging * {
   text-align: center;
 }
 
-/* TEMPLATES: a aba inteira rola (a lista da equipe e, embaixo, a parte local) */
+/* TEMPLATES: a aba inteira rola (a lista da equipe e, embaixo, a parte deste computador) */
 #pane-prods {
   overflow-x: hidden;
   overflow-y: auto;
@@ -2455,7 +2455,7 @@ body.is-org-dragging * {
   pointer-events: none;
 }
 
-/* produção local: sem "copiar", mas a coluna continua (os campos alinham) */
+/* produção deste computador: sem "copiar", mas a coluna continua (os campos alinham) */
 .machine-sync.is-placeholder {
   visibility: hidden;
 }
@@ -2895,7 +2895,7 @@ body.is-org-dragging * {
   margin-top: 14px;
 }
 
-/* os presets de render (aba projeto, neste computador): os dois lado a lado; estreito, um embaixo do outro */
+/* os presets de render (aba tipos de projeto, deste computador): os dois lado a lado; estreito, um embaixo do outro */
 .render-presets {
   display: grid;
   gap: 10px;
