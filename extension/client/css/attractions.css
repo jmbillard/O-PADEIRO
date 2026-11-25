@@ -48,7 +48,7 @@
   color: var(--text-primary);
 }
 
-/* NOVA sem categorias: escolher a pasta (no lugar da lista) */
+/* NOVA sem tipos: escolher a pasta (no lugar da lista) */
 .wz-pick {
   display: flex;
   min-width: 0;
@@ -302,7 +302,7 @@
   white-space: nowrap;
 }
 
-/* a atração nova dentro da lista: o nome e a categoria logo abaixo do item */
+/* a atração nova dentro da lista: o nome e o tipo logo abaixo do item */
 .combo-panel .atr-nova {
   margin: 0;
   padding: 0 10px;
@@ -318,7 +318,7 @@
   background: var(--surface-soft);
 }
 
-/* a atração nova dentro da lista: o nome em cima e a categoria embaixo (a lista é estreita) */
+/* a atração nova dentro da lista: o nome em cima e o tipo embaixo (a lista é estreita) */
 .combo-panel .atr-nova-row {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -380,7 +380,7 @@
   color: var(--text-control);
 }
 
-/* a atração nova: as categorias à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
+/* a atração nova: os tipos à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
 .cat-chips {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -25,15 +25,16 @@ var PAD_DEFAULT_SERVER = PAD_CONFIGURACAO.padrao('mapaDeDrives').defaultServer;
 
 // A regra do renomear (a aba RENOMEAR da configuração substitui): os padrões da tabela de seções
 // (regras/configuracao.js, a seção regraDoRenomear).
-//   PAD_RENAME_TYPES   → os formatos: o prefixo do formato, o comentário da comp e os termos que reconhecem o formato
-//                        no nome da comp ou da pasta (palavras; o plural com S também vale). vale o primeiro encontrado
-//   PAD_RENAME_OPTIONS → removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep
-//   PAD_RENAME_FIXED   → os nomes fixos: se o nome (ou o comentário) da comp contém o termo, ela passa a se chamar 'name'
-var PAD_RENAME_TYPES = PAD_CONFIGURACAO.padrao('regraDoRenomear').types;
+//   PAD_RENAME_FORMATS   → os formatos: o prefixo do formato, a etiqueta da comp e os termos que reconhecem o formato
+//                          no nome da comp ou da pasta (palavras; o plural com S também vale). vale o primeiro encontrado
+//   PAD_RENAME_OPTIONS   → removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep
+//   PAD_RENAME_FIXED     → os nomes fixos: se o nome (ou a etiqueta) da comp contém o termo, ela passa a se chamar 'name'
+//   PAD_RENAME_SEPARATOR → o separador entre o prefixo do formato e o resto (também o dos nomes criados pelos templates)
+var PAD_RENAME_FORMATS = PAD_CONFIGURACAO.padrao('regraDoRenomear').formatos;
 var PAD_RENAME_OPTIONS = { removeSpecial: PAD_CONFIGURACAO.padrao('regraDoRenomear').removeSpecial, textCase: PAD_CONFIGURACAO.padrao('regraDoRenomear').textCase };
 var PAD_RENAME_FIXED = PAD_CONFIGURACAO.padrao('regraDoRenomear').fixed;
 
-// Montada a partir de PAD_RENAME_TYPES (padRenameRefs, em rename lib.js): { prefix, comment, regExpStr: [...] }
+// Montada a partir de PAD_RENAME_FORMATS (padRenameRefs, em rename lib.js): { prefix, etiqueta }
 var renameRefArray = [];
 
 var defaultTemplateConfigObj = {
@@ -52,7 +53,7 @@ var defaultTemplateConfigObj = {
 	outputPath: ['~/Desktop']
 };
 
-var globalSeparator = PAD_CONFIGURACAO.padrao('regraDoRenomear').separator;
+var PAD_RENAME_SEPARATOR = PAD_CONFIGURACAO.padrao('regraDoRenomear').separator;
 
 var lol = 'Σ(っ °Д °;)っ        ';
 

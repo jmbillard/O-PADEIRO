@@ -70,7 +70,7 @@ function padSlash(path) {
 }
 
 // Acrescenta linhas ao diário (cada uma, um array em JSON: ['m', de, para] movido, ['c', de, para] copiado de
-// fora, ['p', de, para] o .aep aberto, ['q', de, para] saída da fila, ['b', cópia, projeto] original guardado,
+// fora, ['p', de, para] o .aep aberto, ['q', de, para] output da fila, ['b', cópia, projeto] original guardado,
 // ['v', versão, data] o começo). → true se gravou
 function padJournalAdd(root, lines) {
 	var file = new File(root + '/' + PAD_MIGRATION_JOURNAL);
@@ -126,7 +126,7 @@ function padJournalRead(root) {
 
 // A pasta pode ser migrada? a migração arruma a pasta INTEIRA onde o .aep está: tem que ser a pasta de um projeto,
 // dentro das pastas de projetos da configuração (aba PROJETO), nunca uma pasta do sistema nem a pasta de uma
-// categoria inteira. isto é só sobre ONDE O .AEP ESTÁ SALVO: os arquivos que o projeto usa e estão espalhados por
+// tipo inteiro. isto é só sobre ONDE O .AEP ESTÁ SALVO: os arquivos que o projeto usa e estão espalhados por
 // aí (a Área de Trabalho de alguém, outra pasta da rede) continuam sendo copiados para a estrutura, como sempre.
 // → '' (pode) | o motivo
 function padMigrateBlocked(rootPath) {
@@ -157,7 +157,7 @@ function padMigrateBlocked(rootPath) {
 	var roots = padProjectsRoots();
 
 	for (i = 0; i < roots.length; i++) {
-		// a própria pasta de uma categoria (…/PROGRAMAS), ou uma acima dela: lá dentro estão as atrações todas
+		// a própria pasta de um tipo (…/PROGRAMAS), ou uma acima dela: lá dentro estão as atrações todas
 		if (roots[i].indexOf(key) == 0) return 'a pasta do projeto é a pasta de um tipo de projeto inteiro (configuração > projeto): a migração arrumaria todas as atrações dele';
 	}
 
@@ -669,7 +669,7 @@ function padMigrateRelink(map) {
 	return count;
 }
 
-// A fila de render: as saídas que apontam para uma pasta que mudou passam a apontar para a nova.
+// A fila de render: os outputs que apontam para uma pasta que mudou passam a apontar para a nova.
 // prefixes: [{ from (chave da pasta antiga), fromPath, toPath }] → [[de, para]] do que mudou
 function padMigrateQueue(prefixes) {
 	var changed = [];

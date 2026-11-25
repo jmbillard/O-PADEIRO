@@ -27,11 +27,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		saving: false,
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
-		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
+		rename: { formatos: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', caminhosFixos: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
-		tiposDeProjeto: { categories: [] }, // aba TIPOS DE PROJETO: os tipos da atração nova [{ name, path e output (com tokens), icon }]
+		tiposDeProjeto: { tipos: [] }, // aba TIPOS DE PROJETO: os tipos da atração nova [{ name, path e output (com tokens), icon }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
@@ -371,10 +371,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function renameForSave() {
 		return {
-			types: state.rename.types.map(function (t) {
+			formatos: state.rename.formatos.map(function (t) {
 				return {
 					prefix: t.prefix.trim(),
-					comment: t.comment.trim(),
+					etiqueta: t.etiqueta.trim(),
 					terms: t.terms.split(',').map(function (x) {
 						return x.trim();
 					}).filter(Boolean)
@@ -434,7 +434,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function tiposDeProjetoForSave() {
 		return {
-			categories: state.tiposDeProjeto.categories.map(function (c) {
+			tipos: state.tiposDeProjeto.tipos.map(function (c) {
 				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '' };
 			})
 		};
@@ -1187,11 +1187,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TAG_ICON = ['M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z', 'M8 8h.01'];
 
 	function setRename(r) {
-		var data = r || { types: [], fixed: [] };
+		var data = r || { formatos: [], fixed: [] };
 
 		state.rename = {
-			types: (data.types || []).map(function (t) {
-				return { prefix: t.prefix || '', comment: t.comment || '', terms: (t.terms || []).join(', ') };
+			formatos: (data.formatos || []).map(function (t) {
+				return { prefix: t.prefix || '', etiqueta: t.etiqueta || '', terms: (t.terms || []).join(', ') };
 			}),
 			fixed: (data.fixed || []).map(function (f) {
 				return { match: f.match || '', name: f.name || '' };
@@ -1224,28 +1224,28 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function renderRename() {
 		if (!state.rename) return;
 
-		var types = $('type-list');
+		var formats = $('format-list');
 		var fixed = $('fixed-list');
 
-		types.textContent = '';
+		formats.textContent = '';
 		fixed.textContent = '';
 
-		state.rename.types.forEach(function (t, i) {
+		state.rename.formatos.forEach(function (t, i) {
 			var row = el('div', 'rename-row');
 
 			row.appendChild(PAD_SORT.handle());
-			row.appendChild(plainInput(t.prefix, 'rename-prefix', 'RDP', 'prefixo do tipo ' + (i + 1), function (v) {
+			row.appendChild(plainInput(t.prefix, 'rename-prefix', 'RDP', 'prefixo do formato ' + (i + 1), function (v) {
 				t.prefix = v;
 			}));
-			row.appendChild(plainInput(t.comment, null, 'RODAPE', 'comentário do tipo ' + (t.prefix || i + 1), function (v) {
-				t.comment = v;
+			row.appendChild(plainInput(t.etiqueta, null, 'RODAPE', 'etiqueta do formato ' + (t.prefix || i + 1), function (v) {
+				t.etiqueta = v;
 			}));
 
-			var terms = tagField(t.terms, 'rodapé, rdp', 'termos do tipo ' + (t.prefix || i + 1), TAG_ICON, function (v) {
+			var terms = tagField(t.terms, 'rodapé, rdp', 'termos do formato ' + (t.prefix || i + 1), TAG_ICON, function (v) {
 				t.terms = v;
 				testRename();
 			}, function () {
-				state.rename.types.splice(i, 1);
+				state.rename.formatos.splice(i, 1);
 				renderRename();
 				updateDirty();
 				testRename();
@@ -1253,7 +1253,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			terms.title = 'digite um termo e a vírgula (ou Enter) para fechar; o plural com S também vale';
 			row.appendChild(terms);
-			types.appendChild(row);
+			formats.appendChild(row);
 		});
 
 		state.rename.fixed.forEach(function (f, i) {
@@ -1274,7 +1274,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fixed.appendChild(row);
 		});
 
-		['btn-new-type', 'btn-new-fixed'].forEach(function (id) {
+		['btn-new-format', 'btn-new-fixed'].forEach(function (id) {
 			$(id).disabled = !state.available;
 		});
 		$('rename-special').checked = state.rename.removeSpecial;
@@ -1320,15 +1320,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		out.appendChild(document.createTextNode('→ '));
 		out.appendChild(el('b', null, res.name || '(vazio)'));
-		out.appendChild(document.createTextNode(res.comment ? '  ·  comentário ' + res.comment : '  ·  nenhum formato encontrado'));
+		out.appendChild(document.createTextNode(res.etiqueta ? '  ·  etiqueta ' + res.etiqueta : '  ·  nenhum formato encontrado'));
 	}
 
 	function bindRename() {
-		$('btn-new-type').addEventListener('click', function () {
-			state.rename.types.push({ prefix: '', comment: '', terms: '' });
+		$('btn-new-format').addEventListener('click', function () {
+			state.rename.formatos.push({ prefix: '', etiqueta: '', terms: '' });
 			renderRename();
 			updateDirty();
-			$('type-list').lastChild.querySelector('.rename-prefix').focus();
+			$('format-list').lastChild.querySelector('.rename-prefix').focus();
 		});
 
 		$('btn-new-fixed').addEventListener('click', function () {
@@ -1357,11 +1357,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			testRename();
 		});
 
-		// a ordem dos tipos importa: arrastar pelo puxador reordena
-		PAD_SORT.enable($('type-list'), '.rename-row', function (from, to) {
-			var moved = state.rename.types.splice(from, 1)[0];
+		// a ordem dos formatos importa: arrastar pelo puxador reordena
+		PAD_SORT.enable($('format-list'), '.rename-row', function (from, to) {
+			var moved = state.rename.formatos.splice(from, 1)[0];
 
-			state.rename.types.splice(to, 0, moved);
+			state.rename.formatos.splice(to, 0, moved);
 			renderRename();
 			updateDirty();
 		});
@@ -1938,7 +1938,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rowHint: function (f, depth) {
 			var o = state.organize;
 
-			// os comentários dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
+			// as etiquetas dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
 			if (!o.commentSubfolders || !f.contents.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -1947,9 +1947,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			icon.setAttribute('aria-hidden', 'true');
 			sub.style.setProperty('--depth', depth + 2);
-			sub.title = 'itens com comentário ficam numa subpasta com o nome do comentário (desligue em "o comentário vira subpasta", à direita)';
+			sub.title = 'itens com etiqueta ficam numa subpasta com o nome da etiqueta (desligue em "etiquetas viram subpastas", à direita)';
 			sub.appendChild(icon);
-			sub.appendChild(el('span', null, 'comentários viram subpastas' + example));
+			sub.appendChild(el('span', null, 'etiquetas viram subpastas' + example));
 
 			return sub;
 		},
@@ -2003,7 +2003,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// os campos à direita (comentários de render, extensões...)
+	// os campos à direita (etiquetas de render, extensões...)
 	function organizeFields() {
 		var o = state.organize;
 		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions', 'org-files': 'fileTags' };
@@ -3633,7 +3633,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var data = JSON.parse(JSON.stringify(p || {}));
 
 		state.tiposDeProjeto = {
-			categories: (data.categories || []).map(function (c) {
+			tipos: (data.tipos || []).map(function (c) {
 				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '' };
 			})
 		};
@@ -3641,7 +3641,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function tipoIcon(row) {
-		return PAD_UTIL.categoryIcon(row.icon) || TIPO_FOLDER_SVG;
+		return PAD_UTIL.tipoIcon(row.icon) || TIPO_FOLDER_SVG;
 	}
 
 	// a prévia de um caminho (key: 'path', o do projeto, ou 'output'): os tokens trocados por um exemplo, em
@@ -3650,7 +3650,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' }; // {categoria}: o nome antigo do {tipo}
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3669,7 +3669,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	// dele), PROJETO e OUTPUT, os dois com a prévia embaixo
 	function renderTiposDeProjeto() {
 		var list = $('tipo-list');
-		var tipos = state.tiposDeProjeto.categories;
+		var tipos = state.tiposDeProjeto.tipos;
 
 		if (!list) return;
 
@@ -3719,7 +3719,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
 				collapseThen(card, function () {
-					state.tiposDeProjeto.categories.splice(i, 1);
+					state.tiposDeProjeto.tipos.splice(i, 1);
 					renderTiposDeProjeto();
 					updateDirty();
 				});
@@ -3821,7 +3821,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		if (!target || !document.body.contains(target.input)) {
 			var cards = $('tipo-list').querySelectorAll('.tipo-card');
-			var rows = state.tiposDeProjeto.categories;
+			var rows = state.tiposDeProjeto.tipos;
 
 			if (!cards.length) return toast(null, 'crie um tipo de projeto antes (+ novo tipo).');
 
@@ -3911,7 +3911,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindTiposDeProjeto() {
 		$('btn-new-tipo').addEventListener('click', function () {
-			state.tiposDeProjeto.categories.push({ name: '', path: '', output: '', icon: 'pasta' });
+			state.tiposDeProjeto.tipos.push({ name: '', path: '', output: '', icon: 'pasta' });
 			renderTiposDeProjeto();
 			updateDirty();
 			$('tipo-list').lastChild.querySelector('.tipo-name input').focus();
@@ -3933,9 +3933,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		PAD_SORT.enable($('tipo-list'), '.tipo-card', function (from, to) {
-			var moved = state.tiposDeProjeto.categories.splice(from, 1)[0];
+			var moved = state.tiposDeProjeto.tipos.splice(from, 1)[0];
 
-			state.tiposDeProjeto.categories.splice(to, 0, moved);
+			state.tiposDeProjeto.tipos.splice(to, 0, moved);
 			renderTiposDeProjeto();
 			updateDirty();
 		});

@@ -4,7 +4,7 @@
 > ícones: o retrato da pasta para o modo de teste
 ---------------------------------------------------------------
 
-Os ícones da biblioteca (o seletor de ícones das categorias e das produções) ficam em extension/client/icons/,
+Os ícones da biblioteca (o seletor de ícones dos tipos e das produções) ficam em extension/client/icons/,
 um arquivo por ícone: nome.svg (desenho) ou nome.json (animação Lottie). No After Effects o painel lê a pasta
 direto (Node). No navegador (modo de teste, sem Node) ele usa o retrato gerado por este script:
 

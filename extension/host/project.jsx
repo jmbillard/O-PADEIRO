@@ -11,13 +11,13 @@ arquivos é do botão COLETAR (collect.jsx).
 
 'TIPOS_DE_PROJETO' (antes 'PROJECT') no O_PADEIRO_GLOBAL_config.json (aba TIPOS DE PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
 (regras/configuracao.js: a limpeza, os tokens e o padrão):
-  categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
+  tipos      → [{ name, path, output, icon }] (o nome antigo: categories): a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta no projeto novo) levam tokens:
-               {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
-               {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
+               {atracao} (sem ele, o tipo é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
+               {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {tipo} ({categoria}, o nome antigo, ainda vale) {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes) {ano_producao} (o ano de produção do filme escolhido: NAO NAO OLHE
                (2022); sem ano, o token sai junto dos parênteses em volta). icon: um ícone do seletor (js/util.js)
-Sem a seção (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
+Sem a seção (ou no formato antigo, com raiz e retrancas): sem tipos, e o "dentro de" vem das
 atrações do índice.
 
 */
@@ -33,11 +33,11 @@ function padProjectPath(path) {
 	return PAD_CONFIGURACAO.caminho(path);
 }
 
-// As categorias da atração nova, cada uma dizendo se a pasta dela está acessível (o começo fixo do caminho,
+// Os tipos de projeto da atração nova, cada um dizendo se a pasta dela está acessível (o começo fixo do caminho,
 // antes do primeiro token), e a pasta dos projetos deste computador, para quando não estiver (rede fora ou
-// modo local; sem ela, a Área de Trabalho). → { categories: [{ name, path, icon, reachable }], fallback }
-PADX.projectCategories = function () {
-	var list = padLerSecao('tiposDeProjeto').categories;
+// modo local; sem ela, a Área de Trabalho). → { tipos: [{ name, path, icon, reachable }], fallback }
+PADX.projectTypes = function () {
+	var list = padLerSecao('tiposDeProjeto').tipos;
 	var local = padLocalMode();
 	var checked = {};
 	var out = [];
@@ -50,7 +50,7 @@ PADX.projectCategories = function () {
 		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, reachable: checked[fixed] });
 	}
 
-	return { categories: out, fallback: padLerSecao('pastaDosProjetos') || '~/Desktop' };
+	return { tipos: out, fallback: padLerSecao('pastaDosProjetos') || '~/Desktop' };
 };
 
 /*
@@ -347,10 +347,10 @@ PADX.projectOpenFolder = function () {
 A claquete (ex: MAIS VOCE 30 10, TELA 9 11) acha a atração no índice da busca: pelo começo dela,
 comparado com os padrões da atração ('pattern' no índice) e com o nome. A pasta da atração recebe a
 estrutura do coletar (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA…), aproveitando a que já existir.
-  - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todas as categorias (filmes também: a
-    pasta da letra é só o token {letra} do caminho da categoria)
+  - o .aep é o nome da atração + o que é (MAIS VOCE SERVICO), em todos os tipos (filmes também: a
+    pasta da letra é só o token {letra} do caminho do tipo)
 No projeto ficam os dados do padeiro (padeiro:, em 'dados do projeto aberto'): a atração, o que é, o designer,
-a pasta da estrutura e a de output (a da categoria ou a da atração no índice, quando ela existe ou é criada com
+a pasta da estrutura e a de output (a do tipo ou a da atração no índice, quando ela existe ou é criada com
 o projeto: sem output, não grava).
 
 */
@@ -423,7 +423,7 @@ function padCompact(text) {
 
 // O índice da busca (a cópia guardada; baixa de novo se estiver velha e houver rede).
 // As atrações do índice da busca, no formato que a janela usa:
-// [{ category, groups: [{ name, projetos, outputs, caminhos, patterns }] }]. A cópia é a mesma do acessorista
+// [{ tipo, groups: [{ name, projetos, outputs, caminhos, patterns }] }]. A cópia é a mesma do acessorista
 // (psCopyToRead): baixada de novo se tiver mais de 30 s (no modo local, só a cópia).
 function padIndexGroups() {
 	var copy = psCopyToRead();
@@ -476,7 +476,7 @@ function padIndexGroups() {
 		});
 	}
 
-	return [{ category: { key: 'atracoes', label: 'ATRAÇÕES' }, groups: groups }];
+	return [{ tipo: { key: 'atracoes', label: 'ATRAÇÕES' }, groups: groups }];
 }
 
 
@@ -556,7 +556,7 @@ PADX.projectFilmsDone = function (a) {
 };
 
 // Atrações cuja claquete começa com um dos padrões (ou com o nome), a mais específica primeiro.
-// a: { claquete } → { claquete, matches: [{ name, category, path, display }] }
+// a: { claquete } → { claquete, matches: [{ name, tipo, path, display }] }
 PADX.projectLookup = function (a) {
 	var words = padClaqueteWords(a.claquete);
 	var prefixes = {};
@@ -593,7 +593,7 @@ PADX.projectLookup = function (a) {
 			if (!score || seen[padCompact(group.name)]) continue;
 
 			seen[padCompact(group.name)] = true;
-			found.push({ name: group.name, category: index[c].category.label || '', path: path, display: padDisplayPath(padPath(path)), score: score });
+			found.push({ name: group.name, tipo: index[c].tipo.label || '', path: path, display: padDisplayPath(padPath(path)), score: score });
 		}
 	}
 

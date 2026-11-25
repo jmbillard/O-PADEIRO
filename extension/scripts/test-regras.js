@@ -86,16 +86,16 @@ function finais(api, list, others) {
 
 // a regra do renomear da equipe, como vem de fábrica (padDefaultRename, host/productions.jsx ← host/lib/globals.js)
 const RENOMEAR_PADRAO = {
-	types: [
-		{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
-		{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
-		{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
-		{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
-		{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
-		{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
-		{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
-		{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
-		{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
+	formatos: [
+		{ prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+		{ prefix: 'CRT', etiqueta: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+		{ prefix: 'LETT', etiqueta: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+		{ prefix: 'CONFRONTO', etiqueta: 'CONFRONTO', terms: ['CONFRONTO'] },
+		{ prefix: 'TARJA', etiqueta: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+		{ prefix: 'PASSAGEM', etiqueta: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
+		{ prefix: 'ASSINA', etiqueta: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
+		{ prefix: 'FOTO', etiqueta: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
+		{ prefix: 'REF', etiqueta: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
 	],
 	fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }],
 	removeSpecial: true,
@@ -108,11 +108,11 @@ function regra(changes) {
 	return Object.assign(JSON.parse(JSON.stringify(RENOMEAR_PADRAO)), changes || {});
 }
 
-// 'nome novo · comentário do formato (ou -) · fixo'
+// 'nome novo · etiqueta do formato (ou -) · fixo'
 function renomeia(api, name, opts, rule) {
 	const r = api.rename(rule || RENOMEAR_PADRAO, name, opts);
 
-	return r.name + ' · ' + (r.comment || '-') + (r.fixed ? ' · fixo' : '');
+	return r.name + ' · ' + (r.etiqueta || '-') + (r.fixed ? ' · fixo' : '');
 }
 
 const REGRAS = [
@@ -160,9 +160,9 @@ const REGRAS = [
 				eq(renomeia(api, 'rdp logo globo'), 'LOGO GLOBO · RODAPE · fixo');
 			});
 
-			test('o nome fixo pelo comentário da comp, só quando o nome não tem formato', function () {
-				eq(renomeia(api, 'abertura', { comment: 'LOGO GLOBO v2' }), 'LOGO GLOBO · - · fixo');
-				eq(renomeia(api, 'rdp abertura', { comment: 'LOGO GLOBO' }), 'RDP - ABERTURA · RODAPE');
+			test('o nome fixo pela etiqueta da comp, só quando o nome não tem formato', function () {
+				eq(renomeia(api, 'abertura', { etiqueta: 'LOGO GLOBO v2' }), 'LOGO GLOBO · - · fixo');
+				eq(renomeia(api, 'rdp abertura', { etiqueta: 'LOGO GLOBO' }), 'RDP - ABERTURA · RODAPE');
 			});
 
 			test('o nome fixo sai como está na regra (como o After grava hoje), sem normalizar', function () {
@@ -191,8 +191,8 @@ const REGRAS = [
 				eq(renomeia(api, 'rodapé joão (final)', null, regra({ removeSpecial: false })), 'RDP - JOÃO (FINAL) · RODAPE');
 			});
 
-			test('o formato devolvido: o prefixo e o comentário; sem formato, null', function () {
-				eq(api.rename(RENOMEAR_PADRAO, 'crt hoje').format, { prefix: 'CRT', comment: 'CARTAO' });
+			test('o formato devolvido: o prefixo e a etiqueta; sem formato, null', function () {
+				eq(api.rename(RENOMEAR_PADRAO, 'crt hoje').format, { prefix: 'CRT', etiqueta: 'CARTAO' });
 				eq(api.rename(RENOMEAR_PADRAO, 'hoje').format, null);
 			});
 
@@ -431,13 +431,13 @@ REGRAS.push({
 		test('regra do renomear, sem nada: os 9 formatos, LOGO GLOBO, maiúsculas e " - "', function () {
 			const r = api.ler(memoria(), 'regraDoRenomear');
 
-			eq(r.types.map(function (t) { return t.prefix; }), ['RDP', 'CRT', 'LETT', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']);
-			eq(r.types[1], { prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] });
+			eq(r.formatos.map(function (t) { return t.prefix; }), ['RDP', 'CRT', 'LETT', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']);
+			eq(r.formatos[1], { prefix: 'CRT', etiqueta: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] });
 			eq(r.fixed, [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }]);
 			eq([r.removeSpecial, r.textCase, r.separator], [true, 'upperCase', ' - ']);
 		});
 
-		test('organizar, sem nada: as pastas e os comentários de sempre', function () {
+		test('organizar, sem nada: as pastas e as etiquetas de sempre', function () {
 			const o = api.ler(memoria(), 'organizar');
 
 			eq(o.folders.length, 9);
@@ -471,9 +471,9 @@ REGRAS.push({
 		});
 
 		test('o padrão devolvido é uma cópia: mexer nele não muda a próxima leitura', function () {
-			api.ler(memoria(), 'regraDoRenomear').types.length = 0;
+			api.ler(memoria(), 'regraDoRenomear').formatos.length = 0;
 			api.padrao('organizar').folders.pop();
-			eq(api.ler(memoria(), 'regraDoRenomear').types.length, 9);
+			eq(api.ler(memoria(), 'regraDoRenomear').formatos.length, 9);
 			eq(api.padrao('organizar').folders.length, 9);
 		});
 
@@ -506,12 +506,64 @@ REGRAS.push({
 		});
 
 		test('regra do renomear: termos em texto, acentos e caixa são limpos; caixa desconhecida vira maiúsculas', function () {
-			const m = memoria({ [EQUIPE]: { RENAME: { types: [{ prefix: ' rdp ', comment: 'rodapé', terms: 'rodapé,  ,  rdp ' }], fixed: [{ match: 'logo  globo', name: 'Logo Globo' }], textCase: 'gritando' } } });
+			const m = memoria({ [EQUIPE]: { RENAME: { formatos: [{ prefix: ' rdp ', etiqueta: 'rodapé', terms: 'rodapé,  ,  rdp ' }], fixed: [{ match: 'logo  globo', name: 'Logo Globo' }], textCase: 'gritando' } } });
 
-			eq(api.ler(m, 'regraDoRenomear'), { types: [{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] }], fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }], removeSpecial: true, textCase: 'upperCase', separator: ' - ' });
-			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { types: [{ prefix: '', comment: 'X', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: o formato 1 precisa de um prefixo/);
+			eq(api.ler(m, 'regraDoRenomear'), { formatos: [{ prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE', 'RDP'] }], fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }], removeSpecial: true, textCase: 'upperCase', separator: ' - ' });
+			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { formatos: [{ prefix: '', etiqueta: 'X', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: o formato 1 precisa de um prefixo/);
 			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { separator: '/' } }); }, /^#PAD_082/);
-			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { types: [{ prefix: 'X', comment: ' ', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: "X" precisa de uma etiqueta\.$/);
+			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { formatos: [{ prefix: 'X', etiqueta: ' ', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: "X" precisa de uma etiqueta\.$/);
+		});
+
+		// --- #46: os nomes do glossário na regra do renomear: RENAME.types → formatos, comment → etiqueta ------------
+		// a regra gravada antes da troca (os nomes antigos), com um formato a mais e outra caixa e outro separador
+		const RENAME_ANTIGO = {
+			types: [{ prefix: 'vht', comment: 'vinheta', terms: 'vinheta, vht' }, { prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE'] }],
+			fixed: [{ match: 'logo globo', name: 'LOGO GLOBO' }],
+			textCase: 'titleCase',
+			separator: '_'
+		};
+
+		test('regra do renomear: a gravada antes (RENAME.types e o comment de cada formato) é lida como formatos e etiqueta', function () {
+			const r = api.ler(memoria({ [EQUIPE]: { RENAME: RENAME_ANTIGO } }), 'regraDoRenomear');
+
+			eq(r.formatos, [{ prefix: 'VHT', etiqueta: 'VINHETA', terms: ['VINHETA', 'VHT'] }, { prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE'] }]);
+			eq([r.types, r.textCase, r.separator], [undefined, 'titleCase', '_']);
+		});
+
+		test('regra do renomear: a gravação grava só os nomes novos (formatos e etiqueta), sem os antigos', function () {
+			const m = memoria({ [EQUIPE]: { RENAME: RENAME_ANTIGO, OUTRA: 1 } });
+
+			api.gravar(m, { regraDoRenomear: api.ler(m, 'regraDoRenomear') });
+			eq(m.doc(EQUIPE).OUTRA, 1);
+			eq(m.doc(EQUIPE).RENAME.types, undefined);
+			eq(m.doc(EQUIPE).RENAME.formatos, [{ prefix: 'VHT', etiqueta: 'VINHETA', terms: ['VINHETA', 'VHT'] }, { prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE'] }]);
+		});
+
+		test('regra do renomear: os campos novos vencem os antigos quando os dois existem', function () {
+			const r = api.ler(memoria({ [EQUIPE]: { RENAME: { formatos: [{ prefix: 'A', etiqueta: 'NOVA', comment: 'VELHA', terms: ['A'] }], types: RENAME_ANTIGO.types } } }), 'regraDoRenomear');
+
+			eq(r.formatos, [{ prefix: 'A', etiqueta: 'NOVA', terms: ['A'] }]);
+		});
+
+		// os mesmos nomes de antes da troca (literais tirados da regra antes de #46): 'nome · etiqueta (ou -)'
+		test('a regra do renomear dá os mesmos nomes de antes: com a padrão e com a gravada nos nomes antigos', function () {
+			const regraDoRenomear = require(path.join(DIR, 'regra-do-renomear.js'));
+			const padrao = api.ler(memoria(), 'regraDoRenomear');
+			const antiga = api.ler(memoria({ [EQUIPE]: { RENAME: RENAME_ANTIGO } }), 'regraDoRenomear');
+			const nomes = [['rodapé_joão silva'], ['joao silva', { folders: ['RODAPES'] }], ['abertura', { etiqueta: 'LOGO GLOBO v2' }], ['CRT - AMANHA'], ['tarja_patrocínio  v2', { folders: ['ASSETS'] }], ['vinheta abertura'], ['logo_globo_branco']];
+
+			function nomesCom(rule) {
+				return nomes.map(function (n) {
+					const r = regraDoRenomear.rename(rule, n[0], n[1]);
+
+					return r.name + ' · ' + (r.etiqueta || '-');
+				});
+			}
+
+			eq(nomesCom(padrao), ['RDP - JOAO SILVA · RODAPE', 'RDP - JOAO SILVA · RODAPE', 'LOGO GLOBO · -', 'CRT - AMANHA · CARTAO', 'TARJA - PATROCINIO V2 · TARJA', 'VINHETA ABERTURA · -', 'LOGO GLOBO · -']);
+			eq(nomesCom(antiga), ['RDP_Joao Silva · RODAPE', 'RDP_Joao Silva · RODAPE', 'LOGO GLOBO · -', 'Crt - Amanha · -', 'Tarja Patrocinio V2 · -', 'VHT_Abertura · VINHETA', 'LOGO GLOBO · -']);
+			eq(regraDoRenomear.suggest(padrao, 'rodapé_anitta (final)'), { plain: 'RODAPE ANITTA FINAL', prefixed: 'RDP - ANITTA FINAL' });
+			eq(regraDoRenomear.suggest(antiga, 'vinheta hoje'), { plain: 'Vinheta Hoje', prefixed: 'VHT_Hoje' });
 		});
 
 		test('organizar: sem version, as sequências vão para a pasta das imagens; sem etiquetas, as do padrão', function () {
@@ -604,7 +656,7 @@ REGRAS.push({
 				PRODUCTIONS: [{ name: 'DIA-A-DIA', icon: '', templatesPath: '//srv/T' }],
 				LOG: { mode: 'off' },
 				DRIVES: { drives: [], shares: [], defaultServer: 'srv' },
-				RENAME: { types: [], fixed: [] },
+				RENAME: { formatos: [], fixed: [] },
 				ORGANIZE: { quebrado: true },
 				SEARCH: { url: 'https://x.com', servidor: [] },
 				LINKS: [{ name: 'a', url: 'https://a.com', icon: '' }],
@@ -779,14 +831,22 @@ REGRAS.push({
 
 		// #45: as chaves guardadas da configuração passam aos termos do glossário. Cada uma: a antiga é lida, a nova é
 		// gravada (e a antiga sai)
-		test('tipos de projeto: "PROJECT" (o nome antigo) é lido; gravar grava só "TIPOS_DE_PROJETO"', function () {
-			const tipos = { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] };
-			const m = memoria({ [EQUIPE]: { PROJECT: tipos, OUTRA: 1 } });
+		// e #46: "tipo", e não "categoria": o campo guardado 'categories' vira 'tipos'
+		test('tipos de projeto: "PROJECT" e "categories" (os nomes antigos) são lidos; gravar grava só "TIPOS_DE_PROJETO.tipos"', function () {
+			const tipos = { tipos: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: 'tv' }] };
+			const m = memoria({ [EQUIPE]: { PROJECT: { categories: [{ name: 'novela', path: '/n/', icon: 'tv' }] }, OUTRA: 1 } });
 
 			eq(api.secao('tiposDeProjeto').chave, 'TIPOS_DE_PROJETO');
 			eq(api.ler(m, 'tiposDeProjeto'), tipos);
 			api.gravar(m, { tiposDeProjeto: api.ler(m, 'tiposDeProjeto') });
 			eq(m.doc(EQUIPE), { OUTRA: 1, TIPOS_DE_PROJETO: tipos });
+
+			// só um dos nomes antigos: a chave nova com o campo antigo, e a chave antiga com o campo novo
+			eq(api.ler(memoria({ [EQUIPE]: { TIPOS_DE_PROJETO: { categories: [{ name: 'novela', path: '/n/', icon: 'tv' }] } } }), 'tiposDeProjeto'), tipos);
+			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { tipos: [{ name: 'novela', path: '/n/', icon: 'tv' }] } } }), 'tiposDeProjeto'), tipos);
+
+			// os dois campos: vale o novo
+			eq(api.ler(memoria({ [EQUIPE]: { TIPOS_DE_PROJETO: { tipos: [{ name: 'A', path: '/a' }], categories: [{ name: 'B', path: '/b' }] } } }), 'tiposDeProjeto').tipos.map(function (t) { return t.name; }), ['A']);
 		});
 
 		test('registro de uso: o modo "csvGlobal" (o nome antigo) é lido como "csvEquipe"; gravar grava "csvEquipe"', function () {
@@ -856,16 +916,16 @@ REGRAS.push({
 			const s = api.secao('tiposDeProjeto');
 
 			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' TIPOS_DE_PROJETO');
-			eq(api.ler(memoria(), 'tiposDeProjeto'), { categories: [] });
-			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { root: '/x', retrancas: [] } } }), 'tiposDeProjeto'), { categories: [] });
-			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { categories: [{ name: 'a' }] } } }), 'tiposDeProjeto'), { categories: [] });
-			eq(api.limpar('tiposDeProjeto', { categories: [{ name: ' mood   mensal ', path: '\\\\srv\\MOOD\\{ano}\\', output: ' ARTE RJ /SHOWS  {o_que_e} /', file: 'a:b{proximo_mes}', icon: 'Tv 1!' }] }),
-				{ categories: [{ name: 'MOOD MENSAL', path: '//srv/MOOD/{ano}', output: 'ARTE RJ/SHOWS {o_que_e}', file: 'a b{proximo_mes}', icon: 'v1' }] });
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: ' !! ', path: '/a' }] }); }, /^#PAD_089 - tipos de projeto: preencha o nome do tipo de projeto 1\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'Novela', path: '/a' }, { name: 'novela!', path: '/b' }] }); }, /^#PAD_089 - tipos de projeto: o tipo NOVELA! aparece mais de uma vez\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A precisa de um caminho\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - tipos de projeto: \{nada\} não é um token do caminho/);
+			eq(api.ler(memoria(), 'tiposDeProjeto'), { tipos: [] });
+			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { root: '/x', retrancas: [] } } }), 'tiposDeProjeto'), { tipos: [] });
+			eq(api.ler(memoria({ [EQUIPE]: { TIPOS_DE_PROJETO: { tipos: [{ name: 'a' }] } } }), 'tiposDeProjeto'), { tipos: [] });
+			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: ' mood   mensal ', path: '\\\\srv\\MOOD\\{ano}\\', output: ' ARTE RJ /SHOWS  {o_que_e} /', file: 'a:b{proximo_mes}', icon: 'Tv 1!' }] }),
+				{ tipos: [{ name: 'MOOD MENSAL', path: '//srv/MOOD/{ano}', output: 'ARTE RJ/SHOWS {o_que_e}', file: 'a b{proximo_mes}', icon: 'v1' }] });
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: ' !! ', path: '/a' }] }); }, /^#PAD_089 - tipos de projeto: preencha o nome do tipo de projeto 1\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'Novela', path: '/a' }, { name: 'novela!', path: '/b' }] }); }, /^#PAD_089 - tipos de projeto: o tipo NOVELA! aparece mais de uma vez\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A precisa de um caminho\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - tipos de projeto: \{nada\} não é um token do caminho/);
 		});
 
 		test('os campos da configuração da equipe vindos do painel viram as seções (as que não vierem ficam de fora; sem produções, a lista vazia)', function () {
@@ -876,8 +936,8 @@ REGRAS.push({
 			// gravar pelo painel: os tipos de projeto vão junto, limpos, e as chaves de fora ficam
 			const m = memoria({ [EQUIPE]: { OUTRA: 1 } });
 
-			m.gravar(EQUIPE, api.aplicar(m.ler(EQUIPE), api.secoesDoPainel({ productions: [{ name: 'A', templatesPath: '//a/b' }], tiposDeProjeto: { categories: [{ name: 'novela', path: '/n/' }] } })));
-			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], TIPOS_DE_PROJETO: { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
+			m.gravar(EQUIPE, api.aplicar(m.ler(EQUIPE), api.secoesDoPainel({ productions: [{ name: 'A', templatesPath: '//a/b' }], tiposDeProjeto: { tipos: [{ name: 'novela', path: '/n/' }] } })));
+			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], TIPOS_DE_PROJETO: { tipos: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
 		});
 
 		test('a aparência e a barra deste computador: gravar uma não apaga a outra; null volta ao padrão da equipe (sai do arquivo)', function () {
@@ -934,10 +994,11 @@ REGRAS.push({
 
 		const m = memoria({ [EQUIPE]: { SEARCH: { url: 'https://x.com', servidor: [{ name: 'A', path: '\\\\srv\\A' }] }, ORGANIZE: { folders: [{ name: 'C', content: 'render' }], renderComments: 'export', autoComment: 'exportar' } } });
 
-		api.gravar(m, { buscaDeCaminhos: api.ler(m, 'buscaDeCaminhos'), organizar: api.ler(m, 'organizar'), regraDoRenomear: { types: [{ prefix: 'rdp', comment: 'rodapé', terms: 'rodapé' }] }, barra: {} });
+		api.gravar(m, { buscaDeCaminhos: api.ler(m, 'buscaDeCaminhos'), organizar: api.ler(m, 'organizar'), regraDoRenomear: { formatos: [{ prefix: 'rdp', etiqueta: 'rodapé', terms: 'rodapé' }] }, barra: {} });
 		eq(m.doc(EQUIPE).SEARCH, { url: 'https://x.com', caminhosFixos: [{ name: 'A', path: '//srv/A' }] });
 		eq(m.doc(EQUIPE).ORGANIZE.folders, [{ name: 'C', parent: '', contents: ['render'] }]);
-		eq(m.doc(EQUIPE).RENAME.types, [{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE'] }]);
+		eq(m.doc(EQUIPE).RENAME.formatos, [{ prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE'] }]);
+		eq(copia(api.ler(memoria({ [EQUIPE]: { RENAME: { types: [{ prefix: 'x', comment: 'y', terms: 'x' }] } } }), 'regraDoRenomear').formatos), [{ prefix: 'X', etiqueta: 'Y', terms: ['X'] }]);
 		eq(m.doc(EQUIPE).BAR.items.length, 17);
 
 		// deste computador: os nomes antigos, a limpeza da sigla (sem os métodos do ES5) e a cópia da busca

@@ -327,7 +327,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			else report(res, (n ? counted(n, 'output renomeado', 'outputs renomeados') : 'outputs renomeados') + ' · ' + UNDO_KEY + ' desfaz');
 		},
 
-		// organizar: sem nenhuma comp selecionada nem com comentário, nada iria para as comps de render (tudo
+		// organizar: sem nenhuma comp selecionada nem com etiqueta, nada iria para as comps de render (tudo
 		// cairia nas precomps). a barra avisa e deixa organizar assim mesmo; force pula a conferência
 		organizeProject: async function (force) {
 			if (force !== true) {
@@ -484,7 +484,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			toast('success', 'projeto salvo: ' + cur.fileName);
 		},
 
-		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta da última saída da fila de render
+		// conversor de caminhos Windows / macOS: painel próprio, já com a pasta do último output da fila de render
 		convertPaths: async function () {
 			await call('requestConverter');
 			PAD_BRIDGE.openPanel(CONVERTER_PANEL_ID);
@@ -589,7 +589,7 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 			label: 'Organizar',
 			icon: 'organize',
 			name: 'O CONTRARREGRA',
-			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas (comentários) nos itens do projeto'],
+			tips: [L_CLICK + 'organizar o projeto (selecione antes as comps que vão para o render)', R_CLICK + 'aplicar etiquetas nos itens do projeto'],
 			left: function () {
 				return actions.organizeProject();
 			},

@@ -389,15 +389,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		});
 	}
 
-	// as comps selecionadas do etiquetador de teste: o nome, as pastas (da mais próxima para a raiz) e o comentário
+	// as comps selecionadas do etiquetador de teste: o nome, as pastas (da mais próxima para a raiz) e a etiqueta
 	function mockComps() {
 		return window.PAD_MOCK_COMPS || (window.PAD_MOCK_COMPS = [
-			{ name: 'rodapé_joão silva', folders: [], comment: '' },
-			{ name: 'joao silva', folders: ['RODAPES'], comment: '' },
-			{ name: 'logo_globo_branco', folders: [], comment: '' },
-			{ name: 'abertura', folders: [], comment: 'LOGO GLOBO v2' },
-			{ name: 'CRT - AMANHA', folders: [], comment: '' },
-			{ name: 'tarja_patrocínio  v2', folders: ['ASSETS'], comment: '' }
+			{ name: 'rodapé_joão silva', folders: [], etiqueta: '' },
+			{ name: 'joao silva', folders: ['RODAPES'], etiqueta: '' },
+			{ name: 'logo_globo_branco', folders: [], etiqueta: '' },
+			{ name: 'abertura', folders: [], etiqueta: 'LOGO GLOBO v2' },
+			{ name: 'CRT - AMANHA', folders: [], etiqueta: '' },
+			{ name: 'tarja_patrocínio  v2', folders: ['ASSETS'], etiqueta: '' }
 		]);
 	}
 
@@ -690,20 +690,20 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var comps = mockComps();
 
 			comps.forEach(function (c) {
-				var r = window.PAD_REGRA_DO_RENOMEAR.rename(rule, c.name, { folders: c.folders, comment: c.comment });
+				var r = window.PAD_REGRA_DO_RENOMEAR.rename(rule, c.name, { folders: c.folders, etiqueta: c.etiqueta });
 
 				c.name = r.name;
-				if (r.comment) c.comment = r.comment;
+				if (r.etiqueta) c.etiqueta = r.etiqueta;
 			});
 
 			return { messages: [], data: { count: comps.length, names: comps.map(function (c) { return c.name; }) } };
 		},
 
 		renameOutputs: function () {
-			return { messages: ['#PAD_033 - 1 saída(s) não foram renomeadas (já renderizadas ou bloqueadas).'] };
+			return { messages: ['#PAD_033 - 1 output(s) da fila não foram renomeados (já renderizados ou bloqueados).'] };
 		},
 
-		// ?mock=nosel: nenhuma comp selecionada nem com comentário (a barra pergunta antes de organizar)
+		// ?mock=nosel: nenhuma comp selecionada nem com etiqueta (a barra pergunta antes de organizar)
 		organizeCheck: function () {
 			return mode === 'nosel' ? { comps: 6, selected: 0, tagged: 0 } : { comps: 6, selected: 2, tagged: 3 };
 		},
@@ -712,7 +712,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { count: 14 } };
 		},
 
-		// etiquetas: 3 itens selecionados e alguns comentários no projeto
+		// etiquetas: 3 itens selecionados e algumas etiquetas no projeto
 		tagsSelection: function () {
 			return { selection: window.PAD_MOCK_SEL == null ? 3 : window.PAD_MOCK_SEL };
 		},
@@ -730,7 +730,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				groups: [
 					{ id: 'render', tags: list(['EXPORTAR', 'LOGO GLOBO', 'TEMPLATE']) },
 					{ id: 'edit', tags: list(['EDIT']) },
-					{ id: 'types', tags: list(['RODAPE', 'CARTAO', 'LETTERING', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']) },
+					{ id: 'formats', tags: list(['RODAPE', 'CARTAO', 'LETTERING', 'CONFRONTO', 'TARJA', 'PASSAGEM', 'ASSINA', 'FOTO', 'REF']) },
 					{ id: 'files', tags: list(['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']) }
 				],
 				folders: { render: '01 COMPS', edit: '' }
@@ -1153,9 +1153,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// janela de projeto (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
-		projectCategories: function () {
+		projectTypes: function () {
 			return {
-				categories: mockLer('tiposDeProjeto').categories.map(function (c) {
+				tipos: mockLer('tiposDeProjeto').tipos.map(function (c) {
 					return Object.assign({ reachable: !/^~|^\/Users\//.test(c.path) && !/OFFLINE/i.test(c.path) }, c);
 				}),
 				fallback: mockLer('pastaDosProjetos') || '~/Desktop'
@@ -1386,7 +1386,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				if (!score && cards.some(function (c) {
 					return c.atr && key(c.atr) === key(m.name) && hits(c.claq);
 				})) score = 1;
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.isFilm ? null : cardOf(m) });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, tipo: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.isFilm ? null : cardOf(m) });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;

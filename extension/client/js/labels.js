@@ -4,14 +4,14 @@
 > O CONTRARREGRA — etiquetas (clique direito no organizar, na barra)
 ---------------------------------------------------------------
 
-Etiquetas são comentários nos itens do projeto que o organizar entende: as de render e das editáveis (configuração >
-organizar), os tipos de peça (os do renomear: a comp vai para uma subpasta com o tipo) e as dos arquivos (o
-comentário vira subpasta; configuração > organizar > etiquetas dos arquivos). Cada uma:
+Etiquetas são os comentários do After nos itens do projeto que o organizar entende: as de render e das editáveis (configuração >
+organizar), as dos formatos (os do renomear: a comp vai para uma subpasta com o formato) e as dos arquivos (o
+etiqueta vira subpasta; configuração > organizar > etiquetas dos arquivos). Cada uma:
 
   ◖ → aplica nos itens selecionados no painel Project
-  ◗ → limpa o comentário dos selecionados
+  ◗ → limpa a etiqueta dos selecionados
 
-O campo de cima aplica um texto livre (Enter; vazio limpa). No rodapé, a borracha limpa o comentário de todos
+O campo de cima aplica um texto livre (Enter; vazio limpa). No rodapé, a borracha limpa a etiqueta de todos
 os itens do projeto e "Organizar" é o clique esquerdo do organizar na barra. Tudo fica num passo de desfazer do
 After (Cmd+Z no Mac, Ctrl+Z no Windows).
 
@@ -39,7 +39,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 	var GROUPS = {
 		render: { title: 'render', color: 'var(--blue-500)', icon: 'comp', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render'); } },
 		edit: { title: 'editáveis', color: 'var(--waiting)', icon: 'edit', hint: function (f) { return f.edit ? 'comps · vão para ' + f.edit : 'comps · sem pasta de editáveis, ficam com as outras'; } },
-		types: { title: 'tipo de peça', color: 'var(--success)', icon: 'type', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render') + ' / tipo (os tipos do ETIQUETADOR)'; } },
+		formats: { title: 'formatos', color: 'var(--success)', icon: 'type', hint: function (f) { return 'comps · vão para ' + (f.render || 'a pasta de render') + ' / formato (os formatos do ETIQUETADOR)'; } },
 		files: { title: 'arquivos', color: 'var(--danger)', icon: 'img', hint: function () { return 'footages · viram subpasta na pasta do tipo'; } }
 	};
 
@@ -103,7 +103,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 		var name = el('span', null, tag.name);
 		var def = GROUPS[group.id];
 		var icon = group.id === 'files' && SOUND.test(tag.name) ? 'snd' : def.icon;
-		var tip = tag.name + '\n\n' + L_CLICK + 'aplicar nos itens selecionados\n' + R_CLICK + 'limpar o comentário dos selecionados';
+		var tip = tag.name + '\n\n' + L_CLICK + 'aplicar nos itens selecionados\n' + R_CLICK + 'limpar a etiqueta dos selecionados';
 
 		b.type = 'button';
 		b.dataset.tag = tag.name;
@@ -202,7 +202,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			var res = await call('tagsApply', { text: text });
 
 			if (button) replay(button, 'is-done');
-			status(text ? text.toUpperCase() + ' em ' + plural(res.count, 'item', 'itens') + '.' : 'comentário limpo em ' + plural(res.count, 'item', 'itens') + '.', 'success');
+			status(text ? text.toUpperCase() + ' em ' + plural(res.count, 'item', 'itens') + '.' : 'etiqueta limpa em ' + plural(res.count, 'item', 'itens') + '.', 'success');
 			await load();
 		});
 	}
@@ -220,7 +220,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			var res = await call('tagsClearAll');
 
 			replay(eraser, 'is-sweeping');
-			status(res.count ? plural(res.count, 'comentário limpo', 'comentários limpos') + ' no projeto · ' + PAD_UTIL.undoKey + ' desfaz.' : 'nenhum item do projeto tinha comentário.', 'success');
+			status(res.count ? plural(res.count, 'etiqueta limpa', 'etiquetas limpas') + ' no projeto · ' + PAD_UTIL.undoKey + ' desfaz.' : 'nenhum item do projeto tinha etiqueta.', 'success');
 			await load();
 		});
 	}
@@ -257,7 +257,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			applyFree();
 		});
 		$('lb-free-go').addEventListener('click', applyFree);
-		// a borracha limpa o comentário de TODOS os itens do projeto: pede um segundo clique (em até 4 s)
+		// a borracha limpa a etiqueta de TODOS os itens do projeto: pede um segundo clique (em até 4 s)
 		$('lb-clear').addEventListener('click', function () {
 			var eraser = $('lb-clear');
 
@@ -268,7 +268,7 @@ After (Cmd+Z no Mac, Ctrl+Z no Windows).
 			}
 
 			eraser.classList.add('is-confirm');
-			status('limpar o comentário de todos os itens do projeto? clique de novo na borracha.', '');
+			status('limpar a etiqueta de todos os itens do projeto? clique de novo na borracha.', '');
 			state.clearTimer = setTimeout(function () {
 				eraser.classList.remove('is-confirm');
 				// só tira a pergunta: se outra ação já escreveu o resultado dela na linha, ele fica

@@ -452,7 +452,7 @@ function padPreferredH264(templates) {
 
 // Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):
 // renderiza a comp principal pela fila de render com um template de output H.264, em meia resolução.
-// As saídas que já estavam na fila ficam de fora durante a renderização e voltam depois.
+// Os outputs que já estavam na fila ficam de fora durante a renderização e voltam depois.
 // a: { compId, base }
 PADX.makerRenderPreview = function (a) {
 	var comp = padMakerComp(a.compId);

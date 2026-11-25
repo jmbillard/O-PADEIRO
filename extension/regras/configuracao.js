@@ -234,25 +234,26 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
-	// regra do renomear ('RENAME'): { types: [{ prefix, comment, terms }], fixed: [{ match, name }], removeSpecial,
+	// regra do renomear ('RENAME'): { formatos: [{ prefix, etiqueta, terms }], fixed: [{ match, name }], removeSpecial,
 	// textCase, separator }
-	//   types → os formatos, na ordem em que são procurados (vale o primeiro encontrado): o prefixo do formato, o
-	//           comentário da comp e os termos que reconhecem o formato no nome
-	//   fixed → os nomes fixos: a comp que contém 'match' (no nome ou no comentário) passa a se chamar 'name'
+	//   formatos → na ordem em que são procurados (vale o primeiro encontrado): o prefixo do formato, a etiqueta da
+	//              comp e os termos que reconhecem o formato no nome
+	//   fixed → os nomes fixos: a comp que contém 'match' (no nome ou na etiqueta) passa a se chamar 'name'
+	// os nomes antigos (#46): 'types' (camposAntigos, na tabela) e o 'comment' de cada formato (CAMPOS_ANTIGOS_DO_FORMATO)
 	//   removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep; separator: ' - '
 	// ---------------------------------------------------------------------------------------------------------
 
 	var PADRAO_RENOMEAR = {
-		types: [
-			{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
-			{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
-			{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
-			{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
-			{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
-			{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
-			{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
-			{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
-			{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
+		formatos: [
+			{ prefix: 'RDP', etiqueta: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+			{ prefix: 'CRT', etiqueta: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+			{ prefix: 'LETT', etiqueta: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+			{ prefix: 'CONFRONTO', etiqueta: 'CONFRONTO', terms: ['CONFRONTO'] },
+			{ prefix: 'TARJA', etiqueta: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+			{ prefix: 'PASSAGEM', etiqueta: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
+			{ prefix: 'ASSINA', etiqueta: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
+			{ prefix: 'FOTO', etiqueta: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
+			{ prefix: 'REF', etiqueta: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
 		],
 		fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }],
 		removeSpecial: true,
@@ -260,17 +261,24 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		separator: ' - '
 	};
 
+	// o campo antigo de dentro de cada formato, lido quando o novo não existe (a gravação grava só o novo)
+	var CAMPOS_ANTIGOS_DO_FORMATO = { etiqueta: 'comment' };
+
+	function campoDoFormato(t, campo) {
+		return t[campo] != null ? t[campo] : t[CAMPOS_ANTIGOS_DO_FORMATO[campo]];
+	}
+
 	function limparRenomear(r) {
 		r = r || {};
 
 		var clean = {
-			types: [],
+			formatos: [],
 			fixed: [],
 			removeSpecial: r.removeSpecial !== false,
 			textCase: /^(upperCase|lowerCase|titleCase|keep)$/.test(r.textCase) ? r.textCase : 'upperCase',
 			separator: r.separator == null ? ' - ' : String(r.separator)
 		};
-		var types = isArray(r.types) ? r.types : [];
+		var formatos = isArray(r.formatos) ? r.formatos : [];
 		var fixed = isArray(r.fixed) ? r.fixed : [];
 		var seen = {};
 		var i;
@@ -280,10 +288,10 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			throw new Error('#PAD_082 - renomear: o separador precisa ter de 1 a 5 caracteres, sem \\ / : * ? " < > |.');
 		}
 
-		for (i = 0; i < types.length; i++) {
-			var t = types[i] || {};
+		for (i = 0; i < formatos.length; i++) {
+			var t = formatos[i] || {};
 			var prefix = termo(t.prefix);
-			var comment = termo(t.comment);
+			var etiqueta = termo(campoDoFormato(t, 'etiqueta'));
 			var list = isArray(t.terms) ? t.terms : String(t.terms == null ? '' : t.terms).split(',');
 			var terms = [];
 
@@ -294,12 +302,12 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			}
 
 			if (prefix == '') throw new Error('#PAD_082 - renomear: o formato ' + (i + 1) + ' precisa de um prefixo.');
-			if (comment == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de uma etiqueta.');
+			if (etiqueta == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de uma etiqueta.');
 			if (!terms.length) throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de ao menos um termo.');
 			if (seen[prefix]) throw new Error('#PAD_082 - renomear: o prefixo "' + prefix + '" aparece mais de uma vez.');
 
 			seen[prefix] = true;
-			clean.types.push({ prefix: prefix, comment: comment, terms: terms });
+			clean.formatos.push({ prefix: prefix, etiqueta: etiqueta, terms: terms });
 		}
 
 		for (i = 0; i < fixed.length; i++) {
@@ -341,7 +349,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		fileTags: ['FUNDO', 'LOGO', 'FOTO', 'TRILHA', 'LOC']
 	};
 
-	function comentario(value) {
+	function etiquetaLimpa(value) {
 		return semEspeciais(trim(value).toUpperCase()).replace(/\s+/g, ' ');
 	}
 
@@ -408,15 +416,15 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 		var comments = listaDeVirgulas(o.renderComments);
 
-		for (i = 0; i < comments.length; i++) clean.renderComments.push(comentario(comments[i]));
+		for (i = 0; i < comments.length; i++) clean.renderComments.push(etiquetaLimpa(comments[i]));
 
-		if (!clean.renderComments.length) throw new Error('#PAD_085 - organizar: informe ao menos um comentário de render.');
+		if (!clean.renderComments.length) throw new Error('#PAD_085 - organizar: informe ao menos uma etiqueta de render.');
 
 		var edits = o.editComments == null ? ['EDIT'] : listaDeVirgulas(o.editComments); // configurações antigas: o padrão
 
-		for (i = 0; i < edits.length; i++) clean.editComments.push(comentario(edits[i]));
+		for (i = 0; i < edits.length; i++) clean.editComments.push(etiquetaLimpa(edits[i]));
 
-		clean.autoComment = comentario(o.autoComment);
+		clean.autoComment = etiquetaLimpa(o.autoComment);
 
 		var matches = false;
 
@@ -424,7 +432,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			if (clean.autoComment.indexOf(clean.renderComments[i]) >= 0) matches = true;
 		}
 
-		if (clean.autoComment == '' || !matches) throw new Error('#PAD_085 - organizar: o comentário automático precisa conter um dos comentários de render.');
+		if (clean.autoComment == '' || !matches) throw new Error('#PAD_085 - organizar: a etiqueta automática precisa conter uma das etiquetas de render.');
 
 		var exts = listaDeVirgulas(o.dataExtensions);
 
@@ -434,7 +442,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		var tags = o.fileTags == null ? PADRAO_ORGANIZAR.fileTags : listaDeVirgulas(o.fileTags);
 
 		for (i = 0; i < tags.length; i++) {
-			var tag = comentario(tags[i]);
+			var tag = etiquetaLimpa(tags[i]);
 
 			if (indexOf(clean.fileTags, tag) < 0) clean.fileTags.push(tag);
 		}
@@ -795,8 +803,9 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
-	// tipos de projeto ('TIPOS_DE_PROJETO', antes 'PROJECT'; aba TIPOS DE PROJETO): { categories: [{ name, path,
-	// output, file, icon }] }, a lista "dentro de" da atração nova (host/project.jsx)
+	// tipos de projeto ('TIPOS_DE_PROJETO', antes 'PROJECT'; aba TIPOS DE PROJETO): { tipos: [{ name, path, output,
+	// file, icon }] }, a lista "dentro de" da atração nova (host/project.jsx). 'categories': o nome antigo de 'tipos'
+	// (camposAntigos, na tabela; #46)
 	//   path   → a pasta do projeto, com os tokens do caminho (TOKENS_DO_CAMINHO); sem {atracao}, o tipo é a atração
 	//   output → a pasta de output proposta no projeto novo (opcional, com tokens); file → o nome do .aep (opcional,
 	//            com tokens); icon → um ícone do seletor (client/js/util.js)
@@ -820,8 +829,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	function limparTiposDeProjeto(o) {
-		var clean = { categories: [] };
-		var list = o && isArray(o.categories) ? o.categories : [];
+		var clean = { tipos: [] };
+		var list = o && isArray(o.tipos) ? o.tipos : [];
 		var seen = {};
 
 		for (var i = 0; i < list.length; i++) {
@@ -849,7 +858,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			}
 
 			seen[key] = true;
-			clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
+			clean.tipos.push({ name: name, path: path, output: output, file: fileName, icon: icon });
 		}
 
 		return clean;
@@ -1000,7 +1009,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	var TABELA = [
 		{ nome: 'producoes', onde: 'equipe', arquivo: EQUIPE, chave: 'PRODUCTIONS', padrao: function () { return []; }, limpar: limparProducoes, lerLimpo: lerProducoes },
 		{ nome: 'mapaDeDrives', onde: 'equipe', arquivo: EQUIPE, chave: 'DRIVES', padrao: function () { return PADRAO_DRIVES; }, limpar: limparDrives },
-		{ nome: 'regraDoRenomear', onde: 'equipe', arquivo: EQUIPE, chave: 'RENAME', padrao: function () { return PADRAO_RENOMEAR; }, limpar: limparRenomear },
+		{ nome: 'regraDoRenomear', onde: 'equipe', arquivo: EQUIPE, chave: 'RENAME', camposAntigos: { formatos: ['types'] }, padrao: function () { return PADRAO_RENOMEAR; }, limpar: limparRenomear },
 		{ nome: 'organizar', onde: 'equipe', arquivo: EQUIPE, chave: 'ORGANIZE', padrao: function () { return PADRAO_ORGANIZAR; }, limpar: limparOrganizar, depoisDeLer: organizarDepoisDeLer },
 		{ nome: 'buscaDeCaminhos', onde: 'equipe', arquivo: EQUIPE, chave: 'SEARCH', camposAntigos: { caminhosFixos: ['servidor'] }, padrao: function () { return PADRAO_BUSCA; }, limpar: limparBusca },
 		{ nome: 'links', onde: 'equipe', arquivo: EQUIPE, chave: 'LINKS', padrao: function () { return PADRAO_LINKS; }, limpar: limparLinks },
@@ -1009,7 +1018,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'aparencia', onde: 'equipe', arquivo: EQUIPE, chave: 'APPEARANCE', padrao: function () { return PADRAO_APARENCIA; }, limpar: limparAparencia },
 		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLLECT', padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
-		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], padrao: function () { return { categories: [] }; }, limpar: limparTiposDeProjeto },
+		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], camposAntigos: { tipos: ['categories'] }, padrao: function () { return { tipos: [] }; }, limpar: limparTiposDeProjeto },
 
 		// deste computador
 		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], arquivosAntigos: [COMPUTADOR_ANTIGO, 'project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },

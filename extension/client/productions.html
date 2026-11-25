@@ -236,8 +236,8 @@
 
 			<!-- aba RENOMEAR -->
 			<div class="cfg-pane drives-pane" id="pane-rename" role="tabpanel" hidden>
-				<p class="cfg-title prods-section-title">tipos de peça</p>
-				<p class="cfg-hint">ao renomear, o padeiro procura um destes termos no nome da comp (ou da pasta dela) e aplica o prefixo e o comentário do tipo: <b>rodapé_joão silva</b> → <b>RDP - JOAO SILVA</b>. a ordem importa: vale o primeiro tipo encontrado (arraste para reordenar). os termos são palavras separadas por vírgula; o plural com S também vale. a mesma regra vale para <b>O ARQUIVISTA</b> (os nomes dos arquivos e das pastas), que reconhece o formato só pelo nome do próprio arquivo ou pasta.</p>
+				<p class="cfg-title prods-section-title">formatos</p>
+				<p class="cfg-hint">ao renomear, o padeiro procura um destes termos no nome da comp (ou da pasta dela) e aplica o prefixo do formato e a etiqueta: <b>rodapé_joão silva</b> → <b>RDP - JOAO SILVA</b>. a ordem importa: vale o primeiro formato encontrado (arraste para reordenar). os termos são palavras separadas por vírgula; o plural com S também vale. a mesma regra vale para <b>O ARQUIVISTA</b> (os nomes dos arquivos e das pastas), que reconhece o formato só pelo nome do próprio arquivo ou pasta.</p>
 								<div class="has-field-icon">
 					<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.5 5v14M16.5 5v14" /></svg>
 					<input type="text" class="cfg-input" id="rename-test" placeholder="digite o nome de uma comp (ex: rodapé_joão silva)" spellcheck="false" autocomplete="off" aria-label="Nome de comp para testar">
@@ -257,12 +257,12 @@
 						<span class="cfg-switch-label" title="tira acentos e símbolos (JOÃO! → JOAO)">remover caracteres especiais</span>
 					</label>
 				</div>
-				<div class="rename-head" aria-hidden="true"><span></span><span>prefixo</span><span>comentário</span><span>termos</span></div>
-				<div class="drive-rows" id="type-list"></div>
-				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-type">+ novo tipo</button>
+				<div class="rename-head" aria-hidden="true"><span></span><span>prefixo</span><span>etiqueta</span><span>termos</span></div>
+				<div class="drive-rows" id="format-list"></div>
+				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-format">+ novo formato</button>
 
 				<p class="cfg-title prods-section-title">nomes fixos</p>
-				<p class="cfg-hint">a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome.</p>
+				<p class="cfg-hint">a comp que tem o termo no nome (ou na etiqueta) passa a se chamar sempre o mesmo nome.</p>
 				<div class="drive-rows" id="fixed-list"></div>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-fixed">+ novo nome fixo</button>
 
@@ -281,26 +281,26 @@
 					<button type="button" class="button button-secondary button-compact add-button" id="btn-new-folder">+ nova pasta</button>
 
 					<p class="cfg-title prods-section-title">comps de render</p>
-					<p class="cfg-hint">a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).</p>
-					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-render" placeholder="EXPORT, TEMPLATE" spellcheck="false" autocomplete="off" aria-label="Comentários de render"></div>
-					<label class="cfg-label" for="org-auto">comentário automático</label>
+					<p class="cfg-hint">a comp vai para a pasta das comps de render quando a etiqueta dela contém um destes termos (ou a etiqueta de um formato da aba renomear).</p>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-render" placeholder="EXPORT, TEMPLATE" spellcheck="false" autocomplete="off" aria-label="Etiquetas de render"></div>
+					<label class="cfg-label" for="org-auto">etiqueta automática</label>
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-auto" placeholder="EXPORTAR" spellcheck="false" autocomplete="off"></div>
-					<p class="cfg-hint">dado às comps selecionadas sem comentário (ao organizar) e às versões criadas ao preencher um template.</p>
+					<p class="cfg-hint">dada às comps selecionadas sem etiqueta (ao organizar) e às versões criadas ao preencher um template.</p>
 
 					<p class="cfg-title prods-section-title">comps editáveis</p>
-					<p class="cfg-hint">com uma pasta para as <b>comps editáveis</b> na árvore, a comp vai para ela quando o comentário contém um destes termos (ex: EDIT, EDITAR). sem essa pasta, elas ficam com as outras comps.</p>
-					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-edit" placeholder="EDIT" spellcheck="false" autocomplete="off" aria-label="Comentários das comps editáveis"></div>
+					<p class="cfg-hint">com uma pasta para as <b>comps editáveis</b> na árvore, a comp vai para ela quando a etiqueta contém um destes termos (ex: EDIT, EDITAR). sem essa pasta, elas ficam com as outras comps.</p>
+					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-edit" placeholder="EDIT" spellcheck="false" autocomplete="off" aria-label="Etiquetas das comps editáveis"></div>
 
 					<p class="cfg-title prods-section-title">arquivos</p>
 					<label class="cfg-label" for="org-data">extensões de dados</label>
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg><input type="text" class="cfg-input" id="org-data" placeholder=".csv, .json, .txt" spellcheck="false" autocomplete="off"></div>
 					<label class="cfg-label" for="org-files">etiquetas dos arquivos</label>
-					<p class="cfg-hint">as etiquetas dos footages na janela de etiquetas (O CONTRARREGRA, <b>◗</b>): o comentário vira subpasta (ex: FUNDO, LOGO, FOTO).</p>
+					<p class="cfg-hint">as etiquetas dos footages na janela de etiquetas (O CONTRARREGRA, <b>◗</b>): a etiqueta vira subpasta (ex: FUNDO, LOGO, FOTO).</p>
 					<div class="has-field-icon"><svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z" /><path d="M8 8h.01" /></svg><input type="text" class="cfg-input" id="org-files" placeholder="FUNDO, LOGO, FOTO, TRILHA, LOC" spellcheck="false" autocomplete="off" aria-label="Etiquetas dos arquivos"></div>
 					<label class="cfg-switch organize-switch">
 						<input type="checkbox" id="org-sub">
 						<span class="cfg-switch-track"></span>
-						<span class="cfg-switch-label" title="ex: comps com comentário RODAPE ficam em 01 COMPS / RODAPE">comentários viram subpastas</span>
+						<span class="cfg-switch-label" title="ex: comps com a etiqueta RODAPE ficam em 01 COMPS / RODAPE">etiquetas viram subpastas</span>
 					</label>
 				</div>
 			</div>
