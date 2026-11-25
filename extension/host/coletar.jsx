@@ -550,14 +550,16 @@ function padColetarItem(item, root, paths, res) {
 	}
 }
 
-// A pasta do projeto gravada nos dados do padeiro (padeiro:pasta), se ela existe; senão ''
-function padColetarMetaRoot() {
+// A pasta do projeto gravada nos dados do padeiro (padeiro:pasta), se ela existe; senão ''. mount: monta o share se
+// preciso (só no coletar, um clique); sem ele, só confere o que já está montado (a bolinha da barra roda sozinha, de
+// tempos em tempos: montar ali abriria o diálogo do macOS e travaria o After)
+function padColetarMetaRoot(mount) {
 	try {
 		var pasta = padMetaRead().pasta;
 
 		if (!pasta) return '';
 
-		var folder = new Folder(padMountedPath(padPath(pasta)));
+		var folder = new Folder(mount ? padMountedPath(padPath(pasta)) : padResolvedPath(padPath(pasta)));
 
 		return folder.exists ? folder.fsName : '';
 	} catch (err) {
@@ -581,7 +583,7 @@ function padColetarTarget(a) {
 	// if/else em vez de ternário encadeado (o ExtendScript agrupa 'a ? b : c ? d : e' do jeito errado)
 	if (a && a.path) target = padPath(a.path);
 	else if (file) target = padColetarRoot(file, settings);
-	else target = padColetarMetaRoot(); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
+	else target = padColetarMetaRoot(true); // sem arquivo (ex: o projeto antigo convertido): a pasta gravada nos dados
 
 	if (!target) throw new Error('#PAD_095 - inicie ou salve o projeto antes de coletar (os arquivos vão para a pasta dele).');
 
