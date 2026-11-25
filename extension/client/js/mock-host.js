@@ -231,6 +231,37 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		});
 	}
 
+	// a regra do renomear da equipe, como vem de fábrica (padDefaultRename, host/productions.jsx ← host/lib/globals.js)
+	var MOCK_RENAME = {
+		types: [
+			{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+			{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+			{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+			{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
+			{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+			{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
+			{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
+			{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
+			{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
+		],
+		fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }],
+		removeSpecial: true,
+		textCase: 'upperCase',
+		separator: ' - '
+	};
+
+	// as comps selecionadas do etiquetador de teste: o nome, as pastas (da mais próxima para a raiz) e o comentário
+	function mockComps() {
+		return window.PAD_MOCK_COMPS || (window.PAD_MOCK_COMPS = [
+			{ name: 'rodapé_joão silva', folders: [], comment: '' },
+			{ name: 'joao silva', folders: ['RODAPES'], comment: '' },
+			{ name: 'logo_globo_branco', folders: [], comment: '' },
+			{ name: 'abertura', folders: [], comment: 'LOGO GLOBO v2' },
+			{ name: 'CRT - AMANHA', folders: [], comment: '' },
+			{ name: 'tarja_patrocínio  v2', folders: ['ASSETS'], comment: '' }
+		]);
+	}
+
 	var api = {
 		ping: function () {
 			return { app: 'After Effects (mock)', build: '24.0x1', os: 'Mac', version: '2.0 beta9', network: mode !== 'nonet' };
@@ -246,16 +277,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 						shares: [{ share: 'VFX', server: 'vfx-ml-sp.servicos.corp.tvglobo.com.br' }, { share: 'promo_ber', server: '10.193.48.13' }],
 						defaultServer: 'vfx-ml-sp.servicos.corp.tvglobo.com.br'
 					},
-					rename: {
-						types: [
-							{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
-							{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
-							{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
-							{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
-							{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] }
-						],
-						fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }]
-					},
+					rename: JSON.parse(JSON.stringify(MOCK_RENAME)),
 					organize: {
 						folders: [
 							{ name: '01 COMPS', parent: '', content: 'render' },
@@ -630,12 +652,24 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { messages: [], data: { path: '/mock/FONTS' } };
 		},
 
+		// o etiquetador: a regra do renomear (regras/regra-do-renomear.js, a mesma do host) com a regra guardada nas comps
+		// de teste. data.names: os nomes que ficaram (o After só devolve a contagem)
 		renameComps: async function () {
 			await wait(delay);
 
 			if (mode === 'fail') throw new Error('#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
 
-			return { messages: [], data: { count: 3 } };
+			var rule = window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.rename : MOCK_RENAME;
+			var comps = mockComps();
+
+			comps.forEach(function (c) {
+				var r = window.PAD_REGRA_DO_RENOMEAR.rename(rule, c.name, { folders: c.folders, comment: c.comment });
+
+				c.name = r.name;
+				if (r.comment) c.comment = r.comment;
+			});
+
+			return { messages: [], data: { count: comps.length, names: comps.map(function (c) { return c.name; }) } };
 		},
 
 		renameOutputs: function () {

@@ -50,15 +50,15 @@ function padFilesSplit(name, isFolder) {
 	return { base: name.slice(0, at), ext: name.slice(at + 1) };
 }
 
-// o nome novo de um item, pela regra do renomear das comps (padRenameByRule, rename lib.js): { plain (só o formato e
-// os nomes fixos), typed (com o prefixo do formato) }. o formato vem só do PRÓPRIO nome (arquivo ou pasta), nunca da
-// pasta onde ele está: a única diferença em relação às comps
+// o nome novo de um item, pela regra do renomear (padRenameByRule, rename lib.js → regras/regra-do-renomear.js):
+// { plain (só o formato e os nomes fixos), typed (com o prefixo do formato) }. o formato vem só do PRÓPRIO nome
+// (arquivo ou pasta), nunca da pasta onde ele está: a única diferença em relação às comps
 function padFilesSuggest(name) {
 	// o macOS guarda o nome com o acento separado da letra (a + ~): junta os dois antes da regra, senão a marca solta
 	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
 	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
-	var rule = padRenameByRule(base, findMatchingPrefix(base, false));
+	var rule = padRenameByRule(base);
 	var typed = sanitizeFileName(rule.name);
 
 	// o nome fixo (rule.fixed: rule.name é ele) vale com ou sem o prefixo; o nome já no padrão (CRT - HOJE) não perde

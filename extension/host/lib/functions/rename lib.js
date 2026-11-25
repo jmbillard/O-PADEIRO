@@ -3,89 +3,61 @@
 /*
 
 ---------------------------------------------------------------
-> 🏷️ renomeação de comps e outputs
+> 🏷️ renomeação de comps e outputs (O ETIQUETADOR)
 ---------------------------------------------------------------
 
-Os tipos ficam em PAD_RENAME_TYPES (globals.js, ou a aba RENOMEAR da configuração): cada tipo tem um
-prefixo (ex: 'RDP'), um comentário (ex: 'RODAPE') e os termos que o identificam (palavras). Os termos
-viram as expressões de 'renameRefArray' em padRenameRefs.
+A regra do renomear mora em regras/regra-do-renomear.js (PAD_REGRA_DO_RENOMEAR, compartilhada com a prévia da
+configuração e o host de teste, ADR 0005). Aqui ficam só as chamadas: a regra da equipe que o host já tem
+(PAD_RENAME_TYPES, PAD_RENAME_FIXED, PAD_RENAME_OPTIONS e o separador, de globals.js ou da aba RENOMEAR da
+configuração, padApplyConfig em productions.jsx) vai como parâmetro para o módulo, e o que depende do After (as
+pastas da comp, o comentário, a fila de render) fica aqui.
 
 */
 
-// Separadores aceitos entre as palavras do nome
-var RENAME_SEPARATORS = '[\\s_\\-]';
+var padRenameCache = { rule: null, key: null, types: null, fixed: null };
 
-// Letras que podem vir com acento no nome (maiúsculas e minúsculas): o termo reconhece 'rodapé' e 'RODAPE'.
-var RENAME_ACCENTS = {
-	A: 'A\u00C0-\u00C4a\u00E0-\u00E4',
-	E: 'E\u00C8-\u00CBe\u00E8-\u00EB',
-	I: 'I\u00CC-\u00CFi\u00EC-\u00EF',
-	O: 'O\u00D2-\u00D6o\u00F2-\u00F6',
-	U: 'U\u00D9-\u00DCu\u00F9-\u00FC',
-	C: 'C\u00C7c\u00E7',
-	N: 'N\u00D1n\u00F1'
-};
+// A regra do renomear da equipe, como o host tem agora, preparada uma vez (compile) enquanto ela não muda.
+function padRenameRule() {
+	var c = padRenameCache;
 
-// Termo (palavra, sem acento, maiúsculas) → expressão: espaços valem qualquer separador, as letras aceitam acento
-// e o plural com S também vale. Usada com a flag 'i' sobre o nome como está (com acentos).
-function padRenameTermRegex(term) {
-	var t = renameNormalize(term).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s_\-]+/g, ' ');
-	var out = '';
+	var key = [PAD_RENAME_OPTIONS.removeSpecial, PAD_RENAME_OPTIONS.textCase, globalSeparator].join('|');
 
-	for (var i = 0; i < t.length; i++) {
-		var c = t.charAt(i);
-
-		if (c == ' ') out += RENAME_SEPARATORS + '+'; // espaço: qualquer separador
-		else out += RENAME_ACCENTS[c] ? '[' + RENAME_ACCENTS[c] + ']' : c;
+	if (!c.rule || c.types !== PAD_RENAME_TYPES || c.fixed !== PAD_RENAME_FIXED || c.key !== key) {
+		c.types = PAD_RENAME_TYPES;
+		c.fixed = PAD_RENAME_FIXED;
+		c.key = key;
+		c.rule = PAD_REGRA_DO_RENOMEAR.compile({
+			types: PAD_RENAME_TYPES,
+			fixed: PAD_RENAME_FIXED,
+			removeSpecial: PAD_RENAME_OPTIONS.removeSpecial,
+			textCase: PAD_RENAME_OPTIONS.textCase,
+			separator: globalSeparator
+		});
 	}
 
-	return out + '(S)?';
+	return c.rule;
 }
 
-// Aplica o formato do nome (configuração > renomear): acentos e símbolos, e a caixa.
+// A formatação do nome (configuração > renomear): os especiais e a caixa (a forminha e o arquivista).
 function padRenameFormat(text) {
-	var t = String(text);
-
-	if (PAD_RENAME_OPTIONS.removeSpecial) t = t.replaceSpecialCharacters();
-
-	t = t.replace(/[\s_]+/g, ' ').replace(/^\s+|\s+$/g, '');
-
-	if (PAD_RENAME_OPTIONS.textCase == 'upperCase') return t.toUpperCase();
-	if (PAD_RENAME_OPTIONS.textCase == 'lowerCase') return t.toLowerCase();
-	if (PAD_RENAME_OPTIONS.textCase == 'titleCase') return t.toTitleCase();
-
-	return t;
+	return PAD_REGRA_DO_RENOMEAR.format(padRenameRule(), text);
 }
 
-// Monta 'renameRefArray' a partir dos tipos (os de globals.js ou os da configuração).
+// Nome normalizado para comparação: maiúsculas, sem acentos (a forminha).
+function renameNormalize(str) {
+	return PAD_REGRA_DO_RENOMEAR.normalize(str);
+}
+
+// Os formatos da regra ('renameRefArray', globals.js): { prefix, comment }, para a lista dos comentários.
 function padRenameRefs(types) {
 	var refs = [];
 
-	for (var i = 0; i < types.length; i++) {
-		var terms = [];
-
-		for (var j = 0; j < types[i].terms.length; j++) terms.push(padRenameTermRegex(types[i].terms[j]));
-
-		refs.push({ prefix: types[i].prefix, comment: types[i].comment, regExpStr: terms });
-	}
+	for (var i = 0; i < types.length; i++) refs.push({ prefix: types[i].prefix, comment: types[i].comment });
 
 	return refs;
 }
 
 renameRefArray = padRenameRefs(PAD_RENAME_TYPES);
-
-// Nome fixo (PAD_RENAME_FIXED) que o texto contém, ou null.
-function padRenameFixedName(text) {
-	var norm = renameNormalize(text);
-
-	for (var i = 0; i < PAD_RENAME_FIXED.length; i++) {
-		var term = renameNormalize(PAD_RENAME_FIXED[i].match).replace(/^\s+|\s+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[\s_\-]+/g, '[\\s_\\-]*');
-
-		if (term && new RegExp(term).test(norm)) return PAD_RENAME_FIXED[i].name;
-	}
-
-	return null;
-}
 
 // Templates podem definir o nome final no texto do último layer ('script_template_name').
 function getTemplateNameLayer(comp) {
@@ -113,112 +85,28 @@ function overwriteCompName(comp) {
 	return true;
 }
 
-// Nome normalizado para comparação: maiúsculas, sem acentos.
-function renameNormalize(str) {
-	return String(str).toUpperCase().replaceSpecialCharacters();
+// A regra do renomear aplicada a um nome de arquivo ou pasta (o arquivista, files.jsx): o formato só pelo próprio
+// nome, nunca pela pasta onde ele está. Retorna { name, comment, fixed } — comment é null sem formato; fixed: veio
+// de um nome fixo.
+function padRenameByRule(name) {
+	var r = PAD_REGRA_DO_RENOMEAR.rename(padRenameRule(), name, { itemOnly: true });
+
+	return { name: r.name, comment: r.comment, fixed: r.fixed };
 }
 
-// Retorna o tipo (item de renameRefArray) correspondente ao nome, ou null.
-// Pastas: o nome precisa COMEÇAR com o termo (ex: 'RODAPES', 'RODAPE - JOGO'), evitando falsos
-// positivos como 'ASSETS' para 'ASS'. Comps: o termo pode estar em qualquer posição, como palavra.
-function findMatchingPrefix(name, isFolder) {
-	for (var t = 0; t < renameRefArray.length; t++) {
-		var refObj = renameRefArray[t];
-
-		for (var u = 0; u < refObj.regExpStr.length; u++) {
-			var val = refObj.regExpStr[u];
-			var pattern = isFolder
-				? new RegExp('^(' + val + ')(' + RENAME_SEPARATORS + '|$)', 'i')
-				: new RegExp('(^|' + RENAME_SEPARATORS + ')(' + val + ')(' + RENAME_SEPARATORS + '|$)', 'i');
-
-			if (pattern.test(name)) return refObj;
-		}
-	}
-
-	return null;
-}
-
-// Remove do nome todos os termos de identificação (de qualquer tipo) e prefixos já aplicados,
-// deixando só a parte descritiva. ex: 'RODAPE_JOAO_SILVA' → 'JOAO SILVA'
-function cleanCompName(compName, refObj) {
-	var cleanName = compName;
-
-	// primeiro: prefixos e termos de todos os tipos
-	for (var p = 0; p < renameRefArray.length; p++) {
-		cleanName = cleanName.replace(new RegExp('^' + renameRefArray[p].prefix + '[\\s\\-]+', 'gi'), '');
-		cleanName = removeRenameTerms(cleanName, renameRefArray[p].regExpStr);
-	}
-
-	// depois: os termos do tipo encontrado, caso ainda restem (ex: termo repetido)
-	cleanName = removeRenameTerms(cleanName, refObj.regExpStr);
-
-	return cleanName.replace(/[\s_\-]+/g, ' ').trim();
-}
-
-function removeRenameTerms(name, terms) {
-	for (var i = 0; i < terms.length; i++) {
-		var val = terms[i];
-
-		name = name
-			.replace(new RegExp('^(' + val + RENAME_SEPARATORS + '+)', 'gi'), '') // início
-			.replace(new RegExp(RENAME_SEPARATORS + '+' + val + RENAME_SEPARATORS + '+', 'gi'), ' ') // meio
-			.replace(new RegExp(RENAME_SEPARATORS + '+' + val + '$', 'gi'), '') // fim
-			.replace(new RegExp('^' + val + '$', 'gi'), ''); // nome inteiro
-	}
-
-	return name;
-}
-
-// A regra do renomear aplicada a um nome, com o formato já achado (ou null): o prefixo do formato, o separador, a
-// caixa, os especiais e os nomes fixos. Sem app nem comp: vale para as comps (getPromoRename) e para os arquivos (o
-// arquivista, files.jsx). Retorna { name, comment, fixed } — comment é null sem formato; fixed: veio de um nome fixo.
-function padRenameByRule(name, prefixFound) {
-	// os termos aceitam acentos: o nome é tratado como está, e o formato (acentos, caixa) vem no fim
-	var text = String(name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-	var result = { name: padRenameFormat(text), comment: null, fixed: false };
-
-	if (prefixFound) {
-		var cleanName = padRenameFormat(cleanCompName(text, prefixFound));
-
-		result.comment = prefixFound.comment;
-		result.name = cleanName && cleanName.toUpperCase() !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
-	}
-
-	// nomes fixos (ex: LOGO GLOBO), pelo nome
-	var fixedName = padRenameFixedName(text);
-
-	if (fixedName) {
-		result.name = fixedName;
-		result.fixed = true;
-	}
-
-	return result;
-}
-
-// Calcula o nome padronizado de uma comp, sem alterá-la.
+// Calcula o nome padronizado de uma comp, sem alterá-la: o formato pelas pastas da comp (da mais próxima para a
+// raiz) e depois pelo nome; o nome fixo pelo nome ou pelo comentário.
 // Retorna { name, comment } — comment é null quando nenhum formato foi identificado.
 function getPromoRename(comp) {
-	var compName = String(comp.name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-	var prefixFound = null;
+	var folders = [];
 
-	// as pastas da comp têm prioridade (da mais próxima para a raiz)
-	for (var folder = comp.parentFolder; folder != app.project.rootFolder && !prefixFound; folder = folder.parentFolder) {
-		prefixFound = findMatchingPrefix(folder.name, true);
+	for (var folder = comp.parentFolder; folder != app.project.rootFolder; folder = folder.parentFolder) {
+		folders.push(folder.name);
 	}
 
-	if (!prefixFound) prefixFound = findMatchingPrefix(compName, false);
+	var r = PAD_REGRA_DO_RENOMEAR.rename(padRenameRule(), comp.name, { folders: folders, comment: comp.comment });
 
-	var rule = padRenameByRule(compName, prefixFound);
-	var result = { name: rule.name, comment: rule.comment };
-
-	// sem nome fixo no nome: o do comentário original (só sem formato)
-	if (!rule.fixed && !prefixFound) {
-		var fixedName = padRenameFixedName(comp.comment);
-
-		if (fixedName) result.name = fixedName;
-	}
-
-	return result;
+	return { name: r.name, comment: r.comment };
 }
 
 // Coleta as comps de uma lista de itens; pastas entram com todo o conteúdo (e têm o nome em maiúsculas).

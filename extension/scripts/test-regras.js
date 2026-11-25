@@ -84,7 +84,142 @@ function finais(api, list, others) {
 	});
 }
 
+// a regra do renomear da equipe, como vem de fábrica (padDefaultRename, host/productions.jsx ← host/lib/globals.js)
+const RENOMEAR_PADRAO = {
+	types: [
+		{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
+		{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
+		{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
+		{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
+		{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
+		{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
+		{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
+		{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
+		{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
+	],
+	fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }],
+	removeSpecial: true,
+	textCase: 'upperCase',
+	separator: ' - '
+};
+
+// a regra padrão com outros ajustes (caixa, separador, especiais, nomes fixos)
+function regra(changes) {
+	return Object.assign(JSON.parse(JSON.stringify(RENOMEAR_PADRAO)), changes || {});
+}
+
+// 'nome novo · comentário do formato (ou -) · fixo'
+function renomeia(api, name, opts, rule) {
+	const r = api.rename(rule || RENOMEAR_PADRAO, name, opts);
+
+	return r.name + ' · ' + (r.comment || '-') + (r.fixed ? ' · fixo' : '');
+}
+
 const REGRAS = [
+	{
+		arquivo: 'regra-do-renomear.js',
+		global: 'PAD_REGRA_DO_RENOMEAR',
+		titulo: 'a regra do renomear (o etiquetador, os outputs da fila, a prévia da configuração)',
+		casos: function (api) {
+			test('o termo de formato no nome vira o prefixo do formato, com o separador', function () {
+				eq(renomeia(api, 'rodapé_joão silva'), 'RDP - JOAO SILVA · RODAPE');
+				eq(renomeia(api, '_RDP_convidado João Gomes'), 'RDP - CONVIDADO JOAO GOMES · RODAPE');
+				eq(renomeia(api, 'jogo rodapé final'), 'RDP - JOGO FINAL · RODAPE');
+				eq(renomeia(api, 'tarja_patrocínio  v2'), 'TARJA - PATROCINIO V2 · TARJA');
+				eq(renomeia(api, 'imagem_01'), 'FOTO - 01 · FOTO');
+				eq(renomeia(api, 'preview final'), 'REF - FINAL · REFERENCIA');
+			});
+
+			test('o plural com S também vale, e o termo só vale como palavra inteira', function () {
+				eq(renomeia(api, 'RODAPES jogo'), 'RDP - JOGO · RODAPE');
+				eq(renomeia(api, 'assets mapa'), 'ASSETS MAPA · -');
+			});
+
+			test('só o termo: o nome fica só com o prefixo do formato', function () {
+				eq(renomeia(api, 'rodape'), 'RDP · RODAPE');
+				eq(renomeia(api, 'CRT'), 'CRT · CARTAO');
+			});
+
+			test('a pasta com termo dá o formato (a mais próxima primeiro, e ela vence o nome)', function () {
+				eq(renomeia(api, 'joao silva', { folders: ['RODAPES'] }), 'RDP - JOAO SILVA · RODAPE');
+				eq(renomeia(api, 'joao', { folders: ['X', 'CARTOES'] }), 'CRT - JOAO · CARTAO');
+				eq(renomeia(api, 'rdp joao', { folders: ['CARTOES'] }), 'CRT - JOAO · CARTAO');
+			});
+
+			test('a pasta só vale quando começa com o termo (ASSETS não é ASS)', function () {
+				eq(renomeia(api, 'joao silva', { folders: ['ASSETS'] }), 'JOAO SILVA · -');
+			});
+
+			test('formato só pelo nome do item (o arquivista): a pasta com termo não dá o prefixo', function () {
+				eq(renomeia(api, 'joao silva', { folders: ['RODAPES'], itemOnly: true }), 'JOAO SILVA · -');
+				eq(renomeia(api, 'jogo rodapé final', { folders: ['CARTOES'], itemOnly: true }), 'RDP - JOGO FINAL · RODAPE');
+			});
+
+			test('o nome fixo LOGO GLOBO vence o formato', function () {
+				eq(renomeia(api, 'logo_globo_branco'), 'LOGO GLOBO · - · fixo');
+				eq(renomeia(api, 'rdp logo globo'), 'LOGO GLOBO · RODAPE · fixo');
+			});
+
+			test('o nome fixo pelo comentário da comp, só quando o nome não tem formato', function () {
+				eq(renomeia(api, 'abertura', { comment: 'LOGO GLOBO v2' }), 'LOGO GLOBO · - · fixo');
+				eq(renomeia(api, 'rdp abertura', { comment: 'LOGO GLOBO' }), 'RDP - ABERTURA · RODAPE');
+			});
+
+			test('o nome fixo sai como está na regra (como o After grava hoje), sem normalizar', function () {
+				eq(renomeia(api, 'logo globo', null, regra({ fixed: [{ match: 'LOGO GLOBO', name: 'Logo  Globo' }] })), 'Logo  Globo · - · fixo');
+			});
+
+			test('o nome já no padrão fica igual', function () {
+				eq(renomeia(api, 'CRT - AMANHA'), 'CRT - AMANHA · CARTAO');
+				eq(renomeia(api, 'RDP - JOAO SILVA'), 'RDP - JOAO SILVA · RODAPE');
+			});
+
+			test('a caixa: minúsculas, título e como está (o prefixo do formato fica como foi escrito)', function () {
+				eq(renomeia(api, 'rdp_joão', null, regra({ textCase: 'lowerCase' })), 'RDP - joao · RODAPE');
+				eq(renomeia(api, 'cartão joão da silva', null, regra({ textCase: 'titleCase' })), 'CRT - Joao Da Silva · CARTAO');
+				eq(renomeia(api, 'cartão joão Da silva', null, regra({ textCase: 'keep' })), 'CRT - joao Da silva · CARTAO');
+			});
+
+			test('o separador da regra', function () {
+				eq(renomeia(api, 'rodape joao', null, regra({ separator: '_' })), 'RDP_JOAO · RODAPE');
+			});
+
+			test('os especiais: tirados (acentos e símbolos) ou mantidos', function () {
+				eq(renomeia(api, 'rodapé joão (final)!'), 'RDP - JOAO FINAL · RODAPE');
+				eq(renomeia(api, '  !!abc!! '), 'ABC · -');
+				eq(renomeia(api, 'rdp ñandu'), 'RDP - ANDU · RODAPE');
+				eq(renomeia(api, 'rodapé joão (final)', null, regra({ removeSpecial: false })), 'RDP - JOÃO (FINAL) · RODAPE');
+			});
+
+			test('o formato devolvido: o prefixo e o comentário; sem formato, null', function () {
+				eq(api.rename(RENOMEAR_PADRAO, 'crt hoje').format, { prefix: 'CRT', comment: 'CARTAO' });
+				eq(api.rename(RENOMEAR_PADRAO, 'hoje').format, null);
+			});
+
+			test('a formatação sozinha (a forminha): especiais e caixa, sem formato', function () {
+				eq(api.format(RENOMEAR_PADRAO, 'joão_da silva!'), 'JOAO DA SILVA');
+				eq(api.format(regra({ textCase: 'keep', removeSpecial: false }), 'joão_da  silva'), 'joão da silva');
+			});
+
+			test('a regra preparada uma vez (compile) dá o mesmo nome', function () {
+				const c = api.compile(RENOMEAR_PADRAO);
+
+				eq(api.rename(c, 'rodapé_joão silva').name, 'RDP - JOAO SILVA');
+				eq(api.format(c, 'joão'), 'JOAO');
+			});
+
+			test('o normalizar da tabela (maiúsculas, sem acentos nem símbolos), o mesmo da limpeza do host', function () {
+				eq(api.normalize('  rodapé  dos jogos! '), 'RODAPE DOS JOGOS');
+				eq(api.normalize('logo_globo'), 'LOGO GLOBO');
+			});
+		},
+		es3: function (api) {
+			eq(api.rename(RENOMEAR_PADRAO, 'rodapé_joão silva', { folders: ['CARTOES'] }).name, 'CRT - JOAO SILVA');
+			eq(api.rename(regra({ textCase: 'titleCase' }), 'logo globo  ').name, 'LOGO GLOBO');
+			eq(api.format(regra({ textCase: 'titleCase' }), 'joão da  silva'), 'Joao Da Silva');
+		}
+	},
+
 	{
 		arquivo: 'nomes-repetidos.js',
 		global: 'PAD_NOMES_REPETIDOS',

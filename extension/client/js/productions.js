@@ -1287,105 +1287,22 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		testRename();
 	}
 
-	// Prévia do renomear com a tabela em edição (a mesma regra do host, rename lib.js), só pelo nome da comp:
-	// os termos aceitam acentos, e o formato (acentos e caixa) vale para a parte descritiva do nome.
-	var RENAME_SEP = '[\\s_\\-]';
-	var RENAME_ACCENTS = { A: 'Aaàáâãä', E: 'Eeèéêë', I: 'Iiìíîï', O: 'Ooòóôõö', U: 'Uuùúûü', C: 'Ccç', N: 'Nnñ' };
-
-	function renameNorm(str) {
-		return String(str).toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\s-]/g, ' ').replace(/[\s_]+/g, ' ').trim();
-	}
-
-	function renameEscape(str) {
-		return renameNorm(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	}
-
-	function renameTermRegex(term) {
-		var t = renameEscape(term).replace(/[\s_\-]+/g, ' ');
-
-		return t.split('').map(function (c) {
-			if (c === ' ') return RENAME_SEP + '+';
-
-			return RENAME_ACCENTS[c] ? '[' + RENAME_ACCENTS[c] + RENAME_ACCENTS[c].toUpperCase() + ']' : c;
-		}).join('') + '(S)?';
-	}
-
-	function renameFormat(text, options) {
-		var t = String(text);
-
-		if (options.removeSpecial) t = t.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\s-]/g, ' ');
-
-		t = t.replace(/[\s_]+/g, ' ').trim();
-
-		if (options.textCase === 'upperCase') return t.toUpperCase();
-		if (options.textCase === 'lowerCase') return t.toLowerCase();
-		if (options.textCase === 'titleCase') return t.toLowerCase().replace(/(^|\s)(\S)/g, function (m, sp, c) {
-			return sp + c.toUpperCase();
-		});
-
-		return t;
-	}
-
+	// Prévia do renomear com a tabela em edição: a mesma regra do host (regras/regra-do-renomear.js), só pelo nome da
+	// comp. A tabela vai como o host a guarda depois de salvar (prefixos, comentários, termos e nomes fixos em
+	// maiúsculas, sem acentos nem símbolos: padCleanRename, host/productions.jsx), para a prévia mostrar o nome que o
+	// etiquetador grava.
 	function previewRename(compName) {
+		var rule = window.PAD_REGRA_DO_RENOMEAR;
 		var data = renameForSave();
-		var raw = String(compName).replace(/\s+/g, ' ').trim();
-		var types = data.types.map(function (t) {
-			return {
-				prefix: renameNorm(t.prefix),
-				comment: renameNorm(t.comment),
-				terms: t.terms.map(renameTermRegex).filter(function (x) {
-					return x !== '(S)?';
-				})
-			};
+
+		data.types = data.types.map(function (t) {
+			return { prefix: rule.normalize(t.prefix), comment: rule.normalize(t.comment), terms: t.terms.map(rule.normalize) };
 		});
-		var found = null;
-
-		types.some(function (t) {
-			return t.terms.some(function (re) {
-				if (new RegExp('(^|' + RENAME_SEP + ')(' + re + ')(' + RENAME_SEP + '|$)', 'i').test(raw)) found = t;
-
-				return !!found;
-			});
+		data.fixed = data.fixed.map(function (f) {
+			return { match: rule.normalize(f.match), name: rule.normalize(f.name) };
 		});
 
-		var result = { name: renameFormat(raw, data), comment: null };
-
-		if (found) {
-			var clean = raw;
-			var strip = function (terms) {
-				terms.forEach(function (re) {
-					clean = clean
-						.replace(new RegExp('^(' + re + RENAME_SEP + '+)', 'gi'), '')
-						.replace(new RegExp(RENAME_SEP + '+' + re + RENAME_SEP + '+', 'gi'), ' ')
-						.replace(new RegExp(RENAME_SEP + '+' + re + '$', 'gi'), '')
-						.replace(new RegExp('^' + re + '$', 'gi'), '');
-				});
-			};
-
-			types.forEach(function (t) {
-				if (t.prefix) clean = clean.replace(new RegExp('^' + t.prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\-]+', 'gi'), '');
-				strip(t.terms);
-			});
-			strip(found.terms);
-			clean = renameFormat(clean.replace(/[\s_\-]+/g, ' ').trim(), data);
-			result.comment = found.comment;
-			result.name = clean && clean.toUpperCase() !== found.prefix ? found.prefix + data.separator + clean : found.prefix;
-		}
-
-		var norm = renameNorm(raw);
-
-		data.fixed.some(function (f) {
-			var term = renameEscape(f.match).replace(/[\s_\-]+/g, '[\\s_\\-]*');
-
-			if (term && new RegExp(term).test(norm)) {
-				result.name = renameNorm(f.name);
-				return true;
-			}
-
-			return false;
-		});
-
-		return result;
+		return rule.rename(data, compName);
 	}
 
 	function testRename() {
@@ -1400,7 +1317,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		out.appendChild(document.createTextNode('→ '));
 		out.appendChild(el('b', null, res.name || '(vazio)'));
-		out.appendChild(document.createTextNode(res.comment ? '  ·  comentário ' + res.comment : '  ·  nenhum tipo encontrado'));
+		out.appendChild(document.createTextNode(res.comment ? '  ·  comentário ' + res.comment : '  ·  nenhum formato encontrado'));
 	}
 
 	function bindRename() {

@@ -217,7 +217,7 @@ com o painel aberto, acesse `http://localhost:<porta>` no Chrome (portas na tabe
 - **botões da barra** → `SECTIONS` em `client/js/bar.js` (rótulo, ícone, dicas e ações dos cliques esquerdo e direito). as ações ficam em `actions`, no mesmo arquivo.
 - **link do apontamento** → `APONTAMENTO_URL` em `client/js/bar.js`.
 - **documentação de cada painel** → `docs/<painel>.md` (templates, criador, produções, acessorista, conversor); o `DOCS_URL` de cada `client/js/<painel>.js` aponta para ela (o ⋯ > ajuda abre).
-- **tipos de renomeação** (prefixos e termos) → `renameRefArray` em `host/lib/globals.js`; a lógica em `host/lib/functions/rename lib.js`.
+- **formatos do renomear** (prefixos e termos) → `PAD_RENAME_TYPES` em `host/lib/globals.js` (o padrão; a aba renomear da configuração substitui); a regra do renomear em `regras/regra-do-renomear.js` (a mesma no host, na prévia da configuração e no host de teste), as chamadas do After em `host/lib/functions/rename lib.js`.
 - **letras de drive da rede** → `DRIVE_MAP` em `host/lib/globals.js`.
 - **config padrão dos templates** → `defaultTemplateConfigObj` em `host/lib/globals.js`.
 - **estrutura de pastas do projeto** → `PROJECT_FOLDERS` em `host/lib/functions/project lib.js`.

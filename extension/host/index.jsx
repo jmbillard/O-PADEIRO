@@ -22,6 +22,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "lib/functions/string lib.js"
 #include "lib/functions/file system lib.js"
 #include "lib/functions/layers lib.js"
+// a regra do renomear (compartilhada, ADR 0005) vem antes de rename lib.js, que a usa ao carregar
+#include "../regras/regra-do-renomear.js"
 #include "lib/functions/rename lib.js"
 #include "lib/functions/project lib.js"
 #include "lib/functions/metadata lib.js"
