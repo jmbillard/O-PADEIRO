@@ -18,7 +18,8 @@ computador): cada pessoa tem a sua lista. Sem preset escolhido, a comp entra na 
 Se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para
 o output local deste computador (configuração > produções > neste computador; vazia: a Área de Trabalho).
 
-  PADX.renderPresets()            → { templates: [nome], final, preview } (a lista do After e os dois escolhidos)
+  PADX.renderPresets()            → { renderTemplates: [nome], preferredTemplate, final, preview } (api.jsx: a lista
+                                    do After e os dois escolhidos)
   PADX.renderQueue({ preview })   → { count, folder, local, names, warnings }
 
 */
@@ -74,41 +75,7 @@ function padRenderNextVersion(folder, base) {
 	return max + 1;
 }
 
-PADX.renderPresets = function () {
-	var comp = null;
-	var temp = null;
-	var list = [];
-
-	for (var i = 1; i <= app.project.numItems && !comp; i++) {
-		if (app.project.item(i) instanceof CompItem) comp = app.project.item(i);
-	}
-
-	// a lista dos templates só existe num item da fila: um de passagem (e uma comp de passagem, sem nenhuma)
-	padUndoBegin('O PADEIRO: ler os presets de render');
-
-	try {
-		if (!comp) temp = comp = app.project.items.addComp('_padeiro', 16, 16, 1, 1, 1);
-
-		var rq = app.project.renderQueue.items.add(comp);
-
-		try {
-			var all = rq.outputModule(1).templates;
-
-			for (var t = 0; t < all.length; t++) {
-				if (!String(all[t]).match(/^_HIDDEN\s/)) list.push(String(all[t]));
-			}
-		} finally {
-			rq.remove();
-		}
-	} finally {
-		if (temp) temp.remove();
-		padUndoEnd();
-	}
-
-	var presets = padLerSecao('presetsDeRender');
-
-	return { templates: list, 'final': presets['final'], preview: presets.preview };
-};
+// PADX.renderPresets (a lista dos presets deste After) fica em api.jsx: o painel de templates também usa.
 
 // a: { preview }
 PADX.renderQueue = function (a) {

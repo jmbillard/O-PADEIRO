@@ -7,9 +7,13 @@
 O <select> continua sendo a fonte do valor e dos eventos ('change'); aqui só trocamos a aparência:
 um botão com o item atual e uma lista flutuante no mesmo estilo do menu "⋯".
 
-  PAD_DROPDOWN.enhance(selectEl[, icons])   → deixa o <select> (dentro de um '.select') com a nova aparência;
+  PAD_DROPDOWN.enhance(selectEl[, icons[, opts]])
+                                           → deixa o <select> (dentro de um '.select') com a nova aparência;
                                               icons: um dos conjuntos de PAD_DROPDOWN.ICONS (ou uma função
-                                              (value, text) → svg), para um ícone antes de cada opção
+                                              (value, text) → svg), para um ícone antes de cada opção;
+                                              opts.fit(trigger, option): ajusta o rótulo depois de cada troca
+                                              (ex: o nome curto quando o inteiro não cabe); opts.popoverClass:
+                                              uma classe a mais na lista aberta
   PAD_DROPDOWN.refresh(selectEl)   → atualiza o rótulo depois de mudar opções, valor ou 'disabled'
 
 Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo); Backspace apaga.
@@ -129,6 +133,7 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		trigger.querySelector('.dropdown-label').textContent = option ? option.textContent : '';
 		if (icon) icon.innerHTML = iconFor(select, option);
 		trigger.disabled = select.disabled;
+		if (select._dropdownOpts && select._dropdownOpts.fit) select._dropdownOpts.fit(trigger, option);
 	}
 
 	function open(select) {
@@ -139,6 +144,7 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		closeOpen();
 
 		var popover = el('div', 'dropdown-popover');
+		if (select._dropdownOpts && select._dropdownOpts.popoverClass) popover.classList.add(select._dropdownOpts.popoverClass);
 		popover.setAttribute('data-motion', 'off'); // filtra a cada tecla: sem animar os itens
 		var items = [];
 		var active = Math.max(0, select.selectedIndex);
@@ -366,8 +372,9 @@ Com a lista aberta, digitar filtra os itens (o termo aparece no lugar do rótulo
 		};
 	}
 
-	function enhance(select, icons) {
+	function enhance(select, icons, opts) {
 		if (icons) select._dropdownIcons = typeof icons === 'function' ? icons : ICONS[icons];
+		if (opts) select._dropdownOpts = opts;
 		if (select._dropdownTrigger) return refresh(select);
 
 		var wrap = select.parentNode;

@@ -39,6 +39,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 
 // as regras compartilhadas com o painel e o teste em Node (ADR 0005)
 #include "../regras/nomes-repetidos.js"
+// o preset de render: o nome curto, o H.264 preferido e a lista sem os _HIDDEN
+#include "../regras/preset-de-render.js"
 
 #include "api.jsx"
 #include "finder.jsx"

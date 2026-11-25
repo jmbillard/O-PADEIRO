@@ -1090,6 +1090,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		$('input-footer').hidden = name !== 'input' && name !== 'loading';
 		$('btn-import').disabled = name !== 'input';
 		$('btn-output').disabled = name !== 'input';
+		$('render-preset').disabled = name !== 'input';
+		PAD_DROPDOWN.refresh($('render-preset'));
 		if (name === 'loading') $('btn-fill').disabled = true;
 
 		$('btn-edit-config').hidden = name === 'run' || name === 'loading';
@@ -1319,6 +1321,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		setPreview(info);
 		updateInputCount();
 		showView('input');
+		paintPresetSelect();
 	}
 
 	// Preview: vídeo (autoplay, em loop) quando existir; senão o png. Se o vídeo não carregar, cai para o png.
@@ -1432,6 +1435,127 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		// sem a revisão da fila (o padrão), o mesmo botão preenche e já põe na fila de render
 		$('btn-fill').textContent = sample ? 'Preencher o exemplo' : 'Preencher: ' + n;
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
+	}
+
+	/* =========================================================
+	   O preset de render no rodapé: escolhido antes de preencher
+	   ========================================================= */
+
+	// a lista dos presets deste After fica guardada neste computador, no store do painel (como o último preset usado):
+	// é só uma cópia do que o After tem, lida ao abrir sem chamar o host. o host (renderPresets) só é chamado sem
+	// lista guardada, e o fillFinish a atualiza a cada preenchimento
+	var PRESET_LIST_KEY = 'presetsDoAfter';
+
+	function readPresetList() {
+		try {
+			var saved = JSON.parse(store.get(PRESET_LIST_KEY) || 'null');
+
+			if (saved && Array.isArray(saved.renderTemplates) && saved.renderTemplates.length) return saved;
+		} catch (err) { }
+
+		return null;
+	}
+
+	function savePresetList(renderTemplates, preferredTemplate) {
+		if (!renderTemplates || !renderTemplates.length) return;
+
+		state.presetList = { renderTemplates: renderTemplates.slice(), preferredTemplate: preferredTemplate || '' };
+		store.set(PRESET_LIST_KEY, JSON.stringify(state.presetList));
+		paintPresetSelect();
+	}
+
+	async function loadPresetList() {
+		state.presetList = readPresetList();
+		if (state.presetList) return paintPresetSelect();
+
+		try {
+			var res = await call('renderPresets');
+
+			savePresetList(res.renderTemplates, res.preferredTemplate);
+		} catch (err) { }
+	}
+
+	// o preset lembrado, o primeiro que estiver na lista: o do template, o último usado ou o H.264 de 15 Mbps
+	function rememberedPreset(list, preferred) {
+		var candidates = [state.selected && templatePreset(state.selected.uri), store.get('outputTemplate'), preferred];
+
+		for (var i = 0; i < candidates.length; i++) {
+			if (candidates[i] && list.indexOf(candidates[i]) >= 0) return candidates[i];
+		}
+
+		return list[0] || '';
+	}
+
+	// o template define pelo menos uma pasta de output (sem nenhuma: preenche sem pôr na fila de render)
+	function hasOutput(info) {
+		var paths = (info && info.config && info.config.outputPath) || [];
+
+		return paths.some(function (path) {
+			return String(path).trim() !== '';
+		});
+	}
+
+	function paintPresetSelect() {
+		var select = $('render-preset');
+		var list = state.presetList ? state.presetList.renderTemplates : [];
+
+		select.textContent = '';
+		list.forEach(function (name) {
+			var option = el('option', null, name);
+
+			option.value = name;
+			select.appendChild(option);
+		});
+		select.value = rememberedPreset(list, state.presetList && state.presetList.preferredTemplate);
+		PAD_DROPDOWN.refresh(select);
+		updatePresetFooter();
+	}
+
+	// sem output (ou sem lista), o seletor recolhe (motion.js anima) e a dica do botão diz o motivo
+	function updatePresetFooter() {
+		var output = !state.info || hasOutput(state.info);
+
+		$('fill-preset').hidden = !output || !$('render-preset').options.length;
+		$('btn-fill').title = PAD_KEYS.modLabel + '+Enter' + (output ? '' : '\nesse template não define uma pasta de output: as versões ficam no projeto, sem fila de render');
+	}
+
+	function lineCount(label) {
+		return Math.round(label.scrollHeight / parseFloat(getComputedStyle(label).lineHeight));
+	}
+
+	// o rótulo do seletor: o nome inteiro numa linha; senão o curto numa linha; senão o curto em duas; senão o curto em
+	// duas sem o ícone (nunca três linhas, nunca cortado). o nome inteiro fica na dica e na lista aberta
+	function fitPresetLabel(trigger, option) {
+		var label = trigger.querySelector('.dropdown-label');
+
+		trigger.classList.remove('is-no-icon');
+		label.classList.remove('is-two-lines');
+		if (!option) return;
+
+		trigger.title = 'preset de render: ' + option.textContent + '\nabra e digite para filtrar';
+		label.textContent = option.textContent;
+		if (label.scrollWidth <= label.clientWidth) return;
+		label.textContent = PAD_PRESET_DE_RENDER.shortName(option.textContent);
+		if (label.scrollWidth <= label.clientWidth) return;
+		label.classList.add('is-two-lines');
+		if (lineCount(label) > 2) trigger.classList.add('is-no-icon');
+	}
+
+	function bindPresetSelect() {
+		var select = $('render-preset');
+		var box = $('fill-preset');
+		var lastWidth = -1;
+
+		PAD_DROPDOWN.enhance(select, 'renderTemplate', { fit: fitPresetLabel, popoverClass: 'preset-popover' });
+
+		// a largura muda (a janela, ou o seletor aparecendo): o nome que cabe muda junto
+		if (window.ResizeObserver) {
+			new ResizeObserver(function () {
+				if (box.clientWidth === lastWidth) return;
+				lastWidth = box.clientWidth;
+				PAD_DROPDOWN.refresh(select);
+			}).observe(box);
+		}
 	}
 
 	/* =========================================================
@@ -1762,7 +1886,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var list = $('file-list');
 
 		list.textContent = '';
-		state.run = { items: [], finished: false, total: begin.total, queued: false, renderTemplates: [], outputPath: [] };
+		// o preset do rodapé (escolhido antes de preencher) e se o template tem output (sem output: sem fila)
+		state.run = { items: [], finished: false, total: begin.total, queued: false, renderTemplates: [], outputPath: [], preset: $('render-preset').value, output: hasOutput(state.info) };
 
 		list.classList.remove('is-editing');
 		$('queue-list-head').hidden = true;
@@ -1821,13 +1946,14 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		state.run.renderTemplates = fin.renderTemplates;
 		state.run.preferredTemplate = fin.preferredTemplate || '';
 		state.run.outputPath = fin.outputPath;
+		savePresetList(fin.renderTemplates, fin.preferredTemplate); // a lista do rodapé fica em dia com o After
 		setBusy(false);
 
 		var ok = state.run.items.filter(function (item) {
 			return item.status === 'success';
 		}).length;
 
-		if (ok > 0 && fin.renderTemplates.length > 0) {
+		if (ok > 0 && state.run.output && fin.renderTemplates.length > 0) {
 			showRenderOptions();
 		} else {
 			await finishRun(ok === 0 ? 'Nenhum template foi preenchido.' : null);
@@ -1839,21 +1965,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	   ========================================================= */
 
 	function showRenderOptions() {
-		var select = $('render-template');
-		// o último preset usado neste template, o último usado em geral ou, na primeira vez, o H.264 de 15 Mbps
-		var saved = (state.selected && templatePreset(state.selected.uri)) || store.get('outputTemplate') || state.run.preferredTemplate;
+		var list = state.run.renderTemplates;
+		var chosen = state.run.preset;
+		// o preset do rodapé sumiu da lista do After (ou não havia lista antes de preencher): o lembrado entre os que
+		// o After tem agora, e a tela da fila aparece para conferir
+		var missing = list.indexOf(chosen) < 0;
 
-		select.textContent = '';
-		state.run.renderTemplates.forEach(function (name) {
-			var option = el('option', null, name);
-
-			option.value = name;
-			select.appendChild(option);
-		});
-
-		if (saved && state.run.renderTemplates.indexOf(saved) >= 0) select.value = saved;
-
-		PAD_DROPDOWN.refresh(select);
+		if (missing) state.run.preset = rememberedPreset(list, state.run.preferredTemplate);
 
 		var outputs = $('render-outputs');
 
@@ -1864,19 +1982,22 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setProgress(state.run.total, state.run.total, 'Preenchimento concluído');
 
-		// sem a revisão (o padrão): a fila sai direto, com o preset lembrado (o do template, o último ou o H.264).
-		// a tela de ordem e preset só aparece com 'Revisar a fila antes de criar' ligado (menu ⋯) ou sem preset
-		if (!reviewQueue() && select.value) {
+		// sem a revisão (o padrão): a fila sai direto, com o preset do rodapé. a tela da fila (a ordem e o que fica de
+		// fora) só aparece com 'Revisar a fila antes de criar' ligado (menu ⋯) ou com o preset fora da lista
+		if (!reviewQueue() && !missing) {
 			createQueue();
 			return;
 		}
 
-		setStage('4 · render', null, 'selecione o preset de render para continuar');
+		$('queue-preset').textContent = '· ' + PAD_PRESET_DE_RENDER.shortName(state.run.preset);
+		$('queue-preset').title = state.run.preset;
+		$('queue-preset-hint').textContent = missing && chosen ? '“' + chosen + '” não está mais nos presets do After: a fila vai com “' + state.run.preset + '”' : 'o preset de render vale para todas as versões';
+		setStage('4 · render', null, 'confira a ordem e o que fica de fora');
 		$('render-options').hidden = false;
 		$('queue-footer').hidden = false;
 		editQueue();
 		setPickerLocked(true);
-		select.focus();
+		$('btn-queue').focus();
 	}
 
 	// Antes de criar a fila: a ordem (o puxador, à esquerda) e o que fica de fora (a lixeira, à direita: sai só da
@@ -1990,7 +2111,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	async function createQueue() {
-		var template = $('render-template').value;
+		var template = state.run.preset;
 
 		if (!template) return;
 
@@ -2132,7 +2253,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		await loadTree(true);
 	}
 
-	// revisar a fila (a ordem, o que fica de fora e o preset) antes de criar: desligado por padrão (neste computador)
+	// revisar a fila (a ordem e o que fica de fora; o preset é o do rodapé) antes de criar: desligado por padrão (neste
+	// computador)
 	function reviewQueue() {
 		return store.get('reviewQueue') === '1';
 	}
@@ -2148,7 +2270,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 			store.set('reviewQueue', reviewQueue() ? '0' : '1');
 			paintReviewItem();
 			updateInputCount();
-			notify('success', reviewQueue() ? 'a fila aparece para revisar antes de ser criada.' : 'o Preencher já põe na fila, com o preset lembrado.');
+			notify('success', reviewQueue() ? 'a fila aparece para revisar antes de ser criada.' : 'o Preencher já põe na fila, com o preset do rodapé.');
 		}
 		if (action === 'refresh') await refreshTree();
 		if (action === 'open-templates') await openTemplatesFolder();
@@ -2469,7 +2591,8 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		}
 
 		bindEvents();
-		PAD_DROPDOWN.enhance($('render-template'), 'renderTemplate');
+		bindPresetSelect();
+		loadPresetList();
 		// o ícone de cada produção (o da biblioteca de ícones, escolhido na configuração) dentro do seletor
 		PAD_DROPDOWN.enhance($('production'), function (value) {
 			var prod = state.productions.filter(function (p) {

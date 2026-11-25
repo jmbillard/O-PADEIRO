@@ -898,6 +898,13 @@ body {
   margin: 0;
 }
 
+/* o preset da fila no título (escolhido no rodapé, antes de preencher): o nome como o After escreve */
+.rq-preset {
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
 .rq-list-head {
   margin: 18px 0 10px;
 }
@@ -1000,10 +1007,6 @@ body {
   margin-left: auto;
 }
 
-
-.render-options .select select {
-  width: 100%;
-}
 
 .render-outputs {
   display: grid;
@@ -1750,6 +1753,69 @@ body {
   border-color: var(--border-strong);
   border-radius: var(--radius-small);
   font-size: 0.84rem;
+}
+
+/* ---------- o preset de render no rodapé do preenchimento (entre os botões redondos e o Preencher) ---------- */
+
+.fill-preset {
+  min-width: 0;
+  max-width: 260px;
+  flex: 1 1 140px;
+  margin-left: auto;
+}
+
+.action-bar .fill-preset + .button-primary {
+  margin-left: 0;
+}
+
+.fill-preset .dropdown-icon {
+  width: 18px;
+  flex-basis: 18px;
+  margin-right: 8px;
+}
+
+.fill-preset .dropdown-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fill-preset .dropdown-trigger {
+  min-height: 46px; /* a altura dos botões do rodapé */
+  padding: 4px 34px 4px 16px;
+  line-height: 1.2;
+}
+
+.fill-preset.select::after {
+  right: 16px;
+}
+
+/* o nome que não cabe numa linha (já o curto): duas linhas, nunca cortado (app.js: fitPresetLabel) */
+.fill-preset .dropdown-label.is-two-lines {
+  line-height: 1.2;
+  white-space: normal;
+}
+
+/* sem espaço nem em duas linhas: o rótulo fica sem o ícone */
+.fill-preset .dropdown-trigger.is-no-icon .dropdown-icon {
+  display: none;
+}
+
+/* a lista dos presets: o nome inteiro, quebrando em duas linhas se precisar */
+.preset-popover .dropdown-item {
+  line-height: 1.25;
+  white-space: normal;
+}
+
+/* estreita: o seletor fica na linha dos botões redondos, o botão principal na de baixo, inteiro */
+@media (max-width: 520px) {
+  .fill-preset {
+    max-width: none;
+    margin-left: 0; /* ocupa o vão da linha: ao recolher, o espaço se divide entre os botões redondos */
+  }
+
+  .action-bar .fill-preset + .button-primary {
+    flex: 1 1 100%;
+  }
 }
 
 .dropdown-trigger:hover:not(:disabled) {

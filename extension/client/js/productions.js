@@ -2941,7 +2941,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		state.renderLoading = true;
 
 		try {
-			state.renderTemplates = (await call('renderPresets')).templates || [];
+			state.renderTemplates = (await call('renderPresets')).renderTemplates || [];
 		} catch (err) {
 			state.renderTemplates = [];
 		}

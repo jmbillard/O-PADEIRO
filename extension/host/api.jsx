@@ -1148,6 +1148,50 @@ function padComposeAccents(text) {
 	return PAD_REGRA_DO_RENOMEAR.composeAccents(text);
 }
 
+// Os presets de render de um item da fila (os templates de output module do After), sem os _HIDDEN (os internos do
+// After): a mesma lista no fillBegin e no renderPresets (regras/preset-de-render.js).
+function padRenderTemplates(rqItem) {
+	var all = rqItem.outputModule(1).templates;
+	var list = [];
+
+	for (var t = 0; t < all.length; t++) list.push(String(all[t]));
+
+	return PAD_PRESET_DE_RENDER.withoutHidden(list);
+}
+
+// Os presets de render deste After, antes de preencher (o seletor do rodapé do painel de templates) e na configuração
+// (os presets d'O FORNO). A lista só existe num item da fila: com a fila de render com algum item, lê dele, sem mexer
+// em nada; vazia, uma comp de passagem entra na fila, a lista é lida e as duas saem (no mesmo grupo de desfazer).
+// → { renderTemplates: [nome], preferredTemplate: o H.264 de 15 Mbps, final, preview: os dois d'O FORNO }
+PADX.renderPresets = function () {
+	var rq = app.project.renderQueue;
+	var list = [];
+
+	if (rq.numItems > 0) {
+		list = padRenderTemplates(rq.item(1));
+	} else {
+		padGroup('O PADEIRO: ler os presets de render', function () {
+			var temp = app.project.items.addComp('_padeiro', 16, 16, 1, 1, 1);
+
+			try {
+				var rqItem = rq.items.add(temp);
+
+				try {
+					list = padRenderTemplates(rqItem);
+				} finally {
+					rqItem.remove();
+				}
+			} finally {
+				temp.remove();
+			}
+		});
+	}
+
+	var presets = padLerSecao('presetsDeRender');
+
+	return { renderTemplates: list, preferredTemplate: padPreferredH264(list), 'final': presets['final'], preview: presets.preview };
+};
+
 // Passo 1: importa o template, prepara os itens a criar e lista os templates de render.
 // a: { uri, text, quiet }
 PADX.fillBegin = function (a) {
@@ -1203,20 +1247,12 @@ PADX.fillBegin = function (a) {
 			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (etiqueta TEMPLATE) não encontrada no projeto');
 		}
 
-		// Extrai e filtra a lista de templates de render
-		var renderTemplates = [];
+		// a lista dos presets de render (sem os _HIDDEN): só existe num item da fila
+		var renderList = [];
 		var rqItem = app.project.renderQueue.items.add(templateComp);
 
 		try {
-			renderTemplates = rqItem.outputModule(1).templates;
-
-			var tIndex = renderTemplates.length - 1;
-
-			// Remove templates ocultos
-			while (tIndex >= 0 && renderTemplates[tIndex].toString().match(/^_HIDDEN\s/)) {
-				renderTemplates.pop();
-				tIndex--;
-			}
+			renderList = padRenderTemplates(rqItem);
 		} finally {
 			rqItem.remove();
 		}
@@ -1234,12 +1270,6 @@ PADX.fillBegin = function (a) {
 					jobs.push({ n: n, f: f, label: inputTextArray[n].split(/[\n\r]+/).join(' / ') + (suffixArray[f] ? ' · ' + suffixArray[f] : '') });
 				}
 			}
-		}
-
-		var renderList = [];
-
-		for (var r = 0; r < renderTemplates.length; r++) {
-			renderList.push(renderTemplates[r].toString());
 		}
 
 		PADX_run = {
@@ -1506,7 +1536,7 @@ PADX.fillFinish = function () {
 	return {
 		count: run.count,
 		renderTemplates: run.renderTemplates,
-		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (confeiteiro.jsx)
+		preferredTemplate: padPreferredH264(run.renderTemplates), // padrão sem preset lembrado (regras/preset-de-render.js)
 		outputPath: padDisplayPaths(run.templateData.outputPath),
 		warnings: warnings
 	};

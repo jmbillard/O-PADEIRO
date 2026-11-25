@@ -79,6 +79,44 @@ async function openTemplate(page) {
 	await page.waitForTimeout(500);
 }
 
+// o preset de render no rodapé do preenchimento (entre os botões redondos e o Preencher), no tamanho padrão e em
+// 340 px (o seletor no vão da linha dos botões redondos, o Preencher na de baixo): aberto, com o nome longo (o curto,
+// em duas linhas) e o template sem output (o seletor some)
+const PRESET_LONGO = 'GLOBO PROMO - ProRes 422 HQ 1080i59 - entrega VT sem áudio';
+
+function presetStates() {
+	const out = [];
+
+	[['', null], [' (340 px)', { width: 340, height: 760 }]].forEach(([suffix, size]) => {
+		async function resize(p) {
+			if (size) await p.setViewportSize(size);
+		}
+
+		out.push(['templates: preset no rodapé' + suffix, 'index.html', async (p) => {
+			await resize(p);
+			await openTemplate(p);
+		}]);
+		out.push(['templates: preset aberto' + suffix, 'index.html', async (p) => {
+			await resize(p);
+			await openTemplate(p);
+			await p.locator('#fill-preset .dropdown-trigger').click();
+			await p.waitForTimeout(300);
+		}]);
+		out.push(['templates: preset de nome longo' + suffix, 'index.html', async (p) => {
+			await resize(p);
+			await p.evaluate((name) => localStorage.setItem('padeiro.outputTemplate', name), PRESET_LONGO);
+			await openTemplate(p);
+		}]);
+		out.push(['templates: sem output' + suffix, 'index.html', async (p) => {
+			await resize(p);
+			await p.locator('.tree-row:visible', { hasText: 'ASSINATURA JORNAL' }).first().click();
+			await p.waitForTimeout(800);
+		}]);
+	});
+
+	return out;
+}
+
 const CHECKS = [
 	['barra', 'bar.html'],
 	['tour', 'bar.html?mock=nosetup'],
@@ -263,7 +301,7 @@ const CHECKS = [
 		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(800);
 	}]
-].concat(['prods', 'tipos-de-projeto', 'coletar', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'deste-computador'].map(function (tab) {
+].concat(presetStates()).concat(['prods', 'tipos-de-projeto', 'coletar', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'deste-computador'].map(function (tab) {
 	return ['configuração: ' + tab, 'productions.html', async (p) => {
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 

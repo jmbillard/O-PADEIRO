@@ -1046,6 +1046,56 @@ REGRAS.push({
 	}
 });
 
+// o preset de render: o nome curto (o rodapé do painel de templates), o H.264 preferido e a lista sem os _HIDDEN
+const PRESETS_DO_AFTER = ['H.264 - Match Render Settings - 15 Mbps', 'H.264 - Match Render Settings - 40 Mbps', 'High Quality', 'Lossless with Alpha', '_HIDDEN X Factor 8 Bit', '_HIDDEN H.264 - 15 Mbps'];
+
+REGRAS.push({
+	arquivo: 'preset-de-render.js',
+	global: 'PAD_PRESET_DE_RENDER',
+	titulo: 'o preset de render (o nome curto, o H.264 preferido e a lista sem os ocultos)',
+	casos: function (api) {
+		test('o nome curto: com 3 partes ou mais, a primeira e a última', function () {
+			eq(api.shortName('H.264 - Match Render Settings - 15 Mbps'), 'H.264 · 15 Mbps');
+			eq(api.shortName('GLOBO PROMO - ProRes 422 HQ 1080i59 - entrega VT sem áudio'), 'GLOBO PROMO · entrega VT sem áudio');
+			eq(api.shortName('A - B - C - D'), 'A · D');
+		});
+
+		test('o nome curto: com menos de 3 partes, o nome inteiro (o hífen sem espaço não separa)', function () {
+			eq(api.shortName('High Quality with Alpha'), 'High Quality with Alpha');
+			eq(api.shortName('ProRes - 4444'), 'ProRes - 4444');
+			eq(api.shortName('H.264-Match-15'), 'H.264-Match-15');
+			eq(api.shortName(''), '');
+		});
+
+		test('o nome curto não tem espaço sobrando nas pontas das partes', function () {
+			eq(api.shortName('  H.264 -  Match   -   15 Mbps  '), 'H.264 · 15 Mbps');
+		});
+
+		test('a lista sem os _HIDDEN (os presets internos do After), em qualquer posição, na mesma ordem', function () {
+			eq(api.withoutHidden(PRESETS_DO_AFTER), ['H.264 - Match Render Settings - 15 Mbps', 'H.264 - Match Render Settings - 40 Mbps', 'High Quality', 'Lossless with Alpha']);
+			eq(api.withoutHidden(['_HIDDEN A', 'B', '_HIDDEN C', 'D']), ['B', 'D']);
+			eq(api.withoutHidden([]), []);
+		});
+
+		test('o H.264 preferido: o de 15 Mbps (o padrão do After, em qualquer idioma), nunca um _HIDDEN', function () {
+			eq(api.preferredH264(PRESETS_DO_AFTER), 'H.264 - Match Render Settings - 15 Mbps');
+			eq(api.preferredH264(['_HIDDEN H.264 - 15 Mbps', 'H.264 - Paramètres de rendu - 15 Mbps']), 'H.264 - Paramètres de rendu - 15 Mbps');
+		});
+
+		test('o H.264 preferido: sem o de 15 Mbps no fim, qualquer H.264 de 15 Mbps; depois qualquer H.264; senão vazio', function () {
+			eq(api.preferredH264(['H264 - 40 Mbps', 'Meu H.264 15 Mbps v2']), 'Meu H.264 15 Mbps v2');
+			eq(api.preferredH264(['Lossless', 'H264 - 40 Mbps']), 'H264 - 40 Mbps');
+			eq(api.preferredH264(['Lossless', 'High Quality']), '');
+			eq(api.preferredH264([]), '');
+		});
+	},
+	es3: function (api) {
+		eq(api.shortName('H.264 - Match Render Settings - 15 Mbps'), 'H.264 · 15 Mbps');
+		eq(api.withoutHidden(['_HIDDEN A', 'B']).length, 1);
+		eq(api.preferredH264(PRESETS_DO_AFTER), 'H.264 - Match Render Settings - 15 Mbps');
+	}
+});
+
 // ---------------------------------------------------------------------------------------------------------------
 
 REGRAS.forEach(function (r) {

@@ -435,19 +435,10 @@ PADX.confeiteiroSave = function (a) {
 	});
 };
 
-// O preset de render H.264 preferido: o de 15 Mbps ("H.264 - Match Render Settings - 15 Mbps", o padrão
-// do After Effects). O meio do nome muda com o idioma, então compara só o começo (H.264) e o fim (15 Mbps).
-// Sem ele, qualquer H.264 de 15 Mbps e, por fim, qualquer H.264. '' se não houver nenhum.
+// O preset de render H.264 preferido (o de 15 Mbps, o padrão do After): a regra compartilhada
+// (regras/preset-de-render.js), também usada pelo painel. '' se não houver nenhum.
 function padPreferredH264(templates) {
-	var rules = [/^H\.?264\b.*\b15\s*Mbps\s*$/i, /H\.?264.*15\s*Mbps/i, /H\.?264/i];
-
-	for (var r = 0; r < rules.length; r++) {
-		for (var t = 0; t < templates.length; t++) {
-			if (!/^_HIDDEN/.test(templates[t]) && rules[r].test(templates[t])) return templates[t];
-		}
-	}
-
-	return '';
+	return PAD_PRESET_DE_RENDER.preferredH264(templates);
 }
 
 // Gera o preview em vídeo do template salvo ('<template>_preview.mp4', o que a janela de templates mostra):

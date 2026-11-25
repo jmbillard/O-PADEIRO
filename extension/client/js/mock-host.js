@@ -117,10 +117,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			outputPath: ['//servidor/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS']
 		},
 		'TARJA DUPLA': { configName: 'TARJA DUPLA', exemple: 'TÍTULO\nSUBTÍTULO', tip: 'título na 1ª linha, subtítulo na 2ª.', outputPath: ['~/Desktop'] },
-		'LETTERING SOLTO': { configName: 'LETTERING', exemple: 'TEXTO', tip: 'digite o texto do lettering.', outputPath: ['~/Desktop'] }
+		'LETTERING SOLTO': { configName: 'LETTERING', exemple: 'TEXTO', tip: 'digite o texto do lettering.', outputPath: ['~/Desktop'] },
+		// sem output: o preenchimento não põe na fila de render (o seletor do preset some do rodapé)
+		'ASSINATURA JORNAL': { configName: 'ASSINATURA JORNAL', exemple: 'JORNAL DA GLOBO', tip: 'digite o nome do jornal.', outputPath: [] }
 	};
 
 	var run = null;
+
+	// os presets de render do After de teste (os templates de output module), na ordem do After (o primeiro é o
+	// H.264 preferido); ?mock=sempreset: o primeiro some do After antes de preencher (o preset escolhido sumiu da lista)
+	var RENDER_TEMPLATES = ['H.264 - Match Render Settings - 15 Mbps', 'H.264 - Match Render Settings - 40 Mbps', 'H.264 - Match Render Settings - 5 Mbps', 'High Quality', 'High Quality with Alpha', 'Lossless', 'Lossless with Alpha', 'Apple ProRes 422 HQ', 'Apple ProRes 4444', 'GLOBO PROMO - ProRes 422 HQ 1080i59 - entrega VT sem áudio', 'AIFF 48kHz', 'Photoshop'];
 
 	// o que o host de teste guardava antes da tabela de seções, numa chave própria do localStorage: lido na semente
 	// (sem o arquivo ainda), e a gravação seguinte vai para o arquivo
@@ -610,11 +616,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { name: a.name };
 		},
 
-		// O FORNO: os presets de render do After e as comps na fila
+		// os presets de render deste After (o seletor do rodapé do painel de templates e os d'O FORNO, na configuração)
 		renderPresets: function () {
 			var r = mockLer('presetsDeRender');
 
-			return { templates: ['H.264 - Match Render Settings - 15 Mbps', 'H.264 metade', 'High Quality', 'High Quality with Alpha', 'Lossless', 'ProRes 422 HQ', 'ProRes 4444 + alpha', 'XDCAM HD 50', 'Sequência PNG'], 'final': r['final'] || '', preview: r.preview || '' };
+			window.PAD_MOCK_RENDER_PRESETS_CALLS = (window.PAD_MOCK_RENDER_PRESETS_CALLS || 0) + 1; // para os testes: quantas leituras
+
+			return { renderTemplates: RENDER_TEMPLATES.slice(), preferredTemplate: RENDER_TEMPLATES[0], 'final': r['final'] || '', preview: r.preview || '' };
 		},
 
 		logoGlobo: async function (a) {
@@ -1122,11 +1130,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		fillFinish: function () {
-			return { count: run.jobs.length, renderTemplates: ['H264 - Match Source', 'ProRes 422 HQ', 'ProRes 4444 (alpha)', 'DNxHR HQX'], outputPath: ['//servidor/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS', '~/Desktop'], warnings: [] };
+			var presets = mode === 'sempreset' ? RENDER_TEMPLATES.slice(1) : RENDER_TEMPLATES.slice();
+
+			return { count: run.jobs.length, renderTemplates: presets, preferredTemplate: presets[0], outputPath: ['//servidor/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS', '~/Desktop'], warnings: [] };
 		},
 
 		queueBegin: function (a) {
 			run.template = a.outputTemplate;
+			window.PAD_MOCK_QUEUE_PRESET = a.outputTemplate; // para os testes: o preset com que a fila foi criada
 
 			return { total: run.jobs.length, outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS', '~/Desktop'], warnings: mode === 'fail' ? ['#PAD_019 - output não pode ser acessado: /Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/TARJAS'] : [] };
 		},
