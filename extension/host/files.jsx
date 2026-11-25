@@ -5,9 +5,10 @@
 > O ARQUIVISTA: renomear os arquivos e as pastas de um diretório
 ---------------------------------------------------------------
 
-A mesma regra do renomear das comps (configuração > renomear: a caixa, os acentos, o separador e o prefixo do
-tipo), aplicada aos nomes dos arquivos e das pastas de um diretório. O prefixo do tipo vem do PRÓPRIO nome
-(_CRT_HOJE → CRT - HOJE), nunca da pasta de cima.
+A mesma regra do renomear das comps (configuração > renomear: o formato pelos termos, o prefixo do formato, a caixa,
+o separador, os especiais e os nomes fixos), aplicada aos nomes dos arquivos e das pastas de um diretório
+(padRenameByRule, rename lib.js). A única diferença: o formato vem do PRÓPRIO nome (_CRT_HOJE → CRT - HOJE; a pasta
+RODAPES JOGO → RDP - JOGO), nunca da pasta onde o item está.
 
 - filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
 - filesList   → os itens da pasta (e das subpastas, se pedido), com a sugestão de cada um
@@ -45,22 +46,21 @@ function padFilesSplit(name, isFolder) {
 	return { base: name.slice(0, at), ext: name.slice(at + 1) };
 }
 
-// o nome novo de um item, pela regra do renomear: { plain (só o formato), typed (com o prefixo do tipo) }
+// o nome novo de um item, pela regra do renomear das comps (padRenameByRule, rename lib.js): { plain (só o formato e
+// os nomes fixos), typed (com o prefixo do formato) }. o formato vem só do PRÓPRIO nome (arquivo ou pasta), nunca da
+// pasta onde ele está: a única diferença em relação às comps
 function padFilesSuggest(name) {
 	// o macOS guarda o nome com o acento separado da letra (a + ~): junta os dois antes da regra, senão a marca solta
 	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
 	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
-	var typed = plain;
-	var found = findMatchingPrefix(base, false);
+	var fixed = padRenameFixedName(base);
+	var rule = padRenameByRule(base, findMatchingPrefix(base, false));
+	var typed = sanitizeFileName(rule.name);
 
-	if (found) {
-		var clean = padRenameFormat(cleanCompName(base, found));
-
-		typed = sanitizeFileName(clean && clean.toUpperCase() !== found.prefix ? found.prefix + globalSeparator + clean : found.prefix);
-		// o nome já no padrão (CRT - HOJE) não perde o separador no formato simples
-		if (padRenameFormat(base) == typed) plain = typed;
-	}
+	// o nome fixo vale com ou sem o prefixo; o nome já no padrão (CRT - HOJE) não perde o separador no formato simples
+	if (fixed) plain = sanitizeFileName(fixed);
+	else if (padRenameFormat(base) == typed) plain = typed;
 
 	return { plain: plain || base, typed: typed || base };
 }
@@ -111,7 +111,7 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 
 		var fs = padFilesSuggest(folders[i].name);
 
-		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.plain, use: false });
+		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.typed, use: false });
 	}
 
 	// as sequências: prefixo + número (3 dígitos ou mais) + extensão, com pelo menos PAD_FILES_SEQ_MIN arquivos

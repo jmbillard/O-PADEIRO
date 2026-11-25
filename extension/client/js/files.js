@@ -4,11 +4,12 @@
 > O ARQUIVISTA — renomear os arquivos e as pastas de um diretório
 ---------------------------------------------------------------
 
-A mesma regra do renomear das comps (configuração > renomear), nos nomes dos arquivos e das pastas de uma pasta. O
-host (files.jsx) lê a pasta e sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser,
-desliga o que não deve mudar e renomeia.
+A mesma regra do renomear das comps (configuração > renomear: o formato, o prefixo do formato, a caixa, o separador,
+os especiais e os nomes fixos), nos nomes dos arquivos e das pastas de uma pasta. O host (files.jsx) lê a pasta e
+sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser, desliga o que não deve mudar e
+renomeia.
 
-  - o prefixo do tipo vem do próprio nome do arquivo (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
+  - o prefixo do formato vem do próprio nome do item, arquivo ou pasta (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
   - nome repetido na mesma pasta, vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em lotes, com a barra de progresso;
   - o arquivo usado no projeto aberto é religado depois de renomeado;
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);

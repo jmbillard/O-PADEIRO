@@ -1759,6 +1759,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 				return clean(name);
 			};
+			// a regra do host (files.jsx → padRenameByRule) resumida: o nome fixo vale com e sem o prefixo, e as pastas
+			// também ganham o prefixo do formato (pelo próprio nome, nunca pela pasta de cima)
+			var fixed = function (name) {
+				return / LOGO GLOBO /.test(' ' + clean(name) + ' ') ? 'LOGO GLOBO' : '';
+			};
 			var list = (window.PAD_MOCK_FILES || (window.PAD_MOCK_FILES = [
 				{ dir: '', name: 'antigos', ext: '', kind: 'folder' },
 				{ dir: '', name: 'Sequência fundo', ext: '', kind: 'folder' },
@@ -1771,13 +1776,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ dir: '', name: 'tarja_patrocínio  v2', ext: 'png', kind: 'file', use: true },
 				{ dir: '', name: 'fundo palco', ext: 'png', kind: 'file', use: true },
 				{ dir: '', name: 'ref_palco', ext: 'jpg', kind: 'file' },
+				{ dir: '', name: 'logo_globo_branco', ext: 'png', kind: 'file' },
 				{ dir: 'Sequência fundo', name: 'textura_ouro', ext: 'png', kind: 'seq', sep: '_', pad: 4, frames: '_[0001-0120]', count: 120, use: true },
 				{ dir: 'antigos', name: '_CRT_ONTEM', ext: 'mov', kind: 'file' },
 				{ dir: 'antigos', name: 'passagem glitter', ext: 'mov', kind: 'file' }
 			])).filter(function (it) {
 				return a.sub || !it.dir;
 			}).map(function (it) {
-				return Object.assign({ use: false }, it, { plain: it.name === typed(it.name) ? it.name : clean(it.name), typed: it.kind === 'folder' ? clean(it.name) : typed(it.name) });
+				return Object.assign({ use: false }, it, { plain: fixed(it.name) || (it.name === typed(it.name) ? it.name : clean(it.name)), typed: fixed(it.name) || typed(it.name) });
 			});
 
 			return { path: a.path, name: String(a.path).split('/').pop(), items: list, truncated: false, undo: window.PAD_MOCK_FILES_UNDO || null };

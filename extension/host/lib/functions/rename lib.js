@@ -169,10 +169,35 @@ function removeRenameTerms(name, terms) {
 	return name;
 }
 
+// A regra do renomear aplicada a um nome, com o formato já achado (ou null): o prefixo do formato, o separador, a
+// caixa, os especiais e os nomes fixos. Sem app nem comp: vale para as comps (getPromoRename) e para os arquivos (o
+// arquivista, files.jsx). Retorna { name, comment, fixed } — comment é null sem formato; fixed: veio de um nome fixo.
+function padRenameByRule(name, prefixFound) {
+	// os termos aceitam acentos: o nome é tratado como está, e o formato (acentos, caixa) vem no fim
+	var text = String(name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+	var result = { name: padRenameFormat(text), comment: null, fixed: false };
+
+	if (prefixFound) {
+		var cleanName = padRenameFormat(cleanCompName(text, prefixFound));
+
+		result.comment = prefixFound.comment;
+		result.name = cleanName && cleanName.toUpperCase() !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
+	}
+
+	// nomes fixos (ex: LOGO GLOBO), pelo nome
+	var fixedName = padRenameFixedName(text);
+
+	if (fixedName) {
+		result.name = fixedName;
+		result.fixed = true;
+	}
+
+	return result;
+}
+
 // Calcula o nome padronizado de uma comp, sem alterá-la.
 // Retorna { name, comment } — comment é null quando nenhum tipo foi identificado.
 function getPromoRename(comp) {
-	// os termos aceitam acentos: o nome é tratado como está, e o formato (acentos, caixa) vem no fim
 	var compName = String(comp.name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var prefixFound = null;
 
@@ -183,19 +208,15 @@ function getPromoRename(comp) {
 
 	if (!prefixFound) prefixFound = findMatchingPrefix(compName, false);
 
-	var result = { name: padRenameFormat(compName), comment: null };
+	var rule = padRenameByRule(compName, prefixFound);
+	var result = { name: rule.name, comment: rule.comment };
 
-	if (prefixFound) {
-		var cleanName = padRenameFormat(cleanCompName(compName, prefixFound));
+	// sem nome fixo no nome: o do comentário original (só sem formato)
+	if (!rule.fixed && !prefixFound) {
+		var fixedName = padRenameFixedName(comp.comment);
 
-		result.comment = prefixFound.comment;
-		result.name = cleanName && cleanName.toUpperCase() !== prefixFound.prefix ? prefixFound.prefix + globalSeparator + cleanName : prefixFound.prefix;
+		if (fixedName) result.name = fixedName;
 	}
-
-	// nomes fixos (ex: LOGO GLOBO), pelo nome da comp ou pelo comentário original
-	var fixedName = padRenameFixedName(compName) || (prefixFound ? null : padRenameFixedName(comp.comment));
-
-	if (fixedName) result.name = fixedName;
 
 	return result;
 }
