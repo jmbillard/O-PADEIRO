@@ -41,8 +41,9 @@ PADX.requestedTab = function () {
 */
 
 // O que o painel precisa para baixar o índice sozinho. local: o modo local (só a cópia, sem a rede). copia: a cópia
-// do índice (onde o painel grava); copiaAntiga: a do nome de antes, lida enquanto não há a de agora.
-// → { url, films, copia, copiaAntiga, local, platform, caminhosFixos, mode, folders, foldersOnly, daily, localIndex }
+// do índice (onde o painel grava); copiasAntigas: as dos nomes de antes (regras/configuracao.js: COPIA_DA_BUSCA), lidas
+// enquanto não há a de agora.
+// → { url, films, copia, copiasAntigas, local, platform, caminhosFixos, mode, folders, foldersOnly, daily, localIndex }
 PADX.searchInfo = function () {
 	var list = PS_CAMINHOS_FIXOS || PAD_CONFIGURACAO.padrao('buscaDeCaminhos').caminhosFixos;
 	var caminhosFixos = [];
@@ -64,13 +65,13 @@ PADX.searchInfo = function () {
 	}
 
 	// o índice local (configuração > buscar, neste computador): as pastas deste computador, lidas pelo painel
-	var search = padMachineSearch(padMachineData().search);
+	var search = padLerSecao('indiceLocal');
 
 	return {
 		url: PS_INDEX_URL,
 		films: PS_FILMS_URL,
 		copia: psCopyFile().fsName,
-		copiaAntiga: psOldCopyFile().fsName,
+		copiasAntigas: psOldCopyPaths(),
 		local: padLocalMode(),
 		platform: appOs,
 		caminhosFixos: caminhosFixos,

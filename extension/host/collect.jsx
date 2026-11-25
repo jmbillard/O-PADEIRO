@@ -9,12 +9,13 @@ Copia os arquivos usados no projeto para a pasta do projeto (a do .aep), numa á
 tipo, e troca os caminhos dos itens para as cópias. Sequências de imagens são copiadas inteiras (os
 quadros do trecho usado), cada uma na própria subpasta.
 
-'COLLECT' no O_PADEIRO_GLOBAL_config.json:
+'COLLECT' no O_PADEIRO_GLOBAL_config.json (a seção coletar da tabela de seções, regras/configuracao.js: o padrão e
+a limpeza ficam lá):
   folders        → a árvore, dentro da pasta do projeto: [{ name, parent, contents: [...] }]
                    tipos: videos, sequencias, imagens, audio, dados, fontes. tipo fora da árvore: não é coletado.
                    'projeto' marca a pasta do .aep: a janela PROJETO salva ali e o coletar usa a pasta de
                    cima como a raiz da estrutura. as pastas sem tipo também são criadas (ex: 03 SAIDA)
-Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
+Sem 'COLLECT' no arquivo: a estrutura padrão (01_PROJETOS, 02_ARQUIVOS, 03_SAIDA, 04_REFS, 05_EXTERNOS).
 
 */
 
@@ -22,93 +23,6 @@ Sem 'COLLECT' no arquivo: PAD_DEFAULT_COLLECT.
 // cada coisa (migrate.jsx), e a pasta deles é sempre criada com a estrutura
 var PAD_COLLECT_CONTENTS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
 var PAD_COLLECT_ALWAYS = ['saidas', 'externos'];
-
-// A estrutura padrão: o .aep em 01, os arquivos em 02 (por tipo), as saídas em 03 (com os previews), as referências
-// em 04 e, em 05, o que não é do projeto (os arquivos externos).
-var PAD_DEFAULT_COLLECT = {
-	folders: [
-		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
-		{ name: '02_ARQUIVOS', parent: '', contents: [] },
-		{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
-		{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
-		{ name: 'VIDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
-		{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
-		{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
-		{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
-		{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
-		{ name: '04_REFS', parent: '', contents: [] },
-		{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
-	]
-};
-
-// Valida e normaliza a seção vinda do painel. Lança Error com a mensagem.
-function padCleanCollect(o) {
-	var clean = { folders: [] }; // 'projectFolders' e 'saveAfter' (antigos) são ignorados: o coletar sempre salva
-	var names = {};
-	var owner = {};
-	var i;
-
-	for (i = 0; i < (o.folders || []).length; i++) {
-		var name = padTrim(o.folders[i].name).replace(/\s+/g, ' ');
-		var list = o.folders[i].contents instanceof Array ? o.folders[i].contents : [];
-		var kept = [];
-
-		if (name == '') throw new Error('#PAD_094 - coletar: a pasta ' + (i + 1) + ' precisa de um nome.');
-		if (/[\\\/:*?"<>|]/.test(name)) throw new Error('#PAD_094 - coletar: "' + name + '" não pode ter \\ / : * ? " < > |.');
-		if (names[name.toUpperCase()]) throw new Error('#PAD_094 - coletar: a pasta "' + name + '" aparece mais de uma vez.');
-
-		for (var t = 0; t < list.length; t++) {
-			var content = padTrim(list[t]);
-
-			if (content == '') continue;
-			if (PAD_COLLECT_CONTENTS.indexOf(content) < 0) throw new Error('#PAD_094 - coletar: tipo desconhecido em "' + name + '".');
-			if (owner[content]) throw new Error('#PAD_094 - coletar: "' + name + '" e "' + owner[content] + '" recebem o mesmo tipo.');
-
-			owner[content] = name;
-			kept.push(content);
-		}
-
-		names[name.toUpperCase()] = true;
-		clean.folders.push({ name: name, parent: padTrim(o.folders[i].parent), contents: kept });
-	}
-
-	for (i = 0; i < clean.folders.length; i++) {
-		var f = clean.folders[i];
-
-		if (f.parent != '' && !names[f.parent.toUpperCase()]) throw new Error('#PAD_094 - coletar: a pasta pai de "' + f.name + '" não existe.');
-
-		// grafia da pasta pai e ciclos
-		var seen = {};
-		var cur = f;
-
-		while (cur && cur.parent != '') {
-			if (seen[cur.name.toUpperCase()]) throw new Error('#PAD_094 - coletar: "' + f.name + '" está dentro dela mesma.');
-
-			seen[cur.name.toUpperCase()] = true;
-
-			var next = null;
-
-			for (var k = 0; k < clean.folders.length; k++) {
-				if (clean.folders[k].name.toUpperCase() == cur.parent.toUpperCase()) next = clean.folders[k];
-			}
-
-			if (cur == f && next) f.parent = next.name;
-			cur = next;
-		}
-	}
-
-	return clean;
-}
-
-function padReadCollect() {
-	try {
-		var data = padConfigData();
-
-		return data.COLLECT ? padCleanCollect(data.COLLECT) : PAD_DEFAULT_COLLECT;
-	} catch (err) {
-		return PAD_DEFAULT_COLLECT;
-	}
-}
 
 // Caminho (relativo à pasta do projeto) da pasta que recebe o tipo; null = o tipo não é coletado.
 function padCollectFolderPath(settings, type) {
@@ -660,7 +574,7 @@ function padCollectReady() {
 function padCollectTarget(a) {
 	if (app.project.numItems == 0) throw new Error('#PAD_050 - o projeto está vazio.');
 
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var file = app.project.file;
 	var target = '';
 
@@ -771,7 +685,7 @@ PADX.collectBegin = function (a) {
 
 // collectStep: a: { target, ids } → { files, sequences, frames, skipped }
 PADX.collectStep = function (a) {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var root = padEnsureFolder(a.target);
 	var paths = padCollectPaths(settings);
 	var res = { files: 0, sequences: 0, frames: 0, skipped: [], missing: [] };
@@ -789,7 +703,7 @@ PADX.collectStep = function (a) {
 
 // collectEnd: a: { target, files, sequences, frames, skipped, missing } → { messages, data }
 PADX.collectEnd = function (a) {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 
 	return padCollect(function () {
 		return padCollectFinish(a.target, settings, { files: a.files || 0, sequences: a.sequences || 0, frames: a.frames || 0, skipped: a.skipped || [], missing: a.missing || [], fonts: '' });
@@ -960,7 +874,7 @@ function padCollectStatusNow() {
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
 // → { project, root, migrated, dests, items: [{ id, name, file, kind, state, layers, frames }] }
 PADX.collectList = function () {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var file = app.project.file;
 	var root = file ? padCollectRoot(file, settings) : '';
 	var rootKey = root ? padPathKey(new Folder(root).fsName) : '';
@@ -1287,7 +1201,7 @@ PADX.collectRelinkFind = function (a) {
 	var state = { byName: {}, files: 0, until: new Date().getTime() + PAD_RELINK_MS, partial: false, seen: {} };
 	var projectFile = app.project.file;
 
-	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padReadCollect())), 5, state);
+	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padLerSecao('coletar'))), 5, state);
 
 	// a pasta de output do projeto e as pastas das saídas da fila de render: o que foi renderizado e voltou para o
 	// projeto (um lettering, um pré-render) costuma estar lá

@@ -34,11 +34,17 @@ download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 		return [info.mode, info.local, info.url, (info.folders || []).join('|'), info.foldersOnly, JSON.stringify(info.caminhosFixos || [])].join('\n');
 	}
 
-	// a cópia para ler: a de agora (info.copia) ou, sem ela, a do nome de antes (info.copiaAntiga, busca_v2.json),
-	// até o próximo download gravar a de agora
+	// a cópia para ler: a de agora (info.copia) ou, sem ela, a primeira dos nomes de antes que existir
+	// (info.copiasAntigas: o host manda, da tabela de seções), até o próximo download gravar a de agora
 	function copyPath(fs, info) {
 		try {
-			if (!fs.existsSync(info.copia) && info.copiaAntiga && fs.existsSync(info.copiaAntiga)) return info.copiaAntiga;
+			if (fs.existsSync(info.copia)) return info.copia;
+
+			var old = (info.copiasAntigas || []).filter(function (p) {
+				return fs.existsSync(p);
+			})[0];
+
+			if (old) return old;
 		} catch (err) { }
 
 		return info.copia;

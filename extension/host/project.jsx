@@ -103,7 +103,7 @@ PADX.projectCategories = function () {
 		out.push({ name: list[i].name, path: list[i].path, output: list[i].output, file: list[i].file || '', icon: list[i].icon, reachable: checked[fixed] });
 	}
 
-	return { categories: out, fallback: padMachinePath(padMachineData().projects) || '~/Desktop' };
+	return { categories: out, fallback: padLerSecao('pastaDosProjetos') || '~/Desktop' };
 };
 
 /*
@@ -283,7 +283,7 @@ function padDayTime(ms) {
 
 // os editores e o salvo por último com quem está usando, hoje → { editores, salvo, changed }
 function padEditorsTouch(cur) {
-	var user = padMachineUser();
+	var user = padSigla();
 	var today = padToday();
 	var list = padEditorsList(cur.editores);
 	var before = padEditorsList(cur.salvo)[0] || null; // quem era o último, antes de agora
@@ -382,7 +382,7 @@ function padToday() {
 // Abre a pasta do projeto aberto: a da estrutura (gravada ao criar) ou a de cima da de projetos.
 PADX.projectOpenFolder = function () {
 	var file = app.project.file;
-	var path = padMountedPath(padPath(padMetaRead().pasta)) || (file ? padCollectRoot(file, padReadCollect()) : '');
+	var path = padMountedPath(padPath(padMetaRead().pasta)) || (file ? padCollectRoot(file, padLerSecao('coletar')) : '');
 
 	if (!path || !new Folder(path).exists) throw new Error('#PAD_091 - o projeto ainda não foi salvo.');
 
@@ -730,7 +730,7 @@ function padListedFolder(path) {
 }
 
 function padNewProjectPlan(a) {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var root;
 	var fileBase;
@@ -852,7 +852,7 @@ PADX.projectFolders = function (a) {
 	var i;
 
 	if (!a.plain) {
-		var settings = padReadCollect();
+		var settings = padLerSecao('coletar');
 
 		for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
 	}
@@ -880,7 +880,7 @@ PADX.projectFolders = function (a) {
 // padeiro criou. as pastas antigas da mesma atração ficam de fora. a: { root, depth, here (a do ano de agora) }
 // → { names: [nome] }
 PADX.projectQuadros = function (a) {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var sub = padCollectFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var level = [new Folder(padMountedPath(padPath(a.root)))];
 	var depth = Math.max(1, Math.min(3, a.depth || 1));
@@ -936,7 +936,7 @@ PADX.projectQuadros = function (a) {
 };
 
 PADX.projectShape = function () {
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var list = padStructureFolders(settings, null);
 	var byName = {};
 	var out = [];
@@ -973,7 +973,7 @@ PADX.projectPlan = function (a) {
 		fileName: plan.fileBase + '.aep',
 		existing: existing,
 		exists: exists,
-		user: padMachineUser(),
+		user: padSigla(),
 		output: outputPath ? padDisplayPath(outputPath) : ''
 	};
 };
@@ -1063,7 +1063,7 @@ PADX.projectCreate = function (a) {
 		atracao: String(a.atracao || ''),
 		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
-		designer: padMachineUser(),
+		designer: padSigla(),
 		pasta: padDisplayPath(plan.root),
 		output: output && output.exists ? padDisplayPath(output.fsName) : '',
 		criado: padToday()
@@ -1157,7 +1157,7 @@ PADX.projectStatus = function () {
 	}
 	else if (file || app.project.numItems > 0) state = 'missing';
 
-	return { state: state, key: key, why: why, fontsCheck: padMachineFontsCheck() };
+	return { state: state, key: key, why: why, fontsCheck: padLerSecao('fontesConferir') };
 };
 
 // a data de modificação de um arquivo, em ms (0 sem arquivo ou sem leitura)
@@ -1175,7 +1175,7 @@ function padFileTime(file) {
 PADX.projectCurrent = function () {
 	var file = app.project.file;
 	var m = padMetaRead();
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var inRoot = !!(file && m.atracao && padInRoot(file));
 
 	return {
@@ -1185,18 +1185,18 @@ PADX.projectCurrent = function () {
 		atracao: m.atracao,
 		quadro: m.quadro,
 		oQueE: m.oQueE,
-		designer: m.designer || padMachineUser(),
+		designer: m.designer || padSigla(),
 		criado: m.criado,
 		editores: padEditorsList(m.editores),
 		salvo: padEditorsList(m.salvo)[0] || null,
-		defaultUser: padDefaultUser(),
+		defaultUser: padSiglaDoLogin(),
 		output: padNoVolumeSuffix(m.output),
 		root: padNoVolumeSuffix(m.pasta) || (file ? padDisplayPath(padCollectRoot(file, settings)) : ''),
 		file: file ? padDisplayPath(file.fsName) : '',
 		fileName: file ? decodeURI(file.name) : '',
 		modified: padFileTime(file), // o último salvamento do arquivo (a hora que os editores, por dia, não guardam)
 		hasItems: app.project.numItems > 0,
-		user: padMachineUser()
+		user: padSigla()
 	};
 };
 
@@ -1238,7 +1238,7 @@ PADX.projectSave = function (a) {
 		atracao: String(a.atracao || ''),
 		quadro: String(a.quadro || ''),
 		oQueE: String(a.what || ''),
-		designer: padCleanUser(a.designer) || padMachineUser(),
+		designer: PAD_CONFIGURACAO.limpar('sigla', a.designer) || padSigla(),
 		pasta: padDisplayPath(plan.root),
 		output: a.output != null ? (a.output ? padDisplayPath(padPath(padCleanSpaces(a.output))) : '') : null,
 		criado: padMetaRead().criado || padToday()

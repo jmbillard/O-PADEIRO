@@ -153,52 +153,20 @@ function padDisplayPaths(list) {
 > este computador (configuração > LOCAL > computador)
 ---------------------------------------------------------------
 
-'machine_config.json' na pasta de dados do usuário:
-  user       → a sigla do designer ({usuario} no nome do projeto); vazia: o usuário do computador
-  projects   → a pasta dos projetos neste computador: a atração nova vai para ela ({categoria}/{atracao})
-               quando a pasta da categoria não pode ser acessada (rede fora ou modo local)
-  outputs    → a pasta padrão de saída (render): vale quando a pasta do template não pode ser acessada
-  templates  → { 'produção': pasta } a pasta de templates de cada produção neste computador
-  localMode  → modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem
-               da última cópia guardada neste computador, os templates das pastas daqui, os projetos vão
-               para 'projects' (ou a Área de Trabalho), os renders para 'outputs' (ou a Área de Trabalho)
-               e os logs esperam a volta para a rede
+As seções deste computador ficam na tabela de seções (regras/configuracao.js): 'machine_config.json' na pasta de
+dados do usuário, com a sigla do designer, a pasta dos projetos, o output local, os presets de render, as produções
+deste computador, o modo local, o registro de uso ligado, o índice local, a lista dos templates e as fontes. O
+adaptador dos arquivos é o de host/productions.jsx (padLerSecao / padGravarSecoes).
+
+Modo local (o mesmo que acontece quando a rede cai): nada tenta a rede. a configuração vem da última cópia guardada
+neste computador, os templates das pastas daqui, os projetos vão para a pasta dos projetos (ou a Área de Trabalho), os
+renders para o output local (ou a Área de Trabalho) e os registros de uso esperam a volta para a rede.
 
 */
 
-var PAD_MACHINE_CACHE = { stamp: -1, data: {} };
-
-function padMachineFile() {
-	return new File(scriptPreferencesPath + '/machine_config.json');
-}
-
-function padMachineData() {
-	var file = padMachineFile();
-	var stamp = 0;
-
-	try {
-		stamp = file.exists ? file.modified.getTime() : 0;
-	} catch (err) { }
-
-	if (stamp != PAD_MACHINE_CACHE.stamp) {
-		PAD_MACHINE_CACHE.stamp = stamp;
-		PAD_MACHINE_CACHE.data = {};
-
-		if (stamp) {
-			try {
-				PAD_MACHINE_CACHE.data = JSON.parse(readFileContent(file)) || {};
-			} catch (err) { }
-		}
-	}
-
-	return PAD_MACHINE_CACHE.data;
-}
-
-// O modo local ligado à mão (configuração > meu usuário). 'homeOffice' é o nome antigo da chave.
+// O modo local ligado à mão (configuração > meu usuário).
 function padLocalForced() {
-	var d = padMachineData();
-
-	return d.localMode === true || d.homeOffice === true;
+	return padLerSecao('modoLocal');
 }
 
 // Modo local: ligado à mão ou a rede fora (a configuração da equipe só existe como a cópia deste
@@ -207,109 +175,59 @@ function padLocalMode() {
 	return padLocalForced() || padConfigIsCopy();
 }
 
-// Caminho de pasta digitado: barras normais, sem barra no fim.
-function padMachinePath(path) {
-	return padNoVolumeSuffix(String(path == null ? '' : path).replace(/^\s+|\s+$/g, '').replace(/\\/g, '/').replace(/(.)\/+$/, '$1'));
+// a sigla que vem do login (o usuário do computador), completa (quem quiser uma sigla muda na configuração > meu
+// usuário)
+function padSiglaDoLogin() {
+	return PAD_CONFIGURACAO.limpar('sigla', system.userName || '');
 }
 
-// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas
-function padCleanUser(user) {
-	return String(user == null ? '' : user).replaceSpecialCharacters().replace(/[^A-Za-z0-9._-]/g, '').substring(0, 24).toUpperCase();
-}
-
-// o padrão: o usuário do computador, completo (quem quiser uma sigla muda na configuração > meu usuário)
-function padDefaultUser() {
-	return padCleanUser(system.userName || '');
-}
-
-// Sigla do designer: a deste computador; sem ela, a antiga (project_user.json) ou a padrão.
-function padMachineUser() {
-	var user = padCleanUser(padMachineData().user);
-
-	if (user) return user;
-
-	var legacy = new File(scriptPreferencesPath + '/project_user.json');
-
-	if (legacy.exists) {
-		try {
-			user = padCleanUser(JSON.parse(readFileContent(legacy)).user);
-		} catch (err) { }
-	}
-
-	return user || padDefaultUser();
-}
-
-// Busca de caminhos neste computador: { mode: 'webhook' | 'local', folders: [], foldersOnly, daily }.
-//   mode        → de onde vêm os caminhos: o webhook da equipe ou o índice local (as pastas abaixo, indexadas aqui)
-//   folders     → as pastas lidas com todas as subpastas
-//   foldersOnly → só pastas (sem arquivos)
-//   daily       → refaz o índice uma vez por dia, ao abrir a busca
-function padMachineSearch(o) {
-	o = o && typeof o == 'object' ? o : {};
-
-	var folders = [];
-	var list = o.folders && typeof o.folders.length == 'number' ? o.folders : [];
-
-	for (var i = 0; i < list.length; i++) {
-		var path = padMachinePath(list[i]);
-
-		if (path) folders.push(path);
-	}
-
-	return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
-}
-
-// A lista de templates neste computador (configuração > templates): quantos recentes aparecem (0 a 30, padrão 5)
-// e há quantos dias um template ainda é novo (0 a 90, padrão 15). 0 esconde a seção
-function padMachineLists(d) {
-	var o = d && d.lists && typeof d.lists == 'object' ? d.lists : {};
-
-	function num(v, def, max) {
-		var n = parseInt(v, 10);
-
-		if (isNaN(n)) return def;
-
-		// sem ternário encadeado (o ExtendScript agrupa errado)
-		if (n < 0) return 0;
-
-		return n > max ? max : n;
-	}
-
-	return { recents: num(o.recents, 5, 30), newDays: num(o.newDays, 15, 90) };
+// Sigla do designer: a deste computador ou, sem ela, a do login.
+function padSigla() {
+	return padLerSecao('sigla') || padSiglaDoLogin();
 }
 
 PADX.machinePrefs = function () {
-	var d = padMachineData();
+	var sigla = padLerSecao('sigla');
 
 	return {
-		user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(),
-		defaultUser: padDefaultUser(),
-		projects: padMachinePath(d.projects),
-		outputs: padMachinePath(d.outputs),
-		render: padMachineRender(d),
-		productions: padMachineProductions(d),
-		log: padMachineLog(),
+		user: sigla == padSiglaDoLogin() ? '' : sigla,
+		defaultUser: padSiglaDoLogin(),
+		projects: padLerSecao('pastaDosProjetos'),
+		outputs: padLerSecao('outputLocal'),
+		render: padLerSecao('presetsDeRender'),
+		productions: padProducoesDesteComputador(),
+		log: padLerSecao('registroDeUsoLigado'),
 		localMode: padLocalForced(),
-		search: padMachineSearch(d.search),
-		fontsUpload: padMachineFontsUpload(),
-		fontsCheck: padMachineFontsCheck(),
-		lists: padMachineLists(d),
+		search: padLerSecao('indiceLocal'),
+		fontsUpload: padLerSecao('fontesNoBanco'),
+		fontsCheck: padLerSecao('fontesConferir'),
+		lists: padLerSecao('listaDosTemplates'),
 		localIndex: scriptPreferencesPath + '/indice_local.json',
 		offline: !padLocalForced() && padConfigIsCopy(), // a rede caiu: o modo local está valendo sozinho
 		hasConfigCopy: padConfigCopyFile().exists
 	};
 };
 
-// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists } (só os campos enviados mudam)
+// a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
+// (só os campos enviados mudam; os outros ficam como estão)
 PADX.saveMachinePrefs = function (a) {
-	var d = padMachineData();
-	var data = { user: padMachineUser() == padDefaultUser() ? '' : padMachineUser(), projects: padMachinePath(d.projects), outputs: padMachinePath(d.outputs), render: padMachineRender(d), productions: padMachineProductions(d), log: padMachineLog(), localMode: padLocalForced(), search: padMachineSearch(d.search), fontsUpload: padMachineFontsUpload(), fontsCheck: padMachineFontsCheck(), lists: padMachineLists(d) };
+	var valores = {
+		pastaDosProjetos: a.projects,
+		outputLocal: a.outputs,
+		presetsDeRender: a.render,
+		registroDeUsoLigado: a.log,
+		indiceLocal: a.search,
+		fontesNoBanco: a.fontsUpload,
+		fontesConferir: a.fontsCheck,
+		listaDosTemplates: a.lists
+	};
 
-	if (a.user != null) data.user = padCleanUser(a.user) == padDefaultUser() ? '' : padCleanUser(a.user);
-	if (a.projects != null) data.projects = padMachinePath(a.projects);
-	if (a.outputs != null) data.outputs = padMachinePath(a.outputs);
-	if (a.render != null) data.render = padMachineRender({ render: a.render });
-	if (a.log != null) data.log = a.log !== false;
+	// a sigla igual à do login fica vazia (vale a do login, mesmo se o login mudar)
+	if (a.user != null) {
+		var sigla = PAD_CONFIGURACAO.limpar('sigla', a.user);
+
+		valores.sigla = sigla == padSiglaDoLogin() ? '' : sigla;
+	}
 
 	if (a.productions != null) {
 		var team = padLerSecao('producoes');
@@ -329,15 +247,11 @@ PADX.saveMachinePrefs = function (a) {
 			names[pname.toUpperCase()] = true;
 		}
 
-		data.productions = padMachineProductions({ productions: a.productions });
+		valores.producoesDesteComputador = a.productions;
 	}
-	if (a.localMode != null) data.localMode = a.localMode === true;
-	if (a.search != null) data.search = padMachineSearch(a.search);
-	if (a.fontsUpload != null) data.fontsUpload = a.fontsUpload !== false;
-	if (a.fontsCheck != null) data.fontsCheck = a.fontsCheck !== false;
-	if (a.lists != null) data.lists = padMachineLists({ lists: a.lists });
+	if (a.localMode != null) valores.modoLocal = a.localMode === true;
 
-	if (data.localMode && !padLocalForced() && !padConfigCopyFile().exists) {
+	if (valores.modoLocal && !padLocalForced() && !padConfigCopyFile().exists) {
 		// liga o modo local: guarda já a cópia da configuração, se a rede ainda estiver aí
 		try {
 			padConfigData();
@@ -346,18 +260,8 @@ PADX.saveMachinePrefs = function (a) {
 		if (!padConfigCopyFile().exists) throw new Error('#PAD_096 - modo local: ainda não há uma cópia da configuração neste computador. abra a configuração uma vez com a rede conectada e ligue de novo.');
 	}
 
-	var folder = new Folder(scriptPreferencesPath);
-
-	if (!folder.exists) folder.create();
-
-	saveTextFile(JSON.stringify(data, null, '\t'), padMachineFile().fsName);
-	PAD_MACHINE_CACHE.stamp = -1;
+	padGravarSecoes(valores);
 	padConfigInvalidate();
-
-	// a sigla antiga sai: agora fica aqui
-	var legacy = new File(scriptPreferencesPath + '/project_user.json');
-
-	if (legacy.exists) legacy.remove();
 
 	return PADX.machinePrefs();
 };
@@ -376,44 +280,25 @@ function padIsLocalPath(path) {
 	return !!drive && !(DRIVE_MAP && DRIVE_MAP[drive[1].toUpperCase()]);
 }
 
-// Produções locais (configuração > templates, neste computador): [{ name, path }], só deste computador, independentes das da
-// equipe. Sem a lista ainda (versão anterior): as pastas deste computador escolhidas para as produções da
-// equipe com caminho local (ex: Ω PASTA LOCAL) viram produções locais.
-function padMachineProductions(d) {
-	var out = [];
-	var seen = {};
-	var i;
+// Produções deste computador (configuração > templates): [{ name, path }], independentes das da equipe. Sem a lista
+// ainda (versão anterior): as pastas deste computador escolhidas para as produções da equipe com caminho deste
+// computador ('templates': { 'produção': pasta }, ex: Ω PASTA LOCAL) viram produções deste computador. Não é um nome
+// antigo da tabela de seções: a conversão depende das produções da equipe e do mapa de drives.
+function padProducoesDesteComputador() {
+	var list = padLerSecao('producoesDesteComputador');
 
-	if (d.productions && typeof d.productions.length == 'number') {
-		for (i = 0; i < d.productions.length; i++) {
-			var row = d.productions[i] || {};
-			var name = String(row.name == null ? '' : row.name).replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
-			var path = padMachinePath(row.path);
+	if (list) return list;
 
-			if (!name || !path || seen[name.toUpperCase()]) continue;
-
-			seen[name.toUpperCase()] = true;
-			out.push({ name: name, path: path });
-		}
-
-		return out;
-	}
-
+	var d = PAD_CONFIG_ADAPTADOR.ler(PAD_CONFIGURACAO.COMPUTADOR) || {};
 	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
 	var team = padLerSecao('producoes');
+	var rows = [];
 
-	for (i = 0; i < team.length; i++) {
-		var local = padMachinePath(old[team[i].name]);
-
-		if (local && padIsLocalPath(team[i].templatesPath)) out.push({ name: team[i].name, path: local });
+	for (var i = 0; i < team.length; i++) {
+		if (padIsLocalPath(team[i].templatesPath)) rows.push({ name: team[i].name, path: old[team[i].name] });
 	}
 
-	return out;
-}
-
-// O registro de uso deste computador (configuração > meu usuário): ligado, segue o da equipe (aba rede).
-function padMachineLog() {
-	return padMachineData().log !== false;
+	return PAD_CONFIGURACAO.limpar('producoesDesteComputador', rows);
 }
 
 // Cópia da configuração da equipe guardada neste computador (para o modo local).
@@ -681,18 +566,18 @@ PADX.productions = function () {
 		shared: true,
 		stamp: configFile.exists ? configFile.modified.getTime() : 0,
 		productions: productions,
-		localProductions: padMachineProductions(padMachineData()), // as produções locais (configuração > templates, neste computador)
+		localProductions: padProducoesDesteComputador(), // as produções locais (configuração > templates, neste computador)
 		localMode: padLocalMode(), // no modo local, o painel mostra só as locais
-		lists: padMachineLists(padMachineData()), // quantos recentes e quantos dias de novos (neste computador)
-		log: padReadLogSettings(),
+		lists: padLerSecao('listaDosTemplates'), // quantos recentes e quantos dias de novos (neste computador)
+		log: padLerSecao('registroDeUso'),
 		drives: padLerSecao('mapaDeDrives'),
 		rename: padLerSecao('regraDoRenomear'),
 		organize: padLerSecao('organizar'),
 		search: padLerSecao('buscaDeCaminhos'),
 		links: padLerSecao('links'),
-		appearance: padReadTeamAppearance(), // o padrão da equipe (a pessoa pode personalizar: personal)
+		appearance: padLerSecao('aparencia'), // o padrão da equipe (a pessoa pode personalizar: personal)
 		project: padReadProject(),
-		collect: padReadCollect(),
+		collect: padLerSecao('coletar'),
 		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),
 		personal: PADX.personalPrefs(),
@@ -706,49 +591,19 @@ PADX.productions = function () {
 /*
 
 ---------------------------------------------------------------
-> log dos preenchimentos
+> registro de uso dos preenchimentos
 ---------------------------------------------------------------
 
-Definido na lista de produções compartilhada ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel de
-produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
-templates da produção usada) ou 'off' (nenhum registro). Sem 'LOG' no arquivo: o webhook de sempre.
+O da equipe é a seção registroDeUso da tabela de seções ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel
+de produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
+templates da produção usada), 'csvGlobal' (ao lado da configuração da equipe) ou 'off' (nenhum registro). Sem 'LOG' no
+arquivo: o webhook de sempre. Neste computador, registroDeUsoLigado desliga só aqui.
 
 */
 
 var PAD_LOG_FILE_NAME = 'O_PADEIRO_log.csv';
 // colunas do CSV (o webhook recebe também atracao, quadro, o_que_e, pasta, output e versao_padeiro)
 var PAD_LOG_COLUMNS = ['data', 'producao', 'template', 'quantidade', 'user', 'work_station', 'caminho'];
-
-function padDefaultLog() {
-	return { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
-}
-
-// Valida a config de log vinda do painel. Lança Error com a mensagem.
-function padCleanLog(log) {
-	var clean = padDefaultLog();
-
-	if (!log) return clean;
-
-	clean.mode = log.mode == 'csv' || log.mode == 'csvGlobal' || log.mode == 'off' ? log.mode : 'webhook';
-	clean.webhook = String(log.webhook == null ? '' : log.webhook).replace(/^\s+|\s+$/g, '');
-
-	// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
-	if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
-		throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-	}
-
-	return clean;
-}
-
-function padReadLogSettings() {
-	try {
-		var data = padConfigData();
-
-		return data.LOG ? padCleanLog(data.LOG) : padDefaultLog();
-	} catch (err) {
-		return padDefaultLog();
-	}
-}
 
 function padCsvValue(value) {
 	return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
@@ -765,7 +620,7 @@ function padProductionFolder(name) {
 	}
 
 	// as produções locais (configuração > templates, neste computador)
-	var personal = padMachineProductions(padMachineData());
+	var personal = padProducoesDesteComputador();
 
 	for (var p = 0; p < personal.length; p++) {
 		if (personal[p].name == name) return new Folder(padPath(personal[p].path));
@@ -804,9 +659,9 @@ function padPendingLogFile() {
 }
 
 function padWriteLog(record) {
-	var settings = padReadLogSettings();
+	var settings = padLerSecao('registroDeUso');
 
-	if (settings.mode == 'off' || !padMachineLog()) return; // desligado pela equipe ou neste computador
+	if (settings.mode == 'off' || !padLerSecao('registroDeUsoLigado')) return; // desligado pela equipe ou neste computador
 	var local = padLocalMode();
 
 	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
@@ -1805,9 +1660,8 @@ PADX.queueBegin = function (a) {
 	var outputs = [];
 	var configured = run.templateData.outputPath;
 
-	var machine = padMachineData();
 	var localMode = padLocalMode();
-	var localOutput = padMachinePath(machine.outputs) || defaultTemplateConfigObj.outputPath[0];
+	var localOutput = padLerSecao('outputLocal') || defaultTemplateConfigObj.outputPath[0];
 
 	for (var o = 0; o < configured.length; o++) {
 		// modo local: tudo na pasta de saída deste computador (sem tocar na rede)
@@ -2059,7 +1913,7 @@ PADX.installFonts = function () {
 	padRequireNetwork('PAD_004');
 
 	var m = padMetaRead();
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var file = app.project.file;
 	var folders = [];
 	// sem ternário encadeado (o ExtendScript agrupa errado: com a pasta gravada, caía na conta pelo arquivo)
@@ -2457,7 +2311,7 @@ PADX.setupStatus = function () {
 		file = padConfigFile();
 	} catch (err) { }
 
-	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padMachineUser() };
+	return { needed: !file, expected: padDisplayPath(padSharedConfigPath()), user: padSigla() };
 };
 
 function padSetupPointer(path) {

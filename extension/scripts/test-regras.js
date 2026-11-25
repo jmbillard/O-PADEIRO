@@ -328,6 +328,26 @@ const REGRAS = [
 // ---------------------------------------------------------------------------------------------------------------
 
 const EQUIPE = 'O_PADEIRO_GLOBAL_config.json';
+// a configuração deste computador (a pasta de dados do usuário)
+const COMPUTADOR = 'machine_config.json';
+const PESSOAL = 'personal_config.json';
+const LINKS_PESSOAIS = 'personal_links.json';
+const ONDE_COMPUTADOR = {
+	sigla: 'computador ' + COMPUTADOR + ' user',
+	modoLocal: 'computador ' + COMPUTADOR + ' localMode',
+	registroDeUsoLigado: 'computador ' + COMPUTADOR + ' log',
+	pastaDosProjetos: 'computador ' + COMPUTADOR + ' projects',
+	outputLocal: 'computador ' + COMPUTADOR + ' outputs',
+	presetsDeRender: 'computador ' + COMPUTADOR + ' render',
+	producoesDesteComputador: 'computador ' + COMPUTADOR + ' productions',
+	indiceLocal: 'computador ' + COMPUTADOR + ' search',
+	listaDosTemplates: 'computador ' + COMPUTADOR + ' lists',
+	fontesNoBanco: 'computador ' + COMPUTADOR + ' fontsUpload',
+	fontesConferir: 'computador ' + COMPUTADOR + ' fontsCheck',
+	linksPessoais: 'computador ' + LINKS_PESSOAIS + ' LINKS',
+	aparenciaPessoal: 'computador ' + PESSOAL + ' APPEARANCE',
+	barraPessoal: 'computador ' + PESSOAL + ' BAR'
+};
 
 // o adaptador em memória: um documento por nome; guarda cópias (como um arquivo) e conta as gravações
 function memoria(docs) {
@@ -346,6 +366,9 @@ function memoria(docs) {
 		gravar: function (nome, doc) {
 			this.gravacoes++;
 			disco[nome] = JSON.stringify(doc);
+		},
+		apagar: function (nome) {
+			delete disco[nome];
 		},
 		doc: function (nome) {
 			return disco.hasOwnProperty(nome) ? JSON.parse(disco[nome]) : null;
@@ -624,6 +647,174 @@ REGRAS.push({
 			api.gravar(ruim, { links: [] });
 			eq(ruim.d, { LINKS: [] });
 		});
+
+		// -------------------------------------------------------------------------------------------------------
+		// a configuração deste computador e as seções da equipe que ainda tinham o próprio ler/limpar
+		// -------------------------------------------------------------------------------------------------------
+
+		test('as seções deste computador moram nos arquivos da pasta de dados, cada uma na sua chave', function () {
+			const onde = {};
+
+			Object.keys(ONDE_COMPUTADOR).forEach(function (nome) {
+				const s = api.secao(nome);
+
+				onde[nome] = s.onde + ' ' + s.arquivo + ' ' + s.chave;
+			});
+			eq(onde, ONDE_COMPUTADOR);
+		});
+
+		test('as seções da equipe que tinham o próprio ler/limpar (registro de uso, aparência, coletar, banco de fontes)', function () {
+			const onde = {};
+
+			['registroDeUso', 'aparencia', 'coletar', 'bancoDeFontes'].forEach(function (nome) {
+				onde[nome] = api.secao(nome).onde + ' ' + api.secao(nome).arquivo + ' ' + api.secao(nome).chave;
+			});
+			eq(onde, { registroDeUso: 'equipe ' + EQUIPE + ' LOG', aparencia: 'equipe ' + EQUIPE + ' APPEARANCE', coletar: 'equipe ' + EQUIPE + ' COLLECT', bancoDeFontes: 'equipe ' + EQUIPE + ' FONTS' });
+		});
+
+		// sem nada: o padrão
+		test('deste computador, sem nada: o padrão de cada seção', function () {
+			const m = memoria();
+			const lido = {};
+
+			Object.keys(ONDE_COMPUTADOR).forEach(function (nome) {
+				lido[nome] = api.ler(m, nome);
+			});
+			eq(lido, {
+				sigla: '',
+				modoLocal: false,
+				registroDeUsoLigado: true,
+				pastaDosProjetos: '',
+				outputLocal: '',
+				presetsDeRender: { 'final': '', preview: '' },
+				producoesDesteComputador: null, // sem a lista: o host monta a partir das pastas de antes ('templates')
+				indiceLocal: { mode: 'webhook', folders: [], foldersOnly: true, daily: true },
+				listaDosTemplates: { recents: 5, newDays: 15 },
+				fontesNoBanco: true,
+				fontesConferir: true,
+				linksPessoais: [],
+				aparenciaPessoal: null, // sem a personalizada: a da equipe
+				barraPessoal: null
+			});
+		});
+
+		test('da equipe, sem nada: o registro de uso pelo webhook, a aparência, a estrutura do coletar e o banco padrão', function () {
+			eq(api.ler(memoria(), 'registroDeUso'), { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' });
+			eq(api.ler(memoria(), 'aparencia'), { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' });
+			eq(api.ler(memoria(), 'coletar').folders.length, 11);
+			eq(api.ler(memoria(), 'coletar').folders[0], { name: '01_PROJETOS', parent: '', contents: ['projeto'] });
+			eq(api.ler(memoria(), 'bancoDeFontes'), { bank: '', upload: true });
+		});
+
+		// campos faltando ou inválidos: limpo
+		test('deste computador: os valores guardados saem limpos', function () {
+			const m = memoria({ [COMPUTADOR]: {
+				user: 'joão.silva_ ç!', localMode: 'sim', log: 0, projects: ' C:\\proj\\ ', outputs: '/Volumes/VFX-2/out/',
+				render: { 'final': ' H264 ' }, productions: [{ name: ' minha   prod ', path: '/x/' }, { name: '', path: '/y' }, { name: 'MINHA PROD', path: '/z' }],
+				search: { mode: 'outro', folders: ['/a/', ' '], foldersOnly: false }, lists: { recents: 99, newDays: -3 }, fontsUpload: 'nao', fontsCheck: false
+			} });
+
+			eq(api.ler(m, 'sigla'), 'JOAOSILVAC');
+			eq(api.ler(m, 'modoLocal'), false);
+			eq(api.ler(m, 'registroDeUsoLigado'), true);
+			eq(api.ler(m, 'pastaDosProjetos'), 'C:/proj');
+			eq(api.ler(m, 'outputLocal'), '/Volumes/VFX/out');
+			eq(api.ler(m, 'presetsDeRender'), { 'final': 'H264', preview: '' });
+			eq(api.ler(m, 'producoesDesteComputador'), [{ name: 'minha prod', path: '/x' }]);
+			eq(api.ler(m, 'indiceLocal'), { mode: 'webhook', folders: ['/a'], foldersOnly: false, daily: true });
+			eq(api.ler(m, 'listaDosTemplates'), { recents: 30, newDays: 0 });
+			eq(api.ler(m, 'fontesNoBanco'), true);
+			eq(api.ler(m, 'fontesConferir'), false);
+		});
+
+		test('a sigla: no máximo 24 caracteres, em maiúsculas (a mesma limpeza para o login)', function () {
+			eq(api.limpar('sigla', 'abcdefghijklmnopqrstuvwxyz'), 'ABCDEFGHIJKLMNOPQRSTUVWX');
+			eq(api.limpar('sigla', 'j.m billard'), 'JMBILLARD');
+			eq(api.limpar('sigla', null), '');
+		});
+
+		test('links pessoais: a mesma limpeza dos links da equipe; um link quebrado faz a lista voltar ao padrão (vazia)', function () {
+			eq(api.ler(memoria({ [LINKS_PESSOAIS]: { LINKS: [{ name: ' meu ', url: ' https://meu.com ' }] } }), 'linksPessoais'), [{ name: 'meu', url: 'https://meu.com', icon: '' }]);
+			eq(api.ler(memoria({ [LINKS_PESSOAIS]: { LINKS: [{ name: 'x', url: 'sem' }] } }), 'linksPessoais'), []);
+			lancaErro(function () { api.gravar(memoria(), { linksPessoais: [{ name: 'x', url: 'sem' }] }); }, /^#PAD_087/);
+		});
+
+		test('a barra e a aparência desta pessoa: a mesma limpeza das da equipe; uma quebrada vale como não personalizada', function () {
+			const m = memoria({ [PESSOAL]: { BAR: { items: ['templates', 'pastas'], hidden: ['templates'] }, APPEARANCE: { mode: 'escuro', accent: '#AABBCC', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'nenhuma' } } });
+
+			eq(api.ler(m, 'barraPessoal'), api.limpar('barra', { items: ['templates', 'pastas'], hidden: ['templates'] }));
+			eq(api.ler(m, 'barraPessoal').hidden, ['gaveta:templates']);
+			eq(api.ler(m, 'aparenciaPessoal'), { mode: 'light', background: 'gradient', accent: '#aabbcc', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'inter', logo: '' });
+			eq(api.ler(memoria({ [PESSOAL]: { APPEARANCE: { accent: 'azul' } } }), 'aparenciaPessoal'), null);
+			lancaErro(function () { api.gravar(memoria(), { aparenciaPessoal: { accent: 'azul' } }); }, /^#PAD_088 - aparência: cor de destaque inválida/);
+		});
+
+		test('registro de uso, coletar e banco de fontes da equipe: limpos; o que não serve lança o erro', function () {
+			eq(api.ler(memoria({ [EQUIPE]: { LOG: { mode: 'csv', webhook: ' x ' } } }), 'registroDeUso'), { mode: 'csv', webhook: 'x' });
+			eq(api.ler(memoria({ [EQUIPE]: { LOG: { mode: 'webhook', webhook: 'ftp://x' } } }), 'registroDeUso').webhook, 'https://workflows.jmbillard.com/webhook/log_db_padeiro');
+			lancaErro(function () { api.gravar(memoria(), { registroDeUso: { mode: 'webhook', webhook: 'a b' } }); }, /^#PAD_078/);
+			eq(api.ler(memoria({ [EQUIPE]: { COLLECT: { folders: [{ name: ' 01  PROJ ', contents: ['projeto'] }, { name: 'IMGS', parent: '01 proj', contents: ['imagens', ''] }], saveAfter: true } } }), 'coletar'),
+				{ folders: [{ name: '01 PROJ', parent: '', contents: ['projeto'] }, { name: 'IMGS', parent: '01 PROJ', contents: ['imagens'] }] });
+			lancaErro(function () { api.gravar(memoria(), { coletar: { folders: [{ name: 'A', contents: ['x'] }] } }); }, /^#PAD_094 - coletar: tipo desconhecido/);
+			eq(api.ler(memoria({ [EQUIPE]: { FONTS: { bank: ' \\\\srv\\FONTES\\ ', upload: false } } }), 'bancoDeFontes'), { bank: '//srv/FONTES', upload: false });
+		});
+
+		// nomes antigos: lidos, e a gravação seguinte só com o novo
+		test('modo local: "homeOffice" (o nome antigo) é lido; gravar o modo local grava só "localMode"', function () {
+			const m = memoria({ [COMPUTADOR]: { homeOffice: true, user: 'ABC' } });
+
+			eq(api.ler(m, 'modoLocal'), true);
+			api.gravar(m, { modoLocal: api.ler(m, 'modoLocal') });
+			eq(m.doc(COMPUTADOR), { user: 'ABC', localMode: true });
+		});
+
+		test('sigla: sem ela no arquivo deste computador, a do arquivo antigo (project_user.json); gravar grava no novo e apaga o antigo', function () {
+			const m = memoria({ [COMPUTADOR]: { log: false }, 'project_user.json': { user: 'velho' } });
+
+			eq(api.ler(m, 'sigla'), 'VELHO');
+			eq(api.ler(memoria({ 'project_user.json': { user: 'velho' } }), 'sigla'), 'VELHO'); // nem o arquivo novo existe
+			eq(api.ler(memoria({ [COMPUTADOR]: { user: 'NOVO' }, 'project_user.json': { user: 'velho' } }), 'sigla'), 'NOVO');
+			api.gravar(m, { sigla: api.ler(m, 'sigla') });
+			eq(m.doc(COMPUTADOR), { log: false, user: 'VELHO' });
+			eq(m.doc('project_user.json'), null);
+		});
+
+		test('a cópia do índice da busca: lida pelo nome de agora e, sem ela, pelo de antes (busca_v2.json)', function () {
+			eq(api.COPIA_DA_BUSCA, { arquivo: 'busca_copia.json', arquivosAntigos: ['busca_v2.json'] });
+			eq(api.paraLer(api.COPIA_DA_BUSCA, function (n) { return n === 'busca_v2.json'; }), 'busca_v2.json');
+			eq(api.paraLer(api.COPIA_DA_BUSCA, function () { return true; }), 'busca_copia.json');
+			eq(api.paraLer(api.COPIA_DA_BUSCA, function () { return false; }), 'busca_copia.json');
+		});
+
+		// salvar uma seção não mexe nas outras
+		test('deste computador: salvar uma seção não mexe nas outras (nem nas chaves de fora da tabela)', function () {
+			const antes = {
+				[COMPUTADOR]: { user: 'ABC', projects: '/p', outputs: '/o', render: { 'final': 'F', preview: 'P' }, productions: [{ name: 'X', path: '/x' }], log: false, localMode: true, search: { mode: 'local', folders: ['/s'], foldersOnly: true, daily: false }, fontsUpload: false, fontsCheck: false, lists: { recents: 1, newDays: 2 }, templates: { X: '/t' } },
+				[PESSOAL]: { APPEARANCE: { mode: 'dark', background: 'gradient', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333', font: 'inter', logo: '' }, BAR: { items: ['pastas'], hidden: [] } },
+				[LINKS_PESSOAIS]: { LINKS: [{ name: 'a', url: 'https://a.com', icon: '' }] },
+				[EQUIPE]: { LOG: { mode: 'off' } }
+			};
+			const novos = { sigla: 'XYZ', modoLocal: false, registroDeUsoLigado: true, pastaDosProjetos: '/np', outputLocal: '/no', presetsDeRender: { 'final': 'G' }, producoesDesteComputador: [{ name: 'Y', path: '/y' }], indiceLocal: { mode: 'webhook' }, listaDosTemplates: { recents: 9 }, fontesNoBanco: true, fontesConferir: true, linksPessoais: [], aparenciaPessoal: { mode: 'light', accent: '#444444', gradientStart: '#555555', gradientEnd: '#666666' }, barraPessoal: {} };
+
+			Object.keys(ONDE_COMPUTADOR).forEach(function (nome) {
+				const m = memoria(antes);
+				const s = api.secao(nome);
+				const esperado = copia(antes);
+
+				api.gravar(m, { [nome]: novos[nome] });
+
+				const depois = {};
+
+				Object.keys(antes).forEach(function (a) {
+					depois[a] = m.doc(a);
+				});
+				delete esperado[s.arquivo][s.chave];
+				delete depois[s.arquivo][s.chave];
+				eq(depois, esperado, nome + ' mexeu nas outras');
+				eq(m.gravacoes, 1, nome);
+				eq(m.doc(s.arquivo)[s.chave], api.limpar(nome, novos[nome]), nome);
+			});
+		});
 	},
 	// no contexto à parte, os objetos são de outro "realm": compara pela cópia em JSON
 	es3: function (api) {
@@ -636,6 +827,16 @@ REGRAS.push({
 		eq(m.doc(EQUIPE).ORGANIZE.folders, [{ name: 'C', parent: '', contents: ['render'] }]);
 		eq(m.doc(EQUIPE).RENAME.types, [{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE'] }]);
 		eq(m.doc(EQUIPE).BAR.items.length, 17);
+
+		// deste computador: os nomes antigos, a limpeza da sigla (sem os métodos do ES5) e a cópia da busca
+		const c = memoria({ [COMPUTADOR]: { homeOffice: true }, 'project_user.json': { user: 'joão' } });
+
+		eq(api.ler(c, 'modoLocal'), true);
+		api.gravar(c, { sigla: api.ler(c, 'sigla'), modoLocal: true, aparenciaPessoal: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
+		eq(c.doc(COMPUTADOR), { localMode: true, user: 'JOAO' });
+		eq(c.doc('project_user.json'), null);
+		eq(c.doc(PESSOAL).APPEARANCE.mode, 'light');
+		eq(api.paraLer(api.COPIA_DA_BUSCA, function (n) { return n === 'busca_v2.json'; }), 'busca_v2.json');
 	}
 });
 

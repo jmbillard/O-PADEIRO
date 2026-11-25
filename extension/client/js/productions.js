@@ -2050,7 +2050,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		['externos', 'arquivos externos', ['M4.5 8.5 12 4.5l7.5 4v7L12 19.5l-7.5-4z', 'M4.5 8.5 12 12.5l7.5-4M12 12.5v7']]
 	];
 
-	// a estrutura padrão (a mesma do host, PAD_DEFAULT_COLLECT): o .aep em 01, os arquivos em 02, as saídas em 03
+	// a estrutura padrão (a mesma da tabela de seções, regras/configuracao.js: a seção coletar): o .aep em 01, os arquivos em 02, as saídas em 03
 	var DEFAULT_COLLECT_FOLDERS = [
 		{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
 		{ name: '02_ARQUIVOS', parent: '', contents: [] },

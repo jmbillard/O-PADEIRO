@@ -11,13 +11,17 @@ Cada seção da configuração é uma linha da tabela (TABELA, abaixo), que diz:
   - a limpeza (limpar): valida e normaliza o valor vindo do painel; lança Error com a mensagem (#PAD_…) quando ele não
     serve. Na leitura, um valor que não passa na limpeza vira o padrão (lerLimpo, quando existe, é a limpeza mais
     tolerante usada só na leitura);
-  - os nomes antigos: as chaves antigas da seção (antigos) e os campos antigos de dentro dela (camposAntigos:
-    { novo: [antigos] }), lidos quando o nome novo não existe. A gravação seguinte grava só o nome novo.
+  - os nomes antigos: as chaves antigas da seção (antigos), os campos antigos de dentro dela (camposAntigos:
+    { novo: [antigos] }) e os arquivos antigos (arquivosAntigos: a mesma chave, num arquivo que era só da seção),
+    lidos quando o nome novo não existe. A gravação seguinte grava só o nome novo (e apaga o arquivo antigo).
 
 Ler uma seção devolve sempre o valor limpo e completo; gravar grava só o nome novo e não mexe nas outras seções.
 
 O módulo não acessa disco: recebe um adaptador que lê e grava um documento (um objeto) pelo nome do arquivo:
-  { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto) }
+  { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto),
+    apagar: function (arquivo) (opcional: tira um arquivo antigo) }
+A configuração da equipe fica num arquivo na rede (EQUIPE); a deste computador, em arquivos da pasta de dados do
+usuário (COMPUTADOR, PESSOAL e LINKS_PESSOAIS).
 O host tem o adaptador com os arquivos (host/productions.jsx), o host de teste o do localStorage (client/js/mock-host.js)
 e o teste em Node um em memória. O JSON fica com o adaptador.
 
@@ -632,6 +636,275 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
+	// registro de uso da equipe ('LOG'): { mode, webhook }
+	//   mode → webhook (envia a linha para o webhook), csv (na pasta de templates da produção usada), csvGlobal (ao
+	//          lado da configuração da equipe) ou off
+	// ---------------------------------------------------------------------------------------------------------
+
+	var PADRAO_REGISTRO = { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
+
+	function limparRegistro(o) {
+		var clean = copiar(PADRAO_REGISTRO);
+
+		if (!o) return clean;
+
+		clean.mode = /^(csv|csvGlobal|off)$/.test(o.mode) ? o.mode : 'webhook';
+		clean.webhook = trim(o.webhook);
+
+		// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
+		if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+			throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+		}
+
+		return clean;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
+	// aparência ('APPEARANCE', da equipe e desta pessoa): o tema de todas as janelas (client/js/theme.js)
+	//   mode → light, dark ou auto; background → gradient ou solid; accent, gradientStart, gradientEnd → #rrggbb;
+	//   font → inter, system, helvetica, segoe, roboto, georgia ou mono; logo → PNG no lugar do pãozinho ('' = ele)
+	// ---------------------------------------------------------------------------------------------------------
+
+	var PADRAO_APARENCIA = { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' };
+
+	function limparAparencia(o) {
+		o = o || {};
+
+		var clean = {
+			mode: /^(light|dark|auto)$/.test(o.mode) ? o.mode : PADRAO_APARENCIA.mode,
+			background: o.background == 'solid' ? 'solid' : 'gradient',
+			accent: trim(o.accent).toLowerCase(),
+			gradientStart: trim(o.gradientStart).toLowerCase(),
+			gradientEnd: trim(o.gradientEnd).toLowerCase(),
+			font: /^(inter|system|helvetica|segoe|roboto|georgia|mono)$/.test(o.font) ? o.font : PADRAO_APARENCIA.font,
+			logo: o.logo ? String(o.logo) : ''
+		};
+		var names = { accent: 'cor de destaque', gradientStart: 'início do degradê', gradientEnd: 'fim do degradê' };
+
+		for (var key in names) {
+			if (names.hasOwnProperty(key) && !/^#[0-9a-f]{6}$/.test(clean[key])) throw new Error('#PAD_088 - aparência: ' + names[key] + ' inválida (use #rrggbb).');
+		}
+
+		return clean;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
+	// coletar ('COLLECT'): { folders: [{ name, parent, contents }] }, a árvore dentro da pasta do projeto
+	//   tipos: projeto (a pasta do .aep), videos, sequencias, imagens, audio, dados, fontes, saidas e externos (esses
+	//   dois não são coletados: dizem para onde a migração leva cada coisa). 'projectFolders' e 'saveAfter' (antigos)
+	//   são ignorados
+	// ---------------------------------------------------------------------------------------------------------
+
+	var COLETAR_CONTEUDOS = ['projeto', 'videos', 'sequencias', 'imagens', 'audio', 'dados', 'fontes', 'saidas', 'externos'];
+
+	// o .aep em 01, os arquivos em 02 (por tipo), as saídas em 03 (com os previews), as referências em 04 e, em 05, o
+	// que não é do projeto (os arquivos externos)
+	var PADRAO_COLETAR = {
+		folders: [
+			{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+			{ name: '02_ARQUIVOS', parent: '', contents: [] },
+			{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+			{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+			{ name: 'VIDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+			{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+			{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+			{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
+			{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+			{ name: '04_REFS', parent: '', contents: [] },
+			{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
+		]
+	};
+
+	function limparColetar(o) {
+		var clean = { folders: [] };
+		var folders = o && isArray(o.folders) ? o.folders : [];
+		var names = {};
+		var owner = {};
+		var i;
+
+		for (i = 0; i < folders.length; i++) {
+			var row = folders[i] || {};
+			var name = trim(row.name).replace(/\s+/g, ' ');
+			var list = isArray(row.contents) ? row.contents : [];
+			var kept = [];
+
+			if (name == '') throw new Error('#PAD_094 - coletar: a pasta ' + (i + 1) + ' precisa de um nome.');
+			if (/[\\\/:*?"<>|]/.test(name)) throw new Error('#PAD_094 - coletar: "' + name + '" não pode ter \\ / : * ? " < > |.');
+			if (names[name.toUpperCase()]) throw new Error('#PAD_094 - coletar: a pasta "' + name + '" aparece mais de uma vez.');
+
+			for (var t = 0; t < list.length; t++) {
+				var content = trim(list[t]);
+
+				if (content == '') continue;
+				if (indexOf(COLETAR_CONTEUDOS, content) < 0) throw new Error('#PAD_094 - coletar: tipo desconhecido em "' + name + '".');
+				if (owner[content]) throw new Error('#PAD_094 - coletar: "' + name + '" e "' + owner[content] + '" recebem o mesmo tipo.');
+
+				owner[content] = name;
+				kept.push(content);
+			}
+
+			names[name.toUpperCase()] = true;
+			clean.folders.push({ name: name, parent: trim(row.parent), contents: kept });
+		}
+
+		for (i = 0; i < clean.folders.length; i++) {
+			var f = clean.folders[i];
+
+			if (f.parent != '' && !names[f.parent.toUpperCase()]) throw new Error('#PAD_094 - coletar: a pasta pai de "' + f.name + '" não existe.');
+
+			// grafia da pasta pai e ciclos
+			var seen = {};
+			var cur = f;
+
+			while (cur && cur.parent != '') {
+				if (seen[cur.name.toUpperCase()]) throw new Error('#PAD_094 - coletar: "' + f.name + '" está dentro dela mesma.');
+
+				seen[cur.name.toUpperCase()] = true;
+
+				var next = null;
+
+				for (var k = 0; k < clean.folders.length; k++) {
+					if (clean.folders[k].name.toUpperCase() == cur.parent.toUpperCase()) next = clean.folders[k];
+				}
+
+				if (cur == f && next) f.parent = next.name;
+				cur = next;
+			}
+		}
+
+		return clean;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
+	// banco de fontes ('FONTS'): { bank, upload }. bank '' = a pasta BANCO DE FONTES ao lado da pasta 'extension'
+	// na rede (o host sabe qual é); upload false: as fontes não vão para o banco
+	// ---------------------------------------------------------------------------------------------------------
+
+	// um caminho digitado: barras normais, sem barra no fim
+	function caminho(value) {
+		return trim(value).replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
+	}
+
+	function limparBancoDeFontes(o) {
+		o = o || {};
+
+		return { bank: caminho(o.bank || ''), upload: o.upload !== false };
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
+	// deste computador ('machine_config.json', na pasta de dados do usuário)
+	//   user        → a sigla do designer ({usuario} no nome do projeto); vazia: a do login
+	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a da categoria não
+	//                 pode ser acessada: rede fora ou modo local)
+	//   outputs     → o output local (vale quando o output do template não pode ser acessado)
+	//   render      → os presets de render { final, preview }
+	//   productions → as produções deste computador [{ name, path }] (configuração > templates)
+	//   localMode   → o modo local ligado à mão
+	//   log         → o registro de uso ligado neste computador (ligado: segue o da equipe)
+	//   search      → o índice local { mode: webhook | local, folders, foldersOnly, daily }
+	//   lists       → a lista de templates { recents (0 a 30), newDays (0 a 90) }
+	//   fontsUpload → as fontes deste computador vão para o banco; fontsCheck → a barra confere as fontes sozinha
+	// ---------------------------------------------------------------------------------------------------------
+
+	var COMPUTADOR = 'machine_config.json';
+	var PESSOAL = 'personal_config.json'; // a aparência e a barra desta pessoa: só as personalizadas
+	var LINKS_PESSOAIS = 'personal_links.json';
+
+	// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas (a mesma limpeza vale para o login)
+	function limparSigla(value) {
+		return semEspeciais(value == null ? '' : value).replace(/[^A-Za-z0-9._-]/g, '').substring(0, 24).toUpperCase();
+	}
+
+	// uma pasta deste computador: barras normais, sem barra no fim e sem o -1 a -5 de um volume montado de novo
+	function limparPasta(value) {
+		return caminho(value).replace(/^(\/Volumes\/[^\/]+?)-[1-5](?=\/|$)/i, '$1');
+	}
+
+	function limparPresetsDeRender(o) {
+		o = o || {};
+
+		return { 'final': trim(o['final'] || ''), preview: trim(o.preview || '') };
+	}
+
+	// sem nome, sem pasta ou com o nome repetido: fica de fora
+	function limparProducoesDesteComputador(list) {
+		var out = [];
+		var seen = {};
+
+		list = isArray(list) ? list : [];
+
+		for (var i = 0; i < list.length; i++) {
+			var row = list[i] || {};
+			var name = trim(row.name).replace(/\s+/g, ' ');
+			var path = limparPasta(row.path);
+
+			if (!name || !path || seen[name.toUpperCase()]) continue;
+
+			seen[name.toUpperCase()] = true;
+			out.push({ name: name, path: path });
+		}
+
+		return out;
+	}
+
+	function limparIndiceLocal(o) {
+		o = o && typeof o == 'object' ? o : {};
+
+		var folders = [];
+		var list = isArray(o.folders) ? o.folders : [];
+
+		for (var i = 0; i < list.length; i++) {
+			var path = limparPasta(list[i]);
+
+			if (path) folders.push(path);
+		}
+
+		return { mode: o.mode == 'local' ? 'local' : 'webhook', folders: folders, foldersOnly: o.foldersOnly !== false, daily: o.daily !== false };
+	}
+
+	function numero(v, def, max) {
+		var n = parseInt(v, 10);
+
+		if (isNaN(n)) return def;
+		if (n < 0) return 0;
+
+		return n > max ? max : n;
+	}
+
+	function limparListaDosTemplates(o) {
+		o = o && typeof o == 'object' ? o : {};
+
+		return { recents: numero(o.recents, 5, 30), newDays: numero(o.newDays, 15, 90) };
+	}
+
+	function ligado(v) {
+		return v !== false;
+	}
+
+	function vazio() {
+		return null;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
+	// a cópia do índice da busca (na pasta temp deste computador). Não é uma seção: é o índice inteiro, grande,
+	// gravado e lido também pelo Node do painel (client/js/search-index.js) direto do disco, sem chave nem limpeza.
+	// Fica aqui só o nome dela e o de antes, lido enquanto não há a de agora (paraLer).
+	// ---------------------------------------------------------------------------------------------------------
+
+	var COPIA_DA_BUSCA = { arquivo: 'busca_copia.json', arquivosAntigos: ['busca_v2.json'] };
+
+	// o arquivo para ler: o de agora ou, sem ele, o primeiro antigo que existir (existe: function (nome) → bool)
+	function paraLer(arquivo, existe) {
+		if (existe(arquivo.arquivo)) return arquivo.arquivo;
+
+		for (var i = 0; arquivo.arquivosAntigos && i < arquivo.arquivosAntigos.length; i++) {
+			if (existe(arquivo.arquivosAntigos[i])) return arquivo.arquivosAntigos[i];
+		}
+
+		return arquivo.arquivo;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
 	// a tabela
 	// ---------------------------------------------------------------------------------------------------------
 
@@ -642,7 +915,30 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'organizar', onde: 'equipe', arquivo: EQUIPE, chave: 'ORGANIZE', padrao: function () { return PADRAO_ORGANIZAR; }, limpar: limparOrganizar, depoisDeLer: organizarDepoisDeLer },
 		{ nome: 'buscaDeCaminhos', onde: 'equipe', arquivo: EQUIPE, chave: 'SEARCH', camposAntigos: { caminhosFixos: ['servidor'] }, padrao: function () { return PADRAO_BUSCA; }, limpar: limparBusca },
 		{ nome: 'links', onde: 'equipe', arquivo: EQUIPE, chave: 'LINKS', padrao: function () { return PADRAO_LINKS; }, limpar: limparLinks },
-		{ nome: 'barra', onde: 'equipe', arquivo: EQUIPE, chave: 'BAR', padrao: function () { return limparBarra({}); }, limpar: limparBarra }
+		{ nome: 'barra', onde: 'equipe', arquivo: EQUIPE, chave: 'BAR', padrao: function () { return limparBarra({}); }, limpar: limparBarra },
+		{ nome: 'registroDeUso', onde: 'equipe', arquivo: EQUIPE, chave: 'LOG', padrao: function () { return PADRAO_REGISTRO; }, limpar: limparRegistro },
+		{ nome: 'aparencia', onde: 'equipe', arquivo: EQUIPE, chave: 'APPEARANCE', padrao: function () { return PADRAO_APARENCIA; }, limpar: limparAparencia },
+		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLLECT', padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
+		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
+
+		// deste computador
+		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'user', arquivosAntigos: ['project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },
+		{ nome: 'modoLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'localMode', antigos: ['homeOffice'], padrao: function () { return false; }, limpar: function (v) { return v === true; } },
+		{ nome: 'registroDeUsoLigado', onde: 'computador', arquivo: COMPUTADOR, chave: 'log', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'pastaDosProjetos', onde: 'computador', arquivo: COMPUTADOR, chave: 'projects', padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'outputLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'outputs', padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'presetsDeRender', onde: 'computador', arquivo: COMPUTADOR, chave: 'render', padrao: function () { return limparPresetsDeRender({}); }, limpar: limparPresetsDeRender },
+		// sem a lista (padrão null), o host monta as produções deste computador das pastas de antes ('templates'), que
+		// dependem das produções da equipe (api.jsx: padProducoesDesteComputador)
+		{ nome: 'producoesDesteComputador', onde: 'computador', arquivo: COMPUTADOR, chave: 'productions', padrao: vazio, limpar: limparProducoesDesteComputador },
+		{ nome: 'indiceLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'search', padrao: function () { return limparIndiceLocal({}); }, limpar: limparIndiceLocal },
+		{ nome: 'listaDosTemplates', onde: 'computador', arquivo: COMPUTADOR, chave: 'lists', padrao: function () { return limparListaDosTemplates({}); }, limpar: limparListaDosTemplates },
+		{ nome: 'fontesNoBanco', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsUpload', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'fontesConferir', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsCheck', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'linksPessoais', onde: 'computador', arquivo: LINKS_PESSOAIS, chave: 'LINKS', padrao: function () { return []; }, limpar: limparLinks },
+		// sem a personalizada (padrão null): vale a da equipe
+		{ nome: 'aparenciaPessoal', onde: 'computador', arquivo: PESSOAL, chave: 'APPEARANCE', padrao: vazio, limpar: limparAparencia },
+		{ nome: 'barraPessoal', onde: 'computador', arquivo: PESSOAL, chave: 'BAR', padrao: vazio, limpar: limparBarra }
 	];
 
 	// ---------------------------------------------------------------------------------------------------------
@@ -699,18 +995,25 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			return valor;
 		}
 
-		// lê uma seção: sempre o valor limpo e completo (sem nada, ou com um valor que não se aproveita: o padrão)
+		// lê uma seção: sempre o valor limpo e completo (sem nada, ou com um valor que não se aproveita: o padrão).
+		// Sem ela no arquivo (ou sem o arquivo, ou ilegível), procura nos arquivos antigos (arquivosAntigos), na mesma
+		// chave.
 		function ler(adaptador, nome) {
 			var s = secao(nome);
-			var doc = null;
+			var arquivos = [s.arquivo].concat(s.arquivosAntigos || []);
+			var doc;
 
-			try {
-				doc = adaptador.ler(s.arquivo);
-			} catch (err) {
-				return padrao(nome);
+			for (var i = 0; i < arquivos.length; i++) {
+				try {
+					doc = adaptador.ler(arquivos[i]);
+				} catch (err) {
+					doc = null;
+				}
+
+				if (bruto(s, doc) != null) return lerDe(doc, nome);
 			}
 
-			return lerDe(doc, nome);
+			return padrao(nome);
 		}
 
 		// a mesma leitura, de um documento já lido
@@ -788,10 +1091,20 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 				adaptador.gravar(arquivo, aplicar(doc, porArquivo[arquivo]));
 			}
 
+			// os arquivos antigos das seções gravadas saem (cada um era só da sua seção)
+			for (nome in limpos) {
+				if (!limpos.hasOwnProperty(nome) || !adaptador.apagar) continue;
+
+				for (var i = 0; secao(nome).arquivosAntigos && i < secao(nome).arquivosAntigos.length; i++) adaptador.apagar(secao(nome).arquivosAntigos[i]);
+			}
+
 			return limpos;
 		}
 
-		return { secao: secao, padrao: padrao, limpar: limpar, ler: ler, lerDe: lerDe, aplicar: aplicar, gravar: gravar, criar: criar, EQUIPE: EQUIPE };
+		return {
+			secao: secao, padrao: padrao, limpar: limpar, ler: ler, lerDe: lerDe, aplicar: aplicar, gravar: gravar, criar: criar, paraLer: paraLer,
+			EQUIPE: EQUIPE, COMPUTADOR: COMPUTADOR, PESSOAL: PESSOAL, LINKS_PESSOAIS: LINKS_PESSOAIS, COPIA_DA_BUSCA: COPIA_DA_BUSCA
+		};
 	}
 
 	var api = criar(TABELA);

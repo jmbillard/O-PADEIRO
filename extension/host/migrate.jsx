@@ -275,7 +275,7 @@ function padMigrateBuild(all, move) {
 
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
 
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var root = new Folder(padCollectRoot(file, settings));
 	var rootKey = padPathKey(root.fsName);
 	var used = padMigrateUsed();
@@ -1037,7 +1037,7 @@ PADX.migrateState = function () {
 
 	if (!file) return { interrupted: false, undo: false };
 
-	var root = new Folder(padCollectRoot(file, padReadCollect())).fsName;
+	var root = new Folder(padCollectRoot(file, padLerSecao('coletar'))).fsName;
 	var hasLog = new File(root + '/' + PAD_MIGRATION_LOG).exists;
 	var hasJournal = new File(root + '/' + PAD_MIGRATION_JOURNAL).exists;
 
@@ -1052,7 +1052,7 @@ PADX.migrateUndo = function () {
 
 	if (!file) throw new Error('#PAD_104 - migrar: salve o projeto antes (a migração arruma a pasta onde ele está).');
 
-	var settings = padReadCollect();
+	var settings = padLerSecao('coletar');
 	var root = new Folder(padCollectRoot(file, settings)).fsName;
 	var logFile = new File(root + '/' + PAD_MIGRATION_LOG);
 

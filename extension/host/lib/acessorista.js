@@ -14,10 +14,10 @@ var PS_CAMINHOS_FIXOS = null; // os caminhos fixos: [{ name, path }] (configura�
 
 var PS_COPY_MAX_AGE = 30 * 1000; // idade máxima (ms) da cópia do índice antes de a janela de projeto baixar de novo
 
-// A cópia do índice da busca neste computador, a mesma para o acessorista e a janela de projeto.
-var PS_COPY_NAME = 'busca_copia.json';
-// O nome de antes da cópia: lido enquanto não há a cópia com o nome de agora (o próximo download grava a de agora).
-var PS_OLD_COPY_NAME = 'busca_v2.json';
+// A cópia do índice da busca neste computador, a mesma para o acessorista e a janela de projeto: o nome dela e os de
+// antes (lidos enquanto não há a cópia com o nome de agora; o próximo download grava a de agora) ficam na tabela de
+// seções (regras/configuracao.js: COPIA_DA_BUSCA).
+var PS_COPY = PAD_CONFIGURACAO.COPIA_DA_BUSCA;
 
 var PS_SMB = {
 	sp: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
@@ -52,21 +52,23 @@ function psShellQuote(text) {
 
 // A cópia do índice com o nome de agora (onde o download grava).
 function psCopyFile() {
-	return new File(tempFolder.fsName + '/' + PS_COPY_NAME);
+	return new File(tempFolder.fsName + '/' + PS_COPY.arquivo);
 }
 
-function psOldCopyFile() {
-	return new File(tempFolder.fsName + '/' + PS_OLD_COPY_NAME);
+// os caminhos das cópias com os nomes de antes (para o painel, que lê pelo Node)
+function psOldCopyPaths() {
+	var out = [];
+
+	for (var i = 0; i < PS_COPY.arquivosAntigos.length; i++) out.push(new File(tempFolder.fsName + '/' + PS_COPY.arquivosAntigos[i]).fsName);
+
+	return out;
 }
 
 // A cópia para ler: a de agora ou, sem ela, a do nome de antes.
 function psCopyToRead() {
-	var file = psCopyFile();
-	var old = psOldCopyFile();
-
-	if (!file.exists && old.exists) return old;
-
-	return file;
+	return new File(tempFolder.fsName + '/' + PAD_CONFIGURACAO.paraLer(PS_COPY, function (nome) {
+		return new File(tempFolder.fsName + '/' + nome).exists;
+	}));
 }
 
 function psCopyIsFresh(file) {

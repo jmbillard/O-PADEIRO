@@ -23,12 +23,7 @@ a pasta de saída deste computador (configuração > produções > neste computa
 
 */
 
-// Os dois presets deste computador → { final, preview }
-function padMachineRender(d) {
-	var r = d && d.render ? d.render : {};
-
-	return { 'final': padTrim(r['final'] || ''), preview: padTrim(r.preview || '') };
-}
+// Os dois presets deste computador ({ final, preview }) são a seção presetsDeRender da tabela de seções.
 
 // A pasta dos previews, relativa à raiz do projeto: a pasta PREVIEWS da estrutura (configuração > coletar); sem
 // ela, PREVIEWS dentro da pasta das saídas.
@@ -110,7 +105,7 @@ PADX.renderPresets = function () {
 		padUndoEnd();
 	}
 
-	var presets = padMachineRender(padMachineData());
+	var presets = padLerSecao('presetsDeRender');
 
 	return { templates: list, 'final': presets['final'], preview: presets.preview };
 };
@@ -128,15 +123,14 @@ PADX.renderQueue = function (a) {
 	if (!comps.length && app.project.activeItem instanceof CompItem) comps.push(app.project.activeItem);
 	if (!comps.length) throw new Error('#PAD_113 - render: selecione as comps no painel de projeto (ou abra uma comp).');
 
-	var machine = padMachineData();
-	var preset = padMachineRender(machine)[preview ? 'preview' : 'final'];
+	var preset = padLerSecao('presetsDeRender')[preview ? 'preview' : 'final'];
 	var warnings = [];
 	var folder = '';
 	var local = false;
 
 	if (preview) {
 		if (app.project.file) {
-			var settings = padReadCollect();
+			var settings = padLerSecao('coletar');
 
 			folder = padCollectRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
 		} else warnings.push('o projeto ainda não foi salvo: o preview vai para o output local.');
@@ -165,7 +159,7 @@ PADX.renderQueue = function (a) {
 
 	if (!folder) {
 		local = true;
-		folder = padPath(padMachinePath(machine.outputs) || '~/Desktop');
+		folder = padPath(padLerSecao('outputLocal') || '~/Desktop');
 		padEnsureFolder(folder);
 	}
 

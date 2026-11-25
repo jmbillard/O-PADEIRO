@@ -122,16 +122,24 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
-	// a configuração da equipe do host de teste: um documento por arquivo no localStorage ('pad.mock.arquivo.<nome>'),
-	// o adaptador da tabela de seções. Sem nada guardado, o arquivo da equipe começa com a semente abaixo (e a barra da
-	// equipe que o host de teste guardava antes em 'pad.mock.bar', se houver: lida, e a gravação seguinte vai para o
-	// arquivo)
-	function mockSemente() {
-		var bar = null;
-
+	// o que o host de teste guardava antes da tabela de seções, numa chave própria do localStorage: lido na semente
+	// (sem o arquivo ainda), e a gravação seguinte vai para o arquivo
+	function mockAntigo(chave) {
 		try {
-			bar = JSON.parse(localStorage.getItem('pad.mock.bar') || 'null');
-		} catch (err) { }
+			return JSON.parse(localStorage.getItem(chave) || 'null');
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// a configuração do host de teste: um documento por arquivo no localStorage ('pad.mock.arquivo.<nome>'), o
+	// adaptador da tabela de seções. Sem nada guardado, o arquivo da equipe começa com a semente abaixo (com a barra, o
+	// banco de fontes e a aparência da equipe que o host de teste guardava antes em 'pad.mock.bar', 'pad.mock.fonts' e
+	// 'pad.mock.appearance', se houver)
+	function mockSemente() {
+		var bar = mockAntigo('pad.mock.bar');
+		var fonts = mockAntigo('pad.mock.fonts');
+		var appearance = mockAntigo('pad.mock.appearance');
 
 		var doc = {
 			PRODUCTIONS: [
@@ -173,30 +181,103 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
 					{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
 				]
+			},
+			COLLECT: {
+				folders: [
+					{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
+					{ name: '02_ARQUIVOS', parent: '', contents: [] },
+					{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
+					{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
+					{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
+					{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
+					{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
+					{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
+					{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
+					{ name: '04_REFS', parent: '', contents: [] },
+					{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
+				]
 			}
 		};
 
 		if (bar) doc.BAR = bar;
+		if (fonts) doc.FONTS = fonts;
+		if (appearance) doc.APPEARANCE = appearance;
 
 		return doc;
+	}
+
+	// os arquivos deste computador, sem nada guardado: o que o host de teste guardava antes em 'pad.mock.machine',
+	// 'pad.mock.prefs' e 'pad.mock.personalLinks' (ou, sem eles, um link pessoal de exemplo)
+	function mockSementeDesteComputador(arquivo) {
+		var C = window.PAD_CONFIGURACAO;
+
+		if (arquivo === C.COMPUTADOR) return mockAntigo('pad.mock.machine');
+
+		if (arquivo === C.PESSOAL) {
+			var prefs = mockAntigo('pad.mock.prefs');
+			var doc = {};
+
+			if (!prefs) return null;
+			if (prefs.appearance) doc.APPEARANCE = prefs.appearance;
+			if (prefs.bar) doc.BAR = prefs.bar;
+
+			return doc;
+		}
+
+		if (arquivo === C.LINKS_PESSOAIS) return { LINKS: mockAntigo('pad.mock.personalLinks') || [{ name: 'meu drive', url: 'https://drive.google.com/', icon: '' }] };
+
+		return null;
 	}
 
 	var mockAdaptador = {
 		ler: function (arquivo) {
 			var text = localStorage.getItem('pad.mock.arquivo.' + arquivo);
 
-			if (text == null) return arquivo === window.PAD_CONFIGURACAO.EQUIPE ? mockSemente() : null;
+			if (text == null) return arquivo === window.PAD_CONFIGURACAO.EQUIPE ? mockSemente() : mockSementeDesteComputador(arquivo);
 
 			return JSON.parse(text);
 		},
 		gravar: function (arquivo, doc) {
 			localStorage.setItem('pad.mock.arquivo.' + arquivo, JSON.stringify(doc));
+		},
+		apagar: function (arquivo) {
+			localStorage.removeItem('pad.mock.arquivo.' + arquivo);
 		}
 	};
 
-	// uma seção da configuração da equipe, limpa e completa (pela tabela)
+	// uma seção da configuração (da equipe ou deste computador), limpa e completa (pela tabela)
 	function mockLer(nome) {
 		return window.PAD_CONFIGURACAO.ler(mockAdaptador, nome);
+	}
+
+	// a data de mentira dos arquivos (as janelas só redesenham quando muda): o próprio texto guardado
+	function mockData(arquivo) {
+		return String(localStorage.getItem('pad.mock.arquivo.' + arquivo));
+	}
+
+	// a sigla igual à do login (JMBILLARD, no host de teste) fica vazia, como no host
+	var MOCK_LOGIN = 'JMBILLARD';
+
+	function mockMachinePrefs() {
+		var sigla = mockLer('sigla');
+
+		return {
+			user: sigla === MOCK_LOGIN ? '' : sigla,
+			defaultUser: MOCK_LOGIN,
+			projects: mockLer('pastaDosProjetos'),
+			outputs: mockLer('outputLocal'),
+			render: mockLer('presetsDeRender'),
+			productions: mockLer('producoesDesteComputador') || [],
+			log: mockLer('registroDeUsoLigado'),
+			localMode: mockLer('modoLocal'),
+			search: mockLer('indiceLocal'),
+			fontsUpload: mockLer('fontesNoBanco'),
+			fontsCheck: mockLer('fontesConferir'),
+			lists: mockLer('listaDosTemplates'),
+			localIndex: '/mock/indice_local.json',
+			hasConfigCopy: true,
+			templates: {}
+		};
 	}
 
 	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
@@ -238,12 +319,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		];
 	}
 
-	function mockMachine() {
-		return JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
-	}
-
+	// a aparência e a barra desta pessoa (null = a da equipe)
 	function mockPrefs() {
-		return JSON.parse(localStorage.getItem('pad.mock.prefs') || 'null') || { appearance: null, bar: null };
+		return { appearance: mockLer('aparenciaPessoal'), bar: mockLer('barraPessoal') };
 	}
 
 	// o arquivista: o caminho relativo de um item (a pasta dele + o nome)
@@ -320,26 +398,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		productions: function (a) {
 			if (!window.PAD_MOCK_LIST) {
-				// o que ainda não está na tabela de seções (a configuração da equipe guardada só na memória desta janela)
+				// o que ainda não está na tabela de seções (os tipos de projeto; e a data de mentira da configuração da equipe)
 				window.PAD_MOCK_LIST = {
 					stamp: 1000,
-					log: { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' },
-					project: mockProject(), // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
-					collect: {
-						folders: [
-							{ name: '01_PROJETOS', parent: '', contents: ['projeto'] },
-							{ name: '02_ARQUIVOS', parent: '', contents: [] },
-							{ name: 'FONTS', parent: '02_ARQUIVOS', contents: ['fontes'] },
-							{ name: 'IMAGENS', parent: '02_ARQUIVOS', contents: ['imagens', 'sequencias'] },
-							{ name: 'VÍDEOS', parent: '02_ARQUIVOS', contents: ['videos'] },
-							{ name: 'AUDIOS', parent: '02_ARQUIVOS', contents: ['audio'] },
-							{ name: 'DADOS', parent: '02_ARQUIVOS', contents: ['dados'] },
-							{ name: '03_SAIDA', parent: '', contents: ['saidas'] },
-							{ name: 'PREVIEWS', parent: '03_SAIDA', contents: [] },
-							{ name: '04_REFS', parent: '', contents: [] },
-							{ name: '05_EXTERNOS', parent: '', contents: ['externos'] }
-						]
-					}
+					project: mockProject() // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
 				};
 			}
 
@@ -353,81 +415,94 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				shared: true,
 				stamp: window.PAD_MOCK_LIST.stamp,
 				error: null,
-				log: Object.assign({}, window.PAD_MOCK_LIST.log),
+				log: mockLer('registroDeUso'),
 				drives: mockLer('mapaDeDrives'),
 				rename: mockLer('regraDoRenomear'),
 				organize: mockLer('organizar'),
 				search: mockLer('buscaDeCaminhos'),
 				links: mockLer('links'),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
-				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
-				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, JSON.parse(localStorage.getItem('pad.mock.fonts') || 'null') || { bank: '', upload: true }),
+				collect: mockLer('coletar'),
+				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')),
 				bar: mockLer('barra'),
 				personal: mockPrefs(),
-				appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null') || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' },
+				appearance: mockLer('aparencia'),
 				productions: mockLer('producoes').map(function (p) {
 					return Object.assign({}, p, { icon: p.icon || null, ignored: /^~(\/|$)|^\/(Users|home)\//.test(p.templatesPath || p.path || '') });
 				}),
-				localProductions: ((JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).productions || []).slice(),
-				localMode: !!(JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).localMode,
-				lists: (JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).lists || { recents: 5, newDays: 15 }
+				localProductions: mockLer('producoesDesteComputador') || [],
+				localMode: mockLer('modoLocal'),
+				lists: mockLer('listaDosTemplates')
 			};
 		},
 
 		appearance: function () {
-			var stored = JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null');
-			var mine = mockPrefs().appearance;
+			var C = window.PAD_CONFIGURACAO;
 
-			return { stamp: (localStorage.getItem('pad.mock.appearance') || 'padrão') + '|' + localStorage.getItem('pad.mock.prefs'), appearance: mine || stored || { mode: 'light', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' } };
+			return { stamp: mockData(C.EQUIPE) + '|' + mockData(C.PESSOAL), appearance: mockLer('aparenciaPessoal') || mockLer('aparencia') };
 		},
 
 		personalPrefs: function () {
 			return mockPrefs();
 		},
 
+		// como o host: o arquivo guarda só as personalizadas (null = voltar ao padrão da equipe)
 		savePersonalPrefs: function (a) {
-			localStorage.setItem('pad.mock.prefs', JSON.stringify({ appearance: a.appearance || null, bar: a.bar || null }));
+			var C = window.PAD_CONFIGURACAO;
+
+			mockAdaptador.gravar(C.PESSOAL, C.aplicar({}, { aparenciaPessoal: a.appearance, barraPessoal: a.bar }));
 
 			return mockPrefs();
 		},
 
 		machinePrefs: function () {
-			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false, productions: [], log: true };
-
-			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, templates: {}, localIndex: '/mock/indice_local.json' }, m);
+			return mockMachinePrefs();
 		},
 
+		// como o host: só os campos enviados mudam
 		saveMachinePrefs: function (a) {
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
-			localStorage.setItem('pad.mock.machine', JSON.stringify({ user: a.user || '', projects: a.projects || '', outputs: a.outputs || '', render: a.render || { 'final': '', preview: '' }, productions: a.productions || [], log: a.log !== false, localMode: !!a.localMode, fontsUpload: a.fontsUpload !== false, fontsCheck: a.fontsCheck !== false, lists: a.lists || { recents: 5, newDays: 15 }, search: a.search || { mode: 'webhook', folders: [], foldersOnly: true, daily: true } }));
 
-			return Object.assign({ defaultUser: 'JMBILLARD', hasConfigCopy: true, localIndex: '/mock/indice_local.json' }, JSON.parse(localStorage.getItem('pad.mock.machine')));
+			var valores = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, producoesDesteComputador: a.productions, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
+
+			if (a.user != null) {
+				var sigla = window.PAD_CONFIGURACAO.limpar('sigla', a.user);
+
+				valores.sigla = sigla === MOCK_LOGIN ? '' : sigla;
+			}
+			if (a.localMode != null) valores.modoLocal = a.localMode === true;
+
+			window.PAD_CONFIGURACAO.gravar(mockAdaptador, valores);
+
+			return mockMachinePrefs();
 		},
 
 		barLinks: function () {
 			var list = window.PAD_MOCK_LIST;
 
-			var personal = JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]');
+			var personal = mockLer('linksPessoais');
 
-			var bar = mockPrefs().bar || mockLer('barra'); // as janelas do navegador não dividem o host de mentira: a configuração fica no localStorage
+			var bar = mockLer('barraPessoal') || mockLer('barra'); // as janelas do navegador não dividem o host de mentira: a configuração fica no localStorage
 			var links = mockLer('links');
 
-			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + localStorage.getItem('pad.mock.personalLinks') + '|' + JSON.stringify(bar) + '|' + JSON.stringify(links), links: links, personal: personal, localMode: !!(mockMachine().localMode || localStorage.getItem('pad.mock.offline')), localForced: !!mockMachine().localMode };
+			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + JSON.stringify(personal) + '|' + JSON.stringify(bar) + '|' + JSON.stringify(links), links: links, personal: personal, localMode: !!(mockLer('modoLocal') || localStorage.getItem('pad.mock.offline')), localForced: mockLer('modoLocal') };
 		},
 
 		personalLinks: function () {
-			return { links: JSON.parse(localStorage.getItem('pad.mock.personalLinks') || '[{"name":"meu drive","url":"https://drive.google.com/","icon":""}]') };
+			return { links: mockLer('linksPessoais') };
 		},
 
+		// como o host: a mesma limpeza dos links da equipe
 		savePersonalLinks: function (a) {
-			var bad = a.links.filter(function (l) { return !l.name || !/^https?:\/\/\S+$/.test(l.url); })[0];
+			try {
+				window.PAD_CONFIGURACAO.gravar(mockAdaptador, { linksPessoais: a.links || [] });
+			} catch (err) {
+				throw new Error(err.message.replace('#PAD_087 - links:', '#PAD_087 - meus links:'));
+			}
 
-			if (bad) throw new Error('#PAD_087 - meus links: "' + (bad.name || '?') + '" precisa de nome e de um endereço (http:// ou https://).');
-			localStorage.setItem('pad.mock.personalLinks', JSON.stringify(a.links));
-
-			return { links: a.links };
+			return { links: mockLer('linksPessoais') };
 		},
 
 		requestConfigTab: function (a) {
@@ -452,16 +527,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			// as seções da tabela, como o host: limpas (a mensagem da limpeza sai sem gravar nada) e gravadas de uma vez;
 			// as que não vierem ficam como estão
 			var equipe = window.PAD_CONFIGURACAO.EQUIPE;
-			var doc = window.PAD_CONFIGURACAO.aplicar(mockAdaptador.ler(equipe), { producoes: a.productions || [], mapaDeDrives: a.drives, regraDoRenomear: a.rename, organizar: a.organize, buscaDeCaminhos: a.search, links: a.links, barra: a.bar });
+			var doc = window.PAD_CONFIGURACAO.aplicar(mockAdaptador.ler(equipe), { producoes: a.productions || [], mapaDeDrives: a.drives, regraDoRenomear: a.rename, organizar: a.organize, buscaDeCaminhos: a.search, links: a.links, barra: a.bar, registroDeUso: a.log, aparencia: a.appearance, coletar: a.collect, bancoDeFontes: a.fonts });
 
 			mockAdaptador.gravar(equipe, doc);
 			window.PAD_MOCK_LIST.stamp += 1000;
-			if (a.log) window.PAD_MOCK_LIST.log = Object.assign({}, a.log);
-			if (a.fonts) localStorage.setItem('pad.mock.fonts', JSON.stringify(a.fonts));
-			if (a.appearance) {
-				if (!['accent', 'gradientStart', 'gradientEnd'].every(function (k) { return /^#[0-9a-f]{6}$/i.test(a.appearance[k]); })) throw new Error('#PAD_088 - aparência: cor inválida (use #rrggbb).');
-				localStorage.setItem('pad.mock.appearance', JSON.stringify(a.appearance));
-			}
 			if (a.project) {
 				// como o host (padCleanProject)
 				var seenCat = {};
@@ -482,20 +551,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				}) };
 				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
 			}
-			if (a.collect) {
-				var seenType = {};
 
-				a.collect.folders.forEach(function (f) {
-					if (!f.name) throw new Error('#PAD_094 - coletar: toda pasta precisa de um nome.');
-					f.contents.forEach(function (t) {
-						if (seenType[t]) throw new Error('#PAD_094 - coletar: duas pastas recebem o mesmo tipo.');
-						seenType[t] = true;
-					});
-				});
-				window.PAD_MOCK_LIST.collect = JSON.parse(JSON.stringify(a.collect));
-			}
-
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockLer('barra'), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personal: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -569,8 +626,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// O FORNO: os presets de render do After e as comps na fila
 		renderPresets: function () {
-			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
-			var r = m.render || {};
+			var r = mockLer('presetsDeRender');
 
 			return { templates: ['H.264 - Match Render Settings - 15 Mbps', 'H.264 metade', 'High Quality', 'High Quality with Alpha', 'Lossless', 'ProRes 422 HQ', 'ProRes 4444 + alpha', 'XDCAM HD 50', 'Sequência PNG'], 'final': r['final'] || '', preview: r.preview || '' };
 		},
@@ -725,8 +781,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// o modo local sem cópia do índice neste computador. o modo local é o da máquina (ou a rede fora:
 		// pad.mock.offline); ?mock=modolocal liga só nesta janela
 		searchInfo: function () {
-			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
-			var ms = machine.search || (/mock=lidx/.test(location.search) ? { mode: 'local', folders: ['/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ', '/Volumes/VFX/imagem/drive_l/Fileserver_3'], foldersOnly: true, daily: true } : { mode: 'webhook', folders: [], foldersOnly: true, daily: true });
+			var C = window.PAD_CONFIGURACAO;
+			var guardado = (mockAdaptador.ler(C.COMPUTADOR) || {}).search != null; // sem o índice local guardado, ?mock=lidx liga um
+			var ms = guardado || !/mock=lidx/.test(location.search) ? mockLer('indiceLocal') : { mode: 'local', folders: ['/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ', '/Volumes/VFX/imagem/drive_l/Fileserver_3'], foldersOnly: true, daily: true };
 
 			return {
 				mode: ms.mode,
@@ -735,9 +792,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				daily: ms.daily,
 				localIndex: '/mock/indice_local.json',
 				url: 'https://workflows.jmbillard.com/webhook/buscar',
-				copia: '/tmp/busca_copia.json',
-				copiaAntiga: '/tmp/busca_v2.json', // o nome de antes da cópia (lido quando não há a de agora)
-				local: !!(machine.localMode || localStorage.getItem('pad.mock.offline') || mode === 'modolocal' || mode === 'nocopy'),
+				copia: '/tmp/' + C.COPIA_DA_BUSCA.arquivo,
+				copiasAntigas: C.COPIA_DA_BUSCA.arquivosAntigos.map(function (n) { return '/tmp/' + n; }), // os nomes de antes da cópia (lidos quando não há a de agora)
+				local: !!(mockLer('modoLocal') || localStorage.getItem('pad.mock.offline') || mode === 'modolocal' || mode === 'nocopy'),
 				platform: 'Mac',
 				caminhosFixos: ((window.PAD_MOCK_LIST && mockLer('buscaDeCaminhos').caminhosFixos) || [
 					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
@@ -1113,7 +1170,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				categories: mockProject().categories.map(function (c) {
 					return Object.assign({ reachable: !/^~|^\/Users\//.test(c.path) && !/OFFLINE/i.test(c.path) }, c);
 				}),
-				fallback: (JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {}).projects || '~/Desktop'
+				fallback: mockLer('pastaDosProjetos') || '~/Desktop'
 			};
 		},
 

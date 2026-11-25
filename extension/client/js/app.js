@@ -639,7 +639,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	// seção), do mais novo para o mais velho (os fixados e recentes não repetem)
 	var NEW_DAYS = 15;
 
-	// os limites da lista vêm com as produções (host: padMachineLists)
+	// os limites da lista vêm com as produções (host: a seção listaDosTemplates)
 	function setListLimits(res) {
 		var l = (res && res.lists) || {};
 
