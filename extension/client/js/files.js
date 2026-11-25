@@ -147,20 +147,15 @@ renomeia.
 
 	/* ---------- a tabela ---------- */
 
-	function render(keepFocus) {
-		var fin = finals();
+	// a contagem de cada situação e os itens que aparecem na lista (o filtro da situação e o filtro pelo nome)
+	function tally(fin) {
 		var q = fold($('fl-q').value);
 		var count = { all: 0, chg: 0, same: 0, bad: 0, off: 0, dup: 0 };
 		var used = 0;
-		var box = $('fl-rows');
-		var focused = keepFocus && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
-		var caret = focused != null ? document.activeElement.selectionStart : 0;
-		var lastDir = null;
+		var list = [];
 
-		box.textContent = '';
 		state.items.forEach(function (it) {
-			var f = fin[it.id];
-			var st = f.state;
+			var st = fin[it.id].state;
 			var shown = renames(st) ? 'chg' : st; // o filtro: ganhou _2 está entre os que mudam
 
 			count.all++;
@@ -169,7 +164,25 @@ renomeia.
 			if (renames(st) && it.use) used++;
 			if (state.filter !== 'all' && state.filter !== shown) return;
 			if (q && fold(it.name + ' ' + target(it)).indexOf(q) < 0) return;
+			list.push(it);
+		});
 
+		return { count: count, used: used, list: list };
+	}
+
+	function render(keepFocus) {
+		var fin = finals();
+		var t = tally(fin);
+		var box = $('fl-rows');
+		var focused = keepFocus && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
+		var caret = focused != null ? document.activeElement.selectionStart : 0;
+		// a rolagem do texto dentro do campo refeito: sem ela, o navegador rola o texto até o cursor e o deixa colado
+		// na borda (sem a margem), escondendo o começo do nome
+		var scroll = focused != null ? document.activeElement.scrollLeft : 0;
+		var lastDir = null;
+
+		box.textContent = '';
+		t.list.forEach(function (it) {
 			if (it.dir !== lastDir) {
 				var group = el('div', 'fl-group');
 
@@ -178,91 +191,150 @@ renomeia.
 				group.appendChild(el('span', null, it.dir ? state.name + ' / ' + it.dir.split('/').join(' / ') : state.name));
 				box.appendChild(group);
 			}
+			box.appendChild(makeRow(it, fin[it.id]));
+		});
 
-			var row = el('div', 'fl-row is-' + st + (it.custom != null ? ' is-edited' : ''));
-			var cb = el('input', 'fl-cb');
-			var cur = el('span', 'fl-cur');
-			var wrap = el('span', 'fl-new-wrap');
-			var input = el('input', 'fl-new');
-			// o elo: o item em uso que muda de nome (também o que ganhou _2: o aviso vai ao lado do sufixo). assim os elos
-			// visíveis batem com a contagem "em uso" do rodapé
-			var icon = renames(st) && it.use ? 'use' : st;
-			var mark = el('span', 'fl-st is-' + icon);
-			var why = reason(it, f);
-			var end = el('span', 'fl-ext', tail(it));
+		if (!box.children.length) box.appendChild(el('p', 'fl-empty', emptyText(t.count)));
 
-			cb.type = 'checkbox';
-			cb.checked = it.on;
-			cb.disabled = state.busy;
-			cb.setAttribute('aria-label', 'renomear ' + it.name);
-			cb.addEventListener('change', function () {
-				it.on = this.checked;
+		totals(t.count, t.used);
+
+		if (focused != null) {
+			var again = $('fl-new-' + focused);
+
+			if (again) {
+				again.focus();
+				try {
+					again.setSelectionRange(caret, caret);
+				} catch (err) { }
+				again.scrollLeft = scroll;
+			}
+		}
+
+		return t.count;
+	}
+
+	// digitou no novo nome: as linhas são atualizadas no lugar, com o mesmo campo, e o navegador cuida do cursor e
+	// da rolagem do texto (refazer o campo a cada tecla deixava o cursor colado na borda e o começo do nome
+	// escondido). só refaz a lista se o que aparece nela mudou (o filtro esconde ou mostra uma linha)
+	function typed() {
+		var fin = finals();
+		var t = tally(fin);
+		var shown = $('fl-rows').querySelectorAll('.fl-row');
+		var same = shown.length === t.list.length;
+
+		for (var i = 0; same && i < shown.length; i++) same = shown[i].dataset.id === String(t.list[i].id);
+		if (!same) return render(true);
+
+		t.list.forEach(function (it, n) {
+			update(shown[n], makeRow(it, fin[it.id]));
+		});
+		totals(t.count, t.used);
+	}
+
+	// a linha na tela fica com a situação, o sufixo, os avisos e a seta da linha nova, mas com o mesmo campo
+	function update(row, fresh) {
+		var wrap = row.querySelector('.fl-new-wrap');
+		var input = wrap.querySelector('.fl-new');
+		var freshWrap = fresh.querySelector('.fl-new-wrap');
+
+		row.className = fresh.className;
+		while (input.nextSibling) wrap.removeChild(input.nextSibling);
+		while (freshWrap.firstChild) {
+			if (freshWrap.firstChild.classList.contains('fl-new')) freshWrap.removeChild(freshWrap.firstChild);
+			else wrap.appendChild(freshWrap.firstChild);
+		}
+		row.replaceChild(fresh.querySelector(':scope > .fl-st'), row.querySelector(':scope > .fl-st'));
+	}
+
+	// uma linha da tabela: a chave, o tipo, o nome de hoje, o novo nome (o campo), o resto do nome e a situação
+	function makeRow(it, f) {
+		var st = f.state;
+		var row = el('div', 'fl-row is-' + st + (it.custom != null ? ' is-edited' : ''));
+		var cb = el('input', 'fl-cb');
+		var cur = el('span', 'fl-cur');
+		var wrap = el('span', 'fl-new-wrap');
+		var input = el('input', 'fl-new');
+		// o elo: o item em uso que muda de nome (também o que ganhou _2: o aviso vai ao lado do sufixo). assim os elos
+		// visíveis batem com a contagem "em uso" do rodapé
+		var icon = renames(st) && it.use ? 'use' : st;
+		var mark = el('span', 'fl-st is-' + icon);
+		var why = reason(it, f);
+		var end = el('span', 'fl-ext', tail(it));
+
+		row.dataset.id = it.id;
+		cb.type = 'checkbox';
+		cb.checked = it.on;
+		cb.disabled = state.busy;
+		cb.setAttribute('aria-label', 'renomear ' + it.name);
+		cb.addEventListener('change', function () {
+			it.on = this.checked;
+			state.step = 0;
+			render();
+		});
+
+		cur.appendChild(el('span', null, it.name));
+		cur.appendChild(el('i', null, tail(it)));
+		cur.title = it.name + tail(it) + (it.kind === 'seq' ? ' · sequência de ' + plural(it.count, 'imagem', 'imagens') : '');
+
+		input.type = 'text';
+		input.value = target(it);
+		input.id = 'fl-new-' + it.id;
+		input.dataset.id = it.id;
+		input.spellcheck = false;
+		input.autocomplete = 'off';
+		input.disabled = st === 'off' || state.busy;
+		input.setAttribute('aria-label', 'novo nome de ' + it.name);
+		input.addEventListener('input', function () {
+			it.custom = this.value === suggest(it) ? null : this.value;
+			state.step = 0;
+			typed();
+		});
+		wrap.appendChild(input);
+		// o sufixo que o nome ganhou vem antes dos quadros e da extensão, em destaque
+		if (f.suffix) end.insertBefore(el('b', 'fl-suffix', f.suffix), end.firstChild);
+		wrap.appendChild(end);
+		// ganhou _2 e está em uso: o elo fica na situação e o aviso, logo depois do sufixo
+		if (st === 'dup' && icon === 'use') {
+			var warn = el('span', 'fl-st is-dup');
+
+			warn.innerHTML = STATE_ICON.dup;
+			warn.title = dupNote(f);
+			warn.setAttribute('aria-label', warn.title);
+			wrap.appendChild(warn);
+		}
+
+		// o nome editado à mão: a seta volta para a sugestão
+		if (it.custom != null && !state.busy) {
+			var reset = el('button', 'fl-reset');
+
+			reset.type = 'button';
+			reset.title = 'voltar para a sugestão';
+			reset.setAttribute('aria-label', 'voltar para a sugestão de ' + it.name);
+			reset.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg>';
+			reset.addEventListener('click', function () {
+				it.custom = null;
 				state.step = 0;
 				render();
 			});
+			wrap.appendChild(reset);
+		}
 
-			cur.appendChild(el('span', null, it.name));
-			cur.appendChild(el('i', null, tail(it)));
-			cur.title = it.name + tail(it) + (it.kind === 'seq' ? ' · sequência de ' + plural(it.count, 'imagem', 'imagens') : '');
+		mark.innerHTML = STATE_ICON[icon];
+		mark.title = why;
+		mark.setAttribute('aria-label', why);
 
-			input.type = 'text';
-			input.value = target(it);
-			input.id = 'fl-new-' + it.id;
-			input.dataset.id = it.id;
-			input.spellcheck = false;
-			input.autocomplete = 'off';
-			input.disabled = st === 'off' || state.busy;
-			input.setAttribute('aria-label', 'novo nome de ' + it.name);
-			input.addEventListener('input', function () {
-				it.custom = this.value === suggest(it) ? null : this.value;
-				state.step = 0;
-				render(true);
-			});
-			wrap.appendChild(input);
-			// o sufixo que o nome ganhou vem antes dos quadros e da extensão, em destaque
-			if (f.suffix) end.insertBefore(el('b', 'fl-suffix', f.suffix), end.firstChild);
-			wrap.appendChild(end);
-			// ganhou _2 e está em uso: o elo fica na situação e o aviso, logo depois do sufixo
-			if (st === 'dup' && icon === 'use') {
-				var warn = el('span', 'fl-st is-dup');
+		row.appendChild(cb);
+		row.insertAdjacentHTML('beforeend', ICON[it.kind] || ICON.file);
+		row.appendChild(cur);
+		row.appendChild(el('span', 'fl-arrow', '→'));
+		row.appendChild(wrap);
+		row.appendChild(mark);
 
-				warn.innerHTML = STATE_ICON.dup;
-				warn.title = dupNote(f);
-				warn.setAttribute('aria-label', warn.title);
-				wrap.appendChild(warn);
-			}
+		return row;
+	}
 
-			// o nome editado à mão: a seta volta para a sugestão
-			if (it.custom != null && !state.busy) {
-				var reset = el('button', 'fl-reset');
-
-				reset.type = 'button';
-				reset.title = 'voltar para a sugestão';
-				reset.setAttribute('aria-label', 'voltar para a sugestão de ' + it.name);
-				reset.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg>';
-				reset.addEventListener('click', function () {
-					it.custom = null;
-					state.step = 0;
-					render();
-				});
-				wrap.appendChild(reset);
-			}
-
-			mark.innerHTML = STATE_ICON[icon];
-			mark.title = why;
-			mark.setAttribute('aria-label', why);
-
-			row.appendChild(cb);
-			row.insertAdjacentHTML('beforeend', ICON[it.kind] || ICON.file);
-			row.appendChild(cur);
-			row.appendChild(el('span', 'fl-arrow', '→'));
-			row.appendChild(wrap);
-			row.appendChild(mark);
-			box.appendChild(row);
-		});
-
-		if (!box.children.length) box.appendChild(el('p', 'fl-empty', emptyText(count)));
-
+	// as contagens dos filtros, a chave de todos e o rodapé
+	function totals(count, used) {
 		['all', 'chg', 'same', 'bad', 'off'].forEach(function (k) {
 			$('fl-n-' + k).textContent = count[k];
 		});
@@ -281,19 +353,6 @@ renomeia.
 		all.disabled = state.busy || !state.items.length;
 
 		footer(count, used);
-
-		if (focused != null) {
-			var again = $('fl-new-' + focused);
-
-			if (again) {
-				again.focus();
-				try {
-					again.setSelectionRange(caret, caret);
-				} catch (err) { }
-			}
-		}
-
-		return count;
 	}
 
 	function emptyText(count) {
