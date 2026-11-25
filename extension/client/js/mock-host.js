@@ -389,21 +389,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return req;
 		},
 
-		searchCategories: async function (a) {
-			await wait(a.force ? 900 : 300);
-
-			return {
-				downloaded: !!a.force,
-				categories: [
-					{ key: 'atracoes_teams', auto: 'TEAMS', count: 412 },
-					{ key: 'atracoes_trello', auto: 'TRELLO', count: 128 },
-					{ key: 'filmes', auto: 'FILMES', count: 57 },
-					{ key: 'esportes_ao_vivo', auto: 'ESPORTES AO VIVO', count: 9 },
-					{ key: 'servidor', auto: 'SERVIDOR', count: 2 }
-				]
-			};
-		},
-
 		saveProductions: async function (a) {
 			await wait(delay);
 
@@ -741,45 +726,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			return { downloaded: true, text: mockSearchIndex() };
 		},
-		pathsIndex: async function (a) {
-			await wait(delay * 2);
-
-			function group(name, extra) {
-				var g = Object.assign({ name: name, projetos: [], outputs: [], caminhos: [], server: '', share: '' }, extra);
-
-				g.haystack = [name].concat(g.projetos, g.outputs, g.caminhos).join('|').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9|]/g, '');
-
-				return g;
-			}
-
-			return {
-				downloaded: true,
-				platform: 'Mac',
-				index: [
-					{
-						category: { key: 'atracoes_teams', label: 'TEAMS' },
-						groups: [
-							group('Domingo com Huck', { projetos: ['/Volumes/VFX/projetos/DOMINGO COM HUCK'], outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/HUCK'], caminhos: ['/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/PROGRAMAS/DOMINGO COM HUCK/2026/OUTUBRO/Chamadas'] }),
-							group('Encontro com Patrícia Poeta', { projetos: ['/Volumes/VFX/projetos/ENCONTRO'], outputs: ['/Volumes/EDIT_IN_PLACE/PROMO/OUTPUT/ENCONTRO'], caminhos: [] }),
-							group('Fantástico', { projetos: ['/Volumes/VFX/projetos/FANTASTICO'], outputs: [], caminhos: [] })
-						]
-					},
-					{
-						category: { key: 'atracoes_trello', label: 'TRELLO' },
-						groups: [group('Fantástico — pauta de domingo', { caminhos: ['/Volumes/VFX/trello/FANTASTICO/PAUTA DE DOMINGO'] })]
-					},
-					{
-						category: { key: 'filmes', label: 'FILMES' },
-						groups: [group('O PROTETOR: CAPÍTULO FINAL', { outputs: ['//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_P_/O PROTETOR 3 - CAPITULO FINAL'] })]
-					},
-					{
-						category: { key: 'servidor', label: 'SERVIDOR' },
-						groups: [group('#INGEST', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST'], server: 'cpp-ml-sp', share: 'PROMO_REDE' }), group('BASES VALENDO', { caminhos: ['/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO'], server: 'cpp-ml-sp', share: 'PROMO_REDE' })]
-					}
-				]
-			};
-		},
-
 		openPath: async function (a) {
 			await wait(150);
 

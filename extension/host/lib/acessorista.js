@@ -1,12 +1,8 @@
-﻿// O ACESSORISTA: índice de caminhos das atrações (webhook + cache), abertura de pastas (montagem SMB no macOS)
-// e conversão de caminhos Windows / macOS.
+﻿// O ACESSORISTA: os endereços da busca de caminhos (o índice da equipe e os filmes recentes), os caminhos fixos,
+// a abertura de pastas (montagem SMB no macOS) e a conversão de caminhos Windows / macOS.
 
-var PS_WEBHOOK_URL = 'https://workflows.jmbillard.com/webhook/path-search';
-
-var PS_WEBHOOK_BODY = '{"origem":"after effects"}';
-
-// Busca nova (formato v2, workflow PROMO - BUSCAR): o índice já pronto, num GET. O painel do acessorista baixa
-// sozinho (sem travar o After Effects); o curl daqui é só o plano B.
+// O índice da busca (workflow PROMO - BUSCAR): pronto, num GET. O painel do acessorista baixa sozinho (sem travar o
+// After Effects); o curl daqui é só o plano B.
 var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
 var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
 
@@ -14,14 +10,9 @@ var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConf
 // pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
 var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
 
-var PS_SERVIDOR = null; // caminhos fixos do servidor: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
+var PS_SERVIDOR = null; // os caminhos fixos: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
 
-// De onde vem o índice (configuração > busca): 'webhook' (PS_WEBHOOK_URL) ou 'file' (PS_INDEX_FILE, o mesmo JSON
-// que o webhook devolveria, num arquivo da rede).
-var PS_SOURCE = 'webhook';
-var PS_INDEX_FILE = '';
-
-var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) do índice local antes de baixar de novo (caminhos do Teams mudam toda hora)
+var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) da cópia do índice antes de a janela PROJETO baixar de novo
 
 var PS_SMB = {
 	sp: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
@@ -30,107 +21,16 @@ var PS_SMB = {
 	cppSp: 'cpp-ml-sp.servicos.corp.tvglobo.com.br'
 };
 
-var PS_CATEGORIES = [
-	{ key: 'atracoes_teams', label: 'TEAMS' },
-	{ key: 'atracoes_trello', label: 'TRELLO' },
-	{ key: 'atracoes', label: 'ATRAÇÕES' },
-	{ key: 'filmes', label: 'FILMES' },
-	{ key: 'servidor', label: 'SERVIDOR' }
-];
-
+// Os caminhos fixos padrão (sem 'SEARCH' na configuração): padDefaultSearch
 var PS_LOCAL_SOURCES = {
 	servidor: [
-		{
-			atracao: '#INGEST',
-			mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
-			win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' },
-			fixedShareServer: PS_SMB.cppSp,
-			fixedShare: 'PROMO_REDE'
-		},
-		{
-			atracao: 'BASES VALENDO',
-			mac: { caminho: '/Volumes/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' },
-			win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' },
-			fixedShareServer: PS_SMB.cppSp,
-			fixedShare: 'PROMO_REDE'
-		}
+		{ atracao: '#INGEST', win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' } },
+		{ atracao: 'BASES VALENDO', win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' } }
 	]
 };
 
-var PS_ACCENTS = {
-	'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
-	'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
-	'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
-	'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
-	'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
-	'ç': 'c', 'ñ': 'n'
-};
-
-function psCategoryLabel(key) {
-	return key.replace(/^atracoes_/, '').replace(/_/g, ' ').toUpperCase();
-}
-
-function psCategoryList(data) {
-	var list = [];
-	var known = {};
-
-	for (var i = 0; i < PS_CATEGORIES.length; i++) {
-		known[PS_CATEGORIES[i].key] = true;
-
-		if (psAsArray(data[PS_CATEGORIES[i].key]).length > 0) list.push(PS_CATEGORIES[i]);
-	}
-
-	for (var key in data) {
-		if (known[key] || !(data[key] instanceof Array) || data[key].length == 0) continue;
-
-		list.push({ key: key, label: psCategoryLabel(key) });
-	}
-
-	return list;
-}
-
-function psNormalize(value) {
-	return String(value || '')
-		.toLowerCase()
-		.replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, function (c) {
-			return PS_ACCENTS[c];
-		})
-		.replace(/[̀-ͯ]/g, '')
-		.replace(/[^a-z0-9]/g, '');
-}
-
 function psSlashes(path) {
 	return String(path || '').replace(/\\/g, '/');
-}
-
-// Caminho como vem do workflow, limpo: sem espaços/quebras de linha nas pontas, sem aspas soltas no
-// começo ou no fim (ex: "...\LETTERING'") e sem barra no fim.
-function psCleanPath(path) {
-	return String(path || '')
-		.replace(/^[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+|[\s\u00A0'"`\u00B4\u2018\u2019\u201C\u201D]+$/g, '')
-		.replace(/(.)[\\\/]+$/, '$1');
-}
-
-// Chave para comparar caminhos: o mesmo caminho em formato Windows (//servidor/share/...) ou macOS
-// (/Volumes/share/...), com barras duplas, espaços em volta das pastas, caracteres invisíveis,
-// maiúsculas ou acentos compostos de jeitos diferentes (o macOS grava "Ê" como "E" + acento).
-function psPathKey(path) {
-	var parts = psToMac(psCleanPath(path).replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')).split('/');
-	var clean = [];
-
-	for (var i = 0; i < parts.length; i++) {
-		var part = parts[i].replace(/^\s+|\s+$/g, '');
-
-		if (part !== '') clean.push(part);
-	}
-
-	return clean
-		.join('/')
-		.toLowerCase()
-		.replace(/[\u0300-\u036f]/g, '')
-		.replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, function (c) {
-			return PS_ACCENTS[c];
-		});
 }
 
 function psToMac(path) {
@@ -153,186 +53,8 @@ function psShellQuote(text) {
 	return "'" + String(text).replace(/'/g, "'\\''") + "'";
 }
 
-function psLastFolderName(path) {
-	var p = psSlashes(path).replace(/\/+$/, '');
-
-	return p.substring(p.lastIndexOf('/') + 1);
-}
-
-function psAsArray(value) {
-	if (!value) return [];
-
-	return value instanceof Array ? value : [value];
-}
-
-function psAddUnique(list, value) {
-	if (!value) return;
-
-	var key = psPathKey(value);
-
-	for (var i = 0; i < list.length; i++) {
-		if (psPathKey(list[i]) == key) return;
-	}
-
-	list.push(String(value));
-}
-
-function psReadJSON(file) {
-	if (!file.exists) return null;
-
-	var text = readFileContent(file).replace(/^﻿/, '');
-
-	return JSON.parse(text);
-}
-
 function psIsFresh(file) {
 	return file.exists && new Date().getTime() - file.modified.getTime() < PS_CACHE_TTL;
-}
-
-function psDownloadIndex(cacheFile) {
-	var partFile = new File(cacheFile.fsName + '.part');
-	var cmd;
-
-	if (partFile.exists) partFile.remove();
-
-	// índice num arquivo: copia em vez de baixar
-	if (PS_SOURCE == 'file') {
-		try {
-			var source = new File(padPath(PS_INDEX_FILE));
-
-			if (!source.exists || !source.copy(partFile.fsName)) return false;
-		} catch (err) {
-			return false;
-		}
-	} else if (appOs == 'Win') {
-		cmd =
-			'cmd.exe /c curl.exe -s -L --connect-timeout 5 --max-time 25 -X POST' +
-			' -H "Content-Type: application/json"' +
-			' -d "' + PS_WEBHOOK_BODY.replace(/"/g, '\\"') + '"' +
-			' -o "' + partFile.fsName.replace(/"/g, '') + '"' +
-			' "' + PS_WEBHOOK_URL + '"';
-	} else {
-		cmd =
-			'curl -s -L --connect-timeout 5 --max-time 25 -X POST' +
-			" -H 'Content-Type: application/json'" +
-			' -d ' + psShellQuote(PS_WEBHOOK_BODY) +
-			' -o ' + psShellQuote(partFile.fsName) +
-			' ' + psShellQuote(PS_WEBHOOK_URL);
-	}
-
-	try {
-		system.callSystem(cmd);
-	} catch (err) {}
-
-	var valid = false;
-
-	try {
-		valid = psReadJSON(partFile) != null;
-	} catch (err) {}
-
-	if (!valid) {
-		if (partFile.exists) partFile.remove();
-		return false;
-	}
-
-	if (cacheFile.exists) cacheFile.remove();
-	partFile.rename(cacheFile.name);
-
-	return true;
-}
-
-function psBuildIndex(data) {
-	// o workflow pode devolver o objeto dentro de uma lista ([ { ... } ])
-	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
-
-	data = data || {};
-
-	// listas locais somadas às do webhook
-	for (var src in PS_LOCAL_SOURCES) {
-		data[src] = psAsArray(data[src]).concat(PS_LOCAL_SOURCES[src]);
-	}
-
-	var categories = psCategoryList(data);
-	var platform = appOs == 'Mac' ? 'mac' : 'win';
-	var index = [];
-
-	for (var c = 0; c < categories.length; c++) {
-		var records = psAsArray(data[categories[c].key]);
-		var groups = [];
-		var groupsByKey = {};
-
-		for (var r = 0; r < records.length; r++) {
-			var rec = records[r];
-
-			if (!rec) continue;
-
-			// sem o caminho deste sistema, usa o do outro (ex: a lista de filmes só tem 'win'); ele é
-			// convertido ao mostrar e ao abrir
-			var plat = rec[platform] || {};
-			var other = rec[platform == 'mac' ? 'win' : 'mac'] || {};
-			var projeto = psCleanPath(plat.projeto || rec.projeto || other.projeto);
-			var output = psCleanPath(plat.output || rec.output || other.output);
-			var caminho = psCleanPath(plat.caminho || rec.caminho || other.caminho);
-			var atracao = psCleanPath(rec.atracao); // nomes também vêm com aspas soltas no fim
-
-			var name = atracao
-				? atracao
-				: psLastFolderName(caminho) || psLastFolderName(projeto) || psLastFolderName(output) || 'Resultado ' + (r + 1);
-
-			// if/else em vez de ternário encadeado: o ExtendScript avalia 'a ? b : c ? d : e'
-			// como '(a ? b : c) ? d : e', o que juntava todas as atrações sem caminho num grupo só.
-			var key;
-
-			if (atracao) key = 'a:' + psNormalize(name);
-			else if (caminho) key = 'c:' + psPathKey(caminho);
-			else key = 'r:' + r;
-
-			var group = groupsByKey[key];
-
-			if (!group) {
-				group = groupsByKey[key] = {
-					name: name,
-					projetos: [],
-					outputs: [],
-					caminhos: [],
-					server: rec.fixedShareServer || '',
-					share: rec.fixedShare || '',
-					patterns: [], // o começo das claquetes da atração (coluna 'pattern' do índice), para a janela PROJETO
-					haystack: psNormalize(name)
-				};
-				groups.push(group);
-			}
-
-			if (rec.fixedShareServer) group.server = rec.fixedShareServer;
-			if (rec.fixedShare) group.share = rec.fixedShare;
-
-			var pat = rec.pattern || rec.patterns || rec.padrao || '';
-			var pats = pat instanceof Array ? pat : String(pat).split(',');
-
-			for (var pp = 0; pp < pats.length; pp++) {
-				var one = String(pats[pp] || '').replace(/^\s+|\s+$/g, '');
-
-				if (one) group.patterns.push(one);
-			}
-
-			psAddUnique(group.projetos, projeto);
-			psAddUnique(group.outputs, output);
-			psAddUnique(group.caminhos, caminho);
-
-			group.haystack += '|' + psNormalize(projeto) + '|' + psNormalize(output) + '|' + psNormalize(caminho);
-		}
-
-		// sem nenhum caminho (ex: filme com output null) não há o que abrir: fica de fora
-		var useful = [];
-
-		for (var g = 0; g < groups.length; g++) {
-			if (groups[g].projetos.length || groups[g].outputs.length || groups[g].caminhos.length) useful.push(groups[g]);
-		}
-
-		if (useful.length > 0) index.push({ category: categories[c], groups: useful });
-	}
-
-	return index;
 }
 
 function psMountedSharePath(server, share) {

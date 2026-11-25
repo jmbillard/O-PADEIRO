@@ -49,7 +49,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		fonts: { bank: '', upload: true }, // aba FONTES (o banco de fontes da equipe)
 		machineSnapshot: '',
 		defaultUser: '',
-		categories: null, // categorias encontradas no índice (pedidas ao abrir a aba)
 		tab: 'prods'
 	};
 
@@ -4197,10 +4196,6 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		requestAnimationFrame(function () {
 			pathsToEnd($('pane-' + name));
 		});
-
-		// as categorias da busca são lidas do índice na primeira vez que a aba abre
-
-
 	}
 
 	// erro do host numa seção: abre a aba dela

@@ -5,7 +5,9 @@
 > O ACESSORISTA — busca de caminhos e de textos (host)
 ---------------------------------------------------------------
 
-Caminhos: o índice (webhook + cache local) e a abertura de pastas ficam em lib/acessorista.js. Textos: o painel pede os layers de texto em lotes de comps.
+Caminhos: o painel baixa o índice da busca sozinho; aqui, o que ele pede ao host (os endereços, a cópia, o curl do
+plano B). A abertura de pastas e a conversão de caminhos ficam em lib/acessorista.js. Textos: o painel pede os layers
+de texto em lotes de comps.
 
 */
 
@@ -38,24 +40,8 @@ PADX.requestedTab = function () {
 
 */
 
-// Índice de atrações já preparado para a plataforma atual. 'force' baixa de novo (lupa).
-// a: { force }  →  { index, downloaded, platform }
-PADX.pathsIndex = function (a) {
-	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
-	var downloaded = true;
-
-	// modo local (ligado ou com a rede fora): só a cópia guardada, sem tocar na rede
-	if (padLocalMode() && cacheFile.exists) downloaded = false;
-	else if (a.force || !psIsFresh(cacheFile)) downloaded = psDownloadIndex(cacheFile);
-
-	try {
-		return { index: psBuildIndex(psReadJSON(cacheFile)), downloaded: downloaded, platform: appOs };
-	} catch (err) {
-		throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
-	}
-};
-
-// Busca nova (v2): o que o painel precisa para baixar o índice sozinho. → { url, cache, local, platform, servidor, labels }
+// O que o painel precisa para baixar o índice sozinho. local: o modo local (só a cópia, sem a rede).
+// → { url, films, cache, local, platform, servidor, mode, folders, foldersOnly, daily, localIndex }
 PADX.searchInfo = function () {
 	var list = PS_SERVIDOR || padDefaultSearch().servidor;
 	var servidor = [];
@@ -104,7 +90,7 @@ PADX.searchCopy = function () {
 	return { text: readFileContent(cache), modified: cache.modified.getTime() };
 };
 
-// Plano B da busca nova: baixa o índice v2 pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
+// Plano B: baixa o índice da busca pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
 // a: { force }  →  { text, downloaded }
 PADX.searchDownload = function (a) {
 	var cache = new File(tempFolder.fsName + '/busca_v2.json');

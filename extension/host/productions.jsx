@@ -537,7 +537,7 @@ function padReadOrganize() {
 'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, servidor: [{ name, path }] }.
   url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
   servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
-Sem 'SEARCH' (ou no formato antigo, do índice que ficou só para o legacy): o webhook e os caminhos padrão.
+Sem 'SEARCH' (ou no formato antigo, de antes do índice da equipe): o webhook e os caminhos fixos padrão.
 
 */
 
@@ -559,7 +559,7 @@ function padDefaultSearch() {
 
 // Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
 function padCleanSearch(o) {
-	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (legacy): os padrões
+	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (o índice por arquivo, que saiu): os padrões
 
 	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, servidor: [] };
 	var seen = {};
@@ -593,45 +593,6 @@ function padReadSearch() {
 		return padDefaultSearch();
 	}
 }
-
-PADX.searchCategories = function (a) {
-	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
-	var downloaded = false;
-
-	if (a.force || !cacheFile.exists) downloaded = psDownloadIndex(cacheFile);
-
-	var data = null;
-
-	try {
-		data = psReadJSON(cacheFile);
-	} catch (err) { }
-
-	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
-	if (!data) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
-
-	var out = [];
-
-	for (var key in data) {
-		if (!(data[key] instanceof Array) || data[key].length == 0) continue;
-
-		out.push({ key: key, auto: psCategoryLabel(key), count: data[key].length });
-	}
-
-	for (var src in PS_LOCAL_SOURCES) {
-		var found = false;
-
-		for (var j = 0; j < out.length; j++) {
-			if (out[j].key == src) {
-				out[j].count += PS_LOCAL_SOURCES[src].length;
-				found = true;
-			}
-		}
-
-		if (!found) out.push({ key: src, auto: psCategoryLabel(src), count: PS_LOCAL_SOURCES[src].length });
-	}
-
-	return { categories: out, downloaded: downloaded };
-};
 
 /*
 
