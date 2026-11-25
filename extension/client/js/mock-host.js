@@ -18,8 +18,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	var mode = (location.search.match(/mock=(\w+)/) || [])[1] || '';
 
 	// a tabela de seções da configuração (regras/configuracao.js, ADR 0005): o host de teste lê e grava as seções da
-	// equipe por ela, como o host. As páginas não carregam a regra (no After o painel não precisa dela): o host de
-	// teste a põe logo depois de si, antes dos scripts do painel
+	// equipe por ela, como o host. Nas páginas que não carregam a regra (as que o painel não precisa dela no After), o
+	// host de teste a põe logo depois de si, antes dos scripts do painel
 	if (!window.PAD_CONFIGURACAO) document.write('<script src="../regras/configuracao.js"><\/script>');
 
 	// índice local de mentira (o de verdade lê as pastas pelo Node): guardado no localStorage
@@ -134,12 +134,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	// a configuração do host de teste: um documento por arquivo no localStorage ('pad.mock.arquivo.<nome>'), o
 	// adaptador da tabela de seções. Sem nada guardado, o arquivo da equipe começa com a semente abaixo (com a barra, o
-	// banco de fontes e a aparência da equipe que o host de teste guardava antes em 'pad.mock.bar', 'pad.mock.fonts' e
-	// 'pad.mock.appearance', se houver)
+	// banco de fontes, a aparência e os tipos de projeto da equipe que o host de teste guardava antes em 'pad.mock.bar',
+	// 'pad.mock.fonts', 'pad.mock.appearance' e 'pad.mock.project', se houver; as capturas de tela ainda põem os tipos
+	// de projeto em 'pad.mock.project')
 	function mockSemente() {
 		var bar = mockAntigo('pad.mock.bar');
 		var fonts = mockAntigo('pad.mock.fonts');
 		var appearance = mockAntigo('pad.mock.appearance');
+		var project = mockAntigo('pad.mock.project');
 
 		var doc = {
 			PRODUCTIONS: [
@@ -202,6 +204,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		if (bar) doc.BAR = bar;
 		if (fonts) doc.FONTS = fonts;
 		if (appearance) doc.APPEARANCE = appearance;
+		if (project) doc.PROJECT = project;
 
 		return doc;
 	}
@@ -278,18 +281,6 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			hasConfigCopy: true,
 			templates: {}
 		};
-	}
-
-	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
-	// as categorias da atração nova (aba PROJETO), guardadas no navegador: a janela PROJETO lê as mesmas
-	function mockProject() {
-		var saved = null;
-
-		try {
-			saved = JSON.parse(localStorage.getItem('pad.mock.project') || 'null');
-		} catch (err) { }
-
-		return { categories: saved && saved.categories ? saved.categories : [] };
 	}
 
 	// os cards do Trello (o índice da busca, 'trello'): o designer ('des'), o status ('st') e a atração ligada no banco
@@ -397,13 +388,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		productions: function (a) {
-			if (!window.PAD_MOCK_LIST) {
-				// o que ainda não está na tabela de seções (os tipos de projeto; e a data de mentira da configuração da equipe)
-				window.PAD_MOCK_LIST = {
-					stamp: 1000,
-					project: mockProject() // as categorias (aba PROJETO): guardadas no navegador, para a janela PROJETO ler
-				};
-			}
+			// a data de mentira da configuração da equipe (o resto está na tabela de seções)
+			if (!window.PAD_MOCK_LIST) window.PAD_MOCK_LIST = { stamp: 1000 };
 
 			// ?mock=local: a lista compartilhada não está acessível (rede fora)
 			if (mode === 'local' && !window.PAD_MOCK_NETBACK) {
@@ -421,7 +407,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				organize: mockLer('organizar'),
 				search: mockLer('buscaDeCaminhos'),
 				links: mockLer('links'),
-				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
+				project: mockLer('tiposDeProjeto'),
 				collect: mockLer('coletar'),
 				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')),
 				bar: mockLer('barra'),
@@ -446,11 +432,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return mockPrefs();
 		},
 
-		// como o host: o arquivo guarda só as personalizadas (null = voltar ao padrão da equipe)
+		// como o host: o arquivo guarda só as personalizadas (null = voltar ao padrão da equipe; sem o campo, fica como está)
 		savePersonalPrefs: function (a) {
-			var C = window.PAD_CONFIGURACAO;
-
-			mockAdaptador.gravar(C.PESSOAL, C.aplicar({}, { aparenciaPessoal: a.appearance, barraPessoal: a.bar }));
+			window.PAD_CONFIGURACAO.gravar(mockAdaptador, { aparenciaPessoal: a.appearance, barraPessoal: a.bar });
 
 			return mockPrefs();
 		},
@@ -459,13 +443,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return mockMachinePrefs();
 		},
 
-		// como o host: só os campos enviados mudam
+		// como o host: só os campos enviados mudam (o arquivo deste computador é regravado inteiro pela tabela)
 		saveMachinePrefs: function (a) {
 			(a.productions || []).forEach(function (p, i) {
 				if (!p.name !== !p.path) throw new Error('#PAD_098 - produção local ' + (i + 1) + ': precisa de um nome e de uma pasta.');
 			});
 
-			var valores = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, producoesDesteComputador: a.productions, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
+			var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
+			var valores = { producoesDesteComputador: a.productions != null ? a.productions : mockLer('producoesDesteComputador') || [] };
+
+			Object.keys(campos).forEach(function (k) {
+				if (campos[k] != null) valores[k] = campos[k];
+			});
 
 			if (a.user != null) {
 				var sigla = window.PAD_CONFIGURACAO.limpar('sigla', a.user);
@@ -527,32 +516,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			// as seções da tabela, como o host: limpas (a mensagem da limpeza sai sem gravar nada) e gravadas de uma vez;
 			// as que não vierem ficam como estão
 			var equipe = window.PAD_CONFIGURACAO.EQUIPE;
-			var doc = window.PAD_CONFIGURACAO.aplicar(mockAdaptador.ler(equipe), { producoes: a.productions || [], mapaDeDrives: a.drives, regraDoRenomear: a.rename, organizar: a.organize, buscaDeCaminhos: a.search, links: a.links, barra: a.bar, registroDeUso: a.log, aparencia: a.appearance, coletar: a.collect, bancoDeFontes: a.fonts });
+			var doc = window.PAD_CONFIGURACAO.aplicar(mockAdaptador.ler(equipe), window.PAD_CONFIGURACAO.secoesDoPainel(a));
 
 			mockAdaptador.gravar(equipe, doc);
 			window.PAD_MOCK_LIST.stamp += 1000;
-			if (a.project) {
-				// como o host (padCleanProject)
-				var seenCat = {};
 
-				(a.project.categories || []).forEach(function (c, i) {
-					var key = String(c.name || '').trim().toUpperCase();
-					var badTok = /\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e|ano_producao)\})[^}]*\}/.exec(c.path || '');
-
-					if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
-					if (seenCat[key]) throw new Error('#PAD_089 - projeto: o tipo ' + key + ' aparece mais de uma vez.');
-					if (!String(c.path || '').trim()) throw new Error('#PAD_089 - projeto: o tipo ' + key + ' precisa de um caminho.');
-					if (badTok) throw new Error('#PAD_089 - projeto: ' + badTok[0] + ' não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {categoria} ou {letra}).');
-					if (/\{(?!(atracao|ano|mes|mes_extenso|proximo_mes|proximo_mes_num|ano_proximo_mes|tipo|categoria|letra|o_que_e|ano_producao)\})[^}]*\}/.test(c.output || '')) throw new Error('#PAD_089 - projeto: token desconhecido no output de ' + key + '.');
-					seenCat[key] = true;
-				});
-				window.PAD_MOCK_LIST.project = { categories: (a.project.categories || []).map(function (c) {
-					return { name: String(c.name).trim().toUpperCase(), path: String(c.path).trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), output: String(c.output || '').trim().replace(/\\/g, '/').replace(/(.)\/+$/, '$1'), file: String(c.file || '').trim(), icon: c.icon || '' };
-				}) };
-				localStorage.setItem('pad.mock.project', JSON.stringify(window.PAD_MOCK_LIST.project));
-			}
-
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personal: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: mockLer('tiposDeProjeto'), collect: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personal: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -1167,7 +1136,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// janela PROJETO (?mock=noproj: projeto sem ID nem nome; ?mock=nort: sem retrancas)
 		projectCategories: function () {
 			return {
-				categories: mockProject().categories.map(function (c) {
+				categories: mockLer('tiposDeProjeto').categories.map(function (c) {
 					return Object.assign({ reachable: !/^~|^\/Users\//.test(c.path) && !/OFFLINE/i.test(c.path) }, c);
 				}),
 				fallback: mockLer('pastaDosProjetos') || '~/Desktop'
@@ -1178,7 +1147,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			if (!window.PAD_MOCK_LIST) api.productions();
 
 			var p = window.PAD_MOCK_PROJECT || (window.PAD_MOCK_PROJECT = mode === 'noproj' ? { id: '', name: '', user: '' } : { id: 'EMP123456', name: 'História ao Vivo', user: '' });
-			var s = window.PAD_MOCK_LIST.project;
+			var s = mockLer('tiposDeProjeto');
 			var retrancas = mode === 'nort' ? [] : s.retrancas;
 			var user = p.user || 'JMBILLARD';
 			var found = null;

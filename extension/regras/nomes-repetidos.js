@@ -107,6 +107,8 @@ usado pelo arquivista, files.js), o host por #include (o global PAD_NOMES_REPETI
 
 	var api = { resolve: resolve, tail: tail, BAD_CHARS: BAD_CHARS };
 
+	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	root.PAD_NOMES_REPETIDOS = api;
+
 	if (typeof module === 'object' && module && module.exports) module.exports = api;
-	else root.PAD_NOMES_REPETIDOS = api;
 })(typeof window !== 'undefined' ? window : this);

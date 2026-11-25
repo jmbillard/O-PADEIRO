@@ -15,7 +15,9 @@ Cada seção da configuração é uma linha da tabela (TABELA, abaixo), que diz:
     { novo: [antigos] }) e os arquivos antigos (arquivosAntigos: a mesma chave, num arquivo que era só da seção),
     lidos quando o nome novo não existe. A gravação seguinte grava só o nome novo (e apaga o arquivo antigo).
 
-Ler uma seção devolve sempre o valor limpo e completo; gravar grava só o nome novo e não mexe nas outras seções.
+Ler uma seção devolve sempre o valor limpo e completo; gravar grava só o nome novo e não mexe nas outras seções. O
+formato guardado de cada arquivo não muda: o da equipe guarda também o que a tabela não conhece; um deste computador é
+regravado inteiro a cada gravação, com todas as seções dele limpas e só elas (gravar, abaixo).
 
 O módulo não acessa disco: recebe um adaptador que lê e grava um documento (um objeto) pelo nome do arquivo:
   { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto),
@@ -292,7 +294,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			}
 
 			if (prefix == '') throw new Error('#PAD_082 - renomear: o formato ' + (i + 1) + ' precisa de um prefixo.');
-			if (comment == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de um comentário.');
+			if (comment == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de uma etiqueta.');
 			if (!terms.length) throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de ao menos um termo.');
 			if (seen[prefix]) throw new Error('#PAD_082 - renomear: o prefixo "' + prefix + '" aparece mais de uma vez.');
 
@@ -792,6 +794,67 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
+	// tipos de projeto ('PROJECT', aba PROJETO): { categories: [{ name, path, output, file, icon }] }, a lista "dentro
+	// de" da atração nova (host/project.jsx)
+	//   path   → a pasta do projeto, com os tokens do caminho (TOKENS_DO_CAMINHO); sem {atracao}, o tipo é a atração
+	//   output → a pasta de output proposta no projeto novo (opcional, com tokens); file → o nome do .aep (opcional,
+	//            com tokens); icon → um ícone do seletor (client/js/util.js)
+	// sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem tipos
+	// ---------------------------------------------------------------------------------------------------------
+
+	// {categoria}: o nome antigo do {tipo}, ainda aceito
+	var TOKENS_DO_CAMINHO = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao'];
+
+	// um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
+	// barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). Vale em todo caminho de output (o host usa
+	// a mesma: padCleanSpaces). Um token vazio ou um nome digitado com espaço sobrando criaria uma pasta quase igual à
+	// certa, que ninguém acha depois
+	function semEspacosAMais(path) {
+		return String(path == null ? '' : path).replace(/[ \t\u00A0]{2,}/g, ' ').replace(/ *([\\\/]) */g, '$1').replace(/^ +| +$/g, '');
+	}
+
+	// o nome comparável de um tipo (o mesmo do nome do .aep, padAepName do host): sem acentos nem símbolos
+	function chaveDoTipo(name) {
+		return trim(semEspeciais(name).toUpperCase().replace(/[^A-Z0-9]+/g, ' '));
+	}
+
+	function limparTiposDeProjeto(o) {
+		var clean = { categories: [] };
+		var list = o && isArray(o.categories) ? o.categories : [];
+		var seen = {};
+
+		for (var i = 0; i < list.length; i++) {
+			var c = list[i] || {};
+			var name = trim(c.name).replace(/\s+/g, ' ').toUpperCase();
+			var path = caminho(c.path);
+			var output = semEspacosAMais(caminho(c.output));
+			// o nome do .aep do tipo (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
+			var fileName = trim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
+			var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
+			var key = chaveDoTipo(name);
+			var re = /\{([^}]*)\}/g;
+			var m;
+
+			if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
+			if (seen[key]) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' aparece mais de uma vez.');
+			if (path == '') throw new Error('#PAD_089 - projeto: o tipo ' + name + ' precisa de um caminho.');
+
+			// {o_que_e} (o que se digita na janela de projeto, depois da atração): só no output e no nome do arquivo. A
+			// pasta do projeto é decidida antes de o "o que é" existir
+			if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
+
+			while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
+				if (indexOf(TOKENS_DO_CAMINHO, m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
+			}
+
+			seen[key] = true;
+			clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
+		}
+
+		return clean;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
 	// deste computador ('machine_config.json', na pasta de dados do usuário)
 	//   user        → a sigla do designer ({usuario} no nome do projeto); vazia: a do login
 	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a da categoria não
@@ -905,6 +968,27 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
+	// a configuração da equipe vinda do painel (saveProductions): o campo do painel → a seção da tabela
+	// ---------------------------------------------------------------------------------------------------------
+
+	var CAMPOS_DO_PAINEL = {
+		productions: 'producoes', drives: 'mapaDeDrives', rename: 'regraDoRenomear', organize: 'organizar', search: 'buscaDeCaminhos', links: 'links',
+		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', collect: 'coletar', fonts: 'bancoDeFontes', project: 'tiposDeProjeto'
+	};
+
+	// { campo do painel: valor } → { seção: valor }, só com os campos que vieram (sem as produções: a lista vazia, que
+	// a limpeza recusa)
+	function secoesDoPainel(a) {
+		var out = { producoes: (a && a.productions) || [] };
+
+		for (var campo in CAMPOS_DO_PAINEL) {
+			if (CAMPOS_DO_PAINEL.hasOwnProperty(campo) && campo != 'productions' && a && a[campo] !== undefined) out[CAMPOS_DO_PAINEL[campo]] = a[campo];
+		}
+
+		return out;
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
 	// a tabela
 	// ---------------------------------------------------------------------------------------------------------
 
@@ -920,6 +1004,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'aparencia', onde: 'equipe', arquivo: EQUIPE, chave: 'APPEARANCE', padrao: function () { return PADRAO_APARENCIA; }, limpar: limparAparencia },
 		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLLECT', padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
+		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'PROJECT', padrao: function () { return { categories: [] }; }, limpar: limparTiposDeProjeto },
 
 		// deste computador
 		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'user', arquivosAntigos: ['project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },
@@ -1061,41 +1146,78 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			return out;
 		}
 
-		// grava as seções de 'valores' ({ nome: valor }), um documento por arquivo; as outras seções ficam como estão.
-		// Limpa todas antes de gravar a primeira: um valor que não serve lança Error e nada é gravado.
-		// Devolve { nome: valor limpo }.
+		// o documento inteiro de um arquivo deste computador: todas as seções da tabela que moram nele, cada uma com o
+		// valor enviado (já limpo) ou, sem ele, o lido (limpo e completo, com os nomes antigos já lidos). As sem valor
+		// (padrão null e nada guardado, ou enviadas null) ficam de fora; as chaves que a tabela não conhece saem.
+		function inteiro(adaptador, arquivo, limpos) {
+			var out = {};
+			var i, s, valor;
+
+			for (i = 0; i < tabela.length; i++) {
+				s = tabela[i];
+
+				if (s.arquivo != arquivo) continue;
+
+				valor = limpos.hasOwnProperty(s.nome) ? limpos[s.nome] : ler(adaptador, s.nome);
+
+				if (valor != null) out[s.chave] = valor;
+			}
+
+			return out;
+		}
+
+		// grava as seções de 'valores' ({ nome: valor }), um documento por arquivo. Limpa todas antes de gravar a
+		// primeira: um valor que não serve lança Error e nada é gravado. Devolve { nome: valor limpo }.
+		//   - da equipe: só as enviadas mudam; as outras seções e as chaves de fora da tabela ficam como estão;
+		//   - deste computador: o arquivo é gravado inteiro (inteiro, acima), com as enviadas e as outras seções dele
+		//     como estão guardadas; null numa seção deste computador a tira do arquivo (volta ao padrão).
+		// Os arquivos antigos das seções gravadas saem (cada um era só da sua seção).
 		function gravar(adaptador, valores) {
 			var porArquivo = {};
 			var limpos = {};
-			var nome, arquivo, doc;
+			var nome, arquivo, doc, s, i;
 
 			for (nome in valores) {
-				if (!valores.hasOwnProperty(nome) || valores[nome] == null) continue;
+				if (!valores.hasOwnProperty(nome) || valores[nome] === undefined) continue;
 
-				limpos[nome] = limpar(nome, valores[nome]);
-				arquivo = secao(nome).arquivo;
+				s = secao(nome);
 
-				if (!porArquivo[arquivo]) porArquivo[arquivo] = {};
-				porArquivo[arquivo][nome] = limpos[nome];
+				if (valores[nome] === null) {
+					if (s.onde != 'computador') continue;
+
+					limpos[nome] = null;
+				} else {
+					limpos[nome] = limpar(nome, valores[nome]);
+				}
+
+				if (!porArquivo[s.arquivo]) porArquivo[s.arquivo] = { computador: s.onde == 'computador', limpos: {} };
+				porArquivo[s.arquivo].limpos[nome] = limpos[nome];
 			}
 
 			for (arquivo in porArquivo) {
 				if (!porArquivo.hasOwnProperty(arquivo)) continue;
 
-				try {
-					doc = adaptador.ler(arquivo);
-				} catch (err) {
-					doc = null; // ilegível: começa de novo (como antes)
+				if (porArquivo[arquivo].computador) {
+					doc = inteiro(adaptador, arquivo, porArquivo[arquivo].limpos);
+				} else {
+					try {
+						doc = aplicar(adaptador.ler(arquivo), porArquivo[arquivo].limpos);
+					} catch (err) {
+						doc = aplicar(null, porArquivo[arquivo].limpos); // ilegível: começa de novo (como antes)
+					}
 				}
 
-				adaptador.gravar(arquivo, aplicar(doc, porArquivo[arquivo]));
+				adaptador.gravar(arquivo, doc);
 			}
 
-			// os arquivos antigos das seções gravadas saem (cada um era só da sua seção)
-			for (nome in limpos) {
-				if (!limpos.hasOwnProperty(nome) || !adaptador.apagar) continue;
+			// os arquivos antigos: os das seções enviadas e, num arquivo deste computador (gravado inteiro), os de
+			// todas as seções dele
+			for (i = 0; adaptador.apagar && i < tabela.length; i++) {
+				s = tabela[i];
 
-				for (var i = 0; secao(nome).arquivosAntigos && i < secao(nome).arquivosAntigos.length; i++) adaptador.apagar(secao(nome).arquivosAntigos[i]);
+				if (!s.arquivosAntigos || !porArquivo[s.arquivo] || !(porArquivo[s.arquivo].computador || limpos.hasOwnProperty(s.nome))) continue;
+
+				for (var j = 0; j < s.arquivosAntigos.length; j++) adaptador.apagar(s.arquivosAntigos[j]);
 			}
 
 			return limpos;
@@ -1103,12 +1225,15 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 		return {
 			secao: secao, padrao: padrao, limpar: limpar, ler: ler, lerDe: lerDe, aplicar: aplicar, gravar: gravar, criar: criar, paraLer: paraLer,
+			secoesDoPainel: secoesDoPainel, caminho: caminho, semEspacosAMais: semEspacosAMais,
 			EQUIPE: EQUIPE, COMPUTADOR: COMPUTADOR, PESSOAL: PESSOAL, LINKS_PESSOAIS: LINKS_PESSOAIS, COPIA_DA_BUSCA: COPIA_DA_BUSCA
 		};
 	}
 
 	var api = criar(TABELA);
 
+	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	root.PAD_CONFIGURACAO = api;
+
 	if (typeof module === 'object' && module && module.exports) module.exports = api;
-	else root.PAD_CONFIGURACAO = api;
 })(typeof window !== 'undefined' ? window : this);

@@ -196,16 +196,16 @@ const REGRAS = [
 				eq(api.rename(RENOMEAR_PADRAO, 'hoje').format, null);
 			});
 
-			test('a formatação sozinha (a forminha): especiais e caixa, sem formato', function () {
-				eq(api.format(RENOMEAR_PADRAO, 'joão_da silva!'), 'JOAO DA SILVA');
-				eq(api.format(regra({ textCase: 'keep', removeSpecial: false }), 'joão_da  silva'), 'joão da silva');
+			test('o texto sozinho (styleText, a forminha): especiais e caixa, sem formato', function () {
+				eq(api.styleText(RENOMEAR_PADRAO, 'joão_da silva!'), 'JOAO DA SILVA');
+				eq(api.styleText(regra({ textCase: 'keep', removeSpecial: false }), 'joão_da  silva'), 'joão da silva');
 			});
 
 			test('a regra preparada uma vez (compile) dá o mesmo nome', function () {
 				const c = api.compile(RENOMEAR_PADRAO);
 
 				eq(api.rename(c, 'rodapé_joão silva').name, 'RDP - JOAO SILVA');
-				eq(api.format(c, 'joão'), 'JOAO');
+				eq(api.styleText(c, 'joão'), 'JOAO');
 			});
 
 			test('o normalizar da tabela (maiúsculas, sem acentos nem símbolos), o mesmo da limpeza do host', function () {
@@ -215,8 +215,8 @@ const REGRAS = [
 
 			// --- #41: a sugestão do arquivista (suggest), com a regra padrão da equipe -------------------------------
 			// 'sem o prefixo | com o prefixo do formato', as duas opções que o arquivista mostra
-			function sugere(name, opts, rule) {
-				const s = api.suggest(rule || RENOMEAR_PADRAO, name, opts);
+			function sugere(name, rule) {
+				const s = api.suggest(rule || RENOMEAR_PADRAO, name);
 
 				return s.plain + ' | ' + s.prefixed;
 			}
@@ -243,7 +243,7 @@ const REGRAS = [
 			test('arquivista: a caixa e o separador seguem a regra', function () {
 				eq(sugere('crt hoje amanhã'), 'CRT HOJE AMANHA | CRT - HOJE AMANHA');
 				eq(sugere('fundo palco'), 'FUNDO PALCO | FUNDO PALCO');
-				eq(sugere('crt hoje amanhã', null, regra({ textCase: 'lowerCase', separator: '_' })), 'crt hoje amanha | CRT_hoje amanha');
+				eq(sugere('crt hoje amanhã', regra({ textCase: 'lowerCase', separator: '_' })), 'crt hoje amanha | CRT_hoje amanha');
 			});
 
 			test('arquivista: a sequência de imagens sugere pelo nome sem os quadros', function () {
@@ -251,23 +251,20 @@ const REGRAS = [
 				eq(sugere('textura_ouro'), 'TEXTURA OURO | TEXTURA OURO');
 			});
 
-			test('arquivista: o item dentro de uma pasta com termo de formato NÃO ganha o prefixo', function () {
-				eq(sugere('convidado', { folders: ['rodapés jogo'] }), 'CONVIDADO | CONVIDADO');
-			});
 
 			test('arquivista: o acento separado da letra (macOS, NFD) vale como o junto', function () {
 				eq(sugere('rodapé joão'), 'RODAPE JOAO | RDP - JOAO');
 			});
 
 			test('arquivista: os caracteres que o disco não aceita viram _ (especiais mantidos)', function () {
-				eq(sugere('rdp a:b', null, regra({ removeSpecial: false })), 'RDP A_B | RDP - A_B');
+				eq(sugere('rdp a:b', regra({ removeSpecial: false })), 'RDP A_B | RDP - A_B');
 			});
 			// --- fim #41 ---------------------------------------------------------------------------------------------
 		},
 		es3: function (api) {
 			eq(api.rename(RENOMEAR_PADRAO, 'rodapé_joão silva', { folders: ['CARTOES'] }).name, 'CRT - JOAO SILVA');
 			eq(api.rename(regra({ textCase: 'titleCase' }), 'logo globo  ').name, 'LOGO GLOBO');
-			eq(api.format(regra({ textCase: 'titleCase' }), 'joão da  silva'), 'Joao Da Silva');
+			eq(api.styleText(regra({ textCase: 'titleCase' }), 'joão da  silva'), 'Joao Da Silva');
 			eq(api.suggest(RENOMEAR_PADRAO, 'rodape\u0301s jogo').prefixed, 'RDP - JOGO'); // #41
 		}
 	},
@@ -514,6 +511,7 @@ REGRAS.push({
 			eq(api.ler(m, 'regraDoRenomear'), { types: [{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] }], fixed: [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }], removeSpecial: true, textCase: 'upperCase', separator: ' - ' });
 			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { types: [{ prefix: '', comment: 'X', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: o formato 1 precisa de um prefixo/);
 			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { separator: '/' } }); }, /^#PAD_082/);
+			lancaErro(function () { api.gravar(memoria(), { regraDoRenomear: { types: [{ prefix: 'X', comment: ' ', terms: ['X'] }] } }); }, /^#PAD_082 - renomear: "X" precisa de uma etiqueta\.$/);
 		});
 
 		test('organizar: sem version, as sequências vão para a pasta das imagens; sem etiquetas, as do padrão', function () {
@@ -765,7 +763,7 @@ REGRAS.push({
 
 			eq(api.ler(m, 'modoLocal'), true);
 			api.gravar(m, { modoLocal: api.ler(m, 'modoLocal') });
-			eq(m.doc(COMPUTADOR), { user: 'ABC', localMode: true });
+			eq([m.doc(COMPUTADOR).user, m.doc(COMPUTADOR).localMode, 'homeOffice' in m.doc(COMPUTADOR)], ['ABC', true, false]);
 		});
 
 		test('sigla: sem ela no arquivo deste computador, a do arquivo antigo (project_user.json); gravar grava no novo e apaga o antigo', function () {
@@ -775,8 +773,58 @@ REGRAS.push({
 			eq(api.ler(memoria({ 'project_user.json': { user: 'velho' } }), 'sigla'), 'VELHO'); // nem o arquivo novo existe
 			eq(api.ler(memoria({ [COMPUTADOR]: { user: 'NOVO' }, 'project_user.json': { user: 'velho' } }), 'sigla'), 'NOVO');
 			api.gravar(m, { sigla: api.ler(m, 'sigla') });
-			eq(m.doc(COMPUTADOR), { log: false, user: 'VELHO' });
+			eq([m.doc(COMPUTADOR).log, m.doc(COMPUTADOR).user], [false, 'VELHO']);
 			eq(m.doc('project_user.json'), null);
+		});
+
+		// o formato guardado deste computador não muda: cada gravação regrava o arquivo inteiro, só com o que se conhece
+		test('deste computador: gravar só a sigla regrava o arquivo inteiro, limpo, sem os nomes antigos nem as chaves de fora', function () {
+			const m = memoria({ [COMPUTADOR]: { homeOffice: true, projects: ' /p/ ', templates: { X: '/t' }, outra: 1 } });
+
+			api.gravar(m, { sigla: 'abc' });
+			eq(m.doc(COMPUTADOR), {
+				user: 'ABC', localMode: true, log: true, projects: '/p', outputs: '', render: { 'final': '', preview: '' },
+				search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true }, lists: { recents: 5, newDays: 15 }, fontsUpload: true, fontsCheck: true
+			});
+		});
+
+		test('tipos de projeto: na tabela (PROJECT da equipe), limpos; o formato antigo e o que não serve viram o padrão (sem tipos)', function () {
+			const s = api.secao('tiposDeProjeto');
+
+			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' PROJECT');
+			eq(api.ler(memoria(), 'tiposDeProjeto'), { categories: [] });
+			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { root: '/x', retrancas: [] } } }), 'tiposDeProjeto'), { categories: [] });
+			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { categories: [{ name: 'a' }] } } }), 'tiposDeProjeto'), { categories: [] });
+			eq(api.limpar('tiposDeProjeto', { categories: [{ name: ' mood   mensal ', path: '\\\\srv\\MOOD\\{ano}\\', output: ' ARTE RJ /SHOWS  {o_que_e} /', file: 'a:b{proximo_mes}', icon: 'Tv 1!' }] }),
+				{ categories: [{ name: 'MOOD MENSAL', path: '//srv/MOOD/{ano}', output: 'ARTE RJ/SHOWS {o_que_e}', file: 'a b{proximo_mes}', icon: 'v1' }] });
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: ' !! ', path: '/a' }] }); }, /^#PAD_089 - projeto: preencha o nome do tipo de projeto 1\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'Novela', path: '/a' }, { name: 'novela!', path: '/b' }] }); }, /^#PAD_089 - projeto: o tipo NOVELA! aparece mais de uma vez\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - projeto: o tipo A precisa de um caminho\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - projeto: \{nada\} não é um token do caminho/);
+		});
+
+		test('os campos da configuração da equipe vindos do painel viram as seções (as que não vierem ficam de fora; sem produções, a lista vazia)', function () {
+			eq(api.secoesDoPainel({ productions: [1], drives: 2, rename: 3, organize: 4, search: 5, links: 6, bar: 7, log: 8, appearance: 9, collect: 10, fonts: 11, project: 12 }),
+				{ producoes: [1], mapaDeDrives: 2, regraDoRenomear: 3, organizar: 4, buscaDeCaminhos: 5, links: 6, barra: 7, registroDeUso: 8, aparencia: 9, coletar: 10, bancoDeFontes: 11, tiposDeProjeto: 12 });
+			eq(api.secoesDoPainel({ links: [] }), { producoes: [], links: [] });
+
+			// gravar pelo painel: os tipos de projeto vão junto, limpos, e as chaves de fora ficam
+			const m = memoria({ [EQUIPE]: { OUTRA: 1 } });
+
+			m.gravar(EQUIPE, api.aplicar(m.ler(EQUIPE), api.secoesDoPainel({ productions: [{ name: 'A', templatesPath: '//a/b' }], project: { categories: [{ name: 'novela', path: '/n/' }] } })));
+			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], PROJECT: { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
+		});
+
+		test('a aparência e a barra desta pessoa: gravar uma não apaga a outra; null volta ao padrão da equipe (sai do arquivo)', function () {
+			const aparencia = api.limpar('aparencia', { mode: 'dark', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' });
+			const m = memoria({ [PESSOAL]: { APPEARANCE: aparencia } });
+
+			api.gravar(m, { barraPessoal: { items: ['pastas'] } });
+			eq(m.doc(PESSOAL), { APPEARANCE: aparencia, BAR: api.limpar('barra', { items: ['pastas'] }) });
+			api.gravar(m, { aparenciaPessoal: null });
+			eq(m.doc(PESSOAL), { BAR: api.limpar('barra', { items: ['pastas'] }) });
+			eq(api.ler(m, 'aparenciaPessoal'), null);
 		});
 
 		test('a cópia do índice da busca: lida pelo nome de agora e, sem ela, pelo de antes (busca_v2.json)', function () {
@@ -787,10 +835,10 @@ REGRAS.push({
 		});
 
 		// salvar uma seção não mexe nas outras
-		test('deste computador: salvar uma seção não mexe nas outras (nem nas chaves de fora da tabela)', function () {
+		test('deste computador: salvar uma seção não mexe nas outras seções', function () {
 			const antes = {
-				[COMPUTADOR]: { user: 'ABC', projects: '/p', outputs: '/o', render: { 'final': 'F', preview: 'P' }, productions: [{ name: 'X', path: '/x' }], log: false, localMode: true, search: { mode: 'local', folders: ['/s'], foldersOnly: true, daily: false }, fontsUpload: false, fontsCheck: false, lists: { recents: 1, newDays: 2 }, templates: { X: '/t' } },
-				[PESSOAL]: { APPEARANCE: { mode: 'dark', background: 'gradient', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333', font: 'inter', logo: '' }, BAR: { items: ['pastas'], hidden: [] } },
+				[COMPUTADOR]: { user: 'ABC', projects: '/p', outputs: '/o', render: { 'final': 'F', preview: 'P' }, productions: [{ name: 'X', path: '/x' }], log: false, localMode: true, search: { mode: 'local', folders: ['/s'], foldersOnly: true, daily: false }, fontsUpload: false, fontsCheck: false, lists: { recents: 1, newDays: 2 } },
+				[PESSOAL]: { APPEARANCE: { mode: 'dark', background: 'gradient', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333', font: 'inter', logo: '' }, BAR: api.limpar('barra', { items: ['pastas'], hidden: [] }) }, // já limpos: o arquivo é regravado limpo
 				[LINKS_PESSOAIS]: { LINKS: [{ name: 'a', url: 'https://a.com', icon: '' }] },
 				[EQUIPE]: { LOG: { mode: 'off' } }
 			};
@@ -833,7 +881,7 @@ REGRAS.push({
 
 		eq(api.ler(c, 'modoLocal'), true);
 		api.gravar(c, { sigla: api.ler(c, 'sigla'), modoLocal: true, aparenciaPessoal: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
-		eq(c.doc(COMPUTADOR), { localMode: true, user: 'JOAO' });
+		eq([c.doc(COMPUTADOR).localMode, c.doc(COMPUTADOR).user, c.doc(COMPUTADOR).homeOffice], [true, 'JOAO', undefined]);
 		eq(c.doc('project_user.json'), null);
 		eq(c.doc(PESSOAL).APPEARANCE.mode, 'light');
 		eq(api.paraLer(api.COPIA_DA_BUSCA, function (n) { return n === 'busca_v2.json'; }), 'busca_v2.json');
@@ -860,6 +908,15 @@ REGRAS.forEach(function (r) {
 
 		assert.ok(g, 'o global ' + r.global + ' não existe');
 		r.es3(g);
+	});
+
+	// o painel do After liga o Node (--enable-nodejs --mixed-context): a página tem window e também module
+	test('carrega como no painel do After (window e module juntos): vira window.' + r.global, function () {
+		const ctx = vm.createContext({ module: { exports: {} } });
+
+		vm.runInContext('var window = this;', ctx);
+		vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: file });
+		assert.ok(ctx.window[r.global], 'window.' + r.global + ' não existe');
 	});
 
 	test('o host inclui a regra (host/index.jsx: #include "../regras/' + r.arquivo + '")', function () {

@@ -209,18 +209,16 @@ PADX.machinePrefs = function () {
 };
 
 // a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
-// (só os campos enviados mudam; os outros ficam como estão)
+// (só os campos enviados mudam; o machine_config.json é regravado inteiro pela tabela, limpo, sem as chaves antigas)
 PADX.saveMachinePrefs = function (a) {
-	var valores = {
-		pastaDosProjetos: a.projects,
-		outputLocal: a.outputs,
-		presetsDeRender: a.render,
-		registroDeUsoLigado: a.log,
-		indiceLocal: a.search,
-		fontesNoBanco: a.fontsUpload,
-		fontesConferir: a.fontsCheck,
-		listaDosTemplates: a.lists
-	};
+	var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
+	// as produções deste computador vão sempre: sem a lista guardada, a convertida das pastas de antes ('templates', que
+	// sai do arquivo nesta gravação)
+	var valores = { producoesDesteComputador: padProducoesDesteComputador() };
+
+	for (var campo in campos) {
+		if (campos.hasOwnProperty(campo) && campos[campo] != null) valores[campo] = campos[campo];
+	}
 
 	// a sigla igual à do login fica vazia (vale a do login, mesmo se o login mudar)
 	if (a.user != null) {
@@ -282,8 +280,9 @@ function padIsLocalPath(path) {
 
 // Produções deste computador (configuração > templates): [{ name, path }], independentes das da equipe. Sem a lista
 // ainda (versão anterior): as pastas deste computador escolhidas para as produções da equipe com caminho deste
-// computador ('templates': { 'produção': pasta }, ex: Ω PASTA LOCAL) viram produções deste computador. Não é um nome
-// antigo da tabela de seções: a conversão depende das produções da equipe e do mapa de drives.
+// computador ('templates': { 'produção': pasta }, ex: Ω PASTA LOCAL) viram produções deste computador, gravadas na
+// primeira gravação deste computador (saveMachinePrefs, que tira 'templates'). Não é um nome antigo da tabela de
+// seções: a conversão depende das produções da equipe e do mapa de drives.
 function padProducoesDesteComputador() {
 	var list = padLerSecao('producoesDesteComputador');
 
@@ -576,7 +575,7 @@ PADX.productions = function () {
 		search: padLerSecao('buscaDeCaminhos'),
 		links: padLerSecao('links'),
 		appearance: padLerSecao('aparencia'), // o padrão da equipe (a pessoa pode personalizar: personal)
-		project: padReadProject(),
+		project: padLerSecao('tiposDeProjeto'),
 		collect: padLerSecao('coletar'),
 		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),

@@ -9,7 +9,8 @@ A janela PROJETO cria o projeto pela atração (abaixo) e edita os dados dele (a
 pastas). O collect dos
 arquivos é do botão COLETAR (collect.jsx).
 
-'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração):
+'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
+(regras/configuracao.js: a limpeza, os tokens e o padrão):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta no projeto novo) levam tokens:
                {atracao} (sem ele, a categoria é a própria atração: MOOD MENSAL) {ano} {mes} {mes_extenso} (NOVEMBRO) {proximo_mes} (DEZEMBRO) {proximo_mes_num} (12)
@@ -21,76 +22,22 @@ atrações do índice.
 
 */
 
-var PAD_DEFAULT_PROJECT = { categories: [] };
-
-var PAD_PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao']; // {categoria}: o nome antigo do {tipo}, ainda aceito
-
-// Um caminho de output sem espaços a mais: dois ou mais espaços seguidos viram um, e somem os espaços em volta das
-// barras e nas pontas ("ARTE RJ /SHOWS  2026 " → "ARTE RJ/SHOWS 2026"). vale em todo caminho de output: os tipos de
-// projeto, a claquete, os dados do projeto e as pastas de output dos templates. um token vazio ou um nome digitado
-// com espaço sobrando criaria uma pasta quase igual à certa, que ninguém acha depois
+// Um caminho de output sem espaços a mais (regras/configuracao.js: semEspacosAMais). vale em todo caminho de output:
+// os tipos de projeto, a janela de projeto, os dados do projeto e as pastas de output dos templates.
 function padCleanSpaces(path) {
-	return String(path == null ? '' : path).replace(/[ \t\u00A0]{2,}/g, ' ').replace(/ *([\\\/]) */g, '$1').replace(/^ +| +$/g, '');
+	return PAD_CONFIGURACAO.semEspacosAMais(path);
 }
 
-// Caminho guardado na configuração: barras normais, sem barra no fim.
+// Caminho guardado na configuração: barras normais, sem barra no fim (regras/configuracao.js: caminho).
 function padProjectPath(path) {
-	return padTrim(path).replace(/\\/g, '/').replace(/(.)\/+$/, '$1');
-}
-
-// Valida e normaliza a seção vinda do painel. Lança Error com a mensagem.
-function padCleanProject(o) {
-	var clean = { categories: [] };
-	var list = o && o.categories instanceof Array ? o.categories : [];
-	var seen = {};
-
-	for (var i = 0; i < list.length; i++) {
-		var c = list[i] || {};
-		var name = padTrim(c.name).replace(/\s+/g, ' ').toUpperCase();
-		var path = padProjectPath(c.path);
-		var output = padCleanSpaces(padProjectPath(c.output));
-		// o nome do .aep da categoria (opcional, com tokens): MOOD MENSAL → {proximo_mes} NA GLOBO
-		var fileName = padTrim(c.file).replace(/[\\\/:*?"<>|]+/g, ' ');
-		var icon = String(c.icon == null ? '' : c.icon).replace(/[^a-z0-9-]/g, '');
-		var key = padAepName(name);
-		var re = /\{([^}]*)\}/g;
-		var m;
-
-		if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
-		if (seen[key]) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' aparece mais de uma vez.');
-		if (path == '') throw new Error('#PAD_089 - projeto: o tipo ' + name + ' precisa de um caminho.');
-
-		// {o_que_e} (o que se digita na claquete, depois da atração): só no output e no nome do arquivo. a pasta do
-		// projeto é decidida antes de o o que é existir
-		if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
-
-		while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-			if (PAD_PATH_TOKENS.indexOf(m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
-		}
-
-
-		seen[key] = true;
-		clean.categories.push({ name: name, path: path, output: output, file: fileName, icon: icon });
-	}
-
-	return clean;
-}
-
-function padReadProject() {
-	try {
-		var data = padConfigData();
-
-		return data.PROJECT ? padCleanProject(data.PROJECT) : PAD_DEFAULT_PROJECT;
-	} catch (err) {
-		return PAD_DEFAULT_PROJECT;
-	}
+	return PAD_CONFIGURACAO.caminho(path);
 }
 
 // As categorias da atração nova, cada uma dizendo se a pasta dela está acessível (o começo fixo do caminho,
 // antes do primeiro token), e a pasta dos projetos deste computador, para quando não estiver (rede fora ou
 // modo local; sem ela, a Área de Trabalho). → { categories: [{ name, path, icon, reachable }], fallback }
 PADX.projectCategories = function () {
-	var list = padReadProject().categories;
+	var list = padLerSecao('tiposDeProjeto').categories;
 	var local = padLocalMode();
 	var checked = {};
 	var out = [];

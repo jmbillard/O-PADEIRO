@@ -14,12 +14,13 @@ removeSpecial, textCase, separator }. Nada aqui lê a configuração nem variáv
     pela pasta onde ele está (o arquivista);
   - com formato: tira do nome os prefixos e os termos de todos os formatos e abre com o prefixo do formato e o
     separador (RDP - JOAO SILVA). O prefixo do formato fica como está na regra;
-  - a formatação (a parte descritiva): os especiais (acentos e símbolos) e a caixa;
+  - o texto da parte descritiva (styleText): os especiais (acentos e símbolos) e a caixa;
   - o nome fixo (LOGO GLOBO) vence tudo, e sai como está na regra. Sem nome fixo no nome e sem formato, o comentário
     da comp (opts.comment) também pode dar o nome fixo.
 
 rename(regra, nome, opts) → { name, format: { prefix, comment } | null, comment (o do formato, ou null), fixed }.
 A regra pode vir crua ou preparada uma vez por compile(regra) (as expressões montadas), para muitos nomes.
+styleText(regra, texto) → o texto com os especiais e a caixa da regra, sem procurar o formato (a forminha).
 
 suggest(regra, nome) → { plain, prefixed }: a sugestão do arquivista para um item (o nome sem a extensão e sem os
 quadros da sequência de imagens), sem e com o prefixo do formato. Junta antes o acento separado da letra (macOS) e
@@ -154,8 +155,8 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 		};
 	}
 
-	// a formatação da parte descritiva do nome: os especiais e a caixa
-	function format(rule, text) {
+	// o texto da parte descritiva do nome: os especiais e a caixa (não é o formato do nome, que é o tipo da comp)
+	function styleText(rule, text) {
 		var r = compile(rule);
 		var t = String(text);
 
@@ -247,10 +248,10 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 
 		if (!found) found = findFormat(r, text, false);
 
-		var result = { name: format(r, text), format: null, comment: null, fixed: false };
+		var result = { name: styleText(r, text), format: null, comment: null, fixed: false };
 
 		if (found) {
-			clean = format(r, describe(r, text, found));
+			clean = styleText(r, describe(r, text, found));
 			result.format = { prefix: found.prefix, comment: found.comment };
 			result.comment = found.comment;
 			result.name = clean && clean.toUpperCase() !== found.prefix ? found.prefix + r.separator + clean : found.prefix;
@@ -295,24 +296,23 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 
 	// a sugestão do arquivista para o nome de um item (arquivo, pasta ou sequência de imagens), sem a extensão e sem
 	// os quadros: { plain (sem o prefixo do formato), prefixed (com ele) }. O formato vem só do nome do item, nunca da
-	// pasta onde ele está (itemOnly; opts.folders é ignorado). O nome fixo e o nome já no padrão (CRT - HOJE) saem
-	// iguais nas duas
-	function suggest(rule, name, opts) {
+	// pasta onde ele está (itemOnly). O nome fixo e o nome já no padrão (CRT - HOJE) saem iguais nas duas
+	function suggest(rule, name) {
 		var r = compile(rule);
 		var base = trim(composeAccents(String(name == null ? '' : name)).replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' '));
-		var plain = fileName(format(r, base.replace(/[\-]+/g, ' ')));
-		var renamed = rename(r, base, { folders: opts && opts.folders, itemOnly: true });
+		var plain = fileName(styleText(r, base.replace(/[\-]+/g, ' ')));
+		var renamed = rename(r, base, { itemOnly: true });
 		var prefixed = fileName(renamed.name);
 
 		if (renamed.fixed) plain = prefixed;
-		else if (format(r, base) == prefixed) plain = prefixed;
+		else if (styleText(r, base) == prefixed) plain = prefixed;
 
 		return { plain: plain || base, prefixed: prefixed || base };
 	}
 
 	var api = {
 		rename: rename,
-		format: format,
+		styleText: styleText,
 		compile: compile,
 		normalize: normalize,
 		specials: specials,
@@ -321,6 +321,8 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 		fileName: fileName
 	};
 
+	// o global sempre (o painel do After tem window e também module, com o Node ligado); o module.exports no Node
+	root.PAD_REGRA_DO_RENOMEAR = api;
+
 	if (typeof module === 'object' && module && module.exports) module.exports = api;
-	else root.PAD_REGRA_DO_RENOMEAR = api;
 })(typeof window !== 'undefined' ? window : this);

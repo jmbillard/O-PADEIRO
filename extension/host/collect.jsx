@@ -751,7 +751,7 @@ function padPathKey(path) {
 // As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada categoria, antes do
 // primeiro token (…/PROGRAMAS/{atracao} → …/PROGRAMAS). [] sem categorias.
 function padProjectsRoots() {
-	var list = padReadProject().categories;
+	var list = padLerSecao('tiposDeProjeto').categories;
 	var roots = [];
 	var seen = {};
 

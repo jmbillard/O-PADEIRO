@@ -77,7 +77,8 @@ function padLerSecao(nome) {
 	return PAD_CONFIGURACAO.ler(PAD_CONFIG_ADAPTADOR, nome);
 }
 
-// Grava seções deste computador ({ nome: valor }): só as enviadas mudam. Lança a mensagem da limpeza sem gravar nada.
+// Grava seções deste computador ({ nome: valor }): o arquivo de cada uma é regravado inteiro, com as enviadas e as
+// outras como estão (null tira a seção). Lança a mensagem da limpeza sem gravar nada.
 function padGravarSecoes(valores) {
 	return PAD_CONFIGURACAO.gravar(PAD_CONFIG_ADAPTADOR, valores);
 }
@@ -116,10 +117,7 @@ PADX.saveProductions = function (a) {
 	} catch (err) { }
 
 	// as seções da tabela, limpas (lança a mensagem da limpeza sem gravar nada); as que não vierem ficam como estão
-	var data = PAD_CONFIGURACAO.aplicar(doc, { producoes: a.productions || [], mapaDeDrives: a.drives, regraDoRenomear: a.rename, organizar: a.organize, buscaDeCaminhos: a.search, links: a.links, barra: a.bar, registroDeUso: a.log, aparencia: a.appearance, coletar: a.collect, bancoDeFontes: a.fonts });
-
-	// os tipos de projeto ainda não estão na tabela: a limpeza usa os tokens do caminho do host (project.jsx)
-	if (a.project) data.PROJECT = padCleanProject(a.project);
+	var data = PAD_CONFIGURACAO.aplicar(doc, PAD_CONFIGURACAO.secoesDoPainel(a));
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -141,7 +139,7 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), project: padReadProject(), collect: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), project: padLerSecao('tiposDeProjeto'), collect: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
 };
 
 // Lê uma lista de produções de um arquivo (importar). a: { path }
@@ -395,12 +393,10 @@ PADX.personalPrefs = function () {
 	return { appearance: padLerSecao('aparenciaPessoal'), bar: padLerSecao('barraPessoal') };
 };
 
-// a: { appearance, bar } (null = voltar ao padrão da equipe). O arquivo guarda só as personalizadas: é gravado de novo
-// só com as que vierem (aplicar num documento vazio), sem as de antes.
+// a: { appearance, bar } (null = voltar ao padrão da equipe; sem o campo, fica como está). O arquivo guarda só as
+// personalizadas.
 PADX.savePersonalPrefs = function (a) {
-	var doc = PAD_CONFIGURACAO.aplicar({}, { aparenciaPessoal: a.appearance, barraPessoal: a.bar });
-
-	PAD_CONFIG_ADAPTADOR.gravar(PAD_CONFIGURACAO.PESSOAL, doc);
+	padGravarSecoes({ aparenciaPessoal: a.appearance, barraPessoal: a.bar });
 
 	return PADX.personalPrefs();
 };

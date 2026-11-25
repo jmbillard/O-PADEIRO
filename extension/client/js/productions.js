@@ -1288,21 +1288,19 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// Prévia do renomear com a tabela em edição: a mesma regra do host (regras/regra-do-renomear.js), só pelo nome da
-	// comp. A tabela vai como o host a guarda depois de salvar (prefixos, comentários, termos e nomes fixos em
-	// maiúsculas, sem acentos nem símbolos: padCleanRename, host/productions.jsx), para a prévia mostrar o nome que o
-	// etiquetador grava.
+	// comp. A tabela vai como o host a guarda depois de salvar (a limpeza da tabela de seções, regras/configuracao.js:
+	// prefixos, etiquetas, termos e nomes fixos em maiúsculas, sem acentos nem símbolos, sem os termos vazios), para a
+	// prévia mostrar o nome que o etiquetador grava. Uma tabela que não se salvaria: { error } (a mensagem do salvar).
 	function previewRename(compName) {
-		var rule = window.PAD_REGRA_DO_RENOMEAR;
-		var data = renameForSave();
+		var data;
 
-		data.types = data.types.map(function (t) {
-			return { prefix: rule.normalize(t.prefix), comment: rule.normalize(t.comment), terms: t.terms.map(rule.normalize) };
-		});
-		data.fixed = data.fixed.map(function (f) {
-			return { match: rule.normalize(f.match), name: rule.normalize(f.name) };
-		});
+		try {
+			data = window.PAD_CONFIGURACAO.limpar('regraDoRenomear', renameForSave());
+		} catch (err) {
+			return { error: err.message };
+		}
 
-		return rule.rename(data, compName);
+		return window.PAD_REGRA_DO_RENOMEAR.rename(data, compName);
 	}
 
 	function testRename() {
@@ -1314,6 +1312,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		if (!value) return;
 
 		var res = previewRename(value);
+
+		if (res.error) {
+			out.textContent = res.error;
+			return;
+		}
 
 		out.appendChild(document.createTextNode('→ '));
 		out.appendChild(el('b', null, res.name || '(vazio)'));

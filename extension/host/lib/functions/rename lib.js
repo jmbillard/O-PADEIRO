@@ -40,7 +40,7 @@ function padRenameRule() {
 
 // A formatação do nome (configuração > renomear): os especiais e a caixa (a forminha e o arquivista).
 function padRenameFormat(text) {
-	return PAD_REGRA_DO_RENOMEAR.format(padRenameRule(), text);
+	return PAD_REGRA_DO_RENOMEAR.styleText(padRenameRule(), text);
 }
 
 // Nome normalizado para comparação: maiúsculas, sem acentos (a forminha).

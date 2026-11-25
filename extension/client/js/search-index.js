@@ -35,19 +35,16 @@ download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 	}
 
 	// a cópia para ler: a de agora (info.copia) ou, sem ela, a primeira dos nomes de antes que existir
-	// (info.copiasAntigas: o host manda, da tabela de seções), até o próximo download gravar a de agora
+	// (info.copiasAntigas: o host manda, da tabela de seções), até o próximo download gravar a de agora. A escolha é a
+	// da tabela de seções (regras/configuracao.js: paraLer, carregada pela página antes deste arquivo)
 	function copyPath(fs, info) {
 		try {
-			if (fs.existsSync(info.copia)) return info.copia;
-
-			var old = (info.copiasAntigas || []).filter(function (p) {
+			return window.PAD_CONFIGURACAO.paraLer({ arquivo: info.copia, arquivosAntigos: info.copiasAntigas || [] }, function (p) {
 				return fs.existsSync(p);
-			})[0];
-
-			if (old) return old;
-		} catch (err) { }
-
-		return info.copia;
+			});
+		} catch (err) {
+			return info.copia;
+		}
 	}
 
 	// → { text, modified } (text vazio: não há cópia; modified em ms)
