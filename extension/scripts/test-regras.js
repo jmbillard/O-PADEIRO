@@ -212,11 +212,63 @@ const REGRAS = [
 				eq(api.normalize('  rodapé  dos jogos! '), 'RODAPE DOS JOGOS');
 				eq(api.normalize('logo_globo'), 'LOGO GLOBO');
 			});
+
+			// --- #41: a sugestão do arquivista (suggest), com a regra padrão da equipe -------------------------------
+			// 'sem o prefixo | com o prefixo do formato', as duas opções que o arquivista mostra
+			function sugere(name, opts, rule) {
+				const s = api.suggest(rule || RENOMEAR_PADRAO, name, opts);
+
+				return s.plain + ' | ' + s.prefixed;
+			}
+
+			test('arquivista: o termo de formato no nome do item ganha o prefixo', function () {
+				eq(sugere('rodapé_anitta (final)'), 'RODAPE ANITTA FINAL | RDP - ANITTA FINAL');
+				eq(sugere('_CRT_HOJE'), 'CRT HOJE | CRT - HOJE');
+			});
+
+			test('arquivista: a pasta com termo no próprio nome ganha o prefixo (só o termo: só o prefixo)', function () {
+				eq(sugere('rodapés jogo'), 'RODAPES JOGO | RDP - JOGO');
+				eq(sugere('Cartões'), 'CARTOES | CRT');
+			});
+
+			test('arquivista: o nome fixo (LOGO GLOBO) sai igual com e sem o prefixo', function () {
+				eq(sugere('logo_globo_branco'), 'LOGO GLOBO | LOGO GLOBO');
+			});
+
+			test('arquivista: o nome já no padrão fica igual, com e sem o prefixo', function () {
+				eq(sugere('CRT - HOJE'), 'CRT - HOJE | CRT - HOJE');
+				eq(sugere('LETT - VEM AI'), 'LETT - VEM AI | LETT - VEM AI');
+			});
+
+			test('arquivista: a caixa e o separador seguem a regra', function () {
+				eq(sugere('crt hoje amanhã'), 'CRT HOJE AMANHA | CRT - HOJE AMANHA');
+				eq(sugere('fundo palco'), 'FUNDO PALCO | FUNDO PALCO');
+				eq(sugere('crt hoje amanhã', null, regra({ textCase: 'lowerCase', separator: '_' })), 'crt hoje amanha | CRT_hoje amanha');
+			});
+
+			test('arquivista: a sequência de imagens sugere pelo nome sem os quadros', function () {
+				eq(sugere('rodape_jogo'), 'RODAPE JOGO | RDP - JOGO');
+				eq(sugere('textura_ouro'), 'TEXTURA OURO | TEXTURA OURO');
+			});
+
+			test('arquivista: o item dentro de uma pasta com termo de formato NÃO ganha o prefixo', function () {
+				eq(sugere('convidado', { folders: ['rodapés jogo'] }), 'CONVIDADO | CONVIDADO');
+			});
+
+			test('arquivista: o acento separado da letra (macOS, NFD) vale como o junto', function () {
+				eq(sugere('rodapé joão'), 'RODAPE JOAO | RDP - JOAO');
+			});
+
+			test('arquivista: os caracteres que o disco não aceita viram _ (especiais mantidos)', function () {
+				eq(sugere('rdp a:b', null, regra({ removeSpecial: false })), 'RDP A_B | RDP - A_B');
+			});
+			// --- fim #41 ---------------------------------------------------------------------------------------------
 		},
 		es3: function (api) {
 			eq(api.rename(RENOMEAR_PADRAO, 'rodapé_joão silva', { folders: ['CARTOES'] }).name, 'CRT - JOAO SILVA');
 			eq(api.rename(regra({ textCase: 'titleCase' }), 'logo globo  ').name, 'LOGO GLOBO');
 			eq(api.format(regra({ textCase: 'titleCase' }), 'joão da  silva'), 'Joao Da Silva');
+			eq(api.suggest(RENOMEAR_PADRAO, 'rodape\u0301s jogo').prefixed, 'RDP - JOGO'); // #41
 		}
 	},
 

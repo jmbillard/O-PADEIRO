@@ -1777,31 +1777,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { undo: window.PAD_MOCK_FILES_UNDO || null };
 		},
 
+		// o arquivista: a sugestão pela regra do renomear (regras/regra-do-renomear.js, suggest: a mesma do host) com a
+		// regra guardada; o formato só pelo nome do item, nunca pela pasta onde ele está
 		filesList: function (a) {
-			var clean = function (t) {
-				return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
-			};
-			var types = [['RDP', ['RODAPE', 'RDP']], ['CRT', ['CARTAO', 'CRT']], ['LETT', ['LETTERING', 'LETT']], ['TARJA', ['TARJA']], ['PASSAGEM', ['PASSAGEM']], ['REF', ['REFERENCIA', 'REF']]];
-			var typed = function (name) {
-				var words = ' ' + clean(name) + ' ';
-
-				for (var i = 0; i < types.length; i++) for (var j = 0; j < types[i][1].length; j++) {
-					var t = types[i][1][j];
-
-					if (words.indexOf(' ' + t + ' ') >= 0) {
-						var rest = words.split(' ' + t + ' ').join(' ').replace(/\s+/g, ' ').trim();
-
-						return rest ? types[i][0] + ' - ' + rest : types[i][0];
-					}
-				}
-
-				return clean(name);
-			};
-			// a regra do host (files.jsx → padRenameByRule) resumida: o nome fixo vale com e sem o prefixo, e as pastas
-			// também ganham o prefixo do formato (pelo próprio nome, nunca pela pasta de cima)
-			var fixed = function (name) {
-				return / LOGO GLOBO /.test(' ' + clean(name) + ' ') ? 'LOGO GLOBO' : '';
-			};
+			var rule = window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.rename : MOCK_RENAME;
 			var list = (window.PAD_MOCK_FILES || (window.PAD_MOCK_FILES = [
 				{ dir: '', name: 'antigos', ext: '', kind: 'folder' },
 				{ dir: '', name: 'Sequência fundo', ext: '', kind: 'folder' },
@@ -1833,7 +1812,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			}).map(function (it) {
 				if (it.kind === 'folder') it = Object.assign({}, it, { use: inside(it) });
 
-				return Object.assign({ use: false }, it, { plain: fixed(it.name) || (it.name === typed(it.name) ? it.name : clean(it.name)), typed: fixed(it.name) || typed(it.name) });
+				var s = window.PAD_REGRA_DO_RENOMEAR.suggest(rule, it.name);
+
+				return Object.assign({ use: false }, it, { plain: s.plain, prefixed: s.prefixed });
 			});
 
 			return { path: a.path, name: String(a.path).split('/').pop(), items: list, truncated: false, undo: window.PAD_MOCK_FILES_UNDO || null };
