@@ -18,11 +18,14 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
 
 ## Regras do código
 
-- **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna. `node extension/scripts/check-ternary.js`
-  confere.
-- **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
-  `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
-  `ui-states.js`.
+- **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna, também em `extension/regras/`.
+  `node extension/scripts/check-ternary.js` confere.
+- **Regras compartilhadas (ADR 0005):** as regras puras do domínio ficam em `extension/regras/`, em ES3, sem After e
+  sem DOM (o host inclui por `#include`, o painel por `<script>`). Antes de enviar, rodar
+  `node extension/scripts/test-regras.js`; regra nova ganha uma entrada em `REGRAS` nesse teste.
+- **Interface:** antes de enviar, rodar `node extension/scripts/test-regras.js` e as checagens de `extension/scripts/`
+  (`check-corners.js`, `check-footers.js`, `check-focus-crop.js`, `check-scroll-corners.js`), com
+  `NODE_PATH=$(npm root -g)`; as telas testadas ficam em `ui-states.js`.
 - **Guia de UI:** `docs/guia-ui.md` vale para toda janela e todo mockup. Ex.: item escolhido numa lista ganha fundo
   suave, nunca uma faixa de cor num lado só.
 - **Glossário no código:** os termos do `GLOSSARY.md` valem também para nomes de variáveis, funções, classes, chaves

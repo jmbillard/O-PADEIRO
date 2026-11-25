@@ -29,6 +29,9 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "lib/functions/fonts lib.js"
 #include "lib/acessorista.js"
 
+// as regras compartilhadas com o painel e o teste em Node (ADR 0005)
+#include "../regras/nomes-repetidos.js"
+
 #include "api.jsx"
 #include "finder.jsx"
 #include "productions.jsx"

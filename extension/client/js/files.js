@@ -10,7 +10,7 @@ sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser,
 renomeia.
 
   - o prefixo do formato vem do próprio nome do item, arquivo ou pasta (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
-  - nome repetido na mesma pasta ganha o primeiro sufixo livre (_2, _3…: files-names.js) e o aviso na linha, e é
+  - nome repetido na mesma pasta ganha o primeiro sufixo livre (_2, _3…: regras/nomes-repetidos.js) e o aviso na linha, e é
     renomeado; vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em
     lotes, com a barra de progresso;
   - o arquivo usado no projeto aberto é religado depois de renomeado; a pasta com um arquivo usado dentro também
@@ -28,7 +28,7 @@ renomeia.
 	var call = PAD_BRIDGE.call;
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#arquivos';
 	var PREF_OPTS = 'pad.files.opts';
-	var NAMES = window.PAD_FILES_NAMES;
+	var NAMES = window.PAD_NOMES_REPETIDOS;
 
 	var ICON = {
 		folder: '<svg class="fl-kind is-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>',
@@ -99,7 +99,7 @@ renomeia.
 		return it.custom != null ? it.custom : suggest(it);
 	}
 
-	// o resto do nome, que não muda: os quadros da sequência e a extensão (files-names.js)
+	// o resto do nome, que não muda: os quadros da sequência e a extensão (regras/nomes-repetidos.js)
 	var tail = NAMES.tail;
 
 	function enabled(it) {
@@ -109,7 +109,7 @@ renomeia.
 		return $('fl-o-files').checked;
 	}
 
-	// o nome final e a situação de cada item (files-names.js): id → { state, name, suffix }. o repetido na mesma pasta
+	// o nome final e a situação de cada item (regras/nomes-repetidos.js): id → { state, name, suffix }. o repetido na mesma pasta
 	// ganha o primeiro sufixo livre (_2, _3…), contando os desligados (com o nome de hoje) e os nomes do disco
 	function finals() {
 		return NAMES.resolve(state.items.map(function (it) {

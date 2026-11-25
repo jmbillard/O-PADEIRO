@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> O ARQUIVISTA — o nome final de cada item (e o sufixo _2, _3…)
+> REGRA — nomes repetidos (o sufixo _2, _3… do arquivista)
 ---------------------------------------------------------------
 
 O nome pedido de cada item (a sugestão ou o editado) vira o nome final. Um nome que ficaria repetido na mesma pasta
@@ -10,19 +10,25 @@ ganha o primeiro sufixo livre (_2, _3…) e a situação 'dup' (o aviso "ganhou 
 Contam como ocupados, dentro da mesma pasta: o nome de hoje de todos os itens da lista (os desligados e os que mudam:
 a ordem das renomeações não importa, nada é sobrescrito), os nomes do disco que não estão na lista (others, do host)
 e os nomes finais já dados. A comparação não diferencia a caixa (os discos também não) e junta o acento separado do
-macOS (NFD) com o junto (NFC), do mesmo jeito em todas as comparações.
+macOS (NFD) com o junto (NFC), do mesmo jeito em todas as comparações (onde houver normalize: o ExtendScript não tem).
 
-Sem DOM: a janela (files.js) usa no navegador (window.PAD_FILES_NAMES); o teste carrega em Node (module.exports).
+Regra compartilhada (ADR 0005): ES3, sem After e sem DOM. O painel carrega por <script> (window.PAD_NOMES_REPETIDOS,
+usado pelo arquivista, files.js), o host por #include (o global PAD_NOMES_REPETIDOS) e o teste em Node por require
+(module.exports): node extension/scripts/test-regras.js.
 
 */
 
 (function (root) {
-	'use strict';
-
 	var BAD_CHARS = /[\\\/:*?"<>|]/;
 
 	function norm(text) {
-		return String(text == null ? '' : text).normalize('NFC');
+		var s = String(text == null ? '' : text);
+
+		return s.normalize ? s.normalize('NFC') : s;
+	}
+
+	function trim(text) {
+		return String(text).replace(/^\s+|\s+$/g, '');
 	}
 
 	// o resto do nome que não muda: a extensão; na sequência, os quadros antes dela. frames (do host, '_[0001-0120]'):
@@ -46,36 +52,47 @@ Sem DOM: a janela (files.js) usa no navegador (window.PAD_FILES_NAMES); o teste 
 		var owner = {}; // nome de hoje → id do item (-1: do disco, fora da lista)
 		var given = {}; // nomes finais já dados
 		var out = {};
+		var i, j, it, dir, list, k, want, name, n;
 
-		items.forEach(function (it) {
+		others = others || {};
+
+		for (i = 0; i < items.length; i++) {
+			it = items[i];
 			owner[key(it.dir, it.name + tail(it))] = it.id;
-		});
-		Object.keys(others || {}).forEach(function (dir) {
-			(others[dir] || []).forEach(function (name) {
-				var k = key(dir, name);
+		}
+		for (dir in others) {
+			if (!others.hasOwnProperty(dir)) continue;
 
-				if (!(k in owner)) owner[k] = -1;
-			});
-		});
+			list = others[dir] || [];
 
-		var taken = function (k, id) {
-			return given[k] || (k in owner && owner[k] !== id);
-		};
+			for (j = 0; j < list.length; j++) {
+				k = key(dir, list[j]);
 
-		items.forEach(function (it) {
-			var want = it.want == null ? null : String(it.want).trim();
+				if (!owner.hasOwnProperty(k)) owner[k] = -1;
+			}
+		}
+
+		function taken(k, id) {
+			return given[k] === true || (owner.hasOwnProperty(k) && owner[k] !== id);
+		}
+
+		for (i = 0; i < items.length; i++) {
+			it = items[i];
+			want = it.want == null ? null : trim(it.want);
 
 			if (want == null) out[it.id] = { state: 'off', name: it.name, suffix: '' };
 			else if (!want || BAD_CHARS.test(want)) out[it.id] = { state: 'bad', name: it.name, suffix: '' };
 			else if (norm(want) === norm(it.name)) out[it.id] = { state: 'same', name: it.name, suffix: '' };
-		});
+		}
 
-		items.forEach(function (it) {
-			if (out[it.id]) return;
+		for (i = 0; i < items.length; i++) {
+			it = items[i];
 
-			var want = String(it.want).trim();
-			var name = want;
-			var n = 1;
+			if (out.hasOwnProperty(it.id)) continue;
+
+			want = trim(it.want);
+			name = want;
+			n = 1;
 
 			while (taken(key(it.dir, name + tail(it)), it.id)) {
 				n++;
@@ -83,13 +100,13 @@ Sem DOM: a janela (files.js) usa no navegador (window.PAD_FILES_NAMES); o teste 
 			}
 			given[key(it.dir, name + tail(it))] = true;
 			out[it.id] = { state: n > 1 ? 'dup' : 'chg', name: name, suffix: n > 1 ? '_' + n : '' };
-		});
+		}
 
 		return out;
 	}
 
 	var api = { resolve: resolve, tail: tail, BAD_CHARS: BAD_CHARS };
 
-	if (typeof module === 'object' && module.exports) module.exports = api;
-	else root.PAD_FILES_NAMES = api;
+	if (typeof module === 'object' && module && module.exports) module.exports = api;
+	else root.PAD_NOMES_REPETIDOS = api;
 })(typeof window !== 'undefined' ? window : this);
