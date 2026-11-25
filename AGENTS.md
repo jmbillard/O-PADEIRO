@@ -45,5 +45,5 @@ Os cinco papéis da triagem, com os rótulos em português (`precisa-triagem`, `
 
 ### Documentos de domínio
 
-Contexto único: um `CONTEXT.md` (o glossário; é ele quando uma skill fala em `GLOSSARY.md`) e `docs/adr/` na raiz.
+Contexto único: um `GLOSSARY.md` (o glossário) e `docs/adr/` na raiz.
 Veja `docs/agents/domain.md`.
