@@ -1186,6 +1186,85 @@ REGRAS.push({
 	}
 });
 
+// as referências de comp nas expressões: comp("NOME") reescrito para o nome novo (o preenchimento, host/api.jsx)
+REGRAS.push({
+	arquivo: 'referencias-de-comp.js',
+	global: 'PAD_REFERENCIAS_DE_COMP',
+	titulo: 'as referências de comp nas expressões (comp("NOME") → o nome novo)',
+	casos: function (api) {
+		const MAPA = { BG: 'BG_2', 'PRINCIPAL': 'RDP - ANA' };
+
+		test('reescreve comp("…") com aspas duplas, simples e crases', function () {
+			eq(api.rewrite('comp("BG").layer(1).transform.opacity', MAPA), 'comp("BG_2").layer(1).transform.opacity');
+			eq(api.rewrite("comp('BG').layer('X').position", MAPA), "comp('BG_2').layer('X').position");
+			eq(api.rewrite('comp(`BG`).width', MAPA), 'comp(`BG_2`).width');
+		});
+
+		test('reescreve com espaços dentro e antes dos parênteses, sem mexer neles', function () {
+			eq(api.rewrite('comp ( "BG" ) .layer(1)', MAPA), 'comp ( "BG_2" ) .layer(1)');
+			eq(api.rewrite('comp(\n\t"BG"\n)', MAPA), 'comp(\n\t"BG_2"\n)');
+		});
+
+		test('reescreve todas as citações, de nomes diferentes, na mesma expressão', function () {
+			eq(api.rewrite('a = comp("BG").width; b = comp(\'PRINCIPAL\').layer("BG"); c = comp("BG").height;', MAPA),
+				'a = comp("BG_2").width; b = comp(\'RDP - ANA\').layer("BG"); c = comp("BG_2").height;');
+		});
+
+		test('NÃO muda: um nome que é só pedaço de outro (ou que tem outro dentro)', function () {
+			eq(api.rewrite('comp("BG FUNDO").layer(1)', MAPA), 'comp("BG FUNDO").layer(1)');
+			eq(api.rewrite('comp("BG_2").layer(1)', MAPA), 'comp("BG_2").layer(1)');
+			eq(api.rewrite('comp("XBG")', MAPA), 'comp("XBG")');
+		});
+
+		test('NÃO muda: o nome fora de comp(…) (layer, texto, comentário, outra função)', function () {
+			const casos = [
+				'thisComp.layer("BG").transform.opacity',
+				'"BG"',
+				'// comp BG\nvalue',
+				'footage("BG").sourceText',
+				'mycomp("BG")',
+				'thisComp("BG")',
+				'comp(nome).layer(1)',
+				'comp("bg").layer(1)', // o After diferencia a caixa no comp("…")
+				'comp(`${n}BG`)'
+			];
+
+			casos.forEach(function (c) {
+				eq(api.rewrite(c, MAPA), c);
+			});
+		});
+
+		test('o nome novo com aspas ou barra é escapado para a aspa usada', function () {
+			eq(api.rewrite('comp("BG")', { BG: 'D"AVILA' }), 'comp("D\\"AVILA")');
+			eq(api.rewrite("comp('BG')", { BG: "D'AVILA" }), "comp('D\\'AVILA')");
+			eq(api.rewrite('comp("D\\"AVILA")', { 'D"AVILA': 'X' }), 'comp("X")');
+		});
+
+		test('o mapa vazio, a expressão vazia ou nula: devolve a mesma', function () {
+			eq(api.rewrite('comp("BG")', {}), 'comp("BG")');
+			eq(api.rewrite('', MAPA), '');
+			eq(api.rewrite(null, MAPA), '');
+		});
+
+		test('um nome como "constructor" ou "toString" não vem do protótipo do mapa', function () {
+			eq(api.rewrite('comp("constructor").layer(1)', MAPA), 'comp("constructor").layer(1)');
+			eq(api.rewrite('comp("toString")', { toString: 'T_2' }), 'comp("T_2")');
+		});
+
+		test('cita: a expressão lê a comp pelo nome (só dentro de comp(…), o nome inteiro)', function () {
+			eq(api.cites('comp("PRINCIPAL").layer("TITULO").text.sourceText', 'PRINCIPAL'), true);
+			eq(api.cites("comp( 'PRINCIPAL' )", 'PRINCIPAL'), true);
+			eq(api.cites('thisComp.layer("PRINCIPAL")', 'PRINCIPAL'), false);
+			eq(api.cites('comp("PRINCIPAL 2")', 'PRINCIPAL'), false);
+			eq(api.cites('', 'PRINCIPAL'), false);
+		});
+	},
+	es3: function (api) {
+		eq(api.rewrite('comp("BG").layer(1); comp(\'BG FUNDO\')', { BG: 'BG_2' }), 'comp("BG_2").layer(1); comp(\'BG FUNDO\')');
+		eq(api.cites('comp("A")', 'A'), true);
+	}
+});
+
 // ---------------------------------------------------------------------------------------------------------------
 
 REGRAS.forEach(function (r) {

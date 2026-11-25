@@ -43,6 +43,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "../regras/preset-de-render.js"
 // do caminho guardado no projeto para os lugares de hoje (o religar d'O CATADOR, coletar.jsx)
 #include "../regras/caminhos.js"
+// as referências de comp nas expressões (comp("NOME")): o preenchimento reescreve as das precomps renomeadas
+#include "../regras/referencias-de-comp.js"
 
 #include "api.jsx"
 #include "finder.jsx"
