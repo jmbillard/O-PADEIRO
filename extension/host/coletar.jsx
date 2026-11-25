@@ -868,9 +868,29 @@ function padColetarStatusNow() {
 
 */
 
+// O que o sistema diz sobre a rede, para a regra do lugar do arquivo (regras/lugar-do-arquivo.js): o mapa de drives,
+// os volumes da rede montados no Mac (o mount) e as letras mapeadas para a rede no Windows (o net use). sem a resposta
+// do sistema, a lista fica de fora (a regra decide pelo mapa)
+function padLugarDoArquivoContexto() {
+	var c = { mapa: padMapaDeDrives() };
+
+	var said = '';
+
+	try {
+		said = String(system.callSystem(appOs == 'Mac' ? '/sbin/mount' : 'cmd.exe /c net use') || '');
+	} catch (err) { }
+
+	if (!/\S/.test(said)) return c; // o sistema não respondeu
+
+	if (appOs == 'Mac') c.volumesDaRede = PAD_LUGAR_DO_ARQUIVO.volumesDaRede(said);
+	else c.letrasDaRede = PAD_LUGAR_DO_ARQUIVO.letrasDaRede(said);
+
+	return c;
+}
+
 // As mídias do projeto e o estado de cada uma, para a janela do coletar:
-//   'ok'     já na pasta do projeto       'local'  fora das pastas de projetos (configuração > TIPOS DE PROJETO)
-//   net      nas pastas de projetos, fora da pasta do projeto      missing  o arquivo não existe
+//   'ok'     já na pasta do projeto       'local'  fora da pasta do projeto, neste computador (regras/lugar-do-arquivo.js)
+//   net      na rede, fora da pasta do projeto      missing  o arquivo não existe
 //   skip     tipo fora da árvore do coletar (configuração > coletar): não é coletado
 // → { project, root, migrated, dests, items: [{ id, name, file, kind, state, layers, frames }] }
 PADX.coletarList = function () {
@@ -879,7 +899,7 @@ PADX.coletarList = function () {
 	var root = file ? padColetarRoot(file, settings) : '';
 	var rootKey = root ? padPathKey(new Folder(root).fsName) : '';
 	var items = [];
-	var roots = padProjectsRoots();
+	var lugar = padLugarDoArquivoContexto();
 
 	for (var i = 1; i <= app.project.numItems; i++) {
 		var item = app.project.item(i);
@@ -899,7 +919,7 @@ PADX.coletarList = function () {
 		if (missing) state = 'missing';
 		else if (rootKey && padPathKey(path).indexOf(rootKey) == 0) state = 'ok';
 		else if (padColetarFolderPath(settings, kind) == null) state = 'skip';
-		else if (!padInProjects(path, roots)) state = 'local';
+		else if (PAD_LUGAR_DO_ARQUIVO.desteComputador(path, lugar)) state = 'local';
 		else state = 'net';
 
 		var layers = 0;

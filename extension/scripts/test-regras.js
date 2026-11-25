@@ -1585,6 +1585,109 @@ REGRAS.push({
 	}
 });
 
+// ---- o lugar do arquivo: neste computador ou na rede (a etiqueta "neste computador" d'O CATADOR) ----
+REGRAS.push({
+	arquivo: 'lugar-do-arquivo.js',
+	global: 'PAD_LUGAR_DO_ARQUIVO',
+	titulo: "o lugar do arquivo: neste computador ou na rede (O CATADOR)",
+	casos: function (api) {
+		const SP = 'vfx-ml-sp.servicos.corp.tvglobo.com.br';
+		const MAPA = {
+			drives: [{ letter: 'L', path: '//' + SP + '/VFX/imagem/drive_l' }, { letter: 'K', path: '//' + SP + '/VFX/imagem/drive_k' }, { letter: 'V', path: '//' + SP + '/EDIT_IN_PLACE' }],
+			shares: [{ share: 'VFX', server: SP }, { share: 'promo_ber', server: '10.193.48.13' }],
+			defaultServer: SP
+		};
+		// o mount de um Mac (sem as marcas de disco interno, que o parser ignora) com o VFX, o PROMO_SP e o cpp-ml-sp da rede e um SSD externo
+		const MOUNT = [
+			'/dev/disk3s1s1 on / (apfs, sealed, read-only, journaled)',
+			'/dev/disk3s5 on /System/Volumes/Data (apfs, journaled, nobrowse)',
+			'//JMBILLARD@' + SP + '/VFX on /Volumes/VFX (smbfs, nodev, nosuid, mounted by jmbillard)',
+			'//corp%5Cjmbillard@cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE on /Volumes/PROMO_REDE (smbfs, nodev, nosuid, mounted by jmbillard)',
+			'//jmbillard@nas-sp/PROMO SP on /Volumes/PROMO_SP (smbfs, nodev, nosuid, mounted by jmbillard)',
+			'//jmbillard@cpp-ml-sp/cpp-ml-sp on /Volumes/cpp-ml-sp (smbfs, nodev, nosuid, mounted by jmbillard)',
+			'afp_xyz@arquivo-sp on /Volumes/ARQUIVO\\040SP (afpfs, nodev, nosuid, mounted by jmbillard)',
+			'/dev/disk5s1 on /Volumes/SSD (apfs, nodev, nosuid, journaled, noowners, mounted by jmbillard)'
+		].join('\n');
+		// o net use de um Windows com o M: mapeado para o servidor de SP
+		const NET_USE = [
+			'New connections will be remembered.',
+			'',
+			'-------------------------------------------------------------------------------',
+			'OK           M:        \\\\cpp-ml-sp.servicos.corp.tvglobo.com.br\\PROMO_REDE',
+			'                                                Microsoft Windows Network',
+			'Unavailable  N:        \\\\nas-sp\\PROMO          Microsoft Windows Network',
+			'OK                     \\\\' + SP + '\\IPC$       Microsoft Windows Network',
+			'The command completed successfully.'
+		].join('\r\n');
+		const MAC = { mapa: MAPA, volumesDaRede: api.volumesDaRede(MOUNT) };
+		const WIN = { mapa: MAPA, letrasDaRede: api.letrasDaRede(NET_USE) };
+
+		test('os volumes da rede saem do mount do Mac (smbfs, afpfs…; o SSD e o disco do Mac não)', function () {
+			eq(api.volumesDaRede(MOUNT), ['VFX', 'PROMO_REDE', 'PROMO_SP', 'cpp-ml-sp', 'ARQUIVO SP']);
+			eq(api.volumesDaRede(''), []);
+		});
+
+		test('as letras da rede saem do net use do Windows (as conectadas e as indisponíveis)', function () {
+			eq(api.letrasDaRede(NET_USE), ['M', 'N']);
+			eq(api.letrasDaRede(''), []);
+		});
+
+		test('servidor de SP fora do mapa de drives, montado no Mac: na rede, não neste computador', function () {
+			eq(api.desteComputador('/Volumes/PROMO_SP/BRUTOS/a.mov', MAC), false);
+			eq(api.desteComputador('/Volumes/cpp-ml-sp/PROMO_REDE/a.mov', MAC), false);
+			eq(api.desteComputador('/Volumes/PROMO_REDE/CPP_JB_PROMO/a.mov', MAC), false);
+			eq(api.desteComputador('/Volumes/ARQUIVO SP/a.mov', MAC), false);
+			eq(api.desteComputador('/Volumes/PROMO_SP-1/BRUTOS/a.mov', MAC), false); // o mesmo share montado de novo
+		});
+
+		test('caminho de rede (\\\\servidor\\share ou //servidor/share): na rede, em qualquer sistema', function () {
+			eq(api.desteComputador('\\\\cpp-ml-sp.servicos.corp.tvglobo.com.br\\PROMO_REDE\\CPP_JB_PROMO\\a.mov', WIN), false);
+			eq(api.desteComputador('//servidor/share/a.mov', MAC), false);
+			eq(api.desteComputador('//servidor/share/a.mov', {}), false);
+		});
+
+		test('letra do Windows: a do mapa de drives e a mapeada para a rede (net use) são da rede; C: e D: são deste computador', function () {
+			eq(api.desteComputador('K:\\3_ABERTURAS\\a.mov', WIN), false);
+			eq(api.desteComputador('k:/3_ABERTURAS/a.mov', WIN), false);
+			eq(api.desteComputador('M:\\BRUTOS\\a.mov', WIN), false);
+			eq(api.desteComputador('C:\\Users\\joao\\a.mov', WIN), true);
+			eq(api.desteComputador('D:\\BRUTOS\\a.mov', WIN), true);
+			eq(api.desteComputador('X:\\a.mov', { mapa: MAPA }), true); // sem o net use: só o mapa diz
+		});
+
+		test('no Mac, as pastas do mapa de drives valem mesmo sem saber o que está montado (/Volumes/VFX, /Volumes/imagem/drive_k)', function () {
+			eq(api.desteComputador('/Volumes/imagem/drive_k/a.mov', MAC), false);
+			eq(api.desteComputador('/Volumes/drive_k/a.mov', { mapa: MAPA, volumesDaRede: [] }), false);
+			eq(api.desteComputador('/Volumes/VFX-1/imagem/a.mov', { mapa: MAPA, volumesDaRede: [] }), false);
+			eq(api.desteComputador('/Volumes/EDIT_IN_PLACE/a.mov', { mapa: MAPA, volumesDaRede: [] }), false);
+			eq(api.desteComputador('/Volumes/promo_ber/a.mov', { mapa: MAPA, volumesDaRede: [] }), false);
+		});
+
+		test('o disco do Mac e um disco externo: neste computador', function () {
+			eq(api.desteComputador('/Users/joao/Desktop/a.mov', MAC), true);
+			eq(api.desteComputador('~/Desktop/a.mov', MAC), true);
+			eq(api.desteComputador('/Volumes/Macintosh HD/Users/joao/a.mov', MAC), true);
+			eq(api.desteComputador('/Volumes/SSD/a.mov', MAC), true);
+			eq(api.desteComputador('/private/tmp/a.mov', MAC), true);
+		});
+
+		test('sem saber o que está montado (o mount não respondeu): o volume fora do mapa conta como da rede', function () {
+			eq(api.desteComputador('/Volumes/PROMO_SP/a.mov', { mapa: MAPA }), false);
+			eq(api.desteComputador('/Volumes/SSD/a.mov', { mapa: MAPA }), false);
+		});
+
+		test('sem caminho: não é deste computador (não vira etiqueta)', function () {
+			eq(api.desteComputador('', MAC), false);
+			eq(api.desteComputador(null, MAC), false);
+		});
+	},
+	es3: function (g) {
+		eq(g.desteComputador('/Volumes/PROMO_SP/a.mov', { volumesDaRede: g.volumesDaRede('//x@srv/P on /Volumes/PROMO_SP (smbfs, nodev)') }), false);
+		eq(g.desteComputador('C:\\a.mov', {}), true);
+		eq(JSON.stringify(g.letrasDaRede('OK           M:        \\\\srv\\P')), '["M"]'); // a lista vem de outro contexto (vm)
+	}
+});
+
 // ---------------------------------------------------------------------------------------------------------------
 
 REGRAS.forEach(function (r) {

@@ -54,7 +54,7 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 		return node;
 	}
 
-	var FILTERS = [['missing', 'nofile', '!', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'neste computador', 'fora das pastas de projetos (neste computador)'], ['net', 'up', '↑', 'na rede', 'nas pastas de projetos, fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
+	var FILTERS = [['missing', 'nofile', '!', 'faltando', 'o arquivo não existe'], ['local', 'install', '↑', 'neste computador', 'fora da pasta do projeto, num disco deste computador (a Área de Trabalho, um disco externo)'], ['net', 'up', '↑', 'na rede', 'na rede (um servidor, uma letra ou um volume da rede), fora da pasta deste projeto'], ['ok', 'ok', '✓', 'no lugar', 'na pasta do projeto (ou de um tipo que não é coletado)']];
 
 	// a situação do arquivo para o filtro: os de tipo fora da árvore (não coletados) contam como no lugar
 	function group(it) {
