@@ -59,8 +59,8 @@ _Avoid_: peça (para esse campo), nome do template; formato (é o do renomear)
 
 **Janela de projeto**:
 A janela do painel onde se escolhe a atração (ou o filme, ou o card), a pasta do projeto e o **o que é**, e se cria ou
-abre o projeto.
-_Avoid_: claquete, wizard
+abre o projeto. O apelido dela é O PROJETISTA.
+_Avoid_: claquete, A CLAQUETE, wizard
 
 ### Pastas e arquivos
 
