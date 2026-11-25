@@ -1284,7 +1284,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		// as pastas de um nível (ATRAÇÃO/PASTA/… e o output): uma árvore de exemplo pelo fim do caminho
 		// os quadros com a estrutura do padeiro em outros anos (o exemplo: os de 2025 na organização nova)
+		// list === false (o Node do painel lê): só os caminhos, como o host (project.jsx)
 		projectQuadros: function (a) {
+			if (a.list === false) return { rootFs: String(a.root || ''), hereFs: String(a.here || ''), sub: '01_PROJETOS', depth: Math.max(1, Math.min(3, a.depth || 1)), listed: false };
+
 			return { names: /DOMINGAO COM HUCK$/.test(String(a.root || '')) ? ['DANÇA DOS FAMOSOS', 'QUEM VEM PRA CANTAR', 'THE WALL', 'VOCÊ DECIDE'] : [] };
 		},
 
@@ -1292,6 +1295,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var root = String(a.path || '').replace(/\/+$/, '');
 
 			if (!a.plain) root = root.replace(/\/0?1[ _]?PROJETOS?$/i, '');
+			// como o host: list === false só converte o caminho (o Node do painel lê); names, os nomes que o Node leu
+			if (a.list === false) return { root: root, rootName: root.split('/').pop(), exists: null, folders: [], rootFs: root, listed: false };
+			if (a.names) {
+				return { root: root, rootName: root.split('/').pop(), exists: true, rootFs: root, listed: true, folders: api.pastasUteis({ names: a.names, plain: a.plain }).names.map(function (n) {
+					return { name: n, path: root + '/' + n };
+				}) };
+			}
 
 			var TREE = {
 				'DOMINGAO COM HUCK/2026': ['DANÇA DOS FAMOSOS', 'DOMINGÃO RECORD', 'QUEM QUER SER UM MILIONÁRIO', 'VIDEOSHOW', 'TE VI NA TV', 'ARQUIVO CONFIDENCIAL', 'PATRÕES'],
@@ -1317,6 +1327,22 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { root: root, rootName: root.split('/').pop(), exists: true, folders: names.map(function (n) {
 				return { name: n, path: root + '/' + n };
 			}) };
+		},
+
+		// os nomes de pasta que entram nas listas (sem as escondidas, de autosave, OLD… e, fora do output, a de projetos)
+		pastasUteis: function (a) {
+			return { names: (a.names || []).filter(function (n) {
+				return !/^\./.test(n) && !/auto[\s._-]*save|^old$/i.test(n) && (a.plain || !/^(0?1[ _]?)?PROJETOS?$/i.test(n));
+			}) };
+		},
+
+		// antes de montar (macOS): no navegador de teste, nenhum servidor a montar
+		servidoresParaMontar: function () {
+			return { servidores: [] };
+		},
+
+		servidorFora: function () {
+			return { ok: true };
 		},
 
 		// os filmes recentes (o webhook dos filmes): ?mock=nofilms, nenhum. o ENCANTO tem card no Trello (o 'trello' é

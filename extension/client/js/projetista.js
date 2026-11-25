@@ -24,6 +24,7 @@ projetos com o nome certo).
 
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/docs/projeto.md';
 	var LOOKUP_MS = 90; // espera depois da última tecla para procurar a atração (a busca é na memória)
+	var SERVIDOR_FORA = /não responde: ele só abre na rede da Globo/; // o aviso do host (lib/acessorista.js) quando não monta
 	var FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
 	var PLUS_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>';
 	var SKIP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m7 17 10-10" /></svg>';
@@ -61,6 +62,13 @@ projetos com o nome certo).
 	function status(text, kind) {
 		var node = $('proj-status');
 
+		// o servidor que só abre na rede da Globo (não respondeu: não foi montado): aviso amarelo, não erro
+		if (kind === 'error' && SERVIDOR_FORA.test(String(text || ''))) {
+			kind = 'warn';
+			text = String(text).split('\n').filter(function (line) {
+				return SERVIDOR_FORA.test(line);
+			}).join(' · ');
+		}
 		clearTimeout(state.statusTimer);
 		node.textContent = kind === 'error' ? PAD_UTIL.errorText(text) : text || '';
 		node.title = node.textContent;
@@ -69,6 +77,17 @@ projetos com o nome certo).
 		// o verde some sozinho; o erro e o amarelo (o que não foi feito) ficam
 		if (text && kind !== 'error' && kind !== 'warn') state.statusTimer = setTimeout(status, 4200);
 	}
+
+	// o aviso que o host mandou junto de uma resposta (o servidor fora da rede, que não foi montado): amarelo, no rodapé
+	window.addEventListener('pad-notes', function (e) {
+		var notes = e.detail && e.detail.notes ? e.detail.notes.filter(function (n) {
+			return SERVIDOR_FORA.test(n);
+		}) : [];
+
+		if (!notes.length) return;
+		e.preventDefault();
+		status(notes.join(' · '), 'warn');
+	});
 
 	// nome de arquivo: sem acentos e símbolos, em maiúsculas (o mesmo do host)
 	function aepName(text) {
@@ -158,6 +177,62 @@ projetos com o nome certo).
 		return String(text || '').toUpperCase().replace(/\s+/g, ' ').trim();
 	}
 
+	/* ---------- as pastas lidas pelo Node do painel (ADR 0003): o host só converte o caminho e filtra os nomes ---------- */
+
+	var NODE_READ_MS = 5000; // a rede lenta: passou disso, a pasta fica sem as de dentro (o After nunca espera)
+
+	function nodeFsOk() {
+		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
+
+		return fs && fs.promises ? fs : null;
+	}
+
+	function withTimeout(promise, ms, late) {
+		return Promise.race([promise, new Promise(function (resolve) {
+			setTimeout(function () {
+				resolve(late);
+			}, ms);
+		})]);
+	}
+
+	// as pastas logo dentro de dir, pelo Node: { exists, names } (exists false: não existe ou não está acessível;
+	// slow: a rede não respondeu a tempo)
+	async function nodeDirs(fs, dir) {
+		if (!dir) return { exists: false, names: [] };
+
+		var items = await withTimeout(fs.promises.readdir(dir, { withFileTypes: true }).catch(function () {
+			return null;
+		}), NODE_READ_MS, 'slow');
+
+		if (items === 'slow') return { exists: false, names: [], slow: true };
+		if (!items) return { exists: false, names: [] };
+
+		return { exists: true, names: items.filter(function (d) {
+			return d.isDirectory();
+		}).map(function (d) {
+			return d.name;
+		}) };
+	}
+
+	// as pastas de um nível: com o Node, ele lê e o host só converte o caminho e tira as que não entram na lista (nada
+	// de ler a rede no host, que trava o After). sem o Node (o navegador de teste), o host lê. nunca monta
+	async function readFolders(path, plain) {
+		var fs = nodeFsOk();
+
+		if (fs) {
+			var conv = await call('projectFolders', { path: path, plain: !!plain, list: false });
+
+			if (conv.listed === false) {
+				var dirs = await nodeDirs(fs, conv.rootFs);
+				var res = dirs.names.length ? await call('projectFolders', { path: path, plain: !!plain, names: dirs.names }) : { root: conv.root, rootName: conv.rootName, folders: [] };
+
+				return Object.assign({}, res, { exists: dirs.exists, slow: !!dirs.slow });
+			}
+		}
+
+		return call('projectFolders', { path: path, plain: !!plain });
+	}
+
 	// as pastas de um nível (lidas na hora, uma vez por caminho). plain: o output (sem tirar a estrutura do coletar)
 	async function listFolders(path, plain) {
 		var cache = state.folderCache || (state.folderCache = {});
@@ -165,7 +240,13 @@ projetos com o nome certo).
 
 		if (!cache[key]) {
 			try {
-				cache[key] = await call('projectFolders', { path: path, plain: !!plain });
+				cache[key] = await readFolders(path, plain);
+				if (cache[key].slow) {
+					var slow = cache[key];
+
+					delete cache[key]; // a rede lenta: lê de novo da próxima vez
+					return slow;
+				}
 			} catch (err) {
 				cache[key] = { root: '', rootName: '', exists: false, folders: [] };
 				status(err.message, 'error');
@@ -1092,9 +1173,13 @@ projetos com o nome certo).
 		var seen = {};
 		var out = [];
 
-		// o host lê as pastas e fica só com as que têm a estrutura do padeiro dentro (as antigas da atração ficam de fora)
+		// as pastas com a estrutura do padeiro dentro (as antigas da atração ficam de fora): com o Node, ele lê e o host
+		// só converte os caminhos (ADR 0003); sem ele, o host lê
 		try {
-			res = await call('projectQuadros', { root: root, depth: tail.length, here: attr.path });
+			var fs = nodeFsOk();
+			var conv = fs ? await call('projectQuadros', { root: root, depth: tail.length, here: attr.path, list: false }) : null;
+
+			res = conv && conv.listed === false ? { names: await nodeQuadros(fs, conv) } : await call('projectQuadros', { root: root, depth: tail.length, here: attr.path });
 		} catch (err) { }
 
 		(current || []).forEach(function (f) {
@@ -1112,6 +1197,71 @@ projetos com o nome certo).
 		return out.sort(function (x, y2) {
 			return x.name < y2.name ? -1 : 1;
 		});
+	}
+
+	// os quadros pelo Node (o mesmo do host em projectQuadros): as pastas 'depth' níveis abaixo da atração e, dentro
+	// delas (menos a do ano de agora), as que têm a pasta de projetos da estrutura. no máximo 120 leituras e
+	// NODE_READ_MS no total: os exemplos são um atalho, não uma lista completa
+	async function nodeQuadros(fs, conv) {
+		var pathMod = require('path');
+		var until = Date.now() + NODE_READ_MS;
+		var reads = 0;
+		var key = function (p) {
+			return String(p || '').replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+		};
+		// as pastas de dentro de cada uma (só as que entram nas listas: o host filtra os nomes, sem ler nada)
+		var inside = async function (list) {
+			var read = await Promise.all(list.map(function (dir) {
+				if (++reads > 120 || Date.now() > until) return { names: [] };
+
+				return nodeDirs(fs, dir);
+			}));
+			var all = [];
+
+			read.forEach(function (r) {
+				all = all.concat(r.names);
+			});
+
+			var useful = all.length ? (await call('pastasUteis', { names: all, plain: true })).names : [];
+
+			return list.map(function (dir, i) {
+				return read[i].names.filter(function (n) {
+					return useful.indexOf(n) >= 0;
+				}).map(function (n) {
+					return { name: n, path: pathMod.join(dir, n) };
+				});
+			});
+		};
+		var level = [conv.rootFs];
+
+		for (var d = 0; d < conv.depth; d++) {
+			level = (await inside(level)).reduce(function (all, kids) {
+				return all.concat(kids.map(function (k) {
+					return k.path;
+				}));
+			}, []);
+		}
+
+		level = level.filter(function (p) {
+			return key(p) !== key(conv.hereFs);
+		});
+
+		var kids = (await inside(level)).reduce(function (all, list) {
+			return all.concat(list);
+		}, []);
+		var names = [];
+
+		await Promise.all(kids.map(async function (k) {
+			if (Date.now() > until) return;
+
+			var st = await withTimeout(fs.promises.stat(pathMod.join(k.path, conv.sub)).catch(function () {
+				return null;
+			}), Math.max(0, until - Date.now()), null);
+
+			if (st && st.isDirectory()) names.push(k.name);
+		}));
+
+		return names;
 	}
 
 	// o ícone do tipo da atração (o mesmo da aba TIPOS DE PROJETO), ou a pasta; o filme, o do tipo de filmes
@@ -1139,8 +1289,12 @@ projetos com o nome certo).
 	function enterAttraction(match, keepOpen) {
 		if (match.noBase) return asNew(match);
 		flow.attr = match;
+		flow.walk = null;
 		$('claq').value = match.name.toUpperCase() + '/';
 		enter(keepOpen);
+		// a lista mostra já a atração escolhida ("procurando as pastas…"), não a da busca de antes: o cabeçalho da
+		// atração nova com o texto velho (NOVA ATRAÇÃO · SUMM com o campo em SUMMER BEATS/) não fica parado na tela
+		renderAttractions();
 	}
 
 	function enter(keepOpen) {
@@ -1579,8 +1733,11 @@ projetos com o nome certo).
 		}
 		if (target.kind === 'nova') return startCardNova(c, target.name);
 
+		var seq = state.lookupSeq;
 		var attr = target.kind === 'film' ? target.attr : await cardAttr(c, target);
 
+		// o campo mudou (ou foi limpo) enquanto a atração do card era procurada: o clique não vale mais
+		if (seq !== state.lookupSeq || state.card !== c) return;
 		if (!attr) return startCardNova(c, target.kind === 'film' ? aepName(target.film.name) : suggestName(c.claq));
 		state.settleAll = true;
 		enterAttraction(atYear(attr));
@@ -1857,6 +2014,10 @@ projetos com o nome certo).
 		if (key === state.pickKey) return renderDest();
 
 		state.pickKey = key;
+		// o plano que ainda não voltou era da escolha de antes: não vale mais (planCriar confere)
+		clearTimeout(state.planTimer);
+		state.planTimer = null;
+		state.planSeq++;
 		state.openFile = ''; // outra pasta: o projeto marcado na lista sai
 		state.openAuto = false;
 		state.sameOff = '';
@@ -1960,6 +2121,8 @@ projetos com o nome certo).
 	// conta do host); a lista dos .aep da pasta veio no plano. digitar o o que é não chama o host (ele lê a rede e
 	// travava a digitação)
 	function localFile(plan) {
+		if (!flow.pick) return;
+
 		var levels = String(flow.pick.quadro || '').split('/');
 		var custom = flow.pick.fileName || '';
 		var base = !levels[levels.length - 1].trim() && custom.indexOf(WHAT_TOKEN) >= 0
@@ -2025,19 +2188,26 @@ projetos com o nome certo).
 		if (!flow.pick) return;
 
 		var seq = ++state.planSeq;
+		var pick = flow.pick;
+		// o plano vale só para a escolha de agora: a escolha mudou ou saiu (o campo limpo) enquanto o host ou o Node
+		// respondia, a resposta é descartada em silêncio
+		var stale = function () {
+			return seq !== state.planSeq || flow.pick !== pick;
+		};
 
 		state.planTimer = setTimeout(async function () {
 			state.planTimer = null;
+			if (stale()) return;
 			try {
 				// com o Node do painel, os .aep da pasta são lidos aqui (sem travar o After: ADR 0003); sem ele, pelo host
 				var fs = ATR.nodeFs ? ATR.nodeFs() : null;
 				var node = !!(fs && fs.promises);
 				var plan = await call('projectPlan', planArgs({ list: !node }));
 
-				if (seq !== state.planSeq) return;
+				if (stale()) return;
 				if (node && plan.listed === false) {
 					plan.existing = plan.projectsFs ? await listAeps(fs, plan.projectsFs) : [];
-					if (seq !== state.planSeq) return;
+					if (stale()) return;
 				}
 				state.plan = plan;
 				// veio pelo card do Trello: os .aep que batem com a claquete ficam em destaque; só um, fica marcado (Abrir
@@ -2051,7 +2221,7 @@ projetos com o nome certo).
 				localFile(plan);
 				renderPlan(plan);
 			} catch (err) {
-				if (seq === state.planSeq) status(err.message, 'error');
+				if (!stale()) status(err.message, 'error');
 			}
 		}, state.plan ? 140 : 0);
 	}
@@ -2340,6 +2510,9 @@ projetos com o nome certo).
 		$('criar-go').textContent = 'Abrindo…';
 		try {
 			var attr = flow.attr || {};
+
+			await PAD_BRIDGE.prepararMontagem([state.plan.projects]);
+
 			var res = await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile, atracao: flow.pick ? flow.pick.name : '', quadro: flow.pick ? flow.pick.quadro || '' : '', tipo: attr.tipo || '', pasta: state.plan.root || '', card: cardDoEnvio() });
 			var sending = startEnvio(res);
 
@@ -2390,7 +2563,7 @@ projetos com o nome certo).
 			var o = outParts();
 			var walk = await walkPath(base, o.levels, o.last, true);
 
-			if (seq !== state.outSeq) return;
+			if (seq !== state.outSeq || !flow.pick) return; // a escolha saiu enquanto as pastas eram lidas
 			state.outWalk = walk;
 
 			// escolhida na lista: sem pastas dentro, a barra sai e volta o cartão
@@ -2651,7 +2824,11 @@ projetos com o nome certo).
 				setTimeout(resolve, 300);
 			});
 
-			var res = await call('projectCreate', args || createArgs());
+			var cargs = args || createArgs();
+
+			await PAD_BRIDGE.prepararMontagem([cargs.path, cargs.output]);
+
+			var res = await call('projectCreate', cargs);
 			// a atração nova ou escolhida por um card: o aviso ao n8n, em segundo plano (a criação já terminou e não
 			// espera por ele)
 			var sending = startEnvio(res);
@@ -2928,6 +3105,8 @@ projetos com o nome certo).
 		}));
 		if (cur.output) body.appendChild(pdPath(PD_OUT, cur.output, async function () {
 			try {
+				await PAD_BRIDGE.prepararMontagem([cur.output]);
+
 				var res = await call('openOutputs', { paths: [cur.output] });
 
 				if (res && res.missing && res.missing.length) status('#PAD_019 - output não pode ser acessado: ' + res.missing[0], 'error');
@@ -3327,6 +3506,8 @@ projetos com o nome certo).
 			// mantém o nome pelo padrão dele, com o mês do nome de hoje); senão, o host faz o último nível + o que é.
 			// tipo e card: só para o envio ao webhook do projeto (o card escolhido na lista: o designer no card); o host
 			// não grava o card no projeto (ADR 0001)
+			await PAD_BRIDGE.prepararMontagem([state.edRoot || $('ed-root').value, state.edOutput]);
+
 			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() || edTypeName(), tipo: state.edAttr ? state.edAttr.tipo || '' : '', card: edCardDoEnvio(atracao) });
 			// ligado a um card: o aviso ao n8n, em segundo plano (o projeto já foi salvo)
 			var sending = startEnvio(cur);

@@ -114,10 +114,94 @@ function psMountedSharePath(server, share) {
 	return '';
 }
 
+// Os servidores que responderam ou não ao teste de alcance: { servidor em minúsculas: { ok, at } }. o de SP
+// (10.193.48.13, promo_ber) só abre na rede da Globo: fora dela (em casa, pela VPN), montar abre o diálogo do macOS
+// "There was a problem connecting to the server…" e o After fica travado até o OK. o que não respondeu fica lembrado
+// por uns minutos (sem testar de novo a cada clique); o que respondeu, por um minuto
+var PS_SERVIDORES = {};
+var PS_SERVIDOR_FORA_MS = 5 * 60 * 1000;
+var PS_SERVIDOR_OK_MS = 60 * 1000;
+
+function psServidorKey(server) {
+	return String(server || '').toLowerCase();
+}
+
+// o painel testou pelo Node (sem travar o After) ou o host testou: guarda a resposta
+function psMarcarServidor(server, ok) {
+	if (server) PS_SERVIDORES[psServidorKey(server)] = { ok: !!ok, at: new Date().getTime() };
+}
+
+// o que já se sabe do servidor: true (responde), false (fora) ou null (não testado há pouco)
+function psServidorSabido(server) {
+	var known = PS_SERVIDORES[psServidorKey(server)];
+
+	if (!known) return null;
+	if (new Date().getTime() - known.at > (known.ok ? PS_SERVIDOR_OK_MS : PS_SERVIDOR_FORA_MS)) return null;
+
+	return known.ok;
+}
+
+// O servidor responde na porta do compartilhamento (445)? o teste rápido antes de montar: o nc espera no máximo 2 s
+// (plano B; o painel testa antes pelo Node quando pode: PADX.servidorFora)
+function psServidorResponde(server) {
+	var known = psServidorSabido(server);
+
+	if (known !== null) return known;
+
+	var out = '';
+
+	try {
+		out = system.callSystem('/usr/bin/nc -z -G 2 -w 2 ' + psShellQuote(server) + ' 445 >/dev/null 2>&1 && echo ok || echo no');
+	} catch (err) {}
+
+	psMarcarServidor(server, /ok/.test(String(out)));
+
+	return psServidorSabido(server) === true;
+}
+
+// o aviso do servidor fora, uma vez por chamada, junto da resposta ao painel (PADX_alerts → res.notes)
+function psAvisoServidorFora(server, share) {
+	var text = 'o servidor ' + server + (share ? ' (' + share + ')' : '') + ' não responde: ele só abre na rede da Globo';
+
+	if (typeof PADX_alerts != 'undefined' && PADX_alerts && PADX_alerts.join('\n').indexOf(text) < 0) PADX_alerts.push(text);
+
+	return text;
+}
+
+// O servidor e o compartilhamento de um caminho do Mac (/Volumes/SHARE/…), sem montar nem testar nada:
+// { server, share } ou null (fora de /Volumes, ou sem servidor no mapa de drives)
+function psServidorDoCaminho(path, fixedServer, fixedShare) {
+	var match = String(path || '').match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+
+	if (!match) return null;
+
+	var volume = match[1].replace(/-[1-5]$/, '');
+	var server = fixedServer;
+	var share = fixedShare || volume;
+
+	if (!server) {
+		var lowerVolume = volume.toLowerCase();
+
+		if (/(^|\/)edit_output(\/|$)/i.test(path)) server = PS_SMB.cppHp; // edit_output fica no cpp-ml-hp
+		else if (lowerVolume == 'vfx' || lowerVolume == 'edit_in_place') server = PS_SMB.sp; // -sp é o padrão
+		else if (typeof findServerForShare == 'function') server = findServerForShare(volume) || ''; // os outros: o servidor do mapa de drives (configuração > rede)
+	}
+
+	return server ? { server: server, share: share, rest: match[2] || '' } : null;
+}
+
+// Monta o compartilhamento (só numa ação pedida pelo designer: abrir, criar, religar). no modo local (ligado à mão)
+// nunca monta; antes de montar, o teste rápido: o servidor que não responde não é montado (o diálogo do macOS travaria
+// o After) e o painel recebe o aviso
 function psMountShare(server, share) {
 	var mounted = psMountedSharePath(server, share);
 
 	if (mounted) return mounted;
+	if (typeof padLocalForced == 'function' && padLocalForced()) return '';
+	if (!psServidorResponde(server)) {
+		psAvisoServidorFora(server, share);
+		return '';
+	}
 
 	var user = '';
 
@@ -147,28 +231,13 @@ function psResolveOnMac(path, fixedServer, fixedShare) {
 
 	if (existing) return existing;
 
-	var match = path.match(/^\/Volumes\/([^\/]+)(\/.*)?$/);
+	var where = psServidorDoCaminho(path, fixedServer, fixedShare);
 
-	if (!match) return path;
+	if (!where) return path;
 
-	var volume = match[1].replace(/-[1-5]$/, '');
-	var rest = match[2] || '';
-	var server = fixedServer;
-	var share = fixedShare || volume;
+	var root = psMountShare(where.server, where.share);
 
-	if (!server) {
-		var lowerVolume = volume.toLowerCase();
-
-		if (/(^|\/)edit_output(\/|$)/i.test(path)) server = PS_SMB.cppHp; // edit_output fica no cpp-ml-hp
-		else if (lowerVolume == 'vfx' || lowerVolume == 'edit_in_place') server = PS_SMB.sp; // -sp é o padrão
-		else if (typeof findServerForShare == 'function') server = findServerForShare(volume) || ''; // os outros: o servidor do mapa de drives (configuração > rede)
-
-		if (!server) return path;
-	}
-
-	var root = psMountShare(server, share);
-
-	if (root && new Folder(root + rest).exists) return root + rest;
+	if (root && new Folder(root + where.rest).exists) return root + where.rest;
 
 	return psExistingVolumeVariant(path) || path;
 }

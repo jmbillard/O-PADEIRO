@@ -490,7 +490,7 @@ PADX.projectFilmsParents = function (a) {
 		var p = '';
 
 		try {
-			p = padMountedPath(padPath(parents[i] || '')) || '';
+			p = padResolvedPath(padPath(parents[i] || '')) || ''; // sem montar: só lista (o volume fora fica sem a pasta)
 			if (p) p = new Folder(p).fsName;
 		} catch (err) { p = ''; }
 
@@ -512,7 +512,7 @@ PADX.projectFilmsDone = function (a) {
 	var paths = [];
 
 	for (var i = 0; i < items.length; i++) {
-		var parent = padMountedPath(padPath(items[i].parent || ''));
+		var parent = padResolvedPath(padPath(items[i].parent || '')); // sem montar: só confere
 		var key = padAepName(String(items[i].title || '').replace(/\(\d{4}\)/g, ' '));
 		var year = String(items[i].year || '');
 		var found = '';
@@ -676,7 +676,9 @@ function padListedFolder(path) {
 	return false;
 }
 
-function padNewProjectPlan(a) {
+// mount: monta o share se preciso (criar, salvar); sem ele, só confere (o plano da janela: um caminho fora dos
+// volumes montados fica "não existe ainda", sem montar: o diálogo do macOS travaria o After)
+function padNewProjectPlan(a, mount) {
 	var settings = padLerSecao('coletar');
 	var sub = padColetarFolderPath(settings, 'projeto') || '01_PROJETOS';
 	var root;
@@ -691,7 +693,7 @@ function padNewProjectPlan(a) {
 	if (!padTrim(levels[levels.length - 1]) && custom.indexOf('{o_que_e}') >= 0) fileBase = padAepFileName(custom.split('{o_que_e}').join(' ' + (a.what || '') + ' '));
 	else fileBase = padAepFileName((padTrim(levels[levels.length - 1]) || custom.split('{o_que_e}').join(' ') || a.atracao) + ' ' + (a.what || ''));
 	if (!fileBase) throw new Error('#PAD_090 - escolha a atração.');
-	root = padMountedPath(padPath(a.path));
+	root = mount ? padMountedPath(padPath(a.path)) : padResolvedPath(padPath(a.path));
 
 	if (!root) throw new Error('#PAD_091 - sem pasta de destino: escolha a pasta.');
 
@@ -784,54 +786,97 @@ autosave, logs, sem nome (New Folder…) e as escondidas nunca aparecem.
 
 */
 
-// a: { path, plain } → { root, rootName, exists, folders: [{ name, path }] }
-PADX.projectFolders = function (a) {
-	var root = padMountedPath(padPath(a.path));
+// as pastas que entram nas listas: sem as escondidas, as de autosave, logs, sem nome… e, fora do output (plain), sem
+// as da estrutura do coletar (skip) e a de projetos
+function padFolderUseful(name, plain, skip) {
+	if (/^\./.test(name) || padIsJunkFolder(name)) return false;
 
-	if (!root) return { root: '', rootName: '', exists: false, folders: [] };
+	return plain || !(skip[padFolderKey(name)] || padIsProjectsFolderName(name));
+}
+
+function padFolderSkip(plain) {
+	var skip = {};
+
+	if (plain) return skip;
+
+	var settings = padLerSecao('coletar');
+
+	for (var i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
+
+	return skip;
+}
+
+// Os nomes de pasta que o Node do painel leu, só os que entram nas listas (sem ler nada aqui).
+// a: { names, plain } → { names }
+PADX.pastasUteis = function (a) {
+	var names = a && a.names instanceof Array ? a.names : [];
+	var skip = padFolderSkip(!!a.plain);
+	var out = [];
+
+	for (var i = 0; i < names.length; i++) {
+		if (padFolderUseful(String(names[i]), !!a.plain, skip)) out.push(String(names[i]));
+	}
+
+	return { names: out };
+};
+
+// a: { path, plain, list, names } → { root, rootName, exists, folders: [{ name, path }], rootFs, listed }
+// com o Node do painel (ADR 0003), duas chamadas sem ler nada aqui: list === false só converte o caminho (rootFs, a
+// pasta como o sistema a vê, para o Node ler) e names (os nomes das pastas que o Node leu) monta a lista. sem o
+// Node, o host lê (plano B). nunca monta: o caminho fora dos volumes montados é uma pasta que ainda não existe
+PADX.projectFolders = function (a) {
+	var root = padResolvedPath(padPath(a.path)); // listar nunca monta (só o que já está montado)
+
+	if (!root) return { root: '', rootName: '', exists: false, folders: [], rootFs: '', listed: a.list !== false };
 
 	var folder = new Folder(root);
 
 	if (!a.plain && padIsProjectsFolderName(decodeURI(folder.name))) folder = folder.parent;
+	if (a.list === false) return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: null, folders: [], rootFs: folder.fsName, listed: false };
 
-	var skip = {};
+	var skip = padFolderSkip(!!a.plain);
 	var folders = [];
 	var i;
+	var name;
 
-	if (!a.plain) {
-		var settings = padLerSecao('coletar');
+	if (a.names instanceof Array) {
+		for (i = 0; i < a.names.length; i++) {
+			name = String(a.names[i]);
+			if (padFolderUseful(name, !!a.plain, skip)) folders.push({ name: name, path: padDisplayPath(folder.fsName + '/' + name) });
+		}
+	} else {
+		var items = folder.exists ? folder.getFiles() || [] : [];
 
-		for (i = 0; i < settings.folders.length; i++) skip[padFolderKey(settings.folders[i].name)] = true;
-	}
+		for (i = 0; i < items.length; i++) {
+			name = decodeURI(items[i].name);
 
-	var items = folder.exists ? folder.getFiles() || [] : [];
+			if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || !padFolderUseful(name, !!a.plain, skip)) continue;
 
-	for (i = 0; i < items.length; i++) {
-		var name = decodeURI(items[i].name);
-
-		if (!(items[i] instanceof Folder || new Folder(items[i].fsName).exists) || /^\./.test(name) || padIsJunkFolder(name)) continue;
-		if (!a.plain && (skip[padFolderKey(name)] || padIsProjectsFolderName(name))) continue;
-
-		folders.push({ name: name, path: padDisplayPath(items[i].fsName) });
+			folders.push({ name: name, path: padDisplayPath(items[i].fsName) });
+		}
 	}
 
 	folders.sort(function (x, y) {
 		return x.name.toUpperCase() < y.name.toUpperCase() ? -1 : 1;
 	});
 
-	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: folder.exists, folders: folders };
+	return { root: padDisplayPath(folder.fsName), rootName: decodeURI(folder.name), exists: a.names instanceof Array ? true : folder.exists, folders: folders, rootFs: folder.fsName, listed: true };
 };
 
 // Os quadros da organização nova numa atração, para os exemplos da janela: as pastas 'depth' níveis abaixo da
 // atração (o {ano}: qualquer ano) que têm dentro a pasta dos projetos da estrutura (01_PROJETOS), ou seja, as que o
 // padeiro criou. as pastas antigas da mesma atração ficam de fora. a: { root, depth, here (a do ano de agora) }
-// → { names: [nome] }
+// → { names: [nome] }. list === false (com o Node do painel, ADR 0003): só os caminhos como o sistema os vê, sem ler
+// nada → { rootFs, hereFs, sub, depth, listed: false }: o Node anda pelas pastas. nunca monta
 PADX.projectQuadros = function (a) {
 	var settings = padLerSecao('coletar');
 	var sub = padColetarFolderPath(settings, 'projeto') || '01_PROJETOS';
-	var level = [new Folder(padMountedPath(padPath(a.root)))];
+	var level = [new Folder(padResolvedPath(padPath(a.root)))]; // listar nunca monta
 	var depth = Math.max(1, Math.min(3, a.depth || 1));
-	var hereKey = a.here ? padPathKey(new Folder(padMountedPath(padPath(a.here))).fsName) : '';
+
+	if (a.list === false) return { rootFs: level[0].fsName, hereFs: a.here ? new Folder(padResolvedPath(padPath(a.here))).fsName : '', sub: sub, depth: depth, listed: false };
+
+	var hereKey = a.here ? padPathKey(new Folder(padResolvedPath(padPath(a.here))).fsName) : '';
 	var names = [];
 	var seen = {};
 	var reads = 0;
@@ -905,7 +950,7 @@ PADX.projectPlan = function (a) {
 
 	for (var i = 0; i < existing.length; i++) if (existing[i].name == plan.fileBase && existing[i].ext != 'aet' && !existing[i].sub) exists = true;
 
-	var outputPath = a.output ? padMountedPath(padPath(padCleanSpaces(a.output))) : '';
+	var outputPath = a.output ? padResolvedPath(padPath(padCleanSpaces(a.output))) : '';
 
 	return {
 		root: padDisplayPath(plan.root),
@@ -1002,7 +1047,7 @@ function padFolderPeek(folder) {
 PADX.projectCreate = function (a) {
 	padLastMkdir = '';
 
-	var plan = padNewProjectPlan(a);
+	var plan = padNewProjectPlan(a, true);
 
 	padColetarStructure(plan.root, plan.settings, PAD_PROJECT_KINDS);
 
@@ -1254,7 +1299,7 @@ PADX.projectSave = function (a) {
 	padLastMkdir = '';
 
 	var file = app.project.file;
-	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root, fileName: a.fileName });
+	var plan = padNewProjectPlan({ atracao: a.atracao, quadro: a.quadro, what: a.what, path: a.root, fileName: a.fileName }, true);
 
 	if (a.fileBase) plan.fileBase = String(a.fileBase);
 

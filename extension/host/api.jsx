@@ -892,6 +892,42 @@ PADX.mountInfo = function (a) {
 	return { mountable: appOs == 'Mac' && !!m, volume: m ? m[1] : '' };
 };
 
+// Os servidores que uma ação vai precisar montar (os caminhos em /Volumes fora dos volumes montados), sem montar nem
+// testar nada: o painel testa eles pelo Node (sem travar o After) e avisa os que não responderam (servidorFora).
+// no modo local (ligado à mão) e no Windows, nenhum. a: { paths } → { servidores: [{ servidor, share }] }
+PADX.servidoresParaMontar = function (a) {
+	var paths = a && a.paths instanceof Array ? a.paths : [];
+	var out = [];
+	var seen = {};
+
+	if (appOs != 'Mac' || padLocalForced()) return { servidores: out };
+
+	for (var i = 0; i < paths.length; i++) {
+		var path = padPath(paths[i]) || String(paths[i] || '');
+		var where = psServidorDoCaminho(path, '', '');
+
+		if (!where || seen[psServidorKey(where.server)] || psMountedSharePath(where.server, where.share)) continue;
+
+		seen[psServidorKey(where.server)] = true;
+		out.push({ servidor: where.server, share: where.share });
+	}
+
+	return { servidores: out };
+};
+
+// O painel testou os servidores pelo Node: os que não responderam não são montados (nem testados de novo pelo host)
+// por uns minutos; os que responderam, montam sem o teste do host. a: { servidores: [fora], ok: [responderam] }
+PADX.servidorFora = function (a) {
+	var fora = a && a.servidores instanceof Array ? a.servidores : [];
+	var ok = a && a.ok instanceof Array ? a.ok : [];
+	var i;
+
+	for (i = 0; i < fora.length; i++) psMarcarServidor(fora[i], false);
+	for (i = 0; i < ok.length; i++) psMarcarServidor(ok[i], true);
+
+	return { ok: true };
+};
+
 // Monta o share da pasta (quem abre a janela de templates pediu: é um clique). a: { path } → { mounted }
 PADX.mountPath = function (a) {
 	var path = padMountedPath(padPath(a.path) || String(a.path || ''));
