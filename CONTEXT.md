@@ -55,7 +55,7 @@ _Avoid_: claquete para a janela de projeto
 
 **O que é**:
 A parte do nome que diz qual peça é (SERVIÇO, CHAMADA, CONVIDADO), num projeto ou num template.
-_Avoid_: formato, peça (para esse campo), nome do template
+_Avoid_: peça (para esse campo), nome do template; formato (é o do renomear)
 
 **Janela de projeto**:
 A janela do painel onde se escolhe a atração (ou o filme, ou o card), a pasta do projeto e o **o que é**, e se cria ou
@@ -167,6 +167,40 @@ _Avoid_: template de output
 **Versão do After**:
 O After Effects em que um projeto foi salvo (After 2025, After 2026).
 _Avoid_: versão (sem "do After")
+
+### Renomear
+
+**Regra do renomear**:
+A regra da equipe para o nome de comps, pastas do projeto, outputs da fila e arquivos: o prefixo do formato, a caixa,
+o separador e os nomes fixos.
+
+**Renomear**:
+Aplicar a regra do renomear a um alvo, dito junto: as comps, os outputs da fila ou os arquivos.
+
+**Formato**:
+A classe de uma peça ou de um arquivo no renomear (RODAPÉ, CRÉDITO, VINHETA), reconhecida pelos termos dela no nome.
+_Avoid_: tipo (é o da atração), tipo de peça
+
+**Prefixo do formato**:
+A sigla do formato que abre o nome (RDP, CRT).
+_Avoid_: prefixo do tipo
+
+**Nome fixo**:
+Um nome que a regra do renomear sempre escreve do mesmo jeito (LOGO GLOBO).
+
+**Arquivista**:
+O painel que renomeia os arquivos e as pastas de uma pasta, pela regra do renomear.
+
+**Item**:
+Cada arquivo, pasta ou sequência de imagens da lista do arquivista.
+_Avoid_: item para versão ou bloco
+
+**Sequência de imagens**:
+Os quadros de uma animação salvos como imagens numeradas, tratados como um item só.
+
+**Religar**:
+Trocar no projeto o caminho de um arquivo para o lugar novo dele, porque foi renomeado, movido ou achado.
+_Avoid_: relinkar
 
 ### Busca
 
