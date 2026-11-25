@@ -12,7 +12,13 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
 - Os subagentes rodam em segundo plano. O agente principal fica livre para conversar, responder dúvidas e acompanhar.
 - Ao voltar, o resultado de cada subagente é conferido pelo gestor (diff, testes, capturas) antes de ser apresentado
   ou enviado.
-- Tarefa pequena, de poucos passos, o gestor faz direto: delegar custa mais que fazer.
+- O gestor faz direto só: ler e conferir (diff, testes, capturas); juntar e enviar o trabalho dos subagentes
+  (resolvendo conflito só de texto); mexer em issues, PRs e artefatos; e trocar um texto ou valor já localizado (um
+  rótulo, um padrão, uma linha de documento) sem investigar.
+- Vai sempre para um subagente: qualquer bug (mesmo que pareça simples), qualquer mudança que peça teste novo,
+  captura ou reprodução no navegador, e qualquer mudança em mais de um arquivo de código.
+- Regra de parada: se uma tarefa começada direto pedir uma segunda investigação (mais uma leitura de código para
+  achar a causa, ou um script de teste), o gestor para e passa a um subagente, com o que já descobriu.
 - Mudança de interface: mockup primeiro, aprovado antes de implementar.
 - Respostas em português.
 
