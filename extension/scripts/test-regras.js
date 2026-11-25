@@ -1382,10 +1382,51 @@ REGRAS.push({
 			eq(api.envio(situacao({ card: CARD, url: '' })), null);
 		});
 
-		test('noutro momento (aberto, alterado): fica para a #51, não envia por enquanto', function () {
-			eq(api.envio(situacao({ momento: 'aberto', card: CARD })), null);
-			eq(api.envio(situacao({ momento: 'alterado', card: CARD })), null);
+		// #51: abrir o .aep pelo JÁ NA PASTA de um card e o Alterar ligando o projeto a um card: só o designer no card
+		const ABERTO = { nome: 'Domingão com Huck', tipo: '', nova: false, quadro: '', pasta: '//srv/VFX/PROGRAMAS/DOMINGAO COM HUCK/2026', output: '//srv/OUT/PROGRAMAS/DOMINGAO COM HUCK', aep: '//srv/VFX/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK CHAMADA.aep' };
+
+		test('abrir pelo JÁ NA PASTA de um card: envia o momento aberto, a atração do projeto aberto, o card e o designer', function () {
+			eq(api.envio(situacao({ momento: 'aberto', atracao: ABERTO, card: CARD })), {
+				url: URL_DO_PROJETO,
+				corpo: {
+					momento: 'aberto',
+					atracao: ABERTO,
+					card: { id: '6650a1b2c3d4e5f6a7b8c9d0', claquete: 'LA NA MINHA TERRA 25/11' },
+					designer: { login: 'jmbillard', sigla: 'JMBILLARD' },
+					versao: '2.0 beta9'
+				}
+			});
+		});
+
+		test('Alterar para um card: envia o momento alterado, com a atração e o .aep salvo', function () {
+			const e = api.envio(situacao({ momento: 'alterado', atracao: ABERTO, card: CARD }));
+
+			eq(e.corpo.momento, 'alterado');
+			eq(e.corpo.atracao, ABERTO);
+			eq(e.corpo.card, CARD);
+			eq(e.corpo.designer, { login: 'jmbillard', sigla: 'JMBILLARD' });
+		});
+
+		test('abrir ou alterar nunca cadastra: a atração vai com nova: false, mesmo a que não está no índice', function () {
+			eq(api.envio(situacao({ momento: 'aberto', card: CARD })).corpo.atracao.nova, false);
+			eq(api.envio(situacao({ momento: 'alterado', card: CARD })).corpo.atracao.nova, false);
+		});
+
+		test('abrir ou alterar sem card (o clique sem card, a atração nova sem card): não envia', function () {
 			eq(api.envio(situacao({ momento: 'aberto' })), null);
+			eq(api.envio(situacao({ momento: 'alterado' })), null);
+			eq(api.envio(situacao({ momento: 'aberto', atracao: ABERTO, card: { id: '', claquete: 'X' } })), null);
+		});
+
+		test('abrir ou alterar por card, no modo local ou sem a URL: não envia', function () {
+			eq(api.envio(situacao({ momento: 'aberto', card: CARD, modoLocal: true })), null);
+			eq(api.envio(situacao({ momento: 'alterado', card: CARD, url: '' })), null);
+		});
+
+		test('o clique num card sem ação (sem momento) ou um momento desconhecido: não envia', function () {
+			eq(api.envio(situacao({ momento: '', card: CARD })), null);
+			eq(api.envio(situacao({ momento: undefined, card: CARD })), null);
+			eq(api.envio(situacao({ momento: 'escolhido', card: CARD })), null);
 		});
 
 		// a resposta do n8n: { itens: [{ codigo, texto }] }
@@ -1509,6 +1550,25 @@ REGRAS.push({
 			eq(api.avisos({}, POR_CARD).avisos, [{ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar o cadastro de Lá na Minha Terra no banco das atrações nem a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi criado; confira na busca e no Trello' }]);
 		});
 
+		// #51: os avisos amarelos dizem o que aconteceu com o projeto (aberto, salvo), não 'criado'
+		const ABERTO_POR_CARD = api.envio(situacao({ momento: 'aberto', atracao: ABERTO, card: CARD }));
+		const ALTERADO_POR_CARD = api.envio(situacao({ momento: 'alterado', atracao: ABERTO, card: CARD }));
+
+		test('aberto ou alterado por card: você entrou no card → verde; a cópia do índice continua valendo', function () {
+			eq(api.avisos(resposta([{ codigo: 'designerEntrouNoCard' }]), ABERTO_POR_CARD), { avisos: [{ kind: 'success', codigo: 'designerEntrouNoCard', texto: 'você entrou no card' }], copiaVelha: false });
+			eq(api.avisos(resposta([{ codigo: 'designerJaEstavaNoCard' }]), ALTERADO_POR_CARD).avisos[0].kind, 'success');
+		});
+
+		test('sem resposta, aberto ou alterado por card: o projeto foi aberto / salvo; entre no card à mão', function () {
+			eq(api.avisos(null, ABERTO_POR_CARD), { avisos: [{ kind: 'warn', codigo: 'semResposta', texto: 'você não entrou no card LA NA MINHA TERRA 25/11 (o n8n não respondeu): o projeto foi aberto; entre no card à mão' }], copiaVelha: false });
+			eq(api.avisos(null, ALTERADO_POR_CARD).avisos[0].texto, 'você não entrou no card LA NA MINHA TERRA 25/11 (o n8n não respondeu): o projeto foi salvo; entre no card à mão');
+		});
+
+		test('fora do formato, aberto ou alterado por card: o aviso amarelo fala do card e do projeto aberto / salvo', function () {
+			eq(api.avisos({}, ABERTO_POR_CARD).avisos, [{ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi aberto; confira no Trello' }]);
+			eq(api.avisos({}, ALTERADO_POR_CARD).avisos[0].texto, 'não deu para confirmar a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi salvo; confira no Trello');
+		});
+
 		test('um código desconhecido vira amarelo (com o texto do n8n, ou o código)', function () {
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa', texto: 'algo novo' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'algo novo' }]);
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'o n8n respondeu outraCoisa' }]);
@@ -1520,6 +1580,8 @@ REGRAS.push({
 		eq(api.avisos('{"itens":[{"codigo":"atracaoCadastrada","texto":"ok"}]}', api.envio(situacao())).avisos[0].kind, 'success');
 		eq(api.avisos(null, api.envio(situacao())).avisos[0].kind, 'warn');
 		eq(api.envio(situacao({ atracao: { nome: 'X', nova: false }, card: { id: 'abc', claquete: 'X 01/12' } })).corpo.card.id, 'abc');
+		eq(api.envio(situacao({ momento: 'aberto', card: { id: 'abc', claquete: 'X' } })).corpo.atracao.nova, false);
+		eq(api.envio(situacao({ momento: 'alterado' })), null);
 	}
 });
 

@@ -323,6 +323,25 @@ const CHECKS = [
 		await p.click('#criar-go');
 		await p.waitForSelector('#proj-status.is-warn', { timeout: 6000 });
 	}],
+	// #51: o Alterar ligando o projeto a um card: o aviso do webhook do projeto no rodapé do editor (o n8n de mentira
+	// fora: o aviso amarelo fica)
+	['projeto: aviso do webhook do projeto no Alterar', 'projetista.html?mock=created', async (p) => {
+		await p.evaluate(async () => {
+			const prods = await window.PAD_MOCK_HOST.call('productions', {});
+
+			await window.PAD_MOCK_HOST.call('saveProductions', { productions: prods.productions, webhookDoProjeto: { url: 'https://workflows.jmbillard.com/webhook/projeto' } });
+			window.PAD_MOCK_N8N = function () {
+				return { status: 0, texto: '' };
+			};
+		});
+		await p.fill('#ed-atracao', '');
+		await p.type('#ed-atracao', 'domingao 25', { delay: 20 });
+		await p.waitForTimeout(1300);
+		await p.locator('#ed-atr-list .card-row').first().click();
+		await p.waitForTimeout(1200);
+		await p.click('#ed-save');
+		await p.waitForSelector('#proj-status.is-warn', { timeout: 6000 });
+	}],
 	['projeto: lista de atrações', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'dom');
 		await p.waitForTimeout(800);

@@ -925,7 +925,12 @@ PADX.projectPlan = function (a) {
 	};
 };
 
-// Abre um projeto que já está na pasta (a lista JÁ NA PASTA do projeto novo). a: { path } → { file }
+// Abre um projeto que já está na pasta (a lista JÁ NA PASTA do projeto novo).
+// a: { path, atracao, quadro, tipo, pasta, card } → { file, opened, envio }
+// envio: o aviso ao n8n quando o .aep foi aberto pelo JÁ NA PASTA de um card (o designer no card; regras/webhook-do-
+// projeto.js), ou null. a atração vai como o projeto aberto a gravou (padeiro:atracao, a pasta, o output); sem os
+// dados do padeiro, a que a janela escolheu. o card só vai no envio, nunca no projeto (ADR 0001). sem abrir (o
+// designer cancelou no "salvar o projeto aberto?" do After), nada é enviado
 PADX.projectOpenFile = function (a) {
 	var file = new File(padMountedPath(padPath(a.path)));
 
@@ -933,7 +938,22 @@ PADX.projectOpenFile = function (a) {
 
 	app.open(file);
 
-	return { file: padDisplayPath(file.fsName) };
+	var opened = !!app.project.file && padSamePath(app.project.file.fsName, file.fsName);
+	var envio = null;
+
+	if (opened && a.card) {
+		var m = padMetaRead();
+		var has = !!m.atracao;
+
+		envio = padEnvioDoProjeto('aberto', {
+			atracao: has ? m.atracao : a.atracao,
+			quadro: has ? m.quadro : a.quadro,
+			tipo: a.tipo,
+			card: a.card
+		}, has && m.pasta ? padNoVolumeSuffix(m.pasta) : String(a.pasta || ''), has ? padNoVolumeSuffix(m.output) : '', padDisplayPath(file.fsName));
+	}
+
+	return { file: padDisplayPath(file.fsName), opened: opened, envio: envio };
 };
 
 // A pasta existe e aceita arquivos novos? (o After Effects só diz "File couldn't be opened for writing")
@@ -1035,17 +1055,19 @@ PADX.projectCreate = function (a) {
 
 	// envio: o aviso ao n8n pelo webhook do projeto (a atração nova ou escolhida por um card), ou null. quem envia é o
 	// painel, em segundo plano (o Node primeiro, ADR 0003): a criação não espera nem falha por ele
-	return { file: aep, root: root, envio: padEnvioDoProjeto(a, root, output && output.exists ? padDisplayPath(output.fsName) : '', aep) };
+	return { file: aep, root: root, envio: padEnvioDoProjeto('criado', a, root, output && output.exists ? padDisplayPath(output.fsName) : '', aep) };
 };
 
-// o envio ao webhook do projeto de um projeto recém-criado (regras/webhook-do-projeto.js; docs/webhook-projeto.md), ou
-// null: a atração nova ou a escolhida por um card, fora do modo local e com a URL na configuração da equipe (aba TIPOS
-// DE PROJETO). a: os do projectCreate + { tipo, atracaoNova, card } (a janela de projeto manda). o card ({ id,
-// claquete }) só vai no envio, nunca nos metadados do projeto (ADR 0001). Um erro aqui não desfaz a criação: null
-function padEnvioDoProjeto(a, pasta, output, aep) {
+// o envio ao webhook do projeto (regras/webhook-do-projeto.js; docs/webhook-projeto.md), ou null.
+// momento: 'criado' (projectCreate: a atração nova ou a escolhida por um card), 'aberto' (projectOpenFile: o JÁ NA
+// PASTA de um card) ou 'alterado' (projectSave: o Alterar ligando o projeto a um card); a regra decide se envia (fora
+// do modo local e com a URL na configuração da equipe, aba TIPOS DE PROJETO). a: { atracao, quadro, tipo,
+// atracaoNova, card } (a janela de projeto manda). o card ({ id, claquete }) só vai no envio, nunca nos metadados do
+// projeto (ADR 0001). Um erro aqui não desfaz o que foi feito: null
+function padEnvioDoProjeto(momento, a, pasta, output, aep) {
 	try {
 		return PAD_WEBHOOK_DO_PROJETO.envio({
-			momento: 'criado',
+			momento: momento,
 			url: padLerSecao('webhookDoProjeto').url,
 			modoLocal: padLocalMode(),
 			versao: PADX_VERSION,
@@ -1221,7 +1243,10 @@ PADX.projectSaveNow = function () {
 
 // Editor (Salvar): grava os dados e salva o .aep onde ele deve ficar: na pasta de projetos da estrutura (criada se
 // faltar; as outras pastas, o coletar cria), com o nome da atração + o que é. com outro nome ou em outro lugar, salva lá (o arquivo antigo continua onde estava).
-// a: { atracao, quadro, what, designer, root, output, fileBase, fileName } → projectCurrent + { moved: caminho antigo }
+// a: { atracao, quadro, what, designer, root, output, fileBase, fileName, tipo, card } → projectCurrent + { moved:
+// caminho antigo, envio }
+// envio: com o card (o Alterar ligou o projeto a um card), o aviso ao n8n para pôr o designer no card, ou null. o card
+// só vai no envio, nunca nos metadados do projeto (ADR 0001); o Alterar nunca cadastra a atração (nova: false)
 // fileBase: o nome de hoje, num projeto antigo fora do padrão (a atração e o o que é não mudaram)
 // fileName: o nome do tipo (aba TIPOS DE PROJETO > ARQUIVO, com {o_que_e}), como no projeto novo: o tipo fixo (MOOD MENSAL)
 // mantém o nome pelo padrão dele ao salvar, em vez de virar a atração + o que é
@@ -1264,6 +1289,7 @@ PADX.projectSave = function (a) {
 	var cur = PADX.projectCurrent();
 
 	if (file && !same) cur.moved = padDisplayPath(file.fsName);
+	cur.envio = a.card ? padEnvioDoProjeto('alterado', { atracao: cur.atracao, quadro: cur.quadro, tipo: a.tipo, card: a.card }, cur.root, cur.output, cur.file) : null;
 
 	return cur;
 };

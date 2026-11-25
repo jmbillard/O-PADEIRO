@@ -5,23 +5,27 @@
 ---------------------------------------------------------------
 
 A janela de projeto (O PROJETISTA) avisa o n8n, pelo webhook do projeto, quando cria o projeto de uma atração nova
-ou de uma atração escolhida por um card do Trello: o n8n cadastra a atração nova no banco das atrações (e não duplica
+ou de uma atração escolhida por um card do Trello, e quando abre um .aep pelo JÁ NA PASTA de um card ou usa o Alterar
+para ligar o projeto a um card: o n8n cadastra a atração nova no banco das atrações (e não duplica
 a que já existir), liga o card à atração nova e põe o designer no card (achado na tabela de designers pelo login ou
 pela sigla). O formato do envio e da resposta, com exemplos, fica em docs/webhook-projeto.md.
 
   envio(situacao) → { url, corpo } ou null (nada a enviar)
     situacao: { momento, url, modoLocal, versao, atracao, card, designer }
-      momento  → 'criado' (o projeto criado; 'aberto' e 'alterado' ficam para a #51)
+      momento  → 'criado' (o projeto criado), 'aberto' (o .aep aberto pelo JÁ NA PASTA) ou 'alterado' (o Alterar
+                 salvou o projeto). outro (o clique num card, sem ação): nada é enviado
       url      → o webhook do projeto (configuração da equipe, aba TIPOS DE PROJETO); vazia: nada é enviado
       modoLocal→ true: nada é enviado
       versao   → a versão do padeiro
       atracao  → { nome, tipo, nova, quadro, pasta, output, aep }: pasta é a pasta do projeto e aep o caminho do
-                 .aep salvo
+                 .aep salvo (no aberto, o .aep aberto). no aberto e no alterado, o que se souber (o tipo pode vir vazio)
       card     → o card do Trello de onde veio a atração ({ id, claquete }) ou null (sem id vale como null). o card
                  só vai no envio, nunca no projeto (ADR 0001)
       designer → { login, sigla }: o login da máquina e a sigla do designer (o n8n acha o usuário do Trello por eles)
-    envia a atração nova (com ou sem card: o cadastro) e a atração conhecida escolhida por um card (só o designer no
-    card). a atração conhecida sem card não envia. o corpo leva o momento, a atração, o card, o designer e a versão.
+    criado: envia a atração nova (com ou sem card: o cadastro) e a atração conhecida escolhida por um card (só o
+    designer no card); a atração conhecida sem card não envia. aberto e alterado: só com o card (só o designer no
+    card) e nunca cadastram (nova: false, mesmo a atração que não está no índice). o corpo leva o momento, a atração,
+    o card, o designer e a versão.
 
   avisos(resposta, envio) → { avisos: [{ kind, codigo, texto }], copiaVelha }
     resposta: o que o n8n devolveu, { itens: [{ codigo, texto }] } (o objeto, o JSON em texto ou embrulhado numa
@@ -61,12 +65,15 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 		var nova = a.nova === true;
 
 		if (!url || s.modoLocal === true) return null;
-		if (s.momento != 'criado' || (!nova && !card)) return null;
+		if (s.momento != 'criado' && s.momento != 'aberto' && s.momento != 'alterado') return null;
+		// abrir e alterar só ligam ao card: nunca cadastram a atração
+		if (s.momento != 'criado') nova = false;
+		if (!nova && !card) return null;
 
 		return {
 			url: url,
 			corpo: {
-				momento: 'criado',
+				momento: s.momento,
 				atracao: { nome: texto(a.nome), tipo: texto(a.tipo), nova: nova, quadro: texto(a.quadro), pasta: texto(a.pasta), output: texto(a.output), aep: texto(a.aep) },
 				card: card,
 				designer: { login: texto(d.login), sigla: texto(d.sigla) },
@@ -91,8 +98,11 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 		return (e && e.corpo && e.corpo.atracao && texto(e.corpo.atracao.nome)) || 'a atração';
 	}
 
+	// o que aconteceu com o projeto, para os textos: criado, aberto (JÁ NA PASTA) ou salvo (o Alterar)
+	var FEITO = { criado: 'o projeto foi criado', aberto: 'o projeto foi aberto', alterado: 'o projeto foi salvo' };
+
 	// o que o envio pedia: o cadastro (a atração nova), o card (o designer no card) ou os dois. sem envio: o cadastro.
-	// noCard: 'no card <claquete>' (para os textos), ou '' sem card
+	// noCard: 'no card <claquete>' (para os textos), ou '' sem card. feito: o que aconteceu com o projeto
 	function pedidoDo(e) {
 		var c = e && e.corpo ? e.corpo : {};
 		var temCard = !!(c.card && texto(c.card.id));
@@ -100,12 +110,12 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 
 		if (temCard) noCard = texto('no card ' + texto(c.card.claquete));
 
-		return { cadastro: !temCard || !!(c.atracao && c.atracao.nova === true), noCard: noCard };
+		return { cadastro: !temCard || !!(c.atracao && c.atracao.nova === true), noCard: noCard, feito: FEITO.hasOwnProperty(c.momento) ? FEITO[c.momento] : FEITO.criado };
 	}
 
 	// o aviso amarelo sem resposta (o n8n fora): o que não foi feito
 	function textoSemResposta(nome, p) {
-		var semResposta = ' (o n8n não respondeu): o projeto foi criado; ';
+		var semResposta = ' (o n8n não respondeu): ' + p.feito + '; ';
 
 		if (!p.cadastro) return 'você não entrou ' + p.noCard + semResposta + 'entre no card à mão';
 		if (p.noCard) return nome + ' não foi cadastrada no banco das atrações e você não entrou ' + p.noCard + semResposta + 'avise a equipe';
@@ -115,7 +125,7 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 
 	// o aviso amarelo da resposta fora do formato: o que não deu para confirmar
 	function textoForaDoFormato(nome, p) {
-		var fora = ' (a resposta do n8n veio fora do formato): o projeto foi criado; ';
+		var fora = ' (a resposta do n8n veio fora do formato): ' + p.feito + '; ';
 
 		if (!p.cadastro) return 'não deu para confirmar a sua entrada ' + p.noCard + fora + 'confira no Trello';
 		if (p.noCard) return 'não deu para confirmar o cadastro de ' + nome + ' no banco das atrações nem a sua entrada ' + p.noCard + fora + 'confira na busca e no Trello';

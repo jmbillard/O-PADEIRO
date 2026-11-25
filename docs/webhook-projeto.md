@@ -1,18 +1,18 @@
 # webhook do projeto
 
 O que **O PROJETISTA** (a janela de projeto) manda ao n8n e o que espera de volta. O padeiro avisa o n8n, em segundo
-plano, ao criar o projeto:
+plano, quando o projeto é criado, aberto ou alterado. Ao criar o projeto:
 
 - de uma **atração nova** (uma que ainda não está no índice da busca): o n8n cadastra a atração no **banco das
   atrações**. Depois disso, a próxima busca já a acha, e o próximo designer não cria outra pasta para a mesma atração;
 - de uma atração escolhida por um **card** do Trello: o n8n põe o **designer** no card (achado na tabela de
   designers) e, se a atração é nova, também liga o card à atração nova no banco.
 
+E, com um card, também ao **abrir** um `.aep` pelo JÁ NA PASTA e ao **alterar** o projeto pelo Alterar: o n8n põe o
+designer no card.
+
 Este é o primeiro webhook que pede mudanças no banco: os outros (a [busca](acessorista.md), os
 [filmes recentes](webhook-filmes.md) e o [Trello](webhook-trello.md)) só leem.
-
-> Por enquanto, só o momento **criado**. Os momentos **aberto** (o `.aep` aberto pelo JÁ NA PASTA de um card) e
-> **alterado** (o Alterar ligando o projeto a um card) vêm na #51: o formato abaixo já tem o lugar deles.
 
 ## endereço
 
@@ -31,14 +31,27 @@ sem espaços, aspas nem símbolos do terminal): uma URL inválida é recusada ao
   cadastro (e, com o card, o card ligado e o designer no card);
 - ao **criar** o projeto de uma atração escolhida por um card (a atração do índice, o tipo fixo como MOOD MENSAL ou o
   filme do card): só para pôr o designer no card;
+- ao **abrir** um `.aep` pelo JÁ NA PASTA depois de escolher a atração por um card (momento `aberto`): só para pôr o
+  designer no card, e só depois de o After abrir o `.aep` (se o designer cancela no "salvar o projeto aberto?", nada
+  sai);
+- ao **salvar** pelo Alterar (o editor do projeto já criado) depois de trocar a atração por um card da lista (momento
+  `alterado`): só para pôr o designer no card, e só depois de salvar. Se o designer escolhe o card e depois troca a
+  atração do campo por outra, o card não vai;
 - **não** envia para a atração que já está no índice da busca escolhida sem card (pela busca, ou pelo tipo fixo e o
-  filme sem card), nem quando só se olha um card na lista, sem criar;
+  filme sem card), nem quando só se olha um card na lista (no projeto novo ou no Alterar), sem criar, abrir nem
+  salvar;
+- **não** envia ao abrir pelo JÁ NA PASTA nem ao salvar pelo Alterar sem card;
 - **não** envia no **modo local**;
 - **não** envia com o endereço vazio.
 
-**A criação nunca espera nem falha pelo envio.** O projeto é criado e salvo primeiro; o envio sai depois, em segundo
-plano, pelo Node do painel (`POST` com JSON, tempo máximo de 8 s). A janela mostra o aviso e só então fecha. Sem o
-Node (o plano B, ADR 0003), o host envia pelo `curl` (como o registro de uso), com o mesmo tempo máximo.
+**Criar, abrir e salvar nunca esperam nem falham pelo envio.** O projeto é criado (aberto, salvo) primeiro; o envio
+sai depois, em segundo plano, pelo Node do painel (`POST` com JSON, tempo máximo de 8 s). A janela mostra o aviso e
+só então fecha. Sem o Node (o plano B, ADR 0003), o host envia pelo `curl` (como o registro de uso), com o mesmo
+tempo máximo.
+
+**Abrir e alterar nunca cadastram a atração** (`atracao.nova` é sempre `false`): só ligam o projeto ao card. Mesmo
+quando o card do Alterar não tem atração (o nome tirado da claquete e um tipo dos chips), o Alterar cria as pastas e
+salva o `.aep` nelas, mas a atração não entra no banco das atrações: o cadastro é só ao criar o projeto pela janela.
 
 ## envio
 
@@ -64,14 +77,14 @@ A atração nova, sem card:
 
 | campo | o que é |
 | --- | --- |
-| `momento` | `criado` (o projeto criado). `aberto` (JÁ NA PASTA) e `alterado` (o Alterar) ficam para a #51. |
+| `momento` | `criado` (o projeto criado), `aberto` (o `.aep` aberto pelo JÁ NA PASTA de um card) ou `alterado` (o projeto salvo pelo Alterar, ligado a um card). |
 | `atracao.nome` | o nome da atração, como foi digitado ou tirado da claquete. |
 | `atracao.tipo` | o tipo de projeto (PROGRAMAS, NOVELAS, SHOWS…), o da aba TIPOS DE PROJETO. |
-| `atracao.nova` | `true`: a atração não estava no índice da busca (o n8n cadastra). `false`: a atração conhecida, escolhida por um card (o n8n só põe o designer no card). |
+| `atracao.nova` | `true`: a atração não estava no índice da busca (o n8n cadastra; só no `criado`). `false`: a atração conhecida escolhida por um card, ou qualquer `aberto` e `alterado` (o n8n só põe o designer no card). |
 | `atracao.quadro` | as pastas abaixo da atração, quando o projeto foi criado num quadro (`DANCA DOS FAMOSOS/FINAL`); `""` sem quadro. |
 | `atracao.pasta` | a pasta do projeto (a estrutura com `01_PROJETOS`, `02_ARQUIVOS`…), como o padeiro mostra o caminho. |
 | `atracao.output` | a pasta de output, se existir; `""` quando o designer pulou o output. |
-| `atracao.aep` | o caminho do `.aep` salvo. |
+| `atracao.aep` | o caminho do `.aep` salvo (no `aberto`, o `.aep` aberto). |
 | `card` | o card do Trello de onde veio a atração, ou `null` (a atração nova escolhida sem card). |
 | `card.id` | o id do card no Trello (o `card` do [índice do Trello](webhook-trello.md)). |
 | `card.claquete` | a claquete do card (o `claq` do índice), para o texto dos avisos e o registro. |
@@ -126,6 +139,52 @@ A atração conhecida escolhida por um card (o n8n só põe o designer no card; 
 
 Na atração conhecida, o `tipo` pode vir vazio (o índice da busca não o guarda).
 
+O `.aep` aberto pelo JÁ NA PASTA de um card (o n8n só põe o designer no card). A atração, a pasta e o output vêm do
+próprio projeto aberto (os dados que o padeiro gravou nele); num `.aep` sem esses dados, vale a atração escolhida na
+janela e a pasta dela, e o output vai vazio:
+
+```json
+{
+  "momento": "aberto",
+  "atracao": {
+    "nome": "Prêmio Rede Globo",
+    "tipo": "",
+    "nova": false,
+    "quadro": "",
+    "pasta": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO REDE GLOBO/2026",
+    "output": "//vfx-ml-sp/EDIT_IN_PLACE/PROMO/cdesign_output/SHOWS/PREMIO REDE GLOBO",
+    "aep": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/SHOWS/PREMIO REDE GLOBO/2026/01 PROJETOS/PREMIO 2026 CH PGM REGIONAL G5.aep"
+  },
+  "card": { "id": "6750aa11bb22cc33dd44ee04", "claquete": "PREMIO 2026 CH PGM REGIONAL G5" },
+  "designer": { "login": "jmbillard", "sigla": "JMBILLARD" },
+  "versao": "2.0 beta9"
+}
+```
+
+O projeto salvo pelo Alterar depois de trocar a atração por um card (o n8n só põe o designer no card). A atração, a
+pasta, o output e o `.aep` são os do projeto já salvo:
+
+```json
+{
+  "momento": "alterado",
+  "atracao": {
+    "nome": "Domingão com Huck",
+    "tipo": "",
+    "nova": false,
+    "quadro": "",
+    "pasta": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026",
+    "output": "//vfx-ml-sp/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/DOMINGAO COM HUCK/2026",
+    "aep": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/DOMINGAO COM HUCK/2026/01 PROJETOS/DOMINGAO COM HUCK SERVICO.aep"
+  },
+  "card": { "id": "6750aa11bb22cc33dd44ee09", "claquete": "DOMINGAO 25/11" },
+  "designer": { "login": "jmbillard", "sigla": "JMBILLARD" },
+  "versao": "2.0 beta9"
+}
+```
+
+A resposta do `aberto` e do `alterado` é a mesma da atração conhecida por card (`designerEntrouNoCard`,
+`designerJaEstavaNoCard`, `designerNaoEncontrado` ou `erro`).
+
 ## resposta
 
 Uma lista curta do que o n8n fez, cada item com um **código** e um **texto**:
@@ -160,11 +219,14 @@ certo, **amarelo** quando algum não deu. Sem `texto`, vale o texto padrão do c
   - a atração nova por card: `<nome> não foi cadastrada no banco das atrações e você não entrou no card <claquete>
     (o n8n não respondeu): o projeto foi criado; avise a equipe`;
   - a atração conhecida por card: `você não entrou no card <claquete> (o n8n não respondeu): o projeto foi criado;
-    entre no card à mão`.
+    entre no card à mão`;
+  - aberto ou alterado por card: o mesmo, com `o projeto foi aberto` ou `o projeto foi salvo` no lugar de `o projeto
+    foi criado`.
 - **Fora do formato** (sem `itens`, a lista vazia, um item sem `codigo`, o que não é JSON): um aviso amarelo, `não deu
   para confirmar o cadastro de <nome> no banco das atrações (a resposta do n8n veio fora do formato): o projeto foi
   criado; confira na busca` (por card: `… nem a sua entrada no card <claquete> … confira na busca e no Trello`; a
-  atração conhecida por card: `não deu para confirmar a sua entrada no card <claquete> … confira no Trello`).
+  atração conhecida por card: `não deu para confirmar a sua entrada no card <claquete> … confira no Trello`; aberto ou
+  alterado: com `o projeto foi aberto` ou `o projeto foi salvo`).
 
 Exemplos:
 
@@ -231,11 +293,15 @@ sozinha, em 10 minutos).
 - `extension/regras/webhook-do-projeto.js`: a regra do envio (`envio`, quando enviar e com quê) e da resposta
   (`avisos`, os avisos e a cópia velha). Os casos ficam em `extension/scripts/test-regras.js`.
 - `extension/regras/configuracao.js`: a seção `webhookDoProjeto` (`WEBHOOK_DO_PROJETO`), o endereço e a validação.
-- `extension/host/project.jsx`: `PADX.projectCreate` monta o envio (`padEnvioDoProjeto`) e devolve junto do projeto
-  criado (o card entra só no envio, não nos metadados); `PADX.projectWebhook` é o plano B pelo `curl`.
+- `extension/host/project.jsx`: o host monta o envio (`padEnvioDoProjeto`), porque é ele que sabe o `.aep` salvo ou
+  aberto e os dados gravados no projeto, e o devolve junto: `PADX.projectCreate` (criado), `PADX.projectOpenFile`
+  (aberto, só com o card e se o After abriu o `.aep`) e `PADX.projectSave` (alterado, só com o card). O card entra só
+  no envio, não nos metadados. `PADX.projectWebhook` é o plano B pelo `curl`.
 - `extension/client/js/projetista.js`: `createArgs()` manda o tipo, se a atração é nova e o card escolhido (`{ id,
-  claquete }`, só para o envio); `webhookDoProjeto()` envia
-  (`postJson()`, o Node do painel) e mostra os avisos (`showAvisos()`).
+  claquete }`, só para o envio); `openPicked()` (o JÁ NA PASTA) manda o card e a atração escolhida; `editorSave()`
+  (o Alterar) manda o card escolhido na lista do editor (`edCardDoEnvio()`: só enquanto a atração do campo for a do
+  card). `startEnvio()` / `webhookDoProjeto()` enviam (`postJson()`, o Node do painel) e `waitAvisos()` mostra os
+  avisos (`showAvisos()`) antes de a janela fechar.
 - `extension/client/js/search-index.js`: `markStale()`, a cópia marcada como velha.
 - `extension/client/productions.html` e `js/productions.js`: o campo na aba TIPOS DE PROJETO.
 - `extension/client/js/mock-host.js`: `projectWebhook`, o n8n de mentira do modo de teste (`window.PAD_MOCK_N8N`).

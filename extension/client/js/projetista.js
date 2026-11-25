@@ -2329,7 +2329,9 @@ projetos com o nome certo).
 
 	var FILE_ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 
-	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
+	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto). escolhido por um
+	// card: o host devolve o envio ao webhook do projeto (o designer no card, momento aberto), que sai em segundo plano
+	// depois de abrir; a janela fecha depois dos avisos
 	async function openPicked() {
 		if (state.busy || !state.openFile || !state.plan) return;
 
@@ -2337,11 +2339,15 @@ projetos com o nome certo).
 		$('criar-go').disabled = true;
 		$('criar-go').textContent = 'Abrindo…';
 		try {
-			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
+			var attr = flow.attr || {};
+			var res = await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile, atracao: flow.pick ? flow.pick.name : '', quadro: flow.pick ? flow.pick.quadro || '' : '', tipo: attr.tipo || '', pasta: state.plan.root || '', card: cardDoEnvio() });
+			var sending = startEnvio(res);
+
 			status('projeto aberto: ' + state.openFile, 'success');
 			$('criar-go').textContent = 'Aberto';
 			state.openFile = '';
-			setTimeout(function () {
+			setTimeout(async function () {
+				await waitAvisos(sending);
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
 				state.currentKey = null;
@@ -2525,9 +2531,15 @@ projetos com o nome certo).
 		// projeto (o host o monta junto do .aep salvo: regras/webhook-do-projeto.js). o card escolhido vai só no envio,
 		// nunca no projeto (ADR 0001): o host não o grava
 		var attr = flow.attr || {};
-		var card = state.card && state.card.card ? { id: String(state.card.card), claquete: String(state.card.claq || '') } : null;
 
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: card }, outTarget()));
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: cardDoEnvio() }, outTarget()));
+	}
+
+	// o card escolhido, como vai no envio ({ id, claquete }), ou null. só no envio, nunca no projeto (ADR 0001)
+	function cardDoEnvio(c) {
+		c = c === undefined ? state.card : c;
+
+		return c && c.card ? { id: String(c.card), claquete: String(c.claq || '') } : null;
 	}
 
 	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova e do card (docs/webhook-projeto.md) ---------- */
@@ -2590,17 +2602,35 @@ projetos com o nome certo).
 		return lido;
 	}
 
-	// os avisos na linha do rodapé: verde quando todos deram certo, amarelo quando algum não
-	function showAvisos(lido) {
+	// os avisos na linha do rodapé: verde quando todos deram certo, amarelo quando algum não. antes: um texto que fica
+	// na frente (o "salvo como" do Alterar)
+	function showAvisos(lido, antes) {
 		var warn = lido.avisos.some(function (a) {
 			return a.kind !== 'success';
 		});
 
-		status(lido.avisos.map(function (a) {
+		status((antes ? [antes] : []).concat(lido.avisos.map(function (a) {
 			return a.texto;
-		}).join(' · '), warn ? 'warn' : 'success');
+		})).join(' · '), warn ? 'warn' : 'success');
 
 		return warn ? 'warn' : 'success';
+	}
+
+	// o envio que o host devolveu (criar, abrir, salvar) sai em segundo plano → a promessa dos avisos, ou null (nada a
+	// enviar)
+	function startEnvio(res) {
+		return res && res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
+	}
+
+	// mostra os avisos do envio e os deixa à vista um instante (antes de a janela fechar); sem envio, não espera
+	async function waitAvisos(sending, antes) {
+		if (!sending) return;
+
+		var kind = showAvisos(await sending, antes);
+
+		await new Promise(function (resolve) {
+			setTimeout(resolve, WEBHOOK_READ[kind]);
+		});
 	}
 
 	async function create(args) {
@@ -2624,7 +2654,7 @@ projetos com o nome certo).
 			var res = await call('projectCreate', args || createArgs());
 			// a atração nova ou escolhida por um card: o aviso ao n8n, em segundo plano (a criação já terminou e não
 			// espera por ele)
-			var sending = res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
+			var sending = startEnvio(res);
 
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
 			// com o envio, ela fecha depois de mostrar os avisos dele (no máximo o tempo do envio + a leitura).
@@ -2633,13 +2663,7 @@ projetos com o nome certo).
 			status('projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 			$('criar-go').textContent = 'Criado';
 			setTimeout(async function () {
-				if (sending) {
-					var kind = showAvisos(await sending);
-
-					await new Promise(function (resolve) {
-						setTimeout(resolve, WEBHOOK_READ[kind]);
-					});
-				}
+				await waitAvisos(sending);
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
 				$('criar-go').textContent = 'Criar projeto';
@@ -2687,6 +2711,7 @@ projetos com o nome certo).
 			ensureBases().then(edFile);
 			state.edPicked = '';
 			state.edAttr = null;
+			state.edCard = null;
 			state.edWalk = null;
 			state.edLevelsDone = !!cur.quadro;
 			state.edRoot = cur.root || '';
@@ -3145,8 +3170,13 @@ projetos com o nome certo).
 	}
 
 	// um card na lista do editor: como no projeto novo, ele só aponta a atração (o filme; sem atração, o nome sugerido
-	// vai para o campo e a lista mostra os tipos da atração nova). o ano da claquete vale para a pasta
+	// vai para o campo e a lista mostra os tipos da atração nova). o ano da claquete vale para a pasta. o card fica
+	// guardado (edCard) só para o envio ao Salvar (o designer no card, momento alterado), enquanto a atração do campo
+	// for a dele; escolher o card, sem salvar, não envia nada. o Alterar nunca cadastra a atração nova do card: só
+	// liga o projeto ao card (o cadastro é só ao criar o projeto)
 	async function edPickCard(c, target) {
+		var picked = state.edCard = { card: cardDoEnvio(c), name: target.kind === 'nova' ? target.name : '' };
+
 		if (target.kind === 'nova') {
 			$('ed-atracao').value = target.name;
 			state.edPicked = '';
@@ -3165,7 +3195,15 @@ projetos com o nome certo).
 		if (y) ATR.setYear(y);
 		attr = atYear(attr);
 		ATR.setYear(keep === new Date().getFullYear() ? 0 : keep);
+		picked.name = attr.name;
 		edPick(attr);
+	}
+
+	// o card do envio do Alterar: o escolhido na lista, se a atração do campo ainda é a dele; senão, null
+	function edCardDoEnvio(atracao) {
+		var c = state.edCard;
+
+		return c && c.card && aepName(c.name) && aepName(c.name) === aepName(atracao) ? c.card : null;
 	}
 
 	// uma pasta da lista (clique ou Enter): entra nela e, com pastas dentro, mostra o nível de dentro; sem pastas, a
@@ -3266,6 +3304,9 @@ projetos com o nome certo).
 
 	// salvar: grava os dados, leva o .aep para a pasta dele com o nome certo e fecha a janela
 	async function editorSave() {
+		// os avisos do envio ainda à vista: o projeto já foi salvo
+		if (state.busy) return;
+
 		var p = edParts();
 
 		// as pastas digitadas e ainda não aceitas: fica o digitado (o que existe é usado, o resto é novo)
@@ -3283,15 +3324,29 @@ projetos com o nome certo).
 
 		try {
 			// o nome do .aep: o de hoje fora do padrão (edKeep), o filme com o ano ou o do tipo (MOOD MENSAL: o tipo fixo
-			// mantém o nome pelo padrão dele, com o mês do nome de hoje); senão, o host faz o último nível + o que é
-			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() || edTypeName() });
+			// mantém o nome pelo padrão dele, com o mês do nome de hoje); senão, o host faz o último nível + o que é.
+			// tipo e card: só para o envio ao webhook do projeto (o card escolhido na lista: o designer no card); o host
+			// não grava o card no projeto (ADR 0001)
+			var cur = await call('projectSave', { atracao: atracao, quadro: quadro, what: $('ed-what').value.trim(), designer: $('ed-user').value, root: state.edRoot || $('ed-root').value, output: state.edOutput, fileBase: state.edKeep || edYearBase() || edTypeName(), tipo: state.edAttr ? state.edAttr.tipo || '' : '', card: edCardDoEnvio(atracao) });
+			// ligado a um card: o aviso ao n8n, em segundo plano (o projeto já foi salvo)
+			var sending = startEnvio(cur);
+			var moved = cur.moved ? 'salvo como ' + cur.fileName + '. o arquivo antigo continua em ' + cur.moved + '.' : '';
 
+			delete cur.envio;
 			state.editorKey = null;
 			state.current = cur;
 			renderEditor(cur);
 			// salvo com outro nome ou em outro lugar: o arquivo antigo continua lá (a janela fica aberta para avisar)
-			if (cur.moved) status('salvo como ' + cur.fileName + '. o arquivo antigo continua em ' + cur.moved + '.', 'success');
-			else PAD_BRIDGE.closePanel();
+			if (moved) status(moved, 'success');
+			if (sending) {
+				state.busy = true; // a atualização a cada 1,5 s não redesenha enquanto os avisos estão à vista
+				try {
+					await waitAvisos(sending, moved);
+				} finally {
+					state.busy = false;
+				}
+			}
+			if (!moved) PAD_BRIDGE.closePanel();
 		} catch (err) {
 			status(err.message, 'error');
 		}

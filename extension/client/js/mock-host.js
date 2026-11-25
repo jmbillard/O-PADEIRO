@@ -284,6 +284,23 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	// a sigla igual à do login (JMBILLARD, no host de teste) fica vazia, como no host
 	var MOCK_LOGIN = 'JMBILLARD';
 
+	// o envio ao webhook do projeto, como o padEnvioDoProjeto do host (regras/webhook-do-projeto.js): momento 'criado',
+	// 'aberto' ou 'alterado'; a regra decide se envia (fora do modo local, com a URL). a: { atracao, quadro, tipo,
+	// atracaoNova, card }
+	function mockEnvio(momento, a, pasta, output, aep) {
+		var regra = window.PAD_WEBHOOK_DO_PROJETO;
+
+		return regra ? regra.envio({
+			momento: momento,
+			url: mockLer('webhookDoProjeto').url,
+			modoLocal: api.searchInfo().local,
+			versao: api.ping().version,
+			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
+			card: a.card || null,
+			designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
+		}) : null;
+	}
+
 	function mockPrefsDesteComputador() {
 		var sigla = mockLer('sigla');
 
@@ -1461,20 +1478,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output || '' /* sem output: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
-			// o envio ao webhook do projeto, como no host (regras/webhook-do-projeto.js): a atração nova ou escolhida por um
-			// card, fora do modo local. o card só vai no envio (PAD_MOCK_CUR, o projeto, não o guarda: ADR 0001)
-			var regra = window.PAD_WEBHOOK_DO_PROJETO;
-			var envio = regra ? regra.envio({
-				momento: 'criado',
-				url: mockLer('webhookDoProjeto').url,
-				modoLocal: api.searchInfo().local,
-				versao: api.ping().version,
-				atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: plan.root, output: a.output || '', aep: window.PAD_MOCK_CUR.file },
-				card: a.card || null,
-				designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
-			}) : null;
-
-			return { file: window.PAD_MOCK_CUR.file, root: plan.root, envio: envio };
+			// o envio ao webhook do projeto, como no host: a atração nova ou escolhida por um card. o card só vai no envio
+			// (PAD_MOCK_CUR, o projeto, não o guarda: ADR 0001)
+			return { file: window.PAD_MOCK_CUR.file, root: plan.root, envio: mockEnvio('criado', a, plan.root, a.output || '', window.PAD_MOCK_CUR.file) };
 		},
 
 		// o plano B do envio (o curl do host): o n8n de mentira. window.PAD_MOCK_N8N(url, corpo) → { status, texto } (os
@@ -1517,6 +1523,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var cur = api.projectCurrent();
 
 			if (old && old !== file) cur.moved = old;
+			// o Alterar ligando o projeto a um card: o envio do designer no card, como no host (o card não vai no projeto)
+			cur.envio = a.card ? mockEnvio('alterado', { atracao: cur.atracao, quadro: cur.quadro, tipo: a.tipo, card: a.card }, cur.root, cur.output, cur.file) : null;
 
 			return cur;
 		},
@@ -1796,10 +1804,12 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			};
 		},
 
+		// o .aep aberto pelo JÁ NA PASTA: de um card, o envio do designer no card, como no host (o .aep do teste não tem
+		// os dados do padeiro: vale a atração que a janela escolheu)
 		projectOpenFile: function (a) {
 			window.PAD_MOCK_OPENED_FILE = a.path;
 
-			return { file: a.path };
+			return { file: a.path, opened: true, envio: a.card ? mockEnvio('aberto', a, a.pasta || '', '', a.path) : null };
 		},
 
 		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)
