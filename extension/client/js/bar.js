@@ -546,7 +546,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 		{
 			key: 'coletar',
 			label: 'Coletar',
-			icon: 'collect',
+			icon: 'coletar',
 			name: 'O CATADOR',
 			tips: [L_CLICK + 'coletar os arquivos do projeto na pasta dele', R_CLICK + 'ver os arquivos do projeto e resolver os que faltam'],
 			left: function () {
@@ -1587,7 +1587,7 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 	   vez a cada 30 s) e a cada 5 minutos. sem a rede, ou trabalhando (coletar, fontes, tour), espera
 	   ========================================================= */
 
-	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/collect.jsx', 'host/productions.jsx'];
+	var CODE_FILES = ['client/bar.html', 'client/js/bar.js', 'client/css/bar.css', 'client/js/bridge.js', 'client/js/util.js', 'client/js/tooltip.js', 'host/index.jsx', 'host/api.jsx', 'host/project.jsx', 'host/coletar.jsx', 'host/productions.jsx'];
 	var code = { stamp: null, at: 0, when: 0 };
 
 	// a pasta extension (a de cima da client desta página), como o cep.fs a entende

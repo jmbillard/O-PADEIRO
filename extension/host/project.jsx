@@ -7,7 +7,7 @@
 
 A janela de projeto (O PROJETISTA) cria o projeto pela atração (abaixo) e edita os dados dele (a atração, o que é, o designer e as
 pastas). Coletar os
-arquivos é do botão COLETAR (collect.jsx).
+arquivos é do botão COLETAR (coletar.jsx).
 
 'TIPOS_DE_PROJETO' (antes 'PROJECT') no O_PADEIRO_GLOBAL_config.json (aba TIPOS DE PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
 (regras/configuracao.js: a limpeza, os tokens e o padrão):

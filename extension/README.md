@@ -70,10 +70,10 @@ O-PADEIRO/
    │  ├─ api.jsx                 → PADX_call e os métodos da barra e dos templates
    │  ├─ finder.jsx              → O ACESSORISTA e o conversor
    │  ├─ productions.jsx         → lista de produções (gravação com conferência de conflito)
-   │  ├─ maker.jsx               → criador de templates
+   │  ├─ confeiteiro.jsx         → criador de templates
    │  ├─ fontbank.jsx            → banco de fontes (as fontes usadas, instalar do banco, trocar no projeto)
    │  ├─ project.jsx             → janela de projeto (dados no XMP, retranca, salvar na pasta da retranca)
-   │  ├─ collect.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
+   │  ├─ coletar.jsx             → botão COLETAR (cópia dos arquivos e das sequências para a pasta do projeto)
    │  └─ lib/                    → funções de apoio (texto, arquivos, layers, renomear, projeto, metadados, rede, fontes)
    └─ scripts/                   → instaladores de desenvolvimento (install-mac.sh, install-win.ps1), as checagens de UI (check-corners.js, check-footers.js, check-focus-crop.js e check-scroll-corners.js, com as telas em ui-states.js), a do glossário (check-glossario.js), o teste das regras (test-regras.js) e a do ternário (check-ternary.js), o retrato da pasta de ícones para o modo de teste (build-icons.js) e as imagens da documentação (doc-media.js)
 ```
@@ -111,7 +111,7 @@ o client chama `PAD_BRIDGE.call('método', { ...argumentos })`, que vira `PADX_c
 var info = await PAD_BRIDGE.call('templateInfo', { uri: node.uri });
 ```
 
-- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `maker.jsx`, `project.jsx`, `collect.jsx`).
+- **métodos** → cada um é uma função `PADX.<nome>` no host (`api.jsx`, `finder.jsx`, `productions.jsx`, `confeiteiro.jsx`, `project.jsx`, `coletar.jsx`).
 - **avisos das libs** → as libs avisam com `alert()`. dentro de `padCollect(fn)` esses avisos são recolhidos e voltam como `{ messages, data }`, para o painel mostrar no próprio estilo.
 - **desfazer** → `padGroup('nome', fn)` agrupa as alterações num único passo de *undo*.
 - **operações longas em passos** → o After Effects ocupado congela o painel. por isso o trabalho é dividido em chamadas curtas, e o painel anima entre elas:

@@ -207,6 +207,9 @@
 	// icons/_snapshot.js (node extension/scripts/build-icons.js).
 	var iconCache = null;
 	var iconAliases = {}; // nome antigo → o ícone que ficou no lugar ({ "key", "same" } no icons.json)
+	// os ícones que mudaram de nome junto com o código (o termo evitado saiu do nome do arquivo): o nome antigo, lido
+	// por compatibilidade, continua achando o ícone já escolhido numa produção ou num tipo
+	var ICONES_ANTIGOS = { 'barra-collect': 'barra-coletar' }; // nome antigo → o novo, lido por compatibilidade
 
 	function iconDir() {
 		var dir = decodeURI(location.pathname).replace(/\/[^\/]*$/, '') + '/icons';
@@ -276,7 +279,7 @@
 	function findIcon(key) {
 		var list = iconList();
 
-		key = iconAliases[key] || key;
+		key = ICONES_ANTIGOS[key] || iconAliases[key] || key;
 
 		for (var i = 0; i < list.length; i++) {
 			if (list[i].key === key) return list[i];

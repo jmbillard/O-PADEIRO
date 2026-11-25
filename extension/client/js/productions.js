@@ -4061,7 +4061,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	// Ícone de cada aba: o da ferramenta da barra, quando há uma (js/icons.js, com as animações de css/icons.css);
 	// as outras têm desenho próprio, com a animação em productions.css (.ti-*).
-	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'collect', search: 'search', 'tipos-de-projeto': 'project', fonts: 'fonts' };
+	var TAB_TOOL_ICONS = { prods: 'templates', rename: 'rename', organize: 'organize', collect: 'coletar', search: 'search', 'tipos-de-projeto': 'project', fonts: 'fonts' };
 
 	var TAB_ICONS = {
 		machine: '<g class="ti-user"><circle class="ti-head" cx="12" cy="8.5" r="3.5" /><path class="ti-body" d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></g>',
