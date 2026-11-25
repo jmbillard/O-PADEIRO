@@ -170,13 +170,47 @@ _Avoid_: versão (sem "do After")
 
 ### Busca
 
+**Acessorista**:
+O painel do botão Buscar, com a busca de caminhos e a busca nos textos.
+
+**Busca de caminhos**:
+A busca das pastas e dos pedidos da equipe pelas fontes: caminhos fixos, atrações, filmes, Teams e Trello.
+_Avoid_: busca (sozinha) para as outras buscas
+
+**Busca nos textos**:
+A busca nos textos dos layers do projeto aberto.
+
+**Fonte**:
+Cada origem de resultados da busca de caminhos (caminhos fixos, atrações, filmes, Teams, Trello), que dá para ligar e
+desligar.
+_Avoid_: categoria
+
+**Caminho fixo**:
+Uma pasta da equipe que sempre aparece na busca de caminhos, cadastrada na configuração (#INGEST, BASES VALENDO).
+_Avoid_: servidor (para a fonte)
+
 **Índice da busca**:
-O conjunto de atrações, filmes, cards do Trello e pastas citadas no Teams em que o painel busca, renovado de tempos em
-tempos.
+O conjunto de atrações, filmes, cards do Trello e mensagens do Teams com caminhos, montado pela equipe e baixado pelo
+painel.
 _Avoid_: cache, base
 
-**Acessorista**:
-O painel da busca de caminhos: as pastas das atrações, do Teams e do Trello.
+**Cópia**:
+O índice da busca salvo no computador, que vale enquanto um novo não chega e quando não há rede.
+_Avoid_: cache
+
+**Mensagem do Teams**:
+Uma mensagem de um chat do Teams que cita um caminho, com quem mandou, o cargo e quando.
+
+**Mapa de drives**:
+A tabela da equipe que liga cada letra de drive do Windows ao caminho de rede, para os caminhos valerem no Mac e no
+Windows.
+
+**Modo local**:
+Trabalhar sem a rede da equipe: a busca usa só a cópia ou o índice local, e o que iria para a rede vai para o output
+local.
+
+**Índice local**:
+O índice montado por um computador com as pastas que ele escolheu, no lugar do índice da busca.
 
 ## Relationships
 
