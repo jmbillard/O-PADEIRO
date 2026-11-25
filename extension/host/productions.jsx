@@ -276,11 +276,11 @@ function padApplyConfig() {
 
 	PAD_ORGANIZE = padReadOrganize();
 
-	// busca de caminhos: o endereço do webhook novo e os caminhos fixos do servidor
+	// busca de caminhos: o endereço do webhook da busca e os caminhos fixos
 	var search = padReadSearch();
 
-	PS_V2_URL = search.url;
-	PS_SERVIDOR = search.servidor;
+	PS_INDEX_URL = search.url;
+	PS_CAMINHOS_FIXOS = search.caminhosFixos;
 }
 
 /*
@@ -534,10 +534,11 @@ function padReadOrganize() {
 > busca de caminhos (aba BUSCAR da configuração)
 ---------------------------------------------------------------
 
-'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, servidor: [{ name, path }] }.
-  url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
-  servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
+'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, caminhosFixos: [{ name, path }] }.
+  url           → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto
+  caminhosFixos → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
 Sem 'SEARCH' (ou no formato antigo, de antes do índice da equipe): o webhook e os caminhos fixos padrão.
+A chave dos caminhos fixos já foi 'servidor': lida quando não há 'caminhosFixos'; ao gravar, só 'caminhosFixos'.
 
 */
 
@@ -545,23 +546,27 @@ var PAD_DEFAULT_SEARCH = null;
 
 function padDefaultSearch() {
 	if (!PAD_DEFAULT_SEARCH) {
-		var servidor = [];
+		var caminhosFixos = [];
 
-		for (var i = 0; i < PS_LOCAL_SOURCES.servidor.length; i++) {
-			servidor.push({ name: PS_LOCAL_SOURCES.servidor[i].atracao, path: psSlashes(PS_LOCAL_SOURCES.servidor[i].win.caminho) });
+		for (var i = 0; i < PS_DEFAULT_CAMINHOS_FIXOS.length; i++) {
+			caminhosFixos.push({ name: PS_DEFAULT_CAMINHOS_FIXOS[i].name, path: psSlashes(PS_DEFAULT_CAMINHOS_FIXOS[i].path) });
 		}
 
-		PAD_DEFAULT_SEARCH = { url: PS_V2_DEFAULT_URL, servidor: servidor };
+		PAD_DEFAULT_SEARCH = { url: PS_INDEX_DEFAULT_URL, caminhosFixos: caminhosFixos };
 	}
 
 	return JSON.parse(JSON.stringify(PAD_DEFAULT_SEARCH));
 }
 
-// Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
+// Valida e normaliza a busca vinda do painel (ou lida da configuração). Lança Error com a mensagem.
 function padCleanSearch(o) {
-	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (o índice por arquivo, que saiu): os padrões
+	// a chave antiga ('servidor') vale enquanto a configuração não for gravada de novo (aí vai só 'caminhosFixos')
+	var list = o.caminhosFixos;
 
-	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, servidor: [] };
+	if (list == null) list = o.servidor;
+	if (o.url == null && list == null) return padDefaultSearch(); // o formato antigo (o índice por arquivo, que saiu): os padrões
+
+	var clean = { url: padTrim(o.url) || PS_INDEX_DEFAULT_URL, caminhosFixos: [] };
 	var seen = {};
 
 	// o endereço também vai para a linha de comando do curl (plano B): sem espaços, aspas nem símbolos do terminal
@@ -569,16 +574,16 @@ function padCleanSearch(o) {
 		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 	}
 
-	for (var i = 0; i < (o.servidor || []).length; i++) {
-		var name = padTrim(o.servidor[i].name).replace(/\s+/g, ' ');
-		var path = padTrim(o.servidor[i].path).replace(/\\/g, '/').replace(/\/+$/, '');
+	for (var i = 0; i < (list || []).length; i++) {
+		var name = padTrim(list[i].name).replace(/\s+/g, ' ');
+		var path = padTrim(list[i].path).replace(/\\/g, '/').replace(/\/+$/, '');
 
 		if (name == '' && path == '') continue;
 		if (name == '' || path == '') throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
 		if (seen[name.toUpperCase()]) throw new Error('#PAD_086 - busca: o caminho fixo "' + name + '" aparece mais de uma vez.');
 
 		seen[name.toUpperCase()] = true;
-		clean.servidor.push({ name: name, path: path });
+		clean.caminhosFixos.push({ name: name, path: path });
 	}
 
 	return clean;

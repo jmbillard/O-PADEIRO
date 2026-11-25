@@ -475,22 +475,22 @@ function padCompact(text) {
 }
 
 // O índice da busca (a cópia guardada; baixa de novo se estiver velha e houver rede).
-// As atrações do índice da busca (webhook novo, formato v2), no formato que a janela usa:
+// As atrações do índice da busca, no formato que a janela usa:
 // [{ category, groups: [{ name, projetos, outputs, caminhos, patterns }] }]. A cópia é a mesma do acessorista
-// (busca_v2.json): baixada de novo se tiver mais de 30 s (no modo local, só a cópia).
+// (psCopyToRead): baixada de novo se tiver mais de 30 s (no modo local, só a cópia).
 function padIndexGroups() {
-	var cacheFile = new File(tempFolder.fsName + '/busca_v2.json');
+	var copy = psCopyToRead();
 	var text = '';
 
-	if (!(padLocalMode() && cacheFile.exists) && !psIsFresh(cacheFile)) {
+	if (!(padLocalMode() && copy.exists) && !psCopyIsFresh(copy)) {
 		try {
 			text = PADX.searchDownload({}).text;
 		} catch (err) { }
 	}
 
-	if (!text && cacheFile.exists) {
+	if (!text && copy.exists) {
 		try {
-			text = readFileContent(cacheFile);
+			text = readFileContent(copy);
 		} catch (err) { }
 	}
 
@@ -503,6 +503,7 @@ function padIndexGroups() {
 		if (data instanceof Array && data[0] && typeof data[0].indice == 'string') data = JSON.parse(data[0].indice);
 	} catch (err) { }
 
+	// o 'v' é um campo do JSON da equipe (o índice montado no n8n)
 	if (!data || data.v != 2) throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 
 	var roots = data.roots || {};

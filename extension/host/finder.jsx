@@ -40,11 +40,12 @@ PADX.requestedTab = function () {
 
 */
 
-// O que o painel precisa para baixar o índice sozinho. local: o modo local (só a cópia, sem a rede).
-// → { url, films, cache, local, platform, servidor, mode, folders, foldersOnly, daily, localIndex }
+// O que o painel precisa para baixar o índice sozinho. local: o modo local (só a cópia, sem a rede). copia: a cópia
+// do índice (onde o painel grava); copiaAntiga: a do nome de antes, lida enquanto não há a de agora.
+// → { url, films, copia, copiaAntiga, local, platform, caminhosFixos, mode, folders, foldersOnly, daily, localIndex }
 PADX.searchInfo = function () {
-	var list = PS_SERVIDOR || padDefaultSearch().servidor;
-	var servidor = [];
+	var list = PS_CAMINHOS_FIXOS || padDefaultSearch().caminhosFixos;
+	var caminhosFixos = [];
 
 	// o servidor e o share saem do caminho de rede (//servidor/share/...); no Mac (/Volumes/SHARE/...), o share
 	// (sem o -1 a -5 de um volume montado de novo) e o servidor pelo mapa de drives, na hora de abrir
@@ -59,19 +60,20 @@ PADX.searchInfo = function () {
 		if (unc) share = unc[2];
 		else if (vol) share = vol[1].replace(/-[1-5]$/, '');
 
-		servidor.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
+		caminhosFixos.push({ name: list[i].name, path: path, server: unc ? unc[1] : '', share: share });
 	}
 
 	// o índice local (configuração > buscar, neste computador): as pastas deste computador, lidas pelo painel
 	var search = padMachineSearch(padMachineData().search);
 
 	return {
-		url: PS_V2_URL,
+		url: PS_INDEX_URL,
 		films: PS_FILMS_URL,
-		cache: tempFolder.fsName + '/busca_v2.json',
+		copia: psCopyFile().fsName,
+		copiaAntiga: psOldCopyFile().fsName,
 		local: padLocalMode(),
 		platform: appOs,
-		servidor: servidor,
+		caminhosFixos: caminhosFixos,
 		mode: search.mode,
 		folders: search.folders,
 		foldersOnly: search.foldersOnly,
@@ -83,26 +85,26 @@ PADX.searchInfo = function () {
 // Modo local, sem o Node do painel: a cópia do índice salva neste computador, sem tocar na rede.
 // →  { text, modified } (text vazio: não há cópia; modified em ms)
 PADX.searchCopy = function () {
-	var cache = new File(tempFolder.fsName + '/busca_v2.json');
+	var copy = psCopyToRead();
 
-	if (!cache.exists) return { text: '', modified: 0 };
+	if (!copy.exists) return { text: '', modified: 0 };
 
-	return { text: readFileContent(cache), modified: cache.modified.getTime() };
+	return { text: readFileContent(copy), modified: copy.modified.getTime() };
 };
 
 // Plano B: baixa o índice da busca pelo curl (quando o painel não conseguir sozinho) e devolve o texto.
 // a: { force }  →  { text, downloaded }
 PADX.searchDownload = function (a) {
-	var cache = new File(tempFolder.fsName + '/busca_v2.json');
-	var part = new File(cache.fsName + '.part');
+	var copy = psCopyFile();
+	var part = new File(copy.fsName + '.part');
 	var downloaded = false;
 
 	if (!padLocalMode()) {
 		if (part.exists) part.remove();
 
 		var cmd = appOs == 'Win'
-			? 'cmd.exe /c curl.exe -s -L --compressed --connect-timeout 5 --max-time 25 -o "' + part.fsName.replace(/"/g, '') + '" "' + PS_V2_URL + '"'
-			: 'curl -s -L --compressed --connect-timeout 5 --max-time 25 -o ' + psShellQuote(part.fsName) + ' ' + psShellQuote(PS_V2_URL);
+			? 'cmd.exe /c curl.exe -s -L --compressed --connect-timeout 5 --max-time 25 -o "' + part.fsName.replace(/"/g, '') + '" "' + PS_INDEX_URL + '"'
+			: 'curl -s -L --compressed --connect-timeout 5 --max-time 25 -o ' + psShellQuote(part.fsName) + ' ' + psShellQuote(PS_INDEX_URL);
 
 		try {
 			system.callSystem(cmd);
@@ -111,9 +113,10 @@ PADX.searchDownload = function (a) {
 		if (part.exists && part.length > 0) {
 			var text = readFileContent(part);
 
+			// o "v": 2 é um campo do JSON da equipe (o índice montado no n8n), não um nome do padeiro
 			if (/^\s*\{\s*"v"\s*:\s*2/.test(text)) {
-				if (cache.exists) cache.remove();
-				part.rename(cache.name);
+				if (copy.exists) copy.remove();
+				part.rename(copy.name);
 				downloaded = true;
 			} else {
 				part.remove();
@@ -121,9 +124,11 @@ PADX.searchDownload = function (a) {
 		}
 	}
 
-	if (!cache.exists) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
+	var read = psCopyToRead();
 
-	return { text: readFileContent(new File(tempFolder.fsName + '/busca_v2.json')), downloaded: downloaded };
+	if (!read.exists) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
+
+	return { text: readFileContent(read), downloaded: downloaded };
 };
 
 // Abre a pasta de um caminho (no macOS, monta o volume SMB se for preciso).

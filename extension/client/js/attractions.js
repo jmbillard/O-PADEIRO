@@ -37,7 +37,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   a completa vem primeiro (a mais específica antes); sem o painel no AE (navegador de teste), pergunta ao host.
 	   --------------------------------------------------------------- */
 
-	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [] };
+	var SEARCH_INDEX = window.PAD_SEARCH_INDEX; // qual índice, a cópia e o download (js/search-index.js)
+	// copyNote: no modo local, a linha com a data da cópia em uso ('' fora dele)
+	var source = { info: null, list: null, stamp: '', refreshing: null, cards: [], copyNote: '' };
 	var CARD_DAYS = 7; // os cards do Trello que viram sugestão na claquete: os que entraram nos últimos 7 dias
 	var INDEX_MAX_AGE = 10 * 60 * 1000; // a cópia do índice do webhook: baixada de novo se tiver mais de 10 min
 
@@ -53,61 +55,16 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	function refreshIndex(fs) {
 		if (source.refreshing) return source.refreshing;
 
-		var url = source.info.url;
-		var file = source.info.cache;
+		var info = source.info;
 
-		source.refreshing = new Promise(function (resolve, reject) {
-			var https = require(/^https:/i.test(url) ? 'https' : 'http');
-			var zlib = require('zlib');
-			var req = https.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: 25000 }, function (res) {
-				if (res.statusCode !== 200) {
-					res.resume();
-					reject(new Error('HTTP ' + res.statusCode));
-					return;
-				}
-
-				var stream = /gzip/i.test(res.headers['content-encoding'] || '') ? res.pipe(zlib.createGunzip()) : res;
-				var chunks = [];
-
-				stream.on('data', function (c) {
-					chunks.push(c);
-				});
-				stream.on('error', reject);
-				stream.on('end', function () {
-					try {
-						var text = Buffer.concat(chunks).toString('utf8');
-
-						unwrapIndex(JSON.parse(text)); // confere antes de trocar a cópia
-						fs.writeFileSync(file + '.part', text, 'utf8');
-						fs.renameSync(file + '.part', file);
-						resolve();
-					} catch (err) {
-						reject(err);
-					}
-				});
-			});
-
-			req.on('timeout', function () {
-				req.destroy(new Error('tempo esgotado'));
-			});
-			req.on('error', reject);
+		source.refreshing = SEARCH_INDEX.download(info.url).then(function (text) {
+			SEARCH_INDEX.unwrap(JSON.parse(text)); // confere antes de trocar a cópia
+			SEARCH_INDEX.writeCopy(fs, info, text);
 		}).finally(function () {
 			source.refreshing = null;
 		});
 
 		return source.refreshing;
-	}
-
-	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
-	function unwrapIndex(data) {
-		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
-
-		var item = data instanceof Array ? data[0] : data;
-
-		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
-		if (item && item.indice && typeof item.indice === 'object') return item.indice;
-
-		return data;
 	}
 
 	// a pasta da atração no caminho do projeto, como mais um nome de busca: …/PROGRAMAS/BBB/BBB 2026/01 PROJETOS →
@@ -233,7 +190,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	// é baixada em segundo plano pelo Node do painel (o curl do host trava o After Effects e a digitação). só sem
 	// cópia nenhuma o host baixa (plano B). no modo local, só a cópia: nada de rede.
 	async function webhookCandidates(fs) {
-		var file = source.info.cache;
+		var copyOnly = SEARCH_INDEX.choice(source.info) === 'copia';
+		var file = SEARCH_INDEX.copyPath(fs, source.info);
 		var stat = null;
 
 		try {
@@ -242,15 +200,17 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		var text = '';
 
-		if (source.info.local) {
+		if (copyOnly) {
 			if (!stat) throw new Error('#PAD_058 - modo local: não há cópia do índice da busca neste computador. com a rede da equipe, desligue o modo local; ou escolha o índice local em configuração > buscar.');
 		} else if (!stat) {
 			try {
 				await refreshIndex(fs);
+				file = SEARCH_INDEX.copyPath(fs, source.info);
 				stat = fs.statSync(file);
 			} catch (err) {
 				try {
 					text = (await call('searchDownload', {})).text;
+					file = SEARCH_INDEX.copyPath(fs, source.info);
 					stat = fs.statSync(file);
 				} catch (err2) { }
 			}
@@ -258,7 +218,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			refreshIndex(fs).catch(function () { });
 		}
 
-		var stamp = 'webhook|' + (stat ? stat.mtimeMs : 0);
+		var stamp = 'webhook|' + file + '|' + (stat ? stat.mtimeMs : 0);
 
 		if (source.list && source.stamp === stamp) return source.list;
 
@@ -268,7 +228,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			throw new Error('#PAD_058 - não foi possível carregar o índice das atrações. verifique a conexão e o workflow.');
 		}
 
-		var data = unwrapIndex(JSON.parse(text));
+		var data = SEARCH_INDEX.unwrap(JSON.parse(text));
 		var roots = data.roots || {};
 		var full = function (p) {
 			var m = /^([a-z]+):(.*)$/.exec(p || '');
@@ -277,6 +237,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		};
 
 		source.stamp = stamp;
+		source.copyNote = copyOnly ? SEARCH_INDEX.copyNote(data.generated, stat ? stat.mtimeMs : 0) : '';
 		source.cards = recentCards(data.trello);
 		source.list = (data.atracoes || []).filter(function (a) {
 			return a && a.name && (a.proj || a.out);
@@ -468,19 +429,20 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}) };
 	}
 
-	// a configuração da busca mudou com a janela aberta (webhook ↔ índice local, outras pastas)? ao voltar para a
-	// janela, a próxima busca usa a fonte nova (sem chamar o host a cada tecla)
+	// a configuração da busca mudou com a janela aberta (js/search-index.js)? ao voltar para a janela, a próxima busca
+	// usa a origem nova (sem chamar o host a cada tecla)
 	async function watchSearchSource() {
 		if (document.hidden || !source.info) return;
 
 		try {
 			var info = await call('searchInfo');
 
-			if (info.mode === source.info.mode && info.local === source.info.local && info.url === source.info.url && String(info.folders) === String(source.info.folders)) return;
+			if (SEARCH_INDEX.signature(info) === SEARCH_INDEX.signature(source.info)) return;
 
 			source.info = info;
 			source.list = null;
 			source.stamp = '';
+			source.copyNote = '';
 		} catch (err) { }
 	}
 
@@ -490,12 +452,23 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		if (!source.info) source.info = await call('searchInfo');
 
 		var fs = nodeFs();
-		var local = source.info.mode === 'local';
+		var local = SEARCH_INDEX.choice(source.info) === 'indiceLocal';
 		var canLocal = local && window.PAD_LOCAL_INDEX && PAD_LOCAL_INDEX.available();
 
 		if (local ? !canLocal : !fs) return null; // navegador de teste: o host responde
 
 		return local ? localCandidates() : await webhookCandidates(fs);
+	}
+
+	// sem o Node do painel (navegador de teste), no modo local: a data da cópia que o host usa, lida uma vez
+	async function hostCopyNote() {
+		if (source.copyNote || SEARCH_INDEX.choice(source.info) !== 'copia') return;
+
+		try {
+			var copy = await call('searchCopy');
+
+			if (copy.text) source.copyNote = SEARCH_INDEX.copyNote(SEARCH_INDEX.unwrap(JSON.parse(copy.text)).generated, copy.modified);
+		} catch (err) { }
 	}
 
 	// → { claquete, matches: [{ name, category, path, out, display, score }], cards } (o mesmo formato do host). cards:
@@ -507,10 +480,12 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			// navegador de teste (ou sem o Node): o host responde; os cards passam pelo mesmo filtro dos do índice
 			var res = await call('projectLookup', { claquete: claq });
 
+			await hostCopyNote();
+
 			return { claquete: res.claquete, matches: res.matches || [], cards: recentCards(res.cards) };
 		}
 
-		var local = source.info.mode === 'local';
+		var local = SEARCH_INDEX.choice(source.info) === 'indiceLocal';
 		var words = aepName(claq).split(' ').filter(Boolean);
 		var found = [];
 
@@ -1115,6 +1090,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		pathTail: pathTail,
 		mode: function () {
 			return source.info ? source.info.mode : '';
+		},
+		// no modo local: 'modo local · cópia do índice de …' (a cópia em uso na última busca); fora dele, ''
+		copyNote: function () {
+			return source.copyNote;
 		},
 		picker: picker
 	};

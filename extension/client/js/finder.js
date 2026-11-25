@@ -4,7 +4,7 @@
 > O ACESSORISTA — busca de caminhos de atrações e de textos dos layers
 ---------------------------------------------------------------
 
-Aba CAMINHOS (principal): índice de atrações (webhook + cache, no host), busca a partir de 2
+Aba CAMINHOS (principal): o índice da busca (o da equipe, a cópia dele ou o índice local), busca a partir de 2
 caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto do projeto
 (em lotes de comps) e filtra enquanto você digita.
 
@@ -313,103 +313,45 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	/* ---------------------------------------------------------------
 	   o índice da busca: o do workflow PROMO - BUSCAR (GET), baixado pelo próprio painel (Node, comprimido, em
 	   segundo plano: o After Effects não trava). a cópia salva aparece na hora e é trocada quando a resposta
-	   chega com outro 'stamp'. no modo local, só a cópia, sem tentar a rede.
+	   chega com outro 'stamp'. no modo local, só a cópia, sem tentar a rede (js/search-index.js decide qual índice).
 	   --------------------------------------------------------------- */
 
-	// as origens da busca de caminhos (a ordem é a dos resultados). a chave 'servidor' é a dos caminhos fixos
-	// (o nome guardado na configuração)
-	var V2_CATS = [
-		{ key: 'servidor', label: 'CAMINHOS FIXOS', max: 10 },
+	var SEARCH_INDEX = window.PAD_SEARCH_INDEX;
+
+	// as origens da busca de caminhos no índice da equipe (a ordem é a dos resultados)
+	var TEAM_ORIGINS = [
+		{ key: 'caminhosFixos', label: 'CAMINHOS FIXOS', max: 10 },
 		{ key: 'atracoes', label: 'ATRAÇÕES', max: 20 },
 		{ key: 'filmes', label: 'FILMES', max: 20 },
 		{ key: 'teams', label: 'TEAMS', max: 20 },
 		{ key: 'trello', label: 'TRELLO', max: 24 }
 	];
 	// índice local (configuração > buscar, neste computador): as pastas deste computador e os caminhos fixos
-	var LOCAL_CATS = [
+	var LOCAL_ORIGINS = [
 		{ key: 'pastas', label: 'PASTAS', max: 30 },
-		{ key: 'servidor', label: 'CAMINHOS FIXOS', max: 10 }
+		{ key: 'caminhosFixos', label: 'CAMINHOS FIXOS', max: 10 }
 	];
-	var V2_TIMEOUT = 25000;
 
-	function nodeApi() {
+	function nodeFs() {
 		try {
-			if (typeof require !== 'function') return null;
-
-			return { https: require('https'), http: require('http'), zlib: require('zlib'), fs: require('fs') };
+			return typeof require === 'function' ? require('fs') : null;
 		} catch (err) {
 			return null;
 		}
 	}
 
-	// GET com gzip (e redirecionamentos) pelo Node do painel
-	function httpGet(api, url, hops) {
-		return new Promise(function (resolve, reject) {
-			var mod = /^https:/i.test(url) ? api.https : api.http;
-			var req = mod.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: V2_TIMEOUT }, function (res) {
-				if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && (hops || 0) < 3) {
-					res.resume();
-					resolve(httpGet(api, new URL(res.headers.location, url).href, (hops || 0) + 1));
-					return;
-				}
-
-				if (res.statusCode !== 200) {
-					res.resume();
-					reject(new Error('HTTP ' + res.statusCode));
-					return;
-				}
-
-				var stream = /gzip/i.test(res.headers['content-encoding'] || '') ? res.pipe(api.zlib.createGunzip()) : res;
-				var chunks = [];
-
-				stream.on('data', function (c) {
-					chunks.push(c);
-				});
-				stream.on('end', function () {
-					resolve(Buffer.concat(chunks).toString('utf8'));
-				});
-				stream.on('error', reject);
-			});
-
-			req.on('timeout', function () {
-				req.destroy(new Error('tempo esgotado'));
-			});
-			req.on('error', reject);
+	// os caminhos fixos (configuração > buscar), com o texto de busca
+	function fixedItems(info) {
+		return (info.caminhosFixos || []).map(function (s) {
+			return { name: s.name, path: s.path, server: s.server, share: s.share, hay: wordIndex(s.name + ' | ' + s.path) };
 		});
 	}
 
-	function readCacheV2(api, file) {
-		try {
-			return api.fs.existsSync(file) ? api.fs.readFileSync(file, 'utf8') : '';
-		} catch (err) {
-			return '';
-		}
-	}
+	// texto do webhook → { stamp, generated, items: { teams: [...], ... } } (os itens de cada origem, com o texto de busca)
+	function parseIndex(text, info) {
+		var data = SEARCH_INDEX.unwrap(JSON.parse(text));
 
-	function writeCacheV2(api, file, text) {
-		try {
-			api.fs.writeFileSync(file + '.part', text, 'utf8');
-			api.fs.renameSync(file + '.part', file);
-		} catch (err) { }
-	}
-
-	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }])
-	function unwrapIndex(data) {
-		if (typeof data === 'string') data = JSON.parse(data); // o JSON mandado como texto ("{\"v\": 2, …}")
-
-		var item = data instanceof Array ? data[0] : data;
-
-		if (item && typeof item.indice === 'string') return JSON.parse(item.indice);
-		if (item && item.indice && typeof item.indice === 'object') return item.indice;
-
-		return data;
-	}
-
-	// texto do webhook → { stamp, cats: { teams: [...], ... } } com o texto de busca de cada item
-	function parseV2(text, info) {
-		var data = unwrapIndex(JSON.parse(text));
-
-		if (!data || data.v !== 2) throw new Error('formato inesperado');
+		if (!data || data.v !== 2) throw new Error('formato inesperado'); // o 'v' do JSON da equipe (n8n)
 
 		var roots = data.roots || {};
 		var full = function (path) {
@@ -420,7 +362,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var hay = function (parts) {
 			return wordIndex(parts.filter(Boolean).join(' | '));
 		};
-		var cats = {
+		// os campos de cada item ('cat', 'proj', 'out'…) são os do JSON da equipe
+		var items = {
 			teams: (data.teams || []).map(function (t) {
 				var path = full(t.path);
 
@@ -435,45 +378,42 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			filmes: (data.filmes || []).map(function (f) {
 				return { name: f.name || '', year: f.year ? String(f.year) : '', out: full(f.out), hay: hay([f.name, f.year, full(f.out)]) };
 			}),
-			servidor: (info.servidor || []).map(function (s) {
-				return { name: s.name, path: s.path, server: s.server, share: s.share, hay: hay([s.name, s.path]) };
-			})
+			caminhosFixos: fixedItems(info)
 		};
 
-		return { stamp: data.stamp || '', generated: data.generated || '', cats: cats };
+		return { stamp: data.stamp || '', generated: data.generated || '', items: items };
 	}
 
-	function applyV2(parsed) {
+	// copyNote: a linha do modo local com a data da cópia em uso ('' fora dele)
+	function applyIndex(parsed, copyNote) {
 		var p = state.paths;
 
-		p.mode = 'v2';
-		p.copyNote = '';
-		p.v2 = parsed;
+		p.mode = 'equipe';
+		p.copyNote = copyNote || '';
+		p.index = parsed;
 		p.stamp = parsed.stamp;
 		p.ready = true;
 		p.loaded = true;
-		p.cats = V2_CATS;
-		buildCategoryFilters();
+		p.loading = false;
+		p.origins = TEAM_ORIGINS;
+		buildOriginFilters();
+		searchPaths();
 	}
 
-	// → true quando a busca nova carregou (da cópia ou do webhook)
-	async function loadPathsV2(force) {
+	// o índice da equipe: a cópia na hora e o webhook em segundo plano. → true quando carregou (da cópia ou do webhook)
+	async function loadPathsTeam(force) {
 		var p = state.paths;
-		var info = p.info || (p.info = await call('searchInfo'));
-		var api = nodeApi();
+		var info = p.info;
+		var fs = nodeFs();
 		var shown = false;
 
-		p.platform = info.platform;
-
 		// 1. a cópia salva aparece na hora (sem esperar a rede)
-		if (api && !force) {
+		if (fs && !force) {
 			try {
-				var cached = readCacheV2(api, info.cache);
+				var copy = SEARCH_INDEX.readCopy(fs, info);
 
-				if (cached) {
-					applyV2(parseV2(cached, info));
-					p.loading = false;
-					searchPaths();
+				if (copy.text) {
+					applyIndex(parseIndex(copy.text, info));
 					shown = true;
 				}
 			} catch (err) { }
@@ -483,10 +423,12 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var text = '';
 
 		try {
-			if (!api) throw new Error('sem Node');
-			text = await httpGet(api, info.url);
-			parseV2(text, info); // confere antes de guardar
-			writeCacheV2(api, info.cache, text);
+			if (!fs) throw new Error('sem Node');
+			text = await SEARCH_INDEX.download(info.url);
+			parseIndex(text, info); // confere antes de guardar
+			try {
+				SEARCH_INDEX.writeCopy(fs, info, text);
+			} catch (err) { }
 		} catch (err) {
 			try {
 				var res = await call('searchDownload', { force: !!force });
@@ -498,13 +440,9 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		}
 
 		if (text) {
-			var fresh = parseV2(text, info);
+			var fresh = parseIndex(text, info);
 
-			if (!shown || fresh.stamp !== p.stamp) {
-				applyV2(fresh);
-				p.loading = false;
-				searchPaths();
-			}
+			if (!shown || fresh.stamp !== p.stamp) applyIndex(fresh);
 
 			return true;
 		}
@@ -517,35 +455,15 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	// modo local (sem a rede da equipe): só a cópia salva neste computador, na hora, sem tentar baixar (nem pelo
 	// painel, nem pelo curl do After Effects). sem o Node do painel, o host lê a cópia. → true quando há cópia
 	async function loadPathsCopy() {
-		var p = state.paths;
-		var info = p.info;
-		var api = nodeApi();
-		var text = '';
-		var modified = 0;
+		var info = state.paths.info;
+		var fs = nodeFs();
+		var copy = fs ? SEARCH_INDEX.readCopy(fs, info) : await call('searchCopy');
 
-		p.platform = info.platform;
+		if (!copy.text) return false;
 
-		if (api) {
-			text = readCacheV2(api, info.cache);
+		var parsed = parseIndex(copy.text, info);
 
-			try {
-				modified = api.fs.statSync(info.cache).mtimeMs;
-			} catch (err) { }
-		} else {
-			var res = await call('searchCopy');
-
-			text = res.text;
-			modified = res.modified;
-		}
-
-		if (!text) return false;
-
-		var parsed = parseV2(text, info);
-
-		applyV2(parsed);
-		p.copyNote = 'modo local · cópia do índice de ' + when(parsed.generated || (modified ? new Date(modified).toISOString() : ''));
-		p.loading = false;
-		searchPaths();
+		applyIndex(parsed, SEARCH_INDEX.copyNote(parsed.generated, copy.modified));
 
 		return true;
 	}
@@ -556,23 +474,23 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		p.loading = true;
 		p.error = '';
 
-		var copyOnly = p.info && p.info.local && p.info.mode !== 'local';
-
 		if (!p.ready || force) {
-			if (copyOnly) showLoader($('results-paths'), 'esquentando o índice…', 'modo local: a cópia salva neste computador');
+			if (p.info && SEARCH_INDEX.choice(p.info) === 'copia') showLoader($('results-paths'), 'esquentando o índice…', 'modo local: a cópia salva neste computador');
 			else showLoader($('results-paths'), force ? 'baixando os caminhos…' : 'esquentando o índice…', 'o workflow pode demorar alguns segundos');
 			await nextPaint();
 		}
 
 		var ok = false;
+		var choice = '';
 
 		try {
 			if (!p.info || force) p.info = await call('searchInfo');
-			copyOnly = p.info.local && p.info.mode !== 'local';
+			p.platform = p.info.platform;
+			choice = SEARCH_INDEX.choice(p.info);
 
-			if (p.info.mode === 'local') ok = await loadPathsLocal(force);
-			else if (copyOnly) ok = await loadPathsCopy();
-			else ok = await loadPathsV2(force);
+			if (choice === 'indiceLocal') ok = await loadPathsLocal(force);
+			else if (choice === 'copia') ok = await loadPathsCopy();
+			else ok = await loadPathsTeam(force);
 		} catch (err) {
 			p.error = err.message;
 		}
@@ -583,7 +501,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			p.ready = false;
 			p.loaded = true;
 
-			if (copyOnly && !p.error) showState($('results-paths'), 'modo local: sem cópia do índice', 'no modo local a busca de caminhos não usa a rede: usa a cópia do índice salva neste computador, e ainda não há uma. com a rede da equipe, desligue o modo local e clique em atualizar; ou escolha o índice local em configuração > buscar.');
+			if (choice === 'copia' && !p.error) showState($('results-paths'), 'modo local: sem cópia do índice', 'no modo local a busca de caminhos não usa a rede: usa a cópia do índice salva neste computador, e ainda não há uma. com a rede da equipe, desligue o modo local e clique em atualizar; ou escolha o índice local em configuração > buscar.');
 			else showState($('results-paths'), 'índice de caminhos indisponível', p.error && !/HTTP|tempo/.test(p.error) ? p.error : 'sem conexão com o workflow e sem cópia salva neste computador. clique em atualizar para tentar de novo.');
 		}
 	}
@@ -594,29 +512,29 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		$('opts-paths').textContent = text || '';
 	}
 
-	// Webhook: um interruptor por origem que tem itens (CAMINHOS FIXOS, ATRAÇÕES, FILMES, TEAMS, TRELLO). a escolha
-	// fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
-	function buildCategoryFilters() {
+	// Índice da equipe: um interruptor por origem que tem itens (CAMINHOS FIXOS, ATRAÇÕES, FILMES, TEAMS, TRELLO). a
+	// escolha fica ao atualizar o índice. no índice local não há interruptores: no lugar, de onde vêm os caminhos.
+	function buildOriginFilters() {
 		var box = $('opts-paths');
 		var p = state.paths;
 
 		box.classList.remove('finder-source');
 		box.textContent = '';
 
-		V2_CATS.forEach(function (cat) {
-			if (!p.v2.cats[cat.key] || !p.v2.cats[cat.key].length) return;
+		TEAM_ORIGINS.forEach(function (origin) {
+			if (!p.index.items[origin.key] || !p.index.items[origin.key].length) return;
 
-			var chip = el('button', 'chip' + (p.hidden[cat.key] ? '' : ' is-on'));
+			var chip = el('button', 'chip' + (p.hidden[origin.key] ? '' : ' is-on'));
 
 			chip.type = 'button';
-			chip.title = 'origem ' + cat.label + ': incluir na busca';
-			chip.setAttribute('aria-pressed', String(!p.hidden[cat.key]));
+			chip.title = 'origem ' + origin.label + ': incluir na busca';
+			chip.setAttribute('aria-pressed', String(!p.hidden[origin.key]));
 			chip.appendChild(el('span', 'chip-check'));
-			chip.appendChild(document.createTextNode(cat.label));
+			chip.appendChild(document.createTextNode(origin.label));
 			chip.addEventListener('click', function () {
-				p.hidden[cat.key] = !p.hidden[cat.key];
-				chip.classList.toggle('is-on', !p.hidden[cat.key]);
-				chip.setAttribute('aria-pressed', String(!p.hidden[cat.key]));
+				p.hidden[origin.key] = !p.hidden[origin.key];
+				chip.classList.toggle('is-on', !p.hidden[origin.key]);
+				chip.setAttribute('aria-pressed', String(!p.hidden[origin.key]));
 				searchPaths();
 			});
 			box.appendChild(chip);
@@ -661,16 +579,15 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	function applyLocal(data, info) {
 		var p = state.paths;
 
-		p.mode = 'local';
-		p.cats = LOCAL_CATS;
-		p.v2 = {
-			cats: {
+		p.mode = 'indiceLocal';
+		p.copyNote = '';
+		p.origins = LOCAL_ORIGINS;
+		p.index = {
+			items: {
 				pastas: data.items.map(function (it) {
 					return { name: it.name, path: it.path, file: it.file, hay: wordIndex(it.name) };
 				}),
-				servidor: (info.servidor || []).map(function (s) {
-					return { name: s.name, path: s.path, server: s.server, share: s.share, hay: wordIndex(s.name + ' | ' + s.path) };
-				}),
+				caminhosFixos: fixedItems(info),
 				atracoes: []
 			}
 		};
@@ -829,21 +746,21 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			return;
 		}
 
-		searchPathsV2();
+		showPathResults();
 	}
 
 	/* ---------------------------------------------------------------
 	   o layout de cada origem (sem títulos: o ícone diz de onde vem)
 	   --------------------------------------------------------------- */
 
-	var V2_ICONS = {
+	var ICONS = {
 		teams: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5h13A2.5 2.5 0 0 1 21 7.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.5V17h-1A2.5 2.5 0 0 1 3 14.5v-7A2.5 2.5 0 0 1 5.5 5z" /></svg>',
 		trello: '<svg viewBox="0 0 24 24" aria-hidden="true" class="tr-logo"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" /><rect class="tr-bar" x="7" y="7" width="4" height="9.5" rx="1" /><rect class="tr-bar" x="13" y="7" width="4" height="5.5" rx="1" /></svg>',
 		redator: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
 		editor: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6.5H7.5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2M14.5 6.5h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2" /><path d="M12 4.5v15" /></svg>',
 		atracoes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 3.5 3.5 4 3.5-4" /><rect x="3" y="7.5" width="18" height="13" rx="2.5" /><rect x="5.5" y="10" width="10.5" height="8" rx="2" /><path d="M18.5 11.5h.01M18.5 15h.01" /></svg>',
 		filmes: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>',
-		servidor: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>',
+		caminhosFixos: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="6" rx="1.5" /><rect x="4" y="13.5" width="16" height="6" rx="1.5" /><path d="M7.5 7.5h.01M7.5 16.5h.01" /></svg>',
 		pasta: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>',
 		arquivo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>'
 	};
@@ -875,7 +792,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		var link = teamsLink(m);
 		var bubble = el(link ? 'button' : 'span', 'tm-msg');
 
-		bubble.innerHTML = V2_ICONS.teams;
+		bubble.innerHTML = ICONS.teams;
 
 		if (link) {
 			bubble.type = 'button';
@@ -909,7 +826,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			});
 		}
 
-		head.appendChild(svgNode(V2_ICONS.trello));
+		head.appendChild(svgNode(ICONS.trello));
 		head.appendChild(highlightNode('i', null, c.claq, query));
 		card.appendChild(head);
 
@@ -918,7 +835,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 			var line = el('span', 'tr-row');
 
-			line.appendChild(svgNode(V2_ICONS[row[0]]));
+			line.appendChild(svgNode(ICONS[row[0]]));
 			line.appendChild(el('em', null, row[1]));
 			line.appendChild(highlightNode('i', null, row[2], query));
 			card.appendChild(line);
@@ -961,7 +878,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 		if (typed.q.length < EXPAND_MIN) return { list: list, also: also };
 
-		(state.paths.v2.cats.atracoes || []).forEach(function (a) {
+		(state.paths.index.items.atracoes || []).forEach(function (a) {
 			var terms = [a.name].concat(a.pattern).map(makeQuery).filter(function (t) {
 				return t.q.length >= EXPAND_MIN;
 			});
@@ -1016,21 +933,17 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		Array.prototype.forEach.call(document.querySelectorAll('#results-paths .tr-grid'), layoutTrello);
 	}
 
-	function searchPathsV2() {
+	function showPathResults() {
 		var p = state.paths;
 		var results = $('results-paths');
 		var typed = makeQuery($('q-paths').value);
 
 		results.textContent = '';
 
-		if (typed.q.length < MIN_QUERY) {
-			showState(results, 'busca de caminhos', 'digite uma atração, claquete, pessoa, output ou caminho', true);
-			if (p.copyNote) results.appendChild(el('p', 'finder-also finder-copy', p.copyNote));
-			return;
-		}
-
-		// modo local: de quando é a cópia em uso (os caminhos podem estar desatualizados)
-		if (p.copyNote) results.appendChild(el('p', 'finder-also finder-copy', p.copyNote));
+		// modo local: de quando é a cópia em uso (os caminhos podem estar desatualizados), em cima de tudo
+		if (typed.q.length < MIN_QUERY) showState(results, 'busca de caminhos', 'digite uma atração, claquete, pessoa, output ou caminho', true);
+		if (p.copyNote) results.appendChild(el('p', 'finder-also', p.copyNote));
+		if (typed.q.length < MIN_QUERY) return;
 
 		var expanded = expandQuery(typed);
 		var query = expanded.list;
@@ -1039,10 +952,10 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		// buscando também pelos nomes da atração: avisa em cima (para não parecer resultado errado)
 		if (expanded.also.length) results.appendChild(el('p', 'finder-also', 'também: ' + expanded.also.slice(0, 3).join(' · ')));
 
-		(p.cats || V2_CATS).forEach(function (cat) {
-			if (p.mode === 'v2' && p.hidden[cat.key]) return; // desligada no interruptor
+		p.origins.forEach(function (origin) {
+			if (p.mode === 'equipe' && p.hidden[origin.key]) return; // desligada no interruptor
 
-			var matches = p.v2.cats[cat.key].filter(function (item) {
+			var matches = p.index.items[origin.key].filter(function (item) {
 				return hits(item.hay, query);
 			});
 
@@ -1050,27 +963,27 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 
 			any = true;
 
-			var box = el('section', 'result-section v2-' + cat.key);
-			var list = el('div', cat.key === 'trello' ? 'tr-grid' : cat.key === 'teams' ? 'tm-list' : 'at-list');
+			var box = el('section', 'result-section origin-' + origin.key);
+			var list = el('div', origin.key === 'trello' ? 'tr-grid' : origin.key === 'teams' ? 'tm-list' : 'at-list');
 
-			if (cat.key === 'trello') list._cards = [];
+			if (origin.key === 'trello') list._cards = [];
 
-			matches.slice(0, cat.max).forEach(function (item) {
-				if (cat.key === 'teams') list.appendChild(teamsItem(item, query));
-				else if (cat.key === 'trello') list._cards.push(trelloItem(item, query));
-				else if (cat.key === 'atracoes') list.appendChild(placeItem(V2_ICONS.atracoes, item.name, [['PASTA DO PROJETO', item.proj], ['OUTPUT', item.out]], query));
-				else if (cat.key === 'filmes') list.appendChild(placeItem(V2_ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
-				else if (cat.key === 'pastas') list.appendChild(placeItem(item.file ? V2_ICONS.arquivo : V2_ICONS.pasta, item.name, [['CAMINHO', item.file ? item.path.replace(/\/[^\/]+$/, '') : item.path]], query));
-				else list.appendChild(placeItem(V2_ICONS.servidor, item.name, [['CAMINHO', item.path]], query, item));
+			matches.slice(0, origin.max).forEach(function (item) {
+				if (origin.key === 'teams') list.appendChild(teamsItem(item, query));
+				else if (origin.key === 'trello') list._cards.push(trelloItem(item, query));
+				else if (origin.key === 'atracoes') list.appendChild(placeItem(ICONS.atracoes, item.name, [['PASTA DO PROJETO', item.proj], ['OUTPUT', item.out]], query));
+				else if (origin.key === 'filmes') list.appendChild(placeItem(ICONS.filmes, item.name, [['OUTPUT', item.out]], query, null, item.year));
+				else if (origin.key === 'pastas') list.appendChild(placeItem(item.file ? ICONS.arquivo : ICONS.pasta, item.name, [['CAMINHO', item.file ? item.path.replace(/\/[^\/]+$/, '') : item.path]], query));
+				else list.appendChild(placeItem(ICONS.caminhosFixos, item.name, [['CAMINHO', item.path]], query, item));
 			});
 
 			box.appendChild(list);
 			results.appendChild(box);
-			if (cat.key === 'trello') layoutTrello(list); // já na página: dá para medir as colunas
-			if (matches.length > cat.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - cat.max) + ' em ' + cat.label + ' — refine a busca'));
+			if (origin.key === 'trello') layoutTrello(list); // já na página: dá para medir as colunas
+			if (matches.length > origin.max) box.appendChild(el('p', 'finder-more', 'mais ' + (matches.length - origin.max) + ' em ' + origin.label + ' — refine a busca'));
 		});
 
-		var off = p.mode === 'v2' && Object.keys(p.hidden).some(function (k) {
+		var off = p.mode === 'equipe' && Object.keys(p.hidden).some(function (k) {
 			return p.hidden[k];
 		});
 
@@ -1274,12 +1187,8 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 	   Pedido de aba (barra principal)
 	   ========================================================= */
 
-	// a busca de caminhos mudou na configuração (webhook ↔ índice local, outro endereço, outras pastas) com esta
-	// janela aberta? ao voltar para ela, recarrega da fonte nova (antes ficava na antiga até clicar em atualizar)
-	function searchSignature(info) {
-		return info ? [info.mode, info.local, info.url, (info.folders || []).join('|'), info.foldersOnly, JSON.stringify(info.servidor || [])].join('\n') : '';
-	}
-
+	// a configuração da busca mudou (js/search-index.js) com esta janela aberta? ao voltar para ela, recarrega da
+	// origem nova (antes ficava na antiga até clicar em atualizar)
 	async function watchSearchSource() {
 		var p = state.paths;
 
@@ -1288,7 +1197,7 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 		try {
 			var info = await call('searchInfo');
 
-			if (searchSignature(info) === searchSignature(p.info)) return;
+			if (SEARCH_INDEX.signature(info) === SEARCH_INDEX.signature(p.info)) return;
 
 			p.info = info;
 			p.ready = false;

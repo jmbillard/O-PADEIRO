@@ -1344,6 +1344,8 @@ projetos com o nome certo).
 		}
 
 		if (!cards.length && !films.length && !attrs.length) list.appendChild(ATR.group(ATR.mode() === 'local' ? 'nenhuma pasta do índice local com esse nome' : 'nenhuma atração ou filme com esse nome'));
+		// modo local: de quando é a cópia do índice em uso (como no acessorista)
+		if (ATR.copyNote()) list.appendChild(el('p', 'combo-more', ATR.copyNote()));
 		list.appendChild(ATR.sep());
 
 		// NOVA: só os chips dos tipos; o tipo digitado no começo (vt …) vem marcado

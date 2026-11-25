@@ -117,6 +117,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	var run = null;
 
+	// a busca da configuração da equipe como o host devolve (padCleanSearch): a chave dos caminhos fixos já foi
+	// 'servidor' (lida quando não há 'caminhosFixos'); devolve e grava só 'caminhosFixos'
+	function mockSearch(search) {
+		var s = search || {};
+
+		return { url: s.url || '', caminhosFixos: JSON.parse(JSON.stringify(s.caminhosFixos || s.servidor || [])) };
+	}
+
 	// preferências desta pessoa (aparência e barra), por cima do padrão da equipe
 	// as categorias da atração nova (aba PROJETO), guardadas no navegador: a janela PROJETO lê as mesmas
 	function mockProject() {
@@ -260,7 +268,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					],
 					search: {
 						url: 'https://workflows.jmbillard.com/webhook/buscar',
-						servidor: [
+						caminhosFixos: [
 							{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
 							{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
 						]
@@ -303,7 +311,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)),
 				rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)),
 				organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)),
-				search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)),
+				search: mockSearch(window.PAD_MOCK_LIST.search),
 				links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)),
 				project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)),
 				collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)),
@@ -464,13 +472,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			}
 			if (a.search) {
 				if (a.search.url && !/^https?:\/\/\S+$/.test(a.search.url)) throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-				a.search.servidor.forEach(function (r, i) {
+				a.search.caminhosFixos.forEach(function (r, i) {
 					if (!r.name !== !r.path) throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
 				});
-				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
+				window.PAD_MOCK_LIST.search = mockSearch(a.search); // grava só a chave nova
 			}
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.search)), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: window.PAD_MOCK_LIST.items, log: Object.assign({}, window.PAD_MOCK_LIST.log), drives: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.drives)), rename: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.rename)), organize: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.organize)), search: mockSearch(window.PAD_MOCK_LIST.search), links: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.links)), project: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.project)), collect: JSON.parse(JSON.stringify(window.PAD_MOCK_LIST.collect)), bar: mockBar(), appearance: JSON.parse(localStorage.getItem('pad.mock.appearance') || 'null'), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -685,8 +693,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		// a busca de caminhos: ?mock=v1 simula o webhook fora do ar; ?mock=lidx, o índice local (buscar); ?mock=nocopy,
-		// nenhuma cópia do índice neste computador. o modo local é o da máquina (ou a rede fora: pad.mock.offline);
-		// ?mock=modolocal liga só nesta janela
+		// o modo local sem cópia do índice neste computador. o modo local é o da máquina (ou a rede fora:
+		// pad.mock.offline); ?mock=modolocal liga só nesta janela
 		searchInfo: function () {
 			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
 			var ms = machine.search || (/mock=lidx/.test(location.search) ? { mode: 'local', folders: ['/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ', '/Volumes/VFX/imagem/drive_l/Fileserver_3'], foldersOnly: true, daily: true } : { mode: 'webhook', folders: [], foldersOnly: true, daily: true });
@@ -698,10 +706,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				daily: ms.daily,
 				localIndex: '/mock/indice_local.json',
 				url: 'https://workflows.jmbillard.com/webhook/buscar',
-				cache: '/tmp/busca_v2.json',
-				local: !!(machine.localMode || localStorage.getItem('pad.mock.offline') || mode === 'modolocal'),
+				copia: '/tmp/busca_copia.json',
+				copiaAntiga: '/tmp/busca_v2.json', // o nome de antes da cópia (lido quando não há a de agora)
+				local: !!(machine.localMode || localStorage.getItem('pad.mock.offline') || mode === 'modolocal' || mode === 'nocopy'),
 				platform: 'Mac',
-				servidor: ((window.PAD_MOCK_LIST && window.PAD_MOCK_LIST.search.servidor) || [
+				caminhosFixos: ((window.PAD_MOCK_LIST && mockSearch(window.PAD_MOCK_LIST.search).caminhosFixos) || [
 					{ name: '#INGEST', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
 					{ name: 'BASES VALENDO', path: '//cpp-ml-sp/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
 				]).map(function (r) {

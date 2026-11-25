@@ -574,7 +574,7 @@ body.finder-page {
 }
 
 /* =========================================================
-   Busca nova (v2): Teams, Trello, atrações, filmes e servidor
+   Os resultados de cada origem: Teams, Trello, atrações, filmes e caminhos fixos
    ========================================================= */
 
 .result-section+.result-section {
@@ -769,7 +769,7 @@ button.tr-card:focus-visible {
   stroke: none;
 }
 
-/* atrações, filmes e servidor: o ícone e o nome; uma linha por caminho (PROJETO, OUTPUT, CAMINHO) */
+/* atrações, filmes e caminhos fixos: o ícone e o nome; uma linha por caminho (PASTA DO PROJETO, OUTPUT, CAMINHO) */
 .tm-list {
   display: grid;
 }

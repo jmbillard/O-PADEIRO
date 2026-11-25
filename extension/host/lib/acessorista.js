@@ -3,16 +3,21 @@
 
 // O índice da busca (workflow PROMO - BUSCAR): pronto, num GET. O painel do acessorista baixa sozinho (sem travar o
 // After Effects); o curl daqui é só o plano B.
-var PS_V2_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
-var PS_V2_URL = PS_V2_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
+var PS_INDEX_DEFAULT_URL = 'https://workflows.jmbillard.com/webhook/buscar';
+var PS_INDEX_URL = PS_INDEX_DEFAULT_URL; // o da configuração > buscar (padApplyConfig)
 
 // Os filmes criados na base nos últimos dias (a claquete mostra com o campo vazio e marca os que ainda não têm
 // pasta). O workflow (PROMO: FILMES PARA O PADEIRO) responde { filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }.
 var PS_FILMS_URL = 'https://workflows.jmbillard.com/webhook/filmes-recentes';
 
-var PS_SERVIDOR = null; // os caminhos fixos: [{ name, path }] (configuração > buscar); null = PS_LOCAL_SOURCES
+var PS_CAMINHOS_FIXOS = null; // os caminhos fixos: [{ name, path }] (configuração > buscar); null = os padrão
 
-var PS_CACHE_TTL = 30 * 1000; // idade máxima (ms) da cópia do índice antes de a janela PROJETO baixar de novo
+var PS_COPY_MAX_AGE = 30 * 1000; // idade máxima (ms) da cópia do índice antes de a janela de projeto baixar de novo
+
+// A cópia do índice da busca neste computador, a mesma para o acessorista e a janela de projeto.
+var PS_COPY_NAME = 'busca_copia.json';
+// O nome de antes da cópia: lido enquanto não há a cópia com o nome de agora (o próximo download grava a de agora).
+var PS_OLD_COPY_NAME = 'busca_v2.json';
 
 var PS_SMB = {
 	sp: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
@@ -22,12 +27,10 @@ var PS_SMB = {
 };
 
 // Os caminhos fixos padrão (sem 'SEARCH' na configuração): padDefaultSearch
-var PS_LOCAL_SOURCES = {
-	servidor: [
-		{ atracao: '#INGEST', win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' } },
-		{ atracao: 'BASES VALENDO', win: { caminho: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' } }
-	]
-};
+var PS_DEFAULT_CAMINHOS_FIXOS = [
+	{ name: '#INGEST', path: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\#INGEST' },
+	{ name: 'BASES VALENDO', path: '\\\\' + PS_SMB.cppSp + '\\PROMO_REDE\\CPP_JB_PROMO\\HOME OFFICE - NAO APAGAR\\BASES E VALENDO' }
+];
 
 function psSlashes(path) {
 	return String(path || '').replace(/\\/g, '/');
@@ -53,8 +56,27 @@ function psShellQuote(text) {
 	return "'" + String(text).replace(/'/g, "'\\''") + "'";
 }
 
-function psIsFresh(file) {
-	return file.exists && new Date().getTime() - file.modified.getTime() < PS_CACHE_TTL;
+// A cópia do índice com o nome de agora (onde o download grava).
+function psCopyFile() {
+	return new File(tempFolder.fsName + '/' + PS_COPY_NAME);
+}
+
+function psOldCopyFile() {
+	return new File(tempFolder.fsName + '/' + PS_OLD_COPY_NAME);
+}
+
+// A cópia para ler: a de agora ou, sem ela, a do nome de antes.
+function psCopyToRead() {
+	var file = psCopyFile();
+	var old = psOldCopyFile();
+
+	if (!file.exists && old.exists) return old;
+
+	return file;
+}
+
+function psCopyIsFresh(file) {
+	return file.exists && new Date().getTime() - file.modified.getTime() < PS_COPY_MAX_AGE;
 }
 
 function psMountedSharePath(server, share) {

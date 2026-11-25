@@ -29,7 +29,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
-		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
+		search: { url: '', caminhosFixos: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
@@ -414,7 +414,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function searchForSave() {
 		return {
 			url: state.search.url.trim(),
-			servidor: state.search.servidor.map(function (r) {
+			caminhosFixos: state.search.caminhosFixos.map(function (r) {
 				return { name: r.name.trim(), path: r.path.trim() };
 			})
 		};
@@ -2544,7 +2544,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		state.search = {
 			url: data.url || '',
-			servidor: (data.servidor || []).map(function (r) {
+			caminhosFixos: (data.caminhosFixos || []).map(function (r) {
 				return { name: r.name || '', path: r.path || '' };
 			})
 		};
@@ -2553,15 +2553,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function renderSearch() {
 		var hook = $('search-webhook');
-		var list = $('servidor-list');
+		var list = $('caminhos-fixos-list');
 
 		if (hook.value !== state.search.url) hook.value = state.search.url;
 		hook.disabled = !state.available;
-		$('btn-new-servidor').disabled = !state.available;
+		$('btn-new-caminho-fixo').disabled = !state.available;
 		list.textContent = '';
 
-		state.search.servidor.forEach(function (row, i) {
-			var box = el('div', 'drive-row srv-row');
+		state.search.caminhosFixos.forEach(function (row, i) {
+			var box = el('div', 'drive-row caminho-fixo-row');
 			var nameField = el('div', 'has-field-icon');
 			var name = el('input', 'cfg-input');
 			var icon = svg(SERVER_ICON);
@@ -2591,7 +2591,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				renderSearch();
 				updateDirty();
 			}, function () {
-				state.search.servidor.splice(i, 1);
+				state.search.caminhosFixos.splice(i, 1);
 				renderSearch();
 				updateDirty();
 			});
@@ -2608,17 +2608,17 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			updateDirty();
 		});
 
-		$('btn-new-servidor').addEventListener('click', function () {
-			state.search.servidor.push({ name: '', path: '' });
+		$('btn-new-caminho-fixo').addEventListener('click', function () {
+			state.search.caminhosFixos.push({ name: '', path: '' });
 			renderSearch();
 			updateDirty();
-			$('servidor-list').lastChild.querySelector('input.cfg-input').focus();
+			$('caminhos-fixos-list').lastChild.querySelector('input.cfg-input').focus();
 		});
 
-		PAD_SORT.enable($('servidor-list'), '.srv-row', function (from, to) {
-			var moved = state.search.servidor.splice(from, 1)[0];
+		PAD_SORT.enable($('caminhos-fixos-list'), '.caminho-fixo-row', function (from, to) {
+			var moved = state.search.caminhosFixos.splice(from, 1)[0];
 
-			state.search.servidor.splice(to, 0, moved);
+			state.search.caminhosFixos.splice(to, 0, moved);
 			renderSearch();
 			updateDirty();
 		});
