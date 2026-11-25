@@ -1430,7 +1430,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 		var sample = n && state.example && $('input').value === state.example;
 
 		// sem a revisão da fila (o padrão), o mesmo botão preenche e já põe na fila de render
-		$('btn-fill').textContent = (sample ? 'Preencher o exemplo' : 'Preencher: ' + n) + (reviewQueue() ? '' : ' e pôr na fila');
+		$('btn-fill').textContent = sample ? 'Preencher o exemplo' : 'Preencher: ' + n;
 		$('btn-fill').disabled = n === 0 || !state.info || !state.info.hasInputLayers;
 	}
 
