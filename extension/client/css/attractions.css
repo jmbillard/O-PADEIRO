@@ -381,14 +381,14 @@
 }
 
 /* a atração nova: os tipos à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
-.cat-chips {
+.tipo-chips {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 4px 12px 6px;
 }
 
-.cat-chip {
+.tipo-chip {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -409,13 +409,13 @@
     color 140ms ease;
 }
 
-.cat-chip span {
+.tipo-chip span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cat-chip svg {
+.tipo-chip svg {
   width: 15px;
   height: 15px;
   flex: 0 0 auto;
@@ -427,19 +427,19 @@
 }
 
 /* is-hover: o realce do teclado (as setas, ou o Enter sem atração achada, que abre os tipos) */
-.cat-chip:hover,
-.cat-chip.is-hover {
+.tipo-chip:hover,
+.tipo-chip.is-hover {
   border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
-.cat-chip.is-on {
+.tipo-chip.is-on {
   border-color: var(--blue-300);
   background: var(--blue-50);
   color: var(--blue-500);
 }
 
-.cat-path {
+.tipo-path {
   margin: 0;
   padding: 2px 14px 6px;
   overflow: hidden;
@@ -450,7 +450,7 @@
   white-space: nowrap;
 }
 
-.cat-path b {
+.tipo-path b {
   color: var(--text-secondary);
   font-weight: 800;
 }

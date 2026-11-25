@@ -973,7 +973,7 @@ REGRAS.push({
 			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], TIPOS_DE_PROJETO: { tipos: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
 		});
 
-		test('a aparência e a barra deste computador: gravar uma não apaga a outra; null volta ao padrão da equipe (sai do arquivo)', function () {
+		test('a aparência e a barra deste computador: gravar uma não apaga a outra; null volta à da equipe (sai do arquivo)', function () {
 			const aparencia = api.limpar('aparencia', { mode: 'dark', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' });
 			const m = memoria({ [PERSONALIZADO]: { APPEARANCE: aparencia } });
 

@@ -223,7 +223,7 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 			if (prod.desteComputador) {
 				option.dataset.badge = 'person';
-				if (!groupDone && state.productions[0] !== prod) option.dataset.group = 'neste computador';
+				if (!groupDone && state.productions[0] !== prod) option.dataset.group = 'deste computador';
 				groupDone = true;
 			}
 

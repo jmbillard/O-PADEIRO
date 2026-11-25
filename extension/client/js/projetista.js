@@ -1234,7 +1234,7 @@ projetos com o nome certo).
 			// Enter cria nele (as setas andam pelos outros)
 			if (state.novaFocus) {
 				state.novaFocus = false;
-				(list.querySelector('.cat-chip') || other).classList.add('is-hover');
+				(list.querySelector('.tipo-chip') || other).classList.add('is-hover');
 			}
 			hint = ''; // sem frase de ajuda: a lista já diz o que achou
 		});
@@ -1479,8 +1479,8 @@ projetos com o nome certo).
 	// onPick(nova, base): o clique num chip (sem ele, cria a atração nova na claquete). keep: os chips na ordem da
 	// configuração (o escolhido não sobe)
 	function catChips(list, nova, onPick, keep) {
-		var grid = el('div', 'cat-chips');
-		var line = el('p', 'cat-path');
+		var grid = el('div', 'tipo-chips');
+		var line = el('p', 'tipo-path');
 		var bases = state.bases.filter(function (b) {
 			return b.pattern;
 		});
@@ -1490,7 +1490,7 @@ projetos com o nome certo).
 			return b !== nova.base;
 		}));
 		bases.forEach(function (b) {
-			var chip = el('button', 'cat-chip' + (b === nova.base ? ' is-on' : ''));
+			var chip = el('button', 'tipo-chip' + (b === nova.base ? ' is-on' : ''));
 
 			chip.type = 'button';
 			chip.innerHTML = (PAD_UTIL.tipoIcon(b.icon) || FOLDER_SVG) + '<span></span>';
@@ -3322,7 +3322,7 @@ projetos com o nome certo).
 
 			// a atração já escolhida (no topo da lista das pastas) fica fora: as setas andam pelas opções (os chips
 			// dos tipos da atração nova também)
-			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item, .cat-chip'), function (it) {
+			var items = Array.prototype.filter.call(list.querySelectorAll('.combo-item, .tipo-chip'), function (it) {
 				return it.offsetParent !== null && !(it.classList.contains('combo-item') && it.classList.contains('is-on'));
 			});
 			var at = items.findIndex(function (it) {

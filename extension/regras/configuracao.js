@@ -13,7 +13,7 @@ Cada seção da configuração é uma linha da tabela (TABELA, abaixo), que diz:
     tolerante usada só na leitura);
   - os nomes antigos: as chaves antigas da seção (antigos) e os campos antigos de dentro dela (camposAntigos:
     { novo: [antigos] }), lidos quando o nome novo não existe; e os arquivos antigos do arquivo da seção
-    (ARQUIVOS_ANTIGOS, abaixo: o arquivo de antes de cada arquivo deste computador, com as mesmas chaves), lidos
+    (ARQUIVOS_ANTIGOS, abaixo: os arquivos de antes de cada arquivo deste computador, com as mesmas chaves), lidos
     enquanto o arquivo novo não existe. A gravação seguinte grava só o nome novo; o arquivo antigo fica no lugar
     (apagá-lo fica para depois do beta).
 
@@ -886,10 +886,14 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	var COMPUTADOR = 'computador_config.json';
 	var PERSONALIZADO = 'computador_personalizado.json'; // a aparência e a barra deste computador: só as personalizadas
 	var LINKS_DESTE_COMPUTADOR = 'computador_links.json';
-	// os nomes de antes (#45), lidos enquanto não há os de agora; a gravação seguinte grava o novo e deixa o antigo no lugar (apagar fica para depois do beta)
-	var COMPUTADOR_ANTIGO = 'machine_config.json';
-	var PERSONALIZADO_ANTIGO = 'personal_config.json';
-	var LINKS_DESTE_COMPUTADOR_ANTIGO = 'personal_links.json';
+	// os arquivos de antes de cada arquivo deste computador (arquivo novo → [antigos], na ordem de leitura), lidos
+	// enquanto o novo não existe; a gravação seguinte grava o novo e deixa o antigo no lugar (apagar fica para depois
+	// do beta). Os nomes de antes do #45 e, da sigla, o project_user.json, ainda mais antigo (só com 'user')
+	var ARQUIVOS_ANTIGOS = {};
+
+	ARQUIVOS_ANTIGOS[COMPUTADOR] = ['machine_config.json', 'project_user.json'];
+	ARQUIVOS_ANTIGOS[PERSONALIZADO] = ['personal_config.json'];
+	ARQUIVOS_ANTIGOS[LINKS_DESTE_COMPUTADOR] = ['personal_links.json'];
 
 	// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas (a mesma limpeza vale para o login)
 	function limparSigla(value) {
@@ -1026,24 +1030,29 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], camposAntigos: { tipos: ['categories'] }, padrao: function () { return { tipos: [] }; }, limpar: limparTiposDeProjeto },
 
 		// deste computador
-		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], arquivosAntigos: [COMPUTADOR_ANTIGO, 'project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },
-		{ nome: 'modoLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'localMode', antigos: ['homeOffice'], arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return false; }, limpar: function (v) { return v === true; } },
-		{ nome: 'registroDeUsoLigado', onde: 'computador', arquivo: COMPUTADOR, chave: 'log', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'pastaDosProjetos', onde: 'computador', arquivo: COMPUTADOR, chave: 'projects', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return ''; }, limpar: limparPasta },
-		{ nome: 'outputLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'outputs', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return ''; }, limpar: limparPasta },
-		{ nome: 'presetsDeRender', onde: 'computador', arquivo: COMPUTADOR, chave: 'render', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparPresetsDeRender({}); }, limpar: limparPresetsDeRender },
+		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], padrao: function () { return ''; }, limpar: limparSigla },
+		{ nome: 'modoLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'localMode', antigos: ['homeOffice'], padrao: function () { return false; }, limpar: function (v) { return v === true; } },
+		{ nome: 'registroDeUsoLigado', onde: 'computador', arquivo: COMPUTADOR, chave: 'log', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'pastaDosProjetos', onde: 'computador', arquivo: COMPUTADOR, chave: 'projects', padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'outputLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'outputs', padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'presetsDeRender', onde: 'computador', arquivo: COMPUTADOR, chave: 'render', padrao: function () { return limparPresetsDeRender({}); }, limpar: limparPresetsDeRender },
 		// sem a lista (padrão null), o host monta as produções deste computador das pastas de antes ('templates'), que
 		// dependem das produções da equipe (api.jsx: padProducoesDesteComputador)
-		{ nome: 'producoesDesteComputador', onde: 'computador', arquivo: COMPUTADOR, chave: 'productions', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: vazio, limpar: limparProducoesDesteComputador },
-		{ nome: 'indiceLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'search', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparIndiceLocal({}); }, limpar: limparIndiceLocal },
-		{ nome: 'listaDosTemplates', onde: 'computador', arquivo: COMPUTADOR, chave: 'lists', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparListaDosTemplates({}); }, limpar: limparListaDosTemplates },
-		{ nome: 'fontesNoBanco', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsUpload', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'fontesConferir', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsCheck', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'linksDesteComputador', onde: 'computador', arquivo: LINKS_DESTE_COMPUTADOR, chave: 'LINKS', arquivosAntigos: [LINKS_DESTE_COMPUTADOR_ANTIGO], padrao: function () { return []; }, limpar: limparLinks },
+		{ nome: 'producoesDesteComputador', onde: 'computador', arquivo: COMPUTADOR, chave: 'productions', padrao: vazio, limpar: limparProducoesDesteComputador },
+		{ nome: 'indiceLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'search', padrao: function () { return limparIndiceLocal({}); }, limpar: limparIndiceLocal },
+		{ nome: 'listaDosTemplates', onde: 'computador', arquivo: COMPUTADOR, chave: 'lists', padrao: function () { return limparListaDosTemplates({}); }, limpar: limparListaDosTemplates },
+		{ nome: 'fontesNoBanco', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsUpload', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'fontesConferir', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsCheck', padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'linksDesteComputador', onde: 'computador', arquivo: LINKS_DESTE_COMPUTADOR, chave: 'LINKS', padrao: function () { return []; }, limpar: limparLinks },
 		// sem a personalizada (padrão null): vale a da equipe
-		{ nome: 'aparenciaDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'APPEARANCE', arquivosAntigos: [PERSONALIZADO_ANTIGO], padrao: vazio, limpar: limparAparencia },
-		{ nome: 'barraDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'BAR', arquivosAntigos: [PERSONALIZADO_ANTIGO], padrao: vazio, limpar: limparBarra }
+		{ nome: 'aparenciaDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'APPEARANCE', padrao: vazio, limpar: limparAparencia },
+		{ nome: 'barraDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'BAR', padrao: vazio, limpar: limparBarra }
 	];
+
+	// os arquivos antigos de cada seção: os do arquivo dela, no mapa por arquivo (ARQUIVOS_ANTIGOS, acima)
+	for (var t = 0; t < TABELA.length; t++) {
+		if (ARQUIVOS_ANTIGOS.hasOwnProperty(TABELA[t].arquivo)) TABELA[t].arquivosAntigos = ARQUIVOS_ANTIGOS[TABELA[t].arquivo];
+	}
 
 	// ---------------------------------------------------------------------------------------------------------
 	// ler e gravar pela tabela

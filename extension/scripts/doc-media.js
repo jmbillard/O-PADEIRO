@@ -257,7 +257,7 @@ const SHOTS = {
 	'claquete-atracao': { w: 480, h: 640, url: 'projetista.html', async run(p) {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
-	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .cat-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
+	}, marks: [{ sel: '#claq-combo .combo-field' }, { sel: '#atr-list .combo-item', text: 'HUCK', pad: 2 }, { sel: '#atr-list .tipo-chips', pad: 4 }, { sel: '#atr-list .combo-item', text: 'outra pasta', pad: 2 }, { sel: '#criar-go' }] },
 	'claquete-editor': { w: 480, h: 520, url: 'projetista.html?mock=created', marks: [
 		{ sel: '#ed-combo .combo-field' }, { sel: '.ed-user' }, { sel: '#ed-what' }, { sel: '#ed-file', pad: 3 }, { sel: '#ed-move', round: true }, { sel: '#ed-output-pick', round: true }, { sel: '#ed-save' }
 	] },
@@ -396,9 +396,9 @@ const SCENES = {
 		await tap(p, '#claq', { wait: 200 });
 		await type(p, 'vt reunião', 120);
 		await p.waitForTimeout(1100);
-		await hover(p, p.locator('.cat-chip', { hasText: 'NOVELA' }).first(), 700);
-		await hover(p, p.locator('.cat-chip.is-on').first(), 800);
-		await tap(p, p.locator('.cat-chip.is-on').first(), { wait: 1100 });
+		await hover(p, p.locator('.tipo-chip', { hasText: 'NOVELA' }).first(), 700);
+		await hover(p, p.locator('.tipo-chip.is-on').first(), 800);
+		await tap(p, p.locator('.tipo-chip.is-on').first(), { wait: 1100 });
 		await tap(p, '#arq-what', { wait: 200 });
 		await type(p, 'abertura', 120);
 		await p.waitForTimeout(1300);

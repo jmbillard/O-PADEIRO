@@ -170,7 +170,7 @@ const CHECKS = [
 	['projeto: card sem atração', 'projetista.html', (p) => projectPick(p, 'summer', '.card-row')],
 	['projeto: card sem atração, tipo escolhido', 'projetista.html', async (p) => {
 		await projectPick(p, 'summer', '.card-row');
-		await p.locator('#card-nova .cat-chip').first().click();
+		await p.locator('#card-nova .tipo-chip').first().click();
 		await p.waitForTimeout(1500);
 	}],
 	['projeto: card de filme', 'projetista.html', (p) => projectPick(p, 'encanto')],
