@@ -1253,7 +1253,8 @@ PADX.fillBegin = function (a) {
 
 		// as comps do template com o nome de uma comp que já estava no projeto ganham _2, _3… (e as expressões do
 		// template que as citam em comp("…") passam a citar o nome novo): senão leriam a comp antiga
-		padRenameRepeatedComps(imported);
+		// no prefixo 'ignore', a comp principal fica com o nome: o script externo do template a procura pelo compName
+		padRenameRepeatedComps(imported, String(templateData.prefix || '').match(/ignore/i) ? templateComp : null);
 
 		// a lista dos presets de render (sem os _HIDDEN): só existe num item da fila
 		var renderList = [];
@@ -1385,7 +1386,7 @@ function padCitesComps(comp, names) {
 // expressões de todas as comps importadas que citam esse nome passam a citar o novo. Assim comp("BG") de um template
 // lê a "BG" dele, não a de outro template ou de outra rodada (o After lê a primeira comp do projeto com o nome).
 // → { ANTIGO: 'NOVO' }
-function padRenameRepeatedComps(imported) {
+function padRenameRepeatedComps(imported, keep) {
 	var mine = {};
 	var before = {};
 	var map = {};
@@ -1406,6 +1407,7 @@ function padRenameRepeatedComps(imported) {
 		var comp = imported[i];
 
 		if (!(comp instanceof CompItem) || !before.hasOwnProperty(String(comp.name).toUpperCase())) continue;
+		if (keep && comp.id == keep.id) continue;
 
 		var name = comp.name;
 
