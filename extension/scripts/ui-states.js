@@ -9,9 +9,28 @@ check-focus-crop.js (foco cortado) e pelo check-corners.js (cantos concêntricos
 
 */
 
+const fs = require('fs');
 const path = require('path');
 
 const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
+
+// o tamanho padrão de cada janela, lido do manifest (o <Size> de cada <MainPath>): é com ele que o After abre a
+// janela quando não há tamanho guardado, e é nele que as checagens olham cada tela
+const MANIFEST = fs.readFileSync(path.resolve(__dirname, '../CSXS/manifest.xml'), 'utf8');
+const SIZES = {};
+
+MANIFEST.replace(/<MainPath>\.\/client\/([^<]+)<\/MainPath>[\s\S]*?<Size>\s*<Width>(\d+)<\/Width>\s*<Height>(\d+)<\/Height>/g, (all, page, w, h) => {
+	SIZES[page] = { width: +w, height: +h };
+});
+
+// url ('projetista.html?mock=created') → { width, height } do manifest
+function windowSize(url) {
+	const size = SIZES[url.split('?')[0]];
+
+	if (!size) throw new Error('a página ' + url + ' não está no manifest');
+
+	return size;
+}
 
 // as janelas e os passos para chegar em cada estado (o mock responde)
 // index.html?lists: dois fixados e um recente na lista de templates do mock
@@ -104,29 +123,29 @@ const CHECKS = [
 		await p.click('#drawer-templates');
 		await p.waitForTimeout(700);
 	}],
-	['criador', 'maker.html', async (p) => {
+	['criador', 'confeiteiro.html', async (p) => {
 		await p.click('#btn-import-add');
 		await p.waitForTimeout(900); // o campo abre animado (motion.js): mede depois de aberto
 		await p.click('#btn-fx'); // as variações de layout (os sufixos)
 		await p.waitForTimeout(500);
 	}],
-	['projeto: editor', 'project.html?mock=created'],
-	['projeto: os dados', 'project.html?mock=created', async (p) => {
+	['projeto: editor', 'projetista.html?mock=created'],
+	['projeto: os dados', 'projetista.html?mock=created', async (p) => {
 		await p.click('#ed-info');
 		await p.waitForTimeout(500);
 	}],
-	['projeto: atração', 'project.html'],
-	['projeto: nova', 'project.html', (p) => projectTo(p, 'nova')],
-	['projeto: card do trello', 'project.html', async (p) => {
+	['projeto: atração', 'projetista.html'],
+	['projeto: nova', 'projetista.html', (p) => projectTo(p, 'nova')],
+	['projeto: card do trello', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'domingao');
 		await p.waitForTimeout(1200);
 	}],
 	// digitando: os filmes recentes que batem (o webhook dos filmes), com o pôster; um clique escolhe o filme (o cartão)
-	['projeto: filmes recentes', 'project.html', async (p) => {
+	['projeto: filmes recentes', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'nao');
 		await p.waitForTimeout(1200);
 	}],
-	['projeto: filme escolhido', 'project.html', async (p) => {
+	['projeto: filme escolhido', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'nao');
 		await p.waitForTimeout(1200);
 		await p.locator('.film-row').first().click();
@@ -134,37 +153,37 @@ const CHECKS = [
 		await p.click('#arq-what');
 		await p.waitForTimeout(400);
 	}],
-	['projeto: o que é e output', 'project.html', (p) => projectTo(p, 'criar')],
-	['projeto: pastas da atração', 'project.html', async (p) => {
+	['projeto: o que é e output', 'projetista.html', (p) => projectTo(p, 'criar')],
+	['projeto: pastas da atração', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'domingao com huck/');
 		await p.waitForTimeout(1000);
 	}],
 	// os três passos: os grupos (NO TRELLO com "seu" e o status, a NOVA), o card escolhido (dois .aep em destaque, o
 	// chip do ano pelo card), o card sem atração (o nome sugerido e os tipos), o card de filme (o pôster) e o tipo fixo
-	['projeto: no trello', 'project.html', (p) => projectPick(p, 'premio')],
-	['projeto: card escolhido', 'project.html', (p) => projectPick(p, 'premio', '.card-row')],
-	['projeto: card escolhido, ano trocado', 'project.html', async (p) => {
+	['projeto: no trello', 'projetista.html', (p) => projectPick(p, 'premio')],
+	['projeto: card escolhido', 'projetista.html', (p) => projectPick(p, 'premio', '.card-row')],
+	['projeto: card escolhido, ano trocado', 'projetista.html', async (p) => {
 		await projectPick(p, 'premio', '.card-row');
 		await p.click('.wz-rule');
 		await p.waitForTimeout(1200);
 	}],
-	['projeto: card sem atração', 'project.html', (p) => projectPick(p, 'summer', '.card-row')],
-	['projeto: card sem atração, tipo escolhido', 'project.html', async (p) => {
+	['projeto: card sem atração', 'projetista.html', (p) => projectPick(p, 'summer', '.card-row')],
+	['projeto: card sem atração, tipo escolhido', 'projetista.html', async (p) => {
 		await projectPick(p, 'summer', '.card-row');
 		await p.locator('#card-nova .cat-chip').first().click();
 		await p.waitForTimeout(1500);
 	}],
-	['projeto: card de filme', 'project.html', (p) => projectPick(p, 'encanto')],
-	['projeto: card de filme escolhido', 'project.html', (p) => projectPick(p, 'encanto', '.card-row')],
-	['projeto: filmes a produzir e já tem projeto', 'project.html', (p) => projectPick(p, 'de')],
-	['projeto: filme com subpasta', 'project.html', (p) => projectPick(p, 'flores', '.film-row')],
-	['projeto: tipo fixo pelo card', 'project.html', (p) => projectPick(p, 'mood', '.card-row')],
-	['projeto: editor com a lista', 'project.html?mock=created', async (p) => {
+	['projeto: card de filme', 'projetista.html', (p) => projectPick(p, 'encanto')],
+	['projeto: card de filme escolhido', 'projetista.html', (p) => projectPick(p, 'encanto', '.card-row')],
+	['projeto: filmes a produzir e já tem projeto', 'projetista.html', (p) => projectPick(p, 'de')],
+	['projeto: filme com subpasta', 'projetista.html', (p) => projectPick(p, 'flores', '.film-row')],
+	['projeto: tipo fixo pelo card', 'projetista.html', (p) => projectPick(p, 'mood', '.card-row')],
+	['projeto: editor com a lista', 'projetista.html?mock=created', async (p) => {
 		await p.fill('#ed-atracao', '');
 		await p.type('#ed-atracao', 'premio', { delay: 20 });
 		await p.waitForTimeout(1300);
 	}],
-	['projeto: editor trocado por um card', 'project.html?mock=created', async (p) => {
+	['projeto: editor trocado por um card', 'projetista.html?mock=created', async (p) => {
 		await p.fill('#ed-atracao', '');
 		await p.type('#ed-atracao', 'premio', { delay: 20 });
 		await p.waitForTimeout(1300);
@@ -186,8 +205,8 @@ const CHECKS = [
 		await p.setViewportSize({ width: 720, height: h });
 	}],
 	['fontes do projeto', 'fonts.html'],
-	['coletar', 'collect.html'],
-	['coletar: migração', 'collect.html', async (p) => {
+	['coletar', 'catador.html'],
+	['coletar: migração', 'catador.html', async (p) => {
 		await p.setViewportSize({ width: 780, height: 660 });
 		await p.click('#app-menu summary');
 		await p.waitForTimeout(300);
@@ -229,11 +248,11 @@ const CHECKS = [
 		await p.locator('.picker-prod .dropdown-trigger').click();
 		await p.waitForTimeout(300);
 	}],
-	['criador: caixa de texto aberta', 'maker.html', async (p) => {
+	['criador: caixa de texto aberta', 'confeiteiro.html', async (p) => {
 		await p.locator('.maker-glass .dropdown-trigger').first().click();
 		await p.waitForTimeout(300);
 	}],
-	['projeto: lista de atrações', 'project.html', async (p) => {
+	['projeto: lista de atrações', 'projetista.html', async (p) => {
 		await p.fill('#claq', 'dom');
 		await p.waitForTimeout(800);
 	}],
@@ -264,4 +283,4 @@ async function prepareContext(context) {
 	}, { categories: CATEGORIES, lists: LISTS });
 }
 
-module.exports = { CLIENT, CATEGORIES, CHECKS, prepareContext };
+module.exports = { CLIENT, CATEGORIES, CHECKS, SIZES, windowSize, prepareContext };

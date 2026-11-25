@@ -17,7 +17,7 @@ Precisa do Playwright. Sai com código 1 quando acha algum botão fora.
 */
 
 const { chromium } = require('playwright');
-const { CLIENT, CHECKS, prepareContext } = require('./ui-states');
+const { CLIENT, CHECKS, windowSize, prepareContext } = require('./ui-states');
 
 const TOLERANCE = 1.5; // px (o hover sobe 1 px)
 const MENU_SIZE = 38;
@@ -56,6 +56,7 @@ function findFooters(opts) {
 		const errors = [];
 
 		page.on('pageerror', (err) => errors.push(err.message));
+		await page.setViewportSize(windowSize(url)); // o tamanho padrão da janela (manifest)
 		await page.goto(CLIENT + url);
 		await page.waitForTimeout(1500);
 		await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; animation-duration: 0s !important; }' });

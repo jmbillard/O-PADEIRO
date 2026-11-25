@@ -19,7 +19,7 @@ Precisa do Playwright. Sai com código 1 quando acha algum canto fora da conta.
 */
 
 const { chromium } = require('playwright');
-const { CLIENT, CHECKS, prepareContext } = require('./ui-states');
+const { CLIENT, CHECKS, windowSize, prepareContext } = require('./ui-states');
 
 const MAX_GAP = 24; // respiro máximo para contar como "no canto"
 const SKEW = 3; // diferença máxima entre o respiro de cima e o do lado
@@ -134,6 +134,7 @@ function findCorners(opts) {
 		const errors = [];
 
 		page.on('pageerror', (err) => errors.push(err.message));
+		await page.setViewportSize(windowSize(url)); // o tamanho padrão da janela (manifest)
 		await page.goto(CLIENT + url);
 		await page.waitForTimeout(1500);
 		await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; animation-duration: 0s !important; }' });
