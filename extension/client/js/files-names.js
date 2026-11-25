@@ -25,10 +25,12 @@ Sem DOM: a janela (files.js) usa no navegador (window.PAD_FILES_NAMES); o teste 
 		return String(text == null ? '' : text).normalize('NFC');
 	}
 
-	// o resto do nome que não muda: a extensão; na sequência, o separador, os dígitos e a extensão (os quadros)
+	// o resto do nome que não muda: a extensão; na sequência, os quadros antes dela. frames (do host, '_[0001-0120]'):
+	// o que a janela mostra; sem ele (o resolve), o separador e um # por dígito, para comparar os nomes
 	function tail(it) {
 		var ext = it.ext ? '.' + it.ext : '';
 
+		if (it.frames) return it.frames + ext;
 		if (it.kind === 'seq') return (it.sep || '') + new Array((it.pad || 0) + 1).join('#') + ext;
 
 		return ext;
@@ -86,7 +88,7 @@ Sem DOM: a janela (files.js) usa no navegador (window.PAD_FILES_NAMES); o teste 
 		return out;
 	}
 
-	var api = { resolve: resolve, BAD_CHARS: BAD_CHARS };
+	var api = { resolve: resolve, tail: tail, BAD_CHARS: BAD_CHARS };
 
 	if (typeof module === 'object' && module.exports) module.exports = api;
 	else root.PAD_FILES_NAMES = api;

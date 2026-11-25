@@ -196,7 +196,7 @@ function padRenameByRule(name, prefixFound) {
 }
 
 // Calcula o nome padronizado de uma comp, sem alterá-la.
-// Retorna { name, comment } — comment é null quando nenhum tipo foi identificado.
+// Retorna { name, comment } — comment é null quando nenhum formato foi identificado.
 function getPromoRename(comp) {
 	var compName = String(comp.name).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var prefixFound = null;

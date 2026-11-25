@@ -36,7 +36,7 @@ renomeia.
 		seq: '<svg class="fl-kind" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="13" height="13" rx="2" /><path d="M4 16V6a2 2 0 0 1 2-2h10" /></svg>'
 	};
 	// a situação em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode), o aviso (ganhou _2: muda,
-	// mas confira), o elo (muda e é usado no projeto aberto) e o traço (desligado)
+	// mas confira), o elo (muda, com ou sem _2, e é usado no projeto aberto) e o traço (desligado)
 	var STATE_ICON = {
 		chg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
 		same: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>',
@@ -99,10 +99,8 @@ renomeia.
 		return it.custom != null ? it.custom : suggest(it);
 	}
 
-	// o resto do nome, que não muda: os quadros da sequência e a extensão
-	function tail(it) {
-		return (it.frames || '') + (it.ext ? '.' + it.ext : '');
-	}
+	// o resto do nome, que não muda: os quadros da sequência e a extensão (files-names.js)
+	var tail = NAMES.tail;
 
 	function enabled(it) {
 		if (!it.on) return false;
@@ -124,6 +122,11 @@ renomeia.
 		return st === 'chg' || st === 'dup';
 	}
 
+	// o aviso de quem ganhou _2
+	function dupNote(fin) {
+		return 'ganhou ' + fin.suffix + ': o nome ficaria repetido nesta pasta. confira antes de renomear';
+	}
+
 	function reason(it, fin) {
 		var st = fin.state;
 		var used = '';
@@ -135,7 +138,7 @@ renomeia.
 
 			return 'caractere que não vale em nome de arquivo ( \\ / : * ? " < > | )';
 		}
-		if (st === 'dup') return 'ganhou ' + fin.suffix + ': o nome ficaria repetido nesta pasta. confira antes de renomear' + used;
+		if (st === 'dup') return dupNote(fin) + used;
 		if (st === 'chg') return 'muda de nome' + used;
 		if (st === 'same') return 'já está no padrão';
 
@@ -181,7 +184,9 @@ renomeia.
 			var cur = el('span', 'fl-cur');
 			var wrap = el('span', 'fl-new-wrap');
 			var input = el('input', 'fl-new');
-			var icon = st === 'chg' && it.use ? 'use' : st;
+			// o elo: o item em uso que muda de nome (também o que ganhou _2: o aviso vai ao lado do sufixo). assim os elos
+			// visíveis batem com a contagem "em uso" do rodapé
+			var icon = renames(st) && it.use ? 'use' : st;
 			var mark = el('span', 'fl-st is-' + icon);
 			var why = reason(it, f);
 			var end = el('span', 'fl-ext', tail(it));
@@ -217,6 +222,15 @@ renomeia.
 			// o sufixo que o nome ganhou vem antes dos quadros e da extensão, em destaque
 			if (f.suffix) end.insertBefore(el('b', 'fl-suffix', f.suffix), end.firstChild);
 			wrap.appendChild(end);
+			// ganhou _2 e está em uso: o elo fica na situação e o aviso, logo depois do sufixo
+			if (st === 'dup' && icon === 'use') {
+				var warn = el('span', 'fl-st is-dup');
+
+				warn.innerHTML = STATE_ICON.dup;
+				warn.title = dupNote(f);
+				warn.setAttribute('aria-label', warn.title);
+				wrap.appendChild(warn);
+			}
 
 			// o nome editado à mão: a seta volta para a sugestão
 			if (it.custom != null && !state.busy) {

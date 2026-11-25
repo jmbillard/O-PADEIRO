@@ -176,6 +176,18 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'], hidden: [] };
 	}
 
+	// o arquivista: o caminho relativo de um item (a pasta dele + o nome)
+	function mockFilesJoin(dir, name) {
+		return dir ? dir + '/' + name : name;
+	}
+
+	// o arquivista: a pasta from virou to; os de dentro (em qualquer nível) vão junto
+	function mockFilesMoveDir(from, to) {
+		(window.PAD_MOCK_FILES || []).forEach(function (x) {
+			if (x.dir === from || x.dir.indexOf(from + '/') === 0) x.dir = to + x.dir.slice(from.length);
+		});
+	}
+
 	// o índice da busca de mentira (o mesmo texto do download e da cópia). age: de quantas horas atrás
 	function mockSearchIndex(age) {
 		var H = 3600000;
@@ -1816,9 +1828,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var used = 0;
 			var ops = [];
 			var rename = function (it, from, to) {
-				if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
-					if (x.dir === from) x.dir = to;
-				});
+				if (it.kind === 'folder') mockFilesMoveDir(mockFilesJoin(it.dir, from), mockFilesJoin(it.dir, to));
 				it.name = to;
 			};
 
@@ -1857,8 +1867,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			window.PAD_MOCK_FILES_UNDO_FAIL = 0;
 
 			u.ops.slice().reverse().forEach(function (op) {
+				// a pasta de agora: as pastas renomeadas depois deste item que não voltaram (left) ainda têm o nome novo
+				var dir = left.reduce(function (d, o) {
+					var from = mockFilesJoin(o.dir, o.from);
+
+					if (o.kind !== 'folder' || (d !== from && d.indexOf(from + '/') !== 0)) return d;
+
+					return mockFilesJoin(o.dir, o.to) + d.slice(from.length);
+				}, op.dir);
 				var it = window.PAD_MOCK_FILES.filter(function (x) {
-					return x.dir === op.dir && x.name === op.to && x.ext === op.ext;
+					return x.dir === dir && x.name === op.to && x.ext === op.ext;
 				})[0];
 
 				if (!it || fail-- > 0) {
@@ -1867,9 +1885,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					return;
 				}
-				if (it.kind === 'folder') window.PAD_MOCK_FILES.forEach(function (x) {
-					if (x.dir === op.to) x.dir = op.from;
-				});
+				if (it.kind === 'folder') mockFilesMoveDir(mockFilesJoin(dir, op.to), mockFilesJoin(dir, op.from));
 				it.name = op.from;
 				back++;
 			});

@@ -30,6 +30,7 @@ var PAD_FILES_MAX = 3000; // itens lidos numa pasta (com as subpastas): acima di
 var PAD_FILES_SKIP_EXT = /\.(aep|aet|aepx|prproj|c4d|blend|ma|mb|max|drp|nk|hip|hipnc|sesx|fcpxml)$/i;
 var PAD_FILES_SKIP_NAME = /^(\.|~\$)|^(thumbs\.db|desktop\.ini)$|^adobe after effects auto-save$|\.aep logs$|^tmpaetoameproject/i;
 var PAD_FILES_SEQ_MIN = 3; // a partir de quantos arquivos numerados um grupo é uma sequência
+var PAD_FILES_RELINK_LABEL = 'O ARQUIVISTA: religar'; // o passo do Ctrl+Z do After
 
 function padFilesUndoFile() {
 	return new File(scriptPreferencesPath + '/arquivista_desfazer.json');
@@ -57,12 +58,12 @@ function padFilesSuggest(name) {
 	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
 	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
-	var fixed = padRenameFixedName(base);
 	var rule = padRenameByRule(base, findMatchingPrefix(base, false));
 	var typed = sanitizeFileName(rule.name);
 
-	// o nome fixo vale com ou sem o prefixo; o nome já no padrão (CRT - HOJE) não perde o separador no formato simples
-	if (fixed) plain = sanitizeFileName(fixed);
+	// o nome fixo (rule.fixed: rule.name é ele) vale com ou sem o prefixo; o nome já no padrão (CRT - HOJE) não perde
+	// o separador no formato simples
+	if (rule.fixed) plain = typed;
 	else if (padRenameFormat(base) == typed) plain = typed;
 
 	return { plain: plain || base, typed: typed || base };
@@ -435,7 +436,7 @@ PADX.filesRename = function (a) {
 	var relinked = 0;
 
 	if (ops.length) {
-		if (a.relink !== false) relinked = padFilesRelinkGroup(ops, 'O ARQUIVISTA: religar');
+		if (a.relink !== false) relinked = padFilesRelinkGroup(ops, PAD_FILES_RELINK_LABEL);
 
 		// o registro para desfazer: as renomeações na ordem em que foram feitas
 		try {
@@ -469,7 +470,7 @@ PADX.filesRename = function (a) {
 PADX.filesRelink = function (a) {
 	var ops = a && a.ops instanceof Array ? a.ops : [];
 
-	return { relinked: padFilesRelinkGroup(ops, 'O ARQUIVISTA: religar') };
+	return { relinked: padFilesRelinkGroup(ops, PAD_FILES_RELINK_LABEL) };
 };
 
 // desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado).
@@ -491,25 +492,28 @@ PADX.filesUndo = function () {
 
 	for (var i = data.ops.length - 1; i >= 0; i--) {
 		var op = data.ops[i];
-		var at = op.to.lastIndexOf('/');
-		var parent = op.to.slice(0, at);
+		// onde o item está agora: as renomeações feitas depois dele que não voltaram (left) continuam valendo. ex.: a
+		// pasta que não voltou ainda tem o nome novo, e o arquivo de dentro está nela
+		var now = padFilesMap(op.to, left);
+		var at = now.lastIndexOf('/');
+		var parent = now.slice(0, at);
 		var oldName = op.from.slice(op.from.lastIndexOf('/') + 1);
 		var isFolder = op.dir === true;
-		var ref = isFolder ? new Folder(op.to) : new File(op.to);
+		var ref = isFolder ? new Folder(now) : new File(now);
 		var why = '';
 
 		if (!ref.exists) why = 'não está mais na pasta';
 		else why = padFilesMove(ref, parent, oldName, isFolder);
 
 		if (why) {
-			errors.push({ name: op.to.slice(at + 1), error: why });
+			errors.push({ name: now.slice(at + 1), error: why });
 			left.unshift(op); // na ordem em que foram feitas
 		} else {
-			back.push({ from: op.to, to: op.from, dir: isFolder });
+			back.push({ from: now, to: parent + '/' + oldName, dir: isFolder });
 		}
 	}
 
-	var relinked = padFilesRelinkGroup(back, 'O ARQUIVISTA: religar (desfazer)');
+	var relinked = padFilesRelinkGroup(back, PAD_FILES_RELINK_LABEL + ' (desfazer)');
 
 	try {
 		if (left.length) saveTextFile(JSON.stringify({ folder: data.folder, count: left.length, when: data.when || new Date().getTime(), ops: left }), file.fsName);
