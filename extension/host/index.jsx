@@ -39,6 +39,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 
 // as regras compartilhadas com o painel e o teste em Node (ADR 0005)
 #include "../regras/nomes-repetidos.js"
+// do caminho guardado no projeto para os lugares de hoje (o religar d'O CATADOR, coletar.jsx)
+#include "../regras/caminhos.js"
 
 #include "api.jsx"
 #include "finder.jsx"
