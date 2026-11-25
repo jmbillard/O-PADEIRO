@@ -47,7 +47,11 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		return String(value == null ? '' : value).replace(/^\s+|\s+$/g, '');
 	}
 
-	function isArray(value) {
+	// o endereço de um webhook (a busca, o registro de uso, o webhook do projeto): http(s), sem espaços, aspas nem os
+	// símbolos do terminal (o endereço também vai para a linha de comando do curl, o plano B do host)
+	var URL_DO_WEBHOOK = /^https?:\/\/[^\s"'`$\\;&|<>]+$/i;
+
+		function isArray(value) {
 		return Object.prototype.toString.call(value) === '[object Array]';
 	}
 
@@ -498,7 +502,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		list = isArray(list) ? list : [];
 
 		// o endereço também vai para a linha de comando do curl (plano B): sem espaços, aspas nem símbolos do terminal
-		if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.url)) {
+		if (!URL_DO_WEBHOOK.test(clean.url)) {
 			throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 		}
 
@@ -664,7 +668,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		clean.webhook = trim(o.webhook);
 
 		// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
-		if (clean.mode == 'webhook' && !/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.webhook)) {
+		if (clean.mode == 'webhook' && !URL_DO_WEBHOOK.test(clean.webhook)) {
 			throw new Error('#PAD_078 - log: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
 		}
 
@@ -869,6 +873,23 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
+	// o webhook do projeto ('WEBHOOK_DO_PROJETO'; aba TIPOS DE PROJETO): { url }, o webhook do n8n que a janela de
+	// projeto avisa ao criar o projeto de uma atração nova (regras/webhook-do-projeto.js; docs/webhook-projeto.md)
+	//   url → vazia: nada é enviado (o padrão, até o workflow existir). a validação é a da URL do registro de uso: o
+	//         endereço também vai para a linha de comando do curl (o plano B do host, sem o Node do painel)
+	// ---------------------------------------------------------------------------------------------------------
+
+	function limparWebhookDoProjeto(o) {
+		var url = trim(o && o.url);
+
+		if (url && !URL_DO_WEBHOOK.test(url)) {
+			throw new Error('#PAD_089 - tipos de projeto: endereço do webhook do projeto inválido (comece com http:// ou https://, sem espaços nem aspas; vazio: nada é enviado).');
+		}
+
+		return { url: url };
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
 	// deste computador ('computador_config.json', antes 'machine_config.json', na pasta de dados do usuário)
 	//   designer    → a sigla do designer (antes 'user') ({designer} nos caminhos dos tipos de projeto, antes {usuario}); vazia: a do login
 	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a do tipo não
@@ -995,7 +1016,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	var CAMPOS_DO_PAINEL = {
 		productions: 'producoes', drives: 'mapaDeDrives', rename: 'regraDoRenomear', organize: 'organizar', search: 'buscaDeCaminhos', links: 'links',
-		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', coletar: 'coletar', fonts: 'bancoDeFontes', tiposDeProjeto: 'tiposDeProjeto'
+		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', coletar: 'coletar', fonts: 'bancoDeFontes', tiposDeProjeto: 'tiposDeProjeto',
+		webhookDoProjeto: 'webhookDoProjeto'
 	};
 
 	// { campo do painel: valor } → { seção: valor }, só com os campos que vieram (sem as produções: a lista vazia, que
@@ -1028,6 +1050,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLETAR', antigos: ['COLLECT'], padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
 		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], camposAntigos: { tipos: ['categories'] }, padrao: function () { return { tipos: [] }; }, limpar: limparTiposDeProjeto },
+		{ nome: 'webhookDoProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'WEBHOOK_DO_PROJETO', padrao: function () { return { url: '' }; }, limpar: limparWebhookDoProjeto },
 
 		// deste computador
 		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], padrao: function () { return ''; }, limpar: limparSigla },

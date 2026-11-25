@@ -135,6 +135,7 @@ a aba **tipos de projeto** define os **tipos de projeto** da atração nova: os 
 - **{letra}** → só um token do caminho, como os outros: os filmes seguem o mesmo fluxo de todos os tipos (o `.aep` é a atração + o que é).
 - **ícone** → o escolhido no seletor (clique no ícone, dentro do campo do nome): todos os desenhos do padeiro, estáticos. vale nos chips da janela de projeto. o tipo novo começa com a pasta.
 - a ordem na janela de projeto: primeiro a atração que já existe (achada pelo nome, na pasta dela); se não existe ou é nova, o chip do tipo; se nenhum serve, **outra pasta…** (livre). sem tipos de projeto na configuração, só o livre.
+- **webhook do projeto** → embaixo dos tipos: o endereço do webhook do n8n que a janela de projeto avisa ao criar o projeto de uma **atração nova**, em segundo plano, para cadastrá-la no banco das atrações (a busca passa a achá-la). **vazio, nada é enviado** (o padrão). a validação é a mesma da URL do registro de uso: uma inválida é recusada ao salvar. o envio e a resposta: [webhook do projeto](webhook-projeto.md).
 
 
 **👤 deste computador** (embaixo):

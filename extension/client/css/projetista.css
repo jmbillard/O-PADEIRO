@@ -18,6 +18,7 @@ body.project-page {
 }
 
 .project {
+  position: relative;
   display: flex;
   height: 100%;
   flex-direction: column;
@@ -237,10 +238,19 @@ body.project-page {
   transform: translateX(-2px);
 }
 
+/* a linha de aviso fica por cima, logo acima do botão do rodapé: aparecer não empurra o rodapé (os botões ficam na
+   linha de todas as janelas, mesmo com o aviso de duas linhas do webhook do projeto). 23 = meio botão do rodapé */
 .proj-status {
+  position: absolute;
+  z-index: 4;
+  right: 18px;
+  bottom: calc(var(--footer-center, 30px) + 23px + 6px);
+  left: 18px;
   min-height: 1.2em;
-  margin: 0 18px 8px;
+  margin: 0;
   overflow: hidden;
+  background: var(--surface);
+  pointer-events: none;
   color: var(--text-secondary);
   font-size: 0.72rem;
   font-weight: 620;
@@ -259,6 +269,13 @@ body.project-page {
 
 .proj-status.is-success {
   color: var(--success);
+}
+
+/* o aviso amarelo (o webhook do projeto não cadastrou a atração nova): o mesmo tom do "atenção" da barra. diz o que
+   não foi feito: quebra a linha em vez de cortar */
+.proj-status.is-warn {
+  color: var(--waiting);
+  white-space: normal;
 }
 
 .actions-menu[open]>.icon-button.is-light {

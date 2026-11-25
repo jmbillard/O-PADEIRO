@@ -32,6 +32,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		search: { url: '', caminhosFixos: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		tiposDeProjeto: { tipos: [] }, // aba TIPOS DE PROJETO: os tipos da atração nova [{ name, path e output (com tokens), icon }]
+		webhookDoProjeto: { url: '' }, // aba TIPOS DE PROJETO: o webhook do projeto (o cadastro da atração nova; vazio: nada é enviado)
 		coletar: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
@@ -440,6 +441,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		};
 	}
 
+	function webhookDoProjetoForSave() {
+		return { url: state.webhookDoProjeto.url.trim() };
+	}
+
 	function fontsForSave() {
 		return { bank: state.fonts.bank.trim(), upload: !!state.fonts.upload };
 	}
@@ -465,7 +470,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function currentSnapshot() {
-		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave() });
+		return JSON.stringify({ list: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), webhookDoProjeto: webhookDoProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave() });
 	}
 
 	// os links pessoais têm o próprio estado salvo (não dependem da lista da rede)
@@ -817,6 +822,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 		state.newBtn.disabled = !available;
 		renderLog();
+		renderWebhookDoProjeto();
 		renderDrives();
 		renderRename();
 		renderOrganize();
@@ -892,6 +898,47 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		$('log-webhook').addEventListener('input', function () {
 			state.log.webhook = $('log-webhook').value;
 			$('log-webhook').classList.remove('has-error');
+			updateDirty();
+		});
+	}
+
+	/* =========================================================
+	   O webhook do projeto (aba TIPOS DE PROJETO): o cadastro da atração nova no banco das atrações. o mesmo campo e a
+	   mesma validação da URL do registro de uso; vazio: nada é enviado (regras/configuracao.js)
+	   ========================================================= */
+
+	function renderWebhookDoProjeto() {
+		var input = $('tipo-webhook');
+
+		if (input.value !== state.webhookDoProjeto.url) input.value = state.webhookDoProjeto.url;
+		input.disabled = !state.available;
+	}
+
+	function setWebhookDoProjeto(w) {
+		state.webhookDoProjeto = { url: (w && w.url) || '' };
+		$('tipo-webhook').classList.remove('has-error');
+		renderWebhookDoProjeto();
+	}
+
+	// a validação da tabela de seções (regras/configuracao.js), a mesma do host → a mensagem (#PAD_089) ou null
+	function validateWebhookDoProjeto() {
+		var problem = null;
+
+		try {
+			window.PAD_CONFIGURACAO.limpar('webhookDoProjeto', webhookDoProjetoForSave());
+		} catch (err) {
+			problem = err.message;
+		}
+
+		$('tipo-webhook').classList.toggle('has-error', !!problem);
+
+		return problem;
+	}
+
+	function bindWebhookDoProjeto() {
+		$('tipo-webhook').addEventListener('input', function () {
+			state.webhookDoProjeto.url = $('tipo-webhook').value;
+			$('tipo-webhook').classList.remove('has-error');
 			updateDirty();
 		});
 	}
@@ -4175,6 +4222,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			setSearch(res.search);
 			setLinks(res.links);
 			setTiposDeProjeto(res.tiposDeProjeto);
+			setWebhookDoProjeto(res.webhookDoProjeto);
 			setColetar(res.coletar);
 			setBar(res.bar);
 			setAppearance(res.appearance);
@@ -4266,12 +4314,20 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			return toast('error', logProblem);
 		}
 
+		var webhookProblem = validateWebhookDoProjeto();
+
+		if (webhookProblem) {
+			showTab('tipos-de-projeto');
+			$('tipo-webhook').focus();
+			return toast('error', webhookProblem);
+		}
+
 		state.saving = true;
 		$('btn-save').disabled = true;
 		$('btn-save').classList.add('is-busy');
 
 		try {
-			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave(), stamp: state.stamp });
+			var res = await call('saveProductions', { productions: listForSave(), log: logForSave(), drives: drivesForSave(), rename: renameForSave(), organize: organizeForSave(), search: searchForSave(), links: linksForSave(), tiposDeProjeto: tiposDeProjetoForSave(), webhookDoProjeto: webhookDoProjetoForSave(), coletar: coletarForSave(), bar: barForSave(), appearance: appearanceForSave(), fonts: fontsForSave(), stamp: state.stamp });
 
 			state.stamp = res.stamp;
 			if (res.log) setLog(res.log);
@@ -4281,6 +4337,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			if (res.search) setSearch(res.search);
 			if (res.links) setLinks(res.links);
 			if (res.tiposDeProjeto) setTiposDeProjeto(res.tiposDeProjeto);
+			if (res.webhookDoProjeto) setWebhookDoProjeto(res.webhookDoProjeto);
 			if (res.coletar) setColetar(res.coletar);
 			if (res.bar) setBar(res.bar);
 			setAppearance(res.appearance || state.team.appearance);
@@ -4412,6 +4469,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		bindLinks();
 		bindAppearance();
 		bindTiposDeProjeto();
+		bindWebhookDoProjeto();
 		bindDesteComputador();
 		bindFonts();
 		bindColetar();

@@ -1045,6 +1045,34 @@ REGRAS.push({
 			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: antigo }] }).tipos[0].path, antigo);
 		});
 
+		// #49: a URL do webhook do projeto (o cadastro da atração nova no banco das atrações), na aba TIPOS DE PROJETO
+		test('webhook do projeto: na tabela (WEBHOOK_DO_PROJETO da equipe); vazio por padrão (nada é enviado)', function () {
+			const s = api.secao('webhookDoProjeto');
+
+			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' WEBHOOK_DO_PROJETO');
+			eq(api.ler(memoria(), 'webhookDoProjeto'), { url: '' });
+			eq(api.secoesDoPainel({ webhookDoProjeto: { url: 'https://a/b' } }), { producoes: [], webhookDoProjeto: { url: 'https://a/b' } });
+		});
+
+		test('webhook do projeto: aceita a URL válida (sem espaços nas pontas) e a vazia; grava só a chave dele', function () {
+			const m = memoria({ [EQUIPE]: { TIPOS_DE_PROJETO: { tipos: [] } } });
+
+			eq(api.limpar('webhookDoProjeto', { url: '  https://workflows.jmbillard.com/webhook/projeto ' }), { url: 'https://workflows.jmbillard.com/webhook/projeto' });
+			eq(api.limpar('webhookDoProjeto', { url: '' }), { url: '' });
+			eq(api.limpar('webhookDoProjeto', null), { url: '' });
+			api.gravar(m, { webhookDoProjeto: { url: 'http://n8n.local:5678/webhook/projeto' } });
+			eq(m.doc(EQUIPE), { TIPOS_DE_PROJETO: { tipos: [] }, WEBHOOK_DO_PROJETO: { url: 'http://n8n.local:5678/webhook/projeto' } });
+			eq(api.ler(m, 'webhookDoProjeto').url, 'http://n8n.local:5678/webhook/projeto');
+		});
+
+		test('webhook do projeto: recusa a URL inválida ao salvar (#PAD_089, a mesma regra da URL do registro de uso); lida, vira a vazia', function () {
+			['ftp://x/y', 'workflows.jmbillard.com/webhook/projeto', 'https://a b/c', 'https://a/"b"', 'https://a/b;rm -rf', "https://a/'b'", 'https://a/$(x)'].forEach(function (url) {
+				lancaErro(function () { api.limpar('webhookDoProjeto', { url: url }); }, /^#PAD_089 - tipos de projeto: endereço do webhook do projeto inválido/);
+			});
+			lancaErro(function () { api.gravar(memoria(), { webhookDoProjeto: { url: 'a b' } }); }, /^#PAD_089/);
+			eq(api.ler(memoria({ [EQUIPE]: { WEBHOOK_DO_PROJETO: { url: 'ftp://x' } } }), 'webhookDoProjeto'), { url: '' });
+		});
+
 		test('o token {designer} (a sigla do designer) vale nos caminhos; {usuario}, o nome antigo, continua aceito', function () {
 			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a/{atracao}', file: '{atracao} {designer}' }] }).tipos[0].file, '{atracao} {designer}');
 			eq(api.limpar('tiposDeProjeto', { tipos: [{ name: 'A', path: '/a/{atracao}', file: '{atracao} {usuario}' }] }).tipos[0].file, '{atracao} {usuario}');
@@ -1262,6 +1290,142 @@ REGRAS.push({
 	es3: function (api) {
 		eq(api.rewrite('comp("BG").layer(1); comp(\'BG FUNDO\')', { BG: 'BG_2' }), 'comp("BG_2").layer(1); comp(\'BG FUNDO\')');
 		eq(api.cites('comp("A")', 'A'), true);
+	}
+});
+
+// o webhook do projeto (#49): o envio ao n8n ao criar o projeto de uma atração nova, e a resposta virando os avisos
+// (O PROJETISTA, client/js/projetista.js; o host monta o envio no projectCreate; docs/webhook-projeto.md)
+const URL_DO_PROJETO = 'https://workflows.jmbillard.com/webhook/projeto';
+
+// a situação de um projeto criado: a atração nova sem card (o caso desta fatia); 'mudar' troca o que o caso pede
+function situacao(mudar) {
+	return Object.assign({
+		momento: 'criado',
+		url: URL_DO_PROJETO,
+		modoLocal: false,
+		versao: '2.0 beta9',
+		atracao: { nome: 'Lá na Minha Terra', tipo: 'PROGRAMAS', nova: true, quadro: '', pasta: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA', output: '//srv/OUT/PROGRAMAS/LA NA MINHA TERRA', aep: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA/01_PROJETOS/LA NA MINHA TERRA CHAMADA.aep' },
+		card: null,
+		designer: { login: 'jmbillard', sigla: 'JMBILLARD' }
+	}, mudar || {});
+}
+
+REGRAS.push({
+	arquivo: 'webhook-do-projeto.js',
+	global: 'PAD_WEBHOOK_DO_PROJETO',
+	titulo: 'o webhook do projeto (o envio ao n8n e os avisos da resposta)',
+	casos: function (api) {
+		test('atração nova sem card: envia o momento, a atração, o designer e a versão para a URL do webhook do projeto', function () {
+			eq(api.envio(situacao()), {
+				url: URL_DO_PROJETO,
+				corpo: {
+					momento: 'criado',
+					atracao: { nome: 'Lá na Minha Terra', tipo: 'PROGRAMAS', nova: true, quadro: '', pasta: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA', output: '//srv/OUT/PROGRAMAS/LA NA MINHA TERRA', aep: '//srv/VFX/PROGRAMAS/LA NA MINHA TERRA/01_PROJETOS/LA NA MINHA TERRA CHAMADA.aep' },
+					card: null,
+					designer: { login: 'jmbillard', sigla: 'JMBILLARD' },
+					versao: '2.0 beta9'
+				}
+			});
+		});
+
+		test('atração conhecida sem card (já no índice da busca): não envia', function () {
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }) })), null);
+		});
+
+		test('modo local: não envia', function () {
+			eq(api.envio(situacao({ modoLocal: true })), null);
+		});
+
+		test('sem a URL do webhook do projeto (vazia, o padrão): não envia', function () {
+			eq(api.envio(situacao({ url: '' })), null);
+			eq(api.envio(situacao({ url: '   ' })), null);
+		});
+
+		test('com card ou noutro momento (aberto, alterado): fica para a #50, não envia por enquanto', function () {
+			eq(api.envio(situacao({ card: { id: 'abc123', claquete: 'LA NA MINHA TERRA 25/11' } })), null);
+			eq(api.envio(situacao({ momento: 'aberto' })), null);
+			eq(api.envio(situacao({ momento: 'alterado' })), null);
+		});
+
+		// a resposta do n8n: { itens: [{ codigo, texto }] }
+		const ENVIO = api.envio(situacao());
+		const resposta = function (itens) {
+			return { itens: itens };
+		};
+
+		test('atracaoCadastrada → aviso verde com o texto do n8n, e a cópia do índice fica velha', function () {
+			eq(api.avisos(resposta([{ codigo: 'atracaoCadastrada', texto: 'LA NA MINHA TERRA cadastrada no banco' }]), ENVIO), {
+				avisos: [{ kind: 'success', codigo: 'atracaoCadastrada', texto: 'LA NA MINHA TERRA cadastrada no banco' }],
+				copiaVelha: true
+			});
+		});
+
+		test('atracaoJaExistia → aviso verde (já existia: nada duplicado), e a cópia do índice fica velha', function () {
+			eq(api.avisos(resposta([{ codigo: 'atracaoJaExistia', texto: '' }]), ENVIO), {
+				avisos: [{ kind: 'success', codigo: 'atracaoJaExistia', texto: 'Lá na Minha Terra já estava no banco das atrações' }],
+				copiaVelha: true
+			});
+		});
+
+		test('sem texto, cada código tem o texto padrão; os do card e do designer (#50) já têm a cor certa', function () {
+			const got = api.avisos(resposta([
+				{ codigo: 'atracaoCadastrada' },
+				{ codigo: 'cardLigado' },
+				{ codigo: 'designerEntrouNoCard' },
+				{ codigo: 'designerJaEstavaNoCard' },
+				{ codigo: 'designerNaoEncontrado' },
+				{ codigo: 'erro' }
+			]), ENVIO);
+
+			eq(got.avisos, [
+				{ kind: 'success', codigo: 'atracaoCadastrada', texto: 'Lá na Minha Terra cadastrada no banco das atrações' },
+				{ kind: 'success', codigo: 'cardLigado', texto: 'card ligado à atração' },
+				{ kind: 'success', codigo: 'designerEntrouNoCard', texto: 'você entrou no card' },
+				{ kind: 'success', codigo: 'designerJaEstavaNoCard', texto: 'você já estava no card' },
+				{ kind: 'warn', codigo: 'designerNaoEncontrado', texto: 'o n8n não achou você na tabela de designers: peça para incluírem' },
+				{ kind: 'warn', codigo: 'erro', texto: 'o n8n não conseguiu fazer o pedido: confira à mão' }
+			]);
+			eq(got.copiaVelha, true);
+		});
+
+		test('erro → aviso amarelo com o texto do n8n; a cópia do índice continua valendo', function () {
+			eq(api.avisos(resposta([{ codigo: 'erro', texto: 'o banco não respondeu' }]), ENVIO), {
+				avisos: [{ kind: 'warn', codigo: 'erro', texto: 'o banco não respondeu' }],
+				copiaVelha: false
+			});
+		});
+
+		test('a resposta em texto (JSON) ou embrulhada numa lista pelo n8n vale igual', function () {
+			const um = [{ kind: 'success', codigo: 'atracaoCadastrada', texto: 'ok' }];
+
+			eq(api.avisos('{"itens":[{"codigo":"atracaoCadastrada","texto":"ok"}]}', ENVIO).avisos, um);
+			eq(api.avisos([{ itens: [{ codigo: 'atracaoCadastrada', texto: 'ok' }] }], ENVIO).avisos, um);
+		});
+
+		const NAO_FEITO = { kind: 'warn', codigo: 'semResposta', texto: 'Lá na Minha Terra não foi cadastrada no banco das atrações (o n8n não respondeu): o projeto foi criado; avise a equipe' };
+		const FORA = { kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar o cadastro de Lá na Minha Terra no banco das atrações (a resposta do n8n veio fora do formato): o projeto foi criado; confira na busca' };
+
+		test('sem resposta (o n8n fora, o tempo esgotado): um aviso amarelo dizendo o que não foi feito', function () {
+			eq(api.avisos(null, ENVIO), { avisos: [NAO_FEITO], copiaVelha: false });
+			eq(api.avisos(undefined, ENVIO), { avisos: [NAO_FEITO], copiaVelha: false });
+		});
+
+		test('a resposta fora do formato: um aviso amarelo', function () {
+			[{}, { itens: [] }, { itens: 'x' }, { itens: [{ texto: 'sem código' }] }, 'não é JSON', '', 42, [], { ok: true }].forEach(function (r) {
+				eq(api.avisos(r, ENVIO), { avisos: [FORA], copiaVelha: false }, JSON.stringify(r));
+			});
+		});
+
+		test('um código desconhecido vira amarelo (com o texto do n8n, ou o código)', function () {
+			eq(api.avisos(resposta([{ codigo: 'outraCoisa', texto: 'algo novo' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'algo novo' }]);
+			eq(api.avisos(resposta([{ codigo: 'outraCoisa' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'o n8n respondeu outraCoisa' }]);
+		});
+	},
+	es3: function (api) {
+		eq(api.envio(situacao()).corpo.atracao.nova, true);
+		eq(api.envio(situacao({ modoLocal: true })), null);
+		eq(api.avisos('{"itens":[{"codigo":"atracaoCadastrada","texto":"ok"}]}', api.envio(situacao())).avisos[0].kind, 'success');
+		eq(api.avisos(null, api.envio(situacao())).avisos[0].kind, 'warn');
 	}
 });
 

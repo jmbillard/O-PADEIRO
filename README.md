@@ -50,6 +50,8 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🕰️ [O VERSIONADOR](docs/versionador.md) | **O VERSIONADOR** | salvar o projeto aberto em versões mais velhas do After (até 3 para trás) |
 | 🗂️ [O PRODUTOR](docs/producoes.md) | **O PRODUTOR** | a configuração: o que é da equipe e o que é só deste computador |
 
+> 🔗 *os webhooks do n8n que o padeiro chama: a [busca](docs/acessorista.md), os [filmes recentes](docs/webhook-filmes.md), os [cards do Trello](docs/webhook-trello.md) e o [webhook do projeto](docs/webhook-projeto.md), que cadastra a atração nova no banco das atrações.*
+
 **tamanhos das janelas** (do manifest). o tamanho padrão de cada janela é o recomendado para ela: o After abre com ele quando não há um tamanho guardado (a primeira vez depois de instalar; as janelas que mudaram de id, como O PROJETISTA e O CONFEITEIRO, voltam a ele depois do instalador). cada uma abre com o conteúdo inteiro à vista e não encolhe abaixo do ponto em que algo fica cortado; as que ajustam a própria altura ao conteúdo (buscar, caminhos, versões) têm o mínimo baixo. as checagens de interface (`extension/scripts/check-*.js`) olham cada janela neste tamanho padrão.
 
 | janela | abre com (o padrão) | mínimo |
@@ -495,7 +497,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_086` | configuração: endereço do webhook da busca inválido, ou caminho fixo sem nome, sem caminho ou repetido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração > tipos de projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |
+| `#PAD_089` | configuração > tipos de projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto; ou o endereço do [webhook do projeto](docs/webhook-projeto.md) inválido (sem http(s):// ou com espaços/aspas) |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
 | `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada (o padeiro tenta três jeitos: criar direto, pelo sistema e, por último, criar neste computador e levar para a rede) |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |

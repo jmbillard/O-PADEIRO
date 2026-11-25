@@ -431,6 +431,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				search: mockLer('buscaDeCaminhos'),
 				links: mockLer('links'),
 				tiposDeProjeto: mockLer('tiposDeProjeto'),
+				webhookDoProjeto: mockLer('webhookDoProjeto'),
 				coletar: mockLer('coletar'),
 				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')),
 				bar: mockLer('barra'),
@@ -544,7 +545,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			mockAdaptador.gravar(equipe, doc);
 			window.PAD_MOCK_LIST.stamp += 1000;
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), tiposDeProjeto: mockLer('tiposDeProjeto'), coletar: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personalizadas: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), tiposDeProjeto: mockLer('tiposDeProjeto'), webhookDoProjeto: mockLer('webhookDoProjeto'), coletar: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personalizadas: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")
@@ -1460,7 +1461,31 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 			window.PAD_MOCK_CUR = { oQueE: String(a.what || '').toUpperCase(), designer: 'JMBILLARD', atracao: a.atracao, quadro: a.quadro || '', output: a.output || '' /* sem output: não grava */, root: plan.root, file: plan.projects + '/' + (a.mode === 'increment' ? plan.fileBase + ' 2.aep' : plan.fileName) };
 
-			return { file: window.PAD_MOCK_CUR.file, root: plan.root };
+			// o envio ao webhook do projeto, como no host (regras/webhook-do-projeto.js): só a atração nova, fora do modo local
+			var regra = window.PAD_WEBHOOK_DO_PROJETO;
+			var envio = regra ? regra.envio({
+				momento: 'criado',
+				url: mockLer('webhookDoProjeto').url,
+				modoLocal: api.searchInfo().local,
+				versao: api.ping().version,
+				atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: plan.root, output: a.output || '', aep: window.PAD_MOCK_CUR.file },
+				card: null,
+				designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
+			}) : null;
+
+			return { file: window.PAD_MOCK_CUR.file, root: plan.root, envio: envio };
+		},
+
+		// o plano B do envio (o curl do host): o n8n de mentira. window.PAD_MOCK_N8N(url, corpo) → { status, texto } (os
+		// testes põem o deles: guardam o que chegou e respondem, ou caem); sem ele, um n8n que cadastra a atração
+		projectWebhook: async function (a) {
+			var url = mockLer('webhookDoProjeto').url;
+
+			await wait(delay);
+			if (!url || api.searchInfo().local || !a.envio || !a.envio.corpo) return { status: 0, texto: '' };
+			if (window.PAD_MOCK_N8N) return window.PAD_MOCK_N8N(url, a.envio.corpo);
+
+			return { status: 200, texto: JSON.stringify({ itens: [{ codigo: 'atracaoCadastrada', texto: a.envio.corpo.atracao.nome + ' cadastrada no banco das atrações' }] }) };
 		},
 
 		projectSaveNow: function () {

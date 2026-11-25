@@ -588,6 +588,7 @@ PADX.productions = function () {
 		links: padLerSecao('links'),
 		appearance: padLerSecao('aparencia'), // a da equipe (cada computador pode personalizar: personalizadas)
 		tiposDeProjeto: padLerSecao('tiposDeProjeto'),
+		webhookDoProjeto: padLerSecao('webhookDoProjeto'), // aba TIPOS DE PROJETO: o webhook do projeto (vazio: nada é enviado)
 		coletar: padLerSecao('coletar'),
 		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),

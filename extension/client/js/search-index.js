@@ -5,8 +5,8 @@
 ---------------------------------------------------------------
 
 Qual índice a busca de caminhos usa (o da equipe, só a cópia no modo local, ou o índice local), quando a
-configuração da busca mudou, a cópia do índice neste computador (ler, gravar e a linha com a data dela) e o
-download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
+configuração da busca mudou, a cópia do índice neste computador (ler, gravar, marcar como velha e a linha com a data
+dela) e o download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 
 */
 
@@ -64,6 +64,22 @@ download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 	function writeCopy(fs, info, text) {
 		fs.writeFileSync(info.copia + '.part', text, 'utf8');
 		fs.renameSync(info.copia + '.part', info.copia);
+	}
+
+	// a cópia marcada como velha: a data dela vai um dia para trás, e a próxima busca baixa o índice de novo (a janela de
+	// projeto, depois de o n8n cadastrar uma atração nova: docs/webhook-projeto.md). → true quando marcou
+	function markStale(fs, info) {
+		var file = copyPath(fs, info);
+		var old = new Date(Date.now() - 86400000);
+
+		try {
+			if (!fs.existsSync(file)) return false;
+			fs.utimesSync(file, old, old);
+
+			return true;
+		} catch (err) {
+			return false;
+		}
 	}
 
 	// o índice do webhook: o JSON direto ({ v: 2, … }) ou embrulhado pelo n8n ([{ indice: '<o JSON em texto>' }]).
@@ -126,6 +142,7 @@ download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 		copyPath: copyPath,
 		readCopy: readCopy,
 		writeCopy: writeCopy,
+		markStale: markStale,
 		unwrap: unwrap,
 		copyNote: copyNote,
 		download: download

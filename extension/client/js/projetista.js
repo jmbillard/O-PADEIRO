@@ -66,7 +66,8 @@ projetos com o nome certo).
 		node.title = node.textContent;
 		node.className = 'proj-status' + (kind ? ' is-' + kind : '');
 
-		if (text && kind !== 'error') state.statusTimer = setTimeout(status, 4200);
+		// o verde some sozinho; o erro e o amarelo (o que não foi feito) ficam
+		if (text && kind !== 'error' && kind !== 'warn') state.statusTimer = setTimeout(status, 4200);
 	}
 
 	// nome de arquivo: sem acentos e símbolos, em maiúsculas (o mesmo do host)
@@ -2520,8 +2521,84 @@ projetos com o nome certo).
 	/* ---------- criar ---------- */
 
 	function createArgs() {
-		// o .aep que já existe e não foi aberto: salva como … 2
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '' }, outTarget()));
+		// o .aep que já existe e não foi aberto: salva como … 2. tipo e atracaoNova: para o envio ao webhook do projeto
+		// (o host o monta, só para a atração nova: regras/webhook-do-projeto.js)
+		var attr = flow.attr || {};
+
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true }, outTarget()));
+	}
+
+	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova (docs/webhook-projeto.md) ---------- */
+
+	var WEBHOOK = window.PAD_WEBHOOK_DO_PROJETO; // o envio e os avisos (regras/webhook-do-projeto.js)
+	var WEBHOOK_TIMEOUT = 8000; // ms: o n8n que não responde nisso vira o aviso amarelo
+	var WEBHOOK_READ = { success: 2200, warn: 6000 }; // ms: o aviso à vista antes de a janela fechar
+
+	// o POST do envio pelo Node do painel → o texto da resposta (rejeita no HTTP de erro, sem rede ou no tempo esgotado)
+	function postJson(url, corpo) {
+		return new Promise(function (resolve, reject) {
+			var body = Buffer.from(JSON.stringify(corpo), 'utf8');
+			var req = require(/^https:/i.test(url) ? 'https' : 'http').request(url, { method: 'POST', timeout: WEBHOOK_TIMEOUT, headers: { 'Content-Type': 'application/json', 'Content-Length': body.length, Accept: 'application/json', 'User-Agent': 'O PADEIRO' } }, function (res) {
+				var chunks = [];
+
+				res.on('data', function (c) {
+					chunks.push(c);
+				});
+				res.on('error', reject);
+				res.on('end', function () {
+					if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error('HTTP ' + res.statusCode));
+					resolve(Buffer.concat(chunks).toString('utf8'));
+				});
+			});
+
+			req.on('timeout', function () {
+				req.destroy(new Error('tempo esgotado'));
+			});
+			req.on('error', reject);
+			req.end(body);
+		});
+	}
+
+	// envia em segundo plano: o Node do painel primeiro; sem ele, o curl do host (o plano B, ADR 0003) → a resposta
+	// (o texto) ou null (sem resposta)
+	async function sendEnvio(envio) {
+		try {
+			if (ATR.nodeFs && ATR.nodeFs()) return await postJson(envio.url, envio.corpo);
+
+			var res = await call('projectWebhook', { envio: envio });
+
+			return res && res.status >= 200 && res.status < 300 ? res.texto : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	// o envio e a resposta virando os avisos → { avisos, copiaVelha }. a atração entrou no banco: a cópia do índice fica
+	// velha (a próxima busca baixa o índice de novo e já a acha). nunca rejeita
+	async function webhookDoProjeto(envio) {
+		var lido = WEBHOOK.avisos(await sendEnvio(envio), envio);
+		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
+
+		if (lido.copiaVelha && fs) {
+			try {
+				window.PAD_SEARCH_INDEX.markStale(fs, await call('searchInfo'));
+			} catch (err) { }
+		}
+
+		return lido;
+	}
+
+	// os avisos na linha do rodapé: verde quando todos deram certo, amarelo quando algum não
+	function showAvisos(lido) {
+		var warn = lido.avisos.some(function (a) {
+			return a.kind !== 'success';
+		});
+
+		status(lido.avisos.map(function (a) {
+			return a.texto;
+		}).join(' · '), warn ? 'warn' : 'success');
+
+		return warn ? 'warn' : 'success';
 	}
 
 	async function create(args) {
@@ -2543,13 +2620,23 @@ projetos com o nome certo).
 			});
 
 			var res = await call('projectCreate', args || createArgs());
+			// a atração nova: o aviso ao n8n, em segundo plano (a criação já terminou e não espera por ele)
+			var sending = res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
 
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
+			// com o envio, ela fecha depois de mostrar os avisos dele (no máximo o tempo do envio + a leitura).
 			// onde não dá para fechar (o navegador de teste), a janela vira o editor do projeto criado
 			done = true;
 			status('projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 			$('criar-go').textContent = 'Criado';
 			setTimeout(async function () {
+				if (sending) {
+					var kind = showAvisos(await sending);
+
+					await new Promise(function (resolve) {
+						setTimeout(resolve, WEBHOOK_READ[kind]);
+					});
+				}
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
 				$('criar-go').textContent = 'Criar projeto';

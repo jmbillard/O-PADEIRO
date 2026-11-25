@@ -45,6 +45,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "../regras/caminhos.js"
 // as referências de comp nas expressões (comp("NOME")): o preenchimento reescreve as das precomps renomeadas
 #include "../regras/referencias-de-comp.js"
+// o webhook do projeto: o envio ao n8n da atração nova criada (o projectCreate, project.jsx)
+#include "../regras/webhook-do-projeto.js"
 
 #include "api.jsx"
 #include "finder.jsx"

@@ -330,6 +330,14 @@
 				<p class="scope-note tipo-empty" id="tipo-empty" hidden>sem tipos de projeto: a janela de projeto pede a pasta da atração nova (livre).</p>
 				<button type="button" class="button button-secondary button-compact add-button" id="btn-new-tipo">+ novo tipo de projeto</button>
 
+				<!-- o webhook do projeto (o cadastro da atração nova no banco das atrações): o mesmo campo da URL do registro de uso -->
+				<p class="cfg-title prods-section-title">webhook do projeto</p>
+				<p class="cfg-hint">ao criar o projeto de uma <b>atração nova</b>, a janela de projeto avisa o n8n por este webhook, em segundo plano, para <b>cadastrar</b> a atração no banco das atrações (a busca passa a achá-la). a criação não espera pela resposta. <b>vazio</b>: nada é enviado.</p>
+				<div class="log-webhook-field" id="tipo-webhook-field">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.1 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.1-3.6-8.5s1.2-6.2 3.6-8.5z" /></svg>
+					<input type="text" class="cfg-input log-webhook" id="tipo-webhook" placeholder="https://workflows.jmbillard.com/webhook/projeto" spellcheck="false" autocomplete="off" aria-label="Endereço do webhook do projeto" title="endereço do webhook do projeto (http:// ou https://; vazio: nada é enviado)">
+				</div>
+
 
 				<div class="deste-computador-split"><span class="deste-computador-split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5" /><path d="M5 19.5c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5" /></svg>deste computador</span></div>
 				<p class="cfg-hint deste-computador-split-hint">só suas: salvas aqui, não mudam nada para os outros.</p>

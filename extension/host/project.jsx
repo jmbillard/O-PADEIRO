@@ -1030,7 +1030,68 @@ PADX.projectCreate = function (a) {
 		throw new Error('#PAD_091 - não foi possível salvar o projeto em ' + padDisplayPath(projects) + ' (sem permissão de escrita na pasta?)' + padMacPrivacyHint() + '.');
 	}
 
-	return { file: padDisplayPath(file.fsName), root: padDisplayPath(plan.root) };
+	var aep = padDisplayPath(file.fsName);
+	var root = padDisplayPath(plan.root);
+
+	// envio: o aviso ao n8n pelo webhook do projeto (a atração nova), ou null. quem envia é o painel, em segundo plano
+	// (o Node primeiro, ADR 0003): a criação não espera nem falha por ele
+	return { file: aep, root: root, envio: padEnvioDoProjeto(a, root, output && output.exists ? padDisplayPath(output.fsName) : '', aep) };
+};
+
+// o envio ao webhook do projeto de um projeto recém-criado (regras/webhook-do-projeto.js; docs/webhook-projeto.md), ou
+// null: só a atração nova, fora do modo local e com a URL na configuração da equipe (aba TIPOS DE PROJETO).
+// a: os do projectCreate + { tipo, atracaoNova } (a janela de projeto manda). Um erro aqui não desfaz a criação: null
+function padEnvioDoProjeto(a, pasta, output, aep) {
+	try {
+		return PAD_WEBHOOK_DO_PROJETO.envio({
+			momento: 'criado',
+			url: padLerSecao('webhookDoProjeto').url,
+			modoLocal: padLocalMode(),
+			versao: PADX_VERSION,
+			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
+			card: null,
+			designer: { login: String(system.userName || ''), sigla: padSigla() }
+		});
+	} catch (err) {
+		return null;
+	}
+}
+
+// Plano B do envio ao webhook do projeto, sem o Node do painel: o POST pelo curl (como o registro de uso), com o corpo
+// num arquivo temporário (sem aspas nem acentos na linha de comando) e a URL da configuração (a validada, nunca a que
+// vem do painel). Trava o After até a resposta (no máximo 8 s): por isso é só o plano B.
+// a: { envio: { corpo } } → { status (o HTTP; 0: sem resposta), texto (o corpo da resposta) }
+PADX.projectWebhook = function (a) {
+	var url = padLerSecao('webhookDoProjeto').url;
+
+	if (!url || padLocalMode() || !a || !a.envio || !a.envio.corpo) return { status: 0, texto: '' };
+
+	var body = new File(tempPath + '/webhook_do_projeto_' + new Date().getTime() + '.json');
+	var out = '';
+
+	padEnsureFolder(tempPath);
+	body.encoding = 'UTF-8';
+	writeFileContent(body, JSON.stringify(a.envio.corpo));
+
+	// -k e --tlsv1.2: os mesmos do registro de uso (a rede da empresa intercepta o TLS). -w: o HTTP na última linha
+	var cmd = appOs == 'Win'
+		? 'cmd.exe /c curl.exe -s -k --tlsv1.2 --connect-timeout 3 --max-time 8 -X POST -H "Content-Type: application/json" --data-binary @"' + body.fsName.replace(/"/g, '') + '" -w "\\n%{http_code}" "' + url + '"'
+		: 'curl -s -k --tlsv1.2 --connect-timeout 3 --max-time 8 -X POST -H "Content-Type: application/json" --data-binary @' + psShellQuote(body.fsName) + ' -w "\\n%{http_code}" ' + psShellQuote(url);
+
+	try {
+		out = String(system.callSystem(cmd) || '');
+	} catch (err) {
+		out = '';
+	}
+
+	try {
+		body.remove();
+	} catch (err2) { }
+
+	var lines = out.replace(/\s+$/, '').split(/\r?\n/);
+	var status = parseInt(lines.pop(), 10) || 0;
+
+	return { status: status, texto: lines.join('\n') };
 };
 
 // O .aep está dentro da pasta gravada no projeto (padeiro:pasta)? sem pasta gravada, vale. o volume com sufixo

@@ -57,6 +57,10 @@ Uma atração que ainda não está no índice da busca. Ao criar o projeto dela,
 Onde a equipe guarda as atrações, os cards e a relação de cada designer com os nomes dele no Teams e no Trello. O
 padeiro não o lê direto: lê o índice da busca e pede as mudanças ao n8n.
 
+**Webhook do projeto**:
+O webhook do n8n que a janela de projeto avisa, em segundo plano, quando cria o projeto de uma atração nova, para
+cadastrá-la no banco das atrações. Fica na configuração da equipe, na aba TIPOS DE PROJETO; vazio, nada é enviado.
+
 **Tipo**:
 A classe de uma atração que decide onde ficam as pastas dela: PROGRAMA, NOVELA, VT, FILME…
 _Avoid_: categoria
