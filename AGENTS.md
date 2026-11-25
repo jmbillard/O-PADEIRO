@@ -25,6 +25,9 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
   `ui-states.js`.
 - **Guia de UI:** `docs/guia-ui.md` vale para toda janela e todo mockup. Ex.: item escolhido numa lista ganha fundo
   suave, nunca uma faixa de cor num lado só.
+- **Glossário no código:** os termos do `GLOSSARY.md` valem também para nomes de variáveis, funções, classes, chaves
+  guardadas, arquivos e ids; os termos em `_Avoid_` não entram em código novo e saem do código que for mexido. Chave
+  guardada que muda de nome: o padeiro lê a antiga e grava a nova.
 - **Teste:** tudo roda no navegador com `extension/client/js/mock-host.js` no lugar do After Effects. Nada disso é
   teste no After de verdade: dizer isso ao relatar.
 
