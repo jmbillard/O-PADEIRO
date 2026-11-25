@@ -49,6 +49,14 @@ Um programa, novela, show, evento ou outro conteúdo com identidade visual próp
 peças (DOMINGÃO COM HUCK, TELA QUENTE).
 _Avoid_: programa (quando o tipo não importa)
 
+**Atração nova**:
+Uma atração que ainda não está no índice da busca. Ao criar o projeto dela, a janela de projeto cria as pastas e o
+`.aep` e pede o cadastro dela no banco das atrações.
+
+**Banco das atrações**:
+Onde a equipe guarda as atrações, os cards e a relação de cada designer com os nomes dele no Teams e no Trello. O
+padeiro não o lê direto: lê o índice da busca e pede as mudanças ao n8n.
+
 **Tipo**:
 A classe de uma atração que decide onde ficam as pastas dela: PROGRAMA, NOVELA, VT, FILME…
 _Avoid_: categoria
