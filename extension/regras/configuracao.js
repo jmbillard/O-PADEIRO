@@ -23,7 +23,7 @@ O módulo não acessa disco: recebe um adaptador que lê e grava um documento (u
   { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto),
     apagar: function (arquivo) (opcional: tira um arquivo antigo) }
 A configuração da equipe fica num arquivo na rede (EQUIPE); a deste computador, em arquivos da pasta de dados do
-usuário (COMPUTADOR, PESSOAL e LINKS_PESSOAIS).
+usuário (COMPUTADOR, PERSONALIZADO e LINKS_DESTE_COMPUTADOR).
 O host tem o adaptador com os arquivos (host/productions.jsx), o host de teste o do localStorage (client/js/mock-host.js)
 e o teste em Node um em memória. O JSON fica com o adaptador.
 
@@ -639,8 +639,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	// ---------------------------------------------------------------------------------------------------------
 	// registro de uso da equipe ('LOG'): { mode, webhook }
-	//   mode → webhook (envia a linha para o webhook), csv (na pasta de templates da produção usada), csvGlobal (ao
-	//          lado da configuração da equipe) ou off
+	//   mode → webhook (envia a linha para o webhook), csv (na pasta de templates da produção usada), csvEquipe (ao
+	//          lado da configuração da equipe; antes 'csvGlobal', ainda lido) ou off
 	// ---------------------------------------------------------------------------------------------------------
 
 	var PADRAO_REGISTRO = { mode: 'webhook', webhook: 'https://workflows.jmbillard.com/webhook/log_db_padeiro' };
@@ -650,7 +650,8 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 		if (!o) return clean;
 
-		clean.mode = /^(csv|csvGlobal|off)$/.test(o.mode) ? o.mode : 'webhook';
+		if (o.mode == 'csvGlobal') o.mode = 'csvEquipe'; // o nome antigo
+		clean.mode = /^(csv|csvEquipe|off)$/.test(o.mode) ? o.mode : 'webhook';
 		clean.webhook = trim(o.webhook);
 
 		// sem aspas, espaços e símbolos do terminal: o endereço vai para a linha de comando do curl
@@ -794,12 +795,12 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
-	// tipos de projeto ('PROJECT', aba PROJETO): { categories: [{ name, path, output, file, icon }] }, a lista "dentro
-	// de" da atração nova (host/project.jsx)
+	// tipos de projeto ('TIPOS_DE_PROJETO', antes 'PROJECT'; aba TIPOS DE PROJETO): { categories: [{ name, path,
+	// output, file, icon }] }, a lista "dentro de" da atração nova (host/project.jsx)
 	//   path   → a pasta do projeto, com os tokens do caminho (TOKENS_DO_CAMINHO); sem {atracao}, o tipo é a atração
 	//   output → a pasta de output proposta no projeto novo (opcional, com tokens); file → o nome do .aep (opcional,
 	//            com tokens); icon → um ícone do seletor (client/js/util.js)
-	// sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem tipos
+	// sem a seção (ou no formato antigo, com raiz e retrancas): sem tipos
 	// ---------------------------------------------------------------------------------------------------------
 
 	// {categoria}: o nome antigo do {tipo}, ainda aceito
@@ -835,16 +836,16 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 			var re = /\{([^}]*)\}/g;
 			var m;
 
-			if (!key) throw new Error('#PAD_089 - projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
-			if (seen[key]) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' aparece mais de uma vez.');
-			if (path == '') throw new Error('#PAD_089 - projeto: o tipo ' + name + ' precisa de um caminho.');
+			if (!key) throw new Error('#PAD_089 - tipos de projeto: preencha o nome do tipo de projeto ' + (i + 1) + '.');
+			if (seen[key]) throw new Error('#PAD_089 - tipos de projeto: o tipo ' + name + ' aparece mais de uma vez.');
+			if (path == '') throw new Error('#PAD_089 - tipos de projeto: o tipo ' + name + ' precisa de um caminho.');
 
 			// {o_que_e} (o que se digita na janela de projeto, depois da atração): só no output e no nome do arquivo. A
 			// pasta do projeto é decidida antes de o "o que é" existir
-			if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
+			if (path.indexOf('{o_que_e}') >= 0) throw new Error('#PAD_089 - tipos de projeto: o tipo ' + name + ' usa {o_que_e} na pasta do PROJETO. ele só vale no OUTPUT e no ARQUIVO.');
 
 			while ((m = re.exec(path + ' ' + output + ' ' + fileName)) != null) {
-				if (indexOf(TOKENS_DO_CAMINHO, m[1]) < 0) throw new Error('#PAD_089 - projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
+				if (indexOf(TOKENS_DO_CAMINHO, m[1]) < 0) throw new Error('#PAD_089 - tipos de projeto: {' + m[1] + '} não é um token do caminho (use {atracao}, {ano}, {mes}, {mes_extenso}, {proximo_mes}, {proximo_mes_num}, {ano_proximo_mes}, {tipo}, {letra}, {o_que_e} ou {ano_producao}).');
 			}
 
 			seen[key] = true;
@@ -855,9 +856,9 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	}
 
 	// ---------------------------------------------------------------------------------------------------------
-	// deste computador ('machine_config.json', na pasta de dados do usuário)
-	//   user        → a sigla do designer ({usuario} no nome do projeto); vazia: a do login
-	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a da categoria não
+	// deste computador ('computador_config.json', antes 'machine_config.json', na pasta de dados do usuário)
+	//   designer    → a sigla do designer (antes 'user') ({usuario} no nome do projeto); vazia: a do login
+	//   projects    → a pasta dos projetos neste computador (a atração nova vai para ela quando a do tipo não
 	//                 pode ser acessada: rede fora ou modo local)
 	//   outputs     → o output local (vale quando o output do template não pode ser acessado)
 	//   render      → os presets de render { final, preview }
@@ -869,9 +870,13 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	//   fontsUpload → as fontes deste computador vão para o banco; fontsCheck → a barra confere as fontes sozinha
 	// ---------------------------------------------------------------------------------------------------------
 
-	var COMPUTADOR = 'machine_config.json';
-	var PESSOAL = 'personal_config.json'; // a aparência e a barra desta pessoa: só as personalizadas
-	var LINKS_PESSOAIS = 'personal_links.json';
+	var COMPUTADOR = 'computador_config.json';
+	var PERSONALIZADO = 'computador_personalizado.json'; // a aparência e a barra deste computador: só as personalizadas
+	var LINKS_DESTE_COMPUTADOR = 'computador_links.json';
+	// os nomes de antes (#45), lidos enquanto não há os de agora; a gravação seguinte apaga o antigo
+	var COMPUTADOR_ANTIGO = 'machine_config.json';
+	var PERSONALIZADO_ANTIGO = 'personal_config.json';
+	var LINKS_DESTE_COMPUTADOR_ANTIGO = 'personal_links.json';
 
 	// o designer: letras, números, ponto, hífen e sublinhado, em maiúsculas (a mesma limpeza vale para o login)
 	function limparSigla(value) {
@@ -973,7 +978,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	var CAMPOS_DO_PAINEL = {
 		productions: 'producoes', drives: 'mapaDeDrives', rename: 'regraDoRenomear', organize: 'organizar', search: 'buscaDeCaminhos', links: 'links',
-		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', collect: 'coletar', fonts: 'bancoDeFontes', project: 'tiposDeProjeto'
+		bar: 'barra', log: 'registroDeUso', appearance: 'aparencia', collect: 'coletar', fonts: 'bancoDeFontes', tiposDeProjeto: 'tiposDeProjeto'
 	};
 
 	// { campo do painel: valor } → { seção: valor }, só com os campos que vieram (sem as produções: a lista vazia, que
@@ -1004,26 +1009,26 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		{ nome: 'aparencia', onde: 'equipe', arquivo: EQUIPE, chave: 'APPEARANCE', padrao: function () { return PADRAO_APARENCIA; }, limpar: limparAparencia },
 		{ nome: 'coletar', onde: 'equipe', arquivo: EQUIPE, chave: 'COLLECT', padrao: function () { return PADRAO_COLETAR; }, limpar: limparColetar },
 		{ nome: 'bancoDeFontes', onde: 'equipe', arquivo: EQUIPE, chave: 'FONTS', padrao: function () { return { bank: '', upload: true }; }, limpar: limparBancoDeFontes },
-		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'PROJECT', padrao: function () { return { categories: [] }; }, limpar: limparTiposDeProjeto },
+		{ nome: 'tiposDeProjeto', onde: 'equipe', arquivo: EQUIPE, chave: 'TIPOS_DE_PROJETO', antigos: ['PROJECT'], padrao: function () { return { categories: [] }; }, limpar: limparTiposDeProjeto },
 
 		// deste computador
-		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'user', arquivosAntigos: ['project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },
-		{ nome: 'modoLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'localMode', antigos: ['homeOffice'], padrao: function () { return false; }, limpar: function (v) { return v === true; } },
-		{ nome: 'registroDeUsoLigado', onde: 'computador', arquivo: COMPUTADOR, chave: 'log', padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'pastaDosProjetos', onde: 'computador', arquivo: COMPUTADOR, chave: 'projects', padrao: function () { return ''; }, limpar: limparPasta },
-		{ nome: 'outputLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'outputs', padrao: function () { return ''; }, limpar: limparPasta },
-		{ nome: 'presetsDeRender', onde: 'computador', arquivo: COMPUTADOR, chave: 'render', padrao: function () { return limparPresetsDeRender({}); }, limpar: limparPresetsDeRender },
+		{ nome: 'sigla', onde: 'computador', arquivo: COMPUTADOR, chave: 'designer', antigos: ['user'], arquivosAntigos: [COMPUTADOR_ANTIGO, 'project_user.json'], padrao: function () { return ''; }, limpar: limparSigla },
+		{ nome: 'modoLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'localMode', antigos: ['homeOffice'], arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return false; }, limpar: function (v) { return v === true; } },
+		{ nome: 'registroDeUsoLigado', onde: 'computador', arquivo: COMPUTADOR, chave: 'log', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'pastaDosProjetos', onde: 'computador', arquivo: COMPUTADOR, chave: 'projects', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'outputLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'outputs', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return ''; }, limpar: limparPasta },
+		{ nome: 'presetsDeRender', onde: 'computador', arquivo: COMPUTADOR, chave: 'render', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparPresetsDeRender({}); }, limpar: limparPresetsDeRender },
 		// sem a lista (padrão null), o host monta as produções deste computador das pastas de antes ('templates'), que
 		// dependem das produções da equipe (api.jsx: padProducoesDesteComputador)
-		{ nome: 'producoesDesteComputador', onde: 'computador', arquivo: COMPUTADOR, chave: 'productions', padrao: vazio, limpar: limparProducoesDesteComputador },
-		{ nome: 'indiceLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'search', padrao: function () { return limparIndiceLocal({}); }, limpar: limparIndiceLocal },
-		{ nome: 'listaDosTemplates', onde: 'computador', arquivo: COMPUTADOR, chave: 'lists', padrao: function () { return limparListaDosTemplates({}); }, limpar: limparListaDosTemplates },
-		{ nome: 'fontesNoBanco', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsUpload', padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'fontesConferir', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsCheck', padrao: function () { return true; }, limpar: ligado },
-		{ nome: 'linksPessoais', onde: 'computador', arquivo: LINKS_PESSOAIS, chave: 'LINKS', padrao: function () { return []; }, limpar: limparLinks },
+		{ nome: 'producoesDesteComputador', onde: 'computador', arquivo: COMPUTADOR, chave: 'productions', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: vazio, limpar: limparProducoesDesteComputador },
+		{ nome: 'indiceLocal', onde: 'computador', arquivo: COMPUTADOR, chave: 'search', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparIndiceLocal({}); }, limpar: limparIndiceLocal },
+		{ nome: 'listaDosTemplates', onde: 'computador', arquivo: COMPUTADOR, chave: 'lists', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return limparListaDosTemplates({}); }, limpar: limparListaDosTemplates },
+		{ nome: 'fontesNoBanco', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsUpload', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'fontesConferir', onde: 'computador', arquivo: COMPUTADOR, chave: 'fontsCheck', arquivosAntigos: [COMPUTADOR_ANTIGO], padrao: function () { return true; }, limpar: ligado },
+		{ nome: 'linksDesteComputador', onde: 'computador', arquivo: LINKS_DESTE_COMPUTADOR, chave: 'LINKS', arquivosAntigos: [LINKS_DESTE_COMPUTADOR_ANTIGO], padrao: function () { return []; }, limpar: limparLinks },
 		// sem a personalizada (padrão null): vale a da equipe
-		{ nome: 'aparenciaPessoal', onde: 'computador', arquivo: PESSOAL, chave: 'APPEARANCE', padrao: vazio, limpar: limparAparencia },
-		{ nome: 'barraPessoal', onde: 'computador', arquivo: PESSOAL, chave: 'BAR', padrao: vazio, limpar: limparBarra }
+		{ nome: 'aparenciaDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'APPEARANCE', arquivosAntigos: [PERSONALIZADO_ANTIGO], padrao: vazio, limpar: limparAparencia },
+		{ nome: 'barraDesteComputador', onde: 'computador', arquivo: PERSONALIZADO, chave: 'BAR', arquivosAntigos: [PERSONALIZADO_ANTIGO], padrao: vazio, limpar: limparBarra }
 	];
 
 	// ---------------------------------------------------------------------------------------------------------
@@ -1226,7 +1231,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		return {
 			secao: secao, padrao: padrao, limpar: limpar, ler: ler, lerDe: lerDe, aplicar: aplicar, gravar: gravar, criar: criar, paraLer: paraLer,
 			secoesDoPainel: secoesDoPainel, caminho: caminho, semEspacosAMais: semEspacosAMais,
-			EQUIPE: EQUIPE, COMPUTADOR: COMPUTADOR, PESSOAL: PESSOAL, LINKS_PESSOAIS: LINKS_PESSOAIS, COPIA_DA_BUSCA: COPIA_DA_BUSCA
+			EQUIPE: EQUIPE, COMPUTADOR: COMPUTADOR, PERSONALIZADO: PERSONALIZADO, LINKS_DESTE_COMPUTADOR: LINKS_DESTE_COMPUTADOR, COPIA_DA_BUSCA: COPIA_DA_BUSCA
 		};
 	}
 

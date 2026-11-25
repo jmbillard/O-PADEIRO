@@ -12,7 +12,7 @@ projeto inteiro.
 
 'FONTS' no O_PADEIRO_GLOBAL_config.json (a seção bancoDeFontes da tabela de seções): { bank: '<pasta>', upload: true }.
 sem 'bank', o banco é a pasta BANCO DE FONTES no mesmo nível da pasta 'extension' na rede (ao lado do código do padeiro
-e da configuração). neste computador (meu usuário):
+e da configuração). deste computador (configuração > DESTE COMPUTADOR):
 fontsUpload (a seção fontesNoBanco; false: as fontes deste computador não vão para o banco) e fontsCheck (a
 fontesConferir; false: a barra só confere as fontes no clique em Fontes).
 

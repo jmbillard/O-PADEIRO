@@ -59,9 +59,9 @@ no topo da lista, antes das pastas, ficam três atalhos:
 - **recentes** → os templates usados por último.
   - um template entra nos recentes quando você **preenche** (ao clicar em '*Preencher*', quando o template começa a ser importado) ou **importa** (duplo clique na lista ou o botão de importar, no rodapé). só selecionar não conta.
   - o último usado vai para o topo; se ele já estava na lista, só sobe (não repete).
-  - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **neste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
+  - aparecem **5 templates** por padrão; o número é de cada pessoa, na [configuração > templates](producoes.md#-templates), em **deste computador** (de 0 a 30; 0 esconde a seção). o padeiro guarda os últimos 30, então aumentar o limite já mostra os anteriores.
   - um template fixado não aparece nos recentes (não repete), então a seção pode mostrar menos que o limite.
-- **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **neste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
+- **novos** → os templates criados nos últimos **15 dias** (ou o número da [configuração > templates](producoes.md#-templates), em **deste computador**: de 0 a 90; 0 esconde a seção), do mais novo para o mais velho (os que já estão nos fixados ou recentes não repetem). vale a data de criação do arquivo `.aep` / `.aet`.
 - **preset de render** → fixados e recentes lembram o último preset de render usado em cada um: na próxima vez, ele já vem escolhido na fila de render (passe o mouse no template para ver qual). templates sem preset guardado usam o último preset usado em geral.
   - templates apagados ou renomeados na rede somem da seção.
 

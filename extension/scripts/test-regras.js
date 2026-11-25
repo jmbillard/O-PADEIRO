@@ -326,11 +326,11 @@ const REGRAS = [
 
 const EQUIPE = 'O_PADEIRO_GLOBAL_config.json';
 // a configuração deste computador (a pasta de dados do usuário)
-const COMPUTADOR = 'machine_config.json';
-const PESSOAL = 'personal_config.json';
-const LINKS_PESSOAIS = 'personal_links.json';
+const COMPUTADOR = 'computador_config.json';
+const PERSONALIZADO = 'computador_personalizado.json';
+const LINKS_DESTE_COMPUTADOR = 'computador_links.json';
 const ONDE_COMPUTADOR = {
-	sigla: 'computador ' + COMPUTADOR + ' user',
+	sigla: 'computador ' + COMPUTADOR + ' designer',
 	modoLocal: 'computador ' + COMPUTADOR + ' localMode',
 	registroDeUsoLigado: 'computador ' + COMPUTADOR + ' log',
 	pastaDosProjetos: 'computador ' + COMPUTADOR + ' projects',
@@ -341,9 +341,9 @@ const ONDE_COMPUTADOR = {
 	listaDosTemplates: 'computador ' + COMPUTADOR + ' lists',
 	fontesNoBanco: 'computador ' + COMPUTADOR + ' fontsUpload',
 	fontesConferir: 'computador ' + COMPUTADOR + ' fontsCheck',
-	linksPessoais: 'computador ' + LINKS_PESSOAIS + ' LINKS',
-	aparenciaPessoal: 'computador ' + PESSOAL + ' APPEARANCE',
-	barraPessoal: 'computador ' + PESSOAL + ' BAR'
+	linksDesteComputador: 'computador ' + LINKS_DESTE_COMPUTADOR + ' LINKS',
+	aparenciaDesteComputador: 'computador ' + PERSONALIZADO + ' APPEARANCE',
+	barraDesteComputador: 'computador ' + PERSONALIZADO + ' BAR'
 };
 
 // o adaptador em memória: um documento por nome; guarda cópias (como um arquivo) e conta as gravações
@@ -690,9 +690,9 @@ REGRAS.push({
 				listaDosTemplates: { recents: 5, newDays: 15 },
 				fontesNoBanco: true,
 				fontesConferir: true,
-				linksPessoais: [],
-				aparenciaPessoal: null, // sem a personalizada: a da equipe
-				barraPessoal: null
+				linksDesteComputador: [],
+				aparenciaDesteComputador: null, // sem a personalizada: a da equipe
+				barraDesteComputador: null
 			});
 		});
 
@@ -731,20 +731,20 @@ REGRAS.push({
 			eq(api.limpar('sigla', null), '');
 		});
 
-		test('links pessoais: a mesma limpeza dos links da equipe; um link quebrado faz a lista voltar ao padrão (vazia)', function () {
-			eq(api.ler(memoria({ [LINKS_PESSOAIS]: { LINKS: [{ name: ' meu ', url: ' https://meu.com ' }] } }), 'linksPessoais'), [{ name: 'meu', url: 'https://meu.com', icon: '' }]);
-			eq(api.ler(memoria({ [LINKS_PESSOAIS]: { LINKS: [{ name: 'x', url: 'sem' }] } }), 'linksPessoais'), []);
-			lancaErro(function () { api.gravar(memoria(), { linksPessoais: [{ name: 'x', url: 'sem' }] }); }, /^#PAD_087/);
+		test('links deste computador: a mesma limpeza dos links da equipe; um link quebrado faz a lista voltar ao padrão (vazia)', function () {
+			eq(api.ler(memoria({ [LINKS_DESTE_COMPUTADOR]: { LINKS: [{ name: ' meu ', url: ' https://meu.com ' }] } }), 'linksDesteComputador'), [{ name: 'meu', url: 'https://meu.com', icon: '' }]);
+			eq(api.ler(memoria({ [LINKS_DESTE_COMPUTADOR]: { LINKS: [{ name: 'x', url: 'sem' }] } }), 'linksDesteComputador'), []);
+			lancaErro(function () { api.gravar(memoria(), { linksDesteComputador: [{ name: 'x', url: 'sem' }] }); }, /^#PAD_087/);
 		});
 
-		test('a barra e a aparência desta pessoa: a mesma limpeza das da equipe; uma quebrada vale como não personalizada', function () {
-			const m = memoria({ [PESSOAL]: { BAR: { items: ['templates', 'pastas'], hidden: ['templates'] }, APPEARANCE: { mode: 'escuro', accent: '#AABBCC', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'nenhuma' } } });
+		test('a barra e a aparência deste computador: a mesma limpeza das da equipe; uma quebrada vale como não personalizada', function () {
+			const m = memoria({ [PERSONALIZADO]: { BAR: { items: ['templates', 'pastas'], hidden: ['templates'] }, APPEARANCE: { mode: 'escuro', accent: '#AABBCC', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'nenhuma' } } });
 
-			eq(api.ler(m, 'barraPessoal'), api.limpar('barra', { items: ['templates', 'pastas'], hidden: ['templates'] }));
-			eq(api.ler(m, 'barraPessoal').hidden, ['gaveta:templates']);
-			eq(api.ler(m, 'aparenciaPessoal'), { mode: 'light', background: 'gradient', accent: '#aabbcc', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'inter', logo: '' });
-			eq(api.ler(memoria({ [PESSOAL]: { APPEARANCE: { accent: 'azul' } } }), 'aparenciaPessoal'), null);
-			lancaErro(function () { api.gravar(memoria(), { aparenciaPessoal: { accent: 'azul' } }); }, /^#PAD_088 - aparência: cor de destaque inválida/);
+			eq(api.ler(m, 'barraDesteComputador'), api.limpar('barra', { items: ['templates', 'pastas'], hidden: ['templates'] }));
+			eq(api.ler(m, 'barraDesteComputador').hidden, ['gaveta:templates']);
+			eq(api.ler(m, 'aparenciaDesteComputador'), { mode: 'light', background: 'gradient', accent: '#aabbcc', gradientStart: '#000000', gradientEnd: '#ffffff', font: 'inter', logo: '' });
+			eq(api.ler(memoria({ [PERSONALIZADO]: { APPEARANCE: { accent: 'azul' } } }), 'aparenciaDesteComputador'), null);
+			lancaErro(function () { api.gravar(memoria(), { aparenciaDesteComputador: { accent: 'azul' } }); }, /^#PAD_088 - aparência: cor de destaque inválida/);
 		});
 
 		test('registro de uso, coletar e banco de fontes da equipe: limpos; o que não serve lança o erro', function () {
@@ -763,7 +763,7 @@ REGRAS.push({
 
 			eq(api.ler(m, 'modoLocal'), true);
 			api.gravar(m, { modoLocal: api.ler(m, 'modoLocal') });
-			eq([m.doc(COMPUTADOR).user, m.doc(COMPUTADOR).localMode, 'homeOffice' in m.doc(COMPUTADOR)], ['ABC', true, false]);
+			eq([m.doc(COMPUTADOR).designer, m.doc(COMPUTADOR).localMode, 'homeOffice' in m.doc(COMPUTADOR)], ['ABC', true, false]);
 		});
 
 		test('sigla: sem ela no arquivo deste computador, a do arquivo antigo (project_user.json); gravar grava no novo e apaga o antigo', function () {
@@ -773,8 +773,72 @@ REGRAS.push({
 			eq(api.ler(memoria({ 'project_user.json': { user: 'velho' } }), 'sigla'), 'VELHO'); // nem o arquivo novo existe
 			eq(api.ler(memoria({ [COMPUTADOR]: { user: 'NOVO' }, 'project_user.json': { user: 'velho' } }), 'sigla'), 'NOVO');
 			api.gravar(m, { sigla: api.ler(m, 'sigla') });
-			eq([m.doc(COMPUTADOR).log, m.doc(COMPUTADOR).user], [false, 'VELHO']);
+			eq([m.doc(COMPUTADOR).log, m.doc(COMPUTADOR).designer], [false, 'VELHO']);
 			eq(m.doc('project_user.json'), null);
+		});
+
+		// #45: as chaves guardadas da configuração passam aos termos do glossário. Cada uma: a antiga é lida, a nova é
+		// gravada (e a antiga sai)
+		test('tipos de projeto: "PROJECT" (o nome antigo) é lido; gravar grava só "TIPOS_DE_PROJETO"', function () {
+			const tipos = { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] };
+			const m = memoria({ [EQUIPE]: { PROJECT: tipos, OUTRA: 1 } });
+
+			eq(api.secao('tiposDeProjeto').chave, 'TIPOS_DE_PROJETO');
+			eq(api.ler(m, 'tiposDeProjeto'), tipos);
+			api.gravar(m, { tiposDeProjeto: api.ler(m, 'tiposDeProjeto') });
+			eq(m.doc(EQUIPE), { OUTRA: 1, TIPOS_DE_PROJETO: tipos });
+		});
+
+		test('registro de uso: o modo "csvGlobal" (o nome antigo) é lido como "csvEquipe"; gravar grava "csvEquipe"', function () {
+			const m = memoria({ [EQUIPE]: { LOG: { mode: 'csvGlobal', webhook: '' } } });
+
+			eq(api.ler(m, 'registroDeUso').mode, 'csvEquipe');
+			api.gravar(m, { registroDeUso: api.ler(m, 'registroDeUso') });
+			eq(m.doc(EQUIPE).LOG.mode, 'csvEquipe');
+			eq(api.limpar('registroDeUso', { mode: 'csvEquipe' }).mode, 'csvEquipe');
+		});
+
+		test('o designer: "user" (o nome antigo) é lido; gravar grava só "designer"', function () {
+			const m = memoria({ [COMPUTADOR]: { user: 'velho', log: false } });
+
+			eq(api.secao('sigla').chave, 'designer');
+			eq(api.ler(m, 'sigla'), 'VELHO');
+			api.gravar(m, { sigla: api.ler(m, 'sigla') });
+			eq([m.doc(COMPUTADOR).designer, m.doc(COMPUTADOR).log], ['VELHO', false]);
+			eq('user' in m.doc(COMPUTADOR), false);
+		});
+
+		test('o arquivo deste computador: "machine_config.json" (o nome antigo) é lido; gravar grava "computador_config.json" e apaga o antigo', function () {
+			const m = memoria({ 'machine_config.json': { user: 'ABC', localMode: true, projects: '/p' } });
+
+			eq(api.COMPUTADOR, COMPUTADOR);
+			eq([api.ler(m, 'sigla'), api.ler(m, 'modoLocal'), api.ler(m, 'pastaDosProjetos')], ['ABC', true, '/p']);
+			api.gravar(m, { outputLocal: '/o' });
+			eq([m.doc(COMPUTADOR).designer, m.doc(COMPUTADOR).localMode, m.doc(COMPUTADOR).projects, m.doc(COMPUTADOR).outputs], ['ABC', true, '/p', '/o']);
+			eq(m.doc('machine_config.json'), null);
+		});
+
+		test('a aparência e a barra deste computador: "personal_config.json" (o nome antigo) é lido; gravar grava "computador_personalizado.json" e apaga o antigo', function () {
+			const barra = api.limpar('barra', { items: ['pastas'] });
+			const m = memoria({ 'personal_config.json': { BAR: barra } });
+
+			eq(api.PERSONALIZADO, PERSONALIZADO);
+			eq(api.ler(m, 'barraDesteComputador'), barra);
+			api.gravar(m, { aparenciaDesteComputador: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
+			eq(m.doc(PERSONALIZADO).BAR, barra);
+			eq(m.doc(PERSONALIZADO).APPEARANCE.accent, '#111111');
+			eq(m.doc('personal_config.json'), null);
+		});
+
+		test('os links deste computador: "personal_links.json" (o nome antigo) é lido; gravar grava "computador_links.json" e apaga o antigo', function () {
+			const links = [{ name: 'a', url: 'https://a.com', icon: '' }];
+			const m = memoria({ 'personal_links.json': { LINKS: links } });
+
+			eq(api.LINKS_DESTE_COMPUTADOR, LINKS_DESTE_COMPUTADOR);
+			eq(api.ler(m, 'linksDesteComputador'), links);
+			api.gravar(m, { linksDesteComputador: links.concat([{ name: 'b', url: 'https://b.com' }]) });
+			eq(m.doc(LINKS_DESTE_COMPUTADOR).LINKS.length, 2);
+			eq(m.doc('personal_links.json'), null);
 		});
 
 		// o formato guardado deste computador não muda: cada gravação regrava o arquivo inteiro, só com o que se conhece
@@ -783,48 +847,48 @@ REGRAS.push({
 
 			api.gravar(m, { sigla: 'abc' });
 			eq(m.doc(COMPUTADOR), {
-				user: 'ABC', localMode: true, log: true, projects: '/p', outputs: '', render: { 'final': '', preview: '' },
+				designer: 'ABC', localMode: true, log: true, projects: '/p', outputs: '', render: { 'final': '', preview: '' },
 				search: { mode: 'webhook', folders: [], foldersOnly: true, daily: true }, lists: { recents: 5, newDays: 15 }, fontsUpload: true, fontsCheck: true
 			});
 		});
 
-		test('tipos de projeto: na tabela (PROJECT da equipe), limpos; o formato antigo e o que não serve viram o padrão (sem tipos)', function () {
+		test('tipos de projeto: na tabela (TIPOS_DE_PROJETO da equipe), limpos; o formato antigo e o que não serve viram o padrão (sem tipos)', function () {
 			const s = api.secao('tiposDeProjeto');
 
-			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' PROJECT');
+			eq(s.onde + ' ' + s.arquivo + ' ' + s.chave, 'equipe ' + EQUIPE + ' TIPOS_DE_PROJETO');
 			eq(api.ler(memoria(), 'tiposDeProjeto'), { categories: [] });
 			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { root: '/x', retrancas: [] } } }), 'tiposDeProjeto'), { categories: [] });
 			eq(api.ler(memoria({ [EQUIPE]: { PROJECT: { categories: [{ name: 'a' }] } } }), 'tiposDeProjeto'), { categories: [] });
 			eq(api.limpar('tiposDeProjeto', { categories: [{ name: ' mood   mensal ', path: '\\\\srv\\MOOD\\{ano}\\', output: ' ARTE RJ /SHOWS  {o_que_e} /', file: 'a:b{proximo_mes}', icon: 'Tv 1!' }] }),
 				{ categories: [{ name: 'MOOD MENSAL', path: '//srv/MOOD/{ano}', output: 'ARTE RJ/SHOWS {o_que_e}', file: 'a b{proximo_mes}', icon: 'v1' }] });
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: ' !! ', path: '/a' }] }); }, /^#PAD_089 - projeto: preencha o nome do tipo de projeto 1\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'Novela', path: '/a' }, { name: 'novela!', path: '/b' }] }); }, /^#PAD_089 - projeto: o tipo NOVELA! aparece mais de uma vez\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - projeto: o tipo A precisa de um caminho\./);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
-			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - projeto: \{nada\} não é um token do caminho/);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: ' !! ', path: '/a' }] }); }, /^#PAD_089 - tipos de projeto: preencha o nome do tipo de projeto 1\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'Novela', path: '/a' }, { name: 'novela!', path: '/b' }] }); }, /^#PAD_089 - tipos de projeto: o tipo NOVELA! aparece mais de uma vez\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: ' ' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A precisa de um caminho\./);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/{o_que_e}' }] }); }, /^#PAD_089 - tipos de projeto: o tipo A usa \{o_que_e\} na pasta do PROJETO/);
+			lancaErro(function () { api.limpar('tiposDeProjeto', { categories: [{ name: 'A', path: '/a', file: '{nada}' }] }); }, /^#PAD_089 - tipos de projeto: \{nada\} não é um token do caminho/);
 		});
 
 		test('os campos da configuração da equipe vindos do painel viram as seções (as que não vierem ficam de fora; sem produções, a lista vazia)', function () {
-			eq(api.secoesDoPainel({ productions: [1], drives: 2, rename: 3, organize: 4, search: 5, links: 6, bar: 7, log: 8, appearance: 9, collect: 10, fonts: 11, project: 12 }),
+			eq(api.secoesDoPainel({ productions: [1], drives: 2, rename: 3, organize: 4, search: 5, links: 6, bar: 7, log: 8, appearance: 9, collect: 10, fonts: 11, tiposDeProjeto: 12 }),
 				{ producoes: [1], mapaDeDrives: 2, regraDoRenomear: 3, organizar: 4, buscaDeCaminhos: 5, links: 6, barra: 7, registroDeUso: 8, aparencia: 9, coletar: 10, bancoDeFontes: 11, tiposDeProjeto: 12 });
 			eq(api.secoesDoPainel({ links: [] }), { producoes: [], links: [] });
 
 			// gravar pelo painel: os tipos de projeto vão junto, limpos, e as chaves de fora ficam
 			const m = memoria({ [EQUIPE]: { OUTRA: 1 } });
 
-			m.gravar(EQUIPE, api.aplicar(m.ler(EQUIPE), api.secoesDoPainel({ productions: [{ name: 'A', templatesPath: '//a/b' }], project: { categories: [{ name: 'novela', path: '/n/' }] } })));
-			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], PROJECT: { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
+			m.gravar(EQUIPE, api.aplicar(m.ler(EQUIPE), api.secoesDoPainel({ productions: [{ name: 'A', templatesPath: '//a/b' }], tiposDeProjeto: { categories: [{ name: 'novela', path: '/n/' }] } })));
+			eq(m.doc(EQUIPE), { OUTRA: 1, PRODUCTIONS: [{ name: 'A', icon: '', templatesPath: '//a/b' }], TIPOS_DE_PROJETO: { categories: [{ name: 'NOVELA', path: '/n', output: '', file: '', icon: '' }] } });
 		});
 
-		test('a aparência e a barra desta pessoa: gravar uma não apaga a outra; null volta ao padrão da equipe (sai do arquivo)', function () {
+		test('a aparência e a barra deste computador: gravar uma não apaga a outra; null volta ao padrão da equipe (sai do arquivo)', function () {
 			const aparencia = api.limpar('aparencia', { mode: 'dark', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' });
-			const m = memoria({ [PESSOAL]: { APPEARANCE: aparencia } });
+			const m = memoria({ [PERSONALIZADO]: { APPEARANCE: aparencia } });
 
-			api.gravar(m, { barraPessoal: { items: ['pastas'] } });
-			eq(m.doc(PESSOAL), { APPEARANCE: aparencia, BAR: api.limpar('barra', { items: ['pastas'] }) });
-			api.gravar(m, { aparenciaPessoal: null });
-			eq(m.doc(PESSOAL), { BAR: api.limpar('barra', { items: ['pastas'] }) });
-			eq(api.ler(m, 'aparenciaPessoal'), null);
+			api.gravar(m, { barraDesteComputador: { items: ['pastas'] } });
+			eq(m.doc(PERSONALIZADO), { APPEARANCE: aparencia, BAR: api.limpar('barra', { items: ['pastas'] }) });
+			api.gravar(m, { aparenciaDesteComputador: null });
+			eq(m.doc(PERSONALIZADO), { BAR: api.limpar('barra', { items: ['pastas'] }) });
+			eq(api.ler(m, 'aparenciaDesteComputador'), null);
 		});
 
 		test('a cópia do índice da busca: lida pelo nome de agora e, sem ela, pelo de antes (busca_v2.json)', function () {
@@ -837,12 +901,12 @@ REGRAS.push({
 		// salvar uma seção não mexe nas outras
 		test('deste computador: salvar uma seção não mexe nas outras seções', function () {
 			const antes = {
-				[COMPUTADOR]: { user: 'ABC', projects: '/p', outputs: '/o', render: { 'final': 'F', preview: 'P' }, productions: [{ name: 'X', path: '/x' }], log: false, localMode: true, search: { mode: 'local', folders: ['/s'], foldersOnly: true, daily: false }, fontsUpload: false, fontsCheck: false, lists: { recents: 1, newDays: 2 } },
-				[PESSOAL]: { APPEARANCE: { mode: 'dark', background: 'gradient', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333', font: 'inter', logo: '' }, BAR: api.limpar('barra', { items: ['pastas'], hidden: [] }) }, // já limpos: o arquivo é regravado limpo
-				[LINKS_PESSOAIS]: { LINKS: [{ name: 'a', url: 'https://a.com', icon: '' }] },
+				[COMPUTADOR]: { designer: 'ABC', projects: '/p', outputs: '/o', render: { 'final': 'F', preview: 'P' }, productions: [{ name: 'X', path: '/x' }], log: false, localMode: true, search: { mode: 'local', folders: ['/s'], foldersOnly: true, daily: false }, fontsUpload: false, fontsCheck: false, lists: { recents: 1, newDays: 2 } },
+				[PERSONALIZADO]: { APPEARANCE: { mode: 'dark', background: 'gradient', accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333', font: 'inter', logo: '' }, BAR: api.limpar('barra', { items: ['pastas'], hidden: [] }) }, // já limpos: o arquivo é regravado limpo
+				[LINKS_DESTE_COMPUTADOR]: { LINKS: [{ name: 'a', url: 'https://a.com', icon: '' }] },
 				[EQUIPE]: { LOG: { mode: 'off' } }
 			};
-			const novos = { sigla: 'XYZ', modoLocal: false, registroDeUsoLigado: true, pastaDosProjetos: '/np', outputLocal: '/no', presetsDeRender: { 'final': 'G' }, producoesDesteComputador: [{ name: 'Y', path: '/y' }], indiceLocal: { mode: 'webhook' }, listaDosTemplates: { recents: 9 }, fontesNoBanco: true, fontesConferir: true, linksPessoais: [], aparenciaPessoal: { mode: 'light', accent: '#444444', gradientStart: '#555555', gradientEnd: '#666666' }, barraPessoal: {} };
+			const novos = { sigla: 'XYZ', modoLocal: false, registroDeUsoLigado: true, pastaDosProjetos: '/np', outputLocal: '/no', presetsDeRender: { 'final': 'G' }, producoesDesteComputador: [{ name: 'Y', path: '/y' }], indiceLocal: { mode: 'webhook' }, listaDosTemplates: { recents: 9 }, fontesNoBanco: true, fontesConferir: true, linksDesteComputador: [], aparenciaDesteComputador: { mode: 'light', accent: '#444444', gradientStart: '#555555', gradientEnd: '#666666' }, barraDesteComputador: {} };
 
 			Object.keys(ONDE_COMPUTADOR).forEach(function (nome) {
 				const m = memoria(antes);
@@ -880,10 +944,10 @@ REGRAS.push({
 		const c = memoria({ [COMPUTADOR]: { homeOffice: true }, 'project_user.json': { user: 'joão' } });
 
 		eq(api.ler(c, 'modoLocal'), true);
-		api.gravar(c, { sigla: api.ler(c, 'sigla'), modoLocal: true, aparenciaPessoal: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
-		eq([c.doc(COMPUTADOR).localMode, c.doc(COMPUTADOR).user, c.doc(COMPUTADOR).homeOffice], [true, 'JOAO', undefined]);
+		api.gravar(c, { sigla: api.ler(c, 'sigla'), modoLocal: true, aparenciaDesteComputador: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
+		eq([c.doc(COMPUTADOR).localMode, c.doc(COMPUTADOR).designer, c.doc(COMPUTADOR).homeOffice, c.doc(COMPUTADOR).user], [true, 'JOAO', undefined, undefined]);
 		eq(c.doc('project_user.json'), null);
-		eq(c.doc(PESSOAL).APPEARANCE.mode, 'light');
+		eq(c.doc(PERSONALIZADO).APPEARANCE.mode, 'light');
 		eq(api.paraLer(api.COPIA_DA_BUSCA, function (n) { return n === 'busca_v2.json'; }), 'busca_v2.json');
 	}
 });
