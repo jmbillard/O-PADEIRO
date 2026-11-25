@@ -191,7 +191,7 @@ O ETIQUETADOR
 sem a configuração da equipe (nem na rede, nem a cópia deste computador), a barra abre um tour num balão de vidro, e as ferramentas esperam:
 
 1. **onde fica a configuração da equipe?** → **achar na rede** (escolha o `O_PADEIRO_GLOBAL_config.json`; o caminho fica gravado, como faz o instalador) · **criar uma nova** (numa pasta da rede, com os padrões; se já houver uma lá, vale ela) · **só aqui** (modo local, com os padrões).
-2. **quem é você?** → a sigla do designer (a mesma de configuração > meu usuário).
+2. **quem é você?** → a sigla do designer (a mesma de configuração > deste computador).
 3. **a turma** → cada ferramenta acende, com o nome e o que fazem os dois cliques (as de dentro das gavetas também: a gaveta abre sozinha). experimente `◖` e `◗` na ferramenta acesa: durante o tour, os cliques só acendem a linha do clique, não rodam nada.
 
 `◗` no pãozinho refaz o tour da turma a qualquer hora.
@@ -472,7 +472,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_047` `#PAD_049` | preenchimento / fila de render fora de ordem (comece de novo) |
 | `#PAD_048` | fila de render: nenhum preset de render escolhido |
 | `#PAD_050` | o projeto está vazio |
-| `#PAD_051` a `#PAD_057` | lista de produções: dado inválido, falha ao gravar ou arquivo de importação inválido |
+| `#PAD_051` a `#PAD_057` | lista de produções: dado inválido, falha ao gravar ou arquivo carregado inválido |
 | `#PAD_058` | não foi possível carregar o índice da busca (sem rede e sem cópia salva; no modo local, sem cópia) |
 | `#PAD_059` `#PAD_060` `#PAD_069` | busca de textos: a comp ou o layer não existe mais (atualize a busca) |
 | `#PAD_061` | conversor: nenhum caminho informado |
@@ -495,7 +495,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_086` | configuração: endereço do webhook da busca inválido, ou caminho fixo sem nome, sem caminho ou repetido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
-| `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |
+| `#PAD_089` | configuração > tipos de projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |
 | `#PAD_090` | projeto: sem atração, sem título do filme ou sem ID e nome |
 | `#PAD_091` | projeto: sem pasta de destino, projeto ainda não salvo, nome do arquivo vazio ou pasta que não pôde ser criada (o padeiro tenta três jeitos: criar direto, pelo sistema e, por último, criar neste computador e levar para a rede) |
 | `#PAD_092` | projeto: já existe um `.aep` com esse nome na pasta |
@@ -504,7 +504,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_095` | coletar: projeto não salvo (use o clique direito para escolher a pasta) |
 | `#PAD_096` | modo local (ligado ou sem a rede): sem cópia da configuração neste computador, ou tentativa de editar a configuração da equipe |
 | `#PAD_097` | criador de templates: variações de layout (nenhum efeito de menu selecionado, sufixo vazio ou repetido, layer do efeito removido) |
-| `#PAD_098` | produção local (configuração > templates, neste computador): sem nome ou sem pasta, ou com o nome de uma produção da equipe |
+| `#PAD_098` | produção deste computador (configuração > templates, deste computador): sem nome ou sem pasta, ou com o nome de uma produção da equipe |
 | `#PAD_100` | importar / versionador: o arquivo não é um projeto do After (`.aep` / `.aet`), a versão não pôde ser lida ou o painel está sem acesso aos arquivos |
 | `#PAD_102` | versionador: projeto nunca salvo, sem pasta ou pasta que não existe |
 | `#PAD_103` | etiquetas: nada selecionado no painel Project, ou só pastas |

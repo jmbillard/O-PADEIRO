@@ -263,7 +263,7 @@ const CHECKS = [
 		if (await edit.count()) await edit.click();
 		await p.waitForTimeout(800);
 	}]
-].concat(['prods', 'project', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
+].concat(['prods', 'tipos-de-projeto', 'collect', 'rename', 'organize', 'search', 'fonts', 'links', 'network', 'telemetry', 'appearance', 'tools', 'machine'].map(function (tab) {
 	return ['configuração: ' + tab, 'productions.html', async (p) => {
 		const button = p.locator('.tab[data-tab="' + tab + '"]');
 
@@ -278,7 +278,7 @@ async function prepareContext(context) {
 		// cada tela começa com as gavetas fechadas (a barra lembra a que ficou aberta: sem isto, a de uma tela
 		// viria aberta na seguinte)
 		localStorage.removeItem('pad.bar.drawer');
-		localStorage.setItem('pad.mock.project', JSON.stringify(data.categories));
+		localStorage.setItem('pad.mock.tiposDeProjeto', JSON.stringify(data.categories));
 		if (/[?&]lists/.test(location.search)) sessionStorage.setItem('mock.templateLists', JSON.stringify(data.lists));
 	}, { categories: CATEGORIES, lists: LISTS });
 }

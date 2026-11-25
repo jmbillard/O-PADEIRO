@@ -135,13 +135,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	// a configuração do host de teste: um documento por arquivo no localStorage ('pad.mock.arquivo.<nome>'), o
 	// adaptador da tabela de seções. Sem nada guardado, o arquivo da equipe começa com a semente abaixo (com a barra, o
 	// banco de fontes, a aparência e os tipos de projeto da equipe que o host de teste guardava antes em 'pad.mock.bar',
-	// 'pad.mock.fonts', 'pad.mock.appearance' e 'pad.mock.project', se houver; as capturas de tela ainda põem os tipos
-	// de projeto em 'pad.mock.project')
+	// 'pad.mock.fonts', 'pad.mock.appearance' e 'pad.mock.tiposDeProjeto' (antes 'pad.mock.project'), se houver; as
+	// capturas de tela põem os tipos de projeto em 'pad.mock.tiposDeProjeto')
 	function mockSemente() {
 		var bar = mockAntigo('pad.mock.bar');
 		var fonts = mockAntigo('pad.mock.fonts');
 		var appearance = mockAntigo('pad.mock.appearance');
-		var project = mockAntigo('pad.mock.project');
+		var tiposDeProjeto = mockAntigo('pad.mock.tiposDeProjeto') || mockAntigo('pad.mock.project');
 
 		var doc = {
 			PRODUCTIONS: [
@@ -204,19 +204,19 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		if (bar) doc.BAR = bar;
 		if (fonts) doc.FONTS = fonts;
 		if (appearance) doc.APPEARANCE = appearance;
-		if (project) doc.PROJECT = project;
+		if (tiposDeProjeto) doc.TIPOS_DE_PROJETO = tiposDeProjeto;
 
 		return doc;
 	}
 
 	// os arquivos deste computador, sem nada guardado: o que o host de teste guardava antes em 'pad.mock.machine',
-	// 'pad.mock.prefs' e 'pad.mock.personalLinks' (ou, sem eles, um link pessoal de exemplo)
+	// 'pad.mock.prefs' e 'pad.mock.personalLinks' (ou, sem eles, um link deste computador de exemplo)
 	function mockSementeDesteComputador(arquivo) {
 		var C = window.PAD_CONFIGURACAO;
 
 		if (arquivo === C.COMPUTADOR) return mockAntigo('pad.mock.machine');
 
-		if (arquivo === C.PESSOAL) {
+		if (arquivo === C.PERSONALIZADO) {
 			var prefs = mockAntigo('pad.mock.prefs');
 			var doc = {};
 
@@ -227,15 +227,34 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return doc;
 		}
 
-		if (arquivo === C.LINKS_PESSOAIS) return { LINKS: mockAntigo('pad.mock.personalLinks') || [{ name: 'meu drive', url: 'https://drive.google.com/', icon: '' }] };
+		if (arquivo === C.LINKS_DESTE_COMPUTADOR) return { LINKS: mockAntigo('pad.mock.personalLinks') || [{ name: 'meu drive', url: 'https://drive.google.com/', icon: '' }] };
 
 		return null;
+	}
+
+	// o arquivo guardado com um nome antigo (#45: machine_config.json, personal_config.json, personal_links.json)? Com
+	// ele, a semente fica de fora: a tabela lê o antigo
+	function mockTemAntigo(arquivo) {
+		var tabela = ['sigla', 'linksDesteComputador', 'aparenciaDesteComputador'];
+
+		for (var i = 0; i < tabela.length; i++) {
+			var s = window.PAD_CONFIGURACAO.secao(tabela[i]);
+
+			if (s.arquivo !== arquivo) continue;
+
+			for (var j = 0; s.arquivosAntigos && j < s.arquivosAntigos.length; j++) {
+				if (localStorage.getItem('pad.mock.arquivo.' + s.arquivosAntigos[j]) != null) return true;
+			}
+		}
+
+		return false;
 	}
 
 	var mockAdaptador = {
 		ler: function (arquivo) {
 			var text = localStorage.getItem('pad.mock.arquivo.' + arquivo);
 
+			if (text == null && mockTemAntigo(arquivo)) return null;
 			if (text == null) return arquivo === window.PAD_CONFIGURACAO.EQUIPE ? mockSemente() : mockSementeDesteComputador(arquivo);
 
 			return JSON.parse(text);
@@ -310,9 +329,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		];
 	}
 
-	// a aparência e a barra desta pessoa (null = a da equipe)
+	// a aparência e a barra deste computador (null = a da equipe)
 	function mockPrefs() {
-		return { appearance: mockLer('aparenciaPessoal'), bar: mockLer('barraPessoal') };
+		return { appearance: mockLer('aparenciaDesteComputador'), bar: mockLer('barraDesteComputador') };
 	}
 
 	// o arquivista: o caminho relativo de um item (a pasta dele + o nome)
@@ -407,7 +426,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				organize: mockLer('organizar'),
 				search: mockLer('buscaDeCaminhos'),
 				links: mockLer('links'),
-				project: mockLer('tiposDeProjeto'),
+				tiposDeProjeto: mockLer('tiposDeProjeto'),
 				collect: mockLer('coletar'),
 				fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')),
 				bar: mockLer('barra'),
@@ -425,16 +444,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		appearance: function () {
 			var C = window.PAD_CONFIGURACAO;
 
-			return { stamp: mockData(C.EQUIPE) + '|' + mockData(C.PESSOAL), appearance: mockLer('aparenciaPessoal') || mockLer('aparencia') };
+			return { stamp: mockData(C.EQUIPE) + '|' + mockData(C.PERSONALIZADO), appearance: mockLer('aparenciaDesteComputador') || mockLer('aparencia') };
 		},
 
 		personalPrefs: function () {
 			return mockPrefs();
 		},
 
-		// como o host: o arquivo guarda só as personalizadas (null = voltar ao padrão da equipe; sem o campo, fica como está)
+		// como o host: o arquivo guarda só as personalizadas (null = voltar à da equipe; sem o campo, fica como está)
 		savePersonalPrefs: function (a) {
-			window.PAD_CONFIGURACAO.gravar(mockAdaptador, { aparenciaPessoal: a.appearance, barraPessoal: a.bar });
+			window.PAD_CONFIGURACAO.gravar(mockAdaptador, { aparenciaDesteComputador: a.appearance, barraDesteComputador: a.bar });
 
 			return mockPrefs();
 		},
@@ -471,27 +490,27 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		barLinks: function () {
 			var list = window.PAD_MOCK_LIST;
 
-			var personal = mockLer('linksPessoais');
+			var personal = mockLer('linksDesteComputador');
 
-			var bar = mockLer('barraPessoal') || mockLer('barra'); // as janelas do navegador não dividem o host de mentira: a configuração fica no localStorage
+			var bar = mockLer('barraDesteComputador') || mockLer('barra'); // as janelas do navegador não dividem o host de mentira: a configuração fica no localStorage
 			var links = mockLer('links');
 
 			return { items: bar.items, hidden: bar.hidden, stamp: (list ? list.stamp : 1) + '|' + JSON.stringify(personal) + '|' + JSON.stringify(bar) + '|' + JSON.stringify(links), links: links, personal: personal, localMode: !!(mockLer('modoLocal') || localStorage.getItem('pad.mock.offline')), localForced: mockLer('modoLocal') };
 		},
 
 		personalLinks: function () {
-			return { links: mockLer('linksPessoais') };
+			return { links: mockLer('linksDesteComputador') };
 		},
 
 		// como o host: a mesma limpeza dos links da equipe
 		savePersonalLinks: function (a) {
 			try {
-				window.PAD_CONFIGURACAO.gravar(mockAdaptador, { linksPessoais: a.links || [] });
+				window.PAD_CONFIGURACAO.gravar(mockAdaptador, { linksDesteComputador: a.links || [] });
 			} catch (err) {
 				throw new Error(err.message.replace('#PAD_087 - links:', '#PAD_087 - meus links:'));
 			}
 
-			return { links: mockLer('linksPessoais') };
+			return { links: mockLer('linksDesteComputador') };
 		},
 
 		requestConfigTab: function (a) {
@@ -521,7 +540,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			mockAdaptador.gravar(equipe, doc);
 			window.PAD_MOCK_LIST.stamp += 1000;
 
-			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), project: mockLer('tiposDeProjeto'), collect: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personal: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
+			return { stamp: window.PAD_MOCK_LIST.stamp, productions: doc.PRODUCTIONS, log: mockLer('registroDeUso'), drives: mockLer('mapaDeDrives'), rename: mockLer('regraDoRenomear'), organize: mockLer('organizar'), search: mockLer('buscaDeCaminhos'), links: mockLer('links'), tiposDeProjeto: mockLer('tiposDeProjeto'), collect: mockLer('coletar'), bar: mockLer('barra'), appearance: mockLer('aparencia'), fonts: Object.assign({ defaultBank: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/_adm-designers/O PADEIRO/BANCO DE FONTES' }, mockLer('bancoDeFontes')), personal: mockPrefs(), configPath: '//servidor/padeiro/O_PADEIRO_GLOBAL_config.json' };
 		},
 
 		// TARJA DUPLA tem duas fontes faltando (até "instalar")

@@ -150,10 +150,10 @@ function padDisplayPaths(list) {
 /*
 
 ---------------------------------------------------------------
-> este computador (configuração > LOCAL > computador)
+> deste computador (configuração > DESTE COMPUTADOR)
 ---------------------------------------------------------------
 
-As seções deste computador ficam na tabela de seções (regras/configuracao.js): 'machine_config.json' na pasta de
+As seções deste computador ficam na tabela de seções (regras/configuracao.js): 'computador_config.json' na pasta de
 dados do usuário, com a sigla do designer, a pasta dos projetos, o output local, os presets de render, as produções
 deste computador, o modo local, o registro de uso ligado, o índice local, a lista dos templates e as fontes. O
 adaptador dos arquivos é o de host/productions.jsx (padLerSecao / padGravarSecoes).
@@ -164,7 +164,7 @@ renders para o output local (ou a Área de Trabalho) e os registros de uso esper
 
 */
 
-// O modo local ligado à mão (configuração > meu usuário).
+// O modo local ligado à mão (configuração > DESTE COMPUTADOR).
 function padLocalForced() {
 	return padLerSecao('modoLocal');
 }
@@ -175,8 +175,7 @@ function padLocalMode() {
 	return padLocalForced() || padConfigIsCopy();
 }
 
-// a sigla que vem do login (o usuário do computador), completa (quem quiser uma sigla muda na configuração > meu
-// usuário)
+// a sigla que vem do login, completa (quem quiser uma sigla muda na configuração > DESTE COMPUTADOR)
 function padSiglaDoLogin() {
 	return PAD_CONFIGURACAO.limpar('sigla', system.userName || '');
 }
@@ -209,7 +208,8 @@ PADX.machinePrefs = function () {
 };
 
 // a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
-// (só os campos enviados mudam; o machine_config.json é regravado inteiro pela tabela, limpo, sem as chaves antigas)
+// (só os campos enviados mudam; o computador_config.json é regravado inteiro pela tabela, limpo, sem as chaves e os
+// arquivos antigos)
 PADX.saveMachinePrefs = function (a) {
 	var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
 	// as produções deste computador vão sempre: sem a lista guardada, a convertida das pastas de antes ('templates', que
@@ -239,8 +239,8 @@ PADX.saveMachinePrefs = function (a) {
 			var ppath = String(a.productions[p].path || '').replace(/^\s+|\s+$/g, '');
 
 			if (!pname && !ppath) continue;
-			if (!pname || !ppath) throw new Error('#PAD_098 - produção local ' + (p + 1) + ': precisa de um nome e de uma pasta.');
-			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção local "' + pname + '": já existe uma produção da equipe com esse nome.');
+			if (!pname || !ppath) throw new Error('#PAD_098 - produção deste computador ' + (p + 1) + ': precisa de um nome e de uma pasta.');
+			if (names[pname.toUpperCase()]) throw new Error('#PAD_098 - produção deste computador "' + pname + '": já existe uma produção da equipe com esse nome.');
 
 			names[pname.toUpperCase()] = true;
 		}
@@ -288,7 +288,14 @@ function padProducoesDesteComputador() {
 
 	if (list) return list;
 
-	var d = PAD_CONFIG_ADAPTADOR.ler(PAD_CONFIGURACAO.COMPUTADOR) || {};
+	// o arquivo deste computador ou, sem ele ainda, o de antes (machine_config.json): os da seção, pela tabela
+	var secao = PAD_CONFIGURACAO.secao('producoesDesteComputador');
+	var arquivos = [secao.arquivo].concat(secao.arquivosAntigos || []);
+	var d = null;
+
+	for (var a = 0; !d && a < arquivos.length; a++) d = PAD_CONFIG_ADAPTADOR.ler(arquivos[a]);
+
+	d = d || {};
 	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};
 	var team = padLerSecao('producoes');
 	var rows = [];
@@ -447,7 +454,7 @@ function padConfigInvalidate() {
 }
 
 function padNoSharedListError() {
-	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > meu usuário) com a rede conectada.';
+	if (padLocalForced()) return '#PAD_096 - modo local: não há uma cópia da configuração neste computador. desligue o modo local (configuração > DESTE COMPUTADOR) com a rede conectada.';
 
 	return '#PAD_064 - lista de produções compartilhada não encontrada: ' + padDisplayPath(padSharedConfigPath()) + '. verifique a conexão com a rede (o arquivo fica junto do padeiro).';
 }
@@ -574,8 +581,8 @@ PADX.productions = function () {
 		organize: padLerSecao('organizar'),
 		search: padLerSecao('buscaDeCaminhos'),
 		links: padLerSecao('links'),
-		appearance: padLerSecao('aparencia'), // o padrão da equipe (a pessoa pode personalizar: personal)
-		project: padLerSecao('tiposDeProjeto'),
+		appearance: padLerSecao('aparencia'), // a da equipe (cada computador pode personalizar: personal)
+		tiposDeProjeto: padLerSecao('tiposDeProjeto'),
 		collect: padLerSecao('coletar'),
 		bar: padLerSecao('barra'),
 		fonts: padReadFonts(),
@@ -595,7 +602,7 @@ PADX.productions = function () {
 
 O da equipe é a seção registroDeUso da tabela de seções ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel
 de produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
-templates da produção usada), 'csvGlobal' (ao lado da configuração da equipe) ou 'off' (nenhum registro). Sem 'LOG' no
+templates da produção usada), 'csvEquipe' (ao lado da configuração da equipe; antes 'csvGlobal') ou 'off' (nenhum registro). Sem 'LOG' no
 arquivo: o webhook de sempre. Neste computador, registroDeUsoLigado desliga só aqui.
 
 */
@@ -665,9 +672,9 @@ function padWriteLog(record) {
 
 	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
 
-	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
+	// CSV da equipe: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
 	var config = local ? new File(padSharedConfigPath()) : padConfigFile();
-	var folder = settings.mode == 'csvGlobal' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
+	var folder = settings.mode == 'csvEquipe' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));

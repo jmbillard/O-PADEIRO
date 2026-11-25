@@ -9,7 +9,7 @@ A janela de projeto (O PROJETISTA) cria o projeto pela atração (abaixo) e edit
 pastas). O collect dos
 arquivos é do botão COLETAR (collect.jsx).
 
-'PROJECT' no O_PADEIRO_GLOBAL_config.json (aba PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
+'TIPOS_DE_PROJETO' (antes 'PROJECT') no O_PADEIRO_GLOBAL_config.json (aba TIPOS DE PROJETO da configuração), a seção 'tiposDeProjeto' da tabela de seções
 (regras/configuracao.js: a limpeza, os tokens e o padrão):
   categories → [{ name, path, output, icon }]: a lista "dentro de" da atração nova. os caminhos (o do
                projeto e o do output, opcional: a pasta de output proposta no projeto novo) levam tokens:
@@ -17,7 +17,7 @@ arquivos é do botão COLETAR (collect.jsx).
                {ano_proximo_mes} (o ano do próximo mês: em dezembro, o que vem) {categoria} {letra} (a primeira letra do nome sem o
                artigo: a pasta da letra dos filmes) {ano_producao} (o ano de produção do filme escolhido: NAO NAO OLHE
                (2022); sem ano, o token sai junto dos parênteses em volta). icon: um ícone do seletor (js/util.js)
-Sem 'PROJECT' (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
+Sem a seção (ou no formato antigo, com raiz e retrancas): sem categorias, e o "dentro de" vem das
 atrações do índice.
 
 */

@@ -83,7 +83,7 @@ function padGravarSecoes(valores) {
 	return PAD_CONFIGURACAO.gravar(PAD_CONFIG_ADAPTADOR, valores);
 }
 
-// Para gravar num arquivo (o da equipe, ou outro ao exportar): lê o arquivo de novo (não o guardado), grava o
+// Para gravar num arquivo (o da equipe, ou outro ao salvar uma cópia da lista): lê o arquivo de novo (não o guardado), grava o
 // documento inteiro e confere o que foi gravado. Um arquivo ilegível vira um documento novo (como sempre foi).
 function padConfigArquivo(file) {
 	return {
@@ -102,7 +102,7 @@ function padConfigArquivo(file) {
 
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
-	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > meu usuário) para editar.');
+	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > DESTE COMPUTADOR) para editar.');
 	if (padConfigIsCopy()) throw new Error('#PAD_096 - sem a rede: a configuração aberta é a cópia deste computador, só para ler. tente de novo com a rede.');
 
 	var file = padConfigFile();
@@ -139,10 +139,10 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), project: padLerSecao('tiposDeProjeto'), collect: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), tiposDeProjeto: padLerSecao('tiposDeProjeto'), collect: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
 };
 
-// Lê uma lista de produções de um arquivo (importar). a: { path }
+// Carrega a lista de produções de um arquivo (no formato do arquivo da equipe). a: { path }
 PADX.readProductionsFile = function (a) {
 	var file = new File(a.path);
 
@@ -153,13 +153,13 @@ PADX.readProductionsFile = function (a) {
 	try {
 		data = JSON.parse(readFileContent(file));
 	} catch (err) {
-		throw new Error('#PAD_057 - o arquivo não é uma lista de produções válida.');
+		throw new Error('#PAD_057 - não deu para carregar: o arquivo não é uma lista de produções válida.');
 	}
 
 	return { productions: PAD_CONFIGURACAO.limpar('producoes', data.PRODUCTIONS) };
 };
 
-// Grava a lista em outro arquivo (exportar). a: { path, productions }
+// Salva uma cópia da lista de produções em outro arquivo (no formato do arquivo da equipe). a: { path, productions }
 PADX.writeProductionsFile = function (a) {
 	PAD_CONFIGURACAO.gravar(padConfigArquivo(new File(a.path)), { producoes: a.productions });
 
@@ -258,21 +258,21 @@ function padApplyConfig() {
 	PS_CAMINHOS_FIXOS = search.caminhosFixos;
 }
 
-// Links pessoais: os do designer, só neste computador (a seção linksPessoais: 'personal_links.json' na pasta de dados
+// Links deste computador: os do designer (a seção linksDesteComputador: 'computador_links.json' na pasta de dados
 // do usuário), mesma forma e mesma limpeza dos da equipe.
 PADX.personalLinks = function () {
-	return { links: padLerSecao('linksPessoais') };
+	return { links: padLerSecao('linksDesteComputador') };
 };
 
 // a: { links }
 PADX.savePersonalLinks = function (a) {
 	try {
-		padGravarSecoes({ linksPessoais: a.links || [] });
+		padGravarSecoes({ linksDesteComputador: a.links || [] });
 	} catch (err) {
 		throw new Error(err.message.replace('#PAD_087 - links:', '#PAD_087 - meus links:'));
 	}
 
-	return { links: padLerSecao('linksPessoais') };
+	return { links: padLerSecao('linksDesteComputador') };
 };
 
 /*
@@ -281,7 +281,7 @@ PADX.savePersonalLinks = function (a) {
 > ferramentas da barra (aba LAYOUT da configuração)
 ---------------------------------------------------------------
 
-'BAR' na configuração da equipe e em personal_config.json (a barra desta pessoa): as seções barra e barraPessoal da
+'BAR' na configuração da equipe e em computador_personalizado.json (a deste computador): as seções barra e barraDesteComputador da
 tabela de seções (regras/configuracao.js), { items: [...], hidden: [...] }, a mesma limpeza.
 
 */
@@ -294,14 +294,14 @@ function padIndexOf(list, value) {
 	return -1;
 }
 
-// A barra desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+// A barra deste computador: a personalizada ou, sem ela, a da equipe.
 function padReadBar() {
-	return padLerSecao('barraPessoal') || padLerSecao('barra');
+	return padLerSecao('barraDesteComputador') || padLerSecao('barra');
 }
 
-// Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
+// Links para a barra (os da equipe e os deste computador), com a data das duas listas (a barra só redesenha quando muda).
 PADX.barLinks = function () {
-	var personal = padArquivoDesteComputador(PAD_CONFIGURACAO.LINKS_PESSOAIS);
+	var personal = padArquivoDesteComputador(PAD_CONFIGURACAO.LINKS_DESTE_COMPUTADOR);
 	var stamp = '';
 
 	// a data da configuração vem do cache (padConfigData): sem perguntar de novo à rede
@@ -315,7 +315,7 @@ PADX.barLinks = function () {
 
 	var bar = padReadBar();
 
-	return { stamp: stamp, links: padLerSecao('links'), personal: padLerSecao('linksPessoais'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
+	return { stamp: stamp, links: padLerSecao('links'), personal: padLerSecao('linksDesteComputador'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
 };
 
 // Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.
@@ -345,8 +345,8 @@ PADX.requestedConfigTab = function () {
 > aparência (aba APARÊNCIA da configuração)
 ---------------------------------------------------------------
 
-'APPEARANCE' no O_PADEIRO_GLOBAL_config.json (a seção aparencia da tabela de seções; a desta pessoa é a
-aparenciaPessoal): o tema de todas as janelas (aplicado por client/js/theme.js).
+'APPEARANCE' no O_PADEIRO_GLOBAL_config.json (a seção aparencia da tabela de seções; a deste computador é a
+aparenciaDesteComputador): o tema de todas as janelas (aplicado por client/js/theme.js).
   mode          → light, dark ou auto (segue o sistema)
   background    → gradient (degradê) ou solid (a cor de destaque)
   accent        → cor de destaque (#rrggbb); gradientStart / gradientEnd → as pontas do degradê
@@ -355,9 +355,9 @@ aparenciaPessoal): o tema de todas as janelas (aplicado por client/js/theme.js).
 
 */
 
-// A aparência desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+// A aparência deste computador: a personalizada ou, sem ela, a da equipe.
 function padReadAppearance() {
-	return padLerSecao('aparenciaPessoal') || padLerSecao('aparencia');
+	return padLerSecao('aparenciaDesteComputador') || padLerSecao('aparencia');
 }
 
 // O tema, com a data dos arquivos (as janelas só reaplicam quando mudam).
@@ -376,27 +376,27 @@ PADX.appearance = function () {
 /*
 
 ---------------------------------------------------------------
-> preferências pessoais (aparência e layout, só neste computador)
+> aparência e layout deste computador
 ---------------------------------------------------------------
 
-'personal_config.json' na pasta de dados do usuário: { APPEARANCE, BAR }, só as que a pessoa personalizou.
-Sem elas, vale o padrão da equipe (APPEARANCE e BAR do O_PADEIRO_GLOBAL_config.json, na rede).
+'computador_personalizado.json' (antes 'personal_config.json') na pasta de dados do usuário: { APPEARANCE, BAR }, só
+as que a pessoa personalizou. Sem elas, vale a da equipe (APPEARANCE e BAR do O_PADEIRO_GLOBAL_config.json, na rede).
 
 */
 
 function padPersonalStamp() {
-	return padDataDoArquivo(padArquivoDesteComputador(PAD_CONFIGURACAO.PESSOAL));
+	return padDataDoArquivo(padArquivoDesteComputador(PAD_CONFIGURACAO.PERSONALIZADO));
 }
 
-// { appearance, bar }: as personalizadas (null = usa o padrão da equipe)
+// { appearance, bar }: as personalizadas (null = usa a da equipe)
 PADX.personalPrefs = function () {
-	return { appearance: padLerSecao('aparenciaPessoal'), bar: padLerSecao('barraPessoal') };
+	return { appearance: padLerSecao('aparenciaDesteComputador'), bar: padLerSecao('barraDesteComputador') };
 };
 
-// a: { appearance, bar } (null = voltar ao padrão da equipe; sem o campo, fica como está). O arquivo guarda só as
+// a: { appearance, bar } (null = voltar à da equipe; sem o campo, fica como está). O arquivo guarda só as
 // personalizadas.
 PADX.savePersonalPrefs = function (a) {
-	padGravarSecoes({ aparenciaPessoal: a.appearance, barraPessoal: a.bar });
+	padGravarSecoes({ aparenciaDesteComputador: a.appearance, barraDesteComputador: a.bar });
 
 	return PADX.personalPrefs();
 };

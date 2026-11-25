@@ -498,7 +498,7 @@ const SCENES = {
 	produtor: { w: 1000, h: 640, url: 'productions.html', async run(p) {
 		mouse = [600, 600];
 		await p.waitForTimeout(700);
-		for (const tab of ['fonts', 'project', 'collect', 'tools', 'appearance', 'machine']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
+		for (const tab of ['fonts', 'tipos-de-projeto', 'collect', 'tools', 'appearance', 'machine']) await tap(p, '.tab[data-tab="' + tab + '"]', { wait: 900, ms: 380 });
 	} }
 };
 
@@ -559,7 +559,7 @@ async function shots(b, names) {
 		await ctx.addInitScript((c) => {
 			try {
 				localStorage.clear();
-				localStorage.setItem('pad.mock.project', JSON.stringify(c));
+				localStorage.setItem('pad.mock.tiposDeProjeto', JSON.stringify(c));
 			} catch (e) { }
 		}, CATEGORIES);
 		if (s.init) await ctx.addInitScript(s.init);
@@ -602,7 +602,7 @@ async function gifs(b, names) {
 		await ctx.addInitScript((c) => {
 			try {
 				localStorage.clear();
-				localStorage.setItem('pad.mock.project', JSON.stringify(c));
+				localStorage.setItem('pad.mock.tiposDeProjeto', JSON.stringify(c));
 			} catch (e) { }
 		}, CATEGORIES);
 		if (s.init) await ctx.addInitScript(s.init);

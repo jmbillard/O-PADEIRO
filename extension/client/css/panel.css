@@ -3054,10 +3054,6 @@ body.motion-ready .eyebrow {
   transform: translateY(2.5px);
 }
 
-#btn-export:hover .io-arrow {
-  transform: translateY(-2.5px);
-}
-
 /* janela estreita: o botão principal encolhe em vez de cair para outra linha */
 @media (max-width: 400px) {
   .action-bar .button-primary {
