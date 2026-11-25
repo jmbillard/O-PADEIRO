@@ -5,8 +5,8 @@
 ---------------------------------------------------------------
 
 A busca das atrações (o índice do webhook, a mesma cópia do acessorista, ou o índice local da configuração >
-buscar), as categorias da aba PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
-achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD_ATTRACTIONS
+buscar), os tipos da aba PROJETO (para uma atração nova) e o seletor: o campo, os cartões das atrações
+achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTRACTIONS
 
 */
 
@@ -255,7 +255,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		}).concat((data.filmes || []).filter(function (f) {
 			return f && f.name;
 		}).map(function (f) {
-			// os filmes: o nome, o ano e o output; a pasta do projeto vem da categoria de filmes (janela projeto)
+			// os filmes: o nome, o ano e o output; a pasta do projeto vem do tipo de filmes (janela projeto)
 			return { name: f.name, cat: 'FILME', year: f.year ? String(f.year) : '', isFilm: true, path: '', out: full(f.out), depth: 1, keys: [wordKey(f.name)].filter(function (k) {
 				return k.f;
 			}) };
@@ -471,7 +471,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		} catch (err) { }
 	}
 
-	// → { claquete, matches: [{ name, category, path, out, display, score }], cards } (o mesmo formato do host). cards:
+	// → { claquete, matches: [{ name, tipo, path, out, display, score }], cards } (o mesmo formato do host). cards:
 	// os cards recentes do Trello (todos: a claquete escolhe os que batem com o digitado, js/project.js)
 	async function findAttractions(claq) {
 		var list = await candidates();
@@ -542,22 +542,22 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			seen[key] = true;
 			return true;
 		}).slice(0, 40).map(function (f) {
-			return { name: f.it.name, category: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
+			return { name: f.it.name, tipo: local ? 'PASTAS' : f.it.isFilm ? 'FILME' + (f.it.year ? ' · ' + f.it.year : '') : f.it.cat || 'ATRAÇÕES', path: f.it.path, out: f.it.out || '', display: displayPath(f.it.path), score: f.score, isFilm: !!f.it.isFilm, year: f.it.year || '', trello: f.card };
 		});
 
 		return { claquete: aepName(claq), matches: matches, cards: local ? [] : source.cards || [] };
 	}
 
-	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser
+	// Os tipos de projeto (configuração > PROJETO): o caminho de cada um, com tokens. o que não pode ser
 	// acessada (rede fora ou modo local) vai para a pasta dos projetos deste computador: {categoria}/{atracao}
-	function categoryBase(c, fallback) {
+	function tipoBase(c, fallback) {
 		var pattern = c.reachable ? c.path : String(fallback || '~/Desktop').replace(/[\\\/]+$/, '') + '/{tipo}/{atracao}';
 		var fixed = pattern.split('{')[0].replace(/[\\\/][^\\\/]*$/, '');
 
 		return { label: c.name, icon: c.icon, pattern: pattern, outPattern: c.reachable ? c.output || '' : '', filePattern: c.file || '', path: fixed, display: displayPath(fixed), offline: !c.reachable };
 	}
 
-	// O caminho da categoria com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
+	// O caminho do tipo com os tokens trocados: {atracao} {ano} {mes} {mes_extenso} {proximo_mes} {proximo_mes_num}
 	// {ano_proximo_mes} (o ano do próximo mês, ou o escolhido na claquete) {categoria}
 	// {letra}. os meses por extenso como os nomes de pasta: em maiúsculas, sem acento (MARCO)
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
@@ -588,13 +588,13 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	// year: o ano de produção do filme ({ano_producao}); sem ele, o token sai junto dos parênteses (e do espaço antes)
 	// month: o mês do card do Trello ({ index: 0-11, year }), que vale mais que a data de hoje (monthOf): JANEIRO NA
 	// GLOBO → os tokens de mês e de ano são os de janeiro (o próximo)
-	function fillPattern(pattern, name, category, year, month) {
+	function fillPattern(pattern, name, tipo, year, month) {
 		var d = new Date();
 
 		year = /^\d{4}$/.test(String(year || '')) ? String(year) : '';
 		if (!year) pattern = String(pattern || '').replace(/\s*[\(\[]\s*\{ano_producao\}\s*[\)\]]/g, '').replace(/\s*\{ano_producao\}/g, '');
 
-		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(category), categoria: aepName(category), letra: letterOf(name), ano_producao: year };
+		var values = { atracao: aepName(name), ano: String(projectYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(yearOverride || d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), tipo: aepName(tipo), categoria: aepName(tipo), letra: letterOf(name), ano_producao: year };
 
 		if (month && month.index >= 0) {
 			var num = ('0' + (month.index + 1)).slice(-2);
@@ -609,16 +609,16 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		});
 	}
 
-	// as categorias da equipe (configuração > PROJETO); sem nenhuma, a pasta é livre (escolher a pasta…)
+	// os tipos de projeto da equipe (configuração > PROJETO); sem nenhum, a pasta é livre (escolher a pasta…)
 	async function newBases() {
 		var cfg = null;
 
 		try {
-			cfg = await call('projectCategories');
+			cfg = await call('projectTypes');
 		} catch (err) { }
 
-		return (cfg && cfg.categories || []).map(function (c) {
-			return categoryBase(c, cfg.fallback);
+		return (cfg && cfg.tipos || []).map(function (c) {
+			return tipoBase(c, cfg.fallback);
 		});
 	}
 
@@ -654,7 +654,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 
 	/* ---------------------------------------------------------------
-	   a atração nova: o caminho da categoria com os tokens trocados (sem categoria: dentro da pasta escolhida)
+	   a atração nova: o caminho do tipo com os tokens trocados (sem tipo: dentro da pasta escolhida)
 	   --------------------------------------------------------------- */
 
 	function resolveNew(base, name) {
@@ -671,17 +671,17 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		return { name: name, path: base.path.replace(/[\\\/]+$/, '') + sep + aepName(name), display: base.display + '/' + aepName(name), out: '', isNew: true };
 	}
 
-	// o ícone da categoria da atração (aba PROJETO), ou a pasta
+	// o ícone do tipo da atração (aba PROJETO), ou a pasta
 	function iconFor(match, bases) {
 		var base = (bases || []).filter(function (b) {
-			return b.label && match.category && aepName(b.label) === aepName(match.category);
+			return b.label && match.tipo && aepName(b.label) === aepName(match.tipo);
 		})[0];
 
-		return (base && PAD_UTIL.categoryIcon(base.icon)) || ICONS.folder;
+		return (base && PAD_UTIL.tipoIcon(base.icon)) || ICONS.folder;
 	}
 
 	/* ---------------------------------------------------------------
-	   o seletor: o campo, os cartões (as achadas e a "nova atração") e a nova (nome + categoria) embaixo.
+	   o seletor: o campo, os cartões (as achadas e a "nova atração") e a nova (nome + tipo) embaixo.
 	   escolher uma achada fecha a lista; a nova fica aberta enquanto é preenchida.
 	   picker(root, { onChange(atr | null) }) → { get(), set(atr), focus() }
 	   atr: { name, path, out, display, isNew }
@@ -696,7 +696,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	};
 	var LIST_MAX = 4;
 	var LOOKUP_MS = 120;
-	var PREF_BASE = 'pad.project.base'; // a última categoria de uma atração nova (a mesma da janela PROJETO)
+	var PREF_BASE = 'pad.project.base'; // o último tipo de uma atração nova (o mesmo da janela PROJETO)
 
 	function el(tag, className, text) {
 		var node = document.createElement(tag);
@@ -851,7 +851,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 			if (window.PAD_DROPDOWN) {
 				PAD_DROPDOWN.enhance(select, function (value) {
 					var base = st.bases[+value];
-					var icon = value === 'pick' ? ICONS.search : (base && PAD_UTIL.categoryIcon(base.icon)) || ICONS.folder;
+					var icon = value === 'pick' ? ICONS.search : (base && PAD_UTIL.tipoIcon(base.icon)) || ICONS.folder;
 
 					return icon.replace('<svg', '<svg class="dropdown-svg"');
 				});
@@ -902,7 +902,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				list.textContent = '';
 				list.appendChild(group(shown.length ? 'atrações' : 'nenhuma atração com esse nome'));
 				shown.forEach(function (m, i) {
-					list.appendChild(comboRow(iconFor(m, st.bases), m.name.toUpperCase(), m.category || '', st.choice === 'm' + i, function () {
+					list.appendChild(comboRow(iconFor(m, st.bases), m.name.toUpperCase(), m.tipo || '', st.choice === 'm' + i, function () {
 						choose('m' + i);
 					}, m.display));
 				});
@@ -1071,7 +1071,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		displayPath: displayPath,
 		find: findAttractions,
 		candidates: candidates,
-		categories: newBases,
+		tipos: newBases,
 		fillPattern: fillPattern,
 		monthOf: monthOf,
 		projectYear: projectYear,

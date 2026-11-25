@@ -18,7 +18,7 @@ const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
 const LISTS = { 'DIA-A-DIA': { favorites: ['/mock/TARJAS/TARJA SIMPLES.aep', '/mock/RODAPES/RODAPE PLACAR.aep'], recents: ['/mock/TEMPLATES PADEIRO/LETTERING SOLTO.aep'], renderPresets: {} } };
 
 // os tipos de projeto: um com {atracao}, o de filmes e um fixo (MOOD MENSAL: o tipo é a atração, o mês pelo card)
-const CATEGORIES = { categories: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}/{ano}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'pelicula' }, { name: 'MOOD MENSAL', path: '/Volumes/VFX/MOOD MENSAL/{ano_proximo_mes}/{proximo_mes_num} {proximo_mes}', output: '/Volumes/OUT/MOOD MENSAL/{ano_proximo_mes}', file: '{proximo_mes} NA GLOBO {o_que_e}', icon: 'calendario' }] };
+const TIPOS_DE_PROJETO = { tipos: [{ name: 'PROGRAMAS', path: '/Volumes/VFX/PROGRAMAS/{atracao}/{ano}', output: '/Volumes/OUT/PROGRAMAS/{atracao}', icon: 'tv' }, { name: 'FILME', path: '/Volumes/VFX/FILMES/TITULOS/_{letra}_/{atracao}', output: '/Volumes/OUT/FILMES/TITULOS/_{letra}_/{atracao}', icon: 'pelicula' }, { name: 'MOOD MENSAL', path: '/Volumes/VFX/MOOD MENSAL/{ano_proximo_mes}/{proximo_mes_num} {proximo_mes}', output: '/Volumes/OUT/MOOD MENSAL/{ano_proximo_mes}', file: '{proximo_mes} NA GLOBO {o_que_e}', icon: 'calendario' }] };
 
 // a janela de projeto: digita no campo (como uma pessoa, para a busca responder) e escolhe a linha da lista
 async function projectPick(page, text, row) {
@@ -253,15 +253,15 @@ const CHECKS = [
 	}];
 }));
 
-// prepara o contexto do navegador: as categorias do projeto e, com ?lists, os fixados e recentes
+// prepara o contexto do navegador: os tipos de projeto e, com ?lists, os fixados e recentes
 async function prepareContext(context) {
 	await context.addInitScript((data) => {
 		// cada tela começa com as gavetas fechadas (a barra lembra a que ficou aberta: sem isto, a de uma tela
 		// viria aberta na seguinte)
 		localStorage.removeItem('pad.bar.drawer');
-		localStorage.setItem('pad.mock.project', JSON.stringify(data.categories));
+		localStorage.setItem('pad.mock.project', JSON.stringify(data.tipos));
 		if (/[?&]lists/.test(location.search)) sessionStorage.setItem('mock.templateLists', JSON.stringify(data.lists));
-	}, { categories: CATEGORIES, lists: LISTS });
+	}, { tipos: TIPOS_DE_PROJETO, lists: LISTS });
 }
 
-module.exports = { CLIENT, CATEGORIES, CHECKS, prepareContext };
+module.exports = { CLIENT, TIPOS_DE_PROJETO, CHECKS, prepareContext };

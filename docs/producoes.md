@@ -161,17 +161,17 @@ a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto*
 
 ## 📍 renomear
 
-a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os tipos de sempre; outra equipe ajusta para os tipos de peça dela. a mesma regra vale para o **[O ARQUIVISTA](../README.md#arquivos)**, nos nomes dos arquivos e das pastas (lá, o formato vem só do nome do próprio arquivo ou pasta).
+a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os formatos de sempre; outra equipe ajusta para os formatos dela. a mesma regra vale para o **[O ARQUIVISTA](../README.md#arquivos)**, nos nomes dos arquivos e das pastas (lá, o formato vem só do nome do próprio arquivo ou pasta).
 
 - **testar** (no topo) → digite o nome de uma comp e veja na hora como ela fica com a tabela em edição.
-- **formato do nome** → a **caixa de texto** (CAIXA ALTA, caixa baixa, Título ou como está), o **separador** entre o prefixo e o nome (` - `; os espaços contam) e **remover caracteres especiais** (ligado, tira acentos e símbolos: **JOÃO!** vira **JOAO**). a caixa e os acentos valem para a parte descritiva; o prefixo do tipo fica como foi escrito. o separador também é o dos nomes criados pelos templates.
-- **tipos de peça** → o **prefixo** do nome, o **comentário** da comp e os **termos** que identificam o tipo no nome da comp (ou da pasta dela): digite um termo e a vírgula (ou Enter) para virar um chip; o `×` do chip (ou backspace no campo vazio) tira. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
-- **nomes fixos** → a comp que tem o termo no nome (ou no comentário) passa a se chamar sempre o mesmo nome. ex: **LOGO GLOBO**.
+- **formato do nome** → a **caixa de texto** (CAIXA ALTA, caixa baixa, Título ou como está), o **separador** entre o prefixo e o nome (` - `; os espaços contam) e **remover caracteres especiais** (ligado, tira acentos e símbolos: **JOÃO!** vira **JOAO**). a caixa e os acentos valem para a parte descritiva; o prefixo do formato fica como foi escrito. o separador também é o dos nomes criados pelos templates.
+- **formatos** → o **prefixo** do formato, a **etiqueta** da comp e os **termos** que identificam o formato no nome da comp (ou da pasta dela): digite um termo e a vírgula (ou Enter) para virar um chip; o `×` do chip (ou backspace no campo vazio) tira. ex: `RDP` · `RODAPE` · `rodapé, rdp`: **rodapé_joão silva** → **RDP - JOAO SILVA**.
+- **nomes fixos** → a comp que tem o termo no nome (ou na etiqueta) passa a se chamar sempre o mesmo nome. ex: **LOGO GLOBO**.
 
 > 🚩 *obs:*\
-> • a ordem importa: vale o primeiro tipo encontrado. arraste pelos pontinhos para reordenar.\
+> • a ordem importa: vale o primeiro formato encontrado. arraste pelos pontinhos para reordenar.\
 > • os termos são palavras: maiúsculas e acentos não importam (`rodape` reconhece **Rodapé**), e o plural com S também vale (`tarja` reconhece **TARJAS**). plurais irregulares entram como outro termo (`cartao, cartoes`).\
-> • o comentário do tipo também é usado pelo **organizar**.
+> • a etiqueta do formato também é usada pelo **organizar**.
 <br>
 
 ---
@@ -186,12 +186,12 @@ a aba tem duas colunas: à esquerda, a **árvore do projeto** (no azul); à dire
 
 - **árvore** → clique no nome para renomear a pasta. arraste a pasta pelos pontinhos: **sobre outra pasta**, ela entra; **entre duas pastas** (aparece uma linha), fica no mesmo nível; sobre **raiz do projeto**, volta para a raiz. '*+ nova pasta*' (no lado branco, abaixo dos tipos) cria uma pasta na raiz; o **×** (passe o mouse) exclui.
 - **tipos de item** → comps de render, comps editáveis, outras comps, vídeos, imagens, sequências de imagens (na pasta das imagens, por padrão), áudio, sólidos, dados e arquivos ausentes. arraste um tipo (o cartão da direita ou a etiqueta na árvore) para a pasta que deve recebê-lo; uma pasta pode receber mais de um tipo. cada cartão mostra onde o tipo está. o **×** da etiqueta (ou soltar o tipo na raiz) tira o tipo da pasta.
-- **comps de render** → a comp vai para a pasta das comps de render quando o comentário dela contém um destes termos (ou o comentário de um tipo de peça da aba renomear).
-- **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando o comentário contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
-- **comentário automático** → dado às comps selecionadas sem comentário (ao organizar) e às versões criadas ao preencher um template. precisa conter um dos termos de render.
+- **comps de render** → a comp vai para a pasta das comps de render quando a etiqueta dela contém um destes termos (ou a etiqueta de um formato da aba renomear).
+- **comps editáveis** → com uma pasta para o tipo **comps editáveis** na árvore, a comp vai para ela quando a etiqueta contém um destes termos (padrão: `EDIT`, que também vale para `EDITAR`). sem essa pasta, as editáveis ficam com as outras comps.
+- **etiqueta automática** → dada às comps selecionadas sem etiqueta (ao organizar) e às versões criadas ao preencher um template. precisa conter um dos termos de render.
 - **extensões de dados** → arquivos tratados como dados (`.csv`, `.json`...).
-- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): o comentário vira subpasta (padrão: FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC). os campos de termos desta aba mostram cada termo como um **chip**.
-- **comentários viram subpastas** → ligado, comps e arquivos com comentário ficam numa subpasta com o nome dele (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*comentários viram subpastas*'.
+- **etiquetas dos arquivos** → as etiquetas dos footages na janela de etiquetas do **O CONTRARREGRA** (`◗` no organizar): a etiqueta vira subpasta (padrão: FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC). os campos de termos desta aba mostram cada termo como um **chip**.
+- **etiquetas viram subpastas** → ligado, comps e arquivos com etiqueta ficam numa subpasta com o nome dela (ex: `01 COMPS / RODAPE`). na árvore, cada pasta que recebe itens mostra isso numa subpasta tracejada, '*etiquetas viram subpastas*'.
 
 > 🚩 *obs:*\
 > • renomear uma pasta leva as subpastas junto; excluir uma pasta sobe as subpastas e os tipos dela para a pasta de cima.\

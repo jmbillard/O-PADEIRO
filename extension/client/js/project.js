@@ -96,14 +96,14 @@ projetos com o nome certo).
 	}
 
 	/* ---------------------------------------------------------------
-	   a busca das atrações e as categorias: js/attractions.js (a mesma do criador de templates)
+	   a busca das atrações e os tipos: js/attractions.js (a mesma do criador de templates)
 	   --------------------------------------------------------------- */
 
 	var ATR = window.PAD_ATTRACTIONS;
 	var findAttractions = ATR.find;
 	var candidates = ATR.candidates;
 	var displayPath = ATR.displayPath;
-	var newBases = ATR.categories;
+	var newBases = ATR.tipos;
 	var fillPattern = ATR.fillPattern;
 
 	/* ---------------------------------------------------------------
@@ -392,7 +392,7 @@ projetos com o nome certo).
 					if (!custom && (!flow.attr || !flow.matches.some(function (m) {
 						return m.path === flow.attr.path;
 					}))) flow.attr = exact.length === 1 ? exact[0] : flow.matches.length === 1 ? flow.matches[0] : null;
-					if (flow.attr && flow.attr.noBase) flow.attr = null; // sem categoria: escolher na lista (vira atração nova)
+					if (flow.attr && flow.attr.noBase) flow.attr = null; // sem tipo: escolher na lista (vira atração nova)
 					flow.walk = flow.attr ? await walkPath(flow.attr.path, p.levels, p.last, false) : null;
 					// o primeiro nível abaixo da atração: os quadros de outros anos, como exemplos
 					if (flow.walk && !p.levels.length) flow.walk.examples = await quadroExamples(flow.attr, flow.walk.info ? flow.walk.info.folders : []);
@@ -447,7 +447,7 @@ projetos com o nome certo).
 			});
 
 			// o filme do índice fica com o ano dele (o do índice manda); a pasta achada pelo host vale para o novo
-			if (at >= 0) out[at] = Object.assign({}, out[at], extra, { year: out[at].year || f.year, category: 'FILME' + ((out[at].year || f.year) ? ' · ' + (out[at].year || f.year) : '') });
+			if (at >= 0) out[at] = Object.assign({}, out[at], extra, { year: out[at].year || f.year, tipo: 'FILME' + ((out[at].year || f.year) ? ' · ' + (out[at].year || f.year) : '') });
 			else add.push(filmMatch(f));
 		});
 
@@ -461,7 +461,7 @@ projetos com o nome certo).
 
 	// um filme dos recentes como uma atração achada (a pasta vem do tipo FILME: resolveFilms)
 	function filmMatch(f) {
-		return Object.assign({ name: f.name, category: 'FILME' + (f.year ? ' · ' + f.year : ''), path: f.path || '', out: '', display: f.path ? displayPath(f.path) : '', isFilm: true, score: 0 }, filmExtra(f));
+		return Object.assign({ name: f.name, tipo: 'FILME' + (f.year ? ' · ' + f.year : ''), path: f.path || '', out: '', display: f.path ? displayPath(f.path) : '', isFilm: true, score: 0 }, filmExtra(f));
 	}
 
 	// os filmes dos cards que batem com o digitado entram na busca, mesmo sem o título bater (TELA QUENTE ENCANTO →
@@ -903,7 +903,7 @@ projetos com o nome certo).
 		return item;
 	}
 
-	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem da categoria de filmes da
+	// os filmes do índice da busca (o nome, o ano e o output): a pasta do projeto vem do tipo de filmes da
 	// configuração (aba PROJETO), como numa atração nova; sem ela, os filmes ficam de fora
 	function filmBase() {
 		var base = state.bases.filter(function (b) {
@@ -961,10 +961,10 @@ projetos com o nome certo).
 		});
 	}
 
-	/* ---------- a organização nova: a atração que já existe dá o nome, a pasta vem da categoria ---------- */
+	/* ---------- a organização nova: a atração que já existe dá o nome, a pasta vem do tipo ---------- */
 
-	// as pastas fixas do caminho da categoria, depois da raiz (PROJETOS ou o Fileserver): …/PROJETOS/ESPORTES/FUTEBOL/
-	// {atracao}/{ano} → ['ESPORTES', 'FUTEBOL']. é por elas que a pasta antiga de uma atração diz de que categoria ela é
+	// as pastas fixas do caminho do tipo, depois da raiz (PROJETOS ou o Fileserver): …/PROJETOS/ESPORTES/FUTEBOL/
+	// {atracao}/{ano} → ['ESPORTES', 'FUTEBOL']. é por elas que a pasta antiga de uma atração diz de que tipo ela é
 	function baseSegments(base) {
 		var head = String(base.pattern || '').split('{atracao}')[0].replace(/\\/g, '/').split('/');
 		var out = [];
@@ -979,8 +979,8 @@ projetos com o nome certo).
 		return out;
 	}
 
-	// a categoria de uma atração achada no índice: a que tem as pastas fixas mais parecidas com o caminho antigo
-	// (…/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2026/… → FUTEBOL); sem nenhuma, pelo nome da categoria do índice
+	// o tipo de uma atração achada no índice: o que tem as pastas fixas mais parecidas com o caminho antigo
+	// (…/Fileserver_3/ESPORTES/FUTEBOL/FUTEBOL 2026/… → FUTEBOL); sem nenhuma, pelo nome do tipo do índice
 	function baseForMatch(m) {
 		var parts = String(m.path || '').replace(/\\/g, '/').split('/').map(aepName);
 		var best = null;
@@ -1009,22 +1009,22 @@ projetos com o nome certo).
 
 		return state.bases.filter(function (b) {
 			var label = aepName(b.label);
-			var cat = aepName(m.category);
+			var tipo = aepName(m.tipo);
 
-			return !b.offline && b.pattern && cat && (label === cat || label + 'S' === cat || label === cat + 'S');
+			return !b.offline && b.pattern && tipo && (label === tipo || label + 'S' === tipo || label === tipo + 'S');
 		})[0] || null;
 	}
 
-	// as atrações achadas, com a pasta da organização nova: o caminho da categoria com os tokens (a pasta antiga fica
-	// em oldPath, para os exemplos de quadros). sem categoria que sirva: noBase (escolher a categoria, como uma nova)
+	// as atrações achadas, com a pasta da organização nova: o caminho do tipo com os tokens (a pasta antiga fica
+	// em oldPath, para os exemplos de quadros). sem tipo que sirva: noBase (escolher o tipo, como uma nova)
 	async function toNewOrg(matches) {
 		await ensureBases(); // também para os chips da atração nova (com ou sem atrações achadas)
 		if (!matches.length) return matches;
 
-		if (!state.bases.length) return matches; // sem categorias na configuração: o jeito de antes (a pasta do índice)
+		if (!state.bases.length) return matches; // sem tipos na configuração: o jeito de antes (a pasta do índice)
 
 		return matches.filter(function (m) {
-			return m.isCustom || m.newOrg || !isCategoryFolder(m);
+			return m.isCustom || m.newOrg || !isTipoFolder(m);
 		}).map(function (m) {
 			if (m.isCustom || m.newOrg) return m;
 
@@ -1032,25 +1032,25 @@ projetos com o nome certo).
 			var name = m.name.toUpperCase();
 
 			// a atração que já tem pasta de projeto no índice: a pasta dela, como está (BBB/BBB 2026), no ano do
-			// projeto; a categoria só dá o ícone e, sem output no índice, o output
+			// projeto; o tipo só dá o ícone e, sem output no índice, o output
 			if (m.path && m.path !== m.out) {
 				var here = ATR.shiftYear(m.path);
 				var outHere = m.out ? ATR.shiftYear(m.out) : base && base.outPattern ? fillPattern(base.outPattern, name, base.label) : '';
 
-				return Object.assign({}, m, { oldPath: m.path, oldOut: m.out || '', path: here, display: displayPath(here), out: outHere, base: base, category: base ? base.label : m.category, fromIndex: true });
+				return Object.assign({}, m, { oldPath: m.path, oldOut: m.out || '', path: here, display: displayPath(here), out: outHere, base: base, tipo: base ? base.label : m.tipo, fromIndex: true });
 			}
 
 			if (!base) return Object.assign({}, m, { oldPath: m.path, path: '', display: 'escolha o tipo', noBase: true });
 
 			var path = fillPattern(base.pattern, name, base.label);
 
-			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, category: base.label, newOrg: true });
+			return Object.assign({}, m, { oldPath: m.path, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label) : '', base: base, tipo: base.label, newOrg: true });
 		});
 	}
 
-	// a pasta achada é a pasta de uma categoria, não uma atração: a que guarda as atrações dela (INSTITUCIONAL/VTs é a
-	// categoria VT; a pasta VTs, onde todos os VTs ficavam juntos, não vira a atração VTS)
-	function isCategoryFolder(m) {
+	// a pasta achada é a pasta de um tipo, não uma atração: a que guarda as atrações dela (INSTITUCIONAL/VTs é o
+	// tipo VT; a pasta VTs, onde todos os VTs ficavam juntos, não vira a atração VTS)
+	function isTipoFolder(m) {
 		var parts = String(m.path || '').replace(/\\/g, '/').replace(/\/+$/, '').split('/').map(aepName);
 
 		return state.bases.some(function (b) {
@@ -1060,22 +1060,22 @@ projetos com o nome certo).
 			var tail = parts.slice(-segs.length);
 			var root = parts[parts.length - segs.length - 1] || '';
 
-			// logo depois da raiz (PROJETOS ou o Fileserver), como no caminho da categoria
+			// logo depois da raiz (PROJETOS ou o Fileserver), como no caminho do tipo
 			return segs.length && tail.length === segs.length && /^(PROJETOS|FILESERVER ?\d+)$/.test(root) && segs.every(function (s, k) {
 				return tail[k] === s || tail[k] + 'S' === s || tail[k] === s + 'S';
 			});
 		});
 	}
 
-	// a atração sem categoria que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe o tipo nos chips)
+	// a atração sem tipo que sirva: vira uma atração nova com o mesmo nome (a pessoa escolhe o tipo nos chips)
 	function asNew(match) {
 		$('claq').value = match.name.toUpperCase();
 		flow.attr = null;
 		openNova(true);
 	}
 
-	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} da categoria, qualquer valor:
-	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho da categoria tem
+	// os exemplos de quadros: os que o padeiro já criou em outros anos (o nível do {ano} do tipo, qualquer valor:
+	// as pastas com a estrutura dentro), sem repetir e sem os do ano de agora. só quando o caminho do tipo tem
 	// pastas depois da atração ({atracao}/{ano}); as pastas antigas da atração ficam de fora
 	async function quadroExamples(attr, current) {
 		if (!attr || !attr.base || attr.fromIndex) return [];
@@ -1113,12 +1113,12 @@ projetos com o nome certo).
 		});
 	}
 
-	// o ícone da categoria da atração (o mesmo da aba PROJETO), ou a pasta; o filme, o do tipo de filmes
+	// o ícone do tipo da atração (o mesmo da aba PROJETO), ou a pasta; o filme, o do tipo de filmes
 	function matchIcon(m) {
 		if (m.isFilm) {
 			var film = filmBase();
 
-			return (film && PAD_UTIL.categoryIcon(film.icon)) || FILM_SVG;
+			return (film && PAD_UTIL.tipoIcon(film.icon)) || FILM_SVG;
 		}
 
 		return ATR.iconFor(m, state.bases);
@@ -1191,7 +1191,7 @@ projetos com o nome certo).
 
 					list.appendChild(ATR.group(found.length ? 'escolha a atração' : 'nenhuma atração com esse nome'));
 					found.forEach(function (match) {
-						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.tipo || '', false, function () {
 							if (match.noBase) return asNew(match);
 							$('claq').value = match.name.toUpperCase() + '/' + p.parts.slice(1).join('/');
 							flow.attr = match;
@@ -1202,7 +1202,7 @@ projetos com o nome certo).
 					list.appendChild(ATR.group('atração'));
 					// clicar na atração escolhida confirma: fica só com ela (sem pasta abaixo) e segue para o o que é.
 					// para trocar de atração: o × do campo, ou apagar o nome
-					list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.category || '', true, function () {
+					list.appendChild(ATR.row(matchIcon(flow.attr), flow.attr.name.toUpperCase(), flow.attr.tipo || '', true, function () {
 						$('claq').value = flow.attr.name.toUpperCase();
 						flow.walk = null;
 						collapseClaq(true);
@@ -1223,7 +1223,7 @@ projetos com o nome certo).
 					enterAttraction(match, keepOpen);
 				},
 				card: pickCard,
-				nova: pickNovaCategory,
+				nova: pickNovaTipo,
 				tail: function () {
 					// sem tipos de projeto na configuração, a atração nova é outra pasta (e, com a barra, a pasta nova dentro)
 					other = list.appendChild(ATR.row(FOLDER_SVG, 'outra pasta…', 'navegador de pastas', false, pickOtherFolder));
@@ -1312,7 +1312,7 @@ projetos com o nome certo).
 				var pick = function () {
 					h.attr(m);
 				};
-				var row = m.recent ? filmRow(m, pick) : ATR.row(matchIcon(m), m.name.toUpperCase(), m.category || '', false, pick, m.display);
+				var row = m.recent ? filmRow(m, pick) : ATR.row(matchIcon(m), m.name.toUpperCase(), m.tipo || '', false, pick, m.display);
 
 				take(function () {
 					h.attr(m, true);
@@ -1338,7 +1338,7 @@ projetos com o nome certo).
 				take(function () {
 					h.attr(m, true); // o Tab completa e fica aberto (as pastas dela)
 				});
-				list.appendChild(ATR.row(matchIcon(m), m.name.toUpperCase(), m.category || '', false, pick, m.display));
+				list.appendChild(ATR.row(matchIcon(m), m.name.toUpperCase(), m.tipo || '', false, pick, m.display));
 			});
 			more(attrs.length - LIST_MAX);
 		}
@@ -1361,16 +1361,16 @@ projetos com o nome certo).
 		return first;
 	}
 
-	/* ---------- a atração nova direto na categoria (os chips embaixo da lista) ---------- */
+	/* ---------- a atração nova direto no tipo (os chips embaixo da lista) ---------- */
 
-	// a categoria digitada no começo (o nome ou o plural dela, com mais alguma palavra depois) marca o chip; o nome
-	// da atração é sempre o texto todo: "novela guerreiros" → NOVELA GUERREIROS, com a categoria NOVELA marcada
+	// o tipo digitado no começo (o nome ou o plural dele, com mais alguma palavra depois) marca o chip; o nome
+	// da atração é sempre o texto todo: "novela guerreiros" → NOVELA GUERREIROS, com o tipo NOVELA marcado
 	function novaFromText(text) {
 		var raw = String(text || '').trim();
 		var words = raw.split(/\s+/);
 		var best = null;
 
-		// o nome da categoria (uma ou mais palavras: MOOD MENSAL; a última pode vir no plural) e mais alguma depois
+		// o nome do tipo (uma ou mais palavras: MOOD MENSAL; a última pode vir no plural) e mais alguma depois
 		state.bases.forEach(function (b) {
 			var label = aepName(b.label).split(' ');
 
@@ -1385,14 +1385,14 @@ projetos com o nome certo).
 			if (ok) best = { base: b, size: label.length };
 		});
 
-		// a categoria no começo só marca o chip: o nome da atração é o texto todo, como foi digitado (vt reunião →
+		// o tipo no começo só marca o chip: o nome da atração é o texto todo, como foi digitado (vt reunião →
 		// VT REUNIAO em VT; novela guerreiros → NOVELA GUERREIROS em NOVELA)
 		if (best) return { name: raw.toUpperCase(), base: best.base };
 
 		return { name: raw.toUpperCase(), base: null };
 	}
 
-	// a categoria sem {atracao} no caminho é a própria atração (MOOD MENSAL → …/MOOD MENSAL/2026/12 DEZEMBRO): entra
+	// o tipo sem {atracao} no caminho é a própria atração (MOOD MENSAL → …/MOOD MENSAL/2026/12 DEZEMBRO): entra
 	// na busca quando o digitado bate com o nome dela (cada palavra é o começo de uma palavra do nome), antes das
 	// achadas e no lugar da de mesmo nome do índice
 	function fixedBases() {
@@ -1444,15 +1444,15 @@ projetos com o nome certo).
 		}));
 	}
 
-	// a atração nova numa categoria, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
+	// a atração nova num tipo, como uma achada: o caminho com os tokens (o ano no fim), e o que vier depois da
 	// barra fica dentro dele (ATRAÇÃO/2026/QUADRO)
 	function novaAttr(name, base, month) {
 		var path = fillPattern(base.pattern, name, base.label, '', month);
 
-		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label, '', month) : '', base: base, category: base.label, newOrg: true, isNewAttr: true };
+		return { name: name, path: path, display: displayPath(path), out: base.outPattern ? fillPattern(base.outPattern, name, base.label, '', month) : '', base: base, tipo: base.label, newOrg: true, isNewAttr: true };
 	}
 
-	// o caminho de uma categoria para a atração nova, com a pasta da atração em diante em destaque
+	// o caminho de um tipo para a atração nova, com a pasta da atração em diante em destaque
 	function novaPathLine(node, nova, base) {
 		node.textContent = '';
 		if (!base) {
@@ -1493,7 +1493,7 @@ projetos com o nome certo).
 			var chip = el('button', 'cat-chip' + (b === nova.base ? ' is-on' : ''));
 
 			chip.type = 'button';
-			chip.innerHTML = (PAD_UTIL.categoryIcon(b.icon) || FOLDER_SVG) + '<span></span>';
+			chip.innerHTML = (PAD_UTIL.tipoIcon(b.icon) || FOLDER_SVG) + '<span></span>';
 			chip.lastChild.textContent = b.label;
 			chip.title = b.offline ? 'a pasta do tipo não está acessível: vai para a pasta deste computador' : '';
 			chip.addEventListener('mousedown', function (e) {
@@ -1506,7 +1506,7 @@ projetos com o nome certo).
 				novaPathLine(line, nova, nova.base);
 			});
 			chip.addEventListener('click', function () {
-				(onPick || pickNovaCategory)(nova, b);
+				(onPick || pickNovaTipo)(nova, b);
 			});
 			grid.appendChild(chip);
 		});
@@ -1515,14 +1515,14 @@ projetos com o nome certo).
 		list.appendChild(line);
 	}
 
-	// escolher a categoria: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
-	function pickNovaCategory(nova, base) {
+	// escolher o tipo: a atração nova entra como uma achada (o nome e a barra; dá para seguir com os quadros)
+	function pickNovaTipo(nova, base) {
 		if (base.pattern.indexOf('{atracao}') < 0) return enterAttraction(Object.assign(novaAttr(base.label, base), { isNewAttr: false, isFixed: true }));
 
 		var name = aepName(nova.name);
 
 		if (!name) return $('claq').focus();
-		ATR.pref(ATR.PREF_BASE, base.label); // a categoria da atração nova fica lembrada (o seletor dos templates usa)
+		ATR.pref(ATR.PREF_BASE, base.label); // o tipo da atração nova fica lembrado (o seletor dos templates usa)
 		enterAttraction(novaAttr(name, base));
 
 		var input = $('claq');
@@ -1555,7 +1555,7 @@ projetos com o nome certo).
 
 		var name = picked.replace(/[\\\/]+$/, '').split(/[\\\/]/).pop();
 
-		enterAttraction({ name: name, path: picked, display: picked, out: '', category: 'outra pasta', isCustom: true });
+		enterAttraction({ name: name, path: picked, display: picked, out: '', tipo: 'outra pasta', isCustom: true });
 	}
 
 	/* ---------- o card escolhido (passo 2): a atração, o filme ou a atração nova tirada da claquete ---------- */
@@ -1782,7 +1782,7 @@ projetos com o nome certo).
 
 		var typed = state.bases.length ? novaFromText(p.first) : null;
 
-		if (typed && typed.base && aepName(typed.name)) return pickNovaCategory(typed, typed.base);
+		if (typed && typed.base && aepName(typed.name)) return pickNovaTipo(typed, typed.base);
 		openNova(false);
 	}
 
@@ -1819,7 +1819,7 @@ projetos com o nome certo).
 		return null;
 	}
 
-	// o nome do .aep da categoria (aba PROJETO > ARQUIVO, com tokens): na atração criada pela categoria (a fixa, a
+	// o nome do .aep do tipo (aba PROJETO > ARQUIVO, com tokens): na atração criada pelo tipo (a fixa, a
 	// nova dos chips); a que já existe no índice fica com o nome dela
 	function attrFileName(attr) {
 		var filled = attr && attr.filmFile ? attr.filmFile : ''; // o filme: o título com o ano (resolveFilms)
@@ -1871,7 +1871,7 @@ projetos com o nome certo).
 			return renderOut();
 		}
 
-		// a pasta de output da atração (o índice ou a categoria): a de partida do campo do output
+		// a pasta de output da atração (o índice ou o tipo): a de partida do campo do output
 		if (state.outBaseFrom !== (pick.out || '')) {
 			state.outBaseFrom = pick.out || '';
 			state.outCustom = '';
@@ -2215,7 +2215,7 @@ projetos com o nome certo).
 		span.appendChild(document.createTextNode('.aep'));
 	}
 
-	/* ---------- as categorias da configuração (aba PROJETO): os tipos de projeto ---------- */
+	/* ---------- os tipos de projeto da configuração (aba PROJETO) ---------- */
 
 	async function ensureBases() {
 		if (state.basesLoaded) return;
@@ -3014,7 +3014,7 @@ projetos com o nome certo).
 
 					list.appendChild(ATR.group(m.length ? 'escolha a atração' : 'nenhuma atração com esse nome'));
 					m.forEach(function (match) {
-						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.category || '', false, function () {
+						list.appendChild(ATR.row(matchIcon(match), match.name.toUpperCase(), match.tipo || '', false, function () {
 							state.edAttr = match;
 							$('ed-atracao').value = match.name.toUpperCase() + '/' + p.parts.slice(1).join('/');
 							edLookup($('ed-atracao').value, false);
@@ -3024,14 +3024,14 @@ projetos com o nome certo).
 				}
 
 				list.appendChild(ATR.group('atração'));
-				list.appendChild(ATR.row(matchIcon(state.edAttr), state.edAttr.name.toUpperCase(), state.edAttr.category || '', true, function () { }, state.edAttr.display));
+				list.appendChild(ATR.row(matchIcon(state.edAttr), state.edAttr.name.toUpperCase(), state.edAttr.tipo || '', true, function () { }, state.edAttr.display));
 				list.appendChild(ATR.sep());
 				if (!state.edWalk) return list.appendChild(ATR.group('procurando as pastas…'));
 				levelRows(list, state.edWalk, p.last, edEnterLevel, edEnterLevel);
 				return;
 			}
 
-			// a mesma lista do projeto novo; no fim, o projeto novo com o que foi digitado (nova atração, categoria e
+			// a mesma lista do projeto novo; no fim, o projeto novo com o que foi digitado (nova atração, tipo e
 			// pasta, como num projeto do zero)
 			state.edFirst = pickGroups(list, p.first, res, {
 				attr: function (match) {

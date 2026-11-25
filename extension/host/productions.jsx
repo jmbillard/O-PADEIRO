@@ -243,11 +243,11 @@ function padApplyConfig() {
 
 	var r = padLerSecao('regraDoRenomear');
 
-	PAD_RENAME_TYPES = r.types;
+	PAD_RENAME_FORMATS = r.formatos;
 	PAD_RENAME_FIXED = r.fixed;
 	PAD_RENAME_OPTIONS = { removeSpecial: r.removeSpecial !== false, textCase: r.textCase || 'upperCase' };
-	globalSeparator = r.separator || ' - '; // também o dos nomes criados pelos templates
-	renameRefArray = padRenameRefs(r.types);
+	PAD_RENAME_SEPARATOR = r.separator || ' - '; // também o dos nomes criados pelos templates
+	renameRefArray = padRenameRefs(r.formatos);
 
 	PAD_ORGANIZE = padLerSecao('organizar');
 

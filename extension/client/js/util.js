@@ -201,7 +201,7 @@
 		return time + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + (d.getFullYear() === now.getFullYear() ? '' : '/' + d.getFullYear());
 	}
 
-	// Os ícones da biblioteca (o seletor de ícones das categorias e das produções): um arquivo por ícone na pasta
+	// Os ícones da biblioteca (o seletor de ícones dos tipos e das produções): um arquivo por ícone na pasta
 	// icons/ (nome.svg, ou nome.json para uma animação Lottie), na ordem de icons/icons.json (os que não estão nele
 	// vêm depois, pelo nome). No After Effects a pasta é lida direto; no navegador (modo de teste), o retrato
 	// icons/_snapshot.js (node extension/scripts/build-icons.js).
@@ -365,9 +365,9 @@
 		}).observe(document.documentElement, { childList: true, subtree: true });
 	}
 
-	// PAD_UTIL.categoryIcon(icon) → '<svg …>' do ícone escolhido para a categoria na aba PROJETO ('' = sem
+	// PAD_UTIL.tipoIcon(icon) → '<svg …>' do ícone escolhido para o tipo na aba PROJETO ('' = sem
 	// ícone: quem chama usa a pasta). nada pelo nome: vale só o escolhido
-	function categoryIcon(icon) {
+	function tipoIcon(icon) {
 		return icon ? iconMarkup(icon) : '';
 	}
 
@@ -611,5 +611,5 @@
 		line.className = 'fw-status is-error';
 	});
 
-	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, categoryIcon: categoryIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
+	window.PAD_UTIL = { barGroups: BAR_GROUPS, barDefault: BAR_DEFAULT, barGroupOf: barGroupOf, barLayout: barLayout, undoKey: UNDO_KEY, iconEntry: findIcon, trashButton: trashButton, removeRow: removeRow, decodeIcon: decodeIcon, ovenLoader: ovenLoader, fileUrl: fileUrl, toast: toast, errorText: errorText, bindMenu: bindMenu, pathLine: pathLine, when: when, tipoIcon: tipoIcon, iconMarkup: iconMarkup, iconLibrary: iconLibrary, syncFonts: syncFonts, outputTokens: outputTokens };
 })();

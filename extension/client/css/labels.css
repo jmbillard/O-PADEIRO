@@ -1,5 +1,5 @@
 /* =========================================================
-   O CONTRARREGRA — etiquetas: comentários nos itens do projeto
+   O CONTRARREGRA — etiquetas nos itens do projeto
    (a mesma folha das janelas de fontes e do versionador: fonts.css)
    ========================================================= */
 
@@ -216,7 +216,7 @@
   }
 }
 
-/* a borracha (limpa todos os comentários): no hover ela desce um pouco, como quem apaga, e a linha embaixo encolhe
+/* a borracha (limpa todas as etiquetas): no hover ela desce um pouco, como quem apaga, e a linha embaixo encolhe
    (e fica assim); ao limpar, esfrega duas vezes e a linha some e volta */
 .lb-eraser {
   flex: 0 0 auto;

@@ -595,7 +595,7 @@ PADX.productions = function () {
 
 O da equipe é a seção registroDeUso da tabela de seções ('LOG' no O_PADEIRO_GLOBAL_config.json), editável no painel
 de produções: 'webhook' (envia o registro para a URL), 'csv' (uma linha em 'O_PADEIRO_log.csv', na pasta de
-templates da produção usada), 'csvGlobal' (ao lado da configuração da equipe) ou 'off' (nenhum registro). Sem 'LOG' no
+templates da produção usada), 'csvEquipe' (ao lado da configuração da equipe) ou 'off' (nenhum registro). Sem 'LOG' no
 arquivo: o webhook de sempre. Neste computador, registroDeUsoLigado desliga só aqui.
 
 */
@@ -665,9 +665,9 @@ function padWriteLog(record) {
 
 	if (settings.mode == 'webhook') return local ? null : sendToWebhookWithCurl(record, settings.webhook);
 
-	// CSV global: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
+	// CSV da equipe: ao lado da lista de produções (na rede); por produção: na pasta de templates dela
 	var config = local ? new File(padSharedConfigPath()) : padConfigFile();
-	var folder = settings.mode == 'csvGlobal' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
+	var folder = settings.mode == 'csvEquipe' ? (config && (local || config.exists) ? config.parent : null) : padProductionFolder(record.producao);
 	var line = [];
 
 	for (var c = 0; c < PAD_LOG_COLUMNS.length; c++) line.push(padCsvValue(record[PAD_LOG_COLUMNS[c]]));
@@ -1188,7 +1188,7 @@ PADX.fillBegin = function (a) {
 		}
 
 		if (!templateComp) {
-			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (comentário TEMPLATE) não encontrada no projeto');
+			throw new Error('#PAD_018 - comp "' + templateData.compName + '" (etiqueta TEMPLATE) não encontrada no projeto');
 		}
 
 		// Extrai e filtra a lista de templates de render
@@ -1398,7 +1398,7 @@ PADX.fillStep = function (a) {
 				// sem prefixo, o nome é só a informação (ex: 'JOAO BOSCO D')
 				var prefix = String(templateData.prefix || '').replace(/^\s+|\s+$/g, '');
 
-				template.name = ((prefix ? prefix + globalSeparator : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
+				template.name = ((prefix ? prefix + PAD_RENAME_SEPARATOR : '') + [info, suffix].join(' ')).toUpperCase().replaceSpecialCharacters(); // --> 'RDP - JOAO BOSCO D'
 			}
 
 			// nome repetido (com uma comp do projeto ou uma versão dos passos anteriores): ganha _2, _3…
@@ -1407,7 +1407,7 @@ PADX.fillStep = function (a) {
 
 			template.openInViewer(); // Abre a composição preenchida
 			template.time = templateData.refTime; // move a agulha da timeline para o tempo de referência
-			template.comment = PAD_ORGANIZE.autoComment; // comentário de render (configuração > organizar)
+			template.comment = PAD_ORGANIZE.autoComment; // etiqueta de render (configuração > organizar)
 
 			run.newComps.push(template);
 			run.count++;
@@ -1791,7 +1791,7 @@ Mesma lógica de PAD_ACTIONS ('main ui functions.js'). Cada uma devolve { messag
 
 */
 
-// Arquivo de saída do último item da fila de render que tem um (ou null).
+// O output do último item da fila de render que tem um (ou null).
 function getLastOutputFile() {
 	var rq = app.project.renderQueue;
 
@@ -2001,7 +2001,7 @@ function padItemChanges(before, key) {
 	return count;
 }
 
-// Os nomes dos arquivos de saída da fila de render, na ordem (item da fila / módulo de saída).
+// Os nomes dos outputs da fila de render, na ordem (item da fila / módulo de saída).
 function padOutputSnapshot() {
 	var names = [];
 	var rq = app.project.renderQueue;
@@ -2059,21 +2059,21 @@ PADX.renameOutputs = function () {
 /*
 
 ---------------------------------------------------------------
-> etiquetas (O CONTRARREGRA, clique direito): comentários nos itens
+> etiquetas (O CONTRARREGRA, clique direito): as etiquetas nos itens
 ---------------------------------------------------------------
 
-As etiquetas são comentários que o organizar entende: as de render e das editáveis (configuração > organizar), os
-tipos de peça (os do renomear: a comp vai para uma subpasta com o tipo) e as dos arquivos (o comentário vira
+As etiquetas são os comentários do After que o organizar entende: as de render e das editáveis (configuração >
+organizar), as dos formatos (os do renomear: a comp vai para uma subpasta com o formato) e as dos arquivos (a etiqueta vira
 subpasta). A janela aplica no que está selecionado no painel Project; as pastas ficam de fora.
 
   tagsInfo        → { selection, groups: [{ id, tags: [{ name, count }] }], folders: { render, edit } }
   tagsSelection   → { selection } (a janela pergunta a cada instante)
   tagsApply       → { text } ('' limpa)                        → { count }
-  tagsClearAll    → limpa o comentário de todos os itens do projeto → { count }
+  tagsClearAll    → limpa a etiqueta de todos os itens do projeto → { count }
 
 */
 
-// O comentário como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
+// O comentário do After como etiqueta: o texto antes de ':' (a subpasta), em maiúsculas.
 function padTagOf(comment) {
 	return padTrim(String(comment).split(':')[0]).toUpperCase();
 }
@@ -2106,7 +2106,7 @@ PADX.tagsSelection = function () {
 PADX.tagsInfo = function () {
 	var seen = {};
 	var render = [PAD_ORGANIZE.autoComment];
-	var types = [];
+	var formats = [];
 	var i;
 
 	// os de render que o automático já contém (EXPORT em EXPORTAR) ficam só no automático
@@ -2114,12 +2114,12 @@ PADX.tagsInfo = function () {
 		if (String(PAD_ORGANIZE.autoComment).indexOf(PAD_ORGANIZE.renderComments[i]) < 0) render.push(PAD_ORGANIZE.renderComments[i]);
 	}
 
-	for (i = 0; i < renameRefArray.length; i++) types.push(renameRefArray[i].comment);
+	for (i = 0; i < renameRefArray.length; i++) formats.push(renameRefArray[i].etiqueta);
 
 	var groups = [
 		{ id: 'render', tags: padTagList(render, [], seen) },
 		{ id: 'edit', tags: padTagList(PAD_ORGANIZE.editComments || [], [], seen) },
-		{ id: 'types', tags: padTagList(types, [], seen) },
+		{ id: 'formats', tags: padTagList(formats, [], seen) },
 		{ id: 'files', tags: padTagList(PAD_ORGANIZE.fileTags || [], [], {}) }
 	];
 
@@ -2146,7 +2146,7 @@ PADX.tagsInfo = function () {
 	};
 };
 
-// O comentário em cada item selecionado (sem as pastas). '' limpa.
+// A etiqueta em cada item selecionado (sem as pastas). '' limpa.
 PADX.tagsApply = function (a) {
 	var text = padTrim(a && a.text).replace(/\s+/g, ' ').toUpperCase();
 	var sel = app.project.selection;
@@ -2185,7 +2185,7 @@ PADX.tagsClearAll = function () {
 	return { count: count };
 };
 
-// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm comentário. Sem nenhuma das
+// Antes de organizar (barra): quantas comps estão selecionadas e quantas já têm etiqueta. Sem nenhuma das
 // duas, nada iria para as comps de render: a barra pergunta antes.
 PADX.organizeCheck = function () {
 	var selected = 0;
@@ -2217,7 +2217,7 @@ PADX.organizeProject = function () {
 
 		try {
 			padGroup('organização automática do projeto', function () {
-				organizeProject(); // comps selecionadas sem comentário recebem o comentário automático
+				organizeProject(); // comps selecionadas sem etiqueta recebem a etiqueta automática
 			});
 		} catch (err) {
 			throw new Error('#PAD_036 - ' + err.message);

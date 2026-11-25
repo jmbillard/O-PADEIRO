@@ -19,7 +19,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 	var DEFAULT_CONFIG_NAME = 'NOME DA CONFIGURAÇÃO';
 	// dicas padrão (as do padeiro antigo, defaultTemplateConfigObj.tip no host)
 	var DEFAULT_TIP = 'digite o texto em 1 ou 2 linhas.\nuse 1 linha vazia para criar mais de 1 versão.';
-	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
+	var RENAME_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	var METHODS = [
 		['textContent', 'conteúdo do texto'],
@@ -156,7 +156,7 @@ selecionados viram os layers editáveis e, ao salvar, o projeto vai para a pasta
 		var info = exampleInputs().join(' ').replace(/[\s-]+/g, ' ').trim();
 		var prefix = $('f-prefix').value.trim();
 
-		return cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+		return cleanName(((prefix ? prefix + RENAME_SEPARATOR : '') + info).toUpperCase());
 	}
 
 	function updateNamePreview() {

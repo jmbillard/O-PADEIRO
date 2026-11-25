@@ -867,7 +867,7 @@ body.prods-page {
   margin: 3px 0 4px;
 }
 
-/* aba RENOMEAR: tipos de peça (puxador, prefixo, comentário, termos) */
+/* aba RENOMEAR: os formatos (puxador, prefixo, etiqueta, termos) */
 .rename-head,
 .rename-row {
   display: grid;
@@ -1297,7 +1297,7 @@ body.is-org-dragging * {
   stroke-width: 1.8;
 }
 
-/* subpasta "fantasma": os comentários dos itens viram subpastas desta pasta */
+/* subpasta "fantasma": as etiquetas dos itens viram subpastas desta pasta */
 .org-sub-hint {
   display: flex;
   align-items: center;
@@ -1320,42 +1320,6 @@ body.is-org-dragging * {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
-}
-
-/* aba BUSCA: a categoria (chave do índice) e o nome de exibição */
-.category-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) 90px;
-  align-items: center;
-  gap: 8px;
-}
-
-.category-key {
-  overflow: hidden;
-  padding: 0 4px;
-  color: var(--text-secondary);
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.category-count {
-  color: var(--text-tertiary);
-  font-size: 0.68rem;
-  text-align: right;
-}
-
-.category-row.is-missing .category-key {
-  color: var(--text-tertiary);
-  text-decoration: line-through;
-}
-
-.category-empty {
-  margin: 0;
-  padding: 10px 0;
-  color: var(--text-tertiary);
-  font-size: 0.74rem;
 }
 
 /* aba LINKS: puxador, ícone (favicon ou escolhido), nome e endereço com o × dentro */
@@ -1841,7 +1805,7 @@ body.is-org-dragging * {
   height: 11px;
 }
 
-/* o seletor da superfície: ícone antes, como os de categoria */
+/* o seletor da superfície: ícone antes, como os de tipo */
 .pv-dd-line {
   display: flex;
   align-items: center;
@@ -2530,7 +2494,7 @@ body.is-org-dragging * {
   padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
-/* aba PROJETO: cada categoria num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
+/* aba PROJETO: cada tipo num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
    OUTPUT com a prévia embaixo); os rótulos alinham os campos */
 #cat-list {
   display: grid;
@@ -2601,7 +2565,7 @@ body.is-org-dragging * {
   transform: translateY(-50%);
 }
 
-/* a lixeira: exclui a categoria (fora do campo, para não parecer que só apaga o texto) */
+/* a lixeira: exclui o tipo (fora do campo, para não parecer que só apaga o texto) */
 .cat-del {
   display: grid;
   width: 30px;
@@ -2732,7 +2696,7 @@ body.is-org-dragging * {
   vertical-align: 1px;
 }
 
-/* o seletor de ícones (abre embaixo do ícone da categoria) */
+/* o seletor de ícones (abre embaixo do ícone do tipo) */
 #pane-project,
 #pane-prods {
   position: relative;

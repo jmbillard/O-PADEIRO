@@ -8,30 +8,30 @@
 
 A regra do renomear mora em regras/regra-do-renomear.js (PAD_REGRA_DO_RENOMEAR, compartilhada com a prévia da
 configuração e o host de teste, ADR 0005). Aqui ficam só as chamadas: a regra da equipe que o host já tem
-(PAD_RENAME_TYPES, PAD_RENAME_FIXED, PAD_RENAME_OPTIONS e o separador, de globals.js ou da aba RENOMEAR da
-configuração, padApplyConfig em productions.jsx) vai como parâmetro para o módulo, e o que depende do After (as
-pastas da comp, o comentário, a fila de render) fica aqui.
+(PAD_RENAME_FORMATS, PAD_RENAME_FIXED, PAD_RENAME_OPTIONS e PAD_RENAME_SEPARATOR, de globals.js ou da aba RENOMEAR
+da configuração, padApplyConfig em productions.jsx) vai como parâmetro para o módulo, e o que depende do After (as
+pastas da comp, a etiqueta, a fila de render) fica aqui.
 
 */
 
-var padRenameCache = { rule: null, key: null, types: null, fixed: null };
+var padRenameCache = { rule: null, key: null, formats: null, fixed: null };
 
 // A regra do renomear da equipe, como o host tem agora, preparada uma vez (compile) enquanto ela não muda.
 function padRenameRule() {
 	var c = padRenameCache;
 
-	var key = [PAD_RENAME_OPTIONS.removeSpecial, PAD_RENAME_OPTIONS.textCase, globalSeparator].join('|');
+	var key = [PAD_RENAME_OPTIONS.removeSpecial, PAD_RENAME_OPTIONS.textCase, PAD_RENAME_SEPARATOR].join('|');
 
-	if (!c.rule || c.types !== PAD_RENAME_TYPES || c.fixed !== PAD_RENAME_FIXED || c.key !== key) {
-		c.types = PAD_RENAME_TYPES;
+	if (!c.rule || c.formats !== PAD_RENAME_FORMATS || c.fixed !== PAD_RENAME_FIXED || c.key !== key) {
+		c.formats = PAD_RENAME_FORMATS;
 		c.fixed = PAD_RENAME_FIXED;
 		c.key = key;
 		c.rule = PAD_REGRA_DO_RENOMEAR.compile({
-			types: PAD_RENAME_TYPES,
+			formatos: PAD_RENAME_FORMATS,
 			fixed: PAD_RENAME_FIXED,
 			removeSpecial: PAD_RENAME_OPTIONS.removeSpecial,
 			textCase: PAD_RENAME_OPTIONS.textCase,
-			separator: globalSeparator
+			separator: PAD_RENAME_SEPARATOR
 		});
 	}
 
@@ -48,16 +48,16 @@ function renameNormalize(str) {
 	return PAD_REGRA_DO_RENOMEAR.normalize(str);
 }
 
-// Os formatos da regra ('renameRefArray', globals.js): { prefix, comment }, para a lista dos comentários.
-function padRenameRefs(types) {
+// Os formatos da regra ('renameRefArray', globals.js): { prefix, etiqueta }, para a lista das etiquetas.
+function padRenameRefs(formats) {
 	var refs = [];
 
-	for (var i = 0; i < types.length; i++) refs.push({ prefix: types[i].prefix, comment: types[i].comment });
+	for (var i = 0; i < formats.length; i++) refs.push({ prefix: formats[i].prefix, etiqueta: formats[i].etiqueta });
 
 	return refs;
 }
 
-renameRefArray = padRenameRefs(PAD_RENAME_TYPES);
+renameRefArray = padRenameRefs(PAD_RENAME_FORMATS);
 
 // Templates podem definir o nome final no texto do último layer ('script_template_name').
 function getTemplateNameLayer(comp) {
@@ -86,8 +86,8 @@ function overwriteCompName(comp) {
 }
 
 // Calcula o nome padronizado de uma comp, sem alterá-la: o formato pelas pastas da comp (da mais próxima para a
-// raiz) e depois pelo nome; o nome fixo pelo nome ou pelo comentário.
-// Retorna { name, comment } — comment é null quando nenhum formato foi identificado.
+// raiz) e depois pelo nome; o nome fixo pelo nome ou pela etiqueta (o comentário da comp no After).
+// Retorna { name, etiqueta } — etiqueta é null quando nenhum formato foi identificado.
 function getPromoRename(comp) {
 	var folders = [];
 
@@ -95,9 +95,9 @@ function getPromoRename(comp) {
 		folders.push(folder.name);
 	}
 
-	var r = PAD_REGRA_DO_RENOMEAR.rename(padRenameRule(), comp.name, { folders: folders, comment: comp.comment });
+	var r = PAD_REGRA_DO_RENOMEAR.rename(padRenameRule(), comp.name, { folders: folders, etiqueta: comp.comment });
 
-	return { name: r.name, comment: r.comment };
+	return { name: r.name, etiqueta: r.etiqueta };
 }
 
 // Coleta as comps de uma lista de itens; pastas entram com todo o conteúdo (e têm o nome em maiúsculas).
@@ -140,7 +140,7 @@ function renamePromoComps(items) {
 		var rename = getPromoRename(comp);
 
 		comp.name = rename.name;
-		if (rename.comment) comp.comment = rename.comment;
+		if (rename.etiqueta) comp.comment = rename.etiqueta;
 	}
 }
 
@@ -149,7 +149,7 @@ function sanitizeFileName(name) {
 	return PAD_REGRA_DO_RENOMEAR.fileName(name);
 }
 
-// Renomeia os arquivos de saída de toda a fila de render com o nome padronizado da comp.
+// Renomeia os outputs de toda a fila de render com o nome padronizado da comp.
 // Itens já renderizados ou em render não são alterados. Nomes repetidos na mesma pasta
 // recebem um sufixo (_2, _3...) para um render não sobrescrever o outro.
 function renameOutputs() {
@@ -194,5 +194,5 @@ function renameOutputs() {
 		}
 	}
 
-	if (skipped > 0) alert(lol + '#PAD_033 - ' + skipped + ' saída(s) não foram renomeadas (já renderizadas ou bloqueadas).');
+	if (skipped > 0) alert(lol + '#PAD_033 - ' + skipped + ' output(s) da fila não foram renomeados (já renderizados ou bloqueados).');
 }

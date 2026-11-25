@@ -47,7 +47,7 @@ O-PADEIRO/
    │  ├─ css/<painel>.css        → bar, finder, converter, productions, maker, project
    │  ├─ css/attractions.css     → o seletor de atração (cartões e atração nova): janela PROJETO, criador e editor de config
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
-   │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
+   │  ├─ icons/                  → a biblioteca de ícones (seletor dos tipos e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
    │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
@@ -55,7 +55,7 @@ O-PADEIRO/
    │     ├─ dropdown.js          → lista suspensa arredondada (com filtro digitado)
    │     ├─ config-editor.js     → formulário do _config.json (painel de templates)
    │     ├─ fontbank.js          → banco de fontes pelo Node (conferir e copiar para o banco e a pasta do projeto)
-   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), as categorias e o seletor (PAD_ATTRACTIONS)
+   │     ├─ attractions.js       → a busca das atrações (índice do webhook ou local), os tipos e o seletor (PAD_ATTRACTIONS)
    │     ├─ search-index.js      → o índice da busca no painel, dividido pelo acessorista e pela janela de projeto: qual índice usar, a cópia e o download (PAD_SEARCH_INDEX)
    │     ├─ util.js              → biblioteca de ícones (lê a pasta icons/), lixeira, forninho, URLs de arquivo
    │     ├─ icons.js             → os ícones das ferramentas da barra (barra e configuração), lidos da pasta icons/ (barra-<nome>.svg)

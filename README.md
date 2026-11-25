@@ -24,8 +24,8 @@ o padeiro é uma **extensão** do After Effects: a **barra** é um painel que po
 | <img src="docs/images/icons/fonts.png" width="40" alt="fontes"> | **Fontes** (gaveta **Projeto**) | **[O TIPÓGRAFO](docs/fontes.md)** resolve as fontes (instala as que faltam) | abre **[O TIPÓGRAFO](docs/fontes.md#-fontes-do-projeto-janela)**: cada fonte, a troca e a cópia |
 | <img src="docs/images/icons/collect.png" width="40" alt="coletar"> | **Coletar** (gaveta **Projeto**) | **[O CATADOR](#coletar)** coleta os arquivos na pasta do projeto | abre **[O CATADOR](#coletar)**: os arquivos e os que faltam |
 | <img src="docs/images/icons/render.png" width="40" alt="render"> | **Render** (gaveta **Projeto**) | **O FORNO** põe o render final das comps na fila, na pasta de output do projeto | põe um preview na fila, na pasta de previews (`COMP_prev_v01`, `_v02`…) |
-| <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todas as saídas da fila de render |
-| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas (comentários) dos itens do projeto |
+| <img src="docs/images/icons/rename.png" width="40" alt="renomear"> | **Renomear** (gaveta **Organização**) | **O ETIQUETADOR** renomeia as comps selecionadas | **O ETIQUETADOR** renomeia todos os outputs da fila de render |
+| <img src="docs/images/icons/organize.png" width="40" alt="organizar"> | **Organizar** (gaveta **Organização**) | **[O CONTRARREGRA](#organizar)** organiza o projeto | abre **[O CONTRARREGRA](#organizar)**: as etiquetas dos itens do projeto |
 | <img src="docs/images/icons/files.png" width="40" alt="arquivos"> | **Arquivos** (gaveta **Organização**) | abre **[O ARQUIVISTA](#arquivos)**: renomear os arquivos e as pastas de uma pasta | |
 | <img src="docs/images/icons/import.png" width="40" alt="importar"> | **Importar AEP** | **[O VERSIONADOR](docs/versionador.md)** importa um projeto do After de qualquer versão | abre **[O VERSIONADOR](docs/versionador.md)**: salvar o projeto em versões mais velhas do After |
 | <img src="docs/images/icons/folders.png" width="40" alt="pastas"> | **Pastas** | **O ADAPTADOR** abre a pasta do último render | abre **[O ADAPTADOR](docs/conversor.md)**: caminhos Windows ⇄ macOS |
@@ -43,7 +43,7 @@ e mais: **[O PRODUTOR](docs/producoes.md)**, a configuração, e o **[instalador
 | 🔤 [O TIPÓGRAFO](docs/fontes.md) | **O TIPÓGRAFO** | as fontes do projeto: o estado de cada uma, trocar por outra e copiar para uma pasta |
 | 📦 [O CATADOR](#coletar) | **O CATADOR** | os arquivos do projeto: coletar e resolver os que faltam |
 | 🔥 O FORNO | **O FORNO** | as comps selecionadas (ou a aberta) na fila de render, na pasta certa: o final no output, o preview nas saídas. só põe na fila; os presets são de cada um ([configuração > projeto](docs/producoes.md#-projeto)) |
-| 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas: comentários nos itens do projeto que o organizar entende |
+| 🏷️ [O CONTRARREGRA](#organizar) | **O CONTRARREGRA** | as etiquetas nos itens do projeto que o organizar entende |
 | 🗂️ [O ARQUIVISTA](#arquivos) | **O ARQUIVISTA** | renomear os arquivos e as pastas de um diretório com a regra do renomear das comps |
 | 🔎 [O ACESSORISTA](docs/acessorista.md) | **O ACESSORISTA** | buscar caminhos de atrações e textos nos layers do projeto |
 | 🔁 [O ADAPTADOR](docs/conversor.md) | **O ADAPTADOR** | converter caminhos entre Windows e macOS |
@@ -160,7 +160,7 @@ cada botão tem **duas ações**: `◖ clique esquerdo` e `◗ clique direito`. 
 O ETIQUETADOR
 
 ◖  →  renomear as comps selecionadas
-◗  →  renomear todas as saídas da fila de render
+◗  →  renomear todos os outputs da fila de render
 ```
 
 ### as gavetas
@@ -197,7 +197,7 @@ sem a configuração da equipe (nem na rede, nem a cópia deste computador), a b
 
 **o aviso** → o resultado de cada ação aparece num aviso flutuante, com uma bolinha (🟢 deu certo, 🟠 atenção, 🔴 erro) e o texto com a contagem (`3 itens renomeados · Cmd+Z desfaz`, ou `Ctrl+Z` no Windows); o × fecha, e ele some sozinho.
 
-**organizar sem nada marcado** → sem nenhuma comp selecionada nem com comentário, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
+**organizar sem nada marcado** → sem nenhuma comp selecionada nem com etiqueta, O CONTRARREGRA avisa antes (nada iria para as comps de render) e oferece '*organizar assim mesmo*'.
 
 <p align="center"><img src="docs/images/anim/progresso.webp" alt="O CATADOR coletando: a contagem e a linha embaixo do botão" width="760"></p>
 
@@ -248,7 +248,7 @@ enquanto trabalha, o nome do botão vira a contagem (`5/12`), uma linha fina enc
 | ❸ | **✕ faltando** | o arquivo não existe (ou mudou de lugar, ou está num volume desmontado: o ❻ procura). depois da busca, o achado vira **→**, com a pasta onde ele está. |
 | ❹ | **↑ amarela** | fora das pastas de projetos (ex: a Área de Trabalho): o coletar leva para a pasta do projeto. |
 | ❺ | **↑ azul** | nas pastas de projetos, mas fora da pasta deste projeto: o coletar copia. (**✓**: já está na pasta do projeto; **–** cinza: tipo fora da árvore do coletar. os dois ficam em **no lugar**.) |
-| ❻ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Relinkar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
+| ❻ | **procurar os que faltam** | procura cada arquivo faltando: no volume certo (`VFX`, `VFX-1` … `VFX-5`, montando o share se precisar) e, pelo nome, na pasta do projeto (5 níveis para dentro) e na pasta mais próxima do caminho antigo que ainda existe (3 níveis). com mais de um arquivo com o mesmo nome, fica o do caminho mais parecido com o antigo. nada muda ainda: cada achado aparece na lista com a pasta nova, e o botão principal vira **Religar** (desfaz com `Cmd+Z` / `Ctrl+Z`). as pastas de autosave, OLD e NÃO VALE ficam fora da busca. |
 | ❼ | **Coletar** | copia o que aparece na lista para a estrutura do projeto; as setas sobem enquanto copia. o **⋯** abre a pasta do projeto e a [migração](#migrar-a-pasta-para-a-estrutura-nova). |
 
 - **estrutura antiga ou com outra grafia** → o coletar usa as pastas que **já existem**, mesmo com o nome um pouco diferente do da configuração: outro número na frente (ou nenhum), com ou sem `_`, `-` e espaços, acento, caixa e plural (`01_PROJETOS` = `01PROJETO` = `PROJETOS`; `IMAGENS` = `03 imagem`). nada é criado ao lado de uma pasta equivalente. se houver **duas** candidatas na mesma pasta (ex: `02 ARQUIVOS` e `05 ARQUIVO`), vale a primeira na ordem alfabética (`02 ARQUIVOS`).
@@ -271,7 +271,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 - **pastas grandes** → a leitura vai até 3 pastas para dentro. uma pasta com mais de 100 arquivos que o projeto não usa (um banco de presets, stock footage…), ou com mais níveis do que isso, **fica como está**: a janela mostra cada uma com uma chave '*manter como está*'; desligada, a pasta vai inteira para os arquivos externos. o que o projeto usa sai de qualquer profundidade.
 - **o que vai para onde** → o `.aep` aberto e os outros `.aep` / `.aet` da pasta (em qualquer subpasta), para a pasta do tipo **projeto**, cada um na subpasta em que estava (`01 PROJETOS/versoes/x.aep` → `01_PROJETOS/versoes/x.aep`); os arquivos usados pelo projeto, para a pasta do tipo de cada um; o que está numa pasta de saída (`SAIDA`, `OUTPUT`, `RENDER`…), para a do tipo **saídas**, com as subpastas; todo o resto (não usado, autosave, `OLD`, pastas sem par), para a do tipo **arquivos externos**, com o caminho de antes dentro dela.
 - **todos os projetos da pasta** → por padrão só o projeto aberto é religado; os outros vão para a pasta dos projetos sem religar (o After pede os arquivos quando forem abertos) e o que só eles usam conta como não usado. ligando '*religar também os outros projetos da pasta*', o After Effects abre cada um para ler o que ele usa (o plano passa a contar como usado o que **qualquer** projeto usa) e, depois de mover, abre de novo para religar, salvar e fechar; no fim, volta ao projeto de antes. demora mais: cada projeto é aberto duas vezes. o original de cada projeto religado fica guardado em `_originais_migracao`, dentro dos arquivos externos (salvo por um After mais novo, um projeto de versão mais velha sai convertido). um projeto que não abre (versão mais nova que a do After, corrompido) vai movido sem religar e aparece no fim. o projeto aberto precisa estar salvo.
-- **ao migrar** → os arquivos são movidos (na mesma unidade é só trocar o nome: rápido, mesmo com vídeo grande), os itens são religados, o `.aep` é salvo no lugar novo, as saídas da fila de render passam a apontar para a pasta nova e as pastas antigas que ficaram vazias são apagadas. nome repetido no destino não sobrescreve: o segundo ganha `_2`.
+- **ao migrar** → os arquivos são movidos (na mesma unidade é só trocar o nome: rápido, mesmo com vídeo grande), os itens são religados, o `.aep` é salvo no lugar novo, os outputs da fila de render passam a apontar para a pasta nova e as pastas antigas que ficaram vazias são apagadas. nome repetido no destino não sobrescreve: o segundo ganha `_2`.
 - **antes de migrar** → a janela mostra, em cima, o **caminho da pasta** que será arrumada e os avisos que importam: os outros projetos que vão sem religar, o projeto fora de uma pasta de projetos (a migração arruma a pasta inteira onde ele está salvo). **Migrar** pede um **segundo clique** (o primeiro vira '*Confirmar: mover N*') e não responde ao `Ctrl+Enter`.
 - **pastas que não migram** → isto é sobre **onde o `.aep` está salvo**, não sobre onde estão os arquivos que ele usa. a migração arruma a pasta inteira do projeto, então ela recusa quando o `.aep` está direto numa pasta do sistema (Área de Trabalho, Documentos, Downloads…), na raiz de um volume (ou na primeira pasta dele), na pasta de um tipo de projeto inteiro ou, com tipos de projeto na [configuração > projeto](docs/producoes.md#-projeto), fora delas: migrar ali moveria tudo o que está nessa pasta. a janela diz o motivo e o caminho: levar o projeto para a pasta dele (Projeto > Iniciar / Alterar) e usar o Coletar. **os arquivos usados que estão espalhados** (a Área de Trabalho de quem criou, outra pasta da rede) **continuam sendo copiados** para a estrutura, numa migração de qualquer pasta válida: é a origem '*fora da pasta · copiados*' do desenho.
 - **desfazer** → arquivo movido no disco não volta com `Cmd+Z` / `Ctrl+Z`: a migração grava um registro na raiz (`_migracao_padeiro.json`) e o botão vira **Desfazer a migração** (também com segundo clique; logo depois de migrar ele espera 2 s, para um clique de reflexo não desfazer), que leva tudo de volta. os outros projetos voltam a ser os originais guardados, **menos os que foram salvos de novo depois da migração**: esses ficam como estão (o original continua guardado nos arquivos externos) e a janela diz quais. com o registro na pasta, ela não migra de novo.
@@ -302,9 +302,9 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 
 **O ETIQUETADOR**: dá a cada comp e a cada output da fila o nome no padrão da equipe.
 
-`◖ clique esquerdo` → renomeia as comps selecionadas no painel de projeto: remove caracteres especiais, passa para MAIÚSCULAS e acrescenta o prefixo do tipo (rodapé, cartão, lettering...).
+`◖ clique esquerdo` → renomeia as comps selecionadas no painel de projeto: remove caracteres especiais, passa para MAIÚSCULAS, acrescenta o prefixo do formato (rodapé, cartão, lettering...) e põe a etiqueta do formato.
 
-*o tipo vem do nome da pasta em que a comp está (ex: `RODAPES`, `LETTERING - JOGO`) ou de um prefixo / sufixo já presente no nome da comp. o nome da pasta tem prioridade.*
+*o formato vem do nome da pasta em que a comp está (ex: `RODAPES`, `LETTERING - JOGO`) ou de um prefixo / sufixo já presente no nome da comp. o nome da pasta tem prioridade.*
 
 `◗ clique direito` → aplica a mesma regra aos outputs de **todos** os itens da fila de render (o nome das comps não muda).
 
@@ -313,7 +313,7 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 > • cada output continua na pasta em que estava; itens já renderizados não mudam e nomes repetidos na mesma pasta ganham um sufixo (`_2`, `_3`...).\
 > • comps com o layer de texto `script_template_name` (último layer) recebem o nome definido nesse layer ([como usar](docs/templates.md#o-nome-da-comp-pelo-layer-script_template_name)).
 
-**prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento, como palavras inteiras):
+**os formatos: prefixos e termos reconhecidos** (no singular ou plural, com ou sem acento, como palavras inteiras):
 
 | prefixo | termos |
 | --- | --- |
@@ -334,20 +334,20 @@ o coletar **copia** para a pasta do projeto o que está fora dela. a migração 
 `◖ clique esquerdo` → organiza o projeto no modelo da PROMO.
 
 > 🚩 *obs:*\
-> • **selecione antes as comps principais** (as que serão renderizadas): elas recebem o comentário 'EXPORTAR' e vão para '01 COMPS'.\
-> • com uma pasta para as **comps editáveis** na árvore (configuração), comps com 'EDIT' no comentário vão para ela.\
-> • comps com comentário 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com o comentário de um tipo reconhecido (ex: 'RODAPE', dado pelo renomear) vão para uma subpasta com esse nome.\
-> • as demais comps vão para '02 PRECOMPS' (em subpastas pelo comentário, se houver).\
-> • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto do comentário antes de ':' vira subpasta.\
+> • **selecione antes as comps principais** (as que serão renderizadas): elas recebem a etiqueta 'EXPORTAR' e vão para '01 COMPS'.\
+> • com uma pasta para as **comps editáveis** na árvore (configuração), comps com 'EDIT' na etiqueta vão para ela.\
+> • comps com a etiqueta 'EXPORTAR', 'TEMPLATE' ou 'LOGO GLOBO' também vão para '01 COMPS'; as com a etiqueta de um formato reconhecido (ex: 'RODAPE', dada pelo renomear) vão para uma subpasta com esse nome.\
+> • as demais comps vão para '02 PRECOMPS' (em subpastas pela etiqueta, se houver).\
+> • footages vão para '03 ARQUIVOS' (VIDEOS, IMAGENS, AUDIO, SOLIDOS, DADOS) e arquivos ausentes para 'MISSING'. o texto da etiqueta antes de ':' vira subpasta.\
 > • pastas que ficarem vazias são removidas.
 
-`◗ clique direito` → abre **O CONTRARREGRA**: as **etiquetas**, comentários nos itens selecionados no painel Project que o organizar entende.
+`◗ clique direito` → abre **O CONTRARREGRA**: as **etiquetas** (os comentários do After) nos itens selecionados no painel Project que o organizar entende.
 
-- **render** (EXPORTAR, TEMPLATE, LOGO GLOBO) e **editáveis** (EDIT): os comentários da configuração > organizar.
-- **tipo de peça** (RODAPE, CARTAO, LETTERING...): os tipos do **O ETIQUETADOR**; a comp vai para uma subpasta com o tipo.
-- **arquivos** (FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC): o comentário do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
+- **render** (EXPORTAR, TEMPLATE, LOGO GLOBO) e **editáveis** (EDIT): as etiquetas da configuração > organizar.
+- **formatos** (RODAPE, CARTAO, LETTERING...): os formatos do **O ETIQUETADOR**; a comp vai para uma subpasta com o formato.
+- **arquivos** (FUNDO, LOGO, FOTO, ESCUDOS, BANDEIRAS, TRILHA, LOC): a etiqueta do footage vira subpasta; a lista é da equipe (configuração > organizar > etiquetas dos arquivos).
 
-`◖` numa etiqueta aplica nos selecionados e `◗` limpa o comentário deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa o comentário de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
+`◖` numa etiqueta aplica nos selecionados e `◗` limpa a etiqueta deles; o número ao lado diz quantos itens do projeto já têm a etiqueta. o campo de cima aplica um texto livre (`Enter`; vazio limpa). a janela abre com o foco no campo de cima. no rodapé, a **borracha** (pede um segundo clique para confirmar) limpa a etiqueta de todos os itens do projeto e **Organizar** organiza (o mesmo que o `◖`). tudo desfaz com `Cmd+Z` (Mac) ou `Ctrl+Z` (Windows).
 
 > ![estrutura do projeto](docs/images/ae-estrutura-projeto.png)
 
@@ -460,7 +460,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_023` `#PAD_025` `#PAD_026` `#PAD_028` `#PAD_031` `#PAD_063` | criador de templates: comp principal ou layers editáveis faltando |
 | `#PAD_027` | criador de templates: o teste de preenchimento falhou |
 | `#PAD_029` | criador de templates: falta a atração ou o que é |
-| `#PAD_032` `#PAD_033` | renomear: nada selecionado / saídas que não puderam ser renomeadas |
+| `#PAD_032` `#PAD_033` | renomear: nada selecionado / outputs da fila que não puderam ser renomeados |
 | `#PAD_034` | algumas fontes não puderam ser copiadas (ex: Adobe Fonts) |
 | `#PAD_036` | organizar: erro ao organizar o projeto |
 | `#PAD_043` | o painel pediu uma ação que o host não conhece (painel e host de versões diferentes: reabra o painel) |
@@ -485,10 +485,10 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_079` | configuração: letra de drive inválida ou repetida |
 | `#PAD_080` | configuração: o caminho do drive não é de rede (`//servidor/share/...`) |
 | `#PAD_081` | configuração: volume sem nome, repetido ou sem servidor |
-| `#PAD_082` | configuração: tipo de renomear sem prefixo, comentário ou termos, prefixo repetido ou separador inválido |
+| `#PAD_082` | configuração: formato do renomear sem prefixo, etiqueta ou termos, prefixo repetido ou separador inválido |
 | `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
 | `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
-| `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
+| `#PAD_085` | configuração: etiquetas de render vazias ou etiqueta automática fora delas |
 | `#PAD_086` | configuração: endereço do webhook da busca inválido, ou caminho fixo sem nome, sem caminho ou repetido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |

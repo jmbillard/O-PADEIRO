@@ -27,11 +27,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		saving: false,
 		log: { mode: 'webhook', webhook: '' }, // onde cada render da fila é registrado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
-		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
+		rename: { formatos: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
 		search: { url: '', caminhosFixos: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
-		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
+		project: { tipos: [] }, // aba PROJETO: os tipos da atração nova [{ name, path e output (com tokens), icon }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
 		bar: { items: [], hidden: [] }, // aba LAYOUT: a ordem da barra ('divider' entre os grupos) e as escondidas
 		appearance: null, // aba APARÊNCIA: o tema (a janela mostra a prévia enquanto edita)
@@ -53,7 +53,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	};
 
 	var LOG_HINTS = {
-		csvGlobal: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da equipe (um arquivo só, na mesma pasta da lista de produções).',
+		csvEquipe: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da equipe (um arquivo só, na mesma pasta da lista de produções).',
 		webhook: 'cada preenchimento é enviado para este endereço (data, produção, template, quantidade, usuário, máquina, a atração do template, os dados do projeto: quadro, o que é, pasta, output, e a versão do Padeiro).',
 		csv: 'cada preenchimento vira uma nova linha no “O_PADEIRO_log.csv” da produção (um arquivo só, na pasta de templates dela).',
 		off: 'nada é registrado.'
@@ -371,10 +371,10 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function renameForSave() {
 		return {
-			types: state.rename.types.map(function (t) {
+			formatos: state.rename.formatos.map(function (t) {
 				return {
 					prefix: t.prefix.trim(),
-					comment: t.comment.trim(),
+					etiqueta: t.etiqueta.trim(),
 					terms: t.terms.split(',').map(function (x) {
 						return x.trim();
 					}).filter(Boolean)
@@ -434,7 +434,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function projectForSave() {
 		return {
-			categories: state.project.categories.map(function (c) {
+			tipos: state.project.tipos.map(function (c) {
 				return { name: c.name.trim().toUpperCase(), path: c.path.trim(), output: (c.output || '').trim(), file: (c.file || '').trim(), icon: c.icon || '' };
 			})
 		};
@@ -585,7 +585,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function buildRow(row) {
 		var box = el('div', 'prod-row');
 		var grip = PAD_SORT.handle();
-		var iconBtn = el('button', 'cat-icon prod-icon'); // o ícone dentro do campo do nome, como nas categorias
+		var iconBtn = el('button', 'cat-icon prod-icon'); // o ícone dentro do campo do nome, como nos tipos
 		var img = el('img');
 		var nameBox = el('div', 'cat-name');
 		var name = el('input', 'cfg-input');
@@ -1187,11 +1187,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	var TAG_ICON = ['M3.5 12.6V5A1.5 1.5 0 0 1 5 3.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7 7a1.5 1.5 0 0 1-2.1 0z', 'M8 8h.01'];
 
 	function setRename(r) {
-		var data = r || { types: [], fixed: [] };
+		var data = r || { formatos: [], fixed: [] };
 
 		state.rename = {
-			types: (data.types || []).map(function (t) {
-				return { prefix: t.prefix || '', comment: t.comment || '', terms: (t.terms || []).join(', ') };
+			formatos: (data.formatos || []).map(function (t) {
+				return { prefix: t.prefix || '', etiqueta: t.etiqueta || '', terms: (t.terms || []).join(', ') };
 			}),
 			fixed: (data.fixed || []).map(function (f) {
 				return { match: f.match || '', name: f.name || '' };
@@ -1224,28 +1224,28 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function renderRename() {
 		if (!state.rename) return;
 
-		var types = $('type-list');
+		var formats = $('format-list');
 		var fixed = $('fixed-list');
 
-		types.textContent = '';
+		formats.textContent = '';
 		fixed.textContent = '';
 
-		state.rename.types.forEach(function (t, i) {
+		state.rename.formatos.forEach(function (t, i) {
 			var row = el('div', 'rename-row');
 
 			row.appendChild(PAD_SORT.handle());
-			row.appendChild(plainInput(t.prefix, 'rename-prefix', 'RDP', 'prefixo do tipo ' + (i + 1), function (v) {
+			row.appendChild(plainInput(t.prefix, 'rename-prefix', 'RDP', 'prefixo do formato ' + (i + 1), function (v) {
 				t.prefix = v;
 			}));
-			row.appendChild(plainInput(t.comment, null, 'RODAPE', 'comentário do tipo ' + (t.prefix || i + 1), function (v) {
-				t.comment = v;
+			row.appendChild(plainInput(t.etiqueta, null, 'RODAPE', 'etiqueta do formato ' + (t.prefix || i + 1), function (v) {
+				t.etiqueta = v;
 			}));
 
-			var terms = tagField(t.terms, 'rodapé, rdp', 'termos do tipo ' + (t.prefix || i + 1), TAG_ICON, function (v) {
+			var terms = tagField(t.terms, 'rodapé, rdp', 'termos do formato ' + (t.prefix || i + 1), TAG_ICON, function (v) {
 				t.terms = v;
 				testRename();
 			}, function () {
-				state.rename.types.splice(i, 1);
+				state.rename.formatos.splice(i, 1);
 				renderRename();
 				updateDirty();
 				testRename();
@@ -1253,7 +1253,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			terms.title = 'digite um termo e a vírgula (ou Enter) para fechar; o plural com S também vale';
 			row.appendChild(terms);
-			types.appendChild(row);
+			formats.appendChild(row);
 		});
 
 		state.rename.fixed.forEach(function (f, i) {
@@ -1274,7 +1274,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			fixed.appendChild(row);
 		});
 
-		['btn-new-type', 'btn-new-fixed'].forEach(function (id) {
+		['btn-new-format', 'btn-new-fixed'].forEach(function (id) {
 			$(id).disabled = !state.available;
 		});
 		$('rename-special').checked = state.rename.removeSpecial;
@@ -1320,15 +1320,15 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 		out.appendChild(document.createTextNode('→ '));
 		out.appendChild(el('b', null, res.name || '(vazio)'));
-		out.appendChild(document.createTextNode(res.comment ? '  ·  comentário ' + res.comment : '  ·  nenhum formato encontrado'));
+		out.appendChild(document.createTextNode(res.etiqueta ? '  ·  etiqueta ' + res.etiqueta : '  ·  nenhum formato encontrado'));
 	}
 
 	function bindRename() {
-		$('btn-new-type').addEventListener('click', function () {
-			state.rename.types.push({ prefix: '', comment: '', terms: '' });
+		$('btn-new-format').addEventListener('click', function () {
+			state.rename.formatos.push({ prefix: '', etiqueta: '', terms: '' });
 			renderRename();
 			updateDirty();
-			$('type-list').lastChild.querySelector('.rename-prefix').focus();
+			$('format-list').lastChild.querySelector('.rename-prefix').focus();
 		});
 
 		$('btn-new-fixed').addEventListener('click', function () {
@@ -1357,11 +1357,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			testRename();
 		});
 
-		// a ordem dos tipos importa: arrastar pelo puxador reordena
-		PAD_SORT.enable($('type-list'), '.rename-row', function (from, to) {
-			var moved = state.rename.types.splice(from, 1)[0];
+		// a ordem dos formatos importa: arrastar pelo puxador reordena
+		PAD_SORT.enable($('format-list'), '.rename-row', function (from, to) {
+			var moved = state.rename.formatos.splice(from, 1)[0];
 
-			state.rename.types.splice(to, 0, moved);
+			state.rename.formatos.splice(to, 0, moved);
 			renderRename();
 			updateDirty();
 		});
@@ -1938,7 +1938,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		rowHint: function (f, depth) {
 			var o = state.organize;
 
-			// os comentários dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
+			// as etiquetas dos itens viram subpastas desta pasta (se ligado): uma subpasta "fantasma" mostra isso
 			if (!o.commentSubfolders || !f.contents.length) return null;
 
 			var sub = el('div', 'org-sub-hint');
@@ -1947,9 +1947,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 			icon.setAttribute('aria-hidden', 'true');
 			sub.style.setProperty('--depth', depth + 2);
-			sub.title = 'itens com comentário ficam numa subpasta com o nome do comentário (desligue em "o comentário vira subpasta", à direita)';
+			sub.title = 'itens com etiqueta ficam numa subpasta com o nome da etiqueta (desligue em "etiquetas viram subpastas", à direita)';
 			sub.appendChild(icon);
-			sub.appendChild(el('span', null, 'comentários viram subpastas' + example));
+			sub.appendChild(el('span', null, 'etiquetas viram subpastas' + example));
 
 			return sub;
 		},
@@ -2003,7 +2003,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// os campos à direita (comentários de render, extensões...)
+	// os campos à direita (etiquetas de render, extensões...)
 	function organizeFields() {
 		var o = state.organize;
 		var fields = { 'org-render': 'renderComments', 'org-edit': 'editComments', 'org-auto': 'autoComment', 'org-data': 'dataExtensions', 'org-files': 'fileTags' };
@@ -3620,11 +3620,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	/* =========================================================
-	   Projeto (janela PROJETO): as categorias da atração nova
+	   Projeto (janela PROJETO): os tipos da atração nova
 	   ========================================================= */
 
-	// cada categoria: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
-	// (do seletor, ou '' = o automático pelo nome). uma categoria com {letra} ganha a etapa dos parecidos.
+	// cada tipo: o nome (a lista "dentro de"), o caminho da pasta da atração nova com tokens e o ícone
+	// (do seletor, ou '' = o automático pelo nome). um tipo com {letra} ganha a etapa dos parecidos.
 	var PATH_TOKENS = ['atracao', 'ano', 'mes', 'mes_extenso', 'proximo_mes', 'proximo_mes_num', 'ano_proximo_mes', 'tipo', 'categoria', 'letra', 'o_que_e', 'ano_producao']; // {categoria}: o nome antigo do {tipo}, ainda aceito
 	var MONTHS = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 	var CAT_FOLDER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>';
@@ -3633,7 +3633,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var data = JSON.parse(JSON.stringify(p || {}));
 
 		state.project = {
-			categories: (data.categories || []).map(function (c) {
+			tipos: (data.tipos || []).map(function (c) {
 				return { name: c.name || '', path: c.path || '', output: c.output || '', file: c.file || '', icon: c.icon || '' };
 			})
 		};
@@ -3641,7 +3641,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	function catIcon(row) {
-		return PAD_UTIL.categoryIcon(row.icon) || CAT_FOLDER_SVG;
+		return PAD_UTIL.tipoIcon(row.icon) || CAT_FOLDER_SVG;
 	}
 
 	// a prévia de um caminho (key: 'path', o do projeto, ou 'output'): os tokens trocados por um exemplo, em
@@ -3650,7 +3650,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		var d = new Date();
 		var path = String(row[key] || '').trim().replace(/\\/g, '/');
 		// o exemplo: a palavra ATRACAO no lugar do nome da atração nova
-		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' };
+		var sample = { atracao: 'ATRACAO', ano: String(d.getFullYear()), mes: ('0' + (d.getMonth() + 1)).slice(-2), mes_extenso: MONTHS[d.getMonth()], proximo_mes: MONTHS[(d.getMonth() + 1) % 12], proximo_mes_num: ('0' + ((d.getMonth() + 1) % 12 + 1)).slice(-2), ano_proximo_mes: String(d.getFullYear() + (d.getMonth() === 11 ? 1 : 0)), o_que_e: 'O QUE E', ano_producao: '2022', tipo: row.name.trim().toUpperCase() || 'TIPO', categoria: row.name.trim().toUpperCase() || 'TIPO', letra: 'A' }; // {categoria}: o nome antigo do {tipo}
 		var at = path.indexOf('{');
 		var head = at < 0 ? path : path.slice(0, at);
 		var cut = head.lastIndexOf('/', head.length - 2);
@@ -3665,11 +3665,11 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// cada categoria num cartão: NOME (com o ícone dentro do campo; a lixeira, que exclui a categoria, fica fora
+	// cada tipo num cartão: NOME (com o ícone dentro do campo; a lixeira, que exclui o tipo, fica fora
 	// dele), PROJETO e OUTPUT, os dois com a prévia embaixo
 	function renderProject() {
 		var list = $('cat-list');
-		var cats = state.project.categories;
+		var cats = state.project.tipos;
 
 		if (!list) return;
 
@@ -3719,7 +3719,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 			remove.innerHTML = TRASH_SVG;
 			remove.addEventListener('click', function () {
 				collapseThen(card, function () {
-					state.project.categories.splice(i, 1);
+					state.project.tipos.splice(i, 1);
 					renderProject();
 					updateDirty();
 				});
@@ -3739,7 +3739,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 					row[k[0]] = v;
 					preview.innerHTML = catPreview(row, k[0]);
 				}, function (picked) {
-					// a pasta escolhida é a da categoria: a atração nova fica dentro dela
+					// a pasta escolhida é a do tipo: a atração nova fica dentro dela
 					row[k[0]] = picked.replace(/[\\/]+$/, '') + '/{atracao}';
 					if (k[0] === 'path' && !row.name) row.name = picked.replace(/[\\/]+$/, '').split(/[\\/]/).pop().toUpperCase();
 					renderProject();
@@ -3747,7 +3747,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 				}, function () { });
 				var input = field.querySelector('input');
 
-				field.removeChild(field.lastChild); // sem o × do campo: o da categoria fica no nome
+				field.removeChild(field.lastChild); // sem o × do campo: o do tipo fica no nome
 
 				// os tokens entram no último caminho em foco; fora dele, o campo mostra o fim do caminho
 				input.addEventListener('focus', function () {
@@ -3800,7 +3800,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		requestAnimationFrame(catPathsToEnd);
 	}
 
-	// o fim de cada caminho (a parte que muda de uma categoria para outra). também ao abrir a aba: montada
+	// o fim de cada caminho (a parte que muda de um tipo para outro). também ao abrir a aba: montada
 	// escondida, o campo ainda não tem largura e fica no começo
 	function catPathsToEnd() {
 		pathsToEnd($('cat-list'));
@@ -3815,13 +3815,13 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 	}
 
-	// põe o token no caminho em foco (ou no do projeto da última categoria), onde está o cursor
+	// põe o token no caminho em foco (ou no do projeto do último tipo), onde está o cursor
 	function insertToken(token) {
 		var target = state.catInput;
 
 		if (!target || !document.body.contains(target.input)) {
 			var cards = $('cat-list').querySelectorAll('.cat-card');
-			var rows = state.project.categories;
+			var rows = state.project.tipos;
 
 			if (!cards.length) return toast(null, 'crie um tipo de projeto antes (+ novo tipo).');
 
@@ -3844,7 +3844,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	}
 
 	// o seletor de ícones: os desenhos do padeiro (estáticos)
-	// o seletor de ícones (a biblioteca da pasta icons/): categorias (aba PROJETO) e produções (aba TEMPLATES).
+	// o seletor de ícones (a biblioteca da pasta icons/): tipos (aba PROJETO) e produções (aba TEMPLATES).
 	// opts: { title, pane, render, none } (none: mostra o "sem ícone")
 	function openIconPicker(anchor, row, opts) {
 		closeIconPicker();
@@ -3911,7 +3911,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 
 	function bindProject() {
 		$('btn-new-cat').addEventListener('click', function () {
-			state.project.categories.push({ name: '', path: '', output: '', icon: 'pasta' });
+			state.project.tipos.push({ name: '', path: '', output: '', icon: 'pasta' });
 			renderProject();
 			updateDirty();
 			$('cat-list').lastChild.querySelector('.cat-name input').focus();
@@ -3933,9 +3933,9 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		});
 
 		PAD_SORT.enable($('cat-list'), '.cat-card', function (from, to) {
-			var moved = state.project.categories.splice(from, 1)[0];
+			var moved = state.project.tipos.splice(from, 1)[0];
 
-			state.project.categories.splice(to, 0, moved);
+			state.project.tipos.splice(to, 0, moved);
 			renderProject();
 			updateDirty();
 		});

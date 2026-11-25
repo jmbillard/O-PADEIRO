@@ -16,7 +16,7 @@ Os presets (os templates de output do After) são de cada um, deste computador (
 computador): cada pessoa tem a sua lista. Sem preset escolhido, a comp entra na fila com o padrão do After.
 
 Se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para
-a pasta de saída deste computador (configuração > produções > neste computador; vazia: a Área de Trabalho).
+o output local deste computador (configuração > produções > neste computador; vazia: a Área de Trabalho).
 
   PADX.renderPresets()            → { templates: [nome], final, preview } (a lista do After e os dois escolhidos)
   PADX.renderQueue({ preview })   → { count, folder, local, names, warnings }
@@ -174,7 +174,7 @@ PADX.renderQueue = function (a) {
 		for (i = 0; i < comps.length; i++) {
 			var item = app.project.renderQueue.items.add(comps[i]);
 			var om = item.outputModule(1);
-			// o nome padronizado da saída (a mesma regra do Renomear > saídas): a camada de nome do template ou o
+			// o nome padronizado da saída (a mesma regra do Renomear > outputs da fila): a camada de nome do template ou o
 			// nome da comp no padrão da promo
 			var nameLayer = getTemplateNameLayer(comps[i]);
 			var base = sanitizeFileName(nameLayer ? templateNameValue(nameLayer) : getPromoRename(comps[i]).name) || sanitizeFileName(comps[i].name);
@@ -196,7 +196,7 @@ PADX.renderQueue = function (a) {
 			}
 			used[name.toLowerCase()] = true;
 
-			// sequência de imagens (pelo nome do preset): o número do quadro no nome, como no Renomear > saídas
+			// sequência de imagens (pelo nome do preset): o número do quadro no nome, como no Renomear > outputs da fila
 			var seq = /sequ|seq\b|png|tiff?|tga|exr|dpx|jpe?g|psd/i.test(preset || '');
 			var file = new File(folder + '/' + name + (seq ? '_[#####]' : '') + '.[fileextension]');
 

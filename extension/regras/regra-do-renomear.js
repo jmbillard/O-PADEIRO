@@ -5,7 +5,7 @@
 ---------------------------------------------------------------
 
 O nome novo de uma comp (ou de um arquivo) pela regra do renomear da equipe. A regra vem como parâmetro, na forma
-guardada na configuração ('RENAME'): { types: [{ prefix, comment, terms: [...] }], fixed: [{ match, name }],
+guardada na configuração ('RENAME'): { formatos: [{ prefix, etiqueta, terms: [...] }], fixed: [{ match, name }],
 removeSpecial, textCase, separator }. Nada aqui lê a configuração nem variáveis de fora.
 
   - o formato: o primeiro da lista com um termo no nome (como palavra; o plural com S também vale; os termos aceitam
@@ -15,10 +15,10 @@ removeSpecial, textCase, separator }. Nada aqui lê a configuração nem variáv
   - com formato: tira do nome os prefixos e os termos de todos os formatos e abre com o prefixo do formato e o
     separador (RDP - JOAO SILVA). O prefixo do formato fica como está na regra;
   - o texto da parte descritiva (styleText): os especiais (acentos e símbolos) e a caixa;
-  - o nome fixo (LOGO GLOBO) vence tudo, e sai como está na regra. Sem nome fixo no nome e sem formato, o comentário
-    da comp (opts.comment) também pode dar o nome fixo.
+  - o nome fixo (LOGO GLOBO) vence tudo, e sai como está na regra. Sem nome fixo no nome e sem formato, a etiqueta
+    da comp (opts.etiqueta) também pode dar o nome fixo.
 
-rename(regra, nome, opts) → { name, format: { prefix, comment } | null, comment (o do formato, ou null), fixed }.
+rename(regra, nome, opts) → { name, format: { prefix, etiqueta } | null, etiqueta (a do formato, ou null), fixed }.
 A regra pode vir crua ou preparada uma vez por compile(regra) (as expressões montadas), para muitos nomes.
 styleText(regra, texto) → o texto com os especiais e a caixa da regra, sem procurar o formato (a forminha).
 
@@ -116,17 +116,17 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 
 	// a regra preparada: as expressões dos termos e dos nomes fixos montadas uma vez
 	function compile(rule) {
-		var types, fixed, formats, list, terms, re, i, j, match;
+		var formatos, fixed, formats, list, terms, re, i, j, match;
 
 		if (rule && rule.compiled === true) return rule;
 
 		rule = rule || {};
-		types = rule.types || [];
+		formatos = rule.formatos || [];
 		fixed = rule.fixed || [];
 		formats = [];
 
-		for (i = 0; i < types.length; i++) {
-			list = types[i].terms || [];
+		for (i = 0; i < formatos.length; i++) {
+			list = formatos[i].terms || [];
 			terms = [];
 
 			for (j = 0; j < list.length; j++) {
@@ -134,7 +134,7 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 
 				if (re) terms.push(re);
 			}
-			formats.push({ prefix: String(types[i].prefix), comment: String(types[i].comment), terms: terms });
+			formats.push({ prefix: String(formatos[i].prefix), etiqueta: String(formatos[i].etiqueta), terms: terms });
 		}
 
 		var fixedRe = [];
@@ -155,7 +155,7 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 		};
 	}
 
-	// o texto da parte descritiva do nome: os especiais e a caixa (não é o formato do nome, que é o tipo da comp)
+	// o texto da parte descritiva do nome: os especiais e a caixa (não acha o formato do nome)
 	function styleText(rule, text) {
 		var r = compile(rule);
 		var t = String(text);
@@ -234,7 +234,7 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 	}
 
 	// a regra do renomear aplicada a um nome. opts: { folders: [nomes das pastas, da mais próxima para a raiz],
-	// comment: o comentário da comp, itemOnly: o formato só pelo nome do item }
+	// etiqueta: a etiqueta da comp, itemOnly: o formato só pelo nome do item }
 	function rename(rule, name, opts) {
 		var r = compile(rule);
 		var text = trim(String(name == null ? '' : name).replace(/\s+/g, ' '));
@@ -248,19 +248,19 @@ productions.js; o etiquetador e o arquivista do host de teste, mock-host.js) e o
 
 		if (!found) found = findFormat(r, text, false);
 
-		var result = { name: styleText(r, text), format: null, comment: null, fixed: false };
+		var result = { name: styleText(r, text), format: null, etiqueta: null, fixed: false };
 
 		if (found) {
 			clean = styleText(r, describe(r, text, found));
-			result.format = { prefix: found.prefix, comment: found.comment };
-			result.comment = found.comment;
+			result.format = { prefix: found.prefix, etiqueta: found.etiqueta };
+			result.etiqueta = found.etiqueta;
 			result.name = clean && clean.toUpperCase() !== found.prefix ? found.prefix + r.separator + clean : found.prefix;
 		}
 
-		// o nome fixo (LOGO GLOBO), pelo nome; sem ele e sem formato, pelo comentário da comp
+		// o nome fixo (LOGO GLOBO), pelo nome; sem ele e sem formato, pela etiqueta da comp
 		fixed = fixedName(r, text);
 
-		if (!fixed && !found && opts.comment) fixed = fixedName(r, opts.comment);
+		if (!fixed && !found && opts.etiqueta) fixed = fixedName(r, opts.etiqueta);
 
 		if (fixed) {
 			result.name = fixed;

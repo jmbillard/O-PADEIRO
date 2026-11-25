@@ -135,7 +135,7 @@ function padLightName(parts, compName, lines) {
 	if (!vars) {
 		if (!lines.length) return compName;
 
-		return compName + globalSeparator + padRenameFormat(lines[0]);
+		return compName + PAD_RENAME_SEPARATOR + padRenameFormat(lines[0]);
 	}
 
 	return out.replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
@@ -192,7 +192,7 @@ function padLightVersions(list) {
 PADX.lightRead = function () {
 	var comp = padLightComp();
 
-	if (!comp) return { comp: '', id: 0, layers: [], parts: [], nameLayer: false, separator: globalSeparator };
+	if (!comp) return { comp: '', id: 0, layers: [], parts: [], nameLayer: false, separator: PAD_RENAME_SEPARATOR };
 
 	var layers = padLightLayers(comp);
 	var list = [];
@@ -211,7 +211,7 @@ PADX.lightRead = function () {
 		layers: list,
 		parts: padLightParts(comp.name, texts),
 		nameLayer: !!getTemplateNameLayer(comp),
-		separator: globalSeparator
+		separator: PAD_RENAME_SEPARATOR
 	};
 };
 

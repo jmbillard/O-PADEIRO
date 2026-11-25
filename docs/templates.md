@@ -105,7 +105,7 @@ depois de preencher, o padeiro mostra cada versão criada e pede o **preset de r
 - **criar fila de render** → adiciona as comps à fila com o output certo. com tudo certo, o painel de templates **fecha sozinho**.
 - **concluir sem fila** → termina sem criar a fila. com tudo certo, o painel também **fecha sozinho**.
 
-> 🚩 *obs:* com algum erro (um template que não preencheu, uma saída que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
+> 🚩 *obs:* com algum erro (um template que não preencheu, um output que não entrou na fila ou um erro no script do template), o painel fica aberto para mostrar o que aconteceu.
 
 para criar um novo preset de output, acesse:\
 `Edit` > `Templates` > `Output Module...`
@@ -207,7 +207,7 @@ um template pode ter um script ao lado dele, com o mesmo nome: `RODAPE CONVIDADO
 
 #### exemplos
 
-**1 · a cor do label e um comentário nas versões criadas**
+**1 · a cor do label e uma etiqueta nas versões criadas**
 
 ```js
 for (var i = 0; i < newCompsArray.length; i++) {

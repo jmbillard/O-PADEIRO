@@ -203,7 +203,7 @@ const DOC_PREVIEWS = `(() => {
 	});
 })();`;
 
-const CATEGORIES = { categories: [
+const TIPOS_DE_PROJETO = { tipos: [
 	{ name: 'PROGRAMA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/{atracao}', icon: 'tv' },
 	{ name: 'NOVELA', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/NOVELAS/{atracao}', output: '', icon: 'mascaras' },
 	{ name: 'VT', path: '/Volumes/VFX/imagem/drive_l/Fileserver_3/INSTITUCIONAL/VTs/{ano}/{atracao}', output: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/INSTITUCIONAL/VTs/{atracao}', icon: 'fita' },
@@ -388,7 +388,7 @@ const SCENES = {
 		await hover(p, '#criar-go', 900);
 	} },
 
-	// A CLAQUETE, atração nova: a categoria no começo do texto marca o chip; Enter cria nela
+	// A CLAQUETE, atração nova: o tipo no começo do texto marca o chip; Enter cria nela
 	'claquete-nova': { w: 480, h: 680, url: 'project.html', async run(p) {
 		mouse = [450, 640];
 		await p.waitForTimeout(500);
@@ -457,7 +457,7 @@ const SCENES = {
 		await p.waitForTimeout(900);
 		await hover(p, '.cw-row .fw-head', 500);
 		await tap(p, '#cw-relink', { wait: 2600 }); // procura: o achado vira →
-		await tap(p, '#cw-go', { wait: 2000 }); // Relinkar
+		await tap(p, '#cw-go', { wait: 2000 }); // Religar
 		await tap(p, '#cw-go', { wait: 2200 }); // Coletar
 	} },
 
@@ -561,7 +561,7 @@ async function shots(b, names) {
 				localStorage.clear();
 				localStorage.setItem('pad.mock.project', JSON.stringify(c));
 			} catch (e) { }
-		}, CATEGORIES);
+		}, TIPOS_DE_PROJETO);
 		if (s.init) await ctx.addInitScript(s.init);
 
 		const p = await ctx.newPage();
@@ -604,7 +604,7 @@ async function gifs(b, names) {
 				localStorage.clear();
 				localStorage.setItem('pad.mock.project', JSON.stringify(c));
 			} catch (e) { }
-		}, CATEGORIES);
+		}, TIPOS_DE_PROJETO);
 		if (s.init) await ctx.addInitScript(s.init);
 
 		const p = await ctx.newPage();

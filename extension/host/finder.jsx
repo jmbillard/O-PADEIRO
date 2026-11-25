@@ -263,7 +263,7 @@ Conversão em lib/acessorista.js (cleanPathInput / toMacPath / toWinPath).
 */
 
 // Pedido de abertura feito pela barra principal ('pastas', clique direito): o painel do conversor
-// começa com a pasta da última saída da fila de render.
+// começa com a pasta do último output da fila de render.
 PADX.requestConverter = function () {
 	var request = { stamp: new Date().getTime(), path: '' };
 

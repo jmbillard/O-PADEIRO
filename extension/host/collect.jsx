@@ -748,10 +748,10 @@ function padPathKey(path) {
 	return p.replace(/\/+/g, '/').replace(/\/$/, '').toLowerCase() + '/';
 }
 
-// As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada categoria, antes do
-// primeiro token (…/PROGRAMAS/{atracao} → …/PROGRAMAS). [] sem categorias.
+// As pastas de projetos (configuração > PROJETO): o começo fixo do caminho de cada tipo, antes do
+// primeiro token (…/PROGRAMAS/{atracao} → …/PROGRAMAS). [] sem tipos.
 function padProjectsRoots() {
-	var list = padLerSecao('tiposDeProjeto').categories;
+	var list = padLerSecao('tiposDeProjeto').tipos;
 	var roots = [];
 	var seen = {};
 
@@ -771,7 +771,7 @@ function padProjectsRoots() {
 	return roots;
 }
 
-// O arquivo está nas pastas de projetos? sem categorias na configuração, vale estar na rede.
+// O arquivo está nas pastas de projetos? sem tipos na configuração, vale estar na rede.
 // O mesmo lugar (ou dentro dele), qualquer que seja a forma do caminho: \\servidor\…, //servidor/…, L:\… (o mapa de
 // drives), /Volumes/VFX e /Volumes/VFX-1 a VFX-5. inside: o caminho a está dentro de b (ou é b)
 function padSamePath(a, b) {
@@ -1031,7 +1031,7 @@ var PAD_RELINK_FILES = 40000; // e o máximo de arquivos lidos
 
 // Os arquivos de 'folder', até 'depth' níveis para dentro, no índice { nome em minúsculas: [caminhos] }. pula as
 // pastas que não interessam (autosave, OLD…) e as escondidas. state: { byName, files, until, partial, seen }
-// As pastas onde o projeto renderiza: a de output gravada no projeto e as das saídas da fila de render (as que
+// As pastas onde o projeto renderiza: a de output gravada no projeto e as dos outputs da fila de render (as que
 // existem, sem repetir). → [Folder]
 function padRelinkOutputs() {
 	var list = [];
@@ -1203,7 +1203,7 @@ PADX.collectRelinkFind = function (a) {
 
 	if (projectFile) padRelinkScan(new Folder(padCollectRoot(projectFile, padLerSecao('coletar'))), 5, state);
 
-	// a pasta de output do projeto e as pastas das saídas da fila de render: o que foi renderizado e voltou para o
+	// a pasta de output do projeto e as pastas dos outputs da fila de render: o que foi renderizado e voltou para o
 	// projeto (um lettering, um pré-render) costuma estar lá
 	var outs = padRelinkOutputs();
 
@@ -1229,7 +1229,7 @@ PADX.collectRelinkFind = function (a) {
 };
 
 // Resolve os arquivos faltando que estão num volume não montado ou com outro sufixo (VFX-1 …): cata o
-// caminho certo e relinka (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses), to: { id: caminho } (opcional:
+// caminho certo e religa (desfaz com um Ctrl+Z). a: { ids } (opcional: só esses), to: { id: caminho } (opcional:
 // o lugar novo de cada um, achado pelo collectRelinkFind) → { relinked, still: [nome] }
 PADX.collectRelink = function (a) {
 	var only = {};
@@ -1239,7 +1239,7 @@ PADX.collectRelink = function (a) {
 
 	for (i = 0; a && a.ids && i < a.ids.length; i++) only[a.ids[i]] = true;
 
-	padUndoBegin('PADEIRO - relinkar arquivos');
+	padUndoBegin('PADEIRO - religar arquivos');
 
 	try {
 		for (i = 1; i <= app.project.numItems; i++) {

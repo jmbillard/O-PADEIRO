@@ -98,7 +98,7 @@ Os volumes dos dois servidores do script: `cdesign` (egcdesign01) e `Arte_Ilha` 
 | pasta `End Pages` (detecta o efeito `servico end page`) | tipo EP pelo nome | **parcial**: só pelo nome da comp, vai para a raiz junto com o render |
 | tag `ignore` (fica fora das subpastas) | — | **parcial**: vira a subpasta `Comps/IGNORE` |
 | subpastas pelo nome do template de Essential Graphics | subpastas pelo comentário | **parcial**: o critério é outro |
-| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | — | **fora**: específico demais da GNEWS; o renomear do padeiro segue os tipos de peça |
+| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | — | **fora**: específico demais da GNEWS; o renomear do padeiro segue os formatos |
 | apoio + data/hora do end page no nome (`txt_apoio`, `txt_data e horario`) | — | **falta** |
 | hard news: `GNEWS projeto n - ID` | — | **falta** |
 | collect para `projPath/<grupo>/<retranca>/<projeto>` | janela PROJETO (salvar) + botão COLETAR | igual (e copia as sequências de imagens) |
