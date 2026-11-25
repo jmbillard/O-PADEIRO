@@ -544,6 +544,23 @@ PADX.ping = function () {
 	};
 };
 
+// o instalador (Shift + clique direito no pãozinho da barra): INSTALAR O PADEIRO.jsx, na pasta do padeiro na rede,
+// ao lado da pasta extension (host → extension → pasta do padeiro, como a configuração da equipe). dentro do
+// $.evalFile, o $.fileName é o do próprio instalador (é assim que o index.jsx acha o PADX_HOST_PATH), e ele acha a
+// pasta extension ao lado dele. a janela do instalador não é modal: a chamada volta logo depois de abri-la
+// → { path }
+var PAD_INSTALLER_NAME = 'INSTALAR O PADEIRO.jsx';
+
+PADX.runInstaller = function () {
+	var file = new File(new Folder(PADX_HOST_PATH).parent.parent.fsName + '/' + PAD_INSTALLER_NAME);
+
+	if (!file.exists) throw new Error('#PAD_119 - instalador: ' + PAD_INSTALLER_NAME + ' não foi encontrado na pasta do padeiro (' + padDisplayPath(file.fsName) + ')');
+
+	$.evalFile(file);
+
+	return { path: padDisplayPath(file.fsName) };
+};
+
 // Lista de produções (nome, pasta de templates e ícone).
 PADX.productions = function () {
 	var configFile = padConfigFile();

@@ -643,6 +643,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return { renderTemplates: RENDER_TEMPLATES.slice(), preferredTemplate: RENDER_TEMPLATES[0], 'final': r['final'] || '', preview: r.preview || '' };
 		},
 
+		// o instalador (Shift + clique direito no pãozinho): só registra a chamada, para os testes
+		runInstaller: function () {
+			window.PAD_MOCK_INSTALLER_CALLS = (window.PAD_MOCK_INSTALLER_CALLS || 0) + 1;
+
+			return { path: '//servidor/padeiro/INSTALAR O PADEIRO.jsx' };
+		},
+
 		logoGlobo: async function (a) {
 			await wait(200);
 

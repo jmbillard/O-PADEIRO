@@ -1830,10 +1830,17 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 		$('logo').addEventListener('click', function () {
 			PAD_BRIDGE.openUrl(DOCS_URL);
 		});
-		// o tour da turma de novo (js/tour.js)
-		$('logo').addEventListener('contextmenu', function (e) {
+		// o tour da turma de novo (js/tour.js); com Shift, o instalador (INSTALAR O PADEIRO.jsx, na pasta do padeiro na rede)
+		$('logo').addEventListener('contextmenu', async function (e) {
 			e.preventDefault();
-			PAD_TOUR.start({});
+
+			if (!e.shiftKey) return PAD_TOUR.start({});
+
+			try {
+				await call('runInstaller');
+			} catch (err) {
+				toast('error', err.message);
+			}
 		});
 		// o tour achou (ou criou) a configuração: a barra relê os links e as ferramentas
 		document.addEventListener('pad-tour-setup', function () {
