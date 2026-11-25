@@ -12,9 +12,12 @@ RODAPES JOGO → RDP - JOGO), nunca da pasta onde o item está.
 
 - filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
 - filesList   → os itens da pasta (e das subpastas, se pedido), com a sugestão de cada um
-- filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora), religa no projeto aberto
-                o que mudou de caminho e guarda o registro para desfazer
-- filesUndo   → desfaz a última renomeação (e religa de volta)
+- filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora) e guarda o registro para
+                desfazer; religa no projeto aberto o que mudou de caminho, ou devolve as trocas (relink: false) para a
+                janela religar tudo de uma vez no fim dos lotes
+- filesRelink → religa no projeto aberto as trocas de caminho dos lotes: um passo só do Ctrl+Z
+- filesUndo   → desfaz a última renomeação (e religa de volta, num passo só do Ctrl+Z). o que não voltar fica no
+                registro, para tentar de novo
 
 Ficam de fora: os arquivos escondidos e de sistema, as pastas de autosave e de logs do After e os projetos (.aep,
 .aet e os de outros programas). Uma sequência de imagens é um item só: o nome muda, os números ficam.
@@ -298,7 +301,16 @@ function padFilesMap(path, ops) {
 	return p;
 }
 
-// religa no projeto aberto os arquivos que mudaram de caminho. devolve quantos foram religados
+// religa no projeto aberto os arquivos que mudaram de caminho, num grupo de desfazer do After (um passo do Ctrl+Z).
+// devolve quantos foram religados
+function padFilesRelinkGroup(ops, label) {
+	if (!ops.length) return 0;
+
+	return padGroup(label, function () {
+		return padFilesRelink(ops);
+	});
+}
+
 function padFilesRelink(ops) {
 	var count = 0;
 
@@ -325,8 +337,9 @@ function padFilesRelink(ops) {
 	return count;
 }
 
-// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }] } → { count, relinked, errors: [{ name, error }], undo }
-// a: { path, items, append } → { count, relinked, errors, undo }
+// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }], append, relink }
+//   → { count, relinked, errors: [{ name, error }], ops: [{ from, to, dir }], undo }
+// relink: false → não religa aqui: a janela junta as ops dos lotes e chama filesRelink no fim (um passo do Ctrl+Z)
 PADX.filesRename = function (a) {
 	var root = new Folder(padMountedPath(padPath(a.path)));
 
@@ -411,7 +424,7 @@ PADX.filesRename = function (a) {
 	var relinked = 0;
 
 	if (ops.length) {
-		relinked = padFilesRelink(ops);
+		if (a.relink !== false) relinked = padFilesRelinkGroup(ops, 'O ARQUIVISTA: religar');
 
 		// o registro para desfazer: as renomeações na ordem em que foram feitas
 		try {
@@ -438,10 +451,19 @@ PADX.filesRename = function (a) {
 		} catch (err) { }
 	}
 
-	return { count: count, relinked: relinked, errors: errors, undo: padFilesUndoInfo() };
+	return { count: count, relinked: relinked, errors: errors, ops: ops, undo: padFilesUndoInfo() };
 };
 
-// desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado)
+// a: { ops: [{ from, to, dir }] } (as dos lotes de filesRename) → { relinked }
+PADX.filesRelink = function (a) {
+	var ops = a && a.ops instanceof Array ? a.ops : [];
+
+	return { relinked: padFilesRelinkGroup(ops, 'O ARQUIVISTA: religar') };
+};
+
+// desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado).
+// o que não voltar (travado, sem permissão) fica no registro: o desfazer continua disponível para tentar de novo; o
+// registro só é apagado quando tudo voltou
 PADX.filesUndo = function () {
 	var file = padFilesUndoFile();
 	var data = null;
@@ -454,6 +476,7 @@ PADX.filesUndo = function () {
 
 	var back = [];
 	var errors = [];
+	var left = [];
 
 	for (var i = data.ops.length - 1; i >= 0; i--) {
 		var op = data.ops[i];
@@ -467,15 +490,20 @@ PADX.filesUndo = function () {
 		if (!ref.exists) why = 'não está mais na pasta';
 		else why = padFilesMove(ref, parent, oldName, isFolder);
 
-		if (why) errors.push({ name: op.to.slice(at + 1), error: why });
-		else back.push({ from: op.to, to: op.from, dir: isFolder });
+		if (why) {
+			errors.push({ name: op.to.slice(at + 1), error: why });
+			left.unshift(op); // na ordem em que foram feitas
+		} else {
+			back.push({ from: op.to, to: op.from, dir: isFolder });
+		}
 	}
 
-	var relinked = back.length ? padFilesRelink(back) : 0;
+	var relinked = padFilesRelinkGroup(back, 'O ARQUIVISTA: religar (desfazer)');
 
 	try {
-		file.remove();
+		if (left.length) saveTextFile(JSON.stringify({ folder: data.folder, count: left.length, when: data.when || new Date().getTime(), ops: left }), file.fsName);
+		else file.remove();
 	} catch (err2) { }
 
-	return { count: back.length, relinked: relinked, errors: errors, folder: padDisplayPath(data.folder || ''), undo: null };
+	return { count: back.length, missing: errors.length, relinked: relinked, errors: errors, folder: padDisplayPath(data.folder || ''), undo: padFilesUndoInfo() };
 };

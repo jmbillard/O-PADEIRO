@@ -15,7 +15,9 @@ renomeia.
     lotes, com a barra de progresso;
   - o arquivo usado no projeto aberto é religado depois de renomeado;
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);
-  - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela.
+  - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela; o que não
+    voltar fica guardado e o botão continua, para tentar de novo;
+  - o religar no projeto aberto acontece uma vez, no fim dos lotes: um passo só do Ctrl+Z do After.
 
 */
 
@@ -388,19 +390,29 @@ renomeia.
 		// depois de um lote que gravou nele: se os primeiros não renomearam nada, o registro ainda é o de antes
 		// (outra renomeação), e juntar nele faria o desfazer voltar aquela também
 		var wrote = false;
+		var ops = [];
 
 		try {
 			for (var at = 0; at < list.length; at += BATCH) {
-				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote });
+				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote, relink: false });
 
 				if (res.count > 0) wrote = true;
 				count += res.count || 0;
-				relinked += res.relinked || 0;
+				ops = ops.concat(res.ops || []);
 				errors = errors.concat(res.errors || []);
 				progress(Math.min(at + BATCH, list.length), list.length);
 			}
 		} catch (err) {
 			errors.push({ name: 'a renomeação parou', error: err.message });
+		}
+
+		// o religar de todos os lotes de uma vez, no fim: um passo só do Ctrl+Z do After (O ARQUIVISTA: religar)
+		if (ops.length) {
+			try {
+				relinked = (await call('filesRelink', { ops: ops })).relinked || 0;
+			} catch (err) {
+				errors.push({ name: 'o religar no projeto', error: err.message });
+			}
 		}
 
 		note = plural(count, 'renomeado', 'renomeados') + (relinked ? ' · ' + plural(relinked, 'religado', 'religados') + ' no projeto' : '');
@@ -491,8 +503,9 @@ renomeia.
 			var res = await call('filesUndo');
 
 			note = plural(res.count, 'item voltou', 'itens voltaram') + ' ao nome de antes' + (res.relinked ? ' · ' + plural(res.relinked, 'religado', 'religados') + ' no projeto' : '');
+			// o que não voltou fica guardado: o botão continua, para tentar de novo
 			if (res.errors && res.errors.length) {
-				note += ' · ' + plural(res.errors.length, 'não voltou', 'não voltaram') + ': ' + res.errors[0].name + ' (' + res.errors[0].error + ')';
+				note += ' · ' + plural(res.errors.length, 'ficou faltando', 'ficaram faltando') + ' (' + res.errors[0].name + ': ' + res.errors[0].error + '): resolva e desfaça de novo';
 				kind = 'error';
 			}
 		} catch (err) {
