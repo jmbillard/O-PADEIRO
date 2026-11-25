@@ -1780,7 +1780,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// o arquivista: a sugestão pela regra do renomear (regras/regra-do-renomear.js, suggest: a mesma do host) com a
 		// regra guardada; o formato só pelo nome do item, nunca pela pasta onde ele está
 		filesList: function (a) {
-			var rule = window.PAD_MOCK_LIST ? window.PAD_MOCK_LIST.rename : MOCK_RENAME;
+			var rule = mockLer('regraDoRenomear');
 			var list = (window.PAD_MOCK_FILES || (window.PAD_MOCK_FILES = [
 				{ dir: '', name: 'antigos', ext: '', kind: 'folder' },
 				{ dir: '', name: 'Sequência fundo', ext: '', kind: 'folder' },
