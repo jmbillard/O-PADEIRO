@@ -33,9 +33,9 @@
 		<!-- os filtros pela situação (os mesmos ícones da coluna da direita, com a contagem) e a busca, numa linha -->
 		<div class="fl-tools">
 			<button type="button" class="fl-chip is-on" data-filter="all" title="todos os itens">todos<b id="fl-n-all">0</b></button>
-			<button type="button" class="fl-chip fl-chg" data-filter="chg" title="mudam de nome" aria-label="mudam de nome"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg><b id="fl-n-chg">0</b></button>
+			<button type="button" class="fl-chip fl-chg" data-filter="chg" title="mudam de nome (com os que ganharam _2)" aria-label="mudam de nome"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg><b id="fl-n-chg">0</b></button>
 			<button type="button" class="fl-chip" data-filter="same" title="já estão no padrão" aria-label="já estão no padrão"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg><b id="fl-n-same">0</b></button>
-			<button type="button" class="fl-chip fl-bad" data-filter="bad" title="nome repetido na mesma pasta, vazio ou com caractere inválido" aria-label="nome repetido ou inválido"><svg viewBox="0 0 24 24"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg><b id="fl-n-bad">0</b></button>
+			<button type="button" class="fl-chip fl-bad" data-filter="bad" title="sem nome ou com caractere inválido: ficam como estão" aria-label="sem nome ou com caractere inválido"><svg viewBox="0 0 24 24"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg><b id="fl-n-bad">0</b></button>
 			<button type="button" class="fl-chip" data-filter="off" title="desligados" aria-label="desligados"><svg viewBox="0 0 24 24"><path d="M6 12h12" /></svg><b id="fl-n-off">0</b></button>
 			<input type="search" class="fl-search" id="fl-q" placeholder="filtrar pelo nome" spellcheck="false" autocomplete="off" aria-label="Filtrar pelo nome">
 		</div>
@@ -77,6 +77,7 @@
 	<script src="icons/_snapshot.js"></script>
 	<script src="js/util.js"></script>
 	<script src="js/keys.js"></script>
+	<script src="js/files-names.js"></script>
 	<script src="js/files.js"></script>
 </body>
 

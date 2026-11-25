@@ -337,6 +337,17 @@ body.files-page {
   color: var(--danger);
 }
 
+/* ganhou _2: muda de nome, mas pede uma conferida (o sufixo em destaque antes da extensão) */
+.fl-st.is-dup {
+  background: var(--waiting-bg);
+  color: var(--waiting);
+}
+
+.fl-suffix {
+  color: var(--waiting);
+  font-weight: 800;
+}
+
 .fl-empty {
   margin: 0;
   padding: 22px 14px;

@@ -203,9 +203,14 @@ const CHECKS = [
 	}],
 	['arquivista: confirmar', 'files.html', async (p) => {
 		await filesFolder(p);
-		// desliga os dois de nome repetido e pede a confirmação (o botão de voltar aparece no rodapé)
-		await p.locator('.fl-row.is-bad .fl-cb').first().click();
+		// desliga o que ganhou _2 e pede a confirmação (o botão de voltar aparece no rodapé)
+		await p.locator('.fl-row.is-dup .fl-cb').first().click();
 		await p.click('#fl-go');
+	}],
+	['arquivista: ganhou _2', 'files.html', async (p) => {
+		await filesFolder(p);
+		// o filtro dos que mudam: a linha com o aviso "ganhou _2" e o sufixo antes da extensão
+		await p.click('.fl-chip[data-filter="chg"]');
 	}],
 	['templates', 'index.html', openTemplate],
 	['templates: fixados e recentes', 'index.html?lists', async (p) => {

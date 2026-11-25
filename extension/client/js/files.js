@@ -10,7 +10,9 @@ sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser,
 renomeia.
 
   - o prefixo do formato vem do próprio nome do item, arquivo ou pasta (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
-  - nome repetido na mesma pasta, vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em lotes, com a barra de progresso;
+  - nome repetido na mesma pasta ganha o primeiro sufixo livre (_2, _3…: files-names.js) e o aviso na linha, e é
+    renomeado; vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em
+    lotes, com a barra de progresso;
   - o arquivo usado no projeto aberto é religado depois de renomeado;
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);
   - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela.
@@ -23,25 +25,27 @@ renomeia.
 	var call = PAD_BRIDGE.call;
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#arquivos';
 	var PREF_OPTS = 'pad.files.opts';
-	var BAD_CHARS = /[\\\/:*?"<>|]/;
+	var NAMES = window.PAD_FILES_NAMES;
 
 	var ICON = {
 		folder: '<svg class="fl-kind is-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>',
 		file: '<svg class="fl-kind" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>',
 		seq: '<svg class="fl-kind" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="13" height="13" rx="2" /><path d="M4 16V6a2 2 0 0 1 2-2h10" /></svg>'
 	};
-	// a situação em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode), o elo (muda e é usado no
-	// projeto aberto) e o traço (desligado)
+	// a situação em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode), o aviso (ganhou _2: muda,
+	// mas confira), o elo (muda e é usado no projeto aberto) e o traço (desligado)
 	var STATE_ICON = {
 		chg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
 		same: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>',
 		bad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg>',
+		dup: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5v5.5M12 16.5v.01" /></svg>',
 		use: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>',
 		off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>'
 	};
 
-	// items: os do host, cada um com id, on (ligado) e custom (o nome editado, ou null)
-	var state = { path: '', name: '', items: [], filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
+	// items: os do host, cada um com id, on (ligado) e custom (o nome editado, ou null). others: os nomes do disco que
+	// não estão na lista, por pasta (contam para o sufixo _2)
+	var state = { path: '', name: '', items: [], others: {}, filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -103,45 +107,30 @@ renomeia.
 		return $('fl-o-files').checked;
 	}
 
-	// o nome final de cada item (os desligados ficam com o de hoje): dois iguais na mesma pasta não podem. os discos
-	// não diferenciam a caixa, então a comparação também não
-	function clashes() {
-		var seen = {};
-		var out = {};
-
-		state.items.forEach(function (it) {
-			var key = it.dir + '/' + ((enabled(it) ? target(it).trim() : it.name) + tail(it)).toLowerCase();
-
-			(seen[key] = seen[key] || []).push(it.id);
-		});
-		Object.keys(seen).forEach(function (k) {
-			if (seen[k].length > 1) seen[k].forEach(function (id) {
-				out[id] = true;
-			});
-		});
-
-		return out;
+	// o nome final e a situação de cada item (files-names.js): id → { state, name, suffix }. o repetido na mesma pasta
+	// ganha o primeiro sufixo livre (_2, _3…), contando os desligados (com o nome de hoje) e os nomes do disco
+	function finals() {
+		return NAMES.resolve(state.items.map(function (it) {
+			return { id: it.id, dir: it.dir, name: it.name, kind: it.kind, ext: it.ext, sep: it.sep, pad: it.pad, want: enabled(it) ? target(it) : null };
+		}), state.others);
 	}
 
-	function stateOf(it, clash) {
-		if (!enabled(it)) return 'off';
-
-		var name = target(it).trim();
-
-		if (!name || BAD_CHARS.test(name) || clash[it.id]) return 'bad';
-
-		// o mesmo nome com o acento junto ou separado (macOS) é o mesmo nome
-		return name.normalize('NFC') === it.name.normalize('NFC') ? 'same' : 'chg';
+	// ganhou _2 também muda de nome (vai na renomeação)
+	function renames(st) {
+		return st === 'chg' || st === 'dup';
 	}
 
-	function reason(it, st, clash) {
+	function reason(it, fin) {
+		var st = fin.state;
+		var used = it.use ? ' · usado no projeto aberto: é religado depois de renomeado' : '';
+
 		if (st === 'bad') {
-			if (clash[it.id]) return 'nome repetido nesta pasta: fica como está até você editar um dos dois';
 			if (!target(it).trim()) return 'sem nome';
 
 			return 'caractere que não vale em nome de arquivo ( \\ / : * ? " < > | )';
 		}
-		if (st === 'chg') return it.use ? 'muda de nome · usado no projeto aberto: é religado depois de renomeado' : 'muda de nome';
+		if (st === 'dup') return 'ganhou ' + fin.suffix + ': o nome ficaria repetido nesta pasta. confira antes de renomear' + used;
+		if (st === 'chg') return 'muda de nome' + used;
 		if (st === 'same') return 'já está no padrão';
 
 		return 'desligado: fica como está';
@@ -150,9 +139,9 @@ renomeia.
 	/* ---------- a tabela ---------- */
 
 	function render(keepFocus) {
-		var clash = clashes();
+		var fin = finals();
 		var q = fold($('fl-q').value);
-		var count = { all: 0, chg: 0, same: 0, bad: 0, off: 0 };
+		var count = { all: 0, chg: 0, same: 0, bad: 0, off: 0, dup: 0 };
 		var used = 0;
 		var box = $('fl-rows');
 		var focused = keepFocus && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
@@ -161,12 +150,15 @@ renomeia.
 
 		box.textContent = '';
 		state.items.forEach(function (it) {
-			var st = stateOf(it, clash);
+			var f = fin[it.id];
+			var st = f.state;
+			var shown = renames(st) ? 'chg' : st; // o filtro: ganhou _2 está entre os que mudam
 
 			count.all++;
-			count[st]++;
-			if (st === 'chg' && it.use) used++;
-			if (state.filter !== 'all' && state.filter !== st) return;
+			count[shown]++;
+			if (st === 'dup') count.dup++;
+			if (renames(st) && it.use) used++;
+			if (state.filter !== 'all' && state.filter !== shown) return;
 			if (q && fold(it.name + ' ' + target(it)).indexOf(q) < 0) return;
 
 			if (it.dir !== lastDir) {
@@ -183,8 +175,10 @@ renomeia.
 			var cur = el('span', 'fl-cur');
 			var wrap = el('span', 'fl-new-wrap');
 			var input = el('input', 'fl-new');
-			var mark = el('span', 'fl-st is-' + (st === 'chg' && it.use ? 'use' : st));
-			var why = reason(it, st, clash);
+			var icon = st === 'chg' && it.use ? 'use' : st;
+			var mark = el('span', 'fl-st is-' + icon);
+			var why = reason(it, f);
+			var end = el('span', 'fl-ext', tail(it));
 
 			cb.type = 'checkbox';
 			cb.checked = it.on;
@@ -214,7 +208,9 @@ renomeia.
 				render(true);
 			});
 			wrap.appendChild(input);
-			wrap.appendChild(el('span', 'fl-ext', tail(it)));
+			// o sufixo que o nome ganhou vem antes dos quadros e da extensão, em destaque
+			if (f.suffix) end.insertBefore(el('b', 'fl-suffix', f.suffix), end.firstChild);
+			wrap.appendChild(end);
 
 			// o nome editado à mão: a seta volta para a sugestão
 			if (it.custom != null && !state.busy) {
@@ -232,7 +228,7 @@ renomeia.
 				wrap.appendChild(reset);
 			}
 
-			mark.innerHTML = STATE_ICON[st === 'chg' && it.use ? 'use' : st];
+			mark.innerHTML = STATE_ICON[icon];
 			mark.title = why;
 			mark.setAttribute('aria-label', why);
 
@@ -304,7 +300,7 @@ renomeia.
 
 		go.textContent = state.step === 1 ? 'Confirmar: renomear ' + count.chg : count.all ? 'Renomear ' + plural(count.chg, 'item', 'itens') : 'Renomear';
 		go.disabled = !count.chg;
-		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + ' · ' + count.same + ' no padrão' + left + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
+		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + (count.dup ? ' (' + count.dup + ' com sufixo: confira)' : '') + ' · ' + count.same + ' no padrão' + left + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
 	}
 
 	// o progresso: uma barra fina entre a tabela e o rodapé e a contagem no botão
@@ -333,6 +329,7 @@ renomeia.
 			state.path = res.path;
 			state.name = res.name;
 			state.truncated = !!res.truncated;
+			state.others = res.others || {};
 			state.undo = res.undo || null;
 			state.items = (res.items || []).map(function (it, i) {
 				it.id = i;
@@ -355,11 +352,11 @@ renomeia.
 	var BATCH = 10; // itens por chamada ao After
 
 	async function rename() {
-		var clash = clashes();
+		var fin = finals();
 		var list = state.items.filter(function (it) {
-			return stateOf(it, clash) === 'chg';
+			return renames(fin[it.id].state);
 		}).map(function (it) {
-			return { dir: it.dir, name: it.name, ext: it.ext, kind: it.kind, sep: it.sep || '', pad: it.pad || 0, to: target(it).trim() };
+			return { dir: it.dir, name: it.name, ext: it.ext, kind: it.kind, sep: it.sep || '', pad: it.pad || 0, to: fin[it.id].name };
 		});
 
 		if (!list.length) return;

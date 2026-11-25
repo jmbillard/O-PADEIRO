@@ -80,16 +80,30 @@ function padFilesUsed() {
 	return used;
 }
 
-// os itens de uma pasta: as pastas e os arquivos, com as sequências juntas. dir: o caminho relativo à pasta lida
+// os itens de uma pasta: as pastas e os arquivos, com as sequências juntas. dir: o caminho relativo à pasta lida.
+// state.others[dir]: os nomes do disco que não viraram item (os de fora e os que passaram do limite): a janela conta
+// com eles para o nome novo não repetir um que já existe
 function padFilesRead(folder, dir, sub, used, out, state) {
 	var entries = folder.getFiles();
 	var folders = [];
 	var files = [];
+	var names = [];
+	var listed = {};
 	var i;
+
+	var finish = function () {
+		var rest = [];
+
+		for (var r = 0; r < names.length; r++) {
+			if (!listed[names[r]]) rest.push(names[r]);
+		}
+		if (rest.length) state.others[dir] = rest;
+	};
 
 	for (i = 0; i < entries.length; i++) {
 		var name = decodeURI(entries[i].name);
 
+		names.push(name);
 		if (PAD_FILES_SKIP_NAME.test(name)) continue;
 		if (entries[i] instanceof Folder) folders.push({ name: name, ref: entries[i] });
 		else if (!PAD_FILES_SKIP_EXT.test(name)) files.push(name);
@@ -105,11 +119,14 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	for (i = 0; i < folders.length; i++) {
 		if (out.length >= PAD_FILES_MAX) {
 			state.truncated = true;
+			finish();
 
 			return;
 		}
 
 		var fs = padFilesSuggest(folders[i].name);
+
+		listed[folders[i].name] = true;
 
 		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.typed, use: false });
 	}
@@ -167,6 +184,8 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 		};
 		var ss = padFilesSuggest(g.prefix);
 
+		for (i = 0; i < g.files.length; i++) listed[g.files[i]] = true;
+
 		out.push({ dir: dir, name: g.prefix, ext: g.ext, kind: 'seq', sep: g.sep, pad: g.pad, frames: g.sep + '[' + two(min) + '-' + two(max) + ']', count: g.files.length, plain: ss.plain, typed: ss.typed, use: inUse });
 	}
 
@@ -177,15 +196,20 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	for (i = 0; i < solo.length; i++) {
 		if (out.length >= PAD_FILES_MAX) {
 			state.truncated = true;
+			finish();
 
 			return;
 		}
 
 		var sp = padFilesSplit(solo[i], false);
+
+		listed[solo[i]] = true;
 		var sg = padFilesSuggest(sp.base);
 
 		out.push({ dir: dir, name: sp.base, ext: sp.ext, kind: 'file', plain: sg.plain, typed: sg.typed, use: !!used[(base + '/' + solo[i]).toLowerCase()] });
 	}
+
+	finish();
 
 	if (!sub) return;
 
@@ -200,18 +224,18 @@ PADX.filesStart = function () {
 	return { undo: padFilesUndoInfo() };
 };
 
-// a: { path, sub } → { path, name, items, truncated, undo }
+// a: { path, sub } → { path, name, items, others, truncated, undo }
 PADX.filesList = function (a) {
 	var folder = new Folder(padMountedPath(padPath(a.path)));
 
 	if (!a.path || !folder.exists) throw new Error('#PAD_113 - a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
 
 	var out = [];
-	var state = { truncated: false };
+	var state = { truncated: false, others: {} };
 
 	padFilesRead(folder, '', a.sub === true, padFilesUsed(), out, state);
 
-	return { path: padDisplayPath(folder.fsName), name: decodeURI(folder.name), items: out, truncated: state.truncated, undo: padFilesUndoInfo() };
+	return { path: padDisplayPath(folder.fsName), name: decodeURI(folder.name), items: out, others: state.others, truncated: state.truncated, undo: padFilesUndoInfo() };
 };
 
 // o que dá para desfazer: { count, folder, when } ou null
