@@ -161,7 +161,7 @@ a raiz da estrutura é a pasta do projeto: a de cima da pasta do tipo **projeto*
 
 ## 📍 renomear
 
-a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os tipos de sempre; outra equipe ajusta para os tipos de peça dela.
+a aba **renomear** define como o botão **renomear** (na barra) padroniza os nomes das comps. vem preenchida com os tipos de sempre; outra equipe ajusta para os tipos de peça dela. a mesma regra vale para o **[O ARQUIVISTA](../README.md#arquivos)**, nos nomes dos arquivos e das pastas (lá, o formato vem só do nome do próprio arquivo ou pasta).
 
 - **testar** (no topo) → digite o nome de uma comp e veja na hora como ela fica com a tabela em edição.
 - **formato do nome** → a **caixa de texto** (CAIXA ALTA, caixa baixa, Título ou como está), o **separador** entre o prefixo e o nome (` - `; os espaços contam) e **remover caracteres especiais** (ligado, tira acentos e símbolos: **JOÃO!** vira **JOAO**). a caixa e os acentos valem para a parte descritiva; o prefixo do tipo fica como foi escrito. o separador também é o dos nomes criados pelos templates.

@@ -242,7 +242,7 @@ PADX.filesStart = function () {
 PADX.filesList = function (a) {
 	var folder = new Folder(padMountedPath(padPath(a.path)));
 
-	if (!a.path || !folder.exists) throw new Error('#PAD_113 - a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
+	if (!a.path || !folder.exists) throw new Error('#PAD_118 - arquivos: a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
 
 	var out = [];
 	var state = { truncated: false, others: {} };
@@ -354,7 +354,7 @@ function padFilesRelink(ops) {
 PADX.filesRename = function (a) {
 	var root = new Folder(padMountedPath(padPath(a.path)));
 
-	if (!a.path || !root.exists) throw new Error('#PAD_113 - a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
+	if (!a.path || !root.exists) throw new Error('#PAD_118 - arquivos: a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
 
 	var base = padFilesKey(root.fsName);
 	var list = a.items instanceof Array ? a.items.slice(0) : [];
