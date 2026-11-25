@@ -261,10 +261,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 		gravar: function (arquivo, doc) {
 			localStorage.setItem('pad.mock.arquivo.' + arquivo, JSON.stringify(doc));
-		},
-		apagar: function (arquivo) {
-			localStorage.removeItem('pad.mock.arquivo.' + arquivo);
 		}
+		// sem apagar, como o host: os arquivos antigos ficam no lugar no beta (regras/configuracao.js: gravar)
 	};
 
 	// uma seção da configuração (da equipe ou deste computador), limpa e completa (pela tabela)

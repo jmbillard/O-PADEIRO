@@ -208,8 +208,8 @@ PADX.prefsDesteComputador = function () {
 };
 
 // a: { user, projects, outputs, render: { final, preview }, productions, log, localMode, search, fontsUpload, fontsCheck, lists }
-// (só os campos enviados mudam; o computador_config.json é regravado inteiro pela tabela, limpo, sem as chaves e os
-// arquivos antigos)
+// (só os campos enviados mudam; o computador_config.json é regravado inteiro pela tabela, limpo, sem as chaves
+// antigas; o arquivo antigo fica no lugar no beta)
 PADX.savePrefsDesteComputador = function (a) {
 	var campos = { pastaDosProjetos: a.projects, outputLocal: a.outputs, presetsDeRender: a.render, registroDeUsoLigado: a.log, indiceLocal: a.search, fontesNoBanco: a.fontsUpload, fontesConferir: a.fontsCheck, listaDosTemplates: a.lists };
 	// as produções deste computador vão sempre: sem a lista guardada, a convertida das pastas de antes ('templates', que
@@ -288,12 +288,17 @@ function padProducoesDesteComputador() {
 
 	if (list) return list;
 
-	// o arquivo deste computador ou, sem ele ainda, o de antes (machine_config.json): os da seção, pela tabela
+	// as pastas de antes: o primeiro arquivo da seção que ainda as tenha (o deste computador ou o de antes,
+	// machine_config.json, que fica no lugar no beta), pela tabela
 	var secao = PAD_CONFIGURACAO.secao('producoesDesteComputador');
 	var arquivos = [secao.arquivo].concat(secao.arquivosAntigos || []);
 	var d = null;
 
-	for (var a = 0; !d && a < arquivos.length; a++) d = PAD_CONFIG_ADAPTADOR.ler(arquivos[a]);
+	for (var a = 0; a < arquivos.length; a++) {
+		d = PAD_CONFIG_ADAPTADOR.ler(arquivos[a]);
+
+		if (d && d.templates) break;
+	}
 
 	d = d || {};
 	var old = d.templates && typeof d.templates == 'object' ? d.templates : {};

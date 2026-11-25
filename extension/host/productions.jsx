@@ -63,13 +63,8 @@ var PAD_CONFIG_ADAPTADOR = {
 
 		saveTextFile(JSON.stringify(doc, null, '\t'), padArquivoDesteComputador(arquivo).fsName);
 		delete PAD_DESTE_COMPUTADOR_CACHE[arquivo];
-	},
-	apagar: function (arquivo) {
-		var file = padArquivoDesteComputador(arquivo);
-
-		if (file.exists) file.remove();
-		delete PAD_DESTE_COMPUTADOR_CACHE[arquivo];
 	}
+	// sem apagar: os arquivos antigos deste computador ficam no lugar no beta (regras/configuracao.js: gravar)
 };
 
 // Uma seção da configuração (da equipe ou deste computador), limpa e completa (pela tabela).

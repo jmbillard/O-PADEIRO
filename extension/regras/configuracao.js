@@ -11,17 +11,18 @@ Cada seção da configuração é uma linha da tabela (TABELA, abaixo), que diz:
   - a limpeza (limpar): valida e normaliza o valor vindo do painel; lança Error com a mensagem (#PAD_…) quando ele não
     serve. Na leitura, um valor que não passa na limpeza vira o padrão (lerLimpo, quando existe, é a limpeza mais
     tolerante usada só na leitura);
-  - os nomes antigos: as chaves antigas da seção (antigos), os campos antigos de dentro dela (camposAntigos:
-    { novo: [antigos] }) e os arquivos antigos (arquivosAntigos: a mesma chave, num arquivo que era só da seção),
-    lidos quando o nome novo não existe. A gravação seguinte grava só o nome novo (e apaga o arquivo antigo).
+  - os nomes antigos: as chaves antigas da seção (antigos) e os campos antigos de dentro dela (camposAntigos:
+    { novo: [antigos] }), lidos quando o nome novo não existe; e os arquivos antigos do arquivo da seção
+    (ARQUIVOS_ANTIGOS, abaixo: o arquivo de antes de cada arquivo deste computador, com as mesmas chaves), lidos
+    enquanto o arquivo novo não existe. A gravação seguinte grava só o nome novo; o arquivo antigo fica no lugar
+    (apagá-lo fica para depois do beta).
 
 Ler uma seção devolve sempre o valor limpo e completo; gravar grava só o nome novo e não mexe nas outras seções. O
 formato guardado de cada arquivo não muda: o da equipe guarda também o que a tabela não conhece; um deste computador é
 regravado inteiro a cada gravação, com todas as seções dele limpas e só elas (gravar, abaixo).
 
 O módulo não acessa disco: recebe um adaptador que lê e grava um documento (um objeto) pelo nome do arquivo:
-  { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto),
-    apagar: function (arquivo) (opcional: tira um arquivo antigo) }
+  { ler: function (arquivo) → objeto ou null (pode lançar), gravar: function (arquivo, objeto) }
 A configuração da equipe fica num arquivo na rede (EQUIPE); a deste computador, em arquivos da pasta de dados do
 usuário (COMPUTADOR, PERSONALIZADO e LINKS_DESTE_COMPUTADOR).
 O host tem o adaptador com os arquivos (host/productions.jsx), o host de teste o do localStorage (client/js/mock-host.js)
@@ -885,7 +886,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 	var COMPUTADOR = 'computador_config.json';
 	var PERSONALIZADO = 'computador_personalizado.json'; // a aparência e a barra deste computador: só as personalizadas
 	var LINKS_DESTE_COMPUTADOR = 'computador_links.json';
-	// os nomes de antes (#45), lidos enquanto não há os de agora; a gravação seguinte apaga o antigo
+	// os nomes de antes (#45), lidos enquanto não há os de agora; a gravação seguinte grava o novo e deixa o antigo no lugar (apagar fica para depois do beta)
 	var COMPUTADOR_ANTIGO = 'machine_config.json';
 	var PERSONALIZADO_ANTIGO = 'personal_config.json';
 	var LINKS_DESTE_COMPUTADOR_ANTIGO = 'personal_links.json';
@@ -1099,8 +1100,9 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		}
 
 		// lê uma seção: sempre o valor limpo e completo (sem nada, ou com um valor que não se aproveita: o padrão).
-		// Sem ela no arquivo (ou sem o arquivo, ou ilegível), procura nos arquivos antigos (arquivosAntigos), na mesma
-		// chave.
+		// Sem o arquivo da seção (ou ilegível), procura nos arquivos antigos dele (arquivosAntigos), na mesma chave, um
+		// depois do outro. Com o arquivo novo, os antigos não são mais lidos: ele foi gravado inteiro, com o que se
+		// aproveitou deles, e uma seção que saiu dele (null: de volta ao padrão) não volta do antigo.
 		function ler(adaptador, nome) {
 			var s = secao(nome);
 			var arquivos = [s.arquivo].concat(s.arquivosAntigos || []);
@@ -1114,6 +1116,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 				}
 
 				if (bruto(s, doc) != null) return lerDe(doc, nome);
+				if (i == 0 && doc && typeof doc == 'object') break;
 			}
 
 			return padrao(nome);
@@ -1189,11 +1192,12 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 		//   - da equipe: só as enviadas mudam; as outras seções e as chaves de fora da tabela ficam como estão;
 		//   - deste computador: o arquivo é gravado inteiro (inteiro, acima), com as enviadas e as outras seções dele
 		//     como estão guardadas; null numa seção deste computador a tira do arquivo (volta ao padrão).
-		// Os arquivos antigos das seções gravadas saem (cada um era só da sua seção).
+		// Os arquivos antigos ficam no lugar: o novo, gravado, passa a valer sozinho (ler, acima). Apagar os antigos
+		// fica para depois do beta, quando ninguém mais voltar a uma versão que só conhece os nomes antigos.
 		function gravar(adaptador, valores) {
 			var porArquivo = {};
 			var limpos = {};
-			var nome, arquivo, doc, s, i;
+			var nome, arquivo, doc, s;
 
 			for (nome in valores) {
 				if (!valores.hasOwnProperty(nome) || valores[nome] === undefined) continue;
@@ -1226,16 +1230,6 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 				}
 
 				adaptador.gravar(arquivo, doc);
-			}
-
-			// os arquivos antigos: os das seções enviadas e, num arquivo deste computador (gravado inteiro), os de
-			// todas as seções dele
-			for (i = 0; adaptador.apagar && i < tabela.length; i++) {
-				s = tabela[i];
-
-				if (!s.arquivosAntigos || !porArquivo[s.arquivo] || !(porArquivo[s.arquivo].computador || limpos.hasOwnProperty(s.nome))) continue;
-
-				for (var j = 0; j < s.arquivosAntigos.length; j++) adaptador.apagar(s.arquivosAntigos[j]);
 			}
 
 			return limpos;

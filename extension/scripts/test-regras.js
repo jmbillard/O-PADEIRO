@@ -364,9 +364,6 @@ function memoria(docs) {
 			this.gravacoes++;
 			disco[nome] = JSON.stringify(doc);
 		},
-		apagar: function (nome) {
-			delete disco[nome];
-		},
 		doc: function (nome) {
 			return disco.hasOwnProperty(nome) ? JSON.parse(disco[nome]) : null;
 		}
@@ -818,15 +815,26 @@ REGRAS.push({
 			eq([m.doc(COMPUTADOR).designer, m.doc(COMPUTADOR).localMode, 'homeOffice' in m.doc(COMPUTADOR)], ['ABC', true, false]);
 		});
 
-		test('sigla: sem ela no arquivo deste computador, a do arquivo antigo (project_user.json); gravar grava no novo e apaga o antigo', function () {
-			const m = memoria({ [COMPUTADOR]: { log: false }, 'project_user.json': { user: 'velho' } });
+		test('sigla: sem o arquivo deste computador, a dos arquivos antigos (machine_config.json, project_user.json); gravar grava no novo e deixa os antigos no lugar', function () {
+			const antigos = { 'machine_config.json': { log: false }, 'project_user.json': { user: 'velho' } };
+			const m = memoria(antigos);
 
-			eq(api.ler(m, 'sigla'), 'VELHO');
-			eq(api.ler(memoria({ 'project_user.json': { user: 'velho' } }), 'sigla'), 'VELHO'); // nem o arquivo novo existe
+			eq(api.ler(m, 'sigla'), 'VELHO'); // o primeiro antigo sem a sigla: vale o seguinte
+			eq(api.ler(memoria({ 'project_user.json': { user: 'velho' } }), 'sigla'), 'VELHO');
 			eq(api.ler(memoria({ [COMPUTADOR]: { user: 'NOVO' }, 'project_user.json': { user: 'velho' } }), 'sigla'), 'NOVO');
 			api.gravar(m, { sigla: api.ler(m, 'sigla') });
 			eq([m.doc(COMPUTADOR).log, m.doc(COMPUTADOR).designer], [false, 'VELHO']);
-			eq(m.doc('project_user.json'), null);
+			eq([m.doc('machine_config.json'), m.doc('project_user.json')], [antigos['machine_config.json'], antigos['project_user.json']]);
+		});
+
+		test('com o arquivo deste computador gravado, os antigos não são mais lidos (o que saiu do novo não volta do antigo)', function () {
+			const m = memoria({ [COMPUTADOR]: { log: false }, 'project_user.json': { user: 'velho' }, 'personal_config.json': { APPEARANCE: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } } });
+
+			eq(api.ler(m, 'sigla'), '');
+			api.gravar(m, { aparenciaDesteComputador: { accent: '#444444', gradientStart: '#555555', gradientEnd: '#666666' } });
+			api.gravar(m, { aparenciaDesteComputador: null }); // volta à da equipe
+			eq(api.ler(m, 'aparenciaDesteComputador'), null);
+			eq(m.doc('personal_config.json').APPEARANCE.accent, '#111111'); // o antigo fica no lugar
 		});
 
 		// #45: as chaves guardadas da configuração passam aos termos do glossário. Cada uma: a antiga é lida, a nova é
@@ -881,17 +889,17 @@ REGRAS.push({
 			eq('user' in m.doc(COMPUTADOR), false);
 		});
 
-		test('o arquivo deste computador: "machine_config.json" (o nome antigo) é lido; gravar grava "computador_config.json" e apaga o antigo', function () {
+		test('o arquivo deste computador: "machine_config.json" (o nome antigo) é lido; gravar grava "computador_config.json" e deixa o antigo no lugar', function () {
 			const m = memoria({ 'machine_config.json': { user: 'ABC', localMode: true, projects: '/p' } });
 
 			eq(api.COMPUTADOR, COMPUTADOR);
 			eq([api.ler(m, 'sigla'), api.ler(m, 'modoLocal'), api.ler(m, 'pastaDosProjetos')], ['ABC', true, '/p']);
 			api.gravar(m, { outputLocal: '/o' });
 			eq([m.doc(COMPUTADOR).designer, m.doc(COMPUTADOR).localMode, m.doc(COMPUTADOR).projects, m.doc(COMPUTADOR).outputs], ['ABC', true, '/p', '/o']);
-			eq(m.doc('machine_config.json'), null);
+			eq(m.doc('machine_config.json'), { user: 'ABC', localMode: true, projects: '/p' });
 		});
 
-		test('a aparência e a barra deste computador: "personal_config.json" (o nome antigo) é lido; gravar grava "computador_personalizado.json" e apaga o antigo', function () {
+		test('a aparência e a barra deste computador: "personal_config.json" (o nome antigo) é lido; gravar grava "computador_personalizado.json" e deixa o antigo no lugar', function () {
 			const barra = api.limpar('barra', { items: ['pastas'] });
 			const m = memoria({ 'personal_config.json': { BAR: barra } });
 
@@ -900,10 +908,10 @@ REGRAS.push({
 			api.gravar(m, { aparenciaDesteComputador: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
 			eq(m.doc(PERSONALIZADO).BAR, barra);
 			eq(m.doc(PERSONALIZADO).APPEARANCE.accent, '#111111');
-			eq(m.doc('personal_config.json'), null);
+			eq(m.doc('personal_config.json'), { BAR: barra });
 		});
 
-		test('os links deste computador: "personal_links.json" (o nome antigo) é lido; gravar grava "computador_links.json" e apaga o antigo', function () {
+		test('os links deste computador: "personal_links.json" (o nome antigo) é lido; gravar grava "computador_links.json" e deixa o antigo no lugar', function () {
 			const links = [{ name: 'a', url: 'https://a.com', icon: '' }];
 			const m = memoria({ 'personal_links.json': { LINKS: links } });
 
@@ -911,7 +919,7 @@ REGRAS.push({
 			eq(api.ler(m, 'linksDesteComputador'), links);
 			api.gravar(m, { linksDesteComputador: links.concat([{ name: 'b', url: 'https://b.com' }]) });
 			eq(m.doc(LINKS_DESTE_COMPUTADOR).LINKS.length, 2);
-			eq(m.doc('personal_links.json'), null);
+			eq(m.doc('personal_links.json'), { LINKS: links });
 		});
 
 		// o formato guardado deste computador não muda: cada gravação regrava o arquivo inteiro, só com o que se conhece
@@ -1027,12 +1035,12 @@ REGRAS.push({
 		eq(m.doc(EQUIPE).BAR.items.length, 17);
 
 		// deste computador: os nomes antigos, a limpeza da sigla (sem os métodos do ES5) e a cópia da busca
-		const c = memoria({ [COMPUTADOR]: { homeOffice: true }, 'project_user.json': { user: 'joão' } });
+		const c = memoria({ 'machine_config.json': { homeOffice: true }, 'project_user.json': { user: 'joão' } });
 
 		eq(api.ler(c, 'modoLocal'), true);
 		api.gravar(c, { sigla: api.ler(c, 'sigla'), modoLocal: true, aparenciaDesteComputador: { accent: '#111111', gradientStart: '#222222', gradientEnd: '#333333' } });
 		eq([c.doc(COMPUTADOR).localMode, c.doc(COMPUTADOR).designer, c.doc(COMPUTADOR).homeOffice, c.doc(COMPUTADOR).user], [true, 'JOAO', undefined, undefined]);
-		eq(c.doc('project_user.json'), null);
+		eq(copia(c.doc('project_user.json')), { user: 'joão' }); // o antigo fica no lugar
 		eq(c.doc(PERSONALIZADO).APPEARANCE.mode, 'light');
 		eq(api.paraLer(api.COPIA_DA_BUSCA, function (n) { return n === 'busca_v2.json'; }), 'busca_v2.json');
 	}
