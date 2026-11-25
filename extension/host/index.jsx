@@ -41,6 +41,8 @@ var PADX_HOST_PATH = new File($.fileName).parent.fsName;
 #include "../regras/nomes-repetidos.js"
 // o preset de render: o nome curto, o H.264 preferido e a lista sem os _HIDDEN
 #include "../regras/preset-de-render.js"
+// do caminho guardado no projeto para os lugares de hoje (o religar d'O CATADOR, coletar.jsx)
+#include "../regras/caminhos.js"
 
 #include "api.jsx"
 #include "finder.jsx"

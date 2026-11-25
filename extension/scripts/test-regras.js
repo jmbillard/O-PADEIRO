@@ -317,6 +317,96 @@ const REGRAS = [
 			eq(finais(api, [['', 'crt hoje', 'CRT - HOJE'], ['', 'crt_hoje', ' CRT - HOJE ']]), ['chg CRT - HOJE', 'dup CRT - HOJE_2']);
 			eq(finais(api, [['', 'a', null]], { '': ['x.mov'] }), ['off a']);
 		}
+	},
+
+	// ---- caminhos: o religar d'O CATADOR (do caminho guardado para os lugares de hoje) ----
+	{
+		arquivo: 'caminhos.js',
+		global: 'PAD_CAMINHOS',
+		titulo: "caminhos do religar d'O CATADOR (o caminho guardado → os lugares de hoje)",
+		casos: function (api) {
+			const SRV = 'vfx-ml-sp.servicos.corp.tvglobo.com.br';
+			const HOJE = '//' + SRV + '/VFX/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov';
+			const COM_K = {
+				drives: [{ letter: 'L', path: '//' + SRV + '/VFX/imagem/drive_l' }, { letter: 'K', path: '//' + SRV + '/VFX/imagem/drive_k' }, { letter: 'T', path: '//egcdesign01/cdesign' }],
+				shares: [{ share: 'VFX', server: SRV }, { share: 'promo_ber', server: '10.193.48.13' }]
+			};
+			const SEM_K = { drives: [COM_K.drives[0], COM_K.drives[2]], shares: COM_K.shares };
+			// os caminhos que saem, na ordem
+			function lugares(path, mapa, volumes) {
+				return api.candidatos(path, mapa, volumes).map(function (c) { return c.caminho; });
+			}
+			// o lugar de hoje está entre os que saem, e antes dos que só vêm dos compartilhamentos e dos volumes
+			function acha(path, mapa, onde) {
+				const list = api.candidatos(path, mapa, ['VFX', 'Macintosh HD']);
+				const hit = list.filter(function (c) { return c.caminho.toLowerCase() === (onde || HOJE).toLowerCase(); })[0];
+
+				assert.ok(hit, path + ' não chega em ' + (onde || HOJE) + ':\n' + list.map(function (c) { return c.como + ' ' + c.caminho; }).join('\n'));
+
+				return hit.como;
+			}
+
+			[['com K no mapa', COM_K], ['sem K no mapa', SEM_K]].forEach(function (m) {
+				test('/Volumes/imagem/drive_k/… (o compartilhamento do Windows virou o volume) → o drive_k de hoje, ' + m[0], function () {
+					eq(acha('/Volumes/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', m[1]), 'mapa');
+				});
+				test('/Volumes/drive_k/… → o drive_k de hoje, ' + m[0], function () {
+					eq(acha('/Volumes/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', m[1]), 'mapa');
+				});
+				test('/Volumes/VFX/imagem/drive_k/… (já o de hoje) → ele mesmo, primeiro, ' + m[0], function () {
+					eq(lugares('/Volumes/VFX/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', m[1])[0], '/Volumes/VFX/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov');
+					eq(acha('/Volumes/VFX/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', m[1]), 'mapa');
+				});
+				test('K:\\… (e o /K/… do After do Mac) → o drive_k de hoje, primeiro, ' + m[0], function () {
+					eq(lugares('K:\\3_ABERTURAS\\4_VARIEDADES\\x.mov', m[1])[0], HOJE);
+					eq(lugares('/K/3_ABERTURAS/4_VARIEDADES/x.mov', m[1])[0], HOJE);
+				});
+				test('\\\\servidor\\imagem\\drive_k\\… (e /servidor/imagem/… do After do Mac) → o drive_k de hoje, ' + m[0], function () {
+					eq(acha('\\\\' + SRV + '\\imagem\\drive_k\\3_ABERTURAS\\4_VARIEDADES\\x.mov', m[1]), 'mapa');
+					eq(acha('/' + SRV + '/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', m[1]), 'mapa');
+				});
+			});
+
+			test('o L do mapa: /Volumes/imagem/drive_l/… → //servidor/VFX/imagem/drive_l/…', function () {
+				eq(acha('/Volumes/imagem/drive_l/Fileserver_5/TOOLKIT ORGANIZADO/F/02 Subtle Dust.mp4', COM_K, '//' + SRV + '/VFX/imagem/drive_l/Fileserver_5/TOOLKIT ORGANIZADO/F/02 Subtle Dust.mp4'), 'mapa');
+			});
+
+			test('o volume montado direto no drive (/Volumes/drive_l): o caminho a partir dele', function () {
+				const list = lugares('/Volumes/imagem/drive_l/Fileserver_5/F/x.mp4', COM_K, ['drive_l']);
+
+				assert.ok(list.indexOf('/Volumes/drive_l/Fileserver_5/F/x.mp4') > 0, list.join('\n'));
+				assert.ok(lugares('L:\\Fileserver_5\\F\\x.mp4', COM_K, ['drive_l']).indexOf('/Volumes/drive_l/Fileserver_5/F/x.mp4') > 0);
+			});
+
+			test('o volume com outro nome: o caminho dentro dos compartilhamentos e dos volumes montados', function () {
+				eq(acha('/Volumes/qualquer/imagem/drive_k/3_ABERTURAS/4_VARIEDADES/x.mov', SEM_K), 'compartilhamento');
+				eq(acha('/Volumes/projetos/3_ABERTURAS/x.mov', SEM_K, '//' + SRV + '/VFX/3_ABERTURAS/x.mov'), 'compartilhamento');
+				assert.ok(lugares('/Volumes/projetos/3_ABERTURAS/x.mov', SEM_K, ['VFX']).indexOf('/Volumes/VFX/projetos/3_ABERTURAS/x.mov') >= 0);
+			});
+
+			test('a letra fora do mapa e sem drive_ no mapa fica como está', function () {
+				eq(lugares('K:\\a\\x.mov', { drives: [], shares: [] }), ['K:/a/x.mov']);
+			});
+
+			test('o caminho que não é da rede fica como está (só ele)', function () {
+				eq(lugares('/Users/joao/Desktop/x.mov', COM_K, ['VFX']), ['/Users/joao/Desktop/x.mov']);
+				eq(lugares('/Volumes/Macintosh HD/Users/x.mov', COM_K, ['VFX']), ['/Volumes/Macintosh HD/Users/x.mov']);
+			});
+
+			test('normalizar: o caminho do Windows como o After do Mac mostra', function () {
+				eq(api.normalizar('/L/a/b.mov'), 'L:/a/b.mov');
+				eq(api.normalizar('/srv.corp/VFX/a.mov'), '//srv.corp/VFX/a.mov');
+				eq(api.normalizar('/Users/a/b.mov'), '/Users/a/b.mov');
+			});
+		},
+		es3: function (api) {
+			const mapa = { drives: [{ letter: 'L', path: '//srv/VFX/imagem/drive_l' }], shares: [{ share: 'VFX', server: 'srv' }] };
+			const list = api.candidatos('/Volumes/imagem/drive_k/a/x.mov', mapa, ['VFX']);
+			const caminhos = [];
+
+			for (let i = 0; i < list.length; i++) caminhos.push(list[i].caminho);
+			assert.ok(caminhos.indexOf('//srv/VFX/imagem/drive_k/a/x.mov') >= 0, caminhos.join('\n'));
+		}
 	}
 ];
 

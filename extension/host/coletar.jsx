@@ -991,35 +991,99 @@ function padPathKind(item, path) {
 	return 'videos';
 }
 
-// Onde o arquivo que falta está agora: o caminho no formato deste sistema, no volume que tem o caminho
-// (VFX, VFX-1 … VFX-5) e, no macOS, montando o share quando nenhum volume tem (uma vez por share: 'tried').
-// → o File que existe, ou null
 // O caminho guardado no projeto, como o After do macOS mostra um caminho que veio do Windows: \\servidor\share\…
-// vira /servidor/share/… (com uma barra só) e L:\… vira /L/…. de volta para o formato que o conversor entende.
+// vira /servidor/share/… (com uma barra só) e L:\… vira /L/…. de volta para o formato que o conversor entende
+// (regras/caminhos.js).
 function padReligarNormalize(path) {
-	var p = String(path || '').replace(/\\/g, '/');
-
-	if (/^\/[A-Za-z]\//.test(p)) return p.charAt(1).toUpperCase() + ':' + p.substring(2); // /L/… → L:/…
-	// /servidor/share/… → //servidor/share/…: a primeira pasta não é uma das do macOS (com ou sem domínio no nome)
-	if (/^\/[^\/]+\/[^\/]+\//.test(p) && !/^\/(Volumes|Users|Applications|System|Library|private|tmp|var|opt|usr|bin|sbin|etc|cores|dev|Network|home)\//i.test(p)) return '/' + p;
-
-	return p;
+	return PAD_CAMINHOS.normalizar(path);
 }
 
+// O mapa de drives em uso (configuração > rede; padApplyConfig, productions.jsx), no formato da seção mapaDeDrives.
+function padMapaDeDrives() {
+	var mapa = { drives: [], shares: [] };
+	var key;
+
+	for (key in DRIVE_MAP) {
+		if (DRIVE_MAP.hasOwnProperty(key)) mapa.drives.push({ letter: key, path: DRIVE_MAP[key] });
+	}
+
+	for (key in PAD_SHARE_SERVERS) {
+		if (PAD_SHARE_SERVERS.hasOwnProperty(key)) mapa.shares.push({ share: key, server: PAD_SHARE_SERVERS[key] });
+	}
+
+	return mapa;
+}
+
+// Os volumes montados neste Mac (os nomes em /Volumes); [] no Windows.
+function padMountedVolumes() {
+	var out = [];
+
+	if (appOs != 'Mac') return out;
+
+	try {
+		var list = new Folder('/Volumes').getFiles();
+
+		for (var i = 0; i < list.length; i++) {
+			if (list[i] instanceof Folder) out.push(decodeURI(list[i].name));
+		}
+	} catch (err) { }
+
+	return out;
+}
+
+// Os lugares onde o arquivo que falta pode estar hoje, do mais provável para o menos (regras/caminhos.js: a letra
+// pelo mapa de drives, o compartilhamento do Windows que virou o volume no Mac — /Volumes/imagem/drive_k/… é
+// /Volumes/VFX/imagem/drive_k/… —, os compartilhamentos do mapa e os volumes montados), no formato deste sistema.
+// → [{ path, como }], sem repetir
+function padReligarPlaces(path) {
+	var list = PAD_CAMINHOS.candidatos(path, padMapaDeDrives(), padMountedVolumes());
+	var out = [];
+	var seen = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var p = padPath(padNoVolumeSuffix(list[i].caminho)) || list[i].caminho;
+		var key = String(p).toLowerCase();
+
+		if (seen[key]) continue;
+
+		seen[key] = true;
+		out.push({ path: p, como: list[i].como });
+	}
+
+	return out;
+}
+
+// Onde o arquivo que falta está agora: o primeiro dos lugares de hoje que existe (no volume que tem o caminho:
+// VFX, VFX-1 … VFX-5) e, no macOS, montando o share quando nenhum volume tem (só os lugares tirados do caminho e do
+// mapa de drives, uma vez por share: 'tried').
+// → o File que existe, ou null
 function padReligarCandidate(path, tried) {
-	var clean = padPath(padNoVolumeSuffix(padReligarNormalize(path))) || String(path);
-	var file = new File(clean);
+	var places = padReligarPlaces(path);
+	var file;
+	var i;
 
-	if (file.exists) return file;
+	for (i = 0; i < places.length; i++) {
+		file = new File(places[i].path);
 
-	var share = String(clean).match(/^\/Volumes\/[^\/]+\/[^\/]+/);
+		if (file.exists) return file;
+	}
 
-	if (appOs != 'Mac' || !share || tried[share[0]]) return null;
+	if (appOs != 'Mac') return null;
 
-	tried[share[0]] = true;
-	file = new File(padMountedPath(clean));
+	for (i = 0; i < places.length; i++) {
+		if (places[i].como != 'direto' && places[i].como != 'mapa') continue;
 
-	return file.exists ? file : null;
+		var share = String(places[i].path).match(/^\/Volumes\/[^\/]+\/[^\/]+/);
+
+		if (!share || tried[share[0]]) continue;
+
+		tried[share[0]] = true;
+		file = new File(padMountedPath(places[i].path));
+
+		if (file.exists) return file;
+	}
+
+	return null;
 }
 
 /* ---------------------------------------------------------------
@@ -1110,7 +1174,19 @@ function padReligarScan(folder, depth, state) {
 // A pasta mais próxima do caminho antigo que ainda existe (subindo até 6 níveis), sem chegar na raiz de um volume
 // ou perto dela (vasculhar o servidor inteiro não dá). → Folder ou null
 function padReligarAncestor(path) {
-	var clean = String(padPath(padNoVolumeSuffix(padReligarNormalize(path))) || path).replace(/\\/g, '/');
+	var places = padReligarPlaces(path);
+
+	for (var i = 0; i < places.length; i++) {
+		var near = padReligarAncestorOf(places[i].path);
+
+		if (near) return near;
+	}
+
+	return null;
+}
+
+function padReligarAncestorOf(path) {
+	var clean = String(path).replace(/\\/g, '/');
 	var parts = clean.split('/');
 	// as partes do volume: /Volumes/VFX (3, com a vazia do começo), //servidor/share (4), L: (1); a busca fica pelo
 	// menos 2 pastas para dentro dele
