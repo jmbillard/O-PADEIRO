@@ -65,16 +65,15 @@ function netAccess() {
 	return app.preferences.getPrefAsLong('Main Pref Section', 'Pref_SCRIPTING_FILE_NETWORK_SECURITY') == 1;
 }
 
-// As libs avisam o designer com alert(). Aqui as mensagens são recolhidas
-// (sem emoticons) e devolvidas ao painel, que mostra no próprio visual.
+// Os avisos das libs (padAviso, globals.js; era o alert() do padeiro antigo) ficam recolhidos aqui e voltam ao
+// painel, que mostra no próprio visual. o host nunca abre a caixa do After (check-alertas.js confere).
 var PADX_alerts = null;
-var PADX_nativeAlert = alert;
 
-// atribuído em $.global: o alert de todas as libs passa por aqui
+// a rede de segurança para os scripts de template (_script.js, na rede) que ainda chamam alert(): o alert vira um
+// aviso ao painel, e fora de uma chamada não mostra nada. no After, o alert nativo pode não ceder a este desvio:
+// por isso o código do padeiro chama padAviso, nunca alert
 $.global.alert = function (msg) {
-	if (PADX_alerts === null) return PADX_nativeAlert(msg);
-
-	PADX_alerts.push(String(msg).replace(lol, '').replace(relax, '').replace(/^\s+|\s+$/g, ''));
+	padAviso(msg);
 };
 
 // Executa 'fn' recolhendo os alerts. Retorna { messages, data }.

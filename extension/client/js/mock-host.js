@@ -65,6 +65,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		};
 	}
 	var delay = mode === 'slow' ? 900 : 260;
+	// o fim do coletar com arquivos ausentes (?mock=fail): o aviso amarelo d'O CATADOR e da barra (coletar.jsx)
+	var MOCK_COLETAR_WARNINGS = ['#PAD_093 - 12 arquivos ausentes (não coletados): Screenshot 2026-11-23 at 15.39.02.png, sumiu.mov, logo antigo.ai, fundo.psd, trilha.wav e mais 7.'];
 
 	function wait(ms) {
 		return new Promise(function (resolve) {
@@ -1825,13 +1827,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				setTimeout(r, 500);
 			});
 
-			return { messages: [], data: { folder: a.target, files: a.files, sequences: 0, frames: 0, fonts: true, saved: true } };
+			return { messages: [], data: { folder: a.target, files: a.files, sequences: 0, frames: 0, fonts: true, saved: true, warnings: mode === 'fail' ? MOCK_COLETAR_WARNINGS : [] } };
 		},
 
 		coletarProject: function (a) {
 			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 
-			return { messages: mode === 'fail' ? ['#PAD_093 - arquivos ausentes (não coletados):\n\nsumiu.mov'] : [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true } };
+			return { messages: [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true, warnings: mode === 'fail' ? MOCK_COLETAR_WARNINGS : [] } };
 		},
 
 		projectOpenFolder: function () {

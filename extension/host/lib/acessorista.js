@@ -254,14 +254,14 @@ function psOpenFolder(path, fixedServer, fixedShare) {
 	if (appOs == 'Mac') folderPath = psResolveOnMac(folderPath, fixedServer, fixedShare);
 
 	if (!new Folder(folderPath).exists) {
-		alert(lol + '#PAD_PATH_001 - a pasta não foi encontrada ou não está acessível:\n' + folderPath);
+		padAviso('#PAD_PATH_001 - a pasta não foi encontrada ou não está acessível: ' + folderPath); // ao painel, nunca um alert
 		return;
 	}
 
 	try {
 		openFolder(folderPath);
 	} catch (err) {
-		alert(lol + '#PAD_PATH_002 - não foi possível abrir a pasta:\n' + folderPath + '\n\n' + err.message);
+		padAviso('#PAD_PATH_002 - não foi possível abrir a pasta: ' + folderPath + ' (' + err.message + ')');
 	}
 }
 

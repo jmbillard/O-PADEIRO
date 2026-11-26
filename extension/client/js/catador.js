@@ -363,8 +363,17 @@ num volume não montado ou com outro sufixo (VFX-1 …): cata o caminho certo e 
 			if (d.files) parts.push(plural(d.files, 'arquivo copiado', 'arquivos copiados'));
 			if (d.sequences) parts.push(plural(d.sequences, 'sequência', 'sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes coletadas');
+
+			var done = (parts.join(' · ') || 'nada novo para copiar') + (d.folder ? ' em ' + d.folder : '') + (d.saved ? ' · projeto salvo.' : '.');
+			// os avisos do fim do coletar (arquivos ausentes, itens não copiados, fontes sem arquivo): em amarelo, antes
+			// do que foi feito (a linha corta no fim); a lista inteira fica na dica
+			var warnings = (d.warnings || []).map(PAD_UTIL.errorText);
+
 			if (res.messages && res.messages.length) status(res.messages.join(' · '), 'error');
-			else status((parts.join(' · ') || 'nada novo para copiar') + (d.folder ? ' em ' + d.folder : '') + (d.saved ? ' · projeto salvo.' : '.'), '');
+			else if (warnings.length) {
+				status(warnings.concat(done).join(' · '), 'warn');
+				$('fw-status').title = warnings.concat(done).join('\n');
+			} else status(done, '');
 		} catch (err) {
 			status(err.message, 'error');
 		}

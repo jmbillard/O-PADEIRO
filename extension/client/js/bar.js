@@ -433,7 +433,11 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 				throw err;
 			}
 
-			progressEnd('coletar', !(res.messages && res.messages.length));
+			// os avisos do fim do coletar (arquivos ausentes, itens não copiados, fontes sem arquivo): o aviso amarelo
+			var warnings = d.warnings || [];
+			var failed = !!(res.messages && res.messages.length);
+
+			progressEnd('coletar', !failed && !warnings.length);
 
 			var parts = [];
 
@@ -441,7 +445,10 @@ pelo ⋯ do painel de templates e pelo botão da rede.
 			if (d.sequences) parts.push(d.sequences + (d.sequences === 1 ? ' sequência' : ' sequências') + ' (' + d.frames + ' quadros)');
 			if (d.fonts) parts.push('fontes');
 
-			report(res, parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.'));
+			var doneText = parts.length ? 'coletado: ' + parts.join(', ') + (d.saved ? '. projeto salvo.' : '. o projeto ainda não foi salvo (use Alterar).') : 'nada novo para coletar' + (d.saved ? ' (projeto salvo).' : '.');
+
+			if (!failed && warnings.length) toast('warn', [doneText].concat(warnings.map(PAD_UTIL.errorText)).join('\n'));
+			else report(res, doneText);
 			setTimeout(function () {
 				watchColetar(true);
 			}, 300);

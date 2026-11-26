@@ -602,9 +602,10 @@ function padColetarTarget(a) {
 function padColetarFinish(target, settings, res) {
 	var file = app.project.file;
 	var paths = padColetarPaths(settings);
+	var fontFails = [];
 
 	padGroup('coletar fontes', function () {
-		if (paths.fontes != null) res.fonts = fontCopyTo(padColetarResolve(new Folder(target).fsName, paths.fontes, false));
+		if (paths.fontes != null) res.fonts = fontCopyTo(padColetarResolve(new Folder(target).fsName, paths.fontes, false), fontFails);
 		padColetarStructure(target, settings); // coletar as fontes apaga a pasta delas se não houver nenhuma
 	});
 
@@ -628,17 +629,31 @@ function padColetarFinish(target, settings, res) {
 		}
 	}
 
-	if (res.skipped.length) alert(lol + '#PAD_093 - estes itens não puderam ser coletados:\n\n' + res.skipped.join('\n'));
-	if (res.missing.length) alert(lol + '#PAD_093 - arquivos ausentes (não coletados):\n\n' + res.missing.join('\n'));
-
 	return {
 		folder: padDisplayPath(new Folder(target).fsName),
 		files: res.files,
 		sequences: res.sequences,
 		frames: res.frames,
 		fonts: res.fonts != '',
-		saved: saved
+		saved: saved,
+		warnings: padColetarWarnings(res.skipped, res.missing, fontFails)
 	};
+}
+
+// Os avisos do fim do coletar (o painel mostra em amarelo: o resto foi coletado), nunca um alert: os itens que não
+// puderam ser copiados, os arquivos ausentes e as fontes sem arquivo, cada um com os primeiros nomes e 'e mais N'
+function padColetarWarnings(skipped, missing, fontFails) {
+	var list = [];
+
+	if (skipped.length == 1) list.push('#PAD_093 - 1 item não pôde ser coletado: ' + padListaCurta(skipped) + '.');
+	else if (skipped.length) list.push('#PAD_093 - ' + skipped.length + ' itens não puderam ser coletados: ' + padListaCurta(skipped) + '.');
+
+	if (missing.length == 1) list.push('#PAD_093 - 1 arquivo ausente (não coletado): ' + padListaCurta(missing) + '.');
+	else if (missing.length) list.push('#PAD_093 - ' + missing.length + ' arquivos ausentes (não coletados): ' + padListaCurta(missing) + '.');
+
+	if (fontFails.length) list.push('#PAD_034 - estas fontes não puderam ser copiadas: ' + padListaCurta(fontFails) + '.');
+
+	return list;
 }
 
 // Coleta tudo numa chamada (a janela do CATADOR). a: { path, ids (opcional: só esses itens, os que a janela está

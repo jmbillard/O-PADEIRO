@@ -127,7 +127,7 @@ function renamePromoComps(items) {
 	var compArray = coletarRenameComps(items || app.project.selection, []);
 
 	if (compArray.length == 0) {
-		alert(lol + '#PAD_032 - selecione as comps ou pastas que serão renomeadas.');
+		padAviso('#PAD_032 - selecione as comps ou pastas que serão renomeadas.'); // um aviso ao painel, nunca um alert
 		return;
 	}
 
@@ -194,5 +194,5 @@ function renameOutputs() {
 		}
 	}
 
-	if (skipped > 0) alert(lol + '#PAD_033 - ' + skipped + ' output(s) da fila não foram renomeados (já renderizados ou bloqueados).');
+	if (skipped > 0) padAviso('#PAD_033 - ' + skipped + ' output(s) da fila não foram renomeados (já renderizados ou bloqueados).');
 }
