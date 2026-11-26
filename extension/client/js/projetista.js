@@ -734,12 +734,17 @@ projetos com o nome certo).
 			var img = el('img');
 
 			img.alt = '';
-			img.loading = 'lazy';
-			img.src = f.poster;
 			img.addEventListener('error', function () {
 				poster.innerHTML = FILM_SVG;
 			});
-			poster.appendChild(img);
+			// pelo Node do painel (ATR.posterSrc: o servidor dos pôsteres não deixa o <img> do CEP abrir o endereço);
+			// enquanto baixa, o ícone; sem o pôster, fica o ícone
+			poster.innerHTML = FILM_SVG;
+			ATR.posterSrc(f.poster).then(function (src) {
+				img.src = src;
+				poster.innerHTML = '';
+				poster.appendChild(img);
+			}, function () { });
 		} else {
 			poster.innerHTML = FILM_SVG;
 		}
