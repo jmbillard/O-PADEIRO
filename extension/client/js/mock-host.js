@@ -65,6 +65,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		};
 	}
 	var delay = mode === 'slow' ? 900 : 260;
+	// o fim do coletar com arquivos ausentes (?mock=fail): o aviso amarelo d'O CATADOR e da barra (coletar.jsx)
+	var MOCK_COLETAR_WARNINGS = ['#PAD_093 - 12 arquivos ausentes (não coletados): Screenshot 2026-11-23 at 15.39.02.png, sumiu.mov, logo antigo.ai, fundo.psd, trilha.wav e mais 7.'];
 
 	function wait(ms) {
 		return new Promise(function (resolve) {
@@ -286,7 +288,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	// o envio ao webhook do projeto, como o padEnvioDoProjeto do host (regras/webhook-do-projeto.js): momento 'criado',
 	// 'aberto' ou 'alterado'; a regra decide se envia (fora do modo local, com a URL). a: { atracao, quadro, tipo,
-	// atracaoNova, card }
+	// atracaoNova, card, filme }
 	function mockEnvio(momento, a, pasta, output, aep) {
 		var regra = window.PAD_WEBHOOK_DO_PROJETO;
 
@@ -295,7 +297,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			url: mockLer('webhookDoProjeto').url,
 			modoLocal: api.searchInfo().local,
 			versao: api.ping().version,
-			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
+			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep, filme: a.filme || null },
 			card: a.card || null,
 			designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
 		}) : null;
@@ -1825,13 +1827,13 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				setTimeout(r, 500);
 			});
 
-			return { messages: [], data: { folder: a.target, files: a.files, sequences: 0, frames: 0, fonts: true, saved: true } };
+			return { messages: [], data: { folder: a.target, files: a.files, sequences: 0, frames: 0, fonts: true, saved: true, warnings: mode === 'fail' ? MOCK_COLETAR_WARNINGS : [] } };
 		},
 
 		coletarProject: function (a) {
 			if (mode === 'unsaved' && !a.path) throw new Error('#PAD_095 - salve o projeto antes de coletar (os arquivos vão para a pasta dele), ou use o clique direito para escolher a pasta.');
 
-			return { messages: mode === 'fail' ? ['#PAD_093 - arquivos ausentes (não coletados):\n\nsumiu.mov'] : [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true } };
+			return { messages: [], data: { folder: a.path || '/Volumes/cdesign/PROMO/JORNAIS/em ponto/EMP123456 historia ao vivo', files: 14, sequences: 2, frames: 480, fonts: true, saved: true, warnings: mode === 'fail' ? MOCK_COLETAR_WARNINGS : [] } };
 		},
 
 		projectOpenFolder: function () {
@@ -1853,7 +1855,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		projectOpenFile: function (a) {
 			window.PAD_MOCK_OPENED_FILE = a.path;
 
-			return { file: a.path, opened: true, envio: a.card ? mockEnvio('aberto', a, a.pasta || '', '', a.path) : null };
+			return { file: a.path, opened: true, envio: mockEnvio('aberto', a, a.pasta || '', '', a.path) };
 		},
 
 		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)

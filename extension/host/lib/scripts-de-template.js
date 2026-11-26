@@ -44,8 +44,8 @@ function openWebSite(url) {
 function getURLContent(urlArray, dstArray) {
 	// Verifica se os arrays têm o mesmo tamanho
 	if (urlArray.length != dstArray.length) {
-		alert('Os arrays de URLs e destinos devem ter o mesmo tamanho.');
-		return;
+		// um erro, nunca um alert: o PADX.runEnd mostra no painel (#PAD_021)
+		throw new Error('os arrays de URLs e destinos devem ter o mesmo tamanho.');
 	}
 
 	var cmd = ''; // Comando a ser executado
@@ -1349,8 +1349,8 @@ function batchFill(fillName, aColor) {
 
 	// Verifica se há camadas selecionadas
 	if (selLayers.length == 0) {
-		alert(lol + 'nenhuma camada selecionada');
-		return; // Sai da função se não houver camadas selecionadas
+		// um erro, nunca um alert: o PADX.runEnd mostra no painel (#PAD_021)
+		throw new Error('nenhuma camada selecionada.');
 	}
 
 	app.beginUndoGroup('fill'); // Inicia um grupo de desfazer (undo)

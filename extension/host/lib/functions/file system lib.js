@@ -210,7 +210,7 @@ function writeFileContent(newFile, fileContent) {
  * @param {boolean} options.forceMac - Força conversão para formato Mac
  * @param {boolean} options.forceBackslash - Usa backslash na saída (para colar no Explorer)
  * @param {boolean} options.forceDriveLetter - Converte UNC para letra de drive quando possível
- * @param {boolean} options.silent - Não exibe alertas
+ * @param {boolean} options.silent - Não manda avisos ao painel (padAviso; nunca um alert)
  * @returns {string} Caminho normalizado
  */
 function normalizeNetworkPath(pathStr, options) {
@@ -266,7 +266,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		// Valida estrutura mínima: //servidor/share
 		if (parts.length < 2) {
-			if (!silent) alert("#PAD_070 - Caminho UNC inválido: estrutura mínima não encontrada");
+			if (!silent) padAviso('#PAD_070 - caminho UNC inválido: estrutura mínima não encontrada.');
 			return "";
 		}
 
@@ -293,9 +293,7 @@ function normalizeNetworkPath(pathStr, options) {
 		// Verifica se o volume está montado
 		if (typeof pathExists === "function" && !pathExists(macPath.replace(/^(\/Volumes\/[^\/]+).*$/, "$1"))) {
 			if (!silent && appOs === 'Mac') {
-				alert("#PAD_071 - O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
-					"Servidor: " + serverName + "\n" +
-					"Monte o volume antes de continuar.");
+				padAviso("#PAD_071 - o volume '" + shareName + "' (servidor " + serverName + ") não está montado: monte o volume antes de continuar.");
 			}
 		}
 
@@ -323,8 +321,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		if (!serverName) {
 			if (!silent) {
-				alert("#PAD_072 - Share '" + shareName + "' não encontrado no mapeamento.\n" +
-					"Usando servidor padrão.");
+				padAviso("#PAD_072 - share '" + shareName + "' não encontrado no mapeamento: usando o servidor padrão.");
 			}
 			serverName = PAD_DEFAULT_SERVER;
 		}

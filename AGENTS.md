@@ -29,6 +29,9 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
   Antes de enviar uma mudança no host (ou um `call('…')` novo no painel), rodar
   `node extension/scripts/check-funcoes-do-host.js`: acha a função ou o `PADX.*` chamado e não definido no host
   (no After, "Function … is undefined" só na hora em que a linha roda).
+  O host nunca abre a caixa do After (`alert`, `confirm`, `prompt`, `new Window`) nem usa o kaomoji do padeiro
+  antigo: o aviso vai ao painel (`padAviso`, `warnings` na resposta ou `Error('#PAD_xxx - …')`).
+  `node extension/scripts/check-alertas.js` confere; `node extension/scripts/test-avisos-do-host.js` testa o coletar.
 - **Regras compartilhadas (ADR 0005):** as regras puras do domínio ficam em `extension/regras/`, em ES3, sem After e
   sem DOM (o host inclui por `#include`, o painel por `<script>`). Antes de enviar, rodar
   `node extension/scripts/test-regras.js`; regra nova ganha uma entrada em `REGRAS` nesse teste.

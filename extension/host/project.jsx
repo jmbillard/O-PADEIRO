@@ -972,8 +972,8 @@ PADX.projectPlan = function (a) {
 
 // Abre um projeto que já está na pasta (a lista JÁ NA PASTA do projeto novo).
 // a: { path, atracao, quadro, tipo, pasta, card } → { file, opened, envio }
-// envio: o aviso ao n8n quando o .aep foi aberto pelo JÁ NA PASTA de um card (o designer no card; regras/webhook-do-
-// projeto.js), ou null. a atração vai como o projeto aberto a gravou (padeiro:atracao, a pasta, o output); sem os
+// envio: o aviso ao n8n de todo .aep aberto pelo JÁ NA PASTA (o registro do projeto e, com o card, o designer no
+// card; regras/webhook-do-projeto.js), ou null. a atração vai como o projeto aberto a gravou (padeiro:atracao, a pasta, o output); sem os
 // dados do padeiro, a que a janela escolheu. o card só vai no envio, nunca no projeto (ADR 0001). sem abrir (o
 // designer cancelou no "salvar o projeto aberto?" do After), nada é enviado
 PADX.projectOpenFile = function (a) {
@@ -986,7 +986,7 @@ PADX.projectOpenFile = function (a) {
 	var opened = !!app.project.file && padSamePath(app.project.file.fsName, file.fsName);
 	var envio = null;
 
-	if (opened && a.card) {
+	if (opened) {
 		var m = padMetaRead();
 		var has = !!m.atracao;
 
@@ -994,7 +994,8 @@ PADX.projectOpenFile = function (a) {
 			atracao: has ? m.atracao : a.atracao,
 			quadro: has ? m.quadro : a.quadro,
 			tipo: a.tipo,
-			card: a.card
+			card: a.card || null,
+			filme: a.filme || null
 		}, has && m.pasta ? padNoVolumeSuffix(m.pasta) : String(a.pasta || ''), has ? padNoVolumeSuffix(m.output) : '', padDisplayPath(file.fsName));
 	}
 
@@ -1104,10 +1105,10 @@ PADX.projectCreate = function (a) {
 };
 
 // o envio ao webhook do projeto (regras/webhook-do-projeto.js; docs/webhook-projeto.md), ou null.
-// momento: 'criado' (projectCreate: a atração nova ou a escolhida por um card), 'aberto' (projectOpenFile: o JÁ NA
-// PASTA de um card) ou 'alterado' (projectSave: o Alterar ligando o projeto a um card); a regra decide se envia (fora
-// do modo local e com a URL na configuração da equipe, aba TIPOS DE PROJETO). a: { atracao, quadro, tipo,
-// atracaoNova, card } (a janela de projeto manda). o card ({ id, claquete }) só vai no envio, nunca nos metadados do
+// momento: 'criado' (projectCreate: todo projeto criado), 'aberto' (projectOpenFile: todo .aep aberto pelo JÁ NA
+// PASTA) ou 'alterado' (projectSave: o Alterar ligando o projeto a um card); a regra decide se envia (fora do
+// modo local e com a URL na configuração da equipe, aba TIPOS DE PROJETO). a: { atracao, quadro, tipo, atracaoNova,
+// card, filme } (a janela de projeto manda; filme: { ano }, só no filme). o card ({ id, claquete }) só vai no envio, nunca nos metadados do
 // projeto (ADR 0001). Um erro aqui não desfaz o que foi feito: null
 function padEnvioDoProjeto(momento, a, pasta, output, aep) {
 	try {
@@ -1116,7 +1117,7 @@ function padEnvioDoProjeto(momento, a, pasta, output, aep) {
 			url: padLerSecao('webhookDoProjeto').url,
 			modoLocal: padLocalMode(),
 			versao: PADX_VERSION,
-			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
+			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep, filme: a.filme || null },
 			card: a.card || null,
 			designer: { login: String(system.userName || ''), sigla: padSigla() }
 		});

@@ -357,6 +357,68 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		});
 	}
 
+	// o pôster de um filme como data: (o <img> mostra). o servidor dos pôsteres (o Teable, em db.promo-globo.com)
+	// responde com Cross-Origin-Resource-Policy: same-origin, e o Chromium do CEP (o painel é file://) recusa a
+	// imagem num <img src="https://…">: o Node do painel baixa (ele não confere esse cabeçalho). segue até 3
+	// redirecionamentos; o que não é imagem (o JSON de erro do Teable, a página de login do Cloudflare) é falha.
+	// um download por endereço, guardado enquanto a janela está aberta (a lista de filmes renova o link a cada 10 min)
+	var posters = {};
+
+	function posterData(url) {
+		if (posters[url]) return posters[url];
+
+		posters[url] = new Promise(function (resolve, reject) {
+			function get(u, hops) {
+				var https = require(/^https:/i.test(u) ? 'https' : 'http');
+				var req = https.get(u, { headers: { 'User-Agent': 'O PADEIRO', Accept: 'image/*' }, timeout: 15000 }, function (res) {
+					var type = String(res.headers['content-type'] || '').split(';')[0].trim();
+
+					if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && hops < 3) {
+						res.resume();
+						get(require('url').resolve(u, res.headers.location), hops + 1);
+						return;
+					}
+					if (res.statusCode !== 200 || !/^image\//i.test(type)) {
+						res.resume();
+						reject(new Error('HTTP ' + res.statusCode + ' ' + type));
+						return;
+					}
+
+					var chunks = [];
+
+					res.on('data', function (c) {
+						chunks.push(c);
+					});
+					res.on('error', reject);
+					res.on('end', function () {
+						resolve('data:' + type + ';base64,' + Buffer.concat(chunks).toString('base64'));
+					});
+				});
+
+				req.on('timeout', function () {
+					req.destroy(new Error('tempo esgotado'));
+				});
+				req.on('error', reject);
+			}
+
+			get(url, 0);
+		});
+		// a falha não fica guardada: na próxima vez que a linha aparecer, tenta de novo
+		posters[url].catch(function () {
+			delete posters[url];
+		});
+
+		return posters[url];
+	}
+
+	// o endereço para o <img> do pôster: com o Node, o data: baixado; sem ele (o navegador de teste), o próprio endereço
+	function posterSrc(url) {
+		if (!url) return Promise.reject(new Error('sem pôster'));
+		if (!nodeFs() || /^data:/i.test(url)) return Promise.resolve(url);
+
+		return posterData(url);
+	}
+
 	// os filmes recentes (uma vez por janela; uma falha não trava a claquete: a lista fica vazia e tenta de novo
 	// na próxima vez que a janela pedir)
 	function recentFilms() {
@@ -1080,6 +1142,7 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		aepName: aepName,
 		aepFileName: aepFileName,
 		recentFilms: recentFilms,
+		posterSrc: posterSrc,
 		nodeFs: nodeFs,
 		displayPath: displayPath,
 		find: findAttractions,

@@ -264,7 +264,8 @@ const SCRIPTS = [
 
 	// FUNC lib.js (antigo)
 	['executeCommandID', "executeCommandID('Save');"],
-	['batchFill', "batchFill('fill', [1, 0, 0, 1]);"],
+	// sem camada selecionada: um erro (o painel mostra como #PAD_021), nunca um alert
+	['batchFill', "try { batchFill('fill', [1, 0, 0, 1]); throw new Error('sem o erro'); } catch (e) { if (e.message != 'nenhuma camada selecionada.') throw e; }"],
 	['lineBreak', 'lineBreak(app.project.activeItem, 10);'],
 	['fxObj', "if (typeof fxObj(app.project.activeItem) != 'object') throw new Error('fx');"],
 	['buildFxObj', "if (typeof buildFxObj() != 'object') throw new Error('fx');"],
@@ -292,6 +293,17 @@ SCRIPTS.forEach(function (s) {
 	test('um script de template chama ' + s[0], function () {
 		runTemplateScript(s[1]);
 	});
+});
+
+test('getURLContent com listas de tamanhos diferentes: o erro chega ao painel (#PAD_021), sem alert', function () {
+	let msg = '';
+
+	try {
+		runTemplateScript("getURLContent(['a', 'b'], ['c']);");
+	} catch (err) {
+		msg = err.message;
+	}
+	if (!/^#PAD_021 - .*os arrays de URLs e destinos devem ter o mesmo tamanho/.test(msg)) throw new Error('veio: ' + msg);
 });
 
 test('openWebSite abre o endereço pelo sistema (macOS: open)', function () {

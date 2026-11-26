@@ -47,7 +47,12 @@ aparece e O PROJETISTA segue funcionando como antes.
   grupo **FILMES**, os **A PRODUZIR** vêm primeiro e depois os que **JÁ TÊM PROJETO**, cada parte com a exibição mais
   próxima em cima. O workflow manda também `filme_id`, `pasta`, `projeto`, `output` e `inedito`; o painel ainda não
   usa esses campos.
-- **O pôster:** a miniatura do anexo do Teable, com um link assinado que expira. Se ele falhar, aparece o ícone.
+- **O pôster:** a miniatura do anexo do Teable, com um link assinado que expira. O Node do painel baixa a imagem e
+  o `<img>` recebe um `data:` (`posterSrc()` em `attractions.js`, um download por endereço enquanto a janela está
+  aberta): o Teable responde com `Cross-Origin-Resource-Policy: same-origin`, e o Chromium do CEP (o painel é
+  `file://`) recusa o `<img src="https://…">` direto. O endereço tem que devolver HTTP 200 com `Content-Type:
+  image/…`; o que não é imagem (o JSON de erro do Teable, a página de login do Cloudflare Access) vira o ícone, e
+  enquanto baixa também aparece o ícone. Sem o Node (o navegador de teste), o `<img>` usa o endereço direto.
 - **Também aceito:** a lista direto (`[ {…}, {…} ]`), embrulhada pelo n8n (`[{ "filmes": [...] }]`) ou um item por
   filme (`[{ "json": {…} }]`). Os nomes em inglês (`name`, `year`) também valem.
 - **A PRODUZIR:** não vem do webhook. O PROJETISTA lê a pasta da letra do filme (o caminho do tipo **FILME**, até o

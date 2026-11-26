@@ -55,6 +55,25 @@ var defaultTemplateConfigObj = {
 
 var PAD_RENAME_SEPARATOR = PAD_CONFIGURACAO.padrao('regraDoRenomear').separator;
 
-var lol = 'Σ(っ °Д °;)っ        ';
+// os prefixos das mensagens do padeiro antigo (eram dois kaomojis): vazios. ficam definidos porque os scripts de
+// template (_script.js, na rede) podem usar 'lol + texto'
+var lol = '';
 
-var relax = 'ヽ(✿ﾟ▽ﾟ)ノ        ';
+var relax = '';
+
+// Um aviso para o painel, no lugar do alert() do padeiro antigo: o host nunca abre a caixa do After (alert, confirm,
+// prompt). o texto entra na lista da chamada em andamento (PADX_alerts, api.jsx: res.notes, ou as messages de
+// padGatherAlerts) e o painel mostra na linha de status ou no aviso da barra. fora de uma chamada, fica de fora
+function padAviso(text) {
+	if (typeof PADX_alerts == 'undefined' || !PADX_alerts) return;
+
+	PADX_alerts.push(String(text).replace(/^\s+|\s+$/g, ''));
+}
+
+// Uma lista de nomes curta, para um aviso: 'a, b, c, d, e e mais 7' (max: quantos nomes mostrar; 5 sem ele)
+function padListaCurta(names, max) {
+	var n = max || 5;
+	var shown = names.slice(0, n).join(', ');
+
+	return names.length > n ? shown + ' e mais ' + (names.length - n) : shown;
+}

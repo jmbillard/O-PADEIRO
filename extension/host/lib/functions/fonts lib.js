@@ -84,8 +84,9 @@ function fontFileExtension(file) {
 }
 
 // Copia os arquivos das fontes usadas no projeto para 'savePath'.
-// Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada.
-function fontCopyTo(savePath) {
+// Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada. fails (opcional): recebe os nomes das fontes
+// que não puderam ser copiadas (o coletar avisa junto dos outros); sem ele, vira um aviso ao painel (padAviso)
+function fontCopyTo(savePath, fails) {
 	var saveFolder = new Folder(savePath);
 	var fonts = getProjectFonts();
 	var copiedFiles = {};
@@ -115,7 +116,9 @@ function fontCopyTo(savePath) {
 	}
 
 	if (failArray.length > 0) {
-		alert(lol + '#PAD_034 - estas fontes não puderam ser copiadas:\n\n' + failArray.join('\n'));
+		if (fails) {
+			for (var k = 0; k < failArray.length; k++) fails.push(failArray[k]);
+		} else padAviso('#PAD_034 - estas fontes não puderam ser copiadas: ' + padListaCurta(failArray) + '.');
 	}
 
 	if (saveFolder.getFiles().length == 0) {

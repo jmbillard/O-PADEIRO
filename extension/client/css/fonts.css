@@ -279,6 +279,11 @@ body.fonts-page {
   color: var(--danger);
 }
 
+/* o aviso amarelo (o coletar com arquivos ausentes): o resto foi feito. o mesmo tom do "atenção" da barra */
+.fw-status.is-warn {
+  color: var(--waiting);
+}
+
 .fw-menu .menu-popover {
   top: auto;
   bottom: calc(100% + 8px);
