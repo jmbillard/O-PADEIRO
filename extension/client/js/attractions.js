@@ -370,7 +370,8 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 			var data = null;
 
 			if (nodeFs() && source.info.films) data = await fetchJson(source.info.films);
-			else data = (await call('projectFilmsRecent', {})).data;
+			// sem o Node ou sem o endereço: só o modo de teste tem filmes (o host não tem projectFilmsRecent)
+			else if (window.PAD_MOCK_HOST) data = (await window.PAD_MOCK_HOST.call('projectFilmsRecent', {})).data;
 
 			films.list = parseFilms(data);
 			films.at = Date.now();

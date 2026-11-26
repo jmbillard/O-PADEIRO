@@ -311,6 +311,51 @@ test('o erro de um script diz qual script falhou (#PAD_021 e o nome do arquivo) 
 	if (!/#PAD_021/.test(msg) || msg.indexOf('_script.js') < 0) throw new Error('mensagem: ' + (msg || '(nenhum erro)'));
 });
 
+// as fontes do host (fontCopyTo, fonts lib.js) pelos caminhos de verdade: O TIPÓGRAFO (PADX.copyFonts) e o fim do
+// coletar (PADX.coletarEnd). na 2.0 RC1, a definição e as chamadas ficaram com nomes diferentes e O CATADOR falhava
+// com "Function fontCopyTo is undefined"
+function withFontProject(fn) {
+	const comp = new CompItem();
+	const layer = new TextLayer();
+	const doc = { value: { font: 'GloboTexto-Bold', fontLocation: '/sistema/fontes/GloboTexto-Bold.otf' }, numKeys: 0 };
+	const project = ctx.app.project;
+	const saved = { numItems: project.numItems, item: project.item, save: project.save, file: project.file };
+
+	layer.property = function () { return { property: function () { return doc; } }; };
+	comp.numLayers = 1;
+	comp.layer = function () { return layer; };
+	disk.files['/sistema/fontes/GloboTexto-Bold.otf'] = 'OTTO';
+	project.numItems = 1;
+	project.item = function () { return comp; };
+	project.save = function () {};
+	project.file = new File('/rede/PROJ/projeto.aep');
+
+	try {
+		fn();
+	} finally {
+		Object.keys(saved).forEach(function (k) { project[k] = saved[k]; });
+	}
+}
+
+test('O TIPÓGRAFO copia as fontes do projeto (PADX.copyFonts → fontCopyTo)', function () {
+	withFontProject(function () {
+		const res = ctx.PADX.copyFonts({ path: encodeURI('/rede/PROJ') });
+
+		if (res.data.path != '/rede/PROJ/FONTS' || !disk.files['/rede/PROJ/FONTS/GloboTexto-Bold.otf']) throw new Error(JSON.stringify(res));
+	});
+});
+
+test('o fim do coletar copia as fontes (PADX.coletarEnd → fontCopyTo)', function () {
+	withFontProject(function () {
+		new Folder('/rede/COLETA').create();
+
+		const res = ctx.PADX.coletarEnd({ target: '/rede/COLETA' });
+		const copied = Object.keys(disk.files).filter((f) => f.indexOf('/rede/COLETA/') === 0 && /GloboTexto-Bold\.otf$/.test(f));
+
+		if (!res.data || !res.data.fonts || copied.length != 1) throw new Error(JSON.stringify(res) + ' ' + copied.join());
+	});
+});
+
 console.log('');
 
 if (failed) {
