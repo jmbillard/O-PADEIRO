@@ -53,7 +53,7 @@ function getProjectFonts() {
 // Nome do arquivo copiado. As fontes do Adobe Fonts ficam em arquivos ocultos e numerados
 // ('.../CoreSync/plugins/livetype/.r/.34534.otf'): nesse caso (ou sem extensão de fonte), o arquivo leva
 // o nome PostScript da fonte e a extensão do formato de verdade (lido no começo do arquivo).
-function fontColetarName(file, postScriptName) {
+function fontCopyName(file, postScriptName) {
 	var name = File.decode(file.name);
 	var path = file.fsName.replace(/\\/g, '/');
 
@@ -85,7 +85,7 @@ function fontFileExtension(file) {
 
 // Copia os arquivos das fontes usadas no projeto para 'savePath'.
 // Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada.
-function fontColetar(savePath) {
+function fontCopyTo(savePath) {
 	var saveFolder = new Folder(savePath);
 	var fonts = getProjectFonts();
 	var copiedFiles = {};
@@ -105,7 +105,7 @@ function fontColetar(savePath) {
 		// estilos diferentes podem vir do mesmo arquivo
 		if (copiedFiles[fontSrcFile.fsName]) continue;
 
-		var fontFileName = fontColetarName(fontSrcFile, fonts[f].name);
+		var fontFileName = fontCopyName(fontSrcFile, fonts[f].name);
 
 		if (fontSrcFile.copy(new File(savePath + '/' + fontFileName))) {
 			copiedFiles[fontSrcFile.fsName] = true;

@@ -1604,9 +1604,9 @@ function getFontNames() {
 	return names;
 }
 
-// nome antigo de fontColetar (fonts lib.js)
+// nome antigo de fontCopyTo (fonts lib.js)
 function fontCollect(savePath) {
-	return fontColetar(savePath);
+	return fontCopyTo(savePath);
 }
 
 // nome antigo de coletarRenameComps (rename lib.js)

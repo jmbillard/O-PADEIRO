@@ -26,6 +26,9 @@ Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTM
 
 - **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna, também em `extension/regras/`.
   `node extension/scripts/check-ternary.js` confere.
+  Antes de enviar uma mudança no host (ou um `call('…')` novo no painel), rodar
+  `node extension/scripts/check-funcoes-do-host.js`: acha a função ou o `PADX.*` chamado e não definido no host
+  (no After, "Function … is undefined" só na hora em que a linha roda).
 - **Regras compartilhadas (ADR 0005):** as regras puras do domínio ficam em `extension/regras/`, em ES3, sem After e
   sem DOM (o host inclui por `#include`, o painel por `<script>`). Antes de enviar, rodar
   `node extension/scripts/test-regras.js`; regra nova ganha uma entrada em `REGRAS` nesse teste.
