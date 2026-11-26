@@ -2518,7 +2518,7 @@ projetos com o nome certo).
 
 			await PAD_BRIDGE.prepararMontagem([state.plan.projects]);
 
-			var res = await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile, atracao: flow.pick ? flow.pick.name : '', quadro: flow.pick ? flow.pick.quadro || '' : '', tipo: attr.tipo || '', pasta: state.plan.root || '', card: cardDoEnvio() });
+			var res = await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile, atracao: flow.pick ? flow.pick.name : '', quadro: flow.pick ? flow.pick.quadro || '' : '', tipo: attr.tipo || '', pasta: state.plan.root || '', card: cardDoEnvio(), filme: filmeDoEnvio(attr) });
 			var sending = startEnvio(res);
 
 			status('projeto aberto: ' + state.openFile, 'success');
@@ -2705,12 +2705,17 @@ projetos com o nome certo).
 	/* ---------- criar ---------- */
 
 	function createArgs() {
-		// o .aep que já existe e não foi aberto: salva como … 2. tipo, atracaoNova e card: só para o envio ao webhook do
-		// projeto (o host o monta junto do .aep salvo: regras/webhook-do-projeto.js). o card escolhido vai só no envio,
-		// nunca no projeto (ADR 0001): o host não o grava
+		// o .aep que já existe e não foi aberto: salva como … 2. tipo, atracaoNova, card e filme: só para o envio ao
+		// webhook do projeto (o host o monta junto do .aep salvo: regras/webhook-do-projeto.js). o card escolhido vai só
+		// no envio, nunca no projeto (ADR 0001): o host não o grava
 		var attr = flow.attr || {};
 
-		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: cardDoEnvio() }, outTarget()));
+		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? 'increment' : '', tipo: attr.tipo || '', atracaoNova: attr.isNewAttr === true, card: cardDoEnvio(), filme: filmeDoEnvio(attr) }, outTarget()));
+	}
+
+	// o filme, como vai no envio ({ ano }: o ano de produção que foi para a pasta e o .aep), ou null fora do filme
+	function filmeDoEnvio(attr) {
+		return attr && attr.isFilm ? { ano: String(attr.year || '') } : null;
 	}
 
 	// o card escolhido, como vai no envio ({ id, claquete }), ou null. só no envio, nunca no projeto (ADR 0001)
@@ -2720,7 +2725,7 @@ projetos com o nome certo).
 		return c && c.card ? { id: String(c.card), claquete: String(c.claq || '') } : null;
 	}
 
-	/* ---------- o webhook do projeto: o aviso ao n8n da atração nova e do card (docs/webhook-projeto.md) ---------- */
+	/* ---------- o webhook do projeto: o registro, a atração nova e o card no n8n (docs/webhook-projeto.md) ---------- */
 
 	var WEBHOOK = window.PAD_WEBHOOK_DO_PROJETO; // o envio e os avisos (regras/webhook-do-projeto.js)
 	var WEBHOOK_TIMEOUT = 8000; // ms: o n8n que não responde nisso vira o aviso amarelo
@@ -2800,11 +2805,16 @@ projetos com o nome certo).
 		return res && res.envio && WEBHOOK ? webhookDoProjeto(res.envio) : null;
 	}
 
-	// mostra os avisos do envio e os deixa à vista um instante (antes de a janela fechar); sem envio, não espera
+	// mostra os avisos do envio e os deixa à vista um instante (antes de a janela fechar); sem envio, ou sem aviso (o
+	// registro do projeto com a resposta de itens vazio: o sucesso silencioso), não espera
 	async function waitAvisos(sending, antes) {
 		if (!sending) return;
 
-		var kind = showAvisos(await sending, antes);
+		var lido = await sending;
+
+		if (!lido.avisos.length) return;
+
+		var kind = showAvisos(lido, antes);
 
 		await new Promise(function (resolve) {
 			setTimeout(resolve, WEBHOOK_READ[kind]);

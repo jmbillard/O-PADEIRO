@@ -874,7 +874,7 @@ Para trocar o nome de uma chave guardada (ou de um campo dela): o nome novo na l
 
 	// ---------------------------------------------------------------------------------------------------------
 	// o webhook do projeto ('WEBHOOK_DO_PROJETO'; aba TIPOS DE PROJETO): { url }, o webhook do n8n que a janela de
-	// projeto avisa ao criar o projeto de uma atração nova (regras/webhook-do-projeto.js; docs/webhook-projeto.md)
+	// projeto avisa ao criar ou abrir um projeto (regras/webhook-do-projeto.js; docs/webhook-projeto.md)
 	//   url → o padrão é o workflow da equipe (https://workflows.jmbillard.com/webhook/projeto); vazia: nada é
 	//         enviado. a validação é a da URL do registro de uso: o
 	//         endereço também vai para a linha de comando do curl (o plano B do host, sem o Node do painel)

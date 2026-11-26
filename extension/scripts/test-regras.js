@@ -1328,8 +1328,28 @@ REGRAS.push({
 			});
 		});
 
-		test('atração conhecida sem card (já no índice da busca): não envia', function () {
-			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }) })), null);
+		// o registro do projeto: todo projeto criado (e todo .aep aberto pelo JÁ NA PASTA) vai ao n8n, com ou sem card
+		test('atração conhecida sem card (já no índice da busca): envia o registro do projeto, com a atração nova: false', function () {
+			const e = api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }) }));
+
+			eq(e.url, URL_DO_PROJETO);
+			eq(e.corpo.momento, 'criado');
+			eq(e.corpo.atracao.nova, false);
+			eq(e.corpo.card, null);
+			eq(e.corpo.designer, { login: 'jmbillard', sigla: 'JMBILLARD' });
+		});
+
+		test('filme da lista sem card: envia o registro, com atracao.filme { ano } (o ano do .aep)', function () {
+			const e = api.envio(situacao({ atracao: { nome: 'Os Pequenos Vestígios', tipo: 'FILME', nova: false, quadro: '', pasta: '//srv/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)', output: '', aep: '//srv/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)/OS PEQUENOS VESTIGIOS (2021) CHAMADA.aep', filme: { ano: 2021 } } }));
+
+			eq(e.corpo.atracao, { nome: 'Os Pequenos Vestígios', tipo: 'FILME', nova: false, quadro: '', pasta: '//srv/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)', output: '', aep: '//srv/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)/OS PEQUENOS VESTIGIOS (2021) CHAMADA.aep', filme: { ano: '2021' } });
+			eq(e.corpo.card, null);
+		});
+
+		test('atracao.filme: só no filme (fora dele, a chave não vai); sem ano, { ano: \'\' }', function () {
+			eq(api.envio(situacao()).corpo.atracao.hasOwnProperty('filme'), false);
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { filme: {} }) })).corpo.atracao.filme, { ano: '' });
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { filme: null }) })).corpo.atracao.hasOwnProperty('filme'), false);
 		});
 
 		test('modo local: não envia', function () {
@@ -1372,8 +1392,8 @@ REGRAS.push({
 			eq(e.corpo.card, { id: 'abc', claquete: 'X 01/12' });
 		});
 
-		test('o card sem id é como sem card: a atração conhecida não envia; a nova envia sem card', function () {
-			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), card: { id: '', claquete: 'X' } })), null);
+		test('o card sem id é como sem card: a atração conhecida envia o registro sem card; a nova envia sem card', function () {
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), card: { id: '', claquete: 'X' } })).corpo.card, null);
 			eq(api.envio(situacao({ card: { id: '  ', claquete: 'X' } })).corpo.card, null);
 		});
 
@@ -1412,10 +1432,24 @@ REGRAS.push({
 			eq(api.envio(situacao({ momento: 'alterado', card: CARD })).corpo.atracao.nova, false);
 		});
 
-		test('abrir ou alterar sem card (o clique sem card, a atração nova sem card): não envia', function () {
-			eq(api.envio(situacao({ momento: 'aberto' })), null);
+		test('abrir pelo JÁ NA PASTA sem card: envia o registro (momento aberto, nova: false, card: null)', function () {
+			const e = api.envio(situacao({ momento: 'aberto', atracao: ABERTO }));
+
+			eq(e.corpo.momento, 'aberto');
+			eq(e.corpo.atracao, ABERTO);
+			eq(e.corpo.card, null);
+			eq(api.envio(situacao({ momento: 'aberto' })).corpo.atracao.nova, false);
+			eq(api.envio(situacao({ momento: 'aberto', atracao: ABERTO, card: { id: '', claquete: 'X' } })).corpo.card, null);
+		});
+
+		test('Alterar sem card: não envia (o Alterar só liga o projeto a um card)', function () {
 			eq(api.envio(situacao({ momento: 'alterado' })), null);
-			eq(api.envio(situacao({ momento: 'aberto', atracao: ABERTO, card: { id: '', claquete: 'X' } })), null);
+			eq(api.envio(situacao({ momento: 'alterado', atracao: ABERTO, card: { id: '', claquete: 'X' } })), null);
+		});
+
+		test('o registro sem card, no modo local ou sem a URL: não envia', function () {
+			eq(api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }), modoLocal: true })), null);
+			eq(api.envio(situacao({ momento: 'aberto', atracao: ABERTO, url: '' })), null);
 		});
 
 		test('abrir ou alterar por card, no modo local ou sem a URL: não envia', function () {
@@ -1569,6 +1603,28 @@ REGRAS.push({
 			eq(api.avisos({}, ALTERADO_POR_CARD).avisos[0].texto, 'não deu para confirmar a sua entrada no card LA NA MINHA TERRA 25/11 (a resposta do n8n veio fora do formato): o projeto foi salvo; confira no Trello');
 		});
 
+		// o registro do projeto: o envio sem cadastro e sem card (a atração conhecida, o filme, o JÁ NA PASTA sem card)
+		const SO_REGISTRO = api.envio(situacao({ atracao: Object.assign(situacao().atracao, { nova: false }) }));
+		const ABERTO_SO_REGISTRO = api.envio(situacao({ momento: 'aberto', atracao: ABERTO }));
+
+		test('projetoRegistrado → aviso verde (texto padrão: projeto registrado); a cópia do índice continua valendo', function () {
+			eq(api.avisos(resposta([{ codigo: 'projetoRegistrado' }]), SO_REGISTRO), { avisos: [{ kind: 'success', codigo: 'projetoRegistrado', texto: 'projeto registrado' }], copiaVelha: false });
+			eq(api.avisos(resposta([{ codigo: 'projetoRegistrado', texto: 'registrado no banco' }]), ABERTO_SO_REGISTRO).avisos, [{ kind: 'success', codigo: 'projetoRegistrado', texto: 'registrado no banco' }]);
+		});
+
+		test('o registro: itens vazio é sucesso silencioso (sem aviso); fora dele, itens vazio continua fora do formato', function () {
+			eq(api.avisos(resposta([]), SO_REGISTRO), { avisos: [], copiaVelha: false });
+			eq(api.avisos('{"itens":[]}', ABERTO_SO_REGISTRO), { avisos: [], copiaVelha: false });
+			eq(api.avisos(resposta([]), ENVIO).avisos[0].codigo, 'foraDoFormato');
+			eq(api.avisos(resposta([]), CONHECIDA_POR_CARD).avisos[0].codigo, 'foraDoFormato');
+		});
+
+		test('o registro, sem resposta ou fora do formato: um aviso amarelo sobre o registro do projeto', function () {
+			eq(api.avisos(null, SO_REGISTRO).avisos, [{ kind: 'warn', codigo: 'semResposta', texto: 'o projeto não foi registrado no banco (o n8n não respondeu): o projeto foi criado; avise a equipe' }]);
+			eq(api.avisos(null, ABERTO_SO_REGISTRO).avisos[0].texto, 'o projeto não foi registrado no banco (o n8n não respondeu): o projeto foi aberto; avise a equipe');
+			eq(api.avisos({}, SO_REGISTRO).avisos, [{ kind: 'warn', codigo: 'foraDoFormato', texto: 'não deu para confirmar o registro do projeto (a resposta do n8n veio fora do formato): o projeto foi criado; avise a equipe' }]);
+		});
+
 		test('um código desconhecido vira amarelo (com o texto do n8n, ou o código)', function () {
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa', texto: 'algo novo' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'algo novo' }]);
 			eq(api.avisos(resposta([{ codigo: 'outraCoisa' }]), ENVIO).avisos, [{ kind: 'warn', codigo: 'outraCoisa', texto: 'o n8n respondeu outraCoisa' }]);
@@ -1582,6 +1638,10 @@ REGRAS.push({
 		eq(api.envio(situacao({ atracao: { nome: 'X', nova: false }, card: { id: 'abc', claquete: 'X 01/12' } })).corpo.card.id, 'abc');
 		eq(api.envio(situacao({ momento: 'aberto', card: { id: 'abc', claquete: 'X' } })).corpo.atracao.nova, false);
 		eq(api.envio(situacao({ momento: 'alterado' })), null);
+		eq(api.envio(situacao({ momento: 'aberto' })).corpo.card, null);
+		eq(api.envio(situacao({ atracao: { nome: 'X', nova: false, filme: { ano: 2021 } } })).corpo.atracao.filme.ano, '2021');
+		eq(api.avisos('{"itens":[]}', api.envio(situacao({ atracao: { nome: 'X', nova: false } }))).avisos.length, 0);
+		eq(api.avisos('{"itens":[{"codigo":"projetoRegistrado"}]}', api.envio(situacao({ momento: 'aberto' }))).avisos[0].kind, 'success');
 	}
 });
 

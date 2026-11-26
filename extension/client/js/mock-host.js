@@ -288,7 +288,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	// o envio ao webhook do projeto, como o padEnvioDoProjeto do host (regras/webhook-do-projeto.js): momento 'criado',
 	// 'aberto' ou 'alterado'; a regra decide se envia (fora do modo local, com a URL). a: { atracao, quadro, tipo,
-	// atracaoNova, card }
+	// atracaoNova, card, filme }
 	function mockEnvio(momento, a, pasta, output, aep) {
 		var regra = window.PAD_WEBHOOK_DO_PROJETO;
 
@@ -297,7 +297,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			url: mockLer('webhookDoProjeto').url,
 			modoLocal: api.searchInfo().local,
 			versao: api.ping().version,
-			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep },
+			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep, filme: a.filme || null },
 			card: a.card || null,
 			designer: { login: MOCK_LOGIN.toLowerCase(), sigla: mockLer('sigla') || MOCK_LOGIN }
 		}) : null;
@@ -1855,7 +1855,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		projectOpenFile: function (a) {
 			window.PAD_MOCK_OPENED_FILE = a.path;
 
-			return { file: a.path, opened: true, envio: a.card ? mockEnvio('aberto', a, a.pasta || '', '', a.path) : null };
+			return { file: a.path, opened: true, envio: mockEnvio('aberto', a, a.pasta || '', '', a.path) };
 		},
 
 		// O ARQUIVISTA: uma pasta de exemplo (o prefixo vem do próprio nome; dois que dariam o mesmo nome)

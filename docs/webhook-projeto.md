@@ -1,7 +1,9 @@
 # webhook do projeto
 
 O que **O PROJETISTA** (a janela de projeto) manda ao n8n e o que espera de volta. O padeiro avisa o n8n, em segundo
-plano, quando o projeto é criado, aberto ou alterado. Ao criar o projeto:
+plano, quando o projeto é criado, aberto ou alterado. **Todo projeto criado e todo `.aep` aberto pelo JÁ NA PASTA**
+(qualquer atração: nova, conhecida, tipo fixo, filme; com ou sem card) vai ao n8n, que **registra o projeto** (o
+`.aep`, a atração, o designer e a data). Além disso, ao criar o projeto:
 
 - de uma **atração nova** (uma que ainda não está no índice da busca): o n8n cadastra a atração no **banco das
   atrações**. Depois disso, a próxima busca já a acha, e o próximo designer não cria outra pasta para a mesma atração;
@@ -9,7 +11,7 @@ plano, quando o projeto é criado, aberto ou alterado. Ao criar o projeto:
   designers) e, se a atração é nova, também liga o card à atração nova no banco.
 
 E, com um card, também ao **abrir** um `.aep` pelo JÁ NA PASTA e ao **alterar** o projeto pelo Alterar: o n8n põe o
-designer no card.
+designer no card. O Alterar sem card não envia nada.
 
 Este é o primeiro webhook que pede mudanças no banco: os outros (a [busca](acessorista.md), os
 [filmes recentes](webhook-filmes.md) e o [Trello](webhook-trello.md)) só leem.
@@ -26,22 +28,24 @@ sem espaços, aspas nem símbolos do terminal): uma URL inválida é recusada ao
 
 ## quando o padeiro envia
 
-- ao **criar** o projeto de uma atração nova pela janela de projeto (os chips dos tipos, ou o card sem atração): o
-  cadastro (e, com o card, o card ligado e o designer no card);
-- ao **criar** o projeto de uma atração escolhida por um card (a atração do índice, o tipo fixo como MOOD MENSAL ou o
-  filme do card): só para pôr o designer no card;
-- ao **abrir** um `.aep` pelo JÁ NA PASTA depois de escolher a atração por um card (momento `aberto`): só para pôr o
-  designer no card, e só depois de o After abrir o `.aep` (se o designer cancela no "salvar o projeto aberto?", nada
+- ao **criar** qualquer projeto pela janela de projeto (momento `criado`): o registro do projeto, sempre. E também:
+  - a **atração nova** (os chips dos tipos, ou o card sem atração): o cadastro (e, com o card, o card ligado e o
+    designer no card);
+  - a atração escolhida por um **card** (a atração do índice, o tipo fixo como MOOD MENSAL ou o filme do card): o
+    designer no card;
+  - a atração conhecida sem card (pela busca, o tipo fixo, o **filme da lista** de filmes recentes, mesmo o A
+    PRODUZIR): só o registro (`atracao.nova: false`, `card: null`). O filme leva `atracao.filme`;
+- ao **abrir** um `.aep` pelo JÁ NA PASTA (momento `aberto`), com ou sem card: o registro do projeto e, com o card, o
+  designer no card. Só depois de o After abrir o `.aep` (se o designer cancela no "salvar o projeto aberto?", nada
   sai);
 - ao **salvar** pelo Alterar (o editor do projeto já criado) depois de trocar a atração por um card da lista (momento
   `alterado`): só para pôr o designer no card, e só depois de salvar. Se o designer escolhe o card e depois troca a
   atração do campo por outra, o card não vai;
-- **não** envia para a atração que já está no índice da busca escolhida sem card (pela busca, ou pelo tipo fixo e o
-  filme sem card), nem quando só se olha um card na lista (no projeto novo ou no Alterar), sem criar, abrir nem
-  salvar;
-- **não** envia ao abrir pelo JÁ NA PASTA nem ao salvar pelo Alterar sem card;
+- **não** envia ao salvar pelo Alterar sem card, nem quando só se olha um card na lista (no projeto novo ou no
+  Alterar), sem criar, abrir nem salvar;
 - **não** envia no **modo local**;
-- **não** envia com o endereço vazio.
+- **não** envia com o endereço vazio (a chave `WEBHOOK_DO_PROJETO` gravada com `url: ""`). Sem a chave no arquivo da
+  equipe, vale o padrão.
 
 **Criar, abrir e salvar nunca esperam nem falham pelo envio.** O projeto é criado (aberto, salvo) primeiro; o envio
 sai depois, em segundo plano, pelo Node do painel (`POST` com JSON, tempo máximo de 8 s). A janela mostra o aviso e
@@ -76,15 +80,16 @@ A atração nova, sem card:
 
 | campo | o que é |
 | --- | --- |
-| `momento` | `criado` (o projeto criado), `aberto` (o `.aep` aberto pelo JÁ NA PASTA de um card) ou `alterado` (o projeto salvo pelo Alterar, ligado a um card). |
+| `momento` | `criado` (o projeto criado), `aberto` (o `.aep` aberto pelo JÁ NA PASTA, com ou sem card) ou `alterado` (o projeto salvo pelo Alterar, ligado a um card). |
 | `atracao.nome` | o nome da atração, como foi digitado ou tirado da claquete. |
 | `atracao.tipo` | o tipo de projeto (PROGRAMAS, NOVELAS, SHOWS…), o da aba TIPOS DE PROJETO. |
-| `atracao.nova` | `true`: a atração não estava no índice da busca (o n8n cadastra; só no `criado`). `false`: a atração conhecida escolhida por um card, ou qualquer `aberto` e `alterado` (o n8n só põe o designer no card). |
+| `atracao.nova` | `true`: a atração não estava no índice da busca (o n8n cadastra; só no `criado`). `false`: a atração conhecida (com card ou sem: o filme da lista também), ou qualquer `aberto` e `alterado` (o n8n só registra o projeto e, com o card, põe o designer nele). |
 | `atracao.quadro` | as pastas abaixo da atração, quando o projeto foi criado num quadro (`DANCA DOS FAMOSOS/FINAL`); `""` sem quadro. |
 | `atracao.pasta` | a pasta do projeto (a estrutura com `01_PROJETOS`, `02_ARQUIVOS`…), como o padeiro mostra o caminho. |
 | `atracao.output` | a pasta de output, se existir; `""` quando o designer pulou o output. |
 | `atracao.aep` | o caminho do `.aep` salvo (no `aberto`, o `.aep` aberto). |
-| `card` | o card do Trello de onde veio a atração, ou `null` (a atração nova escolhida sem card). |
+| `atracao.filme` | só no filme (o filme da lista de filmes recentes, do índice ou do card): `{ "ano": "2021" }`, o ano de produção que foi para a pasta e o `.aep` (o designer pode ter trocado; `""` sem ano). Fora do filme, a chave não vai. |
+| `card` | o card do Trello de onde veio a atração, ou `null` (a atração escolhida sem card). |
 | `card.id` | o id do card no Trello (o `card` do [índice do Trello](webhook-trello.md)). |
 | `card.claquete` | a claquete do card (o `claq` do índice), para o texto dos avisos e o registro. |
 | `designer.login` | o login da máquina, como o sistema o dá (o usuário do sistema). |
@@ -95,6 +100,48 @@ Os caminhos vêm como o padeiro os mostra: o caminho de rede (`//servidor/share/
 
 **O card só vai no envio** (ADR 0001: o card só aponta a atração). O padeiro não o grava nos metadados do projeto
 (o XMP do `.aep`): a janela passa o card ao host só para montar o envio, junto do `.aep` salvo.
+
+A atração conhecida escolhida sem card, pela busca (o n8n só registra o projeto):
+
+```json
+{
+  "momento": "criado",
+  "atracao": {
+    "nome": "MAIS VOCE",
+    "tipo": "",
+    "nova": false,
+    "quadro": "",
+    "pasta": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/MAIS VOCE/2026",
+    "output": "//vfx-ml-sp/EDIT_IN_PLACE/PROMO/cdesign_output/PROGRAMAS/MAIS VOCE",
+    "aep": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_3/PROGRAMAS/MAIS VOCE/2026/01_PROJETOS/MAIS VOCE CHAMADA.aep"
+  },
+  "card": null,
+  "designer": { "login": "jmbillard", "sigla": "JMBILLARD" },
+  "versao": "2.0.11"
+}
+```
+
+O filme escolhido na lista de filmes recentes, sem card (A PRODUZIR: a pasta é criada com o projeto; o n8n só
+registra o projeto, o banco dos filmes é outro):
+
+```json
+{
+  "momento": "criado",
+  "atracao": {
+    "nome": "Os Pequenos Vestígios",
+    "tipo": "FILME",
+    "nova": false,
+    "quadro": "",
+    "pasta": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)",
+    "output": "//vfx-ml-sp/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)",
+    "aep": "//vfx-ml-sp/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS/_P_/OS PEQUENOS VESTIGIOS (2021)/01_PROJETOS/OS PEQUENOS VESTIGIOS (2021) CHAMADA.aep",
+    "filme": { "ano": "2021" }
+  },
+  "card": null,
+  "designer": { "login": "jmbillard", "sigla": "JMBILLARD" },
+  "versao": "2.0.11"
+}
+```
 
 A atração nova a partir de um card sem atração (o n8n cadastra, liga o card a ela e põe o designer no card):
 
@@ -138,7 +185,8 @@ A atração conhecida escolhida por um card (o n8n só põe o designer no card; 
 
 Na atração conhecida, o `tipo` pode vir vazio (o índice da busca não o guarda).
 
-O `.aep` aberto pelo JÁ NA PASTA de um card (o n8n só põe o designer no card). A atração, a pasta e o output vêm do
+O `.aep` aberto pelo JÁ NA PASTA de um card (o n8n registra o projeto e põe o designer no card; sem card, o mesmo
+envio com `"card": null`, só o registro). A atração, a pasta e o output vêm do
 próprio projeto aberto (os dados que o padeiro gravou nele); num `.aep` sem esses dados, vale a atração escolhida na
 janela e a pasta dela, e o output vai vazio:
 
@@ -207,6 +255,7 @@ certo, **amarelo** quando algum não deu. Sem `texto`, vale o texto padrão do c
 | `designerEntrouNoCard` | verde | `você entrou no card` | o designer foi posto no card como membro. |
 | `designerJaEstavaNoCard` | verde | `você já estava no card` | o designer já era membro do card: nada mudou. |
 | `designerNaoEncontrado` | amarelo | `o n8n não achou você na tabela de designers: peça para incluírem` | nem o login nem a sigla estão na tabela de designers: o card fica sem o designer. |
+| `projetoRegistrado` | verde | `projeto registrado` | o projeto foi registrado (o envio sem cadastro e sem card: a atração conhecida, o filme, o JÁ NA PASTA sem card). Nos outros envios, o n8n pode mandar este item junto dos outros. |
 | `erro` | amarelo | `o n8n não conseguiu fazer o pedido: confira à mão` | o workflow falhou (mande o motivo no `texto`). |
 
 - **Também aceito:** a resposta embrulhada pelo n8n numa lista (`[{ "itens": [...] }]`) ou o JSON em texto.
@@ -220,12 +269,19 @@ certo, **amarelo** quando algum não deu. Sem `texto`, vale o texto padrão do c
   - a atração conhecida por card: `você não entrou no card <claquete> (o n8n não respondeu): o projeto foi criado;
     entre no card à mão`;
   - aberto ou alterado por card: o mesmo, com `o projeto foi aberto` ou `o projeto foi salvo` no lugar de `o projeto
-    foi criado`.
+    foi criado`;
+  - só o registro (sem cadastro e sem card): `o projeto não foi registrado no banco (o n8n não respondeu): o projeto
+    foi criado; avise a equipe` (ou `o projeto foi aberto`).
 - **Fora do formato** (sem `itens`, a lista vazia, um item sem `codigo`, o que não é JSON): um aviso amarelo, `não deu
   para confirmar o cadastro de <nome> no banco das atrações (a resposta do n8n veio fora do formato): o projeto foi
   criado; confira na busca` (por card: `… nem a sua entrada no card <claquete> … confira na busca e no Trello`; a
   atração conhecida por card: `não deu para confirmar a sua entrada no card <claquete> … confira no Trello`; aberto ou
-  alterado: com `o projeto foi aberto` ou `o projeto foi salvo`).
+  alterado: com `o projeto foi aberto` ou `o projeto foi salvo`; só o registro: `não deu para confirmar o registro do
+  projeto … avise a equipe`).
+- **Só o registro, com `itens` vazio** (`{ "itens": [] }`): sucesso silencioso, sem aviso (a janela mostra só o
+  `projeto criado` / `projeto aberto` de sempre). Decidido assim porque o registro não tem o que contar ao designer:
+  um amarelo de "fora do formato" a cada projeto de atração conhecida seria ruído. Nos envios com cadastro ou card,
+  a lista vazia continua fora do formato (o designer precisa saber se a atração entrou ou se ele entrou no card).
 
 Exemplos:
 
@@ -274,6 +330,14 @@ Com `card`, o n8n:
 
 O padeiro não lê a tabela de designers nem mostra o nome do Trello: só manda o login e a sigla.
 
+## o registro do projeto
+
+Em todo envio (com ou sem cadastro, com ou sem card), o n8n grava uma linha do projeto: o `atracao.aep`, a atração
+(`atracao.nome`, `atracao.tipo`, `atracao.pasta`, `atracao.output` e, no filme, `atracao.filme.ano`), o designer
+(`designer.login` e `designer.sigla`), o `momento`, o `card.id` (se houver), a `versao` e a data (a hora em que o
+envio chegou: o padeiro não manda a data). No envio sem cadastro e sem card, responde `projetoRegistrado` (ou
+`{ "itens": [] }`, o sucesso silencioso).
+
 ## não duplicar
 
 Duas pessoas podem criar a mesma atração nova antes de o índice da busca ser atualizado. O n8n confere antes de
@@ -294,10 +358,11 @@ sozinha, em 10 minutos).
 - `extension/regras/configuracao.js`: a seção `webhookDoProjeto` (`WEBHOOK_DO_PROJETO`), o endereço e a validação.
 - `extension/host/project.jsx`: o host monta o envio (`padEnvioDoProjeto`), porque é ele que sabe o `.aep` salvo ou
   aberto e os dados gravados no projeto, e o devolve junto: `PADX.projectCreate` (criado), `PADX.projectOpenFile`
-  (aberto, só com o card e se o After abriu o `.aep`) e `PADX.projectSave` (alterado, só com o card). O card entra só
+  (aberto, com ou sem card, se o After abriu o `.aep`) e `PADX.projectSave` (alterado, só com o card). O card entra só
   no envio, não nos metadados. `PADX.projectWebhook` é o plano B pelo `curl`.
-- `extension/client/js/projetista.js`: `createArgs()` manda o tipo, se a atração é nova e o card escolhido (`{ id,
-  claquete }`, só para o envio); `openPicked()` (o JÁ NA PASTA) manda o card e a atração escolhida; `editorSave()`
+- `extension/client/js/projetista.js`: `createArgs()` manda o tipo, se a atração é nova, o card escolhido (`{ id,
+  claquete }`, só para o envio) e o filme (`filmeDoEnvio()`: `{ ano }`); `openPicked()` (o JÁ NA PASTA) manda o
+  card, o filme e a atração escolhida; `editorSave()`
   (o Alterar) manda o card escolhido na lista do editor (`edCardDoEnvio()`: só enquanto a atração do campo for a do
   card). `startEnvio()` / `webhookDoProjeto()` enviam (`postJson()`, o Node do painel) e `waitAvisos()` mostra os
   avisos (`showAvisos()`) antes de a janela fechar.
