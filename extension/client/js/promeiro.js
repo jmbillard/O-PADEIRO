@@ -19,6 +19,11 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
   - com a chave ligada, o índice da busca (o acessorista, O PROJETISTA e O CONFEITEIRO) vem do PROMeiro
     (jmbillard/TEXTAO#143): GET /api/padeiro/buscar → { v: 2, stamp, generated, teams, trello, atracoes, filmes },
     no formato do fluxo PROMO - BUSCAR do n8n, comprimido (js/search-index.js baixa). Com 503, o webhook ou a cópia.
+  - com a chave ligada, o webhook do projeto (criado, aberto pelo JÁ NA PASTA, alterado) vai ao PROMeiro, no lugar do
+    fluxo PROMO - PROJETO do n8n (jmbillard/TEXTAO#144): POST /api/padeiro/projeto { momento, atracao, card,
+    designer, versao } → 200 { itens: [{ codigo, texto }] }, o mesmo envio e a mesma resposta
+    (regras/webhook-do-projeto.js). Sem a chave, com ela pendente ou revogada, com 401 ou 403, com o PROMeiro fora do
+    ar ou com outra resposta: o n8n, como antes.
 
   - o aviso do Padeiro (jmbillard/TEXTAO#141): abrir ou criar o projeto pelo card ou pela Produção do NO TRELLO, ou
     por um filme, avisa o PROMeiro (faz o mesmo que o Peguei): POST /api/padeiro/aviso { aviso, abertoEm, producao |
@@ -264,6 +269,26 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		if (s.estado !== 'ligada' || !s.chave) return null;
 
 		return { url: s.url.replace(/\/+$/, '') + '/api/padeiro/buscar', headers: { Accept: 'application/json', 'X-Chave-Do-Padeiro': s.chave } };
+	}
+
+	// o webhook do projeto (jmbillard/TEXTAO#144): o envio (o corpo de regras/webhook-do-projeto.js) ao PROMeiro, só
+	// com a chave ligada. → { resposta } ({ itens: [...] }), { falhou: true } (401, 403, fora do ar ou outra resposta)
+	// ou null (sem a chave ligada). sem a resposta, vale o n8n
+	async function project(corpo) {
+		var s = await state();
+
+		if (s.estado !== 'ligada' || !s.chave || !corpo) return null;
+
+		try {
+			var res = await request(s.url, 'POST', '/api/padeiro/projeto', s.chave, corpo);
+
+			if (res.status === 200 && res.body && typeof res.body === 'object') return { resposta: res.body };
+
+			// a chave mudou de estado no meio do caminho (revogada, ou trocada por outro cadastro): lê de novo na próxima
+			if (res.status === 401 || res.status === 403) cache.at = 0;
+		} catch (err) { }
+
+		return { falhou: true };
 	}
 
 	// a chave recusada no meio do caminho (401, 403): o estado é lido de novo na próxima vez
@@ -627,6 +652,7 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		productions: productions,
 		films: films,
 		searchSource: searchSource,
+		project: project,
 		recheck: recheck,
 		notify: notify,
 		flush: flush,

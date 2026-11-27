@@ -88,8 +88,9 @@ entregues). A Produção de filme (`fil`) entra como os cards de filme do webhoo
 card (o `trello` do filme no webhook dos filmes). A lista é lida ao abrir O PROJETISTA e de novo a cada minuto, em
 segundo plano; `des` e `st` não vêm do PROMeiro (sem o **seu** e sem a etiqueta do status).
 
-- **O webhook do projeto** (o n8n, [docs/webhook-projeto.md](webhook-projeto.md)) continua a ir com ou sem a chave:
-  o registro do projeto, a atração nova e o designer no card são dele; o aviso do Padeiro é a parte do PROMeiro.
+- **O webhook do projeto** ([docs/webhook-projeto.md](webhook-projeto.md)): com a chave ligada, vai ao PROMeiro
+  (`POST /api/padeiro/projeto`), no lugar do n8n (jmbillard/TEXTAO#144); o registro do projeto, a atração nova e o
+  designer no card ficam com ele. O aviso do Padeiro (o Peguei) segue à parte, pela fila.
 
 - **Sem o endereço, no modo local, com a chave pendente ou com o PROMeiro fora do ar:** tudo como antes, pelo
   webhook do n8n. Nenhuma falha do PROMeiro aparece como erro.

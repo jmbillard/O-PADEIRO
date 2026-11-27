@@ -1109,12 +1109,15 @@ PADX.projectCreate = function (a) {
 // PASTA) ou 'alterado' (projectSave: o Alterar ligando o projeto a um card); a regra decide se envia (fora do
 // modo local e com a URL na configuração da equipe, aba TIPOS DE PROJETO). a: { atracao, quadro, tipo, atracaoNova,
 // card, filme } (a janela de projeto manda; filme: { ano }, só no filme). o card ({ id, claquete }) só vai no envio, nunca nos metadados do
-// projeto (ADR 0001). Um erro aqui não desfaz o que foi feito: null
+// projeto (ADR 0001). Com o endereço do PROMeiro na configuração (aba BUSCAR), o envio é montado mesmo sem a URL do
+// n8n: com a chave ligada, O PROJETISTA manda ao PROMeiro (jmbillard/TEXTAO#144). Um erro aqui não desfaz o que foi
+// feito: null
 function padEnvioDoProjeto(momento, a, pasta, output, aep) {
 	try {
 		return PAD_WEBHOOK_DO_PROJETO.envio({
 			momento: momento,
 			url: padLerSecao('webhookDoProjeto').url,
+			promeiro: padPromeiroUrl() != '',
 			modoLocal: padLocalMode(),
 			versao: PADX_VERSION,
 			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep, filme: a.filme || null },

@@ -26,6 +26,25 @@ O endereço fica na configuração da equipe: configuração > **TIPOS DE PROJET
 `WEBHOOK_DO_PROJETO` do arquivo da equipe). O padrão é o endereço acima, o workflow da equipe; **vazio, nada é enviado** (é assim que se desliga o envio). A validação é a mesma da URL do registro de uso (`http://` ou `https://`,
 sem espaços, aspas nem símbolos do terminal): uma URL inválida é recusada ao salvar (`#PAD_089`).
 
+### com a chave do Padeiro ligada: o PROMeiro
+
+Com a **chave do Padeiro ligada** ([docs/webhook-trello.md](webhook-trello.md#vindo-das-produções-do-promeiro)), o
+mesmo envio vai ao **PROMeiro**, no lugar do n8n:
+
+```
+POST <endereço do PROMeiro>/api/padeiro/projeto
+X-Chave-Do-Padeiro: <a chave deste computador>
+```
+
+O corpo é o mesmo (`{ momento, atracao, card, designer, versao }`) e a resposta também (`200 { itens: [...] }`): os
+avisos não mudam. O PROMeiro grava o que o workflow gravava (o registro do projeto, a atração nova, o card ligado a
+ela e o designer **da chave** no card). Sem a chave, com ela pendente ou revogada, com o PROMeiro recusando a chave
+(401, 403), fora do ar ou respondendo outra coisa, o envio vai ao n8n, como antes.
+
+Com o endereço do PROMeiro na configuração (aba **BUSCAR**), o envio é montado mesmo com o endereço do webhook vazio:
+com a chave ligada, ele vai ao PROMeiro (e, se o PROMeiro não responder, aparece o aviso amarelo); sem ela, nada é
+enviado (e nenhum aviso aparece).
+
 ## quando o padeiro envia
 
 - ao **criar** qualquer projeto pela janela de projeto (momento `criado`): o registro do projeto, sempre. E também:
@@ -44,8 +63,8 @@ sem espaços, aspas nem símbolos do terminal): uma URL inválida é recusada ao
 - **não** envia ao salvar pelo Alterar sem card, nem quando só se olha um card na lista (no projeto novo ou no
   Alterar), sem criar, abrir nem salvar;
 - **não** envia no **modo local**;
-- **não** envia com o endereço vazio (a chave `WEBHOOK_DO_PROJETO` gravada com `url: ""`). Sem a chave no arquivo da
-  equipe, vale o padrão.
+- **não** envia ao n8n com o endereço vazio (a chave `WEBHOOK_DO_PROJETO` gravada com `url: ""`). Sem a chave no
+  arquivo da equipe, vale o padrão. Com a chave do Padeiro ligada, envia ao PROMeiro mesmo assim (acima).
 
 **Criar, abrir e salvar nunca esperam nem falham pelo envio.** O projeto é criado (aberto, salvo) primeiro; o envio
 sai depois, em segundo plano, pelo Node do painel (`POST` com JSON, tempo máximo de 8 s). A janela mostra o aviso e
@@ -366,6 +385,8 @@ sozinha, em 10 minutos).
   (o Alterar) manda o card escolhido na lista do editor (`edCardDoEnvio()`: só enquanto a atração do campo for a do
   card). `startEnvio()` / `webhookDoProjeto()` enviam (`postJson()`, o Node do painel) e `waitAvisos()` mostra os
   avisos (`showAvisos()`) antes de a janela fechar.
+- `extension/client/js/promeiro.js`: `project()`, o envio ao PROMeiro com a chave ligada (`null`: vale o n8n);
+  `sendEnvio()`, n'O PROJETISTA, pergunta a ele primeiro.
 - `extension/client/js/search-index.js`: `markStale()`, a cópia marcada como velha.
 - `extension/client/productions.html` e `js/productions.js`: o campo na aba TIPOS DE PROJETO.
 - `extension/client/js/mock-host.js`: `projectWebhook`, o n8n de mentira do modo de teste (`window.PAD_MOCK_N8N`).

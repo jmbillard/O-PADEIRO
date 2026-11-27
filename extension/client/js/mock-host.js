@@ -420,14 +420,15 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	var MOCK_LOGIN = 'JMBILLARD';
 
 	// o envio ao webhook do projeto, como o padEnvioDoProjeto do host (regras/webhook-do-projeto.js): momento 'criado',
-	// 'aberto' ou 'alterado'; a regra decide se envia (fora do modo local, com a URL). a: { atracao, quadro, tipo,
-	// atracaoNova, card, filme }
+	// 'aberto' ou 'alterado'; a regra decide se envia (fora do modo local, com a URL ou o endereço do PROMeiro). a:
+	// { atracao, quadro, tipo, atracaoNova, card, filme }
 	function mockEnvio(momento, a, pasta, output, aep) {
 		var regra = window.PAD_WEBHOOK_DO_PROJETO;
 
 		return regra ? regra.envio({
 			momento: momento,
 			url: mockLer('webhookDoProjeto').url,
+			promeiro: !!mockPromeiroUrl(),
 			modoLocal: api.searchInfo().local,
 			versao: api.ping().version,
 			atracao: { nome: String(a.atracao || ''), tipo: String(a.tipo || ''), nova: a.atracaoNova === true, quadro: String(a.quadro || ''), pasta: pasta, output: output, aep: aep, filme: a.filme || null },

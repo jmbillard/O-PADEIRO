@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141, #142, #143)
+> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141, #142, #143, #144)
 ---------------------------------------------------------------
 
 Os painéis no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o
@@ -23,7 +23,10 @@ Nada sai para a rede. Confere:
   - os filmes recentes (#142): com a chave (mesmo pendente), vêm do PROMeiro, com o pôster no endereço público dele;
     sem a chave, ou com o PROMeiro fora do ar, do webhook;
   - o índice do buscar (#143): com a chave ligada, o acessorista acha as atrações do cadastro e as Produções do
-    PROMeiro; com a pendente, fora do ar ou sem o endereço, o índice do webhook (o do mock).
+    PROMeiro; com a pendente, fora do ar ou sem o endereço, o índice do webhook (o do mock);
+  - o webhook do projeto (#144): com a chave ligada, o projeto criado pelo card vai ao PROMeiro (a tabela projetos e
+    a designer no card), e não ao n8n, mesmo com o endereço do n8n vazio; com a pendente, ou com o PROMeiro fora do
+    ar, ao n8n (o de mentira).
 
   PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js
 
@@ -94,8 +97,9 @@ async function subirPromeiro() {
 	const { TEABLE_FALSO, teableFalso } = await importar('tests/fixtures/teable-falso.mjs');
 	const { criarCadastros } = await importar('servidor/cadastros.mjs');
 	const env = { CADASTRO_ADMINS: CHEFE, ...TEABLE_FALSO, TEABLE_PG_URL: 'postgres://falso', TEABLE_PG_ESQUEMA: 'bseFalso', TRELLO_KEY: 'chave-falsa', TRELLO_TOKEN: 'token-falso', TRELLO_LISTA_SP: 'entradaSP', TRELLO_SAIDA_SP: 'saidaSP', PROMEIRO_URL: PROMEIRO_PUBLICO, POSTER_PUBLICO_TOKEN: 'token-do-poster' };
-	const nomes = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', filmes: 'filmes_pg', atracoes: 'atracoes_pg', KEY_atracoes: 'key_atracoes_pg', mensagens: 'mensagens_pg' };
-	const teable = teableFalso(nomes, { registros: { ARTE_producao: PRODUCOES, exibicoes: EXIBICOES, designers: DESIGNERS, filmes: FILMES, atracoes: ATRACOES, KEY_atracoes: [], mensagens: [] } });
+	const nomes = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', filmes: 'filmes_pg', atracoes: 'atracoes_pg', KEY_atracoes: 'key_atracoes_pg', mensagens: 'mensagens_pg', projetos: 'projetos_pg' };
+	const registros = { ARTE_producao: PRODUCOES, exibicoes: EXIBICOES, designers: DESIGNERS, filmes: FILMES, atracoes: ATRACOES, KEY_atracoes: [], mensagens: [], projetos: [] };
+	const teable = teableFalso(nomes, { registros });
 	const semRede = async (url) => {
 		throw new Error('o teste não sai para a rede: ' + url);
 	};
@@ -137,6 +141,8 @@ async function subirPromeiro() {
 		// as Produções que o Padeiro vê, com a chave dele
 		producoes: async (chave) => (await (await fetch(url + '/api/padeiro/producoes', { headers: { 'x-chave-do-padeiro': chave } })).json()).trello,
 		padeiros: async () => (await chefe('/api/cadastros/padeiros')).padeiros,
+		// a tabela projetos do Teable de mentira (#144): o que o webhook do projeto gravou
+		projetos: () => registros.projetos.map((r) => r.fields),
 		async fora() {
 			await new Promise((ok) => servidor.close(ok));
 			servidor.closeAllConnections();
@@ -171,6 +177,38 @@ async function guardarAChave(context) {
 	});
 
 	return host;
+}
+
+// o n8n de mentira do webhook do projeto (#144): no navegador de teste, o envio ao n8n é o plano B do host
+// (mock-host.js, projectWebhook), que pergunta a window.PAD_MOCK_N8N. anota o que chegou e responde o registro
+async function n8nFalso(context) {
+	const veio = [];
+
+	await context.exposeFunction('padMockN8nVeio', (corpo) => {
+		veio.push(corpo);
+	});
+	await context.addInitScript(() => {
+		window.PAD_MOCK_N8N = async (url, corpo) => {
+			await window.padMockN8nVeio(corpo);
+
+			return { status: 200, texto: JSON.stringify({ itens: [{ codigo: 'projetoRegistrado', texto: 'projeto registrado pelo n8n' }] }) };
+		};
+	});
+
+	return veio;
+}
+
+// o endereço do webhook do projeto (configuração > TIPOS DE PROJETO; vazio: nada vai ao n8n)
+async function urlDoWebhookDoProjeto(context, url) {
+	const page = await pagina(context);
+
+	await page.goto(CLIENT + 'projetista.html');
+	await page.waitForTimeout(800);
+	await page.evaluate(async (u) => {
+		const prods = await window.PAD_MOCK_HOST.call('productions', {});
+
+		await window.PAD_MOCK_HOST.call('saveProductions', { productions: prods.productions, webhookDoProjeto: { url: u } });
+	}, url);
 }
 
 async function pagina(context) {
@@ -317,6 +355,7 @@ async function estadoNaConfiguracao(context) {
 	const context = await browser.newContext({ viewport: { width: 520, height: 900 } });
 	await prepareContext(context);
 	const host = await guardarAChave(context);
+	const n8n = await n8nFalso(context);
 	let ok = 0;
 	const passo = (texto) => {
 		ok++;
@@ -371,6 +410,14 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual((await acessorista(context, 'festival de inverno')).atracoes, ['Festival de Inverno']);
 		passo('o índice do buscar: com a chave pendente, vem do webhook');
 
+		// 2c. o webhook do projeto (#144): com a chave pendente, o projeto criado pelo card (o do webhook) vai ao n8n
+		await abrirPeloCard(context, 'domingao', 'DOMINGAO 25/11');
+		assert.equal(n8n.length, 1, 'pendente: o webhook do projeto vai ao n8n');
+		assert.equal(n8n[0].card.claquete, 'DOMINGAO 25/11');
+		assert.deepEqual(promeiro.projetos(), [], 'e nada ao PROMeiro');
+		assert.deepEqual(promeiro.trello.pedidos, []);
+		passo('o webhook do projeto: com a chave pendente, vai ao n8n');
+
 		// 3. ligada: o NO TRELLO vem das Produções do PROMeiro
 		await promeiro.chefe('/api/cadastros/padeiros/' + lista[0].id + '/ligar', { method: 'POST', body: JSON.stringify({ designer: 'recDesignerDora' }) });
 		claquete = await noTrello(context, 'domingao');
@@ -412,11 +459,32 @@ async function estadoNaConfiguracao(context) {
 
 		assert.match(await abrirPeloCard(context, 'domingao', 'DOMINGAO 26/11 SP'), /Criado|Aberto|Criar projeto|Abrir projeto/);
 		assert.deepEqual(host.fila, [], 'o aviso foi e saiu da fila');
-		assert.deepEqual(promeiro.trello.pedidos, [{ metodo: 'POST', caminho: '/cards/' + card(1) + '/idMembers', consulta: { value: 'membroDora' } }], 'a designer da chave entra no card do Trello');
+		// o aviso e o webhook do projeto (#144) põem a designer no card (o Trello de mentira aceita os dois)
+		const naDom = { metodo: 'POST', caminho: '/cards/' + card(1) + '/idMembers', consulta: { value: 'membroDora' } };
+		assert.deepEqual(promeiro.trello.pedidos, [naDom, naDom], 'a designer da chave entra no card do Trello');
 		let eventos = await promeiro.linhaDoTempo(dom.producao);
 		assert.deepEqual(eventos.map((e) => [e.tipo, e.antes, e.depois, e.origem]), [['etapa', 'entrada', 'produzindo', 'Padeiro'], ['designer-entrou', null, 'Dora Teste', 'Padeiro']]);
 		assert.ok(Date.parse(eventos[0].quando) >= antesDoAviso - 1000 && Date.parse(eventos[0].quando) <= Date.now(), 'com a hora da abertura');
 		passo('o aviso ao abrir pelo card: a Produção vai para Produzindo, com a designer no card do Trello e a origem "Padeiro"');
+
+		// 3a'. o webhook do projeto (#144): com a chave ligada, o projeto vai ao PROMeiro, no lugar do n8n
+		assert.equal(n8n.length, 1, 'ligada: nada vai ao n8n');
+		const projetos = promeiro.projetos();
+		assert.equal(projetos.length, 1, 'o PROMeiro registrou o projeto');
+		assert.equal(projetos[0].card_ID, card(1));
+		assert.match(projetos[0].momento, /^(criado|aberto)$/);
+		assert.equal(projetos[0].designer_login, 'jmbillard');
+		assert.match(projetos[0].aep, /\.aep$/);
+		passo('o webhook do projeto: com a chave ligada, vai ao PROMeiro (o registro na tabela projetos), e não ao n8n');
+
+		// sem o endereço do webhook do n8n (o fluxo desligado e o campo vazio), a chave ligada continua mandando ao PROMeiro
+		await urlDoWebhookDoProjeto(context, '');
+		await abrirPeloCard(context, 'domingao', 'DOMINGAO 26/11 SP');
+		assert.equal(promeiro.projetos().length, 2, 'sem o endereço do n8n: o PROMeiro registrou o projeto');
+		assert.equal(n8n.length, 1);
+		await urlDoWebhookDoProjeto(context, 'https://workflows.jmbillard.com/webhook/projeto');
+		promeiro.trello.pedidos.length = 2; // o designer de novo no card (o webhook do projeto): fora da conta de baixo
+		passo('o webhook do projeto: sem o endereço do n8n, a chave ligada manda ao PROMeiro');
 
 		// 3b. a fila sem rede: o PROMeiro some depois de a lista chegar; o aviso fica na fila e a barra manda depois
 		let semRede = null;
@@ -429,7 +497,10 @@ async function estadoNaConfiguracao(context) {
 		const guardado = { ...host.fila[0] };
 		assert.equal(guardado.producao, mais.producao);
 		assert.match(guardado.aviso, /^[\w.:-]{1,100}$/);
-		assert.equal(promeiro.trello.pedidos.length, 1, 'nada chegou ao Trello');
+		assert.equal(promeiro.trello.pedidos.length, 2, 'nada chegou ao Trello');
+		assert.equal(n8n.length, 2, 'o PROMeiro fora: o webhook do projeto vai ao n8n');
+		assert.equal(n8n[1].card.claquete, 'MAIS VOCE 28/11 SP');
+		assert.equal(promeiro.projetos().length, 2, 'e nada ao PROMeiro');
 		assert.deepEqual(await promeiro.linhaDoTempo(mais.producao), []);
 		await new Promise((ok) => setTimeout(ok, 1200)); // a hora da abertura fica para trás
 		assert.equal(await aviso(context), '', 'a barra abre sem aviso nenhum');
@@ -437,15 +508,15 @@ async function estadoNaConfiguracao(context) {
 		eventos = await promeiro.linhaDoTempo(mais.producao);
 		assert.deepEqual(eventos.map((e) => [e.tipo, e.depois, e.origem]), [['designer-entrou', 'Dora Teste', 'Padeiro']], 'a designer é somada (a Produção já estava em Produzindo)');
 		assert.equal(eventos[0].quando, guardado.abertoEm, 'com a hora certa da abertura, não a do envio');
-		assert.deepEqual(promeiro.trello.pedidos.slice(1), [{ metodo: 'POST', caminho: '/cards/' + card(2) + '/idMembers', consulta: { value: 'membroDora' } }]);
-		passo('a fila sem rede: o aviso ficou guardado e a barra mandou depois, com a hora da abertura');
+		assert.deepEqual(promeiro.trello.pedidos.slice(2), [{ metodo: 'POST', caminho: '/cards/' + card(2) + '/idMembers', consulta: { value: 'membroDora' } }]);
+		passo('a fila sem rede: o aviso ficou guardado e a barra mandou depois, com a hora da abertura (o webhook do projeto foi ao n8n)');
 
 		// 3c. o aviso repetido: a resposta se perdeu e o mesmo aviso vai de novo. não duplica evento nem membro
 		host.fila = [guardado];
 		await aviso(context);
 		assert.deepEqual(host.fila, [], 'o repetido também sai da fila');
 		assert.equal((await promeiro.linhaDoTempo(mais.producao)).length, 1, 'nenhum evento a mais');
-		assert.equal(promeiro.trello.pedidos.length, 2, 'nenhum pedido a mais ao Trello');
+		assert.equal(promeiro.trello.pedidos.length, 3, 'nenhum pedido a mais ao Trello');
 		passo('o aviso repetido: o mesmo aviso de novo não duplica evento nem membro no card');
 
 		// 4. revogada: o Padeiro pede outra chave, pendente de novo

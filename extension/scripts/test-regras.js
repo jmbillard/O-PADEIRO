@@ -1397,6 +1397,19 @@ REGRAS.push({
 			eq(api.envio(situacao({ url: '   ' })), null);
 		});
 
+		// jmbillard/TEXTAO#144: com a chave ligada, O PROJETISTA manda ao PROMeiro (o mesmo corpo), no lugar do n8n
+		test('com o endereço do PROMeiro: monta o envio mesmo sem a URL do n8n (url vazia); no modo local, nada', function () {
+			const e = api.envio(situacao({ url: '', promeiro: true }));
+
+			eq(e.url, '');
+			eq(e.corpo, api.envio(situacao()).corpo);
+			eq(api.envio(situacao({ url: '  ', promeiro: true })).url, '');
+			eq(api.envio(situacao({ promeiro: true })).url, URL_DO_PROJETO);
+			eq(api.envio(situacao({ url: '', promeiro: true, modoLocal: true })), null);
+			eq(api.envio(situacao({ url: '', promeiro: 'sim' })), null);
+			eq(api.envio(situacao({ url: '', promeiro: true, momento: 'alterado' })), null);
+		});
+
 		// #50: a atração escolhida por um card do Trello. o card só vai no envio (ADR 0001)
 		const CARD = { id: '6650a1b2c3d4e5f6a7b8c9d0', claquete: 'LA NA MINHA TERRA 25/11' };
 

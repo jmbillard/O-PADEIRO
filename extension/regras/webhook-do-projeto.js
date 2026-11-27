@@ -10,11 +10,17 @@ ligar o projeto a um card: o n8n registra o projeto (o .aep, a atração, o desi
 no banco das atrações (e não duplica a que já existir), liga o card à atração nova e põe o designer no card (achado na
 tabela de designers pelo login ou pela sigla). O formato do envio e da resposta, com exemplos, fica em docs/webhook-projeto.md.
 
+Com a chave do Padeiro ligada (jmbillard/TEXTAO#144), o mesmo envio vai ao PROMeiro (POST /api/padeiro/projeto, com a
+chave), no lugar do n8n, e a resposta tem o mesmo formato: quem escolhe é O PROJETISTA (js/promeiro.js), na hora de
+mandar. Por isso, com o endereço do PROMeiro na configuração, o envio é montado mesmo sem a URL do n8n.
+
   envio(situacao) → { url, corpo } ou null (nada a enviar)
     situacao: { momento, url, modoLocal, versao, atracao, card, designer }
       momento  → 'criado' (o projeto criado), 'aberto' (o .aep aberto pelo JÁ NA PASTA) ou 'alterado' (o Alterar
                  salvou o projeto). outro (o clique num card, sem ação): nada é enviado
-      url      → o webhook do projeto (configuração da equipe, aba TIPOS DE PROJETO); vazia: nada é enviado
+      url      → o webhook do projeto (configuração da equipe, aba TIPOS DE PROJETO); vazia: nada é enviado ao n8n
+      promeiro → true: o endereço do PROMeiro está na configuração (aba BUSCAR). com a URL vazia, o envio é montado
+                 assim mesmo (url: ''), para ir ao PROMeiro com a chave ligada; sem a URL e sem o PROMeiro, nada
       modoLocal→ true: nada é enviado
       versao   → a versão do padeiro
       atracao  → { nome, tipo, nova, quadro, pasta, output, aep, filme }: pasta é a pasta do projeto e aep o caminho do
@@ -67,7 +73,7 @@ n'O PROJETISTA) e o teste em Node por require: node extension/scripts/test-regra
 		var card = cardDo(s.card);
 		var nova = a.nova === true;
 
-		if (!url || s.modoLocal === true) return null;
+		if ((!url && s.promeiro !== true) || s.modoLocal === true) return null;
 		if (s.momento != 'criado' && s.momento != 'aberto' && s.momento != 'alterado') return null;
 		// abrir e alterar nunca cadastram a atração; o Alterar sem card não tem o que enviar (criar e abrir: o registro)
 		if (s.momento != 'criado') nova = false;

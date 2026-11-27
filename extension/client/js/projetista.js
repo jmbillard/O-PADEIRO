@@ -2525,7 +2525,8 @@ projetos com o nome certo).
 
 	// o aviso vai para a fila deste computador e de lá ao PROMeiro (js/promeiro.js): sem rede, fica para depois. o
 	// filme acha a Produção dele na lista do PROMeiro (sem ela, nada). nunca dá erro na tela nem segura a janela. sem
-	// a chave ligada, nada sai (o webhook do projeto, do n8n, segue como sempre: startEnvio)
+	// a chave ligada, nada sai. o webhook do projeto (startEnvio) é outra coisa: com a chave ligada, também vai ao
+	// PROMeiro, no lugar do n8n (jmbillard/TEXTAO#144)
 	async function avisar(target) {
 		state.avisoPedido = null;
 		if (!target || !window.PAD_PROMEIRO) return;
@@ -2858,7 +2859,10 @@ projetos com o nome certo).
 		return c && c.card ? { id: String(c.card), claquete: String(c.claq || '') } : null;
 	}
 
-	/* ---------- o webhook do projeto: o registro, a atração nova e o card no n8n (docs/webhook-projeto.md) ---------- */
+	/* ---------- o webhook do projeto: o registro, a atração nova e o card no n8n (docs/webhook-projeto.md) ----------
+	   com a chave do Padeiro ligada, o mesmo envio vai ao PROMeiro (POST /api/padeiro/projeto, js/promeiro.js), no
+	   lugar do n8n, com a mesma resposta (jmbillard/TEXTAO#144); sem ela, ou com o PROMeiro recusando a chave ou fora
+	   do ar, o n8n, como antes */
 
 	var WEBHOOK = window.PAD_WEBHOOK_DO_PROJETO; // o envio e os avisos (regras/webhook-do-projeto.js)
 	var WEBHOOK_TIMEOUT = 8000; // ms: o n8n que não responde nisso vira o aviso amarelo
@@ -2889,9 +2893,28 @@ projetos com o nome certo).
 		});
 	}
 
-	// envia em segundo plano: o Node do painel primeiro; sem ele, o curl do host (o plano B, ADR 0003) → a resposta
-	// (o texto) ou null (sem resposta)
+	// o envio sem para onde ir: sem a chave ligada e sem a URL do n8n (nenhum aviso)
+	var NADA_ENVIADO = {};
+
+	// envia em segundo plano: com a chave ligada, ao PROMeiro (#144); senão (ou se ele não der), ao n8n, pelo Node do
+	// painel primeiro e, sem ele, pelo curl do host (o plano B, ADR 0003) → a resposta (o objeto ou o texto), null
+	// (sem resposta) ou NADA_ENVIADO
 	async function sendEnvio(envio) {
+		var doPromeiro = null;
+
+		if (window.PAD_PROMEIRO) {
+			try {
+				doPromeiro = await PAD_PROMEIRO.project(envio.corpo);
+			} catch (err) {
+				doPromeiro = { falhou: true };
+			}
+
+			if (doPromeiro && doPromeiro.resposta) return doPromeiro.resposta;
+		}
+
+		// sem a URL do n8n: o PROMeiro que não respondeu vira o aviso amarelo; sem a chave ligada, nada foi enviado
+		if (!envio.url) return doPromeiro ? null : NADA_ENVIADO;
+
 		try {
 			if (ATR.nodeFs && ATR.nodeFs()) return await postJson(envio.url, envio.corpo);
 
@@ -2906,7 +2929,11 @@ projetos com o nome certo).
 	// o envio e a resposta virando os avisos → { avisos, copiaVelha }. a atração entrou no banco: a cópia do índice fica
 	// velha (a próxima busca baixa o índice de novo e já a acha). nunca rejeita
 	async function webhookDoProjeto(envio) {
-		var lido = WEBHOOK.avisos(await sendEnvio(envio), envio);
+		var resposta = await sendEnvio(envio);
+
+		if (resposta === NADA_ENVIADO) return { avisos: [], copiaVelha: false };
+
+		var lido = WEBHOOK.avisos(resposta, envio);
 		var fs = ATR.nodeFs ? ATR.nodeFs() : null;
 
 		if (lido.copiaVelha && fs) {

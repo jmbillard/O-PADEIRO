@@ -76,15 +76,33 @@ const ATRACOES = [
 	registro('recAtrShow', { atracao: 'Show da Noite', categoria: 'Variedades', projeto_win: 'P:\\SHOW\\PROJETOS', output_win: '' }),
 	registro('recAtrFesta', { atracao: 'Festa na Praca', categoria: 'Shows', projeto_win: 'cole_aqui_o_caminho', output_win: 'P:\\FESTA\\OUTPUT' })
 ];
-const NOMES = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', atracoes: 'atracoes_pg', filmes: 'filmes_pg' };
+const NOMES = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', atracoes: 'atracoes_pg', filmes: 'filmes_pg', projetos: 'projetos_pg' };
 
-// o Trello de mentira: anota cada pedido e responde ok (a janela não pode pedir nada a ele)
+// o Trello de mentira: anota cada pedido e responde ok (a janela não pode pedir nada a ele). Como o de verdade, recusa
+// pôr no card quem já está nele (400): o webhook do projeto (jmbillard/TEXTAO#144), depois do pegar, tenta pôr a
+// designer de novo, e a recusa não é uma escrita. Os designers das Produções de cima já estão nos cards
 function trelloFalso() {
 	const pedidos = [];
+	const membros = { [card(3)]: new Set(['membroDora']), [card(4)]: new Set(['membroRui']) };
 	const buscar = async (endereco, init = {}) => {
 		const u = new URL(endereco);
+		const metodo = init.method || 'GET';
+		const pedido = { metodo, caminho: u.pathname, lista: u.searchParams.get('idList') || u.searchParams.get('value') || '' };
+		const poe = /^\/1\/cards\/([^/]+)\/idMembers$/.exec(u.pathname);
+		const tira = /^\/1\/cards\/([^/]+)\/idMembers\/([^/]+)$/.exec(u.pathname);
 
-		pedidos.push({ metodo: init.method || 'GET', caminho: u.pathname, lista: u.searchParams.get('idList') || u.searchParams.get('value') || '' });
+		pedidos.push(pedido);
+		if (metodo === 'POST' && poe) {
+			const no = (membros[poe[1]] = membros[poe[1]] || new Set());
+
+			if (no.has(pedido.lista)) {
+				pedido.recusado = true;
+
+				return new Response('member is already on the card', { status: 400 });
+			}
+			no.add(pedido.lista);
+		}
+		if (metodo === 'DELETE' && tira && membros[tira[1]]) membros[tira[1]].delete(tira[2]);
 
 		return Response.json({});
 	};
@@ -108,7 +126,7 @@ async function subirPromeiro() {
 	const { criarCadastros } = await importar('servidor/cadastros.mjs');
 	const { TEABLE_FALSO, teableFalso } = await importar('tests/fixtures/teable-falso.mjs');
 	const env = { CADASTRO_ADMINS: CHEFE, ...TEABLE_FALSO, TEABLE_PG_URL: 'postgres://falso', TEABLE_PG_ESQUEMA: 'bseFalso', TRELLO_KEY: 'chave-falsa', TRELLO_TOKEN: 'token-falso', TRELLO_LISTA_SP: 'entradaSP', TRELLO_SAIDA_SP: 'saidaSP' };
-	const teable = teableFalso(NOMES, { registros: { ARTE_producao: PRODUCOES, exibicoes: [], designers: DESIGNERS, atracoes: ATRACOES, filmes: [] } });
+	const teable = teableFalso(NOMES, { registros: { ARTE_producao: PRODUCOES, exibicoes: [], designers: DESIGNERS, atracoes: ATRACOES, filmes: [], projetos: [] } });
 	const semRede = async (url) => {
 		throw new Error('o teste não sai para a rede: ' + url);
 	};
@@ -167,7 +185,7 @@ async function subirPromeiro() {
 		// a Produção como a janela lê (pela chave da designer)
 		producao: async (chave, id) => (await (await fetch(url + '/api/padeiro/producoes/' + encodeURIComponent(id), { headers: { 'x-chave-do-padeiro': chave } })).json()).producao,
 		// o que a janela escreveu no Trello de mentira
-		escritas: () => trello.pedidos.filter((p) => p.metodo !== 'GET').map((p) => p.metodo + ' ' + p.caminho.replace(/^\/1/, '') + (p.lista ? ' ' + p.lista : '')),
+		escritas: () => trello.pedidos.filter((p) => p.metodo !== 'GET' && !p.recusado).map((p) => p.metodo + ' ' + p.caminho.replace(/^\/1/, '') + (p.lista ? ' ' + p.lista : '')),
 		// uma ação pela rota do Padeiro, fora da janela (outro computador da designer, por exemplo)
 		acao: async (chave, rota, corpo) => {
 			const r = await fetch(url + '/api/padeiro/' + rota, { method: 'POST', headers: { 'content-type': 'application/json', 'x-chave-do-padeiro': chave }, body: JSON.stringify({ acao: 'e2e-' + rota + '-' + Date.now(), feitaEm: new Date().toISOString(), ...corpo }) });
