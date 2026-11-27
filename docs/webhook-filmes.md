@@ -81,10 +81,20 @@ O `.aep` do filme leva o título com o ano (`NAO NAO OLHE (2022) CHAMADA.aep`), 
 se ele estiver preenchido. No editor (o botão **Alterar**), o ano fica no nome ao salvar, enquanto a atração for o
 filme.
 
+## vindo do PROMeiro
+
+Com a **chave do Padeiro** (pendente ou ligada; veja [docs/webhook-trello.md](webhook-trello.md#vindo-das-produções-do-promeiro)),
+os filmes recentes vêm do PROMeiro (`GET /api/padeiro/filmes`, com a chave no cabeçalho `X-Chave-Do-Padeiro`), no
+mesmo formato de cima (`{ atualizado_em, filmes: [...] }`), no lugar do workflow do n8n. O pôster vem no endereço
+público do PROMeiro, que não expira. Sem a chave, com ela revogada, sem o endereço do PROMeiro, no modo local ou com
+o PROMeiro fora do ar (ou respondendo outra coisa que não a lista), tudo como antes, pelo workflow do n8n.
+
 ## onde está no código
 
 - `extension/host/lib/acessorista.js`: `PS_FILMS_URL`, o endereço.
-- `extension/client/js/attractions.js`: `recentFilms()` baixa e `parseFilms()` lê a resposta.
+- `extension/client/js/attractions.js`: `recentFilms()` baixa (do PROMeiro primeiro, com a chave) e `parseFilms()` lê
+  a resposta.
+- `extension/client/js/promeiro.js`: `films()`, os filmes do PROMeiro (`null` sem a chave ou com ele fora do ar).
 - `extension/client/js/projetista.js`: `loadFilms()` confere as pastas, `pickGroups()` monta o grupo FILMES (e o card de
   filme, pelo `cardFilm()`) e `filmRow()` desenha cada linha.
 - `extension/host/project.jsx`: `PADX.projectFilmsParents` converte as pastas das letras; `PADX.projectFilmsDone`

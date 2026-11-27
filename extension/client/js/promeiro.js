@@ -13,6 +13,9 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
     PROMeiro não conhece mais (401) ou revogada pede outra, que volta a ficar pendente;
   - com a chave ligada, o grupo NO TRELLO d'O PROJETISTA lê as Produções em Entrada e Produzindo:
     GET /api/padeiro/producoes → { trello: [...] }, no mesmo formato do índice do buscar (docs/webhook-trello.md).
+  - com a chave (pendente ou ligada), os filmes recentes d'O PROJETISTA vêm do PROMeiro (jmbillard/TEXTAO#142):
+    GET /api/padeiro/filmes → { atualizado_em, filmes: [...] }, no mesmo formato do webhook filmes-recentes do n8n,
+    com o pôster no endereço público do PROMeiro. Sem a chave, revogada ou com o PROMeiro fora do ar, o webhook.
 
   - o aviso do Padeiro (jmbillard/TEXTAO#141): abrir ou criar o projeto pelo card ou pela Produção do NO TRELLO, ou
     por um filme, avisa o PROMeiro (faz o mesmo que o Peguei): POST /api/padeiro/aviso { aviso, abertoEm, producao |
@@ -220,6 +223,27 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 			if (res.status === 200 && res.body && res.body.trello instanceof Array) return res.body.trello;
 
 			// a chave mudou de estado no meio do caminho (revogada, ou um cadastro novo pendente): lê de novo na próxima
+			if (res.status === 401 || res.status === 403) cache.at = 0;
+		} catch (err) { }
+
+		return null;
+	}
+
+	// os filmes recentes d'O PROJETISTA (jmbillard/TEXTAO#142), no mesmo formato do webhook filmes-recentes do n8n
+	// ({ atualizado_em, filmes: [{ titulo, ano, exibicao, sessao, poster, … }] }), com o pôster servido pelo PROMeiro.
+	// a chave pendente também lê (o webhook dava a lista sem chave). → o corpo, ou null (sem a chave, revogada ou com o
+	// PROMeiro fora do ar: vale o webhook)
+	async function films() {
+		var s = await state();
+
+		if ((s.estado !== 'ligada' && s.estado !== 'pendente') || !s.chave) return null;
+
+		try {
+			var res = await request(s.url, 'GET', '/api/padeiro/filmes', s.chave);
+
+			if (res.status === 200 && res.body && res.body.filmes instanceof Array) return res.body;
+
+			// a chave mudou de estado no meio do caminho (revogada, ou trocada por outro cadastro): lê de novo na próxima
 			if (res.status === 401 || res.status === 403) cache.at = 0;
 		} catch (err) { }
 
@@ -580,6 +604,7 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 	window.PAD_PROMEIRO = {
 		state: state,
 		productions: productions,
+		films: films,
 		notify: notify,
 		flush: flush,
 		describe: describe,

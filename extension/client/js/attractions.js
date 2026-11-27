@@ -286,9 +286,10 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 	}
 
 	/* ---------------------------------------------------------------
-	   os filmes recentes: os criados na base nos últimos dias (o webhook dos filmes, searchInfo.films). O PROJETISTA
-	   mostra com o campo vazio, a produzir primeiro. baixados uma vez por janela aberta, pelo Node do painel (sem
-	   travar o After); sem o Node (navegador de teste), o host responde.
+	   os filmes recentes: os criados na base nos últimos dias. com a chave do Padeiro, do PROMeiro (js/promeiro.js,
+	   jmbillard/TEXTAO#142, no mesmo formato); sem ela, do webhook dos filmes (searchInfo.films). O PROJETISTA mostra
+	   com o campo vazio, a produzir primeiro. baixados uma vez por janela aberta, pelo Node do painel (sem travar o
+	   After); sem o Node (navegador de teste), o host responde.
 	   → [{ name, year, exib, sessao, poster }]
 	   --------------------------------------------------------------- */
 
@@ -429,11 +430,18 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		films.loading = (async function () {
 			if (!source.info) source.info = await call('searchInfo');
 
+			// com a chave do Padeiro, os do PROMeiro (jmbillard/TEXTAO#142); sem ela, ou com o PROMeiro fora do ar, o webhook
 			var data = null;
 
-			if (nodeFs() && source.info.films) data = await fetchJson(source.info.films);
+			if (window.PAD_PROMEIRO) {
+				data = await PAD_PROMEIRO.films().catch(function () {
+					return null;
+				});
+			}
+
+			if (!data && nodeFs() && source.info.films) data = await fetchJson(source.info.films);
 			// sem o Node ou sem o endereço: só o modo de teste tem filmes (o host não tem projectFilmsRecent)
-			else if (window.PAD_MOCK_HOST) data = (await window.PAD_MOCK_HOST.call('projectFilmsRecent', {})).data;
+			else if (!data && window.PAD_MOCK_HOST) data = (await window.PAD_MOCK_HOST.call('projectFilmsRecent', {})).data;
 
 			films.list = parseFilms(data);
 			films.at = Date.now();

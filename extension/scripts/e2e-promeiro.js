@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141)
+> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141, #142)
 ---------------------------------------------------------------
 
 Os painéis no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o
@@ -19,7 +19,9 @@ Nada sai para a rede. Confere:
     depois, manda de novo, com a hora certa da abertura;
   - o aviso repetido (a resposta perdida: o mesmo aviso mandado de novo) não duplica evento nem membro no card;
   - revogada: o Padeiro pede outra chave sozinho, que volta a ficar pendente (e o NO TRELLO volta ao webhook);
-  - o PROMeiro fora do ar: o NO TRELLO volta ao webhook, sem erro na tela.
+  - o PROMeiro fora do ar: o NO TRELLO volta ao webhook, sem erro na tela;
+  - os filmes recentes (#142): com a chave (mesmo pendente), vêm do PROMeiro, com o pôster no endereço público dele;
+    sem a chave, ou com o PROMeiro fora do ar, do webhook.
 
   PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js
 
@@ -66,6 +68,18 @@ function trelloFalso() {
 
 	return { pedidos, buscar };
 }
+// os filmes recentes do PROMeiro de teste (#142): as exibições perto de hoje e os filmes delas (o pôster no Teable)
+const diaDaqui = (n) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date(Date.now() + n * DIA));
+const EXIBICOES = [
+	{ id: 'recExTeste1', fields: { filme: { id: 'recFilmeTeste', title: 'Filme de Teste' }, data_de_exibicao: diaDaqui(2) + 'T03:00:00.000Z', sessao: { id: 'recSessao', title: 'Tela Quente' }, inedito: true, link: '', labels: null } },
+	{ id: 'recExTeste2', fields: { filme: { id: 'recFilmeOutro', title: 'Outro Filme' }, data_de_exibicao: diaDaqui(5) + 'T03:00:00.000Z', sessao: { id: 'recSessao2', title: 'Corujão' }, inedito: false, link: '', labels: null } }
+];
+const FILMES = [
+	{ id: 'recFilmeTeste', fields: { titulo: 'Filme de Teste', ano_de_producao: 2021, nome_da_pasta: 'FILME DE TESTE', projeto_win: 'P:\\FILMES\\FILME DE TESTE', projeto_mac: '/Volumes/P/FILMES/FILME DE TESTE', output_win: '', output_mac: '', poster: [{ name: 'poster.jpg' }] } },
+	{ id: 'recFilmeOutro', fields: { titulo: 'Outro Filme', ano_de_producao: 2019, nome_da_pasta: 'OUTRO FILME', projeto_win: '', projeto_mac: '', output_win: '', output_mac: '', poster: null } }
+];
+// o endereço público do PROMeiro (o do pôster, PROMEIRO_URL): o teste leva ao PROMeiro de teste
+const PROMEIRO_PUBLICO = 'http://promeiro.teste';
 const DESIGNERS = [{ id: 'recDesignerDora', fields: { designer: 'Dora Teste', email: 'dora@exemplo.com', designer_ID: 'membroDora', status: 'ativo' } }];
 
 async function subirPromeiro() {
@@ -74,8 +88,8 @@ async function subirPromeiro() {
 	const { abrirBanco, criarApp } = await importar('servidor/app.mjs');
 	const { criarTrello } = await importar('servidor/trello.mjs');
 	const { TEABLE_FALSO, teableFalso } = await importar('tests/fixtures/teable-falso.mjs');
-	const env = { CADASTRO_ADMINS: CHEFE, ...TEABLE_FALSO, TEABLE_PG_URL: 'postgres://falso', TEABLE_PG_ESQUEMA: 'bseFalso', TRELLO_KEY: 'chave-falsa', TRELLO_TOKEN: 'token-falso', TRELLO_LISTA_SP: 'entradaSP', TRELLO_SAIDA_SP: 'saidaSP' };
-	const teable = teableFalso({ ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg' }, { registros: { ARTE_producao: PRODUCOES, exibicoes: [], designers: DESIGNERS } });
+	const env = { CADASTRO_ADMINS: CHEFE, ...TEABLE_FALSO, TEABLE_PG_URL: 'postgres://falso', TEABLE_PG_ESQUEMA: 'bseFalso', TRELLO_KEY: 'chave-falsa', TRELLO_TOKEN: 'token-falso', TRELLO_LISTA_SP: 'entradaSP', TRELLO_SAIDA_SP: 'saidaSP', PROMEIRO_URL: PROMEIRO_PUBLICO, POSTER_PUBLICO_TOKEN: 'token-do-poster' };
+	const teable = teableFalso({ ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', filmes: 'filmes_pg' }, { registros: { ARTE_producao: PRODUCOES, exibicoes: EXIBICOES, designers: DESIGNERS, filmes: FILMES } });
 	const semRede = async (url) => {
 		throw new Error('o teste não sai para a rede: ' + url);
 	};
@@ -84,6 +98,9 @@ async function subirPromeiro() {
 	const app = criarApp({ db, env, buscarNoTeable: teable, abrirPg: teable.abrirPg, buscarNoGitHub: semRede, trello: (e, deps) => criarTrello(e, { ...deps, buscar: trello.buscar }) });
 	await app.releituraPronta;
 	await app.pessoasProntas;
+	// a cópia do pôster do Filme de Teste guardada pelo PROMeiro (#142): um PNG de 1 pixel
+	const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+	db.prepare("INSERT INTO anexos (id, tipo, chave, nome, mime, dados, origem, em, conferido_em) VALUES ('poster-teste', 'poster', 'recFilmeTeste', 'recFilmeTeste.png', 'image/png', ?, 'previa', ?, ?)").run(png, new Date().toISOString(), new Date().toISOString());
 
 	// o painel de teste abre do disco (file://): o PROMeiro de teste responde ao navegador (no After, quem pede é o Node
 	// do painel, sem essa conta). só aqui, em volta do servidor
@@ -183,6 +200,31 @@ async function noTrello(context, typed) {
 	return { rows };
 }
 
+// os filmes recentes d'O PROJETISTA (#142), que entram na busca digitando → [{ titulo, poster }] (o src da <img>, ou '')
+async function filmesRecentes(context, typed) {
+	const page = await pagina(context);
+
+	await page.goto(CLIENT + 'projetista.html');
+	await page.waitForTimeout(1200);
+	await page.click('#claq');
+	await page.waitForTimeout(1500);
+	await page.fill('#claq', typed);
+	await page.waitForTimeout(2200);
+	// CAPTURAS=<pasta>: a claquete de cada passo, para conferir de olho
+	if (process.env.CAPTURAS) await page.screenshot({ path: path.join(process.env.CAPTURAS, 'filmes-' + (++filmesRecentes.vez) + '-' + typed.replace(/\W+/g, '-') + '.png') });
+
+	const rows = await page.locator('.film-row').evaluateAll((els) => els.map((el) => ({
+		titulo: el.querySelector('.combo-title').childNodes[0].textContent.trim(),
+		poster: el.querySelector('.film-poster img') ? el.querySelector('.film-poster img').getAttribute('src') : ''
+	})));
+
+	assert.deepEqual(page.errors, [], 'a claquete abre sem erro');
+
+	return rows;
+}
+
+filmesRecentes.vez = 0;
+
 async function aviso(context) {
 	const page = await pagina(context);
 
@@ -247,6 +289,15 @@ async function estadoNaConfiguracao(context) {
 	};
 
 	try {
+		// o endereço público do PROMeiro (o do pôster, PROMEIRO_URL) é o PROMeiro de teste
+		await context.route(PROMEIRO_PUBLICO + '/**', async (r) => {
+			const u = new URL(r.request().url());
+			const resposta = await fetch(promeiro.url + u.pathname + u.search).catch(() => null);
+
+			if (!resposta) return r.abort('connectionrefused');
+			await r.fulfill({ status: resposta.status, contentType: resposta.headers.get('content-type') || undefined, body: Buffer.from(await resposta.arrayBuffer()) });
+		});
+
 		// o endereço do PROMeiro de teste na configuração > buscar (o mock guarda no navegador)
 		await context.addInitScript((url) => {
 			if (!localStorage.getItem('pad.mock.promeiroUrl')) localStorage.setItem('pad.mock.promeiroUrl', url);
@@ -272,6 +323,13 @@ async function estadoNaConfiguracao(context) {
 		let claquete = await noTrello(context, 'domingao');
 		assert.deepEqual(claquete.rows, ['DOMINGAO 25/11']);
 		passo('pendente: a configuração diz que falta aprovar, e o NO TRELLO vem do webhook (DOMINGAO 25/11)');
+
+		// 2a. os filmes recentes (#142): com a chave, mesmo pendente, vêm do PROMeiro, com o pôster servido por ele
+		const filmes = await filmesRecentes(context, 'filme de');
+		assert.deepEqual(filmes, [{ titulo: 'FILME DE TESTE', poster: PROMEIRO_PUBLICO + '/api/publico/poster/recFilmeTeste?t=token-do-poster' }], 'o filme do PROMeiro, com o pôster dele');
+		assert.deepEqual(await filmesRecentes(context, 'outro filme'), [{ titulo: 'OUTRO FILME', poster: '' }], 'o sem pôster');
+		assert.deepEqual(await filmesRecentes(context, 'sonho'), [], 'e não os do webhook');
+		passo('os filmes recentes: com a chave (pendente), vêm do PROMeiro, com o pôster no endereço público do PROMeiro');
 
 		// 3. ligada: o NO TRELLO vem das Produções do PROMeiro
 		await promeiro.chefe('/api/cadastros/padeiros/' + lista[0].id + '/ligar', { method: 'POST', body: JSON.stringify({ designer: 'recDesignerDora' }) });
@@ -348,6 +406,9 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual(claquete.rows, ['DOMINGAO 25/11'], 'fora do ar: o card do webhook');
 		assert.match(await estadoNaConfiguracao(context), /o PROMeiro não respondeu/);
 		passo('fora do ar: o NO TRELLO volta ao webhook, e a configuração diz que o PROMeiro não respondeu');
+		assert.deepEqual((await filmesRecentes(context, 'sonho')).map((f) => f.titulo), ['UM SONHO DE LIBERDADE'], 'fora do ar: os filmes do webhook');
+		assert.deepEqual(await filmesRecentes(context, 'filme de'), []);
+		passo('fora do ar: os filmes recentes voltam ao webhook');
 
 		// 6. sem o endereço do PROMeiro: nada muda (nem pede chave)
 		const limpo = await browser.newContext({ viewport: { width: 520, height: 900 } });
@@ -359,6 +420,7 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual(claquete.rows, ['DOMINGAO 25/11']);
 		assert.equal(await aviso(limpo), '');
 		assert.match(await estadoNaConfiguracao(limpo), /sem o endereço do PROMeiro/);
+		assert.deepEqual((await filmesRecentes(limpo, 'sonho')).map((f) => f.titulo), ['UM SONHO DE LIBERDADE'], 'sem chave: os filmes do webhook');
 		await limpo.close();
 		passo('sem o endereço do PROMeiro: tudo como antes (o webhook), sem aviso');
 
