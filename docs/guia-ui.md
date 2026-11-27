@@ -10,6 +10,7 @@ as regras para manter todas as janelas do padeiro com a mesma cara e o mesmo com
 
 - **coerência acima de tudo** → o que já existe é o padrão. antes de criar um componente, procure um igual (cartão de opção, campo de caminho, lixeira, pílula, menu radial) e use o mesmo.
 - **simples** → uma ação por botão, o mínimo de texto, nada de opção que ninguém vai usar.
+- **nada de "unha"** → nenhum item, cartão, linha ou bloco leva faixa colorida na borda esquerda (`border-left` grosso, `box-shadow: inset Npx 0 0`, `border-inline-start`); o estado vai numa bolinha ou etiqueta, no fundo levemente tingido ou no texto.
 - **o que é da equipe e o que é deste computador** ficam separados (globo = equipe, salvo na rede; bonequinho = neste computador).
 
 ## 📍 cores: nada de cor fixa
