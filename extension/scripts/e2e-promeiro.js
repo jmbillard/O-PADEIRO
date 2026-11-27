@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141, #142)
+> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141, #142, #143)
 ---------------------------------------------------------------
 
 Os painéis no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o
@@ -21,7 +21,9 @@ Nada sai para a rede. Confere:
   - revogada: o Padeiro pede outra chave sozinho, que volta a ficar pendente (e o NO TRELLO volta ao webhook);
   - o PROMeiro fora do ar: o NO TRELLO volta ao webhook, sem erro na tela;
   - os filmes recentes (#142): com a chave (mesmo pendente), vêm do PROMeiro, com o pôster no endereço público dele;
-    sem a chave, ou com o PROMeiro fora do ar, do webhook.
+    sem a chave, ou com o PROMeiro fora do ar, do webhook;
+  - o índice do buscar (#143): com a chave ligada, o acessorista acha as atrações do cadastro e as Produções do
+    PROMeiro; com a pendente, fora do ar ou sem o endereço, o índice do webhook (o do mock).
 
   PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js
 
@@ -80,6 +82,8 @@ const FILMES = [
 ];
 // o endereço público do PROMeiro (o do pôster, PROMEIRO_URL): o teste leva ao PROMeiro de teste
 const PROMEIRO_PUBLICO = 'http://promeiro.teste';
+// o cadastro das atrações do PROMeiro de teste (#143): uma atração que o índice do webhook (o do mock) não tem
+const ATRACOES = [{ id: 'recAtrZabumba', fields: { atracao: 'Zabumba Elétrica', categoria: 'Shows', projeto_win: '//servidor-falso/ARTE/SHOWS/ZABUMBA ELETRICA/01 PROJETOS', output_win: '//servidor-falso/SAIDA/SHOWS/ZABUMBA ELETRICA' } }];
 const DESIGNERS = [{ id: 'recDesignerDora', fields: { designer: 'Dora Teste', email: 'dora@exemplo.com', designer_ID: 'membroDora', status: 'ativo' } }];
 
 async function subirPromeiro() {
@@ -88,14 +92,16 @@ async function subirPromeiro() {
 	const { abrirBanco, criarApp } = await importar('servidor/app.mjs');
 	const { criarTrello } = await importar('servidor/trello.mjs');
 	const { TEABLE_FALSO, teableFalso } = await importar('tests/fixtures/teable-falso.mjs');
+	const { criarCadastros } = await importar('servidor/cadastros.mjs');
 	const env = { CADASTRO_ADMINS: CHEFE, ...TEABLE_FALSO, TEABLE_PG_URL: 'postgres://falso', TEABLE_PG_ESQUEMA: 'bseFalso', TRELLO_KEY: 'chave-falsa', TRELLO_TOKEN: 'token-falso', TRELLO_LISTA_SP: 'entradaSP', TRELLO_SAIDA_SP: 'saidaSP', PROMEIRO_URL: PROMEIRO_PUBLICO, POSTER_PUBLICO_TOKEN: 'token-do-poster' };
-	const teable = teableFalso({ ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', filmes: 'filmes_pg' }, { registros: { ARTE_producao: PRODUCOES, exibicoes: EXIBICOES, designers: DESIGNERS, filmes: FILMES } });
+	const nomes = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', designers: 'designers_pg', filmes: 'filmes_pg', atracoes: 'atracoes_pg', KEY_atracoes: 'key_atracoes_pg', mensagens: 'mensagens_pg' };
+	const teable = teableFalso(nomes, { registros: { ARTE_producao: PRODUCOES, exibicoes: EXIBICOES, designers: DESIGNERS, filmes: FILMES, atracoes: ATRACOES, KEY_atracoes: [], mensagens: [] } });
 	const semRede = async (url) => {
 		throw new Error('o teste não sai para a rede: ' + url);
 	};
 	const db = abrirBanco(path.join(pasta, 'promeiro.db'));
 	const trello = trelloFalso();
-	const app = criarApp({ db, env, buscarNoTeable: teable, abrirPg: teable.abrirPg, buscarNoGitHub: semRede, trello: (e, deps) => criarTrello(e, { ...deps, buscar: trello.buscar }) });
+	const app = criarApp({ db, env, buscarNoTeable: teable, abrirPg: teable.abrirPg, buscarNoGitHub: semRede, trello: (e, deps) => criarTrello(e, { ...deps, buscar: trello.buscar }), cadastros: (e) => criarCadastros(e, { buscar: teable }) });
 	await app.releituraPronta;
 	await app.pessoasProntas;
 	// a cópia do pôster do Filme de Teste guardada pelo PROMeiro (#142): um PNG de 1 pixel
@@ -225,6 +231,35 @@ async function filmesRecentes(context, typed) {
 
 filmesRecentes.vez = 0;
 
+// o acessorista (#143): busca nos caminhos → { atracoes, trello } (o nome de cada atração e a claquete de cada card)
+async function acessorista(context, typed) {
+	const page = await pagina(context);
+
+	await page.goto(CLIENT + 'finder.html');
+	await page.waitForTimeout(1500);
+	await page.fill('#q-paths', typed);
+	await page.waitForTimeout(1500);
+
+	const achados = {
+		atracoes: await page.locator('#results-paths .at-head b').evaluateAll((els) => els.map((e) => e.textContent.trim())),
+		trello: await page.locator('#results-paths .tr-claq i').evaluateAll((els) => els.map((e) => e.textContent.trim()))
+	};
+
+	assert.deepEqual(page.errors, [], 'o acessorista abre sem erro');
+
+	return achados;
+}
+
+// o download do índice pelo Node do painel (js/search-index.js, como no After): o arquivo roda aqui, fora do navegador
+async function downloadPeloNode(url, headers) {
+	const janela = {};
+	const vm = require('node:vm');
+
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../client/js/search-index.js'), 'utf8'), { window: janela, require, URL, Buffer, setTimeout, clearTimeout });
+
+	return janela.PAD_SEARCH_INDEX.download(url, 0, headers);
+}
+
 async function aviso(context) {
 	const page = await pagina(context);
 
@@ -331,6 +366,11 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual(await filmesRecentes(context, 'sonho'), [], 'e não os do webhook');
 		passo('os filmes recentes: com a chave (pendente), vêm do PROMeiro, com o pôster no endereço público do PROMeiro');
 
+		// 2b. o índice do buscar (#143): com a chave pendente, o do webhook (o mock)
+		assert.deepEqual((await acessorista(context, 'zabumba')).atracoes, [], 'pendente: o índice do webhook');
+		assert.deepEqual((await acessorista(context, 'festival de inverno')).atracoes, ['Festival de Inverno']);
+		passo('o índice do buscar: com a chave pendente, vem do webhook');
+
 		// 3. ligada: o NO TRELLO vem das Produções do PROMeiro
 		await promeiro.chefe('/api/cadastros/padeiros/' + lista[0].id + '/ligar', { method: 'POST', body: JSON.stringify({ designer: 'recDesignerDora' }) });
 		claquete = await noTrello(context, 'domingao');
@@ -342,6 +382,27 @@ async function estadoNaConfiguracao(context) {
 		assert.match(await estadoNaConfiguracao(context), /^ligada a Dora Teste: o NO TRELLO d'O PROJETISTA vem das Produções do PROMeiro/);
 		assert.equal(await aviso(context), '', 'ligada, a barra não avisa nada');
 		passo('ligada: o NO TRELLO mostra as Produções em Entrada e Produzindo (a Entregue e o filme ficam de fora)');
+
+		// 3d. o índice do buscar (#143): com a chave ligada, o do PROMeiro (o cadastro das atrações e as Produções)
+		let achados = await acessorista(context, 'zabumba');
+		assert.deepEqual(achados.atracoes, ['Zabumba Elétrica'], 'a atração do cadastro do PROMeiro');
+		assert.deepEqual((await acessorista(context, 'domingao')).trello, ['DOMINGAO 26/11 SP'], 'a Produção do PROMeiro');
+		assert.deepEqual((await acessorista(context, 'festival de inverno')).atracoes, [], 'e não as do webhook');
+		passo('o índice do buscar: com a chave ligada, vem do PROMeiro (as atrações do cadastro e as Produções)');
+
+		// no After, quem baixa é o Node do painel (js/search-index.js): o índice comprimido, com a chave no cabeçalho
+		const texto = await downloadPeloNode(promeiro.url + '/api/padeiro/buscar', { 'X-Chave-Do-Padeiro': host.guardada.chave });
+		const indice = JSON.parse(texto);
+		assert.equal(indice.v, 2);
+		assert.deepEqual(indice.atracoes.map((a) => a.name), ['Zabumba Elétrica']);
+		await assert.rejects(downloadPeloNode(promeiro.url + '/api/padeiro/buscar', {}), /HTTP 401/, 'sem a chave, 401');
+		passo('o índice do buscar pelo Node do painel: comprimido, com a chave no cabeçalho (sem ela, 401)');
+
+		// o PROMeiro sem o índice (503: sem o cadastro das atrações, ou com o Teable fora): o webhook
+		await context.route(promeiro.url + '/api/padeiro/buscar', (r) => r.fulfill({ status: 503, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ erro: 'O índice do buscar não está disponível agora.' }) }));
+		assert.deepEqual((await acessorista(context, 'festival de inverno')).atracoes, ['Festival de Inverno'], '503: o índice do webhook');
+		await context.unroute(promeiro.url + '/api/padeiro/buscar');
+		passo('o índice do buscar: com o PROMeiro respondendo 503, o webhook');
 
 		// 3a. o aviso ao abrir pelo card (#141): a Produção do NO TRELLO avisa o PROMeiro, que faz o Peguei
 		const producoes = await promeiro.producoes(host.guardada.chave);
@@ -409,6 +470,9 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual((await filmesRecentes(context, 'sonho')).map((f) => f.titulo), ['UM SONHO DE LIBERDADE'], 'fora do ar: os filmes do webhook');
 		assert.deepEqual(await filmesRecentes(context, 'filme de'), []);
 		passo('fora do ar: os filmes recentes voltam ao webhook');
+		achados = await acessorista(context, 'festival de inverno');
+		assert.deepEqual(achados.atracoes, ['Festival de Inverno'], 'fora do ar: o índice do webhook');
+		passo('fora do ar: o índice do buscar volta ao webhook');
 
 		// 6. sem o endereço do PROMeiro: nada muda (nem pede chave)
 		const limpo = await browser.newContext({ viewport: { width: 520, height: 900 } });
@@ -421,6 +485,7 @@ async function estadoNaConfiguracao(context) {
 		assert.equal(await aviso(limpo), '');
 		assert.match(await estadoNaConfiguracao(limpo), /sem o endereço do PROMeiro/);
 		assert.deepEqual((await filmesRecentes(limpo, 'sonho')).map((f) => f.titulo), ['UM SONHO DE LIBERDADE'], 'sem chave: os filmes do webhook');
+		assert.deepEqual((await acessorista(limpo, 'festival de inverno')).atracoes, ['Festival de Inverno'], 'sem chave: o índice do webhook');
 		await limpo.close();
 		passo('sem o endereço do PROMeiro: tudo como antes (o webhook), sem aviso');
 

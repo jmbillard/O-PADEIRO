@@ -16,6 +16,9 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
   - com a chave (pendente ou ligada), os filmes recentes d'O PROJETISTA vêm do PROMeiro (jmbillard/TEXTAO#142):
     GET /api/padeiro/filmes → { atualizado_em, filmes: [...] }, no mesmo formato do webhook filmes-recentes do n8n,
     com o pôster no endereço público do PROMeiro. Sem a chave, revogada ou com o PROMeiro fora do ar, o webhook.
+  - com a chave ligada, o índice da busca (o acessorista, O PROJETISTA e O CONFEITEIRO) vem do PROMeiro
+    (jmbillard/TEXTAO#143): GET /api/padeiro/buscar → { v: 2, stamp, generated, teams, trello, atracoes, filmes },
+    no formato do fluxo PROMO - BUSCAR do n8n, comprimido (js/search-index.js baixa). Com 503, o webhook ou a cópia.
 
   - o aviso do Padeiro (jmbillard/TEXTAO#141): abrir ou criar o projeto pelo card ou pela Produção do NO TRELLO, ou
     por um filme, avisa o PROMeiro (faz o mesmo que o Peguei): POST /api/padeiro/aviso { aviso, abertoEm, producao |
@@ -248,6 +251,24 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		} catch (err) { }
 
 		return null;
+	}
+
+	// o índice da busca (jmbillard/TEXTAO#143): o endereço e o cabeçalho da chave, para js/search-index.js baixar (o
+	// índice é grande e vem comprimido: o download é o dele). só a chave ligada lê. → { url, headers }, ou null (sem a
+	// chave ligada, ou na janela de teste: vale o webhook)
+	async function searchSource() {
+		if (window.PAD_MOCK_PROMEIRO) return null;
+
+		var s = await state();
+
+		if (s.estado !== 'ligada' || !s.chave) return null;
+
+		return { url: s.url.replace(/\/+$/, '') + '/api/padeiro/buscar', headers: { Accept: 'application/json', 'X-Chave-Do-Padeiro': s.chave } };
+	}
+
+	// a chave recusada no meio do caminho (401, 403): o estado é lido de novo na próxima vez
+	function recheck() {
+		cache.at = 0;
 	}
 
 	/* ---------------------------------------------------------------
@@ -605,6 +626,8 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		state: state,
 		productions: productions,
 		films: films,
+		searchSource: searchSource,
+		recheck: recheck,
 		notify: notify,
 		flush: flush,
 		describe: describe,

@@ -6,7 +6,13 @@
 
 Qual índice a busca de caminhos usa (o da equipe, só a cópia no modo local, ou o índice local), quando a
 configuração da busca mudou, a cópia do índice neste computador (ler, gravar, marcar como velha e a linha com a data
-dela) e o download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
+dela) e o download do índice pelo Node do painel.
+
+De onde vem o índice da equipe (jmbillard/TEXTAO#143): com a chave do Padeiro ligada (js/promeiro.js), do PROMeiro
+(GET /api/padeiro/buscar, com a chave no cabeçalho X-Chave-Do-Padeiro), no mesmo formato do fluxo PROMO - BUSCAR do
+n8n; sem a chave, com ela pendente ou revogada, sem o endereço do PROMeiro ou no modo local, do webhook do n8n, como
+antes. O PROMeiro que não dá o índice (503: sem o cadastro das atrações ou com o Teable fora; fora do ar; a chave
+recusada) também cai no webhook, e sem os dois fica a cópia que já está neste computador. → window.PAD_SEARCH_INDEX
 
 */
 
@@ -100,20 +106,41 @@ dela) e o download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 		return 'modo local · cópia do índice de ' + PAD_UTIL.when(generated || (modified ? new Date(modified).toISOString() : ''));
 	}
 
-	// o GET do índice pelo Node do painel (comprimido, com redirecionamentos), sem travar o After Effects → o texto
-	function download(url, hops) {
+	function hasNode() {
+		try {
+			return typeof require === 'function' && !!require('http');
+		} catch (err) {
+			return false;
+		}
+	}
+
+	// o erro do download, com o HTTP (0: sem resposta)
+	function httpError(status) {
+		var err = new Error('HTTP ' + status);
+
+		err.status = status;
+
+		return err;
+	}
+
+	// o GET do índice pelo Node do painel (comprimido, com redirecionamentos), sem travar o After Effects → o texto.
+	// headers: os cabeçalhos a mais (a chave do Padeiro), que só seguem o redirecionamento para o mesmo endereço
+	function download(url, hops, headers) {
 		return new Promise(function (resolve, reject) {
 			var mod = require(/^https:/i.test(url) ? 'https' : 'http');
-			var req = mod.get(url, { headers: { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' }, timeout: TIMEOUT }, function (res) {
+			var sent = Object.assign({}, headers || {}, { 'Accept-Encoding': 'gzip', 'User-Agent': 'O PADEIRO' });
+			var req = mod.get(url, { headers: sent, timeout: TIMEOUT }, function (res) {
 				if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && (hops || 0) < 3) {
+					var next = new URL(res.headers.location, url);
+
 					res.resume();
-					resolve(download(new URL(res.headers.location, url).href, (hops || 0) + 1));
+					resolve(download(next.href, (hops || 0) + 1, next.origin === new URL(url).origin ? headers : null));
 					return;
 				}
 
 				if (res.statusCode !== 200) {
 					res.resume();
-					reject(new Error('HTTP ' + res.statusCode));
+					reject(httpError(res.statusCode));
 					return;
 				}
 
@@ -136,6 +163,59 @@ dela) e o download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 		});
 	}
 
+	// no navegador de teste (sem o Node do painel): o fetch, que já descomprime → o texto
+	function browserDownload(url, headers) {
+		var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+		var timer = ctrl ? setTimeout(function () {
+			ctrl.abort();
+		}, TIMEOUT) : null;
+
+		return fetch(url, { headers: headers || {}, signal: ctrl ? ctrl.signal : undefined }).then(function (res) {
+			if (res.status !== 200) throw httpError(res.status);
+
+			return res.text();
+		}).finally(function () {
+			clearTimeout(timer);
+		});
+	}
+
+	// de onde vem o índice da equipe: o PROMeiro com a chave ligada (#143), senão o webhook do n8n (info.url)
+	// → { url, headers, promeiro }
+	async function teamSource(info) {
+		var p = null;
+
+		try {
+			p = window.PAD_PROMEIRO && !info.local ? await PAD_PROMEIRO.searchSource() : null;
+		} catch (err) { }
+
+		if (p) return { url: p.url, headers: p.headers, promeiro: true };
+
+		return { url: info.url, headers: null, promeiro: false };
+	}
+
+	// baixa o índice da equipe → o texto (o JSON do PROMeiro ou do webhook). o PROMeiro primeiro (com a chave ligada);
+	// se ele não der o índice (503, fora do ar, a chave recusada, fora do formato), o webhook do n8n. sem o Node do
+	// painel (o navegador de teste), só o PROMeiro, pelo fetch: o webhook fica com o host (searchDownload)
+	async function downloadTeam(info) {
+		var src = await teamSource(info);
+
+		if (src.promeiro) {
+			try {
+				var text = hasNode() ? await download(src.url, 0, src.headers) : await browserDownload(src.url, src.headers);
+				var data = unwrap(JSON.parse(text));
+
+				if (data && data.v === 2) return text; // o 'v' do JSON da equipe
+			} catch (err) {
+				// a chave mudou de estado no meio do caminho (revogada, ou trocada por outro cadastro): lê de novo na próxima
+				if (err && (err.status === 401 || err.status === 403) && PAD_PROMEIRO.recheck) PAD_PROMEIRO.recheck();
+			}
+		}
+
+		if (!hasNode()) throw new Error('sem Node');
+
+		return download(info.url);
+	}
+
 	window.PAD_SEARCH_INDEX = {
 		choice: choice,
 		signature: signature,
@@ -145,6 +225,8 @@ dela) e o download do índice pelo Node do painel. → window.PAD_SEARCH_INDEX
 		markStale: markStale,
 		unwrap: unwrap,
 		copyNote: copyNote,
-		download: download
+		download: download,
+		teamSource: teamSource,
+		downloadTeam: downloadTeam
 	};
 })();

@@ -50,6 +50,7 @@ no [modo local](producoes.md#-deste-computador) (sem a rede da equipe, ligado à
 
 > 🚩 *obs:*\
 > • os caminhos vêm do workflow **PROMO - BUSCAR**, que já devolve o índice pronto (com as mensagens do Teams mais recentes). o painel baixa sozinho, em segundo plano, sem travar o After Effects: a cópia salva aparece na hora e é trocada quando a resposta chega. sem conexão, vale a cópia salva (avisando '*usando o último índice salvo*'). a resposta pode vir como o JSON do índice, como o JSON em texto ou embrulhada pelo n8n (`[{ "indice": "…" }]`): o painel entende as três.\
+> • com a **chave do Padeiro ligada** ([docs/webhook-trello.md](webhook-trello.md#vindo-das-produções-do-promeiro)), o índice vem do **PROMeiro** (`GET /api/padeiro/buscar`, com a chave no cabeçalho `X-Chave-Do-Padeiro`), no mesmo formato, no lugar do workflow (o mesmo vale para a janela de projeto e O CONFEITEIRO). sem a chave, com ela pendente ou revogada, sem o endereço do PROMeiro ou no modo local, o workflow, como antes; com o PROMeiro sem o índice (503), fora do ar ou recusando a chave, também o workflow e, sem ele, a cópia salva.\
 > • o endereço do workflow e os caminhos fixos ficam na [configuração > buscar](producoes.md#-buscar).\
 > • no macOS, os volumes de rede necessários são montados ao abrir uma pasta. no Windows, os caminhos do Mac (`/Volumes/...`) são convertidos pelo mapa da [configuração > rede](producoes.md#-rede).\
 > • cada origem mostra no máximo o número da coluna **até** da tabela: refine o termo para ver os demais.

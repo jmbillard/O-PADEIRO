@@ -51,13 +51,14 @@ achadas e a "nova atração" (nome + tipo), abrindo embaixo. → window.PAD_ATTR
 		}
 	}
 
-	// baixa o índice do webhook pelo Node do painel (sem travar o After Effects) e troca a cópia. um download por vez.
+	// baixa o índice pelo Node do painel (sem travar o After Effects) e troca a cópia: do PROMeiro, com a chave ligada
+	// (#143), ou do webhook (js/search-index.js decide). um download por vez.
 	function refreshIndex(fs) {
 		if (source.refreshing) return source.refreshing;
 
 		var info = source.info;
 
-		source.refreshing = SEARCH_INDEX.download(info.url).then(function (text) {
+		source.refreshing = SEARCH_INDEX.downloadTeam(info).then(function (text) {
 			SEARCH_INDEX.unwrap(JSON.parse(text)); // confere antes de trocar a cópia
 			SEARCH_INDEX.writeCopy(fs, info, text);
 		}).finally(function () {

@@ -419,15 +419,14 @@ caracteres e abertura das pastas. Aba TEXTOS: lê os textos dos layers de texto 
 			} catch (err) { }
 		}
 
-		// 2. o webhook (pelo painel; se não der, pelo curl do After Effects)
+		// 2. o PROMeiro, com a chave ligada (#143), ou o webhook (pelo painel; se não der, pelo curl do After Effects)
 		var text = '';
 
 		try {
-			if (!fs) throw new Error('sem Node');
-			text = await SEARCH_INDEX.download(info.url);
+			text = await SEARCH_INDEX.downloadTeam(info);
 			parseIndex(text, info); // confere antes de guardar
 			try {
-				SEARCH_INDEX.writeCopy(fs, info, text);
+				if (fs) SEARCH_INDEX.writeCopy(fs, info, text);
 			} catch (err) { }
 		} catch (err) {
 			try {

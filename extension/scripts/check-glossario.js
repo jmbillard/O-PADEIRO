@@ -113,7 +113,8 @@ const COMENTARIO_DE_COMPATIBILIDADE = /(\/\/|\/\*|#).*(nome antigo|nomes antigos
 const DE_FORA = {
 	// a coluna 'categoria' da tabela de atrações do PROMeiro (o Teable de teste do e2e): o servidor do PROMeiro a lê
 	// pelo nome (o tipo da atração, no vocabulário dele), e o nome não é do Padeiro
-	'extension/scripts/e2e-janela.js': { categoria: 'a coluna categoria das atrações do PROMeiro de teste' }
+	'extension/scripts/e2e-janela.js': { categoria: 'a coluna categoria das atrações do PROMeiro de teste' },
+	'extension/scripts/e2e-promeiro.js': { categoria: 'a coluna categoria das atrações do PROMeiro de teste (o índice do buscar, jmbillard/TEXTAO#143)' }
 };
 
 // fora da busca: as bibliotecas de terceiros, os ícones e imagens, e esta checagem (que cita os termos)
