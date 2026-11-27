@@ -61,6 +61,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 	var delay = mode === 'slow' ? 900 : 260;
 
+	// o endereço do PROMeiro de teste (configuração > buscar; o teste do PROMeiro põe no localStorage)
+	function mockPromeiroUrl() {
+		return localStorage.getItem('pad.mock.promeiroUrl') || '';
+	}
+
 	function wait(ms) {
 		return new Promise(function (resolve) {
 			setTimeout(resolve, ms);
@@ -190,6 +195,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 					],
 					search: {
 						url: 'https://workflows.jmbillard.com/webhook/buscar',
+						promeiro: mockPromeiroUrl(), // o PROMeiro de teste (vazio: nada fala com ele)
 						servidor: [
 							{ name: '#INGEST', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/#INGEST' },
 							{ name: 'BASES VALENDO', path: '//cpp-ml-sp.servicos.corp.tvglobo.com.br/PROMO_REDE/CPP_JB_PROMO/HOME OFFICE - NAO APAGAR/BASES E VALENDO' }
@@ -265,6 +271,29 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			localStorage.setItem('pad.mock.prefs', JSON.stringify({ appearance: a.appearance || null, bar: a.bar || null }));
 
 			return mockPrefs();
+		},
+
+		// o PROMeiro (host/promeiro.jsx): o endereço da configuração > buscar e a chave guardada neste computador (aqui,
+		// no localStorage). o usuário, o computador e o sistema são de mentira
+		// (o teste do PROMeiro, scripts/e2e-promeiro.js, troca o localStorage pelo padMockPromeiro: o arquivo do host,
+		// do lado de fora do navegador, que não perde nada entre uma janela e outra)
+		promeiroInfo: async function () {
+			var url = mockPromeiroUrl();
+			var saved = (window.padMockPromeiro ? await window.padMockPromeiro() : JSON.parse(localStorage.getItem('pad.mock.promeiro') || 'null')) || {};
+			var same = !!url && saved.url === url && !!saved.chave;
+			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
+
+			return { url: url, usuario: 'designer.teste', computador: 'MAC-TESTE-01', sistema: 'macOS 15.1', sigla: machine.user || 'JMBILLARD', chave: same ? saved.chave : '', estado: same ? saved.estado || '' : '', designer: same ? saved.designer || '' : '', conferido: same ? saved.conferido || '' : '', local: !!machine.localMode };
+		},
+
+		promeiroSave: async function (a) {
+			var data = a.chave ? { url: a.url, chave: a.chave, estado: a.estado || '', designer: a.designer || '', conferido: new Date().toISOString() } : null;
+
+			if (window.padMockPromeiro) await window.padMockPromeiro(data || {});
+			else if (!data) localStorage.removeItem('pad.mock.promeiro');
+			else localStorage.setItem('pad.mock.promeiro', JSON.stringify(data));
+
+			return api.promeiroInfo();
 		},
 
 		machinePrefs: function () {
@@ -412,6 +441,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				a.search.servidor.forEach(function (r, i) {
 					if (!r.name !== !r.path) throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
 				});
+				if (a.search.promeiro && !/^https?:\/\/[^\s"'?#]+$/.test(a.search.promeiro)) throw new Error('#PAD_086 - busca: endereço do PROMeiro inválido (comece com http:// ou https://, sem espaços nem aspas).');
+				a.search.promeiro = String(a.search.promeiro || '').replace(/\/+$/, '');
+				localStorage.setItem('pad.mock.promeiroUrl', a.search.promeiro);
 				window.PAD_MOCK_LIST.search = JSON.parse(JSON.stringify(a.search));
 			}
 
@@ -1286,7 +1318,7 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 					if (pre[k] && k.length > score) score = k.length;
 				});
-				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.trello || null });
+				if (score) out.push({ name: m.name, path: m.path, out: m.out || '', display: m.path, film: !!m.film, isFilm: !!m.isFilm, category: m.isFilm ? 'FILME · ' + m.year : '', score: score, trello: m.trello || null, patterns: m.pat });
 			});
 			out.sort(function (x, y) {
 				return y.score - x.score;

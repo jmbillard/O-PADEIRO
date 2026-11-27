@@ -484,7 +484,7 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_083` | configuração: nome fixo sem o termo ou sem o nome |
 | `#PAD_084` | configuração: árvore de pastas do organizar inválida (nome vazio ou repetido, pasta pai inexistente, ciclo ou conteúdo em duas pastas) |
 | `#PAD_085` | configuração: comentários de render vazios ou comentário automático fora deles |
-| `#PAD_086` | configuração: endereço do webhook da busca inválido ou arquivo de índice não escolhido |
+| `#PAD_086` | configuração: endereço do webhook da busca ou do PROMeiro inválido, ou arquivo de índice não escolhido |
 | `#PAD_087` | configuração: link sem nome ou com endereço inválido |
 | `#PAD_088` | configuração: cor da aparência inválida (use `#rrggbb`) |
 | `#PAD_089` | configuração > projeto: tipo de projeto sem nome ou sem caminho, repetido, com token desconhecido ou com `{o_que_e}` na pasta do projeto |

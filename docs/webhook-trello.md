@@ -60,9 +60,34 @@ O card decide **qual atração**; a regra da atração decide **a pasta e o `.ae
 O nome do card não vira nome de arquivo: ele só diz a atração e, quando a regra usa mês, qual mês.
 Com vários cards da mesma atração, aparece **um card por linha** (até 5; no tipo com regra, como o MOOD MENSAL, só o mais novo). O clique marca na lista **JÁ NA PASTA** o `.aep` daquele card: cada palavra da claquete é o começo de uma palavra do nome do arquivo (`PREMIO 2026 CH JOR ESP G5` → `MELHOR CHAMADA DE JORNALISMO E ESPORTE G5.aep`), o botão vira **Abrir projeto**. Empate ou nada em comum: nada marcado.
 
+## vindo das Produções do PROMeiro
+
+Com o endereço do **PROMeiro** na configuração (aba **BUSCAR**, da equipe), cada computador pede a sua **chave do
+Padeiro** sozinho, na primeira vez que a barra abre (`POST /api/padeiro/cadastro`, com o usuário do computador, o
+nome do computador, o sistema e a sigla). A chave fica guardada neste computador (`promeiro.json`, na pasta de dados
+do usuário, ao lado do `machine_config.json`) e começa **pendente**: até um administrador ligar a chave a um designer
+(PROMeiro › Cadastros › Padeiros), a barra mostra um aviso ao abrir e a configuração > buscar diz que falta aprovar.
+
+Com a chave **ligada**, o grupo **NO TRELLO** lê as Produções em Entrada e Produzindo do PROMeiro
+(`GET /api/padeiro/producoes`, no mesmo formato `trello` de cima, com a chave no cabeçalho `X-Chave-Do-Padeiro`), no
+lugar dos cards do webhook. Vale toda Produção aberta, sem o limite dos 7 dias (o PROMeiro já deixa de fora as
+entregues); os filmes (`fil`) continuam de fora. A lista é lida ao abrir a claquete e de novo a cada minuto, em
+segundo plano.
+
+- **Sem o endereço, no modo local, com a chave pendente ou com o PROMeiro fora do ar:** tudo como antes, pelo
+  webhook do n8n. Nenhuma falha do PROMeiro aparece como erro.
+- **Chave revogada, ou que o PROMeiro não conhece mais:** o Padeiro pede outra sozinho, que volta a ficar pendente.
+- **Quem fala com o PROMeiro** é o Node do painel (`js/promeiro.js`), sem travar o After Effects; o host
+  (`host/promeiro.jsx`, ES3) só diz o usuário, o computador, o sistema e a sigla, e guarda a chave.
+- **Teste:** `PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js` sobe um
+  PROMeiro de teste e passa pelos painéis no navegador (mock-host): pedir a chave, pendente, ligada, revogada, fora
+  do ar e sem endereço.
+
 ## onde está no código
 
 - `extension/client/js/attractions.js`: `recentCards()` filtra os cards e `cardFor()` acha o card de cada atração;
   `findAttractions()` põe a atração com card primeiro (`trello` em cada resultado).
 - `extension/client/js/project.js`: `cardRow()` desenha a linha e `cardWhen()` escreve quando o card entrou.
 - `extension/client/js/mock-host.js`: o card de exemplo do Domingão (modo de teste: digite `domingao`).
+- `extension/client/js/promeiro.js` e `extension/host/promeiro.jsx`: a chave do Padeiro e a lista das Produções;
+  `attractions.js` troca os cards do webhook pelos do PROMeiro (`currentCards()`).

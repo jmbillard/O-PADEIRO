@@ -406,20 +406,71 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   não sugere nada.
 	   --------------------------------------------------------------- */
 
-	function recentCards(list) {
+	// open: a lista das Produções do PROMeiro (só as em Entrada e Produzindo): todas valem, sem o limite dos 7 dias e
+	// também sem a data de entrada (o PROMeiro já deixou de fora as entregues)
+	function recentCards(list, open) {
 		var since = Date.now() - CARD_DAYS * 86400000;
 
 		return (list || []).filter(function (c) {
 			var at = c && c.at ? Date.parse(String(c.at)) : NaN;
 
 			// os cards de filme ('fil') ficam de fora: os filmes têm a lista deles
-			return c && c.claq && !c.fim && !c.fil && !isNaN(at) && at >= since && at <= Date.now() + 86400000;
+			if (!c || !c.claq || c.fim || c.fil) return false;
+
+			return open || (!isNaN(at) && at >= since && at <= Date.now() + 86400000);
 		}).map(function (c) {
-			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: String(c.at), time: Date.parse(String(c.at)), atr: c.atr ? aepName(c.atr) : '', words: aepName(c.claq).split(' ').filter(Boolean) };
+			var time = c.at ? Date.parse(String(c.at)) : NaN;
+
+			// producao: a Produção do PROMeiro (o aviso do Padeiro volta com ela); '' no card do webhook
+			return { claq: String(c.claq), red: c.red || '', ed: c.ed || '', card: c.card || '', at: c.at ? String(c.at) : '', time: isNaN(time) ? 0 : time, atr: c.atr ? aepName(c.atr) : '', producao: c.producao ? String(c.producao) : '', words: aepName(c.claq).split(' ').filter(Boolean) };
 		}).sort(function (a, b) {
 			return b.time - a.time; // o mais novo primeiro
 		});
 	}
+
+	/* ---------------------------------------------------------------
+	   as Produções do PROMeiro no lugar dos cards do webhook (jmbillard/TEXTAO#140): com a chave do Padeiro ligada, o
+	   grupo NO TRELLO mostra as Produções em Entrada e Produzindo (js/promeiro.js). sem a chave, com ela pendente ou
+	   com o PROMeiro fora do ar, continuam os cards do webhook do n8n. lida ao abrir a janela e de novo a cada minuto,
+	   em segundo plano (a busca não espera mais que um instante por ela).
+	   --------------------------------------------------------------- */
+
+	var fromPromeiro = { cards: null, at: 0, loading: null };
+	var PROMEIRO_FRESH = 60000;
+	var PROMEIRO_WAIT = 1500; // quanto a busca espera pela primeira leitura
+
+	function refreshPromeiro() {
+		if (!window.PAD_PROMEIRO) return Promise.resolve(null);
+		if (fromPromeiro.loading) return fromPromeiro.loading;
+		if (fromPromeiro.at && Date.now() - fromPromeiro.at < PROMEIRO_FRESH) return Promise.resolve(fromPromeiro.cards);
+
+		fromPromeiro.loading = PAD_PROMEIRO.productions().then(function (list) {
+			fromPromeiro.cards = list ? recentCards(list, true) : null;
+			fromPromeiro.at = Date.now();
+
+			return fromPromeiro.cards;
+		}).catch(function () {
+			return null;
+		}).finally(function () {
+			fromPromeiro.loading = null;
+		});
+
+		return fromPromeiro.loading;
+	}
+
+	// os cards que valem agora: os do PROMeiro (lidos), senão os do webhook. espera um instante pela leitura em curso
+	async function currentCards() {
+		var pending = refreshPromeiro();
+
+		await Promise.race([pending, new Promise(function (resolve) {
+			setTimeout(resolve, PROMEIRO_WAIT);
+		})]);
+
+		return fromPromeiro.cards || source.cards;
+	}
+
+	// a janela abriu: já pede a lista (a primeira busca não espera a rede)
+	if (window.PAD_PROMEIRO) refreshPromeiro();
 
 	// o card mais novo de uma atração → { claq, red, ed, card, at, more } ou null. o card ligado a uma atração no banco
 	// ('atr') vale só para ela (Fut Fem Amis → AMISTOSOS DA SELECAO FEMININA, não FUTEBOL); o card sem vínculo, pelas
@@ -437,8 +488,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		if (!hits.length) return null;
 
 		// all: todos os cards dela (o mais novo primeiro): a claquete mostra um por linha (o prêmio com um card por categoria)
-		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, more: hits.length - 1, all: hits.map(function (h) {
-			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at };
+		return { claq: hits[0].claq, red: hits[0].red, ed: hits[0].ed, card: hits[0].card, at: hits[0].at, producao: hits[0].producao, more: hits.length - 1, all: hits.map(function (h) {
+			return { claq: h.claq, red: h.red, ed: h.ed, card: h.card, at: h.at, producao: h.producao };
 		}) };
 	}
 
@@ -476,9 +527,10 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	async function findAttractions(claq) {
 		var list = await candidates();
 
-		if (!list) return call('projectLookup', { claquete: claq });
+		if (!list) return withPromeiroCards(await call('projectLookup', { claquete: claq }));
 
 		var local = source.info.mode === 'local';
+		var cards = local ? [] : await currentCards();
 		var words = aepName(claq).split(' ').filter(Boolean);
 		var found = [];
 
@@ -489,13 +541,13 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				score = Math.max(score, scoreAny(k, words));
 			});
 
-			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it, source.cards) });
+			if (score) found.push({ it: it, score: score, card: local || it.isFilm ? null : cardFor(it, cards) });
 		});
 
 		// pela claquete dos cards novos: o card ligado a uma atração no banco traz ela, mesmo que o nome dela não bata com
 		// o digitado (fut → o card FUT FEM AMIS 29/11 → AMISTÓSOS DA SELEÇÃO FEMININA, ao lado do FUTEBOL)
 		if (!local) {
-			(source.cards || []).forEach(function (c) {
+			(cards || []).forEach(function (c) {
 				if (!c.atr || !scoreAny(wordKey(c.claq), words)) return;
 
 				var it = list.filter(function (x) {
@@ -509,7 +561,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 				})[0];
 
 				if (had) had.viaCard = true;
-				else found.push({ it: it, score: 1000, card: cardFor(it, source.cards), viaCard: true });
+				else found.push({ it: it, score: 1000, card: cardFor(it, cards), viaCard: true });
 			});
 		}
 
@@ -539,6 +591,30 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		});
 
 		return { claquete: aepName(claq), matches: matches };
+	}
+
+	// a resposta do host (sem o Node do painel: o navegador de teste) com os cards do PROMeiro no lugar dos dela, quando
+	// a chave está ligada: o card de cada atração pelo nome e pelos padrões dela, como no índice
+	async function withPromeiroCards(res) {
+		var cards = res && res.matches ? await currentCards() : null;
+
+		if (!cards || cards === source.cards) return res;
+
+		res.matches.forEach(function (m) {
+			if (m.isFilm) return;
+
+			var keys = [wordKey(m.name)].concat((m.patterns || []).map(wordKey)).filter(function (k) {
+				return k.f;
+			});
+
+			m.trello = cardFor({ name: m.name, keys: keys }, cards);
+		});
+
+		res.matches.sort(function (a, b) {
+			return (b.trello ? 1 : 0) - (a.trello ? 1 : 0);
+		});
+
+		return res;
 	}
 
 	// As categorias da aba PROJETO (configuração): o caminho de cada uma, com tokens. a que não pode ser

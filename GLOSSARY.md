@@ -57,3 +57,11 @@ _Evitar_: cache (sozinho), base
 
 **Acessorista**:
 O painel da busca de caminhos (as pastas das atrações, do Teams e do Trello).
+
+## PROMeiro
+
+**Chave do Padeiro**:
+O que identifica este computador no PROMeiro: pedida sozinha na primeira vez (usuário do computador, computador,
+sistema e sigla), guardada no `promeiro.json` da pasta de dados, **pendente** até um administrador ligar a um designer.
+Ligada, o grupo NO TRELLO vem das Produções do PROMeiro; pendente, revogada ou sem rede, do webhook.
+_Evitar_: token, senha, login

@@ -29,7 +29,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 		drives: { drives: [], shares: [], defaultServer: '' }, // mapa de drives da rede (aba REDE)
 		rename: { types: [], fixed: [], removeSpecial: true, textCase: 'upperCase', separator: ' - ' }, // aba RENOMEAR; termos editados como texto
 		organize: { folders: [], renderComments: '', editComments: '', autoComment: '', dataExtensions: '', commentSubfolders: true, fileTags: '' }, // aba ORGANIZAR (folders: { name, parent, contents })
-		search: { url: '', servidor: [] }, // aba BUSCAR: o webhook da busca e os caminhos fixos do servidor [{ name, path }]
+		search: { url: '', promeiro: '', servidor: [] }, // aba BUSCAR: o webhook da busca, o endereço do PROMeiro e os caminhos fixos do servidor [{ name, path }]
 		links: [], // aba LINKS: [{ name, url, icon }] (icon vazio = favicon do site)
 		project: { categories: [] }, // aba PROJETO: as categorias da atração nova [{ name, path e output (com tokens), icon }]
 		collect: { folders: [] }, // aba COLETAR (folders: { name, parent, contents })
@@ -415,6 +415,7 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function searchForSave() {
 		return {
 			url: state.search.url.trim(),
+			promeiro: state.search.promeiro.trim().replace(/\/+$/, ''),
 			servidor: state.search.servidor.map(function (r) {
 				return { name: r.name.trim(), path: r.path.trim() };
 			})
@@ -2543,21 +2544,57 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function setSearch(sc) {
 		var data = sc || {};
 
+		var before = promeiroShown;
+
 		state.search = {
 			url: data.url || '',
+			promeiro: data.promeiro || '',
 			servidor: (data.servidor || []).map(function (r) {
 				return { name: r.name || '', path: r.path || '' };
 			})
 		};
 		renderSearch();
+		// o endereço salvo mudou (ou a aba abriu): o estado da chave é lido de novo
+		if (before !== state.search.promeiro) renderPromeiro(before !== null);
+		promeiroShown = state.search.promeiro;
+	}
+
+	var promeiroShown = null; // o endereço do PROMeiro do último estado mostrado
+
+	// a chave do Padeiro deste computador no PROMeiro (js/promeiro.js): pendente, ligada, fora do ar ou sem endereço.
+	// abrir a configuração com o endereço já salvo também pede a chave, se ainda não há uma
+	function renderPromeiro(force) {
+		var box = $('machine-promeiro');
+
+		if (!box || !window.PAD_PROMEIRO) return;
+
+		box.textContent = '';
+		box.appendChild(document.createTextNode('conferindo…'));
+
+		PAD_PROMEIRO.state(force).then(function (s) {
+			var text = PAD_PROMEIRO.describe(s);
+			var cut = text.indexOf(':');
+
+			box.textContent = '';
+			box.dataset.state = s.estado;
+			if (s.estado === 'pendente' || s.estado === 'ligada') {
+				box.appendChild(el('b', 'promeiro-state', text.slice(0, cut)));
+				box.appendChild(document.createTextNode(text.slice(cut)));
+			} else {
+				box.appendChild(document.createTextNode(text));
+			}
+		});
 	}
 
 	function renderSearch() {
 		var hook = $('search-webhook');
+		var promeiro = $('search-promeiro');
 		var list = $('servidor-list');
 
 		if (hook.value !== state.search.url) hook.value = state.search.url;
+		if (promeiro.value !== state.search.promeiro) promeiro.value = state.search.promeiro;
 		hook.disabled = !state.available;
+		promeiro.disabled = !state.available;
 		$('btn-new-servidor').disabled = !state.available;
 		list.textContent = '';
 
@@ -2605,6 +2642,12 @@ Salvar confere se o arquivo mudou desde a leitura (outra pessoa pode ter editado
 	function bindSearch() {
 		$('search-webhook').addEventListener('input', function () {
 			state.search.url = this.value;
+			this.classList.remove('has-error');
+			updateDirty();
+		});
+
+		$('search-promeiro').addEventListener('input', function () {
+			state.search.promeiro = this.value;
 			this.classList.remove('has-error');
 			updateDirty();
 		});

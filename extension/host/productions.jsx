@@ -534,8 +534,10 @@ function padReadOrganize() {
 > busca de caminhos (aba BUSCAR da configuração)
 ---------------------------------------------------------------
 
-'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, servidor: [{ name, path }] }.
+'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, promeiro, servidor: [{ name, path }] }.
   url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
+  promeiro → o endereço do PROMeiro (jmbillard/TEXTAO#140): com a chave do Padeiro ligada, o grupo NO TRELLO da
+             claquete vem das Produções dele (host/promeiro.jsx, js/promeiro.js). vazio: nada fala com o PROMeiro
   servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
 Sem 'SEARCH' (ou no formato antigo, do índice que ficou só para o legacy): o webhook e os caminhos padrão.
 
@@ -551,7 +553,7 @@ function padDefaultSearch() {
 			servidor.push({ name: PS_LOCAL_SOURCES.servidor[i].atracao, path: psSlashes(PS_LOCAL_SOURCES.servidor[i].win.caminho) });
 		}
 
-		PAD_DEFAULT_SEARCH = { url: PS_V2_DEFAULT_URL, servidor: servidor };
+		PAD_DEFAULT_SEARCH = { url: PS_V2_DEFAULT_URL, promeiro: '', servidor: servidor };
 	}
 
 	return JSON.parse(JSON.stringify(PAD_DEFAULT_SEARCH));
@@ -561,12 +563,17 @@ function padDefaultSearch() {
 function padCleanSearch(o) {
 	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (legacy): os padrões
 
-	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, servidor: [] };
+	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, promeiro: padTrim(o.promeiro).replace(/\/+$/, ''), servidor: [] };
 	var seen = {};
 
 	// o endereço também vai para a linha de comando do curl (plano B): sem espaços, aspas nem símbolos do terminal
 	if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.url)) {
 		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
+	}
+
+	// o PROMeiro: só o endereço (o painel acrescenta /api/padeiro/…)
+	if (clean.promeiro && !/^https?:\/\/[^\s"'`$\\;&|<>?#]+$/i.test(clean.promeiro)) {
+		throw new Error('#PAD_086 - busca: endereço do PROMeiro inválido (comece com http:// ou https://, sem espaços nem aspas).');
 	}
 
 	for (var i = 0; i < (o.servidor || []).length; i++) {

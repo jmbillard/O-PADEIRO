@@ -1765,6 +1765,17 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 		paintSeason();
 	}
 
+	// a chave do Padeiro no PROMeiro (js/promeiro.js): na primeira vez, a barra pede a chave; enquanto ela espera um
+	// administrador, um aviso só, ao abrir o After (o resto do Padeiro segue igual). sem o endereço do PROMeiro na
+	// configuração, no modo local ou com o PROMeiro fora do ar, nada aparece
+	function watchPromeiro() {
+		if (!window.PAD_PROMEIRO) return;
+
+		PAD_PROMEIRO.state(true).then(function (s) {
+			if (s.estado === 'pendente') toast('warn', PAD_PROMEIRO.describe(s).replace(/^pendente: /, ''));
+		});
+	}
+
 	async function init() {
 		// os avisos do host (o que era alert() nas libs antigas) no aviso da barra
 		window.addEventListener('pad-notes', function (e) {
@@ -1840,6 +1851,8 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 			if (!info.network) {
 				toast('error', '#PAD_012 - sem acesso a rede... habilite "Allow Scripts to Write Files and Access Network" em Edit > Preferences > Scripting & Expressions.', 9000);
+			} else if (!setup.needed) {
+				watchPromeiro();
 			}
 		} catch (err) {
 			toast('error', err.message);

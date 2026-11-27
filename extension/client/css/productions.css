@@ -2820,6 +2820,20 @@ body.is-org-dragging * {
   flex: 0 0 auto;
 }
 
+/* a chave do PROMeiro: o estado vai no texto, na cor do significado (espera, deu certo) */
+.promeiro-status {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.promeiro-status[data-state='pendente'] .promeiro-state {
+  color: var(--waiting);
+}
+
+.promeiro-status[data-state='ligada'] .promeiro-state {
+  color: var(--success);
+}
+
 .index-row .cfg-input {
   padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
