@@ -26,10 +26,21 @@ vez): duas janelas abertas não perdem o aviso uma da outra. Uma lista de { avis
 url }, a mais velha primeiro, com no máximo PAD_PROMEIRO_QUEUE_MAX avisos e só os dos últimos
 PAD_PROMEIRO_QUEUE_DAYS dias.
 
+A mesma fila guarda as ações da janela PROMeiro · produções (jmbillard/TEXTAO#150): pegar, marcar a arte, o fogo,
+entregar, voltar e desfazer. A ação leva também a `rota` (aviso, arte, fogo, entregar, voltar ou desfazer), os `dados`
+da rota (arte, feita, nivel, desfaz) e a `claq` (só para a janela dizer qual foi); `aviso` é o identificador da ação
+(o `acao` da rota) e `abertoEm`, a hora em que foi feita (o `feitaEm`). O aviso sem `rota` é o da abertura do projeto.
+
+'promeiro-recusadas.json', na mesma pasta: as ações da janela que o PROMeiro recusou de vez quando a fila foi (a
+chave revogada, a Produção que já mudou: 400, 401, 403, 404, 409). Saem da fila e ficam aqui até a janela mostrar ao
+designer (quem manda a fila pode ser a barra, e não a janela). { acao, rota, producao, claq, status, erro, em }, no
+máximo PAD_PROMEIRO_REFUSED_MAX.
+
 */
 
 var PAD_PROMEIRO_QUEUE_MAX = 100;
 var PAD_PROMEIRO_QUEUE_DAYS = 30;
+var PAD_PROMEIRO_REFUSED_MAX = 20;
 
 function padPromeiroFile() {
 	return new File(scriptPreferencesPath + '/promeiro.json');
@@ -194,8 +205,22 @@ PADX.promeiroQueue = function () {
 	return { itens: padPromeiroQueueRead() };
 };
 
-// Põe um aviso na fila. a: { aviso, abertoEm, producao, card, filme }. Sem o endereço do PROMeiro na configuração,
-// nada entra (ninguém para avisar). O mesmo identificador não entra duas vezes. → { queued, itens }
+// os dados de uma ação da janela (#150), só o que as rotas usam: { arte, feita, nivel, desfaz }
+function padPromeiroActionData(d) {
+	var out = {};
+
+	if (!d || typeof d != 'object') return out;
+	if (d.arte != null) out.arte = padPromeiroText(d.arte, 200);
+	if (d.feita === true || d.feita === false) out.feita = d.feita;
+	if (d.nivel == 1 || d.nivel == 2 || d.nivel == 3) out.nivel = Number(d.nivel);
+	if (d.desfaz != null) out.desfaz = padPromeiroText(d.desfaz, 100);
+
+	return out;
+}
+
+// Põe um aviso (ou uma ação da janela, #150) na fila. a: { aviso, abertoEm, producao, card, filme } e, na ação,
+// { rota, dados, claq }. Sem o endereço do PROMeiro na configuração, nada entra (ninguém para avisar). O mesmo
+// identificador não entra duas vezes. → { queued, itens }
 PADX.promeiroQueueAdd = function (a) {
 	var url = '';
 
@@ -211,6 +236,14 @@ PADX.promeiroQueueAdd = function (a) {
 		filme: padPromeiroText(a.filme, 100),
 		url: url
 	};
+	var rota = padPromeiroText(a.rota, 20);
+
+	if (rota) {
+		if (!/^(aviso|arte|fogo|entregar|voltar|desfazer)$/.test(rota)) return { queued: false, itens: padPromeiroQueueRead().length };
+		item.rota = rota;
+		item.dados = padPromeiroActionData(a.dados);
+		item.claq = padPromeiroText(a.claq, 120);
+	}
 
 	if (!url || !/^[\w.:-]{1,100}$/.test(item.aviso) || !(item.producao || item.card || item.filme)) return { queued: false, itens: padPromeiroQueueRead().length };
 
@@ -231,8 +264,9 @@ PADX.promeiroQueueAdd = function (a) {
 	return { queued: true, itens: list.length };
 };
 
-// Tira da fila os avisos resolvidos (entregues, repetidos ou recusados de vez). a: { avisos: [identificador] }
-// → { itens }
+// Tira da fila os avisos resolvidos (entregues, repetidos ou recusados de vez). a: { avisos: [identificador],
+// recusadas: [{ acao, rota, producao, claq, status, erro }] } (as recusadas da janela ficam para ela mostrar, #150)
+// → { itens, tirados } (tirados: quantos estavam na fila)
 PADX.promeiroQueueDrop = function (a) {
 	var gone = {};
 	var ids = a && a.avisos instanceof Array ? a.avisos : [];
@@ -246,8 +280,74 @@ PADX.promeiroQueueDrop = function (a) {
 	}
 
 	if (list.length != old.length) padPromeiroQueueWrite(list);
+	if (a && a.recusadas instanceof Array && a.recusadas.length) padPromeiroRefusedAdd(a.recusadas);
 
-	return { itens: list.length };
+	return { itens: list.length, tirados: old.length - list.length };
+};
+
+/* ---------------------------------------------------------------
+   as ações da janela recusadas de vez pelo PROMeiro (jmbillard/TEXTAO#150)
+   --------------------------------------------------------------- */
+
+function padPromeiroRefusedFile() {
+	return new File(scriptPreferencesPath + '/promeiro-recusadas.json');
+}
+
+function padPromeiroRefusedRead() {
+	var file = padPromeiroRefusedFile();
+
+	if (!file.exists) return [];
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return data instanceof Array ? data : [];
+	} catch (err) {
+		return [];
+	}
+}
+
+function padPromeiroRefusedAdd(items) {
+	var list = padPromeiroRefusedRead();
+
+	for (var i = 0; i < items.length; i++) {
+		var x = items[i];
+
+		if (!x || typeof x != 'object') continue;
+
+		list.push({
+			acao: padPromeiroText(x.acao, 100),
+			rota: padPromeiroText(x.rota, 20),
+			producao: padPromeiroText(x.producao, 100),
+			claq: padPromeiroText(x.claq, 120),
+			dados: padPromeiroActionData(x.dados),
+			status: Number(x.status) || 0,
+			erro: padPromeiroText(x.erro, 300),
+			em: padPromeiroNow()
+		});
+	}
+
+	if (list.length > PAD_PROMEIRO_REFUSED_MAX) list = list.slice(list.length - PAD_PROMEIRO_REFUSED_MAX);
+
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify(list, null, '\t'), padPromeiroRefusedFile().fsName);
+}
+
+// As ações da janela recusadas de vez, a mais velha primeiro. a: { limpar } (true: a janela já mostrou, o arquivo
+// some) → { itens }
+PADX.promeiroRecusadas = function (a) {
+	var list = padPromeiroRefusedRead();
+
+	if (a && a.limpar) {
+		var file = padPromeiroRefusedFile();
+
+		if (file.exists) file.remove();
+	}
+
+	return { itens: list };
 };
 
 /* ---------------------------------------------------------------

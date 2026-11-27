@@ -4,8 +4,7 @@
 > PROMeiro · produções — a janela das Produções no After (jmbillard/TEXTAO#148)
 ---------------------------------------------------------------
 
-Uma versão compacta da tela de produções do PROMeiro, com o visual dele (css/promeiro.css). A fila sem rede vem
-depois (jmbillard/TEXTAO#150): por ora, sem rede, a caixinha mostra o erro e nada trava.
+Uma versão compacta da tela de produções do PROMeiro, com o visual dele (css/promeiro.css).
 
   - a lista: a praça no topo (lembrada por designer, neste computador), as abas Entrada, Produzindo e Minhas, cada
     uma com a contagem, e em cada Produção só a claquete e o estado: "pronto para abrir" (bolinha cheia), "sem pasta"
@@ -26,6 +25,16 @@ Entregue; o nome só na dica), Preencher templates, Abrir projeto e Entreguei (s
     o nível pedido, à prova de repetição), menos na Entregue;
   - Entreguei com artes por marcar avisa quais faltam, com "Entregar assim mesmo" e "Cancelar";
   - a caixinha: o que aconteceu, o Desfazer (pegar, entregar e voltar) e o × na ponta direita.
+
+Sem rede (jmbillard/TEXTAO#150), todas as ações (pegar, marcar a arte, o fogo, entregar, voltar e desfazer) vão para a
+fila deste computador (a mesma dos avisos, js/promeiro.js) e seguem em ordem quando a rede volta. A janela atualiza na
+hora, como se a ação tivesse ido (a Produção fica "otimista" enquanto houver ação dela na fila: a leitura do PROMeiro
+não passa por cima), a caixinha diz "Sem rede: vai quando a rede voltar." e o topo mostra quantas estão guardadas
+("Dora · 2"). A janela confere a fila de tempos em tempos e manda de novo; quando a fila de uma Produção esvazia, ela
+lê a Produção do PROMeiro, que é a verdade. A ação recusada de vez (a chave revogada, a Produção que já mudou: 409) sai
+da fila e aparece na caixinha, e a Produção volta ao que o PROMeiro diz. O Desfazer sem rede tira da fila a ação que
+ainda não foi; a que já foi ganha um desfazer na fila, com o identificador dela (`desfaz`). Sem rede, a lista e a
+Produção que já estavam à vista continuam (a leitura que falha não apaga a janela).
 
 As Produções vêm do PROMeiro pelo caminho do Padeiro (js/promeiro.js: a chave, o endereço e o pedido). A lista é lida
 de novo de tempos em tempos e quando a janela volta à frente.
@@ -61,14 +70,22 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		lendoProducao: false,
 		naoExiste: false,
 		falta: null, // o id da Produção com o aviso das artes que faltam (o Entreguei)
-		caixa: null, // a caixinha: { n, texto, sub, desfaz: { acao, producao }, atencao }
-		ocupado: false // uma ação a caminho do PROMeiro: os botões esperam
+		caixa: null, // a caixinha: { n, texto, sub, desfaz: { acao, producao, antes }, atencao, sempre }
+		ocupado: false, // uma ação a caminho do PROMeiro: os botões esperam
+		semRede: false, // a última leitura não chegou ao PROMeiro (a lista e a Produção à vista continuam)
+		guardadas: 0, // quantas ações e avisos estão na fila deste computador (#150)
+		naFila: {}, // id → quantas ações da Produção estão na fila
+		otimista: {}, // id → a Produção como a janela mostra, com as ações guardadas (a leitura do PROMeiro espera a fila)
+		lidas: {}, // id → a última leitura de cada Produção (sem rede, a janela abre com ela)
+		semLeitura: false // sem rede, a Produção aberta nunca foi lida
 	};
 
 	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var CAIXA_MS = 10000; // a caixinha some sozinha depois disso (a nova toma o lugar)
 	var PROJETO_ESPERA = 120000; // quanto a janela espera a resposta da janela PROJETO
+	var FILA_MS = 8000; // com ações guardadas, a janela confere a fila e manda de novo nesse intervalo
+	var SEM_REDE = 'Sem rede: vai quando a rede voltar.';
 
 	var ic = {
 		voltar: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -181,11 +198,19 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 	function topo() {
 		var chave = '';
 
-		if (S.estado === 'ligada') chave = '<span class="pr-chave" title="' + esc('chave ligada' + (S.designer ? ' a ' + S.designer : '')) + '"><span class="pr-bola"></span><span>' + esc(S.designer.split(' ')[0] || 'ligada') + '</span></span>';
+		if (S.estado === 'ligada') chave = '<span class="pr-chave" title="' + esc(dicaDaChave()) + '"><span class="pr-bola' + (S.guardadas || S.semRede ? ' atencao' : '') + '"></span><span>' + esc((S.designer.split(' ')[0] || 'ligada') + (S.guardadas ? ' · ' + S.guardadas : '')) + '</span></span>';
 		if (S.estado === 'pendente') chave = '<span class="pr-chave" title="chave do Padeiro pendente"><span class="pr-bola atencao"></span><span>pendente</span></span>';
-		if (S.estado === 'fora') chave = '<span class="pr-chave" title="o PROMeiro não respondeu"><span class="pr-bola atencao"></span><span>sem resposta</span></span>';
+		if (S.estado === 'fora') chave = '<span class="pr-chave" title="o PROMeiro não respondeu"><span class="pr-bola atencao"></span><span>sem resposta' + (S.guardadas ? ' · ' + S.guardadas : '') + '</span></span>';
 
 		return '<div class="pr-topo"><span class="logo-app"><b>PROM</b>eiro</span><span class="pr-onde">produções</span><span class="espaco"></span>' + chave + '</div>';
+	}
+
+	// a dica da chave no topo: ligada, sem rede ou com ações guardadas
+	function dicaDaChave() {
+		if (S.guardadas) return (S.guardadas === 1 ? '1 ação guardada' : S.guardadas + ' ações guardadas') + ' neste computador: vão quando a rede voltar';
+		if (S.semRede) return 'sem rede: o PROMeiro não respondeu à última leitura';
+
+		return 'chave ligada' + (S.designer ? ' a ' + S.designer : '');
 	}
 
 	function filtro() {
@@ -309,7 +334,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 	function caixinha() {
 		var c = S.caixa;
 
-		if (!c || S.estado !== 'ligada') return '';
+		if (!c || (S.estado !== 'ligada' && !c.sempre)) return '';
 
 		return '<div class="pr-caixa-in" role="status" data-n="' + c.n + '">' + (c.atencao ? '<span class="pr-bola atencao"></span>' : '') + '<span class="pr-caixa-texto">' + esc(c.texto) + (c.sub ? '<small>' + esc(c.sub) + '</small>' : '') + '</span>' +
 			(c.desfaz ? '<button type="button" class="pr-caixa-desfazer" data-acao="desfazer"' + (S.ocupado ? ' disabled' : '') + '>Desfazer</button>' : '') +
@@ -331,6 +356,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 
 		var p = S.producao && S.producao.id === S.aberta ? S.producao : null;
 
+		if (!p && S.semLeitura) return '<div class="pr-folha-rolar"><div class="pr-cab"><span class="linha">' + voltar + '</span><p class="pr-aviso" role="status"><b>Sem rede:</b> essa Produção ainda não foi lida. a janela tenta de novo sozinha.</p></div></div>';
 		if (!p) return '<div class="pr-folha-rolar"><div class="pr-cab"><span class="linha">' + voltar + '</span><p class="pr-lendo">lendo…</p></div></div>';
 
 		var artes = p.artes instanceof Array ? p.artes : [];
@@ -406,12 +432,21 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		lendoLista = PAD_PROMEIRO.windowList(force).then(function (r) {
 			var antes = S.estado;
 
+			// sem rede, com a lista à vista: ela continua (as ações vão para a fila), só o topo avisa
+			if (r.estado === 'fora' && S.estado === 'ligada') {
+				S.semRede = true;
+				render();
+
+				return;
+			}
+
+			S.semRede = false;
 			S.estado = r.estado === 'ligada' && r.lista ? 'ligada' : r.estado === 'ligada' ? 'fora' : r.estado;
 			S.local = !!r.local;
 			if (r.designer !== undefined) S.designer = r.designer || '';
 
 			if (S.estado === 'ligada') {
-				S.lista = r.lista;
+				S.lista = r.lista.map(comOtimista);
 				// a Produção aberta que saiu da lista (entregue, arquivada) continua aberta: a leitura dela diz
 			} else {
 				S.lista = [];
@@ -477,10 +512,28 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		if (S.aberta !== pid) return; // outra foi aberta enquanto esta lia
 
 		if (r.estado !== 'ligada') {
+			// sem rede, com a lista à vista: a Produção fica com a última leitura (ou o aviso, se nunca foi lida)
+			if (r.estado === 'fora' && S.estado === 'ligada') {
+				S.semRede = true;
+				S.semLeitura = !S.producao;
+				render();
+			}
 			if (!quieta) load(true);
 
 			return;
 		}
+
+		S.semLeitura = false;
+
+		// com ação dela ainda na fila, a janela fica com o que mostrou (a leitura de depois da fila diz a verdade)
+		if (S.otimista[pid] && S.naFila[pid]) {
+			S.producao = S.otimista[pid];
+			render();
+
+			return;
+		}
+
+		if (r.producao) S.lidas[pid] = r.producao;
 
 		S.naoExiste = !!r.naoExiste;
 		S.producao = r.producao || null;
@@ -494,10 +547,11 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		S.menu = false;
 		S.falta = null;
 		S.aberta = pid;
-		S.producao = null;
+		S.producao = S.otimista[pid] && S.naFila[pid] ? S.otimista[pid] : S.lidas[pid] || null;
 		S.naoExiste = false;
+		S.semLeitura = false;
 		render('folha');
-		loadProduction(pid);
+		loadProduction(pid, !!S.producao);
 	}
 
 	function back() {
@@ -519,11 +573,12 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 	var nCaixa = 0;
 	var tCaixa = null;
 
-	// mostra a caixinha (a nova toma o lugar da anterior). desfaz: { acao, producao } (o Desfazer), ou null
-	function caixa(texto, sub, desfaz, atencao) {
-		S.caixa = { n: ++nCaixa, texto: texto, sub: sub || '', desfaz: desfaz || null, atencao: !!atencao };
+	// mostra a caixinha (a nova toma o lugar da anterior). desfaz: { acao, producao, antes } (o Desfazer), ou null.
+	// sempre: aparece com qualquer estado da chave e só sai pelo × (a ação recusada de vez, #150)
+	function caixa(texto, sub, desfaz, atencao, sempre) {
+		S.caixa = { n: ++nCaixa, texto: texto, sub: sub || '', desfaz: desfaz || null, atencao: !!atencao, sempre: !!sempre };
 		clearTimeout(tCaixa);
-		tCaixa = setTimeout(function () {
+		if (!sempre) tCaixa = setTimeout(function () {
 			S.caixa = null;
 			render();
 		}, CAIXA_MS);
@@ -546,6 +601,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 
 	// a Produção mudou no PROMeiro: a janela fica com a que veio na resposta e lê a lista de novo
 	function mudou(producao) {
+		if (producao && producao.id) S.lidas[producao.id] = producao;
 		if (producao && producao.id === S.aberta) {
 			S.producao = producao;
 			S.comVoce[producao.id] = !!producao.comVoce;
@@ -564,8 +620,9 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		load(true);
 	}
 
-	// a resposta de uma ação (js/promeiro.js windowAction) → true quando o PROMeiro fez (a janela já atualizou).
-	// recusada ou sem rede: a caixinha diz, e a Produção é lida de novo (o que a janela já tinha mudado volta)
+	// a resposta de uma ação (js/promeiro.js windowAction) → 'feito' quando o PROMeiro fez (a janela já atualizou),
+	// 'guardado' quando ficou na fila sem rede (quem chama atualiza a janela como se tivesse ido: guardar) ou false.
+	// recusada: a caixinha diz, e a Produção é lida de novo (o que a janela já tinha mudado volta)
 	function feito(r, pid) {
 		if (r.estado !== 'ligada') {
 			semChave(r);
@@ -573,8 +630,19 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 			return false;
 		}
 
-		if (r.semRede) {
-			caixa('Sem rede: o PROMeiro não recebeu.', 'nada mudou lá; tente de novo quando a rede voltar.', null, true);
+		if (r.guardado) return 'guardado';
+
+		// outra janela mandou a fila com esta ação dentro: a resposta ficou com ela; a Produção é lida de novo
+		if (r.enviado) {
+			r.corpo = {};
+			mudou(null);
+			if (S.aberta === pid) loadProduction(pid, true);
+
+			return 'feito';
+		}
+
+		if (r.erro) {
+			caixa('A ação não foi: ' + r.erro, '', null, true);
 			loadProduction(pid, true);
 
 			return false;
@@ -583,7 +651,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		if (r.status === 200) {
 			mudou(r.corpo.producao);
 
-			return true;
+			return 'feito';
 		}
 
 		caixa((r.corpo && r.corpo.erro) || 'O PROMeiro recusou (' + r.status + ').', '', null, true);
@@ -591,6 +659,128 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		else loadProduction(pid, true);
 
 		return false;
+	}
+
+	/* ---------- sem rede: a fila (jmbillard/TEXTAO#150) ---------- */
+
+	var nGuardadas = 0; // as ações desta janela que ficaram na fila (a caixinha diz quando elas forem)
+
+	// o que mudou de etapa e de designers, para o Desfazer voltar
+	function antesDe(p) {
+		return { etapa: p.etapa, designers: (p.designers || []).slice(), comVoce: !!p.comVoce };
+	}
+
+	function mesmoNome(a, b) {
+		return String(a || '').toLowerCase() === String(b || '').toLowerCase();
+	}
+
+	// pegou: a pessoa entra (somada a quem já está), e a Entrada vai para Produzindo
+	function pegou(p) {
+		var designers = (p.designers || []).slice();
+
+		if (!p.comVoce && S.designer) designers.push(S.designer);
+
+		return { designers: designers, comVoce: true, etapa: p.etapa === 'entrada' ? 'produzindo' : p.etapa };
+	}
+
+	// saiu (a seta ←): sem ninguém, a Produção volta para a Entrada; a Entregue volta para a Entrada
+	function saiu(p) {
+		var designers = (p.designers || []).filter(function (d) {
+			return !mesmoNome(d, S.designer);
+		});
+
+		return { designers: designers, comVoce: false, etapa: p.etapa === 'entregue' || !designers.length ? 'entrada' : p.etapa };
+	}
+
+	// a Produção como a janela mostra, com a ação guardada (otimista: a leitura do PROMeiro espera a fila dela)
+	function aplicar(p, mudanca) {
+		Object.assign(p, mudanca || {});
+		S.comVoce[p.id] = !!p.comVoce;
+		S.otimista[p.id] = p;
+		S.naFila[p.id] = (S.naFila[p.id] || 0) + 1;
+		S.lista = S.lista.map(comOtimista);
+	}
+
+	// o item da lista com a etapa e o "com você" da Produção otimista
+	function comOtimista(item) {
+		var o = S.otimista[id(item)];
+
+		return o && S.naFila[id(item)] ? Object.assign({}, item, { etapa: o.etapa, comVoce: !!o.comVoce }) : item;
+	}
+
+	// a ação ficou na fila: a janela fica como se tivesse ido e confere a fila (o contador do topo)
+	function guardar(p, mudanca) {
+		aplicar(p, mudanca);
+		nGuardadas++;
+		render();
+		lerFila();
+	}
+
+	// o nome da ação guardada, para a caixinha da recusa
+	function descrever(x) {
+		var d = x.dados || {};
+		var nome = { aviso: 'pegar', arte: (d.feita === false ? 'desmarcar ' : 'marcar ') + (d.arte || 'a arte'), fogo: 'o fogo de ' + (d.arte || 'uma arte'), entregar: 'entregar', voltar: 'voltar para a Entrada', desfazer: 'desfazer' }[x.rota] || x.rota;
+
+		return nome + (x.claq ? ' (' + x.claq + ')' : '');
+	}
+
+	// as ações guardadas que o PROMeiro recusou de vez: saíram da fila, e a caixinha diz (fica até o ×)
+	function avisarRecusa(list) {
+		var x = list[list.length - 1];
+		var texto = list.length === 1 ? 'O PROMeiro recusou ' + descrever(x) + '.' : 'O PROMeiro recusou ' + list.length + ' ações guardadas.';
+		var sub = (list.length === 1 ? '' : 'a última: ' + descrever(x) + '. ') + (x.erro || '') + ' Saiu da fila.';
+
+		caixa(texto, sub, null, true, true);
+	}
+
+	var lendoFila = null;
+
+	// confere a fila deste computador: quantas ações estão guardadas e de quais Produções. A Produção que não tem mais
+	// ação na fila é lida do PROMeiro (a verdade); a recusada de vez aparece na caixinha
+	function lerFila() {
+		if (lendoFila) return lendoFila.then(lerFila);
+
+		lendoFila = (async function () {
+			var itens = await PAD_PROMEIRO.queued();
+			var recusadas = await PAD_PROMEIRO.refused();
+			var naFila = {};
+			var reler = false;
+
+			itens.forEach(function (x) {
+				if (x.producao) naFila[x.producao] = (naFila[x.producao] || 0) + 1;
+			});
+			S.guardadas = itens.length;
+			S.naFila = naFila;
+
+			Object.keys(S.otimista).forEach(function (pid) {
+				if (naFila[pid]) return;
+				delete S.otimista[pid];
+				reler = true;
+			});
+
+			if (recusadas.length) {
+				nGuardadas = 0;
+				avisarRecusa(recusadas);
+				reler = true;
+			} else if (nGuardadas && !S.guardadas) {
+				caixa(nGuardadas === 1 ? 'A ação guardada foi ao PROMeiro.' : 'As ' + nGuardadas + ' ações guardadas foram ao PROMeiro.', '', null);
+				nGuardadas = 0;
+			}
+
+			render();
+			if (reler && S.estado === 'ligada') await load();
+		})().catch(function () { }).finally(function () {
+			lendoFila = null;
+		});
+
+		return lendoFila;
+	}
+
+	// com ações guardadas, a janela manda a fila de novo de tempos em tempos (a barra também manda, se estiver aberta)
+	function filaTick() {
+		if (!S.guardadas) return;
+
+		PAD_PROMEIRO.flush(true).then(lerFila);
 	}
 
 	// uma ação de cada vez: os botões esperam a resposta
@@ -612,10 +802,18 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 	async function pegar(p) {
 		if (p.comVoce) return { sub: '' };
 
-		var r = await PAD_PROMEIRO.take(p.id);
+		var antes = antesDe(p);
+		var r = await PAD_PROMEIRO.take(p.id, { claq: p.claquete });
 		var c = r.corpo || {};
 
-		if (r.guardado) return { sub: 'Sem rede: o aviso fica guardado e vai quando a rede voltar.', atencao: true };
+		// sem rede: o aviso fica na fila, e a janela já mostra a Produção com a pessoa (a Entregue não muda de etapa)
+		if (r.guardado) {
+			guardar(p, pegou(p));
+
+			return { sub: SEM_REDE, desfaz: p.etapa === 'entregue' ? null : { acao: r.aviso, producao: p.id, antes: antes }, atencao: true };
+		}
+
+		if (r.enviado) return { sub: '' };
 		if (r.erro) return { sub: 'O PROMeiro não foi avisado: ' + r.erro, atencao: true };
 		if (r.status === 200) {
 			// a Entregue (só a abertura fica registrada) e a repetida não pegam
@@ -623,7 +821,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 				return e === 'designer-entrou' || e === 'etapa';
 			})) return { sub: '' };
 
-			return { sub: 'Você pegou a Produção.', desfaz: { acao: r.aviso, producao: p.id } };
+			return { sub: 'Você pegou a Produção.', desfaz: { acao: r.aviso, producao: p.id, antes: antes } };
 		}
 
 		if ((r.status === 401 || r.status === 403) && c.estado) {
@@ -733,7 +931,10 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 			a.marcada = feita ? { por: S.designer } : null;
 			if (S.falta && !faltam(p).length) S.falta = null;
 			render();
-			feito(await PAD_PROMEIRO.windowAction('arte', { producao: p.id, arte: a.nome, feita: feita }), p.id);
+
+			if (feito(await PAD_PROMEIRO.windowAction('arte', { producao: p.id, arte: a.nome, feita: feita }, { claq: p.claquete }), p.id) !== 'guardado') return;
+			guardar(p);
+			caixa(a.nome + (feita ? ' marcada.' : ' desmarcada.'), SEM_REDE, null, true);
 		});
 	}
 
@@ -749,7 +950,10 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 
 			a.fogo = nivel;
 			render();
-			feito(await PAD_PROMEIRO.windowAction('fogo', { producao: p.id, arte: a.nome, nivel: nivel }), p.id);
+
+			if (feito(await PAD_PROMEIRO.windowAction('fogo', { producao: p.id, arte: a.nome, nivel: nivel }, { claq: p.claquete }), p.id) !== 'guardado') return;
+			guardar(p);
+			caixa(a.nome + ': complexidade ' + NIVEL[nivel] + '.', SEM_REDE, null, true);
 		});
 	}
 
@@ -773,11 +977,14 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		if (!p) return;
 
 		return busy(async function () {
-			var r = await PAD_PROMEIRO.windowAction('entregar', { producao: p.id });
+			var antes = antesDe(p);
+			var r = await PAD_PROMEIRO.windowAction('entregar', { producao: p.id }, { claq: p.claquete });
+			var f = feito(r, p.id);
 
-			if (!feito(r, p.id)) return;
+			if (!f) return;
 			S.falta = null;
-			caixa(p.claquete + ' foi entregue.', '', { acao: r.acao, producao: p.id });
+			if (f === 'guardado') guardar(p, { etapa: 'entregue' });
+			caixa(p.claquete + ' foi entregue.', f === 'guardado' ? SEM_REDE : '', { acao: r.acao, producao: p.id, antes: antes }, f === 'guardado');
 		});
 	}
 
@@ -788,26 +995,44 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		if (!p) return;
 
 		return busy(async function () {
-			var r = await PAD_PROMEIRO.windowAction('voltar', { producao: p.id });
+			var antes = antesDe(p);
+			var r = await PAD_PROMEIRO.windowAction('voltar', { producao: p.id }, { claq: p.claquete });
+			var f = feito(r, p.id);
 
-			if (!feito(r, p.id)) return;
+			if (!f) return;
+			if (f === 'guardado') guardar(p, saiu(p));
 
-			var agora = r.corpo.producao || {};
+			var agora = f === 'guardado' ? p : (r.corpo && r.corpo.producao) || {};
 
-			caixa(agora.etapa === 'entrada' ? p.claquete + ' voltou para a Entrada.' : 'Você saiu de ' + p.claquete + '.', '', { acao: r.acao, producao: p.id });
+			caixa(agora.etapa === 'entrada' ? p.claquete + ' voltou para a Entrada.' : 'Você saiu de ' + p.claquete + '.', f === 'guardado' ? SEM_REDE : '', { acao: r.acao, producao: p.id, antes: antes }, f === 'guardado');
 		});
 	}
 
-	// o Desfazer da caixinha: a ação contrária da última (só se ninguém mudou a Produção depois)
+	// o Desfazer da caixinha: a ação contrária da última (só se ninguém mudou a Produção depois). Sem rede (#150), a
+	// ação que ainda está na fila só sai dela; a que já foi ganha um desfazer na fila, com o identificador dela
 	function desfazer() {
 		var d = S.caixa && S.caixa.desfaz;
 
 		if (!d) return;
 
 		return busy(async function () {
-			var r = await PAD_PROMEIRO.windowAction('desfazer', { producao: d.producao, desfaz: d.acao });
+			var p = S.producao && S.producao.id === d.producao ? S.producao : S.otimista[d.producao] || null;
 
-			if (feito(r, d.producao)) caixa('Desfeito.', '', null);
+			if (await PAD_PROMEIRO.unqueue(d.acao)) {
+				if (p && d.antes) aplicar(p, d.antes);
+				nGuardadas = Math.max(0, nGuardadas - 1);
+				caixa('Desfeito.', 'A ação guardada saiu da fila: nada foi ao PROMeiro.', null);
+				await lerFila();
+
+				return;
+			}
+
+			var r = await PAD_PROMEIRO.windowAction('desfazer', { producao: d.producao, desfaz: d.acao }, { claq: p ? p.claquete : '' });
+			var f = feito(r, d.producao);
+
+			if (f === 'guardado' && p && d.antes) guardar(p, d.antes);
+			else if (f === 'guardado') nGuardadas++;
+			if (f) caixa('Desfeito.', f === 'guardado' ? SEM_REDE : '', null, f === 'guardado');
 		});
 	}
 
@@ -905,10 +1130,12 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		if (document.hidden) return;
 
 		load(S.estado !== 'ligada');
+		lerFila();
 	}
 
 	setInterval(tick, REFRESH);
+	setInterval(filaTick, FILA_MS);
 	window.addEventListener('focus', tick);
 
-	load(false);
+	load(false).then(lerFila);
 })();

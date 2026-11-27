@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: a janela PROMeiro · produções (jmbillard/TEXTAO#148, #149)
+> ponta a ponta: a janela PROMeiro · produções (jmbillard/TEXTAO#148, #149, #150)
 ---------------------------------------------------------------
 
 A janela no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o repositório
@@ -20,7 +20,12 @@ e2e-promeiro.js). Nada sai para a rede. Confere:
     o projeto ou abre o .aep do card, e a caixinha diz qual; Preencher templates pega e A FORMA abre na busca da
     atração; marcar e desmarcar a arte (só quem está na Produção); o fogo sobe; Entreguei com as artes que faltam
     (Cancelar, Entregar assim mesmo); a seta ← volta para a Entrada; o Desfazer (entregar e pegar); a caixinha com o
-    × na ponta direita; sem rede, o erro na caixinha e nada trava; e o que chegou ao Trello de mentira;
+    × na ponta direita; e o que chegou ao Trello de mentira;
+  - sem rede (#150): cada ação (pegar, marcar a arte, o fogo, entregar, voltar e desfazer) entra na fila com o
+    identificador e a hora, a janela atualiza na hora, a caixinha diz "Sem rede: vai quando a rede voltar." e o topo
+    conta as guardadas ("Dora · 4"); o Desfazer tira da fila a que ainda não foi e enfileira o desfazer da que já foi;
+    com a rede de volta, a fila vai em ordem (o que chegou ao PROMeiro, com a hora certa, e ao Trello de mentira), a
+    repetida não duplica e a recusada de vez (409) sai da fila e aparece na caixinha;
   - as capturas (claro e escuro, estreita e larga, pendente, o pé, a caixinha e o "falta") na pasta CAPTURAS (sem
     ela, nenhuma).
 
@@ -163,6 +168,12 @@ async function subirPromeiro() {
 		producao: async (chave, id) => (await (await fetch(url + '/api/padeiro/producoes/' + encodeURIComponent(id), { headers: { 'x-chave-do-padeiro': chave } })).json()).producao,
 		// o que a janela escreveu no Trello de mentira
 		escritas: () => trello.pedidos.filter((p) => p.metodo !== 'GET').map((p) => p.metodo + ' ' + p.caminho.replace(/^\/1/, '') + (p.lista ? ' ' + p.lista : '')),
+		// uma ação pela rota do Padeiro, fora da janela (outro computador da designer, por exemplo)
+		acao: async (chave, rota, corpo) => {
+			const r = await fetch(url + '/api/padeiro/' + rota, { method: 'POST', headers: { 'content-type': 'application/json', 'x-chave-do-padeiro': chave }, body: JSON.stringify({ acao: 'e2e-' + rota + '-' + Date.now(), feitaEm: new Date().toISOString(), ...corpo }) });
+
+			return { status: r.status, corpo: await r.json() };
+		},
 		// a designer da chave marca uma arte como feita (a rota que a janela vai usar no #149)
 		marcar: async (chave, producao, arte) => {
 			const r = await fetch(url + '/api/padeiro/arte', { method: 'POST', headers: { 'content-type': 'application/json', 'x-chave-do-padeiro': chave }, body: JSON.stringify({ acao: 'e2e-' + Date.now(), feitaEm: new Date().toISOString(), producao, arte, feita: true }) });
@@ -195,6 +206,14 @@ async function guardarAChave(context) {
 		if (list !== undefined) host.fila = list || [];
 
 		return host.fila;
+	});
+
+	// as ações da janela recusadas de vez (o promeiro-recusadas.json): também na memória do teste
+	host.recusadas = [];
+	await context.exposeFunction('padMockPromeiroRecusadas', (list) => {
+		if (list !== undefined) host.recusadas = list || [];
+
+		return host.recusadas;
 	});
 
 	// os pedidos da janela às outras (o promeiro-pedido-<para>.json): também na memória do teste
@@ -260,6 +279,12 @@ async function aba(page, nome) {
 // os botões do pé da Produção: o texto (a seta ←, pelo nome da dica)
 async function pe(page) {
 	return page.locator('.pr-pe button').evaluateAll((els) => els.map((e) => e.textContent.trim() || '← ' + e.getAttribute('aria-label')));
+}
+
+// o topo diz quantas ações estão guardadas (a janela confere a fila logo depois da ação)
+async function topoDiz(page, esperado) {
+	await page.waitForFunction((t) => (document.querySelector('.pr-chave') || {}).textContent === t, esperado, { timeout: 5000 }).catch(() => { });
+	assert.equal(await texto(page.locator('.pr-chave')), esperado);
 }
 
 async function caixinha(page) {
@@ -341,6 +366,8 @@ async function capturar(page, nome) {
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5');
 		assert.deepEqual(await abas(page), ['Entrada 0', 'Produzindo 1', 'Minhas 1'], 'Minhas vale para todas as praças');
 		assert.equal(await texto(page.locator('.pr-nada')), 'nada na entrada!');
+		// a outra página vê o que foi gravado antes de a janela abrir de novo (sem isso, a gravação às vezes não chega)
+		await segura.waitForFunction(() => /G5/.test(localStorage.getItem('pad.promeiro.praca') || ''));
 		page = await abrirJanela(largo);
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5', 'a praça escolhida fica lembrada ao abrir de novo');
 		await segura.close();
@@ -594,21 +621,35 @@ async function capturar(page, nome) {
 		await proj.close();
 		passo('Abrir projeto de quem já está na Produção: a janela PROJETO abre o .aep do card ("Abrindo: FESTA NA PRACA ABERTURA.aep")');
 
-		// 17. sem rede: o erro na caixinha, a arte volta como estava e nada trava
+		// 17. sem rede só na rota da arte (#150): a arte fica marcada, a ação vai para a fila e segue quando a rede volta
 		await quieta(page);
-		await page.route('**/api/padeiro/arte', (r) => r.abort());
+		await page.route('**/api/padeiro/arte', (r) => r.abort('internetdisconnected'));
 		await page.locator('.artes li:nth-child(2) .b').click();
 		await page.waitForFunction(() => /Sem rede/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''));
 		await quieta(page);
-		assert.equal(await caixinha(page), 'Sem rede: o PROMeiro não recebeu. nada mudou lá; tente de novo quando a rede voltar. ×');
+		assert.equal(await caixinha(page), 'CARTÃO marcada. Sem rede: vai quando a rede voltar. ×');
 		assert.equal(await page.locator('.pr-caixa-in .pr-bola.atencao').count(), 1);
-		assert.equal(await texto(page.locator('.pr-conta-artes small')), '1 de 2', 'a arte voltou como estava');
-		await capturar(page, 'sem-rede-largo-claro');
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '2 de 2', 'a janela já mostra a arte marcada');
+		await topoDiz(page, 'Dora · 1');
+		assert.equal(host.fila.length, 1);
+		const arteGuardada = { ...host.fila[0] };
+		assert.equal(arteGuardada.rota, 'arte');
+		assert.deepEqual(arteGuardada.dados, { arte: 'CARTÃO', feita: true });
+		assert.equal(arteGuardada.producao, festa);
+		assert.match(arteGuardada.aviso, /^[\w.:-]{1,100}$/);
+		assert.equal((await promeiro.producao(host.guardada.chave, festa)).artes[1].feita, false, 'nada chegou ao PROMeiro ainda');
+		await capturar(page, 'sem-rede-arte-largo-claro');
+		await new Promise((ok) => setTimeout(ok, 1100)); // a hora da ação fica para trás
 		await page.unroute('**/api/padeiro/arte');
-		await page.locator('.artes li:nth-child(2) .b').click();
+		await page.waitForFunction(() => (document.querySelector('.pr-chave') || {}).textContent === 'Dora', null, { timeout: 25000 });
 		await quieta(page);
-		assert.equal(await texto(page.locator('.pr-conta-artes small')), '2 de 2', 'a rede voltou: marca');
-		passo('sem rede: a caixinha mostra o erro, a arte volta como estava e a janela não trava');
+		assert.equal(await caixinha(page), 'A ação guardada foi ao PROMeiro. ×');
+		assert.deepEqual(host.fila, [], 'a fila esvaziou');
+		const cartao = (await promeiro.producao(host.guardada.chave, festa)).artes[1];
+		assert.equal(cartao.feita, true, 'a rede voltou: a arte chegou');
+		assert.equal(cartao.marcada.em, arteGuardada.abertoEm, 'com a hora em que foi marcada, não a do envio');
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '2 de 2');
+		passo('sem rede na arte: a janela marca na hora, a caixinha diz "Sem rede: vai quando a rede voltar.", o topo conta "Dora · 1" e a arte vai com a hora certa');
 
 		// 18. só quem está na Produção marca (a do Rui, na rede)
 		await page.locator('.pr-praca').click();
@@ -664,6 +705,155 @@ async function capturar(page, nome) {
 		passo('estreita (320 px), claro e escuro: o pé, o aviso do que falta e a caixinha acima do pé, com o × na ponta direita');
 
 		assert.deepEqual(promeiro.escritas().slice(6), ['PUT /cards/' + card(3) + ' saidaSP', 'PUT /cards/' + card(3) + ' entradaSP', 'PUT /cards/' + card(3) + ' saidaSP', 'PUT /cards/' + card(3) + ' entradaSP'], 'no Trello: só as entregas e os Desfazer da FESTA');
+		// 20. sem rede de todo (#150): pegar, marcar, o fogo e entregar vão para a fila; a janela atualiza na hora
+		const semRede = (r) => r.abort('internetdisconnected');
+		const fila = () => host.fila.map((x) => x.rota + (x.dados && x.dados.arte ? ' ' + x.dados.arte : '') + (x.producao === show ? ' SHOW' : x.producao === festa ? ' FESTA' : ''));
+		page = await abrirJanela(largo);
+		await page.locator('.pr-praca').click();
+		await page.locator('.pr-menu-item', { hasText: 'SP' }).click();
+		// as duas lidas com a rede (sem rede, a janela abre a Produção com a última leitura)
+		await aba(page, 'Minhas');
+		await page.locator('.prod-card', { hasText: 'FESTA NA PRACA' }).click();
+		await page.waitForFunction(() => /FESTA/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		await aba(page, 'Entrada');
+		await page.locator('.prod-card', { hasText: 'SHOW DA NOITE' }).click();
+		await page.waitForFunction(() => /SHOW/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		await quieta(page);
+		const noTrello = promeiro.escritas().length;
+		await largo.route('**/api/padeiro/**', semRede);
+
+		await page.click('.pr-pe [data-acao="projeto"]');
+		await page.waitForFunction(() => /Sem rede/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''));
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Abrindo o projeto de SHOW DA NOITE 20/12 SP… Sem rede: vai quando a rede voltar. Desfazer ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO', 'pegou: a janela já mostra como se tivesse ido');
+		assert.deepEqual(await pe(page), ['← voltar para a Entrada', 'Preencher templates', 'Abrir projeto', 'Entreguei']);
+		await topoDiz(page, 'Dora · 1');
+		assert.equal(await page.locator('.pr-col .prod-card', { hasText: 'SHOW DA NOITE' }).count(), 0, 'na lista, saiu da Entrada');
+		await aba(page, 'Produzindo');
+		assert.equal(await page.locator('.pr-col .prod-card', { hasText: 'SHOW DA NOITE' }).count(), 1, 'e está em Produzindo');
+		await capturar(page, 'sem-rede-pegou-largo-claro');
+
+		await page.locator('.artes li:nth-child(2) .b').click();
+		await quieta(page);
+		assert.equal(await caixinha(page), 'AMANHÃ marcada. Sem rede: vai quando a rede voltar. ×');
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '2 de 3');
+		await page.locator('.artes li:nth-child(3) button.cx').click();
+		await quieta(page);
+		assert.equal(await fogoDe(3), 'fogo n3');
+		assert.equal(await caixinha(page), 'DOMINGO: complexidade ALTA. Sem rede: vai quando a rede voltar. ×');
+		await page.click('.pr-pe [data-acao="entreguei"]');
+		await page.click('.pr-falta [data-acao="assim-mesmo"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'SHOW DA NOITE 20/12 SP foi entregue. Sem rede: vai quando a rede voltar. Desfazer ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE');
+		await topoDiz(page, 'Dora · 4');
+		assert.deepEqual(fila(), ['aviso SHOW', 'arte AMANHÃ SHOW', 'fogo DOMINGO SHOW', 'entregar SHOW']);
+		await capturar(page, 'sem-rede-largo-claro');
+
+		// o Desfazer da entrega que ainda está na fila: ela só sai dela
+		await page.click('.pr-caixa-desfazer');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Desfeito. A ação guardada saiu da fila: nada foi ao PROMeiro. ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
+		await topoDiz(page, 'Dora · 3');
+		assert.deepEqual(fila(), ['aviso SHOW', 'arte AMANHÃ SHOW', 'fogo DOMINGO SHOW']);
+		await page.click('.pr-pe [data-acao="entreguei"]');
+		await page.click('.pr-falta [data-acao="assim-mesmo"]');
+		await quieta(page);
+		await topoDiz(page, 'Dora · 4');
+
+		// a FESTA, aberta sem rede (com a última leitura): o Entreguei vai para a fila
+		await aba(page, 'Minhas');
+		await page.locator('.prod-card', { hasText: 'FESTA NA PRACA' }).click();
+		await page.waitForFunction(() => /FESTA/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		await quieta(page);
+		await page.click('.pr-pe [data-acao="entreguei"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'FESTA NA PRACA 20/12 SP foi entregue. Sem rede: vai quando a rede voltar. Desfazer ×');
+		await topoDiz(page, 'Dora · 5');
+		const guardadas = JSON.parse(JSON.stringify(host.fila));
+		assert.deepEqual(fila(), ['aviso SHOW', 'arte AMANHÃ SHOW', 'fogo DOMINGO SHOW', 'entregar SHOW', 'entregar FESTA']);
+		assert.equal(new Set(guardadas.map((x) => x.aviso)).size, 5, 'cada ação com o seu identificador');
+		assert.deepEqual(guardadas.map((x) => x.abertoEm), guardadas.map((x) => x.abertoEm).slice().sort(), 'com a hora de cada uma, em ordem');
+		assert.equal(promeiro.escritas().length, noTrello, 'sem rede, nada chegou ao Trello');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).etapa, 'entrada', 'nem ao PROMeiro');
+		assert.deepEqual(page.errors, []);
+		passo('sem rede: pegar, marcar, o fogo e entregar entram na fila com o identificador e a hora; a janela atualiza na hora e o topo conta "Dora · 5"; o Desfazer tira da fila a que não foi');
+
+		// enquanto isso, a FESTA foi entregue por outro caminho: a entrega guardada vai ser recusada (409)
+		await new Promise((ok) => setTimeout(ok, 1100)); // a hora das ações fica para trás
+		assert.equal((await promeiro.acao(host.guardada.chave, 'entregar', { producao: festa })).status, 200);
+		const antesDaRede = promeiro.escritas().length;
+
+		// a rede volta: a fila vai em ordem
+		await largo.unroute('**/api/padeiro/**', semRede);
+		await page.waitForFunction(() => (document.querySelector('.pr-chave') || {}).textContent === 'Dora', null, { timeout: 25000 });
+		await page.waitForFunction(() => /recusou/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''));
+		await quieta(page);
+		assert.deepEqual(host.fila, [], 'a fila esvaziou');
+		assert.deepEqual(host.recusadas, [], 'a recusada foi mostrada e saiu do host');
+		assert.match(await caixinha(page), /^O PROMeiro recusou entregar \(FESTA NA PRACA 20\/12 SP\)\. .*Entregue.* Saiu da fila\. ×$/);
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE', 'a FESTA, como o PROMeiro diz');
+		await capturar(page, 'recusa-largo-claro');
+		assert.deepEqual(promeiro.escritas().slice(antesDaRede), ['POST /cards/' + card(1) + '/idMembers membroDora', 'PUT /cards/' + card(1) + ' saidaSP'], 'no Trello, em ordem: a Dora entrou no card do SHOW e ele foi para a saída');
+		const showAgora = await promeiro.producao(host.guardada.chave, show);
+		assert.equal(showAgora.etapa, 'entregue');
+		assert.deepEqual(showAgora.designers, ['Dora Teste']);
+		assert.equal(showAgora.artes[1].feita, true);
+		assert.equal(showAgora.artes[1].marcada.em, guardadas[1].abertoEm, 'a arte com a hora certa');
+		assert.equal(showAgora.artes[2].fogo, 3);
+		await page.click('.pr-caixa-fechar');
+		assert.equal(await page.locator('.pr-caixa-in').count(), 0);
+		passo('a rede voltou: a fila foi em ordem (pegar, marcar, fogo, entregar), com a hora certa; a entrega da FESTA, recusada (409), saiu da fila e apareceu na caixinha');
+
+		// o mesmo envio de novo (a resposta se perdeu): nada duplica. (o fogo fica de fora: com a Produção já Entregue,
+		// a rota do fogo do PROMeiro responde 409 antes de ver que é repetido)
+		host.fila = guardadas.filter((x) => x.producao === show && x.rota !== 'fogo');
+		const naoDuplica = promeiro.escritas().length;
+		await page.evaluate(() => PAD_PROMEIRO.flush(true));
+		assert.deepEqual(host.fila, [], 'as repetidas saem da fila');
+		assert.deepEqual(host.recusadas, [], 'e nenhuma é recusada');
+		assert.equal(promeiro.escritas().length, naoDuplica, 'nada novo no Trello');
+		assert.deepEqual(await promeiro.producao(host.guardada.chave, show), showAgora, 'nem no PROMeiro');
+		passo('o mesmo envio de novo: as ações repetidas não duplicam nada');
+
+		// o Desfazer de uma ação que já foi, sem rede: o desfazer entra na fila com o identificador dela (desfaz).
+		// o SHOW, Entregue, saiu da lista: a janela abre ele pelo id (como o clique num card)
+		await page.evaluate((id) => {
+			const b = document.createElement('button');
+
+			b.setAttribute('data-abrir', id);
+			b.id = 'e2e-abrir';
+			document.body.appendChild(b);
+		}, show);
+		await page.click('#e2e-abrir');
+		await page.waitForFunction(() => /SHOW/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE');
+		await page.click('.pr-pe [data-acao="devolver"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'SHOW DA NOITE 20/12 SP voltou para a Entrada. Desfazer ×');
+		const voltou = promeiro.escritas().length;
+		await largo.route('**/api/padeiro/**', semRede);
+		await page.click('.pr-caixa-desfazer');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Desfeito. Sem rede: vai quando a rede voltar. ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE', 'a janela já mostra desfeito');
+		await topoDiz(page, 'Dora · 1');
+		assert.equal(host.fila[0].rota, 'desfazer');
+		assert.ok(host.fila[0].dados.desfaz, 'com o identificador da ação desfeita');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).etapa, 'entrada');
+		await largo.unroute('**/api/padeiro/**', semRede);
+		await page.waitForFunction(() => (document.querySelector('.pr-chave') || {}).textContent === 'Dora', null, { timeout: 25000 });
+		await quieta(page);
+		assert.equal(await caixinha(page), 'A ação guardada foi ao PROMeiro. ×');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).etapa, 'entregue', 'o desfazer chegou');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE');
+		assert.ok(promeiro.escritas().length > voltou, 'e o Trello voltou também');
+		assert.deepEqual(page.errors, []);
+		passo('o Desfazer sem rede de uma ação que já foi: o desfazer entra na fila com o identificador dela e vai quando a rede volta');
+
 		await largo.close();
 		await largoEscuro.close();
 		console.log('\n' + ok + ' passos ok');

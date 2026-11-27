@@ -103,11 +103,23 @@ do `promeiro.json`; `host/promeiro.jsx`) e só sai dela quando o PROMeiro respon
 esperar a resposta para fechar a janela nem travar o After. A fila vai de novo ao abrir a barra e a claquete e, com a
 barra aberta, a cada 3 minutos. O que acontece com cada aviso:
 
-- **entregue** (200), **repetido**, **mal feito** (400) ou **a Produção que não existe** (404): sai da fila;
+- **entregue** (200), **repetido**, **mal feito** (400), **a Produção que não existe** (404) ou **que já mudou**
+  (409): sai da fila;
 - **a chave que não vale** (401, 403) ou **pendente**: sai da fila (o PROMeiro recusaria);
-- **sem rede**, o PROMeiro fora do ar, um erro dele ou do Trello: fica para depois;
+- **sem rede**, o PROMeiro fora do ar, um erro dele ou do Trello (502, 503): fica para depois, e os que vêm atrás dele
+  também (a fila vai em ordem: nenhum passa à frente);
 - **no modo local** ou sem o endereço do PROMeiro: fica até voltar; o aviso pedido em outro endereço sai;
 - no máximo 100 avisos, dos últimos 30 dias.
+
+**As ações da janela PROMeiro · produções** (jmbillard/TEXTAO#150) vão pela mesma fila: pegar (o aviso), marcar a
+arte, o fogo, entregar, voltar e desfazer (`POST /api/padeiro/{aviso,arte,fogo,entregar,voltar,desfazer}`). Cada uma
+leva o identificador (`acao`) e a hora em que foi feita (`feitaEm`); na fila, também a `rota`, os `dados` dela e a
+claquete. Sem rede, a janela atualiza na hora, como se a ação tivesse ido, a caixinha diz "Sem rede: vai quando a rede
+voltar." e o topo conta as guardadas ("Dora · 2"); com ações guardadas, a janela manda a fila de novo a cada 8 s.
+Quando a fila de uma Produção esvazia, a janela lê a Produção do PROMeiro, que é a verdade. A ação recusada de vez sai
+da fila e fica em `promeiro-recusadas.json` (na mesma pasta) até a janela mostrar na caixinha. O Desfazer sem rede tira
+da fila a ação que ainda não foi; a que já foi ganha um desfazer na fila, com o identificador dela (`desfaz`). Teste:
+`PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-janela.js`.
 
 ## onde está no código
 
@@ -119,4 +131,7 @@ barra aberta, a cada 3 minutos. O que acontece com cada aviso:
   `attractions.js` troca os cards do webhook pelos do PROMeiro (`currentCards()`).
 - o aviso do Padeiro: `project.js` (`avisoTarget()` e `avisar()`, ao abrir ou criar), `promeiro.js` (`notify()` e
   `flush()`, a fila), `attractions.js` (`filmProduction()`, a Produção do filme) e `host/promeiro.jsx`
-  (`promeiroQueue`, `promeiroQueueAdd`, `promeiroQueueDrop`); `bar.js` manda a fila ao abrir e de tempos em tempos.
+  (`promeiroQueue`, `promeiroQueueAdd`, `promeiroQueueDrop`, `promeiroRecusadas`); `bar.js` manda a fila ao abrir e
+  de tempos em tempos.
+- as ações da janela na fila: `promeiro.js` (`windowAction()`, `take()`, `unqueue()`, `refused()`) e
+  `promeiro-janela.js` (`guardar()`, `lerFila()`, a Produção otimista).

@@ -209,6 +209,18 @@ const CHECKS = [
 		await p.waitForSelector('.pr-caixa-in');
 		await p.waitForTimeout(400);
 	}],
+	// sem rede (#150): a arte marcada vai para a fila, a caixinha diz e o topo conta as guardadas
+	['promeiro: sem rede', 'promeiro.html?mock=janela', async (p) => {
+		await p.click('.pr-aba[data-v="produzindo"]');
+		await p.locator('.prod-card', { hasText: 'NOITE DE JAZZ' }).click();
+		await p.waitForSelector('.pr-pe [data-acao="entreguei"]');
+		await p.evaluate(() => {
+			window.PAD_MOCK_SEM_REDE = true;
+		});
+		await p.locator('.artes li:nth-child(2) .b').click();
+		await p.waitForSelector('.pr-caixa-in');
+		await p.waitForTimeout(400);
+	}],
 	['promeiro: chave pendente', 'promeiro.html?mock=janelapendente'],
 	['editor de config', 'index.html', async (p) => {
 		await openTemplate(p);

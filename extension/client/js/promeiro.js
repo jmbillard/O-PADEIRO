@@ -24,8 +24,13 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
   - a janela PROMeiro · produções (#148, promeiro.html): com a chave ligada, lê a lista (a mesma rota, com o
     "pronto para abrir" de cada Produção) e a Produção aberta: GET /api/padeiro/producoes/<id>. Com a pendente, o
     PROMeiro recusa (403 { estado: 'pendente' }) e a janela mostra só o aviso.
-    As ações dela (#149): pegar é o aviso (take, pela fila, esperando a resposta); marcar a arte, o fogo, entregar,
-    voltar e desfazer são POST /api/padeiro/<rota> { acao, feitaEm, … } (windowAction), só com a chave ligada.
+    As ações dela (#149): pegar é o aviso (take); marcar a arte, o fogo, entregar, voltar e desfazer são
+    POST /api/padeiro/<rota> { acao, feitaEm, … } (windowAction), só com a chave ligada.
+    Sem rede (#150), todas elas vão pela fila dos avisos, a mesma: cada uma entra com o identificador (`acao`) e a hora
+    certa (`feitaEm`) e a fila manda em ordem quando a rede volta. A resposta (200, ou a recusa de vez: 400, 401, 403,
+    404, 409) tira da fila; o PROMeiro fora do ar (502, 503) ou sem rede deixa ela e o que vem depois para a próxima vez,
+    para não passar à frente. A recusa de vez de uma ação da janela que ninguém está esperando fica guardada no host
+    (promeiroRecusadas) para a janela mostrar ao designer.
 
 Sem o endereço do PROMeiro na configuração (aba BUSCAR), no modo local, com a chave pendente ou com o PROMeiro fora do
 ar, nada muda: o NO TRELLO continua vindo do webhook do n8n. Quem fala é o Node do painel (sem travar o After
@@ -264,66 +269,145 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 	   as ações da janela (jmbillard/TEXTAO#149)
 	   --------------------------------------------------------------- */
 
-	// uma ação da janela: POST /api/padeiro/<rota> (arte, fogo, entregar, voltar, desfazer), com o identificador da ação
-	// e a hora. Só a chave ligada age: a pendente recebe 403 { estado: 'pendente' }. Sem rede (ou sem resposta a tempo),
-	// nada fica guardado nesta fatia (a fila da janela é o #150): a janela mostra o erro.
-	// → { estado: 'ligada', status, corpo, acao } | { estado: 'ligada', semRede: true, acao } |
-	//   { estado: 'pendente' | 'desligado' | 'fora' }
-	async function windowAction(rota, dados) {
-		var s = await state();
-
-		if (s.estado !== 'ligada') return { estado: s.estado, local: !!s.local };
-
-		var body = Object.assign({}, dados || {}, { acao: newAvisoId(), feitaEm: new Date().toISOString() });
-		var res;
-
-		try {
-			res = await request(s.url, 'POST', '/api/padeiro/' + rota, s.chave, body);
-		} catch (err) {
-			return { estado: 'ligada', semRede: true, acao: body.acao };
-		}
-
-		if (res.status === 403 && res.body && res.body.estado) {
-			cache.at = 0;
-
-			return { estado: res.body.estado === 'ligada' ? 'fora' : res.body.estado === 'revogada' ? (await state(true)).estado : res.body.estado };
-		}
-
-		if (res.status === 401) {
-			var again = await state(true);
-
-			return { estado: again.estado === 'ligada' ? 'fora' : again.estado };
-		}
-
-		return { estado: 'ligada', status: res.status, corpo: res.body || {}, acao: body.acao };
+	// o estado da chave para agir: a ligada, ou a última lida ligada quando o PROMeiro não responde agora (sem rede, a
+	// ação vai para a fila e segue quando a rede voltar)
+	function canAct(s) {
+		return s.estado === 'ligada' || (s.estado === 'fora' && s.ultimo === 'ligada');
 	}
 
-	// pegar pela janela (Abrir projeto, Preencher templates): o aviso do Padeiro, pela fila deste computador, como ao
-	// abrir pelo card, mas esperando a resposta (a caixinha diz o que aconteceu e o Desfazer usa o identificador).
-	// → { aviso, status, corpo } (o PROMeiro respondeu) | { aviso, guardado: true } (sem rede ou com o PROMeiro fora do
-	// ar: o aviso ficou na fila e vai depois) | { erro } (nem entrou na fila)
-	async function take(producao) {
-		var item = { aviso: newAvisoId(), abertoEm: new Date().toISOString(), producao: String(producao || ''), card: '', filme: '' };
+	// põe a ação na fila e manda, esperando a resposta. Com outras guardadas na fila e a rede fora (o último pedido
+	// não chegou), não espera: a ação fica atrás delas, sem segurar a janela. → { status, corpo } | { guardado } |
+	// { enviado } (outra janela mandou: a resposta ficou com ela) | { erro }
+	async function enqueue(item, semRede) {
 		var added = null;
+		var busy = !!flushing;
 
 		try {
 			added = await call('promeiroQueueAdd', item);
 		} catch (err) { }
 
-		if (!added || !added.queued) return { erro: 'o aviso não entrou na fila deste computador.' };
+		if (!added || !added.queued) return { erro: 'a ação não entrou na fila deste computador.' };
 
-		// um envio da fila já em curso (de antes deste aviso) não leva ele: manda de novo
-		for (var i = 0; i < 2 && !answers[item.aviso]; i++) await flush(true);
+		waiting[item.aviso] = true;
 
-		var r = answers[item.aviso];
+		try {
+			if (added.itens > 1 && (semRede || offline)) {
+				flush();
 
-		delete answers[item.aviso];
+				return { guardado: true };
+			}
 
-		return r ? { aviso: item.aviso, status: r.status, corpo: r.corpo || {} } : { aviso: item.aviso, guardado: true };
+			// um envio da fila já em curso (de antes desta ação) não leva ela: manda de novo
+			await flush(true);
+			if (busy && !answers[item.aviso]) await flush(true);
+
+			var r = answers[item.aviso];
+
+			delete answers[item.aviso];
+			if (r) return { status: r.status, corpo: r.corpo || {} };
+
+			var left = [];
+
+			try {
+				left = (await call('promeiroQueue')).itens || [];
+			} catch (err) { }
+
+			return left.some(function (x) {
+				return x.aviso === item.aviso;
+			}) ? { guardado: true } : { enviado: true };
+		} finally {
+			delete waiting[item.aviso];
+		}
 	}
 
-	// a resposta do PROMeiro a cada aviso mandado pela fila (a janela espera pela do pegar)
+	// a recusa por causa da chave (pendente, revogada, desconhecida): o estado é lido de novo
+	async function keyRefused(res) {
+		cache.at = 0;
+
+		var again = await state(true);
+
+		if (res.corpo && res.corpo.estado === 'pendente') return 'pendente';
+
+		return again.estado === 'ligada' ? 'fora' : again.estado;
+	}
+
+	// uma ação da janela: POST /api/padeiro/<rota> (arte, fogo, entregar, voltar, desfazer), com o identificador da ação
+	// e a hora, pela fila (#150). Só a chave ligada age: a pendente recebe 403 { estado: 'pendente' }. info: { claq }
+	// (só para a janela dizer qual ação foi recusada, se for depois).
+	// → { estado: 'ligada', status, corpo, acao } | { estado: 'ligada', guardado: true, acao } (sem rede: na fila) |
+	//   { estado: 'ligada', enviado: true, acao } | { estado: 'ligada', erro } |
+	//   { estado: 'pendente' | 'desligado' | 'fora' }
+	async function windowAction(rota, dados, info) {
+		var s = await state();
+
+		if (!canAct(s)) return { estado: s.estado, local: !!s.local };
+
+		var d = dados || {};
+		var item = { aviso: newAvisoId(), rota: rota, abertoEm: new Date().toISOString(), producao: String(d.producao || ''), card: '', filme: '', claq: String((info && info.claq) || ''), dados: {} };
+
+		Object.keys(d).forEach(function (k) {
+			if (k !== 'producao') item.dados[k] = d[k];
+		});
+
+		var r = await enqueue(item, s.estado === 'fora');
+
+		if (r.erro) return { estado: 'ligada', erro: r.erro };
+		if (r.guardado || r.enviado) return { estado: 'ligada', guardado: !!r.guardado, enviado: !!r.enviado, acao: item.aviso };
+		if ((r.status === 401 || r.status === 403) && r.corpo && r.corpo.estado) return { estado: await keyRefused(r) };
+		if (r.status === 401) return { estado: await keyRefused(r) };
+
+		return { estado: 'ligada', status: r.status, corpo: r.corpo || {}, acao: item.aviso };
+	}
+
+	// pegar pela janela (Abrir projeto, Preencher templates): o aviso do Padeiro, pela fila deste computador, como ao
+	// abrir pelo card, mas esperando a resposta (a caixinha diz o que aconteceu e o Desfazer usa o identificador).
+	// → { aviso, status, corpo } (o PROMeiro respondeu) | { aviso, guardado: true } (sem rede ou com o PROMeiro fora do
+	// ar: o aviso ficou na fila e vai depois) | { aviso, enviado: true } | { erro } (nem entrou na fila)
+	async function take(producao, info) {
+		var item = { aviso: newAvisoId(), rota: 'aviso', abertoEm: new Date().toISOString(), producao: String(producao || ''), card: '', filme: '', claq: String((info && info.claq) || ''), dados: {} };
+		var r = await enqueue(item);
+
+		if (r.erro) return { erro: 'o aviso não entrou na fila deste computador.' };
+		if (r.guardado || r.enviado) return { aviso: item.aviso, guardado: !!r.guardado, enviado: !!r.enviado };
+
+		return { aviso: item.aviso, status: r.status, corpo: r.corpo || {} };
+	}
+
+	// tira uma ação da fila antes de ela ir (o Desfazer sem rede, #150). Espera o envio em curso nesta janela, para
+	// não tirar a que já está a caminho. → true quando ela ainda estava na fila (nada foi ao PROMeiro)
+	async function unqueue(acao) {
+		if (flushing) await flushing;
+
+		try {
+			return (await call('promeiroQueueDrop', { avisos: [String(acao || '')] })).tirados > 0;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	// as ações da janela recusadas de vez quando a fila foi (e ninguém esperava a resposta): a janela mostra e limpa
+	async function refused() {
+		try {
+			return (await call('promeiroRecusadas', { limpar: true })).itens || [];
+		} catch (err) {
+			return [];
+		}
+	}
+
+	// quantas ações e avisos estão guardados na fila deste computador, e de quais Produções
+	async function queued() {
+		try {
+			return (await call('promeiroQueue')).itens || [];
+		} catch (err) {
+			return [];
+		}
+	}
+
+	// a resposta do PROMeiro a cada aviso mandado pela fila (a janela espera pela das ações dela); waiting: as ações
+	// que esta janela está esperando (a recusa delas vem na resposta, e não fica guardada para depois)
 	var answers = {};
+	var waiting = {};
+	var offline = false; // o último pedido da fila não chegou ao PROMeiro (sem rede)
 
 	// a lista da janela: as Produções em Entrada e Produzindo, cada uma com o "pronto para abrir" (pronto, estado)
 	async function windowList(force) {
@@ -405,13 +489,18 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		var s = await state();
 
 		if (force && s.estado === 'fora') s = await state(true);
+		if (s.estado === 'fora') offline = true;
 
 		var done = [];
 		var sent = 0;
+		var refusals = [];
 
-		// a chave pendente não avisa (o PROMeiro recusa): a fila sai. sem o endereço ou no modo local, ela fica
+		// a chave pendente não avisa (o PROMeiro recusa): a fila sai (as ações da janela, como recusadas). sem o endereço
+		// ou no modo local, ela fica
 		if (s.estado === 'pendente') {
 			done = list.map(function (x) {
+				if (x.rota && !waiting[x.aviso]) refusals.push(refusalOf(x, { status: 403, body: { erro: 'A chave do Padeiro está pendente: falta um administrador do PROMeiro ligar.' } }));
+
 				return x.aviso;
 			});
 		} else if (s.estado === 'ligada') {
@@ -427,25 +516,53 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 				var res;
 
 				try {
-					res = await request(s.url, 'POST', '/api/padeiro/aviso', s.chave, { aviso: x.aviso, abertoEm: x.abertoEm, producao: x.producao || undefined, card: x.card || undefined, filme: x.filme || undefined });
+					res = await request(s.url, 'POST', '/api/padeiro/' + route(x), s.chave, bodyOf(x));
 				} catch (err) {
-					break; // sem rede (ou o PROMeiro não respondeu a tempo): o resto fica para depois
+					offline = true;
+					break; // sem rede (ou o PROMeiro não respondeu a tempo): esta e as seguintes ficam para depois
 				}
 
-				// entregue (ou repetido: já tinha chegado), ou recusado de vez (mal feito, a Produção que não existe, a chave que
-				// não vale para ele): sai da fila. o resto (o PROMeiro ou o Trello com problema) tenta de novo depois
+				offline = false;
+
+				// entregue (ou repetido: já tinha chegado), ou recusado de vez (mal feito, a Produção que não existe ou já mudou,
+				// a chave que não vale para ele): sai da fila. o resto (o PROMeiro ou o Trello com problema) fica, e as
+				// seguintes também, para a fila não passar à frente dela
+				var settled = (res.status >= 200 && res.status < 300) || (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429);
+
+				if (!settled) break;
+
 				answers[x.aviso] = { status: res.status, corpo: res.body };
+				done.push(x.aviso);
 				if (res.status === 200) sent++;
-				if (res.status === 200 || res.status === 400 || res.status === 404 || res.status === 401 || res.status === 403) done.push(x.aviso);
+				else if (x.rota && !waiting[x.aviso]) refusals.push(refusalOf(x, res));
 				if (res.status === 401 || res.status === 403) cache.at = 0;
 			}
 		}
 
 		var left = list.length - done.length;
 
-		if (done.length) left = (await call('promeiroQueueDrop', { avisos: done })).itens;
+		if (done.length) left = (await call('promeiroQueueDrop', { avisos: done, recusadas: refusals })).itens;
 
 		return { sent: sent, left: left };
+	}
+
+	// a rota de um item da fila: o aviso (sem rota: o da abertura do projeto) ou a ação da janela (#150)
+	function route(x) {
+		return x.rota && x.rota !== 'aviso' ? x.rota : 'aviso';
+	}
+
+	// o corpo do pedido de um item da fila
+	function bodyOf(x) {
+		if (route(x) === 'aviso') return { aviso: x.aviso, abertoEm: x.abertoEm, producao: x.producao || undefined, card: x.card || undefined, filme: x.filme || undefined };
+
+		return Object.assign({}, x.dados || {}, { acao: x.aviso, feitaEm: x.abertoEm, producao: x.producao });
+	}
+
+	// a recusa de vez de uma ação da janela, para ela mostrar depois
+	function refusalOf(x, res) {
+		var erro = res.body && res.body.erro ? String(res.body.erro) : 'O PROMeiro recusou (' + res.status + ').';
+
+		return { acao: x.aviso, rota: route(x), producao: x.producao || '', claq: x.claq || '', dados: x.dados || {}, status: res.status, erro: erro };
 	}
 
 	// o texto do estado, para a configuração e o aviso da barra
@@ -469,6 +586,9 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		windowList: windowList,
 		windowProduction: windowProduction,
 		windowAction: windowAction,
-		take: take
+		take: take,
+		unqueue: unqueue,
+		refused: refused,
+		queued: queued
 	};
 })();

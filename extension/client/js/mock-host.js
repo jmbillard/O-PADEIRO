@@ -157,6 +157,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var json = function (status, body) {
 				return { status: status, body: body };
 			};
+
+			// sem rede (#150, ui-states.js: window.PAD_MOCK_SEM_REDE = true): nada chega
+			if (window.PAD_MOCK_SEM_REDE) throw new Error('sem rede (modo de teste)');
 			var one = /^\/api\/padeiro\/producoes\/([^/]+)$/.exec(path);
 			var rota = method === 'POST' ? (/^\/api\/padeiro\/(aviso|arte|fogo|entregar|voltar|desfazer)$/.exec(path) || [])[1] : '';
 
@@ -266,6 +269,29 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 	function mockBar() {
 		return JSON.parse(localStorage.getItem('pad.mock.bar') || 'null') || { items: ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'], hidden: [] };
+	}
+
+	// os dados de uma ação da janela PROMeiro · produções na fila (host/promeiro.jsx padPromeiroActionData)
+	function mockActionData(d) {
+		var out = {};
+
+		if (!d || typeof d !== 'object') return out;
+		if (d.arte != null) out.arte = String(d.arte);
+		if (d.feita === true || d.feita === false) out.feita = d.feita;
+		if ([1, 2, 3].indexOf(d.nivel) >= 0) out.nivel = d.nivel;
+		if (d.desfaz != null) out.desfaz = String(d.desfaz);
+
+		return out;
+	}
+
+	// lê (sem list) ou grava as ações recusadas de vez
+	async function mockRefused(list) {
+		if (window.padMockPromeiroRecusadas) return (await window.padMockPromeiroRecusadas(list)) || [];
+		if (list === undefined) return JSON.parse(localStorage.getItem('pad.mock.promeiroRecusadas') || 'null') || [];
+		if (!list.length) localStorage.removeItem('pad.mock.promeiroRecusadas');
+		else localStorage.setItem('pad.mock.promeiroRecusadas', JSON.stringify(list));
+
+		return list;
 	}
 
 	var api = {
@@ -443,6 +469,14 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			var list = (await api.promeiroQueue()).itens;
 			var item = { aviso: String(a.aviso || ''), abertoEm: String(a.abertoEm || '') || new Date().toISOString(), producao: String(a.producao || ''), card: String(a.card || ''), filme: String(a.filme || ''), url: url };
 
+			// as ações da janela PROMeiro · produções (#150): a rota, os dados dela e a claquete
+			if (a.rota) {
+				if (!/^(aviso|arte|fogo|entregar|voltar|desfazer)$/.test(String(a.rota))) return { queued: false, itens: list.length };
+				item.rota = String(a.rota);
+				item.dados = mockActionData(a.dados);
+				item.claq = String(a.claq || '');
+			}
+
 			if (!url || !/^[\w.:-]{1,100}$/.test(item.aviso) || !(item.producao || item.card || item.filme)) return { queued: false, itens: list.length };
 			if (list.some(function (x) {
 				return x.aviso === item.aviso;
@@ -456,13 +490,32 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 
 		promeiroQueueDrop: async function (a) {
 			var gone = (a && a.avisos) || [];
-			var list = (await api.promeiroQueue()).itens.filter(function (x) {
+			var old = (await api.promeiroQueue()).itens;
+			var list = old.filter(function (x) {
 				return gone.indexOf(x.aviso) < 0;
 			});
 
 			await api.promeiroQueueWrite(list);
 
-			return { itens: list.length };
+			if (a && a.recusadas && a.recusadas.length) {
+				var refused = (await mockRefused()).concat(a.recusadas.map(function (x) {
+					return { acao: String(x.acao || ''), rota: String(x.rota || ''), producao: String(x.producao || ''), claq: String(x.claq || ''), dados: mockActionData(x.dados), status: Number(x.status) || 0, erro: String(x.erro || ''), em: new Date().toISOString() };
+				}));
+
+				await mockRefused(refused.slice(-20));
+			}
+
+			return { itens: list.length, tirados: old.length - list.length };
+		},
+
+		// as ações da janela recusadas de vez (host/promeiro.jsx, o promeiro-recusadas.json): aqui, no localStorage (o
+		// teste da janela troca pelo padMockPromeiroRecusadas, a memória do teste)
+		promeiroRecusadas: async function (a) {
+			var list = await mockRefused();
+
+			if (a && a.limpar) await mockRefused([]);
+
+			return { itens: list };
 		},
 
 		// os pedidos da janela PROMeiro · produções às outras janelas (host/promeiro.jsx, promeiro-pedido-<para>.json):
