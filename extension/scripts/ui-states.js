@@ -194,6 +194,21 @@ const CHECKS = [
 		await p.locator('.prod-card').first().click();
 		await p.waitForTimeout(800);
 	}],
+	// os botões (#149): o aviso das artes que faltam (Entreguei) e a caixinha (Abrir projeto pegou a Produção)
+	['promeiro: entreguei com arte faltando', 'promeiro.html?mock=janela', async (p) => {
+		await p.click('.pr-aba[data-v="produzindo"]');
+		await p.locator('.prod-card', { hasText: 'NOITE DE JAZZ' }).click();
+		await p.waitForSelector('.pr-pe [data-acao="entreguei"]');
+		await p.click('.pr-pe [data-acao="entreguei"]');
+		await p.waitForSelector('.pr-falta');
+	}],
+	['promeiro: caixinha', 'promeiro.html?mock=janela', async (p) => {
+		await p.locator('.prod-card', { hasText: 'DOMINGAO' }).click();
+		await p.waitForSelector('.pr-pe [data-acao="projeto"]');
+		await p.click('.pr-pe [data-acao="projeto"]');
+		await p.waitForSelector('.pr-caixa-in');
+		await p.waitForTimeout(400);
+	}],
 	['promeiro: chave pendente', 'promeiro.html?mock=janelapendente'],
 	['editor de config', 'index.html', async (p) => {
 		await openTemplate(p);

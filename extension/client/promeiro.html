@@ -11,11 +11,13 @@
 <body data-tela="lista">
 	<!-- PROMeiro · produções (jmbillard/TEXTAO#148): as Produções do PROMeiro dentro do After, no visual do PROMeiro.
 	     a coluna da lista (a praça, as abas e os cards) fica na mesa; a Produção aberta, no papel. estreita, uma de cada
-	     vez; larga, as duas lado a lado. nesta fatia a janela só mostra -->
+	     vez; larga, as duas lado a lado. os botões ficam no pé da Produção (#149) -->
 	<main class="pr-app" id="pr-app" aria-busy="true">
 		<section class="pr-col" id="pr-col" aria-label="As Produções"></section>
 		<section class="pr-folha" id="pr-folha" aria-label="A Produção aberta"></section>
 	</main>
+	<!-- a caixinha (#149): o que a última ação fez, com o Desfazer e o × na ponta direita -->
+	<div class="pr-caixa" id="pr-caixa" aria-live="polite"></div>
 
 	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>

@@ -73,6 +73,7 @@
   --ultra: #e2532b;
   --no-ultra: #fff;
   --falta: #9a4b12;
+  --falta-fundo: #fbefe2;
   --ok: #2f6b47;
   --sombra-menu: 0 0 0 1px rgb(26 25 22 / 8%), 0 6px 14px rgb(26 25 22 / 8%), 0 18px 40px rgb(26 25 22 / 14%);
   --sombra-folha: 0 1px 2px rgb(26 25 22 / 4%), 0 12px 32px rgb(26 25 22 / 5%);
@@ -98,6 +99,7 @@
   --ultra: #ff8a5c;
   --no-ultra: #2a120a;
   --falta: #e3a871;
+  --falta-fundo: #36281a;
   --ok: #86c9a0;
   --sombra-menu: 0 0 0 1px rgb(255 255 255 / 8%), 0 18px 40px rgb(0 0 0 / 55%);
   --sombra-folha: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 12px 32px rgb(0 0 0 / 35%);
@@ -921,6 +923,304 @@ ul {
 }
 
 /* a folha sem Produção aberta (só na larga) e a que está lendo */
+/* ---------- os botões (#149): a arte que marca, o fogo que sobe, o pé, o aviso do que falta e a caixinha ---------- */
+.artes .b[data-acao] {
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+
+.artes .b[data-acao]:active {
+  transform: scale(0.92);
+}
+
+button.cx {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+button.cx:hover .fogo.n1 {
+  opacity: 1;
+}
+
+button.cx:hover .fogo.n2,
+button.cx:hover .fogo.n3 {
+  filter: brightness(1.08);
+}
+
+.botao {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--regua-forte);
+  background: var(--cartao);
+  color: var(--tinta);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: 500 13px var(--sans);
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.08s;
+}
+
+.botao:hover {
+  border-color: var(--tinta3);
+}
+
+.botao:active {
+  transform: scale(0.98);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.botao.primario {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--papel);
+  font-weight: 600;
+}
+
+.botao.primario:hover {
+  opacity: 0.9;
+}
+
+/* o pé da Produção, no papel: a seta ←, Preencher templates, Abrir projeto e Entreguei */
+.pr-pe {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  background: var(--papel);
+}
+
+.pr-pe::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 18px;
+  background: linear-gradient(to top, var(--papel), transparent);
+  pointer-events: none;
+}
+
+.pr-pe .botao {
+  flex: 1 1 auto;
+}
+
+.pr-pe .botao.primario {
+  flex: 0 0 auto;
+}
+
+.pr-volta {
+  flex: none;
+  margin-right: auto;
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--tinta2);
+  transition: background 0.15s;
+}
+
+.pr-volta:hover {
+  background: var(--neutro);
+  color: var(--tinta);
+}
+
+.pr-volta svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* o Entreguei com artes por marcar: o fundo levemente tingido (sem faixa na borda), em cima do pé */
+.pr-falta {
+  flex: none;
+  margin: 0 16px 4px;
+  padding: 10px 8px 8px;
+  border-radius: 14px;
+  background: var(--falta-fundo);
+  color: var(--falta);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 12.5px/1.4 var(--sans);
+  animation: pr-surgir 0.25s var(--suave);
+}
+
+/* o aviso fica em cima do pé: o esfumado do fim da lista passa para cima dele */
+.pr-falta {
+  position: relative;
+}
+
+.pr-falta::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  bottom: 100%;
+  height: 18px;
+  background: linear-gradient(to top, var(--papel), transparent);
+  pointer-events: none;
+}
+
+.pr-falta + .pr-pe::before {
+  display: none;
+}
+
+.pr-falta-texto {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.pr-falta-artes {
+  margin: 0;
+  padding: 0 6px 0 22px;
+  list-style: none;
+  color: var(--tinta);
+  font: 500 12px/1.45 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.pr-falta-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.pr-falta-botoes .botao {
+  flex: 1 1 auto;
+  height: 32px;
+  border-radius: 6px;
+  white-space: normal;
+}
+
+.pr-falta-botoes .assim-mesmo {
+  background: var(--falta);
+  border-color: var(--falta);
+  color: var(--papel);
+  font-weight: 600;
+}
+
+.pr-falta-botoes .assim-mesmo:hover {
+  opacity: 0.9;
+}
+
+/* a caixinha: presa embaixo, logo acima do pé (a janela acerta a altura: placeCaixa); o texto ocupa o meio e o × fica
+   na ponta direita */
+.pr-caixa {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 16px;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+@media (min-width: 641px) {
+  .pr-caixa {
+    left: 316px;
+    right: 16px;
+  }
+}
+
+.pr-caixa-in {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--tinta);
+  color: var(--papel);
+  box-shadow: 0 10px 30px rgb(26 25 22 / 25%);
+  font: 500 12.5px/1.35 var(--sans);
+  animation: pr-surgir 0.3s var(--suave);
+}
+
+.pr-caixa-in .pr-bola {
+  flex: none;
+  margin-left: 6px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--papel) 25%, transparent);
+}
+
+.pr-caixa-texto {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 6px;
+  overflow-wrap: anywhere;
+}
+
+.pr-caixa-texto small {
+  display: block;
+  opacity: 0.75;
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+.pr-caixa-desfazer {
+  flex: none;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--papel);
+  color: var(--tinta);
+  font: 600 12.5px var(--sans);
+}
+
+.pr-caixa-desfazer:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.pr-caixa-fechar {
+  flex: none;
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: 400 18px/1 var(--sans);
+  opacity: 0.8;
+}
+
+.pr-caixa-fechar:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--papel) 12%, transparent);
+}
+
 .pr-vazia {
   flex: 1;
   display: grid;

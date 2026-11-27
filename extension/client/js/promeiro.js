@@ -24,6 +24,8 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
   - a janela PROMeiro · produções (#148, promeiro.html): com a chave ligada, lê a lista (a mesma rota, com o
     "pronto para abrir" de cada Produção) e a Produção aberta: GET /api/padeiro/producoes/<id>. Com a pendente, o
     PROMeiro recusa (403 { estado: 'pendente' }) e a janela mostra só o aviso.
+    As ações dela (#149): pegar é o aviso (take, pela fila, esperando a resposta); marcar a arte, o fogo, entregar,
+    voltar e desfazer são POST /api/padeiro/<rota> { acao, feitaEm, … } (windowAction), só com a chave ligada.
 
 Sem o endereço do PROMeiro na configuração (aba BUSCAR), no modo local, com a chave pendente ou com o PROMeiro fora do
 ar, nada muda: o NO TRELLO continua vindo do webhook do n8n. Quem fala é o Node do painel (sem travar o After
@@ -258,6 +260,71 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		return { estado: 'fora' };
 	}
 
+	/* ---------------------------------------------------------------
+	   as ações da janela (jmbillard/TEXTAO#149)
+	   --------------------------------------------------------------- */
+
+	// uma ação da janela: POST /api/padeiro/<rota> (arte, fogo, entregar, voltar, desfazer), com o identificador da ação
+	// e a hora. Só a chave ligada age: a pendente recebe 403 { estado: 'pendente' }. Sem rede (ou sem resposta a tempo),
+	// nada fica guardado nesta fatia (a fila da janela é o #150): a janela mostra o erro.
+	// → { estado: 'ligada', status, corpo, acao } | { estado: 'ligada', semRede: true, acao } |
+	//   { estado: 'pendente' | 'desligado' | 'fora' }
+	async function windowAction(rota, dados) {
+		var s = await state();
+
+		if (s.estado !== 'ligada') return { estado: s.estado, local: !!s.local };
+
+		var body = Object.assign({}, dados || {}, { acao: newAvisoId(), feitaEm: new Date().toISOString() });
+		var res;
+
+		try {
+			res = await request(s.url, 'POST', '/api/padeiro/' + rota, s.chave, body);
+		} catch (err) {
+			return { estado: 'ligada', semRede: true, acao: body.acao };
+		}
+
+		if (res.status === 403 && res.body && res.body.estado) {
+			cache.at = 0;
+
+			return { estado: res.body.estado === 'ligada' ? 'fora' : res.body.estado === 'revogada' ? (await state(true)).estado : res.body.estado };
+		}
+
+		if (res.status === 401) {
+			var again = await state(true);
+
+			return { estado: again.estado === 'ligada' ? 'fora' : again.estado };
+		}
+
+		return { estado: 'ligada', status: res.status, corpo: res.body || {}, acao: body.acao };
+	}
+
+	// pegar pela janela (Abrir projeto, Preencher templates): o aviso do Padeiro, pela fila deste computador, como ao
+	// abrir pelo card, mas esperando a resposta (a caixinha diz o que aconteceu e o Desfazer usa o identificador).
+	// → { aviso, status, corpo } (o PROMeiro respondeu) | { aviso, guardado: true } (sem rede ou com o PROMeiro fora do
+	// ar: o aviso ficou na fila e vai depois) | { erro } (nem entrou na fila)
+	async function take(producao) {
+		var item = { aviso: newAvisoId(), abertoEm: new Date().toISOString(), producao: String(producao || ''), card: '', filme: '' };
+		var added = null;
+
+		try {
+			added = await call('promeiroQueueAdd', item);
+		} catch (err) { }
+
+		if (!added || !added.queued) return { erro: 'o aviso não entrou na fila deste computador.' };
+
+		// um envio da fila já em curso (de antes deste aviso) não leva ele: manda de novo
+		for (var i = 0; i < 2 && !answers[item.aviso]; i++) await flush(true);
+
+		var r = answers[item.aviso];
+
+		delete answers[item.aviso];
+
+		return r ? { aviso: item.aviso, status: r.status, corpo: r.corpo || {} } : { aviso: item.aviso, guardado: true };
+	}
+
+	// a resposta do PROMeiro a cada aviso mandado pela fila (a janela espera pela do pegar)
+	var answers = {};
+
 	// a lista da janela: as Produções em Entrada e Produzindo, cada uma com o "pronto para abrir" (pronto, estado)
 	async function windowList(force) {
 		var r = await read('/api/padeiro/producoes', force);
@@ -367,6 +434,7 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 
 				// entregue (ou repetido: já tinha chegado), ou recusado de vez (mal feito, a Produção que não existe, a chave que
 				// não vale para ele): sai da fila. o resto (o PROMeiro ou o Trello com problema) tenta de novo depois
+				answers[x.aviso] = { status: res.status, corpo: res.body };
 				if (res.status === 200) sent++;
 				if (res.status === 200 || res.status === 400 || res.status === 404 || res.status === 401 || res.status === 403) done.push(x.aviso);
 				if (res.status === 401 || res.status === 403) cache.at = 0;
@@ -399,6 +467,8 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		flush: flush,
 		describe: describe,
 		windowList: windowList,
-		windowProduction: windowProduction
+		windowProduction: windowProduction,
+		windowAction: windowAction,
+		take: take
 	};
 })();

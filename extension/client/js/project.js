@@ -1654,6 +1654,7 @@ projetos com o nome certo).
 				state.cardPick = null;
 				localFile(plan);
 				renderPlan(plan);
+				followPedido();
 			} catch (err) {
 				if (seq === state.planSeq) status(err.message, 'error');
 			}
@@ -1911,6 +1912,8 @@ projetos com o nome certo).
 		var c = state.avisoCard;
 
 		if (!flow.pick) return null;
+		// pela janela PROMeiro · produções: ela já pegou a Produção (o aviso foi de lá)
+		if (c && c.avisado && aepName(flow.pick.name) === c.attr) return null;
 		if (c && aepName(flow.pick.name) === c.attr && (c.producao || c.card)) return { producao: c.producao, card: c.card };
 		if (flow.attr && flow.attr.isFilm && aepName(flow.attr.name) === aepName(flow.pick.name)) return { film: flow.attr.name };
 
@@ -1934,11 +1937,105 @@ projetos com o nome certo).
 		} catch (err) { }
 	}
 
+	/* ---------- o pedido da janela PROMeiro · produções (jmbillard/TEXTAO#149) ---------- */
+
+	// Abrir projeto, na janela PROMeiro: ela pega a Produção e pede (pelo host, promeiro-pedido-projeto.json) o que o
+	// clique no card do NO TRELLO faz aqui: a atração da claquete, a pasta de projetos dela e o .aep do card. Achado o
+	// .aep, abre; sem ele, cria (o .aep da atração que já existe abre, como pelo card). A resposta volta pelo host
+	// (projeto-feito): o arquivo, se foi criado, ou o erro. Sem a atração (ou num filme), a claquete fica digitada e a
+	// pessoa termina aqui (pendente)
+	var PEDIDO_TTL = 60000; // o pedido mais velho que isso não vale ao abrir a janela
+	var pedidoVisto = 0;
+
+	async function watchPedido(initial) {
+		if (document.hidden && !initial) return;
+
+		var req;
+
+		try {
+			req = await call('promeiroPedido', { para: 'projeto' });
+		} catch (err) {
+			return;
+		}
+
+		if (!req.stamp || req.stamp <= pedidoVisto) return;
+		pedidoVisto = req.stamp;
+		if (initial && req.now - req.stamp > PEDIDO_TTL) return;
+
+		await fromPromeiro(req.stamp, req.dados || {});
+	}
+
+	async function fromPromeiro(stamp, d) {
+		var pedido = { stamp: stamp, producao: String(d.producao || '') };
+		var claq = String(d.claq || '');
+
+		state.pedido = null;
+		if (state.busy) return answerPedido(pedido, { erro: 'a janela PROJETO está ocupada: tente de novo.' });
+		// o projeto aberto ainda não foi lido (a janela acabou de abrir): lê antes, para a leitura não recomeçar a tela
+		if (!state.current) await refresh(true);
+
+		startManualNew('');
+
+		var res = null;
+
+		try {
+			res = d.filme ? null : await findAttractions(claq);
+		} catch (err) { }
+
+		var matches = (res && res.matches) || [];
+		var cardOf = function (m) {
+			return ((m.trello && (m.trello.all || [m.trello])) || []).filter(function (c) {
+				return (pedido.producao && c.producao === pedido.producao) || (d.card && c.card === d.card);
+			})[0];
+		};
+		var match = matches.filter(function (m) {
+			return !m.isFilm && cardOf(m);
+		})[0] || matches.filter(function (m) {
+			return !m.isFilm && d.atr && aepName(m.name) === aepName(d.atr);
+		})[0];
+
+		if (!match) {
+			$('claq').value = claq;
+			lookup();
+
+			return answerPedido(pedido, { pendente: d.filme ? 'o filme: escolha na lista dos filmes.' : 'a atração da claquete não foi achada no índice.' });
+		}
+
+		var c = cardOf(match) || { claq: claq, card: d.card || '', producao: pedido.producao };
+
+		// como o clique no card (cardRow): a pasta de projetos da atração, com o .aep do card marcado
+		state.settleAll = true;
+		state.cardPick = { claq: c.claq, attr: aepName(match.name) };
+		enterAttraction(match);
+		state.avisoCard = { attr: aepName(match.name), card: c.card || '', producao: c.producao || '', avisado: true };
+		pedido.attr = aepName(match.name);
+		state.pedido = pedido;
+	}
+
+	// o plano da atração do pedido chegou: abre o .aep do card ou cria
+	function followPedido() {
+		var pedido = state.pedido;
+
+		if (!pedido || !flow.pick || aepName(flow.pick.name) !== pedido.attr || state.busy) return;
+
+		state.pedido = null;
+		if (state.openFile) openPicked(pedido);
+		else create(undefined, pedido);
+	}
+
+	// a resposta à janela PROMeiro (pelo host): { arquivo, criado } | { erro } | { pendente }
+	function answerPedido(pedido, r) {
+		if (!pedido) return;
+
+		call('promeiroPedir', { para: 'projeto-feito', dados: Object.assign({ pedido: pedido.stamp, producao: pedido.producao }, r) }).catch(function () { });
+	}
+
 	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
-	async function openPicked() {
+	async function openPicked(pedido) {
 		if (state.busy || !state.openFile || !state.plan) return;
 
 		var target = avisoTarget();
+		var file = state.openFile;
 
 		state.busy = true;
 		$('criar-go').disabled = true;
@@ -1946,6 +2043,7 @@ projetos com o nome certo).
 		try {
 			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
 			status('projeto aberto: ' + state.openFile, 'success');
+			answerPedido(pedido, { arquivo: file, criado: false });
 			await avisar(target);
 			$('criar-go').textContent = 'Aberto';
 			state.openFile = '';
@@ -1960,6 +2058,7 @@ projetos com o nome certo).
 			$('criar-go').disabled = false;
 			$('criar-go').textContent = 'Abrir projeto';
 			status(err.message, 'error');
+			answerPedido(pedido, { erro: PAD_UTIL.errorText(err.message) });
 		}
 	}
 
@@ -2172,7 +2271,7 @@ projetos com o nome certo).
 		return planArgs(Object.assign({ mode: state.plan && state.plan.exists ? flow.mode : '' }, outTarget()));
 	}
 
-	async function create(args) {
+	async function create(args, pedido) {
 		if (state.busy) return;
 		if (!flow.pick) {
 			status('#PAD_090 - escolha a atração do projeto.', 'error');
@@ -2202,6 +2301,7 @@ projetos com o nome certo).
 			// onde não dá para fechar (o navegador de teste), a janela vira o editor do projeto criado
 			done = true;
 			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
+			answerPedido(pedido, { arquivo: res.file.split(/[\\\/]/).pop(), criado: !res.opened });
 			$('criar-go').textContent = res.opened ? 'Aberto' : 'Criado';
 			await avisar(target);
 			setTimeout(async function () {
@@ -2212,6 +2312,7 @@ projetos com o nome certo).
 			}, 1300);
 		} catch (err) {
 			status(err.message, 'error');
+			answerPedido(pedido, { erro: PAD_UTIL.errorText(err.message) });
 		} finally {
 			if (!done) {
 				state.busy = false;
@@ -3260,6 +3361,15 @@ projetos com o nome certo).
 		}, 1500);
 		window.addEventListener('focus', function () {
 			refresh();
+		});
+
+		// o pedido da janela PROMeiro · produções (Abrir projeto): ao abrir, de tempos em tempos e ao voltar à frente
+		setTimeout(function () {
+			watchPedido(true);
+		}, 300);
+		setInterval(watchPedido, 1000);
+		window.addEventListener('focus', function () {
+			watchPedido();
 		});
 	}
 

@@ -2458,6 +2458,39 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 	}
 
 	/* =========================================================
+	   O pedido da janela PROMeiro · produções (jmbillard/TEXTAO#149)
+	   ========================================================= */
+
+	// Preencher templates, na janela PROMeiro: ela pega a Produção e pede (pelo host, promeiro-pedido-templates.json)
+	// os templates da atração: a busca da lista fica com o nome dela (com um preenchimento em curso, nada muda)
+	var PEDIDO_TTL = 60000; // o pedido mais velho que isso não vale ao abrir a janela
+	var pedidoVisto = 0;
+
+	async function watchPedido(initial) {
+		if (document.hidden && !initial) return;
+
+		var req;
+
+		try {
+			req = await call('promeiroPedido', { para: 'templates' });
+		} catch (err) {
+			return;
+		}
+
+		if (!req.stamp || req.stamp <= pedidoVisto) return;
+		pedidoVisto = req.stamp;
+		if (initial && req.now - req.stamp > PEDIDO_TTL) return;
+
+		var query = String((req.dados && (req.dados.atr || req.dados.claq)) || '').trim();
+		var search = $('search');
+
+		if (!query || runIsOpen()) return;
+
+		search.value = query;
+		search.dispatchEvent(new Event('input'));
+	}
+
+	/* =========================================================
 	   Início
 	   ========================================================= */
 
@@ -2504,6 +2537,13 @@ Toda a conversa com o After Effects passa por PAD_BRIDGE.call (bridge.js → hos
 
 		setInterval(watchProduction, 2000);
 		window.addEventListener('focus', watchProduction);
+
+		// o pedido da janela PROMeiro · produções (Preencher templates): ao abrir, de tempos em tempos e ao voltar à frente
+		watchPedido(true);
+		setInterval(watchPedido, 1000);
+		window.addEventListener('focus', function () {
+			watchPedido();
+		});
 		window.addEventListener('resize', syncCardThumb); // a miniatura da lista acompanha a largura dos cartões
 	}
 

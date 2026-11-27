@@ -249,3 +249,55 @@ PADX.promeiroQueueDrop = function (a) {
 
 	return { itens: list.length };
 };
+
+/* ---------------------------------------------------------------
+   os pedidos da janela PROMeiro · produções às outras janelas (jmbillard/TEXTAO#149)
+   --------------------------------------------------------------- */
+
+// 'promeiro-pedido-<para>.json', na mesma pasta: o pedido de uma janela a outra, como o do conversor e o da aba da
+// configuração (a janela que recebe confere de tempos em tempos e ao voltar à frente):
+//   projeto       → a janela PROJETO abre (ou cria) o projeto da Produção, como pelo card: { producao, claq, atr, card }
+//   templates     → A FORMA abre nos templates da atração: { atr, claq }
+//   projeto-feito → a resposta da janela PROJETO à janela PROMeiro: { pedido, producao, arquivo, criado, erro, pendente }
+// Cada pedido novo toma o lugar do anterior. { stamp, dados }
+
+function padPromeiroRequestFile(para) {
+	return new File(scriptPreferencesPath + '/promeiro-pedido-' + para + '.json');
+}
+
+function padPromeiroRequestKind(para) {
+	var kind = String(para == null ? '' : para);
+
+	if (!/^[a-z-]{1,20}$/.test(kind)) throw new Error('#PAD_120 - pedido da janela PROMeiro sem destino: ' + kind.substring(0, 20));
+
+	return kind;
+}
+
+// Guarda o pedido. a: { para, dados } → { stamp }
+PADX.promeiroPedir = function (a) {
+	var kind = padPromeiroRequestKind(a && a.para);
+	var folder = new Folder(scriptPreferencesPath);
+	var stamp = new Date().getTime();
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify({ stamp: stamp, dados: a.dados && typeof a.dados == 'object' ? a.dados : {} }), padPromeiroRequestFile(kind).fsName);
+
+	return { stamp: stamp };
+};
+
+// O último pedido. a: { para } → { stamp, dados, now } (sem pedido, stamp 0)
+PADX.promeiroPedido = function (a) {
+	var file = padPromeiroRequestFile(padPromeiroRequestKind(a && a.para));
+	var now = new Date().getTime();
+
+	if (!file.exists) return { stamp: 0, dados: {}, now: now };
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+
+		return { stamp: data && data.stamp ? Number(data.stamp) : 0, dados: data && data.dados && typeof data.dados == 'object' ? data.dados : {}, now: now };
+	} catch (err) {
+		return { stamp: 0, dados: {}, now: now };
+	}
+};

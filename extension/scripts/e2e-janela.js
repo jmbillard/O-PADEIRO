@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: a janela PROMeiro · produções (jmbillard/TEXTAO#148)
+> ponta a ponta: a janela PROMeiro · produções (jmbillard/TEXTAO#148, #149)
 ---------------------------------------------------------------
 
 A janela no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o repositório
@@ -15,7 +15,14 @@ e2e-promeiro.js). Nada sai para a rede. Confere:
   - abrir a Produção (larga, ao lado da lista): a praça e a etapa, a claquete, a versão em código (AH), o estado, as
     artes com o número, a feita riscada e o fogo, e a contagem "1 de 2"; nada de horário de exibição;
   - estreita (320 px): a lista ou a Produção, e a seta ← volta à lista;
-  - as capturas (claro e escuro, estreita e larga, pendente) na pasta CAPTURAS (sem ela, nenhuma).
+  - os botões (#149), contra as rotas do PROMeiro de teste e o Trello de mentira: a chave pendente não age; Abrir
+    projeto pega a Produção (o aviso) e a janela PROJETO (aberta aqui pelo teste, como o Padeiro abre no After) cria
+    o projeto ou abre o .aep do card, e a caixinha diz qual; Preencher templates pega e A FORMA abre na busca da
+    atração; marcar e desmarcar a arte (só quem está na Produção); o fogo sobe; Entreguei com as artes que faltam
+    (Cancelar, Entregar assim mesmo); a seta ← volta para a Entrada; o Desfazer (entregar e pegar); a caixinha com o
+    × na ponta direita; sem rede, o erro na caixinha e nada trava; e o que chegou ao Trello de mentira;
+  - as capturas (claro e escuro, estreita e larga, pendente, o pé, a caixinha e o "falta") na pasta CAPTURAS (sem
+    ela, nenhuma).
 
   PROMEIRO=/caminho/do/TEXTAO CAPTURAS=/uma/pasta NODE_PATH=$(npm root -g) node extension/scripts/e2e-janela.js
 
@@ -70,7 +77,9 @@ const NOMES = { ARTE_producao: 'arte_producao_pg', exibicoes: 'exibicoes_pg', de
 function trelloFalso() {
 	const pedidos = [];
 	const buscar = async (endereco, init = {}) => {
-		pedidos.push({ metodo: init.method || 'GET', caminho: new URL(endereco).pathname });
+		const u = new URL(endereco);
+
+		pedidos.push({ metodo: init.method || 'GET', caminho: u.pathname, lista: u.searchParams.get('idList') || u.searchParams.get('value') || '' });
 
 		return Response.json({});
 	};
@@ -150,6 +159,10 @@ async function subirPromeiro() {
 		trello,
 		idDe,
 		padeiros: async () => (await chefe('/api/cadastros/padeiros')).padeiros,
+		// a Produção como a janela lê (pela chave da designer)
+		producao: async (chave, id) => (await (await fetch(url + '/api/padeiro/producoes/' + encodeURIComponent(id), { headers: { 'x-chave-do-padeiro': chave } })).json()).producao,
+		// o que a janela escreveu no Trello de mentira
+		escritas: () => trello.pedidos.filter((p) => p.metodo !== 'GET').map((p) => p.metodo + ' ' + p.caminho.replace(/^\/1/, '') + (p.lista ? ' ' + p.lista : '')),
 		// a designer da chave marca uma arte como feita (a rota que a janela vai usar no #149)
 		marcar: async (chave, producao, arte) => {
 			const r = await fetch(url + '/api/padeiro/arte', { method: 'POST', headers: { 'content-type': 'application/json', 'x-chave-do-padeiro': chave }, body: JSON.stringify({ acao: 'e2e-' + Date.now(), feitaEm: new Date().toISOString(), producao, arte, feita: true }) });
@@ -176,7 +189,21 @@ async function guardarAChave(context) {
 
 		return host.guardada;
 	});
-	await context.exposeFunction('padMockPromeiroFila', () => []);
+	// a fila dos avisos (o promeiro-fila.json): também na memória do teste
+	host.fila = [];
+	await context.exposeFunction('padMockPromeiroFila', (list) => {
+		if (list !== undefined) host.fila = list || [];
+
+		return host.fila;
+	});
+
+	// os pedidos da janela às outras (o promeiro-pedido-<para>.json): também na memória do teste
+	host.pedidos = {};
+	await context.exposeFunction('padMockPedido', (para, data) => {
+		if (data !== undefined) host.pedidos[para] = data;
+
+		return host.pedidos[para] || null;
+	});
 
 	return host;
 }
@@ -227,6 +254,21 @@ async function abas(page) {
 
 async function aba(page, nome) {
 	await page.locator('.pr-aba', { hasText: nome }).click();
+	await page.waitForTimeout(150);
+}
+
+// os botões do pé da Produção: o texto (a seta ←, pelo nome da dica)
+async function pe(page) {
+	return page.locator('.pr-pe button').evaluateAll((els) => els.map((e) => e.textContent.trim() || '← ' + e.getAttribute('aria-label')));
+}
+
+async function caixinha(page) {
+	return texto(page.locator('.pr-caixa-in'));
+}
+
+// a ação terminou: nenhum botão esperando a resposta
+async function quieta(page) {
+	await page.waitForFunction(() => !document.querySelector('.pr-pe [disabled], .pr-caixa [disabled], .pr-falta [disabled]') && document.querySelector('.pr-folha h2'));
 	await page.waitForTimeout(150);
 }
 
@@ -290,12 +332,18 @@ async function capturar(page, nome) {
 		await aba(page, 'Entrada');
 		await page.locator('.pr-praca').click();
 		assert.deepEqual(await page.locator('.pr-menu-item').evaluateAll((els) => els.map((e) => e.textContent.replace(/\s+/g, ' ').trim())), ['G51 aberta', 'SP3 abertas', 'Todas as praças']);
+		// no navegador de teste, o localStorage do file:// some quando a última página dele fecha (a janela navegando
+		// para ela mesma): outra página aberta segura o que foi gravado até a janela abrir de novo
+		const segura = await largo.newPage();
+		await segura.goto(CLIENT + 'promeiro.html?mock=janelapendente');
+		await page.bringToFront();
 		await page.locator('.pr-menu-item', { hasText: 'G5' }).click();
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5');
 		assert.deepEqual(await abas(page), ['Entrada 0', 'Produzindo 1', 'Minhas 1'], 'Minhas vale para todas as praças');
 		assert.equal(await texto(page.locator('.pr-nada')), 'nada na entrada!');
 		page = await abrirJanela(largo);
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5', 'a praça escolhida fica lembrada ao abrir de novo');
+		await segura.close();
 		await page.locator('.pr-praca').click();
 		await page.locator('.pr-menu-item', { hasText: 'SP' }).click();
 		assert.deepEqual(await abas(page).then((a) => a.slice(0, 2)), ['Entrada 2', 'Produzindo 1']);
@@ -319,7 +367,10 @@ async function capturar(page, nome) {
 			['3', 'DOMINGO', false, 'fogo n2']
 		]);
 		assert.doesNotMatch(await texto(page.locator('.pr-folha')), /\d{1,2}h\d{2}|exibi/i, 'sem horário de exibição');
-		assert.equal(await page.locator('.pr-folha button:visible').count(), 0, 'larga: sem a seta (a lista está ao lado) e, nesta fatia, sem botões');
+		assert.equal(await page.locator('.pr-folha .pr-voltar:visible').count(), 0, 'larga: sem a seta (a lista está ao lado)');
+		assert.deepEqual(await pe(page), ['Preencher templates', 'Abrir projeto'], 'quem não está na Produção: só Preencher templates e Abrir projeto');
+		assert.equal(await page.locator('.artes .b[data-acao]').count(), 0, 'quem não está na Produção não marca as artes');
+		assert.equal(await page.locator('.artes button.cx').count(), 3, 'o fogo sobe com um clique (qualquer designer)');
 
 		await page.locator('.prod-card', { hasText: 'PROGRAMA NOVO' }).click();
 		await page.waitForFunction(() => /PROGRAMA NOVO/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
@@ -337,7 +388,7 @@ async function capturar(page, nome) {
 			['LETTERING', true, true, false],
 			['CARTÃO', false, false, false]
 		], 'a feita riscada; sem Roteiro, sem fogo');
-		assert.equal(await page.locator('.artes li.feita .b').getAttribute('title'), 'feita · marcada por Dora Teste');
+		assert.equal(await page.locator('.artes li.feita .b').getAttribute('title'), 'feita · marcada por Dora Teste · clique para voltar a fazer');
 		await capturar(page, 'producao-largo-claro');
 		assert.deepEqual(page.errors, []);
 		passo('abrir a Produção (larga): a praça e a etapa, a claquete, (AH), o estado, as artes com o fogo e a feita riscada, "1 de 2"');
@@ -393,7 +444,226 @@ async function capturar(page, nome) {
 		await pend.close();
 		passo('outro computador: a chave nova fica pendente e a janela só avisa');
 
-		assert.deepEqual(promeiro.trello.pedidos.filter((p) => p.metodo !== 'GET'), [], 'a janela não escreve nada no Trello');
+		const show = promeiro.idDe('SHOW DA NOITE');
+		const festa = promeiro.idDe('FESTA NA PRACA');
+		assert.deepEqual(promeiro.escritas(), [], 'até aqui, a janela não escreve nada no Trello');
+
+		// 8. a chave pendente: nada age (sem o pé, sem as artes; a ação pedida mesmo assim é recusada, sem gravar nada)
+		const pend2 = await contexto(browser, promeiro, { largura: 900 });
+		await guardarAChave(pend2);
+		page = await abrirJanela(pend2);
+		assert.equal(await page.getAttribute('body', 'data-estado'), 'pendente');
+		assert.equal(await page.locator('.pr-pe, .artes, .pr-caixa-in').count(), 0, 'pendente: nem o pé, nem as artes, nem a caixinha');
+		const recusada = await page.evaluate((id) => PAD_PROMEIRO.windowAction('arte', { producao: id, arte: 'HOJE', feita: true }), show);
+		assert.equal(recusada.estado, 'pendente', 'a chave pendente não age');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).contagem.feitas, 0);
+		assert.deepEqual(page.errors, []);
+		await pend2.close();
+		passo('a chave pendente: os botões não aparecem e a ação pedida mesmo assim é recusada');
+
+		// 9. Abrir projeto: pega a Produção (o aviso) e a janela PROJETO cria o projeto; a caixinha diz
+		page = await abrirJanela(largo);
+		await aba(page, 'Entrada');
+		await page.locator('.prod-card', { hasText: 'SHOW DA NOITE' }).click();
+		await page.waitForSelector('.pr-pe');
+		await page.click('.pr-pe [data-acao="projeto"]');
+		await page.waitForSelector('.pr-caixa-in');
+		assert.equal(await caixinha(page), 'Abrindo o projeto de SHOW DA NOITE 20/12 SP… Você pegou a Produção. Desfazer ×');
+		// no After, o Padeiro abre a janela PROJETO; aqui, o teste
+		const proj = await largo.newPage();
+		proj.errors = [];
+		proj.on('pageerror', (err) => proj.errors.push(err.message));
+		await proj.goto(CLIENT + 'project.html');
+		await page.waitForFunction(() => /Projeto criado/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''), null, { timeout: 20000 });
+		assert.equal(await caixinha(page), 'Projeto criado: SHOW DA NOITE.aep Você pegou a Produção. Desfazer ×');
+		assert.match(await proj.evaluate(() => (window.PAD_MOCK_CUR || {}).file || ''), /\/SHOWS\/SHOW DA NOITE\/2026\/01 PROJETOS\/SHOW DA NOITE\.aep$/, 'a janela PROJETO criou o projeto na pasta da atração');
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
+		assert.deepEqual(await pe(page), ['← voltar para a Entrada', 'Preencher templates', 'Abrir projeto', 'Entreguei']);
+		assert.deepEqual((await promeiro.producao(host.guardada.chave, show)).designers, ['Dora Teste']);
+		assert.deepEqual(promeiro.escritas(), ['POST /cards/' + card(1) + '/idMembers membroDora'], 'a Dora entrou no card (só ela, uma vez)');
+		const cx = await page.locator('.pr-caixa-in').boundingBox();
+		const fechar = await page.locator('.pr-caixa-fechar').boundingBox();
+		const desfazerBox = await page.locator('.pr-caixa-desfazer').boundingBox();
+		assert.ok(cx.x + cx.width - (fechar.x + fechar.width) <= 8.5, 'o × na ponta direita da caixinha');
+		assert.ok(fechar.x > desfazerBox.x + desfazerBox.width, 'o × depois do Desfazer');
+		await capturar(page, 'caixinha-largo-claro');
+		await page.click('.pr-caixa-fechar');
+		assert.equal(await page.locator('.pr-caixa-in').count(), 0, 'o × fecha a caixinha');
+		assert.deepEqual(proj.errors, []);
+		passo('Abrir projeto: pega a Produção (a Dora no card e na Produção) e a janela PROJETO cria; "Projeto criado: SHOW DA NOITE.aep", com o × na ponta direita');
+
+		// 10. marcar e desmarcar a arte: o nome riscado e a contagem
+		const arteB = (n) => page.locator('.artes li:nth-child(' + n + ') .b');
+		await arteB(1).click();
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '1 de 3');
+		assert.equal(await page.locator('.artes li:nth-child(1).feita .pr-risco').count(), 1, 'riscada');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).artes[0].feita, true);
+		await arteB(1).click();
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '0 de 3');
+		assert.equal(await page.locator('.artes .pr-risco').count(), 0);
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).artes[0].feita, false);
+		await arteB(1).focus();
+		await page.keyboard.press('Enter');
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '1 de 3', 'o Enter na bolinha também marca');
+		assert.equal(await page.locator('.pr-caixa-in').count(), 0, 'marcar não abre a caixinha');
+		passo('marcar a arte: um clique risca e conta "1 de 3", outro desmarca; o PROMeiro grava');
+
+		// 11. o fogo: um clique sobe um nível (manda o nível pedido)
+		const fogoDe = (n) => page.locator('.artes li:nth-child(' + n + ') .fogo').evaluate((e) => e.className.baseVal);
+		assert.equal(await fogoDe(2), 'fogo n1');
+		await page.locator('.artes li:nth-child(2) button.cx').click();
+		await quieta(page);
+		assert.equal(await fogoDe(2), 'fogo n2');
+		await page.locator('.artes li:nth-child(2) button.cx').click();
+		await quieta(page);
+		assert.equal(await fogoDe(2), 'fogo n3');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).artes[1].fogo, 3);
+		passo('o fogo: cada clique sobe um nível (vela, fogueira, incêndio) e o PROMeiro grava');
+
+		// 12. Entreguei com artes por marcar: quais faltam; Cancelar; Entregar assim mesmo
+		await page.click('.pr-pe [data-acao="entreguei"]');
+		await page.waitForSelector('.pr-falta');
+		assert.equal(await texto(page.locator('.pr-falta')), 'Faltam marcar 2 artes no checklist: AMANHÃ DOMINGO Entregar assim mesmo Cancelar');
+		await capturar(page, 'falta-largo-claro');
+		await page.click('.pr-falta [data-acao="cancelar-falta"]');
+		assert.equal(await page.locator('.pr-falta').count(), 0, 'Cancelar fecha o aviso');
+		assert.equal((await promeiro.producao(host.guardada.chave, show)).etapa, 'produzindo', 'nada foi entregue');
+		await page.click('.pr-pe [data-acao="entreguei"]');
+		await page.click('.pr-falta [data-acao="assim-mesmo"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'SHOW DA NOITE 20/12 SP foi entregue. Desfazer ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTREGUE');
+		assert.deepEqual(await pe(page), ['← voltar para a Entrada', 'Preencher templates', 'Abrir projeto'], 'a Entregue: sem o Entreguei');
+		assert.equal(await page.locator('.artes .b[data-acao], .artes button.cx').count(), 0, 'a Entregue: as artes e o fogo não mudam');
+		assert.deepEqual(promeiro.escritas().slice(1), ['PUT /cards/' + card(1) + ' saidaSP'], 'o card foi para a saída da praça');
+		await capturar(page, 'entregue-largo-claro');
+		passo('Entreguei: avisa as que faltam (AMANHÃ, DOMINGO); Cancelar não entrega; "Entregar assim mesmo" entrega e o card vai para a saída');
+
+		// 13. o Desfazer da entrega
+		await page.click('.pr-caixa-desfazer');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Desfeito. ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
+		assert.deepEqual(promeiro.escritas().slice(2), ['PUT /cards/' + card(1) + ' entradaSP'], 'o card voltou para a entrada');
+		passo('o Desfazer da entrega: a Produção volta para Produzindo e o card para a entrada');
+
+		// 14. a seta ←: voltar para a Entrada (com o nome só na dica)
+		assert.equal(await page.locator('.pr-pe .pr-volta').getAttribute('title'), 'voltar para a Entrada');
+		await page.click('.pr-pe [data-acao="devolver"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'SHOW DA NOITE 20/12 SP voltou para a Entrada. Desfazer ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTRADA');
+		assert.deepEqual(await pe(page), ['Preencher templates', 'Abrir projeto']);
+		assert.deepEqual(promeiro.escritas().slice(3), ['DELETE /cards/' + card(1) + '/idMembers/membroDora'], 'a Dora saiu do card');
+		passo('a seta ← volta a Produção para a Entrada (a Dora sai do card), com o Desfazer na caixinha');
+
+		// 15. Preencher templates: pega de novo e A FORMA abre nos templates da atração; e o Desfazer do pegar
+		await page.click('.pr-pe [data-acao="templates"]');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Abrindo A FORMA: templates de Show da Noite. Você pegou a Produção. Desfazer ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
+		const forma = await largo.newPage();
+		forma.errors = [];
+		forma.on('pageerror', (err) => forma.errors.push(err.message));
+		await forma.goto(CLIENT + 'index.html');
+		await forma.waitForFunction(() => document.getElementById('search').value === 'Show da Noite', null, { timeout: 10000 });
+		assert.deepEqual(forma.errors, []);
+		await forma.close();
+		await page.bringToFront();
+		await page.click('.pr-caixa-desfazer');
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Desfeito. ×');
+		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · ENTRADA', 'o Desfazer do pegar: de volta à Entrada');
+		assert.deepEqual(promeiro.escritas().slice(4), ['POST /cards/' + card(1) + '/idMembers membroDora', 'DELETE /cards/' + card(1) + '/idMembers/membroDora']);
+		passo('Preencher templates: pega a Produção e A FORMA abre com a busca "Show da Noite"; o Desfazer do pegar volta tudo');
+
+		// 16. Abrir projeto de quem já está na Produção: sem pegar de novo, a janela PROJETO abre o .aep do card
+		await aba(page, 'Minhas');
+		await page.locator('.prod-card', { hasText: 'FESTA NA PRACA' }).click();
+		await page.waitForFunction(() => /FESTA/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		await page.click('.pr-pe [data-acao="projeto"]');
+		await page.waitForFunction(() => /^Abrindo:/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''), null, { timeout: 20000 });
+		assert.equal(await caixinha(page), 'Abrindo: FESTA NA PRACA ABERTURA.aep ×', 'já estava com ela: sem "Você pegou" e sem o Desfazer');
+		assert.match(await proj.evaluate(() => window.PAD_MOCK_OPENED_FILE || ''), /FESTA NA PRACA\/01 PROJETOS\/FESTA NA PRACA ABERTURA\.aep$/);
+		assert.equal(promeiro.escritas().length, 6, 'nada novo no Trello');
+		assert.deepEqual(proj.errors, []);
+		await proj.close();
+		passo('Abrir projeto de quem já está na Produção: a janela PROJETO abre o .aep do card ("Abrindo: FESTA NA PRACA ABERTURA.aep")');
+
+		// 17. sem rede: o erro na caixinha, a arte volta como estava e nada trava
+		await quieta(page);
+		await page.route('**/api/padeiro/arte', (r) => r.abort());
+		await page.locator('.artes li:nth-child(2) .b').click();
+		await page.waitForFunction(() => /Sem rede/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''));
+		await quieta(page);
+		assert.equal(await caixinha(page), 'Sem rede: o PROMeiro não recebeu. nada mudou lá; tente de novo quando a rede voltar. ×');
+		assert.equal(await page.locator('.pr-caixa-in .pr-bola.atencao').count(), 1);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '1 de 2', 'a arte voltou como estava');
+		await capturar(page, 'sem-rede-largo-claro');
+		await page.unroute('**/api/padeiro/arte');
+		await page.locator('.artes li:nth-child(2) .b').click();
+		await quieta(page);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '2 de 2', 'a rede voltou: marca');
+		passo('sem rede: a caixinha mostra o erro, a arte volta como estava e a janela não trava');
+
+		// 18. só quem está na Produção marca (a do Rui, na rede)
+		await page.locator('.pr-praca').click();
+		await page.locator('.pr-menu-item', { hasText: 'Todas as praças' }).click();
+		await aba(page, 'Produzindo');
+		await page.locator('.prod-card', { hasText: 'BAILE DA ILHA' }).click();
+		await page.waitForFunction(() => /BAILE/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
+		assert.equal(await page.locator('.artes .b[data-acao]').count(), 0);
+		await page.locator('.artes li:nth-child(1) .b').click();
+		await page.waitForTimeout(300);
+		assert.equal(await texto(page.locator('.pr-conta-artes small')), '0 de 1', 'o clique não marca');
+		assert.deepEqual(await pe(page), ['Preencher templates', 'Abrir projeto']);
+		assert.deepEqual(page.errors, []);
+		passo('só quem está na Produção marca as artes e vê o Entreguei (a do Rui não muda)');
+
+		// 19. estreita, claro e escuro: o pé, o aviso do que falta e a caixinha
+		for (const escuro of [false, true]) {
+			const estreito = await contexto(browser, promeiro, { largura: 320, escuro });
+			const h = await guardarAChave(estreito);
+			const tema = escuro ? 'escuro' : 'claro';
+
+			h.guardada = host.guardada;
+			page = await abrirJanela(estreito);
+			await page.locator('.pr-aba', { hasText: 'Minhas' }).click();
+			await page.locator('.prod-card', { hasText: 'FESTA NA PRACA' }).click();
+			await page.waitForSelector('.pr-pe');
+			await page.locator('.artes li:nth-child(2) .b').click();
+			await quieta(page);
+			assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 320, 'estreita: o pé não passa da largura');
+			await capturar(page, 'producao-pe-estreito-' + tema);
+			await page.click('.pr-pe [data-acao="entreguei"]');
+			await page.waitForSelector('.pr-falta');
+			assert.equal(await texto(page.locator('.pr-falta-artes')), 'CARTÃO');
+			await capturar(page, 'falta-estreito-' + tema);
+			await page.click('.pr-falta [data-acao="cancelar-falta"]');
+			await page.locator('.artes li:nth-child(2) .b').click();
+			await quieta(page);
+			await page.click('.pr-pe [data-acao="entreguei"]');
+			await quieta(page);
+			assert.equal(await caixinha(page), 'FESTA NA PRACA 20/12 SP foi entregue. Desfazer ×', 'nada faltando: entrega direto');
+			const c = await page.locator('.pr-caixa-in').boundingBox();
+			const x = await page.locator('.pr-caixa-fechar').boundingBox();
+			const pe1 = await page.locator('.pr-pe').boundingBox();
+			assert.ok(c.x + c.width - (x.x + x.width) <= 8.5, 'estreita: o × na ponta direita');
+			assert.ok(c.y + c.height <= pe1.y, 'a caixinha fica acima do pé');
+			await capturar(page, 'caixinha-estreito-' + tema);
+			await page.click('.pr-caixa-desfazer');
+			await quieta(page);
+			assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
+			assert.deepEqual(page.errors, []);
+			await estreito.close();
+		}
+		passo('estreita (320 px), claro e escuro: o pé, o aviso do que falta e a caixinha acima do pé, com o × na ponta direita');
+
+		assert.deepEqual(promeiro.escritas().slice(6), ['PUT /cards/' + card(3) + ' saidaSP', 'PUT /cards/' + card(3) + ' entradaSP', 'PUT /cards/' + card(3) + ' saidaSP', 'PUT /cards/' + card(3) + ' entradaSP'], 'no Trello: só as entregas e os Desfazer da FESTA');
 		await largo.close();
 		await largoEscuro.close();
 		console.log('\n' + ok + ' passos ok');

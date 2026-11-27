@@ -77,11 +77,11 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	if (MOCK_JANELA) {
 		var JANELA_PENDENTE = mode === 'janelapendente';
 		var JANELA_LISTA = [
-			{ producao: 'pJan1', claq: 'DOMINGAO 29/11 SP', praca: 'SP', etapa: 'entrada', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan1', claq: 'DOMINGAO 29/11 SP', atr: 'Domingão com Huck', card: 'cJan1', praca: 'SP', etapa: 'entrada', pronto: true, estado: 'pronto para abrir' },
 			{ producao: 'pJan2', claq: 'VERAO NA ORLA 01/12 SP', praca: 'SP', etapa: 'entrada', pronto: false, estado: 'sem pasta' },
 			{ producao: 'pJan3', claq: 'PRAIA LIMPA 02/12 SP', praca: 'SP', etapa: 'entrada', pronto: false, estado: 'sem atração' },
-			{ producao: 'pJan4', claq: 'NOITE DE JAZZ 28/11 SP', praca: 'SP', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
-			{ producao: 'pJan5', claq: 'BAILE DA ILHA 30/11 RJ', praca: 'RJ', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan4', claq: 'NOITE DE JAZZ 28/11 SP', atr: 'Noite de Jazz', card: 'cJan4', praca: 'SP', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan5', claq: 'BAILE DA ILHA 30/11 RJ', atr: 'Baile da Ilha', card: 'cJan5', praca: 'RJ', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
 			{ producao: 'pJan6', claq: 'CARNAVAL 03/12 RJ', praca: 'RJ', etapa: 'entrada', pronto: true, estado: 'pronto para abrir' }
 		];
 		var JANELA_ARTES = [
@@ -91,31 +91,100 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		];
 		var JANELA_COM_DORA = { pJan4: true };
 
-		window.PAD_MOCK_PROMEIRO = function (method, path) {
+		// cada Produção como o PROMeiro de mentira guarda (as ações da janela, #149, mudam aqui)
+		var JANELA = {};
+
+		JANELA_LISTA.forEach(function (p) {
+			var artes = p.producao === 'pJan4' || p.producao === 'pJan1' ? JANELA_ARTES : [{ nome: 'LETTERING', fogo: 1, feita: false, marcada: null }, { nome: 'CARTÃO', fogo: 1, feita: false, marcada: null }];
+
+			JANELA[p.producao] = { etapa: p.etapa, designers: JANELA_COM_DORA[p.producao] ? ['Dora Teste'] : [], artes: JSON.parse(JSON.stringify(artes)), ultima: null };
+		});
+
+		var janelaProducao = function (p) {
+			var j = JANELA[p.producao];
+
+			return {
+				id: p.producao, praca: p.praca, etapa: j.etapa, claquete: p.claq, versao: p.producao === 'pJan4' ? '(AH)' : '(PNAH)', pronto: p.pronto, estado: p.estado,
+				designers: j.designers.slice(), comVoce: j.designers.indexOf('Dora Teste') >= 0, artes: JSON.parse(JSON.stringify(j.artes)),
+				contagem: { feitas: j.artes.filter(function (a) { return a.feita; }).length, total: j.artes.length }
+			};
+		};
+
+		// as ações (a última de cada Produção desfaz): o pegar (aviso), a arte, o fogo, entregar e voltar
+		var janelaAcao = function (rota, p, body) {
+			var j = JANELA[p.producao];
+			var antes = { etapa: j.etapa, designers: j.designers.slice() };
+			var comDora = j.designers.indexOf('Dora Teste') >= 0;
+			var arte = body.arte ? j.artes.filter(function (a) { return a.nome === body.arte; })[0] : null;
+
+			if (rota === 'aviso') {
+				if (j.etapa === 'entrada') j.etapa = 'produzindo';
+				if (!comDora && j.etapa !== 'entregue') j.designers.push('Dora Teste');
+			} else if (rota === 'arte') {
+				if (!comDora) return { status: 403, body: { erro: 'Só quem está na Produção marca as artes dela.' } };
+				if (!arte) return { status: 404, body: { erro: 'Essa arte não está na Produção.' } };
+				arte.feita = !!body.feita;
+				arte.marcada = arte.feita ? { por: 'Dora Teste', em: new Date().toISOString() } : null;
+
+				return null;
+			} else if (rota === 'fogo') {
+				if (!arte) return { status: 404, body: { erro: 'Essa arte não está na Produção.' } };
+				arte.fogo = body.nivel || (arte.fogo === 3 ? 1 : arte.fogo + 1);
+
+				return null;
+			} else if (rota === 'entregar') {
+				if (j.etapa === 'entregue') return { status: 409, body: { erro: 'Essa Produção já está em Entregue.' } };
+				j.etapa = 'entregue';
+			} else if (rota === 'voltar') {
+				if (j.etapa === 'produzindo' && !comDora) return { status: 403, body: { erro: 'Só quem está na Produção volta com ela para a Entrada.' } };
+				j.designers = j.designers.filter(function (d) { return d !== 'Dora Teste'; });
+				if (j.etapa === 'entregue' || !j.designers.length) j.etapa = 'entrada';
+			} else if (rota === 'desfazer') {
+				if (!j.ultima) return { status: 409, body: { erro: 'Não há ação sua para desfazer nesta Produção.' } };
+				j.etapa = j.ultima.etapa;
+				j.designers = j.ultima.designers;
+				j.ultima = null;
+
+				return null;
+			}
+
+			j.ultima = antes;
+
+			return null;
+		};
+
+		window.PAD_MOCK_PROMEIRO = function (method, path, key, body) {
 			var json = function (status, body) {
 				return { status: status, body: body };
 			};
 			var one = /^\/api\/padeiro\/producoes\/([^/]+)$/.exec(path);
+			var rota = method === 'POST' ? (/^\/api\/padeiro\/(aviso|arte|fogo|entregar|voltar|desfazer)$/.exec(path) || [])[1] : '';
 
 			if (path === '/api/padeiro/eu') return json(200, { estado: JANELA_PENDENTE ? 'pendente' : 'ligada', designer: JANELA_PENDENTE ? null : { nome: 'Dora Teste' } });
 			if (JANELA_PENDENTE) return json(403, { erro: 'A chave do Padeiro está aguardando um administrador do PROMeiro ligar ao designer.', estado: 'pendente' });
-			if (path === '/api/padeiro/producoes') return json(200, { trello: JANELA_LISTA });
+			if (path === '/api/padeiro/producoes') return json(200, { trello: JANELA_LISTA.filter(function (x) {
+				return JANELA[x.producao].etapa !== 'entregue';
+			}).map(function (x) {
+				return Object.assign({}, x, { etapa: JANELA[x.producao].etapa });
+			}) });
 
-			var p = one && JANELA_LISTA.filter(function (x) {
-				return x.producao === decodeURIComponent(one[1]);
+			var id = one ? decodeURIComponent(one[1]) : rota && body ? String(body.producao || '') : '';
+			var p = JANELA_LISTA.filter(function (x) {
+				return x.producao === id;
 			})[0];
 
 			if (!p) return json(404, { erro: 'Essa Produção não está mais aberta no PROMeiro.' });
 
-			var artes = p.producao === 'pJan4' || p.producao === 'pJan1' ? JANELA_ARTES : [{ nome: 'LETTERING', fogo: 1, feita: false, marcada: null }, { nome: 'CARTÃO', fogo: 1, feita: false, marcada: null }];
+			if (rota) {
+				var recusa = janelaAcao(rota, p, body || {});
 
-			return json(200, {
-				producao: {
-					id: p.producao, praca: p.praca, etapa: p.etapa, claquete: p.claq, versao: p.producao === 'pJan4' ? '(AH)' : '(PNAH)', pronto: p.pronto, estado: p.estado,
-					designers: JANELA_COM_DORA[p.producao] ? ['Dora Teste'] : [], comVoce: !!JANELA_COM_DORA[p.producao], artes: artes,
-					contagem: { feitas: artes.filter(function (a) { return a.feita; }).length, total: artes.length }
-				}
-			});
+				if (recusa) return recusa;
+				if (rota === 'aviso') return json(200, { producao: p.producao, etapa: JANELA[p.producao].etapa, designers: JANELA[p.producao].designers, eventos: ['etapa', 'designer-entrou'], trello: [] });
+
+				return json(200, { feito: { eventos: [rota], trello: [] }, producao: janelaProducao(p) });
+			}
+
+			return json(200, { producao: janelaProducao(p) });
 		};
 	}
 
@@ -394,6 +463,26 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			await api.promeiroQueueWrite(list);
 
 			return { itens: list.length };
+		},
+
+		// os pedidos da janela PROMeiro · produções às outras janelas (host/promeiro.jsx, promeiro-pedido-<para>.json):
+		// aqui, no localStorage (o teste da janela, scripts/e2e-janela.js, troca pelo padMockPedido: o arquivo do host,
+		// do lado de fora do navegador, que uma janela vê na hora em que a outra grava)
+		promeiroPedir: async function (a) {
+			var stamp = Date.now();
+			var data = { stamp: stamp, dados: a.dados || {} };
+
+			if (!/^[a-z-]{1,20}$/.test(String(a.para || ''))) throw new Error('#PAD_120 - pedido da janela PROMeiro sem destino: ' + a.para);
+			if (window.padMockPedido) await window.padMockPedido(a.para, data);
+			else localStorage.setItem('pad.mock.pedido.' + a.para, JSON.stringify(data));
+
+			return { stamp: stamp };
+		},
+
+		promeiroPedido: async function (a) {
+			var data = (window.padMockPedido ? await window.padMockPedido(a.para) : JSON.parse(localStorage.getItem('pad.mock.pedido.' + a.para) || 'null')) || { stamp: 0, dados: {} };
+
+			return { stamp: data.stamp, dados: data.dados, now: Date.now() };
 		},
 
 		machinePrefs: function () {
@@ -1394,6 +1483,9 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'Quem Ama Cuida', pat: ['QUEM AMA'], path: V + '/NOVELAS/QUEM AMA CUIDA/01PROJETOS' },
 				{ name: 'Tela Quente', pat: ['TELA', 'TELA QUENTE'], path: '/Volumes/VFX/imagem/drive_l/Fileserver_1/FILMES/TITULOS', film: true },
 				{ name: 'Sessão da Tarde', pat: ['S TARDE', 'STARDE'], path: V + '/INSTITUCIONAL/ON AIR 2021/01PROJETOS' },
+				// as da janela PROMeiro · produções (scripts/e2e-janela.js): uma sem projeto ainda, outra com o .aep do card
+				{ name: 'Show da Noite', pat: ['SHOW DA NOITE'], path: V + '/SHOWS/SHOW DA NOITE/2026', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/SHOWS/SHOW DA NOITE' },
+				{ name: 'Festa na Praça', pat: ['FESTA NA PRACA'], path: V + '/SHOWS/FESTA NA PRACA/01 PROJETOS' },
 				{ name: 'O Mentiroso', pat: ['MENTIROSO'], path: '', out: '/Volumes/EDIT_IN_PLACE/PROMO/cdesign_output/C# ABERTA & INTER/ARTE RJ/FILMES/TITULOS/_M_/O MENTIROSO', isFilm: true, year: '1997' }
 			];
 			var key = function (t) {
@@ -1460,13 +1552,16 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 				{ name: 'MELHOR CHAMADA DE JORNALISMO E ESPORTE AFILIADA', modified: now - 22 * H },
 				{ name: 'MELHOR CHAMADA DE PROGRAMA LOCAL AFILIADA', modified: now - 30 * H },
 				{ name: 'MELHOR CHAMADA DE CONTEUDO REDE', modified: now - 70 * H }
+			] : !film && /FESTA NA PRACA/.test(root) ? [
+				// o .aep do card da Produção (a janela PROMeiro abre ele)
+				{ name: 'FESTA NA PRACA ABERTURA', modified: now - 4 * H }
 			] : !film && /MOOD MENSAL/.test(root) ? [
 				// o mood do mês já começado (o card do Trello abre ele)
 				{ name: 'JANEIRO NA GLOBO', modified: now - 3 * H }
 			] : [];
 			var folders = [{ name: '02_ARQUIVOS', depth: 0 }, { name: 'FONTS', depth: 1 }, { name: 'IMAGENS', depth: 1 }, { name: 'VÍDEOS', depth: 1 }, { name: '03_SAIDA', depth: 0 }];
 
-			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
+			return { root: projectsRoot ? root.replace(/\/[^\/]+$/, '') : root, rootName: (projectsRoot ? root.replace(/\/[^\/]+$/, '') : root).split('/').pop(), rootExists: !film || !!a.filmPath, projects: projectsRoot ? root : root + '/01 PROJETOS', projectsName: projectsRoot ? root.split('/').pop() : '01 PROJETOS', projectsExists: projectsRoot || /MAIS VOCE|MOOD MENSAL|PREMIO REDE GLOBO|FESTA NA PRACA/.test(root), fileBase: base, fileName: base + '.aep', existing: existing, exists: existing.some(function (f) { return f.name === base; }), folders: folders, user: 'JMBILLARD', output: a.output || '', outputExists: !!a.output && /ARTE RJ\/PROGRAMAS/.test(a.output), outputSub: a.output && a.what ? a.output + '/' + String(a.what).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim() : '', outputSubExists: false };
 		},
 
 		projectCreate: function (a) {
