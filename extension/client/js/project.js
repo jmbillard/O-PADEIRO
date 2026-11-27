@@ -665,6 +665,8 @@ projetos com o nome certo).
 			state.settleAll = true;
 			state.cardPick = { claq: c.claq, attr: aepName(match.name) };
 			enterAttraction(match);
+			// o card (ou a Produção do PROMeiro) que avisa o PROMeiro ao abrir ou criar o projeto (avisar)
+			state.avisoCard = { attr: aepName(match.name), card: c.card || '', producao: c.producao || '' };
 		});
 
 		return item;
@@ -1020,6 +1022,8 @@ projetos com o nome certo).
 
 	function enterAttraction(match, keepOpen) {
 		if (match.noBase) return asNew(match);
+		// outra atração: o card escolhido antes não é dela
+		if (state.avisoCard && state.avisoCard.attr !== aepName(match.name)) state.avisoCard = null;
 		flow.attr = match;
 		flow.choice = '';
 		$('claq').value = match.name.toUpperCase() + '/';
@@ -1899,9 +1903,42 @@ projetos com o nome certo).
 
 	var FILE_ROW_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>';
 
+	/* ---------- o aviso do Padeiro (jmbillard/TEXTAO#141) ---------- */
+
+	// o que avisa o PROMeiro ao abrir ou criar o projeto: o card do NO TRELLO escolhido (a Produção do PROMeiro, ou o
+	// card do webhook) ou o filme. pego antes de a janela recomeçar; null quando não veio por nenhum deles
+	function avisoTarget() {
+		var c = state.avisoCard;
+
+		if (!flow.pick) return null;
+		if (c && aepName(flow.pick.name) === c.attr && (c.producao || c.card)) return { producao: c.producao, card: c.card };
+		if (flow.attr && flow.attr.isFilm && aepName(flow.attr.name) === aepName(flow.pick.name)) return { film: flow.attr.name };
+
+		return null;
+	}
+
+	// o aviso vai para a fila deste computador e de lá ao PROMeiro (js/promeiro.js): sem rede, fica para depois. o
+	// filme acha a Produção dele na lista do PROMeiro (sem ela, nada). nunca dá erro na tela nem segura a janela
+	async function avisar(target) {
+		state.avisoCard = null;
+		if (!target || !window.PAD_PROMEIRO) return;
+
+		try {
+			if (target.film) {
+				var producao = await ATR.filmProduction(target.film);
+
+				if (!producao) return;
+				target = { producao: producao };
+			}
+			await PAD_PROMEIRO.notify(target);
+		} catch (err) { }
+	}
+
 	// abre o projeto marcado na lista e encerra o fluxo (o After pergunta se salva o que está aberto)
 	async function openPicked() {
 		if (state.busy || !state.openFile || !state.plan) return;
+
+		var target = avisoTarget();
 
 		state.busy = true;
 		$('criar-go').disabled = true;
@@ -1909,6 +1946,7 @@ projetos com o nome certo).
 		try {
 			await call('projectOpenFile', { path: String(state.plan.projects).replace(/[\\\/]+$/, '') + '/' + state.openFile });
 			status('projeto aberto: ' + state.openFile, 'success');
+			await avisar(target);
 			$('criar-go').textContent = 'Aberto';
 			state.openFile = '';
 			setTimeout(function () {
@@ -2157,6 +2195,7 @@ projetos com o nome certo).
 				setTimeout(resolve, 300);
 			});
 
+			var target = avisoTarget();
 			var res = await call('projectCreate', args || createArgs());
 
 			// a ação final fecha a janela: a confirmação fica um instante à vista (o botão diz "Criado") e ela fecha.
@@ -2164,6 +2203,7 @@ projetos com o nome certo).
 			done = true;
 			status(res.opened ? 'projeto aberto.' : 'projeto criado: ' + res.file.split(/[\\\/]/).pop(), 'success');
 			$('criar-go').textContent = res.opened ? 'Aberto' : 'Criado';
+			await avisar(target);
 			setTimeout(async function () {
 				PAD_BRIDGE.closePanel();
 				state.busy = false;
@@ -2785,6 +2825,7 @@ projetos com o nome certo).
 	}
 
 	function startWizard(typed) {
+		state.avisoCard = null;
 		flow.matches = [];
 		flow.pick = null;
 		flow.attr = null;
@@ -2932,6 +2973,11 @@ projetos com o nome certo).
 	}
 
 	function init() {
+		// a fila dos avisos do Padeiro que não foram (sem rede): vai de novo ao abrir a janela, sem esperar por ela
+		if (window.PAD_PROMEIRO) setTimeout(function () {
+			PAD_PROMEIRO.flush();
+		}, 2000);
+
 		// setas e Tab nas listas (antes dos Enter dos campos)
 		var claqComplete = function () {
 			var p = claqParts();

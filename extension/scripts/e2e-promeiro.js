@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140)
+> ponta a ponta: o Padeiro e o PROMeiro (jmbillard/TEXTAO#140, #141)
 ---------------------------------------------------------------
 
 Os painéis no navegador (modo de teste, mock-host.js) contra um PROMeiro de teste: o servidor do PROMeiro (o
@@ -13,6 +13,11 @@ Nada sai para a rede. Confere:
     webhook (o do mock);
   - ligada (um administrador liga a chave a um designer): o NO TRELLO mostra as Produções em Entrada e Produzindo do
     PROMeiro, também a que entrou há mais de 7 dias, e não os cards do webhook;
+  - o aviso ao abrir pelo card (#141): criar o projeto pelo card da Produção do NO TRELLO avisa o PROMeiro, que põe a
+    designer da chave no card do Trello (o de mentira) e na Produção, com a origem "Padeiro";
+  - a fila sem rede: abrir pelo card sem chegar ao PROMeiro guarda o aviso na fila deste computador; a barra, aberta
+    depois, manda de novo, com a hora certa da abertura;
+  - o aviso repetido (a resposta perdida: o mesmo aviso mandado de novo) não duplica evento nem membro no card;
   - revogada: o Padeiro pede outra chave sozinho, que volta a ficar pendente (e o NO TRELLO volta ao webhook);
   - o PROMeiro fora do ar: o NO TRELLO volta ao webhook, sem erro na tela.
 
@@ -47,6 +52,20 @@ const PRODUCOES = [
 	{ id: 'recPadChef', fields: { card_ID: card(3), claquete: 'CHEF 20/11 SP', status: '["FINALIZADO"]', designers: '["Rui Teste"]', entregue: true, data_entrada: ha(6), data_entrega: ha(1), __last_modified_time: ha(1) } },
 	{ id: 'recPadFilme', fields: { card_ID: '', claquete: 'TELA QUENTE 30/11', status: '["FILME"]', designers: null, filme: [{ id: 'recFilmeTeste', title: 'Filme de Teste' }], data_entrada: ha(1), __last_modified_time: ha(1) } }
 ];
+// o Trello de mentira: anota cada pedido (sem a chave e o token) e responde ok
+function trelloFalso() {
+	const pedidos = [];
+	const buscar = async (endereco, init = {}) => {
+		const url = new URL(endereco);
+		const consulta = Object.fromEntries([...url.searchParams].filter(([k]) => k !== 'key' && k !== 'token'));
+
+		pedidos.push({ metodo: init.method || 'GET', caminho: url.pathname.replace(/^\/1/, ''), consulta });
+
+		return Response.json({});
+	};
+
+	return { pedidos, buscar };
+}
 const DESIGNERS = [{ id: 'recDesignerDora', fields: { designer: 'Dora Teste', email: 'dora@exemplo.com', designer_ID: 'membroDora', status: 'ativo' } }];
 
 async function subirPromeiro() {
@@ -61,7 +80,8 @@ async function subirPromeiro() {
 		throw new Error('o teste não sai para a rede: ' + url);
 	};
 	const db = abrirBanco(path.join(pasta, 'promeiro.db'));
-	const app = criarApp({ db, env, buscarNoTeable: teable, abrirPg: teable.abrirPg, buscarNoGitHub: semRede, trello: (e, deps) => criarTrello(e, { ...deps, buscar: semRede }) });
+	const trello = trelloFalso();
+	const app = criarApp({ db, env, buscarNoTeable: teable, abrirPg: teable.abrirPg, buscarNoGitHub: semRede, trello: (e, deps) => criarTrello(e, { ...deps, buscar: trello.buscar }) });
 	await app.releituraPronta;
 	await app.pessoasProntas;
 
@@ -88,6 +108,11 @@ async function subirPromeiro() {
 	return {
 		url,
 		chefe,
+		trello,
+		// a linha do tempo da Produção (o que o administrador vê)
+		linhaDoTempo: async (id) => (await chefe('/api/linha-do-tempo?producao=' + encodeURIComponent(id))).eventos,
+		// as Produções que o Padeiro vê, com a chave dele
+		producoes: async (chave) => (await (await fetch(url + '/api/padeiro/producoes', { headers: { 'x-chave-do-padeiro': chave } })).json()).trello,
 		padeiros: async () => (await chefe('/api/cadastros/padeiros')).padeiros,
 		async fora() {
 			await new Promise((ok) => servidor.close(ok));
@@ -107,14 +132,22 @@ const PAGES = new WeakMap();
 
 // a chave guardada "no host": no After é o promeiro.json da pasta de dados; aqui, a memória do teste (o localStorage do
 // file:// não é confiável entre uma janela e outra no Chromium de teste)
+// e a fila dos avisos (no After, o promeiro-fila.json), também na memória do teste: o teste lê e mexe nela
 async function guardarAChave(context) {
-	let guardada = null;
+	const host = { guardada: null, fila: [] };
 
 	await context.exposeFunction('padMockPromeiro', (data) => {
-		if (data !== undefined) guardada = data && data.chave ? data : null;
+		if (data !== undefined) host.guardada = data && data.chave ? data : null;
 
-		return guardada;
+		return host.guardada;
 	});
+	await context.exposeFunction('padMockPromeiroFila', (list) => {
+		if (list !== undefined) host.fila = list || [];
+
+		return host.fila;
+	});
+
+	return host;
 }
 
 async function pagina(context) {
@@ -163,6 +196,28 @@ async function aviso(context) {
 	return text;
 }
 
+// abre (ou cria) o projeto pelo card do NO TRELLO: digita, clica no card e no botão do rodapé. antes do clique no card,
+// antes(page) (ex: cortar a rede). → o texto do botão no fim
+async function abrirPeloCard(context, typed, claq, antes) {
+	const page = await pagina(context);
+
+	await page.goto(CLIENT + 'project.html');
+	await page.waitForTimeout(1200);
+	await page.fill('#claq', typed);
+	await page.waitForTimeout(2200);
+	if (antes) await antes(page);
+	await page.locator('.card-row', { hasText: claq }).first().click();
+	await page.waitForTimeout(1500);
+	await page.locator('#criar-go').click();
+	await page.waitForTimeout(2500);
+
+	const go = (await page.locator('#criar-go').innerText()).trim();
+
+	assert.deepEqual(page.errors, [], 'a claquete abre o projeto sem erro');
+
+	return go;
+}
+
 async function estadoNaConfiguracao(context) {
 	const page = await pagina(context);
 
@@ -183,7 +238,7 @@ async function estadoNaConfiguracao(context) {
 	const browser = await chromium.launch();
 	const context = await browser.newContext({ viewport: { width: 520, height: 900 } });
 	await prepareContext(context);
-	await guardarAChave(context);
+	const host = await guardarAChave(context);
 	let ok = 0;
 	const passo = (texto) => {
 		ok++;
@@ -228,6 +283,50 @@ async function estadoNaConfiguracao(context) {
 		assert.match(await estadoNaConfiguracao(context), /^ligada a Dora Teste: o NO TRELLO da claquete vem das Produções do PROMeiro/);
 		assert.equal(await aviso(context), '', 'ligada, a barra não avisa nada');
 		passo('ligada: o NO TRELLO mostra as Produções em Entrada e Produzindo (a Entregue e o filme ficam de fora)');
+
+		// 3a. o aviso ao abrir pelo card (#141): a Produção do NO TRELLO avisa o PROMeiro, que faz o Peguei
+		const producoes = await promeiro.producoes(host.guardada.chave);
+		const dom = producoes.find((p) => p.claq === 'DOMINGAO 26/11 SP');
+		const mais = producoes.find((p) => p.claq === 'MAIS VOCE 28/11 SP');
+		const antesDoAviso = Date.now();
+
+		assert.match(await abrirPeloCard(context, 'domingao', 'DOMINGAO 26/11 SP'), /Criado|Aberto|Criar projeto|Abrir projeto/);
+		assert.deepEqual(host.fila, [], 'o aviso foi e saiu da fila');
+		assert.deepEqual(promeiro.trello.pedidos, [{ metodo: 'POST', caminho: '/cards/' + card(1) + '/idMembers', consulta: { value: 'membroDora' } }], 'a designer da chave entra no card do Trello');
+		let eventos = await promeiro.linhaDoTempo(dom.producao);
+		assert.deepEqual(eventos.map((e) => [e.tipo, e.antes, e.depois, e.origem]), [['etapa', 'entrada', 'produzindo', 'Padeiro'], ['designer-entrou', null, 'Dora Teste', 'Padeiro']]);
+		assert.ok(Date.parse(eventos[0].quando) >= antesDoAviso - 1000 && Date.parse(eventos[0].quando) <= Date.now(), 'com a hora da abertura');
+		passo('o aviso ao abrir pelo card: a Produção vai para Produzindo, com a designer no card do Trello e a origem "Padeiro"');
+
+		// 3b. a fila sem rede: o PROMeiro some depois de a lista chegar; o aviso fica na fila e a barra manda depois
+		let semRede = null;
+		await abrirPeloCard(context, 'mais voce', 'MAIS VOCE 28/11 SP', async (page) => {
+			semRede = page;
+			await page.route(promeiro.url + '/**', (r) => r.abort('internetdisconnected'));
+		});
+		await semRede.unroute(promeiro.url + '/**');
+		assert.equal(host.fila.length, 1, 'sem rede, o aviso fica na fila');
+		const guardado = { ...host.fila[0] };
+		assert.equal(guardado.producao, mais.producao);
+		assert.match(guardado.aviso, /^[\w.:-]{1,100}$/);
+		assert.equal(promeiro.trello.pedidos.length, 1, 'nada chegou ao Trello');
+		assert.deepEqual(await promeiro.linhaDoTempo(mais.producao), []);
+		await new Promise((ok) => setTimeout(ok, 1200)); // a hora da abertura fica para trás
+		assert.equal(await aviso(context), '', 'a barra abre sem aviso nenhum');
+		assert.deepEqual(host.fila, [], 'a barra mandou a fila');
+		eventos = await promeiro.linhaDoTempo(mais.producao);
+		assert.deepEqual(eventos.map((e) => [e.tipo, e.depois, e.origem]), [['designer-entrou', 'Dora Teste', 'Padeiro']], 'a designer é somada (a Produção já estava em Produzindo)');
+		assert.equal(eventos[0].quando, guardado.abertoEm, 'com a hora certa da abertura, não a do envio');
+		assert.deepEqual(promeiro.trello.pedidos.slice(1), [{ metodo: 'POST', caminho: '/cards/' + card(2) + '/idMembers', consulta: { value: 'membroDora' } }]);
+		passo('a fila sem rede: o aviso ficou guardado e a barra mandou depois, com a hora da abertura');
+
+		// 3c. o aviso repetido: a resposta se perdeu e o mesmo aviso vai de novo. não duplica evento nem membro
+		host.fila = [guardado];
+		await aviso(context);
+		assert.deepEqual(host.fila, [], 'o repetido também sai da fila');
+		assert.equal((await promeiro.linhaDoTempo(mais.producao)).length, 1, 'nenhum evento a mais');
+		assert.equal(promeiro.trello.pedidos.length, 2, 'nenhum pedido a mais ao Trello');
+		passo('o aviso repetido: o mesmo aviso de novo não duplica evento nem membro no card');
 
 		// 4. revogada: o Padeiro pede outra chave, pendente de novo
 		await promeiro.chefe('/api/cadastros/padeiros/' + lista[0].id + '/revogar', { method: 'POST' });

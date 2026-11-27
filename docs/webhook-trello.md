@@ -80,8 +80,34 @@ segundo plano.
 - **Quem fala com o PROMeiro** é o Node do painel (`js/promeiro.js`), sem travar o After Effects; o host
   (`host/promeiro.jsx`, ES3) só diz o usuário, o computador, o sistema e a sigla, e guarda a chave.
 - **Teste:** `PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js` sobe um
-  PROMeiro de teste e passa pelos painéis no navegador (mock-host): pedir a chave, pendente, ligada, revogada, fora
-  do ar e sem endereço.
+  PROMeiro de teste e passa pelos painéis no navegador (mock-host): pedir a chave, pendente, ligada, o aviso ao abrir
+  pelo card, a fila sem rede (e o reenvio), o aviso repetido, revogada, fora do ar e sem endereço.
+
+### o aviso do Padeiro (abrir ou criar o projeto)
+
+Abrir ou criar o projeto pelo **card** ou pela **Produção** do grupo NO TRELLO, ou por um **filme**, avisa o PROMeiro
+(`POST /api/padeiro/aviso`, com a chave no cabeçalho), que faz o mesmo que o botão **Peguei** da tela de produções: o
+designer da chave entra no card do Trello e na Produção, com a origem "Padeiro" na linha do tempo. O aviso leva:
+
+- `aviso`: um identificador novo a cada abertura (`pad-…`). O mesmo aviso mandado de novo (a resposta que se perdeu,
+  duas janelas mandando a fila ao mesmo tempo) não grava de novo: o PROMeiro responde `{ repetido: true }`;
+- `abertoEm`: a hora em que o projeto foi aberto ou criado (ISO), e não a do envio;
+- `producao` (a Produção do NO TRELLO) e `card` (o card do Trello). O card do webhook, sem a Produção, vai só com o
+  `card`. O filme vai pela Produção dele na lista do PROMeiro (a de filme, com o título na atração ou no começo da
+  claquete); o filme sem Produção não avisa nada.
+
+Só o clique num card do NO TRELLO conta: digitar a atração e criar o projeto, sem o card, não avisa.
+
+**A fila sem rede.** O aviso entra primeiro na fila deste computador (`promeiro-fila.json`, na pasta de dados, ao lado
+do `promeiro.json`; `host/promeiro.jsx`) e só sai dela quando o PROMeiro responde. Quem manda é o Node do painel, sem
+esperar a resposta para fechar a janela nem travar o After. A fila vai de novo ao abrir a barra e a claquete e, com a
+barra aberta, a cada 3 minutos. O que acontece com cada aviso:
+
+- **entregue** (200), **repetido**, **mal feito** (400) ou **a Produção que não existe** (404): sai da fila;
+- **a chave que não vale** (401, 403) ou **pendente**: sai da fila (o PROMeiro recusaria);
+- **sem rede**, o PROMeiro fora do ar, um erro dele ou do Trello: fica para depois;
+- **no modo local** ou sem o endereço do PROMeiro: fica até voltar; o aviso pedido em outro endereço sai;
+- no máximo 100 avisos, dos últimos 30 dias.
 
 ## onde está no código
 
@@ -91,3 +117,6 @@ segundo plano.
 - `extension/client/js/mock-host.js`: o card de exemplo do Domingão (modo de teste: digite `domingao`).
 - `extension/client/js/promeiro.js` e `extension/host/promeiro.jsx`: a chave do Padeiro e a lista das Produções;
   `attractions.js` troca os cards do webhook pelos do PROMeiro (`currentCards()`).
+- o aviso do Padeiro: `project.js` (`avisoTarget()` e `avisar()`, ao abrir ou criar), `promeiro.js` (`notify()` e
+  `flush()`, a fila), `attractions.js` (`filmProduction()`, a Produção do filme) e `host/promeiro.jsx`
+  (`promeiroQueue`, `promeiroQueueAdd`, `promeiroQueueDrop`); `bar.js` manda a fila ao abrir e de tempos em tempos.

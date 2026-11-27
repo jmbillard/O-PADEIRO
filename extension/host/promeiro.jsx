@@ -19,7 +19,17 @@ o painel não sabe sozinho (o usuário e o nome do computador, o sistema, a sigl
 
 O endereço do PROMeiro é da equipe: configuração > buscar ('SEARCH.promeiro'). Vazio, nada fala com o PROMeiro.
 
+'promeiro-fila.json', na mesma pasta: a fila dos avisos do Padeiro ainda não entregues (jmbillard/TEXTAO#141). O
+aviso entra aqui primeiro, ao abrir ou criar o projeto, e sai quando o PROMeiro responde (js/promeiro.js); sem rede,
+ou com o PROMeiro fora do ar, fica para depois. Cada mudança da fila é uma chamada só ao host (lê, muda e grava de uma
+vez): duas janelas abertas não perdem o aviso uma da outra. Uma lista de { aviso, abertoEm, producao, card, filme,
+url }, a mais velha primeiro, com no máximo PAD_PROMEIRO_QUEUE_MAX avisos e só os dos últimos
+PAD_PROMEIRO_QUEUE_DAYS dias.
+
 */
+
+var PAD_PROMEIRO_QUEUE_MAX = 100;
+var PAD_PROMEIRO_QUEUE_DAYS = 30;
 
 function padPromeiroFile() {
 	return new File(scriptPreferencesPath + '/promeiro.json');
@@ -39,9 +49,9 @@ function padPromeiroSaved() {
 	}
 }
 
-// agora, em ISO (UTC): o ExtendScript não tem o toISOString
-function padPromeiroNow() {
-	var d = new Date();
+// agora (ou agora menos 'back' ms), em ISO (UTC): o ExtendScript não tem o toISOString
+function padPromeiroNow(back) {
+	var d = new Date(new Date().getTime() - (back || 0));
 	var two = function (n) {
 		return (n < 10 ? '0' : '') + n;
 	};
@@ -127,4 +137,115 @@ PADX.promeiroSave = function (a) {
 	saveTextFile(JSON.stringify(data, null, '\t'), padPromeiroFile().fsName);
 
 	return PADX.promeiroInfo();
+};
+
+/* ---------------------------------------------------------------
+   a fila dos avisos do Padeiro (jmbillard/TEXTAO#141)
+   --------------------------------------------------------------- */
+
+function padPromeiroQueueFile() {
+	return new File(scriptPreferencesPath + '/promeiro-fila.json');
+}
+
+function padPromeiroQueueRead() {
+	var file = padPromeiroQueueFile();
+
+	if (!file.exists) return [];
+
+	try {
+		var data = JSON.parse(readFileContent(file));
+		var list = [];
+
+		if (!(data instanceof Array)) return [];
+
+		for (var i = 0; i < data.length; i++) {
+			if (data[i] && typeof data[i] == 'object' && data[i].aviso) list.push(data[i]);
+		}
+
+		return list;
+	} catch (err) {
+		return [];
+	}
+}
+
+// grava a fila (vazia, apaga o arquivo)
+function padPromeiroQueueWrite(list) {
+	var file = padPromeiroQueueFile();
+
+	if (!list.length) {
+		if (file.exists) file.remove();
+
+		return;
+	}
+
+	var folder = new Folder(scriptPreferencesPath);
+
+	if (!folder.exists) folder.create();
+
+	saveTextFile(JSON.stringify(list, null, '\t'), file.fsName);
+}
+
+function padPromeiroText(v, max) {
+	return padTrim(String(v == null ? '' : v)).substring(0, max);
+}
+
+// A fila dos avisos ainda não entregues. → { itens: [{ aviso, abertoEm, producao, card, filme, url }] }
+PADX.promeiroQueue = function () {
+	return { itens: padPromeiroQueueRead() };
+};
+
+// Põe um aviso na fila. a: { aviso, abertoEm, producao, card, filme }. Sem o endereço do PROMeiro na configuração,
+// nada entra (ninguém para avisar). O mesmo identificador não entra duas vezes. → { queued, itens }
+PADX.promeiroQueueAdd = function (a) {
+	var url = '';
+
+	try {
+		url = padReadSearch().promeiro || '';
+	} catch (err) { }
+
+	var item = {
+		aviso: padPromeiroText(a.aviso, 100),
+		abertoEm: padPromeiroText(a.abertoEm, 40) || padPromeiroNow(),
+		producao: padPromeiroText(a.producao, 100),
+		card: padPromeiroText(a.card, 100),
+		filme: padPromeiroText(a.filme, 100),
+		url: url
+	};
+
+	if (!url || !/^[\w.:-]{1,100}$/.test(item.aviso) || !(item.producao || item.card || item.filme)) return { queued: false, itens: padPromeiroQueueRead().length };
+
+	var since = padPromeiroNow(PAD_PROMEIRO_QUEUE_DAYS * 86400000);
+	var old = padPromeiroQueueRead();
+	var list = [];
+
+	for (var i = 0; i < old.length; i++) {
+		if (old[i].aviso == item.aviso) return { queued: true, itens: old.length };
+		// a hora em ISO (UTC) se compara como texto: o mais velho que os dias da fila sai
+		if (String(old[i].abertoEm || '') >= since) list.push(old[i]);
+	}
+
+	list.push(item);
+	if (list.length > PAD_PROMEIRO_QUEUE_MAX) list = list.slice(list.length - PAD_PROMEIRO_QUEUE_MAX);
+	padPromeiroQueueWrite(list);
+
+	return { queued: true, itens: list.length };
+};
+
+// Tira da fila os avisos resolvidos (entregues, repetidos ou recusados de vez). a: { avisos: [identificador] }
+// → { itens }
+PADX.promeiroQueueDrop = function (a) {
+	var gone = {};
+	var ids = a && a.avisos instanceof Array ? a.avisos : [];
+	var old = padPromeiroQueueRead();
+	var list = [];
+
+	for (var i = 0; i < ids.length; i++) gone['#' + ids[i]] = true;
+
+	for (var j = 0; j < old.length; j++) {
+		if (!gone['#' + old[j].aviso]) list.push(old[j]);
+	}
+
+	if (list.length != old.length) padPromeiroQueueWrite(list);
+
+	return { itens: list.length };
 };

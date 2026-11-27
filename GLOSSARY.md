@@ -65,3 +65,15 @@ O que identifica este computador no PROMeiro: pedida sozinha na primeira vez (us
 sistema e sigla), guardada no `promeiro.json` da pasta de dados, **pendente** até um administrador ligar a um designer.
 Ligada, o grupo NO TRELLO vem das Produções do PROMeiro; pendente, revogada ou sem rede, do webhook.
 _Evitar_: token, senha, login
+
+**Aviso do Padeiro**:
+O que o Padeiro manda ao PROMeiro quando o projeto é aberto ou criado pelo card ou pela Produção do NO TRELLO, ou por
+um filme: o PROMeiro faz o mesmo que o **Peguei** (o designer da chave entra no card e na Produção). Leva a hora da
+abertura e um identificador, para o repetido não gravar de novo. Só com a chave ligada.
+_Evitar_: webhook do projeto (é a rota do n8n)
+
+**Fila dos avisos**:
+Os avisos do Padeiro ainda não entregues, no `promeiro-fila.json` da pasta de dados: o aviso entra nela primeiro e sai
+quando o PROMeiro responde. Sem rede, ou com o PROMeiro fora do ar, fica e vai de novo ao abrir a barra ou a claquete
+e, com a barra aberta, a cada 3 minutos.
+_Evitar_: cache, pendências

@@ -296,6 +296,47 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 			return api.promeiroInfo();
 		},
 
+		// a fila dos avisos do Padeiro (host/promeiro.jsx, o promeiro-fila.json): aqui, no localStorage (o teste do
+		// PROMeiro troca pelo padMockPromeiroFila, a memória do teste, como a chave)
+		promeiroQueue: async function () {
+			var list = window.padMockPromeiroFila ? await window.padMockPromeiroFila() : JSON.parse(localStorage.getItem('pad.mock.promeiroFila') || 'null');
+
+			return { itens: list || [] };
+		},
+
+		promeiroQueueWrite: async function (list) {
+			if (window.padMockPromeiroFila) await window.padMockPromeiroFila(list);
+			else if (!list.length) localStorage.removeItem('pad.mock.promeiroFila');
+			else localStorage.setItem('pad.mock.promeiroFila', JSON.stringify(list));
+		},
+
+		promeiroQueueAdd: async function (a) {
+			var url = mockPromeiroUrl();
+			var list = (await api.promeiroQueue()).itens;
+			var item = { aviso: String(a.aviso || ''), abertoEm: String(a.abertoEm || '') || new Date().toISOString(), producao: String(a.producao || ''), card: String(a.card || ''), filme: String(a.filme || ''), url: url };
+
+			if (!url || !/^[\w.:-]{1,100}$/.test(item.aviso) || !(item.producao || item.card || item.filme)) return { queued: false, itens: list.length };
+			if (list.some(function (x) {
+				return x.aviso === item.aviso;
+			})) return { queued: true, itens: list.length };
+
+			list.push(item);
+			await api.promeiroQueueWrite(list.slice(-100));
+
+			return { queued: true, itens: Math.min(list.length, 100) };
+		},
+
+		promeiroQueueDrop: async function (a) {
+			var gone = (a && a.avisos) || [];
+			var list = (await api.promeiroQueue()).itens.filter(function (x) {
+				return gone.indexOf(x.aviso) < 0;
+			});
+
+			await api.promeiroQueueWrite(list);
+
+			return { itens: list.length };
+		},
+
 		machinePrefs: function () {
 			var m = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || { user: '', projects: '', outputs: '', localMode: false, productions: [], log: true };
 

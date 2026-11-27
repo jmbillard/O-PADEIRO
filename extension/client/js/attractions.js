@@ -435,7 +435,8 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 	   em segundo plano (a busca não espera mais que um instante por ela).
 	   --------------------------------------------------------------- */
 
-	var fromPromeiro = { cards: null, at: 0, loading: null };
+	// films: as Produções de filme ('fil'), que ficam fora do NO TRELLO, mas valem para o aviso do filme (#141)
+	var fromPromeiro = { cards: null, films: null, at: 0, loading: null };
 	var PROMEIRO_FRESH = 60000;
 	var PROMEIRO_WAIT = 1500; // quanto a busca espera pela primeira leitura
 
@@ -446,6 +447,9 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 
 		fromPromeiro.loading = PAD_PROMEIRO.productions().then(function (list) {
 			fromPromeiro.cards = list ? recentCards(list, true) : null;
+			fromPromeiro.films = list ? list.filter(function (c) {
+				return c && c.fil && c.producao;
+			}) : null;
 			fromPromeiro.at = Date.now();
 
 			return fromPromeiro.cards;
@@ -467,6 +471,25 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		})]);
 
 		return fromPromeiro.cards || source.cards;
+	}
+
+	// a Produção do filme (o aviso do Padeiro ao abrir ou criar o projeto do filme, jmbillard/TEXTAO#141): a do PROMeiro
+	// com o título do filme na atração ou no começo da claquete → o id dela, ou '' (sem a chave ligada, fora do ar ou
+	// sem Produção). não espera mais que um instante pela lista
+	async function filmProduction(name) {
+		var key = aepName(name);
+
+		if (!key) return '';
+
+		await Promise.race([refreshPromeiro(), new Promise(function (resolve) {
+			setTimeout(resolve, PROMEIRO_WAIT);
+		})]);
+
+		var hit = (fromPromeiro.films || []).filter(function (c) {
+			return aepName(c.atr || '') === key || (aepName(c.claq || '') + ' ').indexOf(key + ' ') === 0;
+		})[0];
+
+		return hit ? String(hit.producao) : '';
 	}
 
 	// a janela abriu: já pede a lista (a primeira busca não espera a rede)
@@ -1136,6 +1159,7 @@ achadas e a "nova atração" (nome + categoria), abrindo embaixo. → window.PAD
 		aepName: aepName,
 		aepFileName: aepFileName,
 		recentFilms: recentFilms,
+		filmProduction: filmProduction,
 		nodeFs: nodeFs,
 		displayPath: displayPath,
 		find: findAttractions,

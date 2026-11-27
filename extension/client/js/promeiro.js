@@ -14,6 +14,13 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
   - com a chave ligada, o grupo NO TRELLO da claquete lê as Produções em Entrada e Produzindo:
     GET /api/padeiro/producoes → { trello: [...] }, no mesmo formato do índice do buscar (docs/webhook-trello.md).
 
+  - o aviso do Padeiro (jmbillard/TEXTAO#141): abrir ou criar o projeto pelo card ou pela Produção do NO TRELLO, ou
+    por um filme, avisa o PROMeiro (faz o mesmo que o Peguei): POST /api/padeiro/aviso { aviso, abertoEm, producao |
+    card | filme }. `aviso` é o identificador (o mesmo, de novo, não grava duas vezes) e `abertoEm`, a hora da
+    abertura. O aviso entra primeiro na fila deste computador (host/promeiro.jsx, promeiro-fila.json) e sai dela
+    quando o PROMeiro responde; sem rede, ou com o PROMeiro fora do ar, fica para depois: a fila é reenviada ao abrir
+    a barra e a claquete e, com a barra aberta, de tempos em tempos (flush). Nada disso espera a rede para seguir.
+
 Sem o endereço do PROMeiro na configuração (aba BUSCAR), no modo local, com a chave pendente ou com o PROMeiro fora do
 ar, nada muda: o NO TRELLO continua vindo do webhook do n8n. Quem fala é o Node do painel (sem travar o After
 Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro: o Padeiro segue como antes.
@@ -199,6 +206,110 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		return null;
 	}
 
+	/* ---------------------------------------------------------------
+	   o aviso do Padeiro e a fila sem rede (jmbillard/TEXTAO#141)
+	   --------------------------------------------------------------- */
+
+	// um identificador novo para o aviso (letras, números e hífen: o que o PROMeiro aceita)
+	function newAvisoId() {
+		var rand = '';
+
+		try {
+			rand = crypto.randomUUID();
+		} catch (err) {
+			for (var i = 0; i < 4; i++) rand += Math.floor(Math.random() * 0x100000000).toString(16);
+		}
+
+		return 'pad-' + Date.now().toString(36) + '-' + rand;
+	}
+
+	// avisa o PROMeiro que o projeto foi aberto ou criado. target: { producao, card, filme } (um basta). o aviso entra
+	// na fila (com a hora de agora) e já vai, sem esperar a resposta. → true quando ficou na fila
+	async function notify(target) {
+		var t = target || {};
+		var item = { aviso: newAvisoId(), abertoEm: new Date().toISOString(), producao: String(t.producao || ''), card: String(t.card || ''), filme: String(t.filme || '') };
+
+		if (!item.producao && !item.card && !item.filme) return false;
+
+		var added = null;
+
+		try {
+			added = await call('promeiroQueueAdd', item);
+		} catch (err) { }
+
+		if (!added || !added.queued) return false;
+		flush();
+
+		return true;
+	}
+
+	var flushing = null;
+
+	// manda a fila ao PROMeiro (um envio por vez em cada janela; outra janela mandando o mesmo aviso ao mesmo tempo não
+	// duplica: o identificador é o mesmo). force: o PROMeiro estava fora do ar há pouco, mas tenta de novo
+	function flush(force) {
+		if (flushing) return flushing;
+
+		flushing = sendQueue(force).catch(function () {
+			return null;
+		}).finally(function () {
+			flushing = null;
+		});
+
+		return flushing;
+	}
+
+	// → { sent, left } (left: o que ficou na fila para depois)
+	async function sendQueue(force) {
+		var list = (await call('promeiroQueue')).itens || [];
+
+		if (!list.length) return { sent: 0, left: 0 };
+
+		var s = await state();
+
+		if (force && s.estado === 'fora') s = await state(true);
+
+		var done = [];
+		var sent = 0;
+
+		// a chave pendente não avisa (o PROMeiro recusa): a fila sai. sem o endereço ou no modo local, ela fica
+		if (s.estado === 'pendente') {
+			done = list.map(function (x) {
+				return x.aviso;
+			});
+		} else if (s.estado === 'ligada') {
+			for (var i = 0; i < list.length; i++) {
+				var x = list[i];
+
+				// o aviso de outro endereço do PROMeiro (a configuração mudou): não vale mais
+				if (x.url !== s.url) {
+					done.push(x.aviso);
+					continue;
+				}
+
+				var res;
+
+				try {
+					res = await request(s.url, 'POST', '/api/padeiro/aviso', s.chave, { aviso: x.aviso, abertoEm: x.abertoEm, producao: x.producao || undefined, card: x.card || undefined, filme: x.filme || undefined });
+				} catch (err) {
+					break; // sem rede (ou o PROMeiro não respondeu a tempo): o resto fica para depois
+				}
+
+				// entregue (ou repetido: já tinha chegado), ou recusado de vez (mal feito, a Produção que não existe, a chave que
+				// não vale para ele): sai da fila. o resto (o PROMeiro ou o Trello com problema) tenta de novo depois
+				if (res.status === 200) sent++;
+				if (res.status === 200 || res.status === 400 || res.status === 404 || res.status === 401 || res.status === 403) done.push(x.aviso);
+				if (res.status === 401 || res.status === 403) cache.at = 0;
+			}
+		}
+
+		var left = list.length - done.length;
+
+		if (done.length) left = (await call('promeiroQueueDrop', { avisos: done })).itens;
+
+		return { sent: sent, left: left };
+	}
+
 	// o texto do estado, para a configuração e o aviso da barra
 	function describe(s) {
 		if (!s) return '';
@@ -214,6 +325,8 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 	window.PAD_PROMEIRO = {
 		state: state,
 		productions: productions,
+		notify: notify,
+		flush: flush,
 		describe: describe
 	};
 })();

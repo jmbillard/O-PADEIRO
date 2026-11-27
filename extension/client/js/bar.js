@@ -1767,13 +1767,21 @@ Ações sem tela própria rodam no host; as outras abrem o painel correspondente
 
 	// a chave do Padeiro no PROMeiro (js/promeiro.js): na primeira vez, a barra pede a chave; enquanto ela espera um
 	// administrador, um aviso só, ao abrir o After (o resto do Padeiro segue igual). sem o endereço do PROMeiro na
-	// configuração, no modo local ou com o PROMeiro fora do ar, nada aparece
+	// configuração, no modo local ou com o PROMeiro fora do ar, nada aparece.
+	// a fila dos avisos do Padeiro (jmbillard/TEXTAO#141) vai ao abrir a barra e, com ela aberta, a cada
+	// PROMEIRO_RESEND (só lê a fila do host; com ela vazia, nada sai para a rede)
+	var PROMEIRO_RESEND = 180000;
+
 	function watchPromeiro() {
 		if (!window.PAD_PROMEIRO) return;
 
 		PAD_PROMEIRO.state(true).then(function (s) {
 			if (s.estado === 'pendente') toast('warn', PAD_PROMEIRO.describe(s).replace(/^pendente: /, ''));
+			PAD_PROMEIRO.flush();
 		});
+		setInterval(function () {
+			PAD_PROMEIRO.flush(true);
+		}, PROMEIRO_RESEND);
 	}
 
 	async function init() {
