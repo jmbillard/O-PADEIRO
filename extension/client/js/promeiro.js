@@ -21,6 +21,10 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
     quando o PROMeiro responde; sem rede, ou com o PROMeiro fora do ar, fica para depois: a fila é reenviada ao abrir
     a barra e a claquete e, com a barra aberta, de tempos em tempos (flush). Nada disso espera a rede para seguir.
 
+  - a janela PROMeiro · produções (#148, promeiro.html): com a chave ligada, lê a lista (a mesma rota, com o
+    "pronto para abrir" de cada Produção) e a Produção aberta: GET /api/padeiro/producoes/<id>. Com a pendente, o
+    PROMeiro recusa (403 { estado: 'pendente' }) e a janela mostra só o aviso.
+
 Sem o endereço do PROMeiro na configuração (aba BUSCAR), no modo local, com a chave pendente ou com o PROMeiro fora do
 ar, nada muda: o NO TRELLO continua vindo do webhook do n8n. Quem fala é o Node do painel (sem travar o After
 Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro: o Padeiro segue como antes.
@@ -46,6 +50,15 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 
 	// um pedido ao PROMeiro → { status, body } (o corpo em JSON, ou null). rejeita sem rede ou sem resposta a tempo
 	function request(base, method, path, key, body) {
+		// o modo de teste da janela PROMeiro · produções (mock-host.js, '?mock=janela'): o PROMeiro de mentira responde
+		if (window.PAD_MOCK_PROMEIRO) {
+			return new Promise(function (resolve) {
+				setTimeout(resolve, 120);
+			}).then(function () {
+				return window.PAD_MOCK_PROMEIRO(method, path, key, body);
+			});
+		}
+
 		var url = base.replace(/\/+$/, '') + path;
 		var text = body ? JSON.stringify(body) : '';
 		var headers = { Accept: 'application/json' };
@@ -207,6 +220,63 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 	}
 
 	/* ---------------------------------------------------------------
+	   a janela PROMeiro · produções (jmbillard/TEXTAO#148)
+	   --------------------------------------------------------------- */
+
+	// lê uma rota da janela (a lista ou a Produção). Só a chave ligada lê: a pendente recebe 403 { estado: 'pendente' }
+	// e a janela mostra só o aviso. A chave que deixou de valer (401, revogada) pede outra pelo state (volta pendente).
+	// force: confere o estado da chave de novo (a pendente que foi ligada aparece sem esperar o FRESH)
+	// → { estado: 'ligada', designer, corpo } | { estado: 'ligada', naoExiste: true } (404) |
+	//   { estado: 'pendente' | 'desligado' | 'fora', local }
+	async function read(path, force) {
+		var s = await state(force);
+
+		if (s.estado !== 'ligada') return { estado: s.estado, local: !!s.local };
+
+		var res;
+
+		try {
+			res = await request(s.url, 'GET', path, s.chave);
+		} catch (err) {
+			return { estado: 'fora' };
+		}
+
+		if (res.status === 200 && res.body) return { estado: 'ligada', designer: s.designer || '', corpo: res.body };
+		if (res.status === 404) return { estado: 'ligada', designer: s.designer || '', naoExiste: true };
+		if (res.status === 403 && res.body && res.body.estado === 'pendente') {
+			cache.at = 0;
+
+			return { estado: 'pendente' };
+		}
+
+		if (res.status === 401 || res.status === 403) {
+			var again = await state(true);
+
+			return { estado: again.estado === 'ligada' ? 'fora' : again.estado, local: !!again.local };
+		}
+
+		return { estado: 'fora' };
+	}
+
+	// a lista da janela: as Produções em Entrada e Produzindo, cada uma com o "pronto para abrir" (pronto, estado)
+	async function windowList(force) {
+		var r = await read('/api/padeiro/producoes', force);
+
+		if (r.corpo) r.lista = r.corpo.trello instanceof Array ? r.corpo.trello : [];
+
+		return r;
+	}
+
+	// uma Produção, como a janela mostra (a praça e a etapa, a claquete, a versão em código, o estado e as artes)
+	async function windowProduction(id) {
+		var r = await read('/api/padeiro/producoes/' + encodeURIComponent(String(id || '')));
+
+		if (r.corpo) r.producao = r.corpo.producao || null;
+
+		return r;
+	}
+
+	/* ---------------------------------------------------------------
 	   o aviso do Padeiro e a fila sem rede (jmbillard/TEXTAO#141)
 	   --------------------------------------------------------------- */
 
@@ -327,6 +397,8 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 		productions: productions,
 		notify: notify,
 		flush: flush,
-		describe: describe
+		describe: describe,
+		windowList: windowList,
+		windowProduction: windowProduction
 	};
 })();

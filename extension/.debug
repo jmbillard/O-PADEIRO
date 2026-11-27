@@ -65,4 +65,9 @@
 			<Host Name="AEFT" Port="8100" />
 		</HostList>
 	</Extension>
+	<Extension Id="com.jmbillard.opadeiro.promeiro">
+		<HostList>
+			<Host Name="AEFT" Port="8101" />
+		</HostList>
+	</Extension>
 </ExtensionList>

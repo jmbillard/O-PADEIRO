@@ -16,6 +16,7 @@
 		<Extension Id="com.jmbillard.opadeiro.labels" Version="2.0.9" />
 		<Extension Id="com.jmbillard.opadeiro.files" Version="2.0.9" />
 		<Extension Id="com.jmbillard.opadeiro.light" Version="2.0.9" />
+		<Extension Id="com.jmbillard.opadeiro.promeiro" Version="2.0.9" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -478,6 +479,42 @@
 						<MinSize>
 							<Width>360</Width>
 							<Height>380</Height>
+						</MinSize>
+						<MaxSize>
+							<Width>4000</Width>
+							<Height>3000</Height>
+						</MaxSize>
+					</Geometry>
+				</UI>
+			</DispatchInfo>
+		</Extension>
+		<!-- PROMeiro · produções: as Produções do PROMeiro dentro do After, no visual do PROMeiro (jmbillard/TEXTAO#148).
+		     estreita (320 px) mostra a lista ou a Produção; larga (a partir de 641 px), as duas lado a lado -->
+		<Extension Id="com.jmbillard.opadeiro.promeiro">
+			<DispatchInfo>
+				<Resources>
+					<MainPath>./client/promeiro.html</MainPath>
+					<CEFCommandLine>
+						<Parameter>--allow-file-access-from-files</Parameter>
+						<Parameter>--allow-file-access</Parameter>
+						<Parameter>--enable-nodejs</Parameter>
+						<Parameter>--mixed-context</Parameter>
+					</CEFCommandLine>
+				</Resources>
+				<Lifecycle>
+					<AutoVisible>true</AutoVisible>
+				</Lifecycle>
+				<UI>
+					<Type>Panel</Type>
+					<Menu>PROMeiro · produções</Menu>
+					<Geometry>
+						<Size>
+							<Width>420</Width>
+							<Height>680</Height>
+						</Size>
+						<MinSize>
+							<Width>320</Width>
+							<Height>360</Height>
 						</MinSize>
 						<MaxSize>
 							<Width>4000</Width>

@@ -4,7 +4,7 @@
 const path = require('path');
 const { chromium } = require('playwright');
 
-const PAGES = ['index.html', 'productions.html', 'project.html', 'fonts.html', 'collect.html', 'finder.html', 'maker.html', 'files.html', 'light.html', 'converter.html', 'labels.html', 'versioner.html'];
+const PAGES = ['index.html', 'productions.html', 'project.html', 'fonts.html', 'collect.html', 'finder.html', 'maker.html', 'files.html', 'light.html', 'converter.html', 'labels.html', 'versioner.html', 'promeiro.html?mock=janela'];
 
 function scan() {
 	var out = [];

@@ -61,9 +61,62 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 	}
 	var delay = mode === 'slow' ? 900 : 260;
 
-	// o endereço do PROMeiro de teste (configuração > buscar; o teste do PROMeiro põe no localStorage)
+	// o endereço do PROMeiro de teste (configuração > buscar; o teste do PROMeiro põe no localStorage). na janela
+	// PROMeiro · produções com '?mock=janela' (ou 'janelapendente'), um PROMeiro de mentira, aqui mesmo (abaixo)
+	var MOCK_JANELA = /^janela/.test(mode);
+
 	function mockPromeiroUrl() {
+		if (MOCK_JANELA) return 'http://promeiro.teste';
+
 		return localStorage.getItem('pad.mock.promeiroUrl') || '';
+	}
+
+	// o PROMeiro de mentira da janela PROMeiro · produções (jmbillard/TEXTAO#148): as rotas do Padeiro que a janela lê,
+	// com a chave ligada à designer de teste ('?mock=janela') ou pendente ('?mock=janelapendente'). js/promeiro.js
+	// pergunta a ele no lugar da rede. claquetes e nomes inventados
+	if (MOCK_JANELA) {
+		var JANELA_PENDENTE = mode === 'janelapendente';
+		var JANELA_LISTA = [
+			{ producao: 'pJan1', claq: 'DOMINGAO 29/11 SP', praca: 'SP', etapa: 'entrada', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan2', claq: 'VERAO NA ORLA 01/12 SP', praca: 'SP', etapa: 'entrada', pronto: false, estado: 'sem pasta' },
+			{ producao: 'pJan3', claq: 'PRAIA LIMPA 02/12 SP', praca: 'SP', etapa: 'entrada', pronto: false, estado: 'sem atração' },
+			{ producao: 'pJan4', claq: 'NOITE DE JAZZ 28/11 SP', praca: 'SP', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan5', claq: 'BAILE DA ILHA 30/11 RJ', praca: 'RJ', etapa: 'produzindo', pronto: true, estado: 'pronto para abrir' },
+			{ producao: 'pJan6', claq: 'CARNAVAL 03/12 RJ', praca: 'RJ', etapa: 'entrada', pronto: true, estado: 'pronto para abrir' }
+		];
+		var JANELA_ARTES = [
+			{ nome: 'LETTERING ABERTURA', fogo: 3, feita: true, marcada: { por: 'Dora Teste', em: '2026-11-27T10:00:00.000Z' } },
+			{ nome: 'RODAPÉ CONVIDADO', fogo: 1, feita: false, marcada: null },
+			{ nome: 'CARTÃO FINAL', fogo: 2, feita: false, marcada: null }
+		];
+		var JANELA_COM_DORA = { pJan4: true };
+
+		window.PAD_MOCK_PROMEIRO = function (method, path) {
+			var json = function (status, body) {
+				return { status: status, body: body };
+			};
+			var one = /^\/api\/padeiro\/producoes\/([^/]+)$/.exec(path);
+
+			if (path === '/api/padeiro/eu') return json(200, { estado: JANELA_PENDENTE ? 'pendente' : 'ligada', designer: JANELA_PENDENTE ? null : { nome: 'Dora Teste' } });
+			if (JANELA_PENDENTE) return json(403, { erro: 'A chave do Padeiro está aguardando um administrador do PROMeiro ligar ao designer.', estado: 'pendente' });
+			if (path === '/api/padeiro/producoes') return json(200, { trello: JANELA_LISTA });
+
+			var p = one && JANELA_LISTA.filter(function (x) {
+				return x.producao === decodeURIComponent(one[1]);
+			})[0];
+
+			if (!p) return json(404, { erro: 'Essa Produção não está mais aberta no PROMeiro.' });
+
+			var artes = p.producao === 'pJan4' || p.producao === 'pJan1' ? JANELA_ARTES : [{ nome: 'LETTERING', fogo: 1, feita: false, marcada: null }, { nome: 'CARTÃO', fogo: 1, feita: false, marcada: null }];
+
+			return json(200, {
+				producao: {
+					id: p.producao, praca: p.praca, etapa: p.etapa, claquete: p.claq, versao: p.producao === 'pJan4' ? '(AH)' : '(PNAH)', pronto: p.pronto, estado: p.estado,
+					designers: JANELA_COM_DORA[p.producao] ? ['Dora Teste'] : [], comVoce: !!JANELA_COM_DORA[p.producao], artes: artes,
+					contagem: { feitas: artes.filter(function (a) { return a.feita; }).length, total: artes.length }
+				}
+			});
+		};
 	}
 
 	function wait(ms) {
@@ -279,6 +332,10 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		// do lado de fora do navegador, que não perde nada entre uma janela e outra)
 		promeiroInfo: async function () {
 			var url = mockPromeiroUrl();
+
+			// a janela PROMeiro · produções no modo de teste: a chave já pedida (o PROMeiro de mentira diz o estado)
+			if (MOCK_JANELA) return { url: url, usuario: 'designer.teste', computador: 'MAC-TESTE-01', sistema: 'macOS 15.1', sigla: 'DORA', chave: 'chave-de-teste', estado: '', designer: '', conferido: '', local: false };
+
 			var saved = (window.padMockPromeiro ? await window.padMockPromeiro() : JSON.parse(localStorage.getItem('pad.mock.promeiro') || 'null')) || {};
 			var same = !!url && saved.url === url && !!saved.chave;
 			var machine = JSON.parse(localStorage.getItem('pad.mock.machine') || 'null') || {};
@@ -287,6 +344,8 @@ Use '?mock=slow' para respostas mais lentas e '?mock=fail' para simular erros.
 		},
 
 		promeiroSave: async function (a) {
+			if (MOCK_JANELA) return api.promeiroInfo();
+
 			var data = a.chave ? { url: a.url, chave: a.chave, estado: a.estado || '', designer: a.designer || '', conferido: new Date().toISOString() } : null;
 
 			if (window.padMockPromeiro) await window.padMockPromeiro(data || {});

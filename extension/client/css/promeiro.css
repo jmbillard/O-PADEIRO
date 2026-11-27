@@ -1,0 +1,985 @@
+/* =========================================================
+   PROMeiro · produções (jmbillard/TEXTAO#148)
+
+   A janela do PROMeiro dentro do After: o visual é o do PROMeiro (a mesa, o papel, a tinta, o laranja e as fontes
+   dele), e não o do Padeiro, como no protótipo aprovado. Por isso as cores daqui são as do PROMeiro (src/estilos.css
+   e src/ui/producoes.css do TEXTAO), fixas nos tokens abaixo, e não o tema de cores do Padeiro. O claro e o escuro
+   seguem o modo da aparência do Padeiro (js/theme.js põe o data-theme no <html>).
+
+   Nada de unha: o estado de cada Produção vai numa bolinha com o texto, nunca numa faixa na borda.
+   ========================================================= */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 900;
+  src: url('../fonts/promeiro/inter-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Newsreader Variable';
+  font-style: normal;
+  font-display: block;
+  font-weight: 200 800;
+  src: url('../fonts/promeiro/newsreader-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: block;
+  font-weight: 400;
+  src: url('../fonts/promeiro/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: block;
+  font-weight: 500;
+  src: url('../fonts/promeiro/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-display: block;
+  font-weight: 600;
+  src: url('../fonts/promeiro/ibm-plex-mono-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-display: block;
+  font-weight: 600;
+  src: url('../fonts/promeiro/caveat-latin-600-normal.woff2') format('woff2');
+}
+
+/* ---------- os tokens do PROMeiro ---------- */
+:root {
+  color-scheme: light;
+  --mesa: #f1efe9;
+  --papel: #fffefb;
+  --cartao: #ffffff;
+  --segmento-ativo: #ffffff;
+  --tinta: #1a1916;
+  --tinta2: #5f5b53;
+  --tinta3: #77736a;
+  --regua: #e7e3da;
+  --regua-forte: #d6d1c5;
+  --neutro: #efede7;
+  --ultra: #e2532b;
+  --no-ultra: #fff;
+  --falta: #9a4b12;
+  --ok: #2f6b47;
+  --sombra-menu: 0 0 0 1px rgb(26 25 22 / 8%), 0 6px 14px rgb(26 25 22 / 8%), 0 18px 40px rgb(26 25 22 / 14%);
+  --sombra-folha: 0 1px 2px rgb(26 25 22 / 4%), 0 12px 32px rgb(26 25 22 / 5%);
+  --sans: 'Inter Variable', Inter, -apple-system, 'Segoe UI', sans-serif;
+  --serifa: 'Newsreader Variable', Newsreader, Georgia, serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --mao: Caveat, cursive;
+  --suave: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --mesa: #121110;
+  --papel: #1b1a17;
+  --cartao: #211f1c;
+  --segmento-ativo: #423e37;
+  --tinta: #ece8df;
+  --tinta2: #b2ada2;
+  --tinta3: #918b80;
+  --regua: #2f2c27;
+  --regua-forte: #45413a;
+  --neutro: #2a2824;
+  --ultra: #ff8a5c;
+  --no-ultra: #2a120a;
+  --falta: #e3a871;
+  --ok: #86c9a0;
+  --sombra-menu: 0 0 0 1px rgb(255 255 255 / 8%), 0 18px 40px rgb(0 0 0 / 55%);
+  --sombra-folha: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 12px 32px rgb(0 0 0 / 35%);
+}
+
+/* ---------- a base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  background: var(--mesa);
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--mesa);
+  color: var(--tinta);
+  font: 400 13px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+h2,
+p,
+ol,
+ul {
+  margin: 0;
+}
+
+/* o foco pelo teclado: um contorno fino, como no resto do Padeiro (guia de UI), na cor do PROMeiro */
+:focus-visible {
+  outline: 1px solid var(--ultra);
+  outline-offset: 2px;
+}
+
+.espaco {
+  flex: 1;
+}
+
+@keyframes pr-surgir {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes pr-abrir {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+/* ---------- a janela: estreita, a lista ou a Produção; larga, as duas lado a lado ---------- */
+.pr-app {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--mesa);
+}
+
+@media (min-width: 641px) {
+  .pr-app {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .pr-folha .pr-voltar {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-tela='producao'] .pr-col {
+    display: none;
+  }
+
+  body[data-tela='lista'] .pr-folha {
+    display: none;
+  }
+}
+
+/* sem a lista (a chave pendente, sem o endereço, o PROMeiro fora do ar): só a coluna, com o aviso */
+.pr-app.so-aviso {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pr-app.so-aviso .pr-folha {
+  display: none;
+}
+
+.pr-app.so-aviso .pr-col {
+  max-width: 460px;
+}
+
+.entra {
+  animation: pr-surgir 0.25s var(--suave);
+}
+
+/* ---------- a coluna da lista, na mesa ---------- */
+.pr-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  padding: 14px 16px 0;
+}
+
+.pr-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+}
+
+.logo-app {
+  font: 500 18px/1 var(--sans);
+  letter-spacing: -0.02em;
+  color: var(--ultra);
+  white-space: nowrap;
+}
+
+.logo-app b {
+  font-weight: 800;
+  color: var(--tinta);
+  letter-spacing: -0.01em;
+}
+
+.pr-onde {
+  font: 400 17px/1 var(--serifa);
+  color: var(--tinta2);
+  white-space: nowrap;
+}
+
+.pr-onde::before {
+  content: '·';
+  margin: 0 5px 0 1px;
+  color: var(--tinta3);
+}
+
+.pr-chave {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font: 600 11.5px var(--sans);
+  color: var(--tinta2);
+  white-space: nowrap;
+}
+
+.pr-chave span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pr-bola {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+
+.pr-bola.atencao {
+  background: var(--ultra);
+}
+
+/* a praça: o botão e o menu */
+.pr-filtro {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+
+.pr-praca {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--regua-forte);
+  background: var(--cartao);
+  font: 600 12.5px var(--sans);
+  color: var(--tinta);
+  white-space: nowrap;
+  transition: border-color 0.15s;
+}
+
+.pr-praca:hover {
+  border-color: var(--tinta3);
+}
+
+.pr-praca svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--tinta3);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s;
+}
+
+.pr-praca[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+/* concêntrico: raio dos itens (8) + respiro (4) */
+.pr-menu {
+  position: absolute;
+  z-index: 40;
+  top: 34px;
+  left: 0;
+  min-width: 210px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--cartao);
+  box-shadow: var(--sombra-menu);
+  animation: pr-abrir 0.14s var(--suave);
+  transform-origin: top left;
+}
+
+.pr-menu hr {
+  border: 0;
+  border-top: 1px solid var(--regua);
+  margin: 4px 6px;
+}
+
+.pr-menu-item {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+
+.pr-menu-item:hover {
+  background: var(--neutro);
+}
+
+.pr-menu-item small {
+  color: var(--tinta3);
+  font-size: 12px;
+}
+
+.pr-menu-item[aria-checked='true'] {
+  font-weight: 600;
+}
+
+/* as abas: o trilho do segmento do PROMeiro. concêntrico: raio das abas (8) + respiro (3) */
+.pr-abas {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin: 10px 0;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--tinta) 8%, transparent);
+}
+
+.pr-aba {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tinta2);
+  font: 500 12.5px var(--sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.pr-aba:hover {
+  color: var(--tinta);
+}
+
+.pr-aba[aria-selected='true'] {
+  background: var(--segmento-ativo);
+  color: var(--tinta);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(26 25 22 / 14%);
+}
+
+/* a contagem: pequena (15 px), fora da conta dos cantos da aba */
+.pr-conta {
+  min-width: 18px;
+  height: 15px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tinta) 8%, transparent);
+  color: var(--tinta);
+  font: 600 10.5px/15px var(--sans);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-aba[aria-selected='true'] .pr-conta {
+  background: var(--neutro);
+}
+
+/* a lista: some num degradê embaixo (a transição para o fim da janela é sempre um degradê) */
+.pr-rolar {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 2px 4px 24px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+}
+
+.pr-cards {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* o card: só a claquete e o estado */
+.prod-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: var(--papel);
+  border: 1px solid var(--regua);
+  text-align: left;
+  transition: border-color 0.2s;
+}
+
+.prod-card:hover {
+  border-color: var(--regua-forte);
+}
+
+.prod-card[aria-current='true'] {
+  border-color: var(--tinta3);
+  background: var(--cartao);
+}
+
+.pr-card-l1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.prod-claquete {
+  font: 600 12.5px/1.3 var(--mono);
+  letter-spacing: -0.01em;
+  color: var(--tinta);
+  overflow-wrap: anywhere;
+}
+
+.pr-praca-sigla {
+  font: 600 10.5px var(--sans);
+  letter-spacing: 0.06em;
+  color: var(--tinta3);
+}
+
+/* o estado: a bolinha cheia (pronto para abrir) ou vazada em laranja (sem pasta, sem atração) */
+.pr-pronto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 11.5px var(--sans);
+  color: var(--ok);
+}
+
+.pr-pronto i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+
+.pr-pronto.falta {
+  color: var(--falta);
+}
+
+.pr-pronto.falta i {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--falta);
+}
+
+.pr-nada {
+  margin: 14px 4px;
+  font: 600 18px/1.1 var(--mao);
+  color: var(--tinta3);
+  transform: rotate(-1.5deg);
+  transform-origin: left;
+}
+
+/* o aviso (a chave pendente, sem o endereço, fora do ar): o fundo levemente tingido, sem faixa na borda */
+.pr-aviso {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--neutro);
+  color: var(--tinta2);
+  font: 400 12.5px/1.45 var(--sans);
+}
+
+.pr-aviso b {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.pr-aviso small {
+  display: block;
+  margin-top: 4px;
+  color: var(--tinta3);
+  font-size: 11.5px;
+}
+
+.pr-de-novo {
+  margin-top: 6px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: 500 12.5px var(--sans);
+  color: var(--tinta2);
+  text-decoration: underline;
+  text-decoration-color: var(--regua-forte);
+  text-underline-offset: 3px;
+}
+
+.pr-de-novo:hover {
+  color: var(--tinta);
+  text-decoration-color: currentColor;
+}
+
+/* ---------- a Produção aberta, no papel ---------- */
+.pr-folha {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+}
+
+@media (min-width: 641px) {
+  .pr-folha {
+    box-shadow:
+      var(--sombra-folha),
+      0 0 0 1px var(--regua);
+  }
+}
+
+.pr-folha-rolar {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pr-cab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.pr-cab .linha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+}
+
+.pr-voltar {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: -4px 0 -4px -8px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--tinta2);
+  transition: background 0.15s;
+}
+
+.pr-voltar:hover {
+  background: var(--neutro);
+  color: var(--tinta);
+}
+
+.pr-voltar svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pr-rotulo {
+  font: 600 11px var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta3);
+}
+
+.pr-cab h2 {
+  font: 600 18px/1.3 var(--mono);
+  letter-spacing: -0.01em;
+  color: var(--tinta);
+  overflow-wrap: anywhere;
+}
+
+/* a versão da chamada: só o código, numa etiqueta discreta */
+.pr-versao {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--neutro);
+  color: var(--tinta2);
+  font: 500 11px/17px var(--mono);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pr-conta-artes {
+  margin: 0 0 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font: 600 11.5px var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta2);
+}
+
+.pr-conta-artes small {
+  font: 600 16px/1 var(--mao);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta2);
+}
+
+/* as artes: a lista do editor (a bolinha laranja com o número, o nome e o fogo da complexidade), de ponta a ponta */
+.artes {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.artes li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+
+.arte-linha {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 9px 6px;
+}
+
+.artes .txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.artes .txt b {
+  font: 500 13px/1.35 var(--mono);
+  overflow-wrap: anywhere;
+}
+
+.artes .b {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ultra);
+  color: var(--no-ultra);
+  font: 600 10.5px var(--sans);
+}
+
+.artes .b svg {
+  display: none;
+  width: 11px;
+  height: 11px;
+  margin: 0 -3px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* a arte feita: a bolinha vira o aro com o ✓ (o mesmo padrão da bolinha, sem verde) e o nome fica riscado à mão */
+.artes li.feita .b {
+  background: transparent;
+  color: var(--tinta3);
+  box-shadow: inset 0 0 0 1.5px var(--regua-forte);
+}
+
+.artes li.feita .b .num {
+  display: none;
+}
+
+.artes li.feita .b svg {
+  display: block;
+}
+
+.artes li.feita .txt b {
+  color: var(--tinta3);
+  font-weight: 600;
+}
+
+.artes li.feita .cx .fogo {
+  opacity: 0.45;
+}
+
+.pr-risco {
+  position: relative;
+}
+
+.pr-risco svg {
+  position: absolute;
+  left: -2px;
+  top: calc(50% - 6px);
+  width: calc(100% + 4px);
+  height: 12px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.pr-risco path {
+  fill: none;
+  stroke: var(--ultra);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.85;
+  vector-effect: non-scaling-stroke;
+}
+
+/* o fogo da complexidade: a vela (BAIXA, apagada), a fogueira (MÉDIA) e o incêndio (ALTA), em traço à mão. a coluna
+   tem a largura do incêndio, e cada fogo fica centrado nela e no chão. sem Roteiro, a coluna fica vazia */
+.cx,
+.cx-vaga {
+  flex: none;
+  align-self: center;
+  width: 26px;
+  height: 24px;
+  margin: 0 -2px 0 0;
+}
+
+.cx {
+  display: grid;
+  justify-items: center;
+  align-items: end;
+}
+
+.fogo {
+  display: block;
+  overflow: visible;
+}
+
+.fogo path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fogo .hachura {
+  stroke-width: 0.9;
+  opacity: 0.75;
+}
+
+.fogo.n1 {
+  color: var(--tinta3);
+  opacity: 0.6;
+}
+
+.fogo.n1 path {
+  stroke-width: 1.25;
+}
+
+.fogo.n2 path {
+  stroke-width: 1.5;
+}
+
+.fogo.n3 path:not(.hachura) {
+  stroke-width: 1.7;
+}
+
+.fogo.n2,
+.fogo.n3 {
+  color: var(--ultra);
+}
+
+/* só a chama tremula (o pavio, a vela e as lenhas ficam paradas), só com transform */
+.fogo .chama {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tremor-1 2.4s ease-in-out infinite;
+}
+
+.fogo.n2 .chama {
+  animation-name: tremor-2;
+}
+
+.fogo.n3 .chama {
+  animation-name: tremor-3;
+}
+
+@keyframes tremor-1 {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  30% {
+    transform: skewX(-1.2deg) scaleY(1.015);
+  }
+
+  60% {
+    transform: skewX(0.6deg) scaleY(0.99);
+  }
+
+  80% {
+    transform: skewX(1deg) scaleY(1.01);
+  }
+}
+
+@keyframes tremor-2 {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  30% {
+    transform: skewX(-3deg) scaleY(1.04);
+  }
+
+  60% {
+    transform: skewX(1.5deg) scaleY(0.97);
+  }
+
+  80% {
+    transform: skewX(2.5deg) scaleY(1.03);
+  }
+}
+
+@keyframes tremor-3 {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  30% {
+    transform: skewX(-4deg) scaleY(1.06);
+  }
+
+  60% {
+    transform: skewX(2deg) scaleY(0.96);
+  }
+
+  80% {
+    transform: skewX(3.5deg) scaleY(1.04);
+  }
+}
+
+/* a folha sem Produção aberta (só na larga) e a que está lendo */
+.pr-vazia {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  padding: 24px;
+  text-align: center;
+  color: var(--tinta3);
+  font: 400 13px var(--sans);
+}
+
+.pr-vazia b {
+  font: 400 24px/1.1 var(--serifa);
+  color: var(--tinta);
+}
+
+.pr-lendo {
+  margin: 4px 0;
+  font: 600 18px/1.1 var(--mao);
+  color: var(--tinta3);
+}
+
+/* a dica (js/tooltip.js), no papel do PROMeiro */
+.pad-tooltip {
+  position: fixed;
+  z-index: 10000;
+  visibility: hidden;
+  max-width: 240px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: var(--tinta);
+  color: var(--papel);
+  box-shadow: var(--sombra-menu);
+  font: 500 11.5px/1.35 var(--sans);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    visibility 0s linear 140ms;
+  white-space: pre-line;
+}
+
+.pad-tooltip.is-visible {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease,
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -507,6 +507,8 @@ todo erro do padeiro tem um código `PAD_`, que aparece **no fim** da mensagem (
 | `#PAD_115` | a forminha: sem comp aberta, sem layer de texto selecionado ou sem texto no input |
 | `#PAD_116` | a forminha: a comp aberta ou os layers dela mudaram desde a leitura (leia de novo a seleção) |
 | `#PAD_117` | arquivos: a lista (.csv) não pôde ser gravada no lugar escolhido |
+| `#PAD_118` | PROMeiro · produções: o PROMeiro não respondeu (sem rede, fora do ar, ou o caminho do Padeiro sem o Bypass do Access); a janela tenta de novo sozinha |
+| `#PAD_119` | PROMeiro · produções: a Produção aberta não está mais aberta no PROMeiro (arquivada) |
 | `#PAD_112` | projeto: o `.aep` marcado na lista da claquete não foi encontrado (apagado ou movido) |
 | `#PAD_111` | migrar: a pasta não pode ser migrada (pasta do sistema, raiz de um volume, a pasta de um tipo de projeto inteiro, fora das pastas de projetos, ou com projetos de outros programas, como Cinema 4D, Max e Premiere, que perderiam os arquivos: use o Coletar, que copia) |
 | `#PAD_113` | render: nenhuma comp selecionada no painel Project nem aberta |

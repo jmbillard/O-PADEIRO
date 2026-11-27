@@ -182,6 +182,19 @@ const CHECKS = [
 		await p.fill('#claq', 'dom');
 		await p.waitForTimeout(800);
 	}],
+	// a janela PROMeiro · produções (jmbillard/TEXTAO#148), com o PROMeiro de mentira do mock: a lista, o menu da praça,
+	// a Produção aberta (a viewport das checagens é larga: lista e Produção lado a lado) e a chave pendente
+	['promeiro: lista', 'promeiro.html?mock=janela'],
+	['promeiro: menu da praça', 'promeiro.html?mock=janela', async (p) => {
+		await p.click('#pr-praca');
+		await p.waitForTimeout(300);
+	}],
+	['promeiro: produção aberta', 'promeiro.html?mock=janela', async (p) => {
+		await p.click('.pr-aba[data-v="produzindo"]');
+		await p.locator('.prod-card').first().click();
+		await p.waitForTimeout(800);
+	}],
+	['promeiro: chave pendente', 'promeiro.html?mock=janelapendente'],
 	['editor de config', 'index.html', async (p) => {
 		await openTemplate(p);
 		const edit = p.locator('[title*="editar config"]').first();

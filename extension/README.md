@@ -8,7 +8,7 @@ a extensão é um pacote **CEP** (Common Extensibility Platform) para o After Ef
 
 ## 📍 os painéis
 
-todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo host. a barra é um painel acoplável (`<Type>Panel</Type>`); as outras ferramentas são janelas que não acoplam (`<Type>Modeless</Type>`).
+todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo host. a barra e a janela PROMeiro · produções são painéis acopláveis (`<Type>Panel</Type>`); as outras ferramentas são janelas que não acoplam (`<Type>Modeless</Type>`). a PROMeiro · produções tem o visual do PROMeiro (`css/promeiro.css`, com as fontes dele em `client/fonts/promeiro/`, licença OFL), e não o do Padeiro.
 
 | painel (menu `Window` > `Extensions`) | id | página | script | porta de depuração |
 | --- | --- | --- | --- | --- |
@@ -25,6 +25,7 @@ todos os painéis vêm do mesmo pacote (`CSXS/manifest.xml`) e carregam o mesmo 
 | O CONTRARREGRA | `com.jmbillard.opadeiro.labels` | `labels.html` | `js/labels.js` | 8098 |
 | O ARQUIVISTA | `com.jmbillard.opadeiro.files` | `files.html` | `js/files.js` | 8099 |
 | A FORMINHA | `com.jmbillard.opadeiro.light` | `light.html` | `js/light.js` | 8100 |
+| PROMeiro · produções | `com.jmbillard.opadeiro.promeiro` | `promeiro.html` | `js/promeiro-janela.js` | 8101 |
 
 <br>
 
@@ -49,6 +50,7 @@ O-PADEIRO/
    │  ├─ css/icons.css           → animações dos ícones das ferramentas (barra e abas da configuração)
    │  ├─ icons/                  → a biblioteca de ícones (seletor das categorias e das produções): nome.svg ou nome.json (Lottie), a ordem em icons.json, o retrato _snapshot.js (modo de teste)
    │  ├─ lib/                    → bibliotecas de terceiros (lottie_light.min.js, licença MIT)
+   │  ├─ fonts/promeiro/         → as fontes do PROMeiro (Inter, Newsreader, IBM Plex Mono, Caveat; licença OFL), só da janela PROMeiro · produções
    │  └─ js/
    │     ├─ bridge.js            → ponte com o host (PAD_BRIDGE.call), diálogos de arquivo, abrir / fechar painéis
    │     ├─ keys.js              → teclado comum (setas, Esc, Ctrl/Cmd+F / S) e registerKeyEventsInterest
