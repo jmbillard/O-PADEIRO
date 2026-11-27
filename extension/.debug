@@ -25,12 +25,12 @@
 			<Host Name="AEFT" Port="8092" />
 		</HostList>
 	</Extension>
-	<Extension Id="com.jmbillard.opadeiro.maker">
+	<Extension Id="com.jmbillard.opadeiro.confeiteiro">
 		<HostList>
 			<Host Name="AEFT" Port="8093" />
 		</HostList>
 	</Extension>
-	<Extension Id="com.jmbillard.opadeiro.project">
+	<Extension Id="com.jmbillard.opadeiro.projetista">
 		<HostList>
 			<Host Name="AEFT" Port="8094" />
 		</HostList>
@@ -40,7 +40,7 @@
 			<Host Name="AEFT" Port="8095" />
 		</HostList>
 	</Extension>
-	<Extension Id="com.jmbillard.opadeiro.collect">
+	<Extension Id="com.jmbillard.opadeiro.catador">
 		<HostList>
 			<Host Name="AEFT" Port="8096" />
 		</HostList>

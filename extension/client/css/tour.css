@@ -76,11 +76,12 @@ body.is-touring .pad-tooltip {
   padding: 8px 10px 8px 16px;
   overflow: hidden;
   border: 1px solid rgb(var(--on-brand) / 34%);
-  border-radius: 20px;
+  /* concêntrico com o botão do canto (a pílula de 36 px, raio 18) na barra do tamanho padrão (84 px): 18 + o
+     respiro até a borda + a borda */
+  border-radius: 30px;
   background: linear-gradient(135deg, rgb(var(--on-brand) / 24%), rgb(var(--on-brand) / 12%));
-  box-shadow:
-    0 14px 34px rgb(var(--shade-rgb) / 28%),
-    inset 0 1px 0 rgb(var(--shine-rgb) / 30%);
+  /* sem o fio de luz em cima (inset): ele somava à borda e o contorno ficava mais grosso em cima que embaixo */
+  box-shadow: 0 14px 34px rgb(var(--shade-rgb) / 28%);
   color: rgb(var(--on-brand));
   backdrop-filter: blur(18px) saturate(1.3);
   gap: 4px 16px;

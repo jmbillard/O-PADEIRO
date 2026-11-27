@@ -17,9 +17,9 @@ Uma versão compacta da tela de produções do PROMeiro, com o visual dele (css/
 
 Os botões (jmbillard/TEXTAO#149), no pé da Produção: a seta ← (voltar para a Entrada, só de quem está nela ou da
 Entregue; o nome só na dica), Preencher templates, Abrir projeto e Entreguei (só de quem está nela):
-  - Abrir projeto e Preencher templates pegam a Produção (o aviso do Padeiro, js/promeiro.js take) e pedem à janela
-    PROJETO (abrir ou criar o projeto, como pelo card do NO TRELLO: js/project.js) ou à A FORMA (os templates da
-    atração: js/app.js) pelo host (promeiroPedir). A caixinha diz "Você pegou a Produção" e, quando a janela PROJETO
+  - Abrir projeto e Preencher templates pegam a Produção (o aviso do Padeiro, js/promeiro.js take) e pedem a O
+    PROJETISTA (abrir ou criar o projeto, como pelo card do NO TRELLO: js/projetista.js) ou à A FORMA (os templates da
+    atração: js/app.js) pelo host (promeiroPedir). A caixinha diz "Você pegou a Produção" e, quando O PROJETISTA
     responde, "Projeto criado: …" ou "Abrindo: …";
   - a arte: um clique na bolinha marca ou desmarca (só quem está na Produção); o fogo: um clique sobe um nível (manda
     o nível pedido, à prova de repetição), menos na Entregue;
@@ -80,10 +80,10 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		semLeitura: false // sem rede, a Produção aberta nunca foi lida
 	};
 
-	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.project';
+	var PROJECT_PANEL_ID = 'com.jmbillard.opadeiro.projetista';
 	var TEMPLATES_PANEL_ID = 'com.jmbillard.opadeiro.panel';
 	var CAIXA_MS = 10000; // a caixinha some sozinha depois disso (a nova toma o lugar)
-	var PROJETO_ESPERA = 120000; // quanto a janela espera a resposta da janela PROJETO
+	var PROJETO_ESPERA = 120000; // quanto a janela espera a resposta d'O PROJETISTA
 	var FILA_MS = 8000; // com ações guardadas, a janela confere a fila e manda de novo nesse intervalo
 	var SEM_REDE = 'Sem rede: vai quando a rede voltar.';
 
@@ -235,7 +235,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 	function aviso() {
 		if (S.estado === 'lendo') return '<p class="pr-lendo">lendo…</p>';
 		if (S.estado === 'pendente') return '<p class="pr-aviso" role="status"><b>Chave pendente:</b> este Padeiro está aguardando um administrador do PROMeiro ligar a chave a você.<small>as Produções aparecem aqui sozinhas quando a chave for ligada.</small></p>';
-		if (S.estado === 'fora') return '<div class="pr-aviso" role="status"><b>O PROMeiro não respondeu.</b> sem rede, ou o PROMeiro fora do ar: a janela tenta de novo sozinha. · PAD_118<br><button type="button" class="pr-de-novo" data-acao="de-novo">tentar agora</button></div>';
+		if (S.estado === 'fora') return '<div class="pr-aviso" role="status"><b>O PROMeiro não respondeu.</b> sem rede, ou o PROMeiro fora do ar: a janela tenta de novo sozinha. · PAD_121<br><button type="button" class="pr-de-novo" data-acao="de-novo">tentar agora</button></div>';
 		if (S.local) return '<p class="pr-aviso" role="status"><b>Modo local:</b> nada fala com o PROMeiro neste computador.</p>';
 
 		return '<p class="pr-aviso" role="status"><b>Sem o endereço do PROMeiro.</b> ponha o endereço na configuração, aba BUSCAR.</p>';
@@ -352,7 +352,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 			return '<div class="pr-vazia"><b>Escolha uma Produção</b>com você: ' + l.minhas.length + ' · na entrada' + (praca() === TODAS ? '' : ' ' + esc(praca())) + ': ' + l.entrada.length + '</div>';
 		}
 
-		if (S.naoExiste) return '<div class="pr-folha-rolar"><div class="pr-cab"><span class="linha">' + voltar + '</span><p class="pr-aviso" role="status"><b>Essa Produção não está mais aberta no PROMeiro.</b> · PAD_119</p></div></div>';
+		if (S.naoExiste) return '<div class="pr-folha-rolar"><div class="pr-cab"><span class="linha">' + voltar + '</span><p class="pr-aviso" role="status"><b>Essa Produção não está mais aberta no PROMeiro.</b> · PAD_122</p></div></div>';
 
 		var p = S.producao && S.producao.id === S.aberta ? S.producao : null;
 
@@ -833,7 +833,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		return { sub: (c.erro || 'O PROMeiro recusou o aviso (' + r.status + ').') + (r.status >= 500 ? ' O aviso vai de novo depois.' : ''), atencao: true };
 	}
 
-	// Abrir projeto: pega e pede à janela PROJETO (abrir o .aep do card ou criar), que responde pelo host
+	// Abrir projeto: pega e pede a O PROJETISTA (abrir o .aep do card ou criar), que responde pelo host
 	function abrirProjeto() {
 		var p = aberta();
 
@@ -851,7 +851,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 				pedido = await call('promeiroPedir', { para: 'projeto', dados: { producao: p.id, claq: p.claquete, atr: item.atr || '', card: item.card || '', filme: item.fil ? item.filme || '' : '' } });
 				PAD_BRIDGE.openPanel(PROJECT_PANEL_ID);
 			} catch (err) {
-				caixa('A janela PROJETO não abriu: ' + PAD_UTIL_ERR(err), pg.sub, pg.desfaz, true);
+				caixa('O PROJETISTA não abriu: ' + PAD_UTIL_ERR(err), pg.sub, pg.desfaz, true);
 				mudou(null);
 
 				return;
@@ -864,7 +864,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 		});
 	}
 
-	// a resposta da janela PROJETO (o .aep aberto ou criado): a caixinha diz qual
+	// a resposta d'O PROJETISTA (o .aep aberto ou criado): a caixinha diz qual
 	async function esperarProjeto(stamp, n, pg) {
 		var fim = Date.now() + PROJETO_ESPERA;
 
@@ -885,7 +885,7 @@ janela lê a Produção de cada uma em Produzindo (é onde o designer fica) para
 			var desfaz = S.caixa && S.caixa.n === n ? S.caixa.desfaz : pg.desfaz;
 
 			if (d.erro) caixa('O projeto não abriu: ' + d.erro, pg.sub, desfaz, true);
-			else if (d.pendente) caixa('Escolha a atração na janela PROJETO.', d.pendente, desfaz, true);
+			else if (d.pendente) caixa('Escolha a atração n\'O PROJETISTA.', d.pendente, desfaz, true);
 			else caixa((d.criado ? 'Projeto criado: ' : 'Abrindo: ') + d.arquivo, pg.sub, desfaz, pg.atencao);
 
 			return;

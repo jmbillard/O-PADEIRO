@@ -11,7 +11,7 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
     sigla } → { chave, estado: 'pendente' }. A chave fica nas configurações deste computador (host/promeiro.jsx);
   - depois, confere o estado: GET /api/padeiro/eu → { estado: pendente | ligada | revogada, designer }. A chave que o
     PROMeiro não conhece mais (401) ou revogada pede outra, que volta a ficar pendente;
-  - com a chave ligada, o grupo NO TRELLO da claquete lê as Produções em Entrada e Produzindo:
+  - com a chave ligada, o grupo NO TRELLO d'O PROJETISTA lê as Produções em Entrada e Produzindo:
     GET /api/padeiro/producoes → { trello: [...] }, no mesmo formato do índice do buscar (docs/webhook-trello.md).
 
   - o aviso do Padeiro (jmbillard/TEXTAO#141): abrir ou criar o projeto pelo card ou pela Produção do NO TRELLO, ou
@@ -19,7 +19,7 @@ X-Chave-Do-Padeiro (o resto do PROMeiro fica atrás do login, que o After Effect
     card | filme }. `aviso` é o identificador (o mesmo, de novo, não grava duas vezes) e `abertoEm`, a hora da
     abertura. O aviso entra primeiro na fila deste computador (host/promeiro.jsx, promeiro-fila.json) e sai dela
     quando o PROMeiro responde; sem rede, ou com o PROMeiro fora do ar, fica para depois: a fila é reenviada ao abrir
-    a barra e a claquete e, com a barra aberta, de tempos em tempos (flush). Nada disso espera a rede para seguir.
+    a barra e O PROJETISTA e, com a barra aberta, de tempos em tempos (flush). Nada disso espera a rede para seguir.
 
   - a janela PROMeiro · produções (#148, promeiro.html): com a chave ligada, lê a lista (a mesma rota, com o
     "pronto para abrir" de cada Produção) e a Produção aberta: GET /api/padeiro/producoes/<id>. Com a pendente, o
@@ -568,7 +568,7 @@ Effects); no navegador de teste, o fetch. Nenhuma falha daqui aparece como erro:
 	// o texto do estado, para a configuração e o aviso da barra
 	function describe(s) {
 		if (!s) return '';
-		if (s.estado === 'ligada') return 'ligada' + (s.designer ? ' a ' + s.designer : '') + ': o NO TRELLO da claquete vem das Produções do PROMeiro.';
+		if (s.estado === 'ligada') return 'ligada' + (s.designer ? ' a ' + s.designer : '') + ': o NO TRELLO d\'O PROJETISTA vem das Produções do PROMeiro.';
 		if (s.estado === 'pendente') return 'pendente: falta um administrador do PROMeiro aprovar a chave deste computador. até lá, tudo funciona como antes.';
 		if (s.estado === 'fora') return 'o PROMeiro não respondeu: o NO TRELLO continua vindo do webhook.';
 

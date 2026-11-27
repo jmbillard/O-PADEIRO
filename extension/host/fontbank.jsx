@@ -10,21 +10,15 @@ barra (o Node, sem travar o After Effects): o host só diz quais fontes o projet
 e onde fica a pasta de fontes do projeto; instala as que faltam (do banco) e troca uma fonte por outra no
 projeto inteiro.
 
-'FONTS' no O_PADEIRO_GLOBAL_config.json: { bank: '<pasta>', upload: true }. sem 'bank', o banco é a pasta
-BANCO DE FONTES no mesmo nível da pasta 'extension' na rede (ao lado do código do padeiro e da configuração). neste computador (meu usuário):
-fontsUpload (false: as fontes deste computador não vão para o banco).
+'FONTS' no O_PADEIRO_GLOBAL_config.json (a seção bancoDeFontes da tabela de seções): { bank: '<pasta>', upload: true }.
+sem 'bank', o banco é a pasta BANCO DE FONTES no mesmo nível da pasta 'extension' na rede (ao lado do código do padeiro
+e da configuração). deste computador (configuração > DESTE COMPUTADOR):
+fontsUpload (a seção fontesNoBanco; false: as fontes deste computador não vão para o banco) e fontsCheck (a
+fontesConferir; false: a barra só confere as fontes no clique em Fontes).
 
 Requer o After Effects 2024 (24.0) ou mais novo (Project.usedFonts, replaceFont e app.fonts).
 
 */
-
-var PAD_DEFAULT_FONTS = { bank: '', upload: true };
-
-function padCleanFonts(o) {
-	o = o || {};
-
-	return { bank: padProjectPath(o.bank || ''), upload: o.upload !== false };
-}
 
 // O banco padrão: a pasta BANCO DE FONTES ao lado da pasta 'extension' na rede (a do código que está rodando).
 var PAD_FONT_BANK_NAME = 'BANCO DE FONTES';
@@ -37,17 +31,9 @@ function padDefaultFontBank() {
 	}
 }
 
-// → { bank (o da configuração, '' = o padrão), upload, defaultBank }
+// → { bank (o da configuração, '' = o padrão), upload, defaultBank } (a seção bancoDeFontes da tabela de seções)
 function padReadFonts() {
-	var out;
-
-	try {
-		var data = padConfigData();
-
-		out = data.FONTS ? padCleanFonts(data.FONTS) : padCleanFonts(PAD_DEFAULT_FONTS);
-	} catch (err) {
-		out = padCleanFonts(PAD_DEFAULT_FONTS);
-	}
+	var out = padLerSecao('bancoDeFontes');
 
 	out.defaultBank = padDefaultFontBank();
 
@@ -57,17 +43,6 @@ function padReadFonts() {
 // A pasta do banco em uso: a da configuração ou, sem ela, a padrão.
 function padFontBankPath(cfg) {
 	return cfg.bank || cfg.defaultBank || '';
-}
-
-// As fontes deste computador vão para o banco? (configuração > FONTES, neste computador)
-function padMachineFontsUpload() {
-	return padMachineData().fontsUpload !== false;
-}
-
-// A barra confere as fontes sozinha (a bolinha e o envio) quando o projeto muda? (configuração > FONTES, neste
-// computador). desligado: só no clique em Fontes
-function padMachineFontsCheck() {
-	return padMachineData().fontsCheck !== false;
 }
 
 function padFontsSupported() {
@@ -82,20 +57,20 @@ function padFontsSupported() {
 // da pasta de projetos. '' sem o projeto salvo. mount: pode montar o share (só depois de um clique)
 function padProjectFontsFolder(mount) {
 	var file = app.project.file;
-	var settings = padReadCollect();
-	var sub = padCollectFolderPath(settings, 'fontes');
+	var settings = padLerSecao('coletar');
+	var sub = padColetarFolderPath(settings, 'fontes');
 	var m = padMetaRead();
 	var root = '';
 
 	if (m.pasta) root = mount ? padMountedPath(padPath(m.pasta)) : padResolvedPath(padPath(m.pasta));
-	else if (file) root = padCollectRoot(file, settings);
+	else if (file) root = padColetarRoot(file, settings);
 
 	return root && sub ? new Folder(root + '/' + sub).fsName : '';
 }
 
 // As fontes usadas no projeto aberto e onde ficam as pastas. leve o bastante para a barra chamar de tempos
 // em tempos. → { supported, fonts: [{ name, family, style, location, missing, layers }], bank, upload,
-//   machineUpload, projectFonts, project, user, machine }
+//   uploadDesteComputador, projectFonts, project, user, machine }
 PADX.fontsProject = function () {
 	var cfg = padReadFonts();
 	var out = {
@@ -104,10 +79,10 @@ PADX.fontsProject = function () {
 		bank: padFontBankPath(cfg) ? padResolvedPath(padPath(padFontBankPath(cfg))) : '', // a barra lê de tempos em tempos: nunca monta
 		bankDisplay: padFontBankPath(cfg),
 		upload: cfg.upload,
-		machineUpload: padMachineFontsUpload(),
+		uploadDesteComputador: padLerSecao('fontesNoBanco'), // configuração > FONTES, neste computador
 		projectFonts: '',
 		project: app.project.file ? decodeURI(app.project.file.name) : '',
-		user: padMachineUser(),
+		user: padSigla(),
 		machine: system.machineName,
 		os: appOs
 	};

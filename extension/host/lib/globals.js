@@ -1,62 +1,40 @@
-﻿// Constantes globais: mapa das letras de drive da rede, termos de renomeação e config padrão dos templates.
+﻿// Variáveis globais: mapa das letras de drive da rede, termos de renomeação e config padrão dos templates.
 
-var DRIVE_MAP = {
-	L: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l",
-	K: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_k",
-	T: "//egcdesign01.servicos.corp.tvglobo.com.br/cdesign",
-	V: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE",
-	Y: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX",
-	P: "//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_p"
-};
-
+// O mapa de drives, os volumes sem letra e o servidor padrão: os padrões da tabela de seções (regras/configuracao.js,
+// a seção mapaDeDrives); a configuração da equipe troca (padApplyConfig, productions.jsx).
+//   DRIVE_MAP          → letra do Windows → caminho de rede
+//   UNC_TO_DRIVE       → caminho de rede → letra ('L:')
+//   PAD_SHARE_SERVERS  → volumes (shares) sem letra: share → servidor, para converter /Volumes/SHARE em //servidor/SHARE
+//   PAD_DEFAULT_SERVER → o servidor usado quando o share não está em nenhum dos mapas
+var DRIVE_MAP = {};
 var UNC_TO_DRIVE = {};
+var PAD_SHARE_SERVERS = {};
+var PAD_DEFAULT_SERVER = PAD_CONFIGURACAO.padrao('mapaDeDrives').defaultServer;
 
-UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_l"] = "L:";
+(function () {
+	var d = PAD_CONFIGURACAO.padrao('mapaDeDrives');
+	var i;
 
-UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_k"] = "K:";
+	for (i = 0; i < d.drives.length; i++) {
+		DRIVE_MAP[d.drives[i].letter] = d.drives[i].path;
+		UNC_TO_DRIVE[d.drives[i].path] = d.drives[i].letter + ':';
+	}
 
-UNC_TO_DRIVE["//egcdesign01.servicos.corp.tvglobo.com.br/cdesign"] = "T:";
+	for (i = 0; i < d.shares.length; i++) PAD_SHARE_SERVERS[d.shares[i].share] = d.shares[i].server;
+})();
 
-UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/EDIT_IN_PLACE"] = "V:";
+// A regra do renomear (a aba RENOMEAR da configuração substitui): os padrões da tabela de seções
+// (regras/configuracao.js, a seção regraDoRenomear).
+//   PAD_RENAME_FORMATS   → os formatos: o prefixo do formato, a etiqueta da comp e os termos que reconhecem o formato
+//                          no nome da comp ou da pasta (palavras; o plural com S também vale). vale o primeiro encontrado
+//   PAD_RENAME_OPTIONS   → removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep
+//   PAD_RENAME_FIXED     → os nomes fixos: se o nome (ou a etiqueta) da comp contém o termo, ela passa a se chamar 'name'
+//   PAD_RENAME_SEPARATOR → o separador entre o prefixo do formato e o resto (também o dos nomes criados pelos templates)
+var PAD_RENAME_FORMATS = PAD_CONFIGURACAO.padrao('regraDoRenomear').formatos;
+var PAD_RENAME_OPTIONS = { removeSpecial: PAD_CONFIGURACAO.padrao('regraDoRenomear').removeSpecial, textCase: PAD_CONFIGURACAO.padrao('regraDoRenomear').textCase };
+var PAD_RENAME_FIXED = PAD_CONFIGURACAO.padrao('regraDoRenomear').fixed;
 
-UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX"] = "Y:";
-
-UNC_TO_DRIVE["//vfx-ml-sp.servicos.corp.tvglobo.com.br/VFX/imagem/drive_p"] = "P:";
-
-// Volumes (shares) que não têm letra de drive: share → servidor, para converter /Volumes/SHARE em //servidor/SHARE.
-var PAD_SHARE_SERVERS = {
-	VFX: 'vfx-ml-sp.servicos.corp.tvglobo.com.br',
-	cdesign: 'egcdesign01.servicos.corp.tvglobo.com.br',
-	EDIT_IN_PLACE: 'vfx-ml-hp.servicos.corp.tvglobo.com.br',
-	promo_ber: '10.193.48.13'
-};
-
-// Servidor usado quando o share não está em nenhum dos mapas.
-var PAD_DEFAULT_SERVER = 'vfx-ml-sp.servicos.corp.tvglobo.com.br';
-
-// Tipos de peça para renomear (a aba RENOMEAR da configuração substitui): prefixo do nome, comentário da comp e
-// os termos que identificam o tipo no nome da comp ou da pasta (palavras; o plural com S também vale).
-// A ordem importa: vale o primeiro tipo encontrado.
-var PAD_RENAME_TYPES = [
-	{ prefix: 'RDP', comment: 'RODAPE', terms: ['RODAPE', 'RDP'] },
-	{ prefix: 'CRT', comment: 'CARTAO', terms: ['CARTAO', 'CARTOES', 'CRT'] },
-	{ prefix: 'LETT', comment: 'LETTERING', terms: ['LETTERING', 'LETT', 'LET'] },
-	{ prefix: 'CONFRONTO', comment: 'CONFRONTO', terms: ['CONFRONTO'] },
-	{ prefix: 'TARJA', comment: 'TARJA', terms: ['TARJA', 'TRJ', 'TAR'] },
-	{ prefix: 'PASSAGEM', comment: 'PASSAGEM', terms: ['PASSAGEM', 'TRANSICAO', 'TRANSICOES', 'LAPADA'] },
-	{ prefix: 'ASSINA', comment: 'ASSINATURA', terms: ['ASSINATURA', 'ASSINA', 'ASS'] },
-	{ prefix: 'FOTO', comment: 'FOTO', terms: ['FOTO', 'IMG', 'IMAGEM', 'IMAGENS'] },
-	{ prefix: 'REF', comment: 'REFERENCIA', terms: ['REFERENCIA', 'PREVIEW', 'REF', 'PREV'] }
-];
-
-// Formato do nome: removeSpecial tira acentos e símbolos; textCase: upperCase, lowerCase, titleCase ou keep (como está).
-// O prefixo do tipo fica sempre como foi escrito.
-var PAD_RENAME_OPTIONS = { removeSpecial: true, textCase: 'upperCase' };
-
-// Nomes fixos: se o nome (ou o comentário) da comp contém o termo, ela passa a se chamar 'name'.
-var PAD_RENAME_FIXED = [{ match: 'LOGO GLOBO', name: 'LOGO GLOBO' }];
-
-// Montada a partir de PAD_RENAME_TYPES (padRenameRefs, em rename lib.js): { prefix, comment, regExpStr: [...] }
+// Montada a partir de PAD_RENAME_FORMATS (padRenameRefs, em rename lib.js): { prefix, etiqueta }
 var renameRefArray = [];
 
 var defaultTemplateConfigObj = {
@@ -75,8 +53,27 @@ var defaultTemplateConfigObj = {
 	outputPath: ['~/Desktop']
 };
 
-var globalSeparator = ' - ';
+var PAD_RENAME_SEPARATOR = PAD_CONFIGURACAO.padrao('regraDoRenomear').separator;
 
-var lol = 'Σ(っ °Д °;)っ        ';
+// os prefixos das mensagens do padeiro antigo (eram dois kaomojis): vazios. ficam definidos porque os scripts de
+// template (_script.js, na rede) podem usar 'lol + texto'
+var lol = '';
 
-var relax = 'ヽ(✿ﾟ▽ﾟ)ノ        ';
+var relax = '';
+
+// Um aviso para o painel, no lugar do alert() do padeiro antigo: o host nunca abre a caixa do After (alert, confirm,
+// prompt). o texto entra na lista da chamada em andamento (PADX_alerts, api.jsx: res.notes, ou as messages de
+// padGatherAlerts) e o painel mostra na linha de status ou no aviso da barra. fora de uma chamada, fica de fora
+function padAviso(text) {
+	if (typeof PADX_alerts == 'undefined' || !PADX_alerts) return;
+
+	PADX_alerts.push(String(text).replace(/^\s+|\s+$/g, ''));
+}
+
+// Uma lista de nomes curta, para um aviso: 'a, b, c, d, e e mais 7' (max: quantos nomes mostrar; 5 sem ele)
+function padListaCurta(names, max) {
+	var n = max || 5;
+	var shown = names.slice(0, n).join(', ');
+
+	return names.length > n ? shown + ' e mais ' + (names.length - n) : shown;
+}

@@ -28,7 +28,7 @@ são preservadas ao salvar.
 		['layerName', 'nome do layer']
 	];
 
-	var GLOBAL_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
+	var RENAME_SEPARATOR = ' - '; // mesmo separador do nome final das comps (host)
 
 	/* =========================================================
 	   Utilidades
@@ -268,7 +268,7 @@ são preservadas ao salvar.
 		atrPicker.set(base.atracao || null);
 		fields.atracao = { wrap: atrWrap, control: atrPicker.input };
 		field(idGrid, 'configName', 'O que é', input(base.configName), 'ex: SERVIÇO, CONVIDADO, AESP. identifica o template no log.', 'file');
-		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (comentário TEMPLATE) que será duplicada.', 'comp');
+		field(idGrid, 'compName', 'Nome da comp principal', input(base.compName), 'a comp do projeto (etiqueta TEMPLATE) que será duplicada.', 'comp');
 
 		/* ---------- 2. nome final e texto ---------- */
 
@@ -277,7 +277,7 @@ são preservadas ao salvar.
 
 		nameCard.appendChild(nameGrid);
 		field(nameGrid, 'prefix', 'Prefixo (opcional)', input(base.prefix), 'início do nome de todas as comps criadas. "ignore" não preenche, só importa o template.', 'prefix');
-		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todas as informações estão visíveis.', 'time');
+		field(nameGrid, 'refTime', 'Tempo de referência (s)', input(base.refTime, 'number'), 'momento em que todos os campos estão visíveis.', 'time');
 
 		var caseSel = select(CASES, base.textCase, 'textCase');
 
@@ -286,7 +286,7 @@ são preservadas ao salvar.
 		caseSel.removeAttribute('id');
 		caseSel.control.id = 'cfg-textCase';
 
-		field(nameGrid, 'separator', 'Separador de informações', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para uma informação por linha. com 1 layer só, o texto inteiro vai para ele.', 'separator');
+		field(nameGrid, 'separator', 'Separador de campos', input(normalizeBreaks(base.separator).replace(/\n/g, '\\n')), 'use \\n para um campo por linha. com 1 layer só, o texto inteiro vai para ele.', 'separator');
 
 		var namePreview = el('p', 'cfg-preview');
 
@@ -298,12 +298,12 @@ são preservadas ao salvar.
 		var textGrid = el('div', 'cfg-grid');
 
 		textCard.appendChild(textGrid);
-		field(textGrid, 'exemple', 'Exemplo de preenchimento', area(normalizeBreaks(base.exemple), 5), 'linha vazia separa as versões do template.');
+		field(textGrid, 'exemple', 'Exemplo de preenchimento', area(normalizeBreaks(base.exemple), 5), 'linha vazia separa os blocos (cada bloco gera uma versão).');
 		field(textGrid, 'tip', 'Dicas', area(normalizeBreaks(base.tip), 5), 'cada linha vira um item da lista de dicas.');
 
 		/* ---------- 4. layers ---------- */
 
-		var layersCard = card('Layers editáveis', 'a 1ª informação do input vai para o 1º layer da lista, a 2ª para o 2º, e assim por diante.');
+		var layersCard = card('Layers editáveis', 'o 1º campo do bloco vai para o 1º layer da lista, o 2º para o 2º, e assim por diante.');
 		var layersList = el('div', 'cfg-rows');
 
 		layersCard.appendChild(layersList);
@@ -349,7 +349,7 @@ são preservadas ao salvar.
 				});
 
 				row.appendChild(PAD_SORT.handle());
-				row.appendChild(el('span', 'cfg-row-label', 'informação ' + (i + 1)));
+				row.appendChild(el('span', 'cfg-row-label', 'campo ' + (i + 1)));
 				row.appendChild(el('span', 'cfg-row-prefix', 'layer'));
 				row.appendChild(num);
 				row.appendChild(methodSel);
@@ -410,7 +410,7 @@ são preservadas ao salvar.
 		importInput.id = 'cfg-importPath';
 		importInput.addEventListener('input', changed);
 		fields.importPath = { wrap: importRow, control: importInput };
-		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de mídias (opcional)'), { htmlFor: 'cfg-importPath' }));
+		importRow.appendChild(Object.assign(el('label', 'cfg-label', 'Pasta de import (opcional)'), { htmlFor: 'cfg-importPath' }));
 		importLine.appendChild(importInput);
 		// campo com botão (pastinha): sem ícone antes
 		importLine.appendChild(pickButton(importInput));
@@ -421,7 +421,7 @@ são preservadas ao salvar.
 		var outputsWrap = el('div', 'cfg-field');
 		var outputsList = el('div', 'cfg-rows');
 
-		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um módulo de saída na fila de render. com os tokens, o caminho vale todo ano (…/BBB/BBB {ano}).');
+		var outputsHint = el('p', 'cfg-hint', 'cada pasta gera um output na fila de render. com os tokens, o caminho vale todo ano (…/BBB/BBB {ano}).');
 
 		outputsWrap.appendChild(el('span', 'cfg-label', 'Pastas de output'));
 		outputsWrap.appendChild(outputsList);
@@ -575,16 +575,16 @@ são preservadas ao salvar.
 			}
 
 			if (!cfg.atracao) bad('atracao', 'escolha a atração do template (ou crie uma nova).');
-			if (cfg.configName === '') bad('configName', 'preencha o que é (o nome do template).');
+			if (cfg.configName === '') bad('configName', 'preencha o que é.');
 			if (cfg.compName === '') bad('compName', 'preencha o nome da comp principal.');
 			if (isNaN(cfg.refTime) || cfg.refTime < 0) bad('refTime', 'o tempo de referência precisa ser um número maior ou igual a 0.');
 
 			cfg.inputLayers.forEach(function (l, i) {
-				if (!(l.layerIndex >= 1)) bad(null, 'informação ' + (i + 1) + ': o índice do layer precisa ser um número maior que 0.');
+				if (!(l.layerIndex >= 1)) bad(null, 'campo ' + (i + 1) + ': o índice do layer precisa ser um número maior que 0.');
 			});
 
 			if (cfg.outputPath.some(function (p) { return p === ''; })) bad(null, 'há uma pasta de output vazia.');
-			if (cfg.importPath === '') bad('importPath', 'informe a pasta de importação.');
+			if (cfg.importPath === '') bad('importPath', 'informe a pasta de import.');
 
 			if (cfg.inputFx) {
 				if (!(cfg.inputFx.layerIndex >= 1)) bad('fxLayerIndex', 'variações: índice de layer inválido.');
@@ -649,7 +649,7 @@ são preservadas ao salvar.
 			if (kind === 'lowerCase') info = info.toLowerCase();
 
 			var prefix = text('prefix').trim();
-			var name = cleanName(((prefix ? prefix + GLOBAL_SEPARATOR : '') + info).toUpperCase());
+			var name = cleanName(((prefix ? prefix + RENAME_SEPARATOR : '') + info).toUpperCase());
 
 			namePreview.textContent = '';
 			namePreview.appendChild(el('span', 'cfg-preview-label', 'nome final da comp com o exemplo'));

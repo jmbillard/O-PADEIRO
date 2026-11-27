@@ -13,7 +13,7 @@ o painel **O ADAPTADOR**: converte caminhos entre Windows e macOS.
 | ❸ | **copiar** | a prancheta de cada campo copia o caminho. |
 
 
-`◗ clique direito` em **pastas**, na barra. o conversor abre com a pasta da última saída da fila de render.
+`◗ clique direito` em **pastas**, na barra. o conversor abre com a pasta do último output da fila de render.
 
 - **cole um caminho em qualquer lugar do painel** → o padeiro reconhece se é macOS ou Windows, coloca no campo certo e converte o outro.
 - **prancheta** (dentro de cada campo) → copia o caminho.

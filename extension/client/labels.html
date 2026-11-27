@@ -15,8 +15,8 @@
 </head>
 
 <body class="fonts-page labels-page">
-	<!-- as etiquetas: comentários nos itens selecionados no painel Project, os que o organizar entende
-	     (render, editáveis, tipo de peça, arquivos); o rodapé limpa todos e organiza -->
+	<!-- as etiquetas (os comentários do After) nos itens selecionados no painel Project, os que o organizar entende
+	     (render, editáveis, formatos, arquivos); o rodapé limpa todos e organiza -->
 	<main class="fonts labels" id="labels">
 		<p class="lb-sel" id="lb-sel"><i></i><span id="lb-sel-text"></span></p>
 
@@ -29,11 +29,11 @@
 		<div class="lb-groups" id="lb-groups"></div>
 
 		<div class="action-bar is-anchored fw-bar">
-			<button type="button" class="io-button lb-eraser" id="lb-clear" title="limpar o comentário de todos os itens do projeto" aria-label="limpar o comentário de todos os itens do projeto"><svg viewBox="0 0 24 24"><g class="lb-eraser-body"><path d="M8.6 19.8 4.2 15.4a1.5 1.5 0 0 1 0-2.1L13.3 4.2a1.5 1.5 0 0 1 2.1 0l4.4 4.4a1.5 1.5 0 0 1 0 2.1l-9.1 9.1z" /><path d="m7.8 9.7 6.5 6.5" /></g><path class="lb-eraser-line" d="M12.5 19.8h8" pathLength="8" /></svg></button>
+			<button type="button" class="io-button lb-eraser" id="lb-clear" title="limpar a etiqueta de todos os itens do projeto" aria-label="limpar a etiqueta de todos os itens do projeto"><svg viewBox="0 0 24 24"><g class="lb-eraser-body"><path d="M8.6 19.8 4.2 15.4a1.5 1.5 0 0 1 0-2.1L13.3 4.2a1.5 1.5 0 0 1 2.1 0l4.4 4.4a1.5 1.5 0 0 1 0 2.1l-9.1 9.1z" /><path d="m7.8 9.7 6.5 6.5" /></g><path class="lb-eraser-line" d="M12.5 19.8h8" pathLength="8" /></svg></button>
 			<details class="actions-menu fw-menu" id="app-menu">
 				<summary class="icon-button is-light" title="Mais opções" aria-label="Mais opções"><svg viewBox="0 0 24 24" class="anim-dots"><circle cx="6" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18" cy="12" r="1.2" /></svg></summary>
 				<div class="menu-popover">
-					<button type="button" data-action="clearSel">Limpar o comentário dos selecionados</button>
+					<button type="button" data-action="clearSel">Limpar a etiqueta dos selecionados</button>
 					<button type="button" data-action="config">Editar as etiquetas (O PRODUTOR)</button>
 					<button type="button" data-action="docs">Ajuda / documentação</button>
 					<button type="button" data-action="reload">Recarregar painel</button>

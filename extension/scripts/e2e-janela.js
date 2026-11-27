@@ -16,7 +16,7 @@ e2e-promeiro.js). Nada sai para a rede. Confere:
     artes com o número, a feita riscada e o fogo, e a contagem "1 de 2"; nada de horário de exibição;
   - estreita (320 px): a lista ou a Produção, e a seta ← volta à lista;
   - os botões (#149), contra as rotas do PROMeiro de teste e o Trello de mentira: a chave pendente não age; Abrir
-    projeto pega a Produção (o aviso) e a janela PROJETO (aberta aqui pelo teste, como o Padeiro abre no After) cria
+    projeto pega a Produção (o aviso) e O PROJETISTA (aberta aqui pelo teste, como o Padeiro abre no After) cria
     o projeto ou abre o .aep do card, e a caixinha diz qual; Preencher templates pega e A FORMA abre na busca da
     atração; marcar e desmarcar a arte (só quem está na Produção); o fogo sobe; Entreguei com as artes que faltam
     (Cancelar, Entregar assim mesmo); a seta ← volta para a Entrada; o Desfazer (entregar e pegar); a caixinha com o
@@ -488,7 +488,7 @@ async function capturar(page, nome) {
 		await pend2.close();
 		passo('a chave pendente: os botões não aparecem e a ação pedida mesmo assim é recusada');
 
-		// 9. Abrir projeto: pega a Produção (o aviso) e a janela PROJETO cria o projeto; a caixinha diz
+		// 9. Abrir projeto: pega a Produção (o aviso) e O PROJETISTA cria o projeto; a caixinha diz
 		page = await abrirJanela(largo);
 		await aba(page, 'Entrada');
 		await page.locator('.prod-card', { hasText: 'SHOW DA NOITE' }).click();
@@ -496,14 +496,14 @@ async function capturar(page, nome) {
 		await page.click('.pr-pe [data-acao="projeto"]');
 		await page.waitForSelector('.pr-caixa-in');
 		assert.equal(await caixinha(page), 'Abrindo o projeto de SHOW DA NOITE 20/12 SP… Você pegou a Produção. Desfazer ×');
-		// no After, o Padeiro abre a janela PROJETO; aqui, o teste
+		// no After, o Padeiro abre O PROJETISTA; aqui, o teste
 		const proj = await largo.newPage();
 		proj.errors = [];
 		proj.on('pageerror', (err) => proj.errors.push(err.message));
-		await proj.goto(CLIENT + 'project.html');
+		await proj.goto(CLIENT + 'projetista.html');
 		await page.waitForFunction(() => /Projeto criado/.test((document.querySelector('.pr-caixa-in') || {}).textContent || ''), null, { timeout: 20000 });
 		assert.equal(await caixinha(page), 'Projeto criado: SHOW DA NOITE.aep Você pegou a Produção. Desfazer ×');
-		assert.match(await proj.evaluate(() => (window.PAD_MOCK_CUR || {}).file || ''), /\/SHOWS\/SHOW DA NOITE\/2026\/01 PROJETOS\/SHOW DA NOITE\.aep$/, 'a janela PROJETO criou o projeto na pasta da atração');
+		assert.match(await proj.evaluate(() => (window.PAD_MOCK_CUR || {}).file || ''), /\/SHOWS\/SHOW DA NOITE\/2026\/01 PROJETOS\/SHOW DA NOITE\.aep$/, 'O PROJETISTA criou o projeto na pasta da atração');
 		await quieta(page);
 		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
 		assert.deepEqual(await pe(page), ['← voltar para a Entrada', 'Preencher templates', 'Abrir projeto', 'Entreguei']);
@@ -518,7 +518,7 @@ async function capturar(page, nome) {
 		await page.click('.pr-caixa-fechar');
 		assert.equal(await page.locator('.pr-caixa-in').count(), 0, 'o × fecha a caixinha');
 		assert.deepEqual(proj.errors, []);
-		passo('Abrir projeto: pega a Produção (a Dora no card e na Produção) e a janela PROJETO cria; "Projeto criado: SHOW DA NOITE.aep", com o × na ponta direita');
+		passo('Abrir projeto: pega a Produção (a Dora no card e na Produção) e O PROJETISTA cria; "Projeto criado: SHOW DA NOITE.aep", com o × na ponta direita');
 
 		// 10. marcar e desmarcar a arte: o nome riscado e a contagem
 		const arteB = (n) => page.locator('.artes li:nth-child(' + n + ') .b');
@@ -608,7 +608,7 @@ async function capturar(page, nome) {
 		assert.deepEqual(promeiro.escritas().slice(4), ['POST /cards/' + card(1) + '/idMembers membroDora', 'DELETE /cards/' + card(1) + '/idMembers/membroDora']);
 		passo('Preencher templates: pega a Produção e A FORMA abre com a busca "Show da Noite"; o Desfazer do pegar volta tudo');
 
-		// 16. Abrir projeto de quem já está na Produção: sem pegar de novo, a janela PROJETO abre o .aep do card
+		// 16. Abrir projeto de quem já está na Produção: sem pegar de novo, O PROJETISTA abre o .aep do card
 		await aba(page, 'Minhas');
 		await page.locator('.prod-card', { hasText: 'FESTA NA PRACA' }).click();
 		await page.waitForFunction(() => /FESTA/.test((document.querySelector('.pr-folha h2') || {}).textContent || ''));
@@ -619,7 +619,7 @@ async function capturar(page, nome) {
 		assert.equal(promeiro.escritas().length, 6, 'nada novo no Trello');
 		assert.deepEqual(proj.errors, []);
 		await proj.close();
-		passo('Abrir projeto de quem já está na Produção: a janela PROJETO abre o .aep do card ("Abrindo: FESTA NA PRACA ABERTURA.aep")');
+		passo('Abrir projeto de quem já está na Produção: O PROJETISTA abre o .aep do card ("Abrindo: FESTA NA PRACA ABERTURA.aep")');
 
 		// 17. sem rede só na rota da arte (#150): a arte fica marcada, a ação vai para a fila e segue quando a rede volta
 		await quieta(page);

@@ -41,7 +41,7 @@ Nada é apagado: as fontes já instaladas ficam como estão. O projeto é um pro
 
 	var files = [];
 
-	collect(source, 0);
+	gather(source, 0);
 
 	if (!files.length) {
 		alert('Nenhum arquivo de fonte (.ttf, .otf, .ttc, .otc) nessa pasta.', TITLE);
@@ -141,7 +141,7 @@ Nada é apagado: as fontes já instaladas ficam como estão. O projeto é um pro
 	/* ---------- as funções ---------- */
 
 	// os arquivos de fonte da pasta e das subpastas (até 6 níveis), sem os escondidos
-	function collect(folder, depth) {
+	function gather(folder, depth) {
 		var list = folder.getFiles();
 
 		for (var i = 0; i < list.length; i++) {
@@ -149,7 +149,7 @@ Nada é apagado: as fontes já instaladas ficam como estão. O projeto é um pro
 
 			if (name.charAt(0) === '.') continue;
 			if (list[i] instanceof Folder) {
-				if (depth < 6) collect(list[i], depth + 1);
+				if (depth < 6) gather(list[i], depth + 1);
 			} else if (FONT_EXT.test(name)) {
 				files.push(list[i]);
 			}

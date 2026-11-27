@@ -5,10 +5,10 @@
 ---------------------------------------------------------------
 
 Duplica a comp aberta e preenche os layers de texto selecionados, só na memória (sem template, sem arquivo). O host
-(light.jsx) lê a comp e a seleção, diz o nome de cada duplicata e faz o trabalho; aqui a pessoa digita o input (o
+(light.jsx) lê a comp e a seleção, diz o nome de cada versão e faz o trabalho; aqui a pessoa digita o input (o
 mesmo do preenchimento completo: uma linha por layer, linha vazia separa as versões), confere os nomes e duplica.
 
-  - o nome de cada duplicata segue o da comp de hoje: o trecho que é o texto de um layer selecionado muda; a regra
+  - o nome de cada versão segue o da comp de hoje: o trecho que é o texto de um layer selecionado muda; a regra
     do renomear (configuração > renomear) dá a caixa, os acentos e o separador;
   - o texto de um layer pode ter várias linhas: com 1 layer, a versão inteira vai para ele; com 2 ou mais, as partes
     de cada versão são separadas por uma linha com o separador (--- por padrão; vazio: uma linha por layer);
@@ -166,10 +166,10 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 			name.appendChild(el('span', 'lt-var', part.text));
 		});
 
-		if (info.nameLayer) box.title = info.comp + '\n\na comp tem o layer script_template_name: o texto dele é o nome de cada duplicata (o nome digitado na tabela vale por cima)';
-		else if (vars > 1) box.title = info.comp + '\n\ncada trecho marcado é o texto de um layer selecionado: todos mudam em cada duplicata';
-		else if (vars) box.title = info.comp + '\n\no trecho marcado é o texto de um layer selecionado: muda em cada duplicata';
-		else if (info.layers.length) box.title = info.comp + '\n\no nome não tem o texto dos layers: as duplicatas levam o nome da comp + a 1ª linha';
+		if (info.nameLayer) box.title = info.comp + '\n\na comp tem o layer script_template_name: o texto dele é o nome de cada versão (o nome digitado na tabela vale por cima)';
+		else if (vars > 1) box.title = info.comp + '\n\ncada trecho marcado é o texto de um layer selecionado: todos mudam em cada versão';
+		else if (vars) box.title = info.comp + '\n\no trecho marcado é o texto de um layer selecionado: muda em cada versão';
+		else if (info.layers.length) box.title = info.comp + '\n\no nome não tem o texto dos layers: as versões levam o nome da comp + a 1ª linha';
 		else box.title = info.comp;
 	}
 
@@ -188,21 +188,21 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		info.layers.forEach(function (layer, i) {
 			var pill = el('span', 'lt-layer' + (inName[i] ? ' is-name' : ''));
 
-			pill.title = 'layer ' + layer.index + ' · ' + layer.name + (inName[i] ? '\no texto dele está no nome da comp: muda em cada duplicata' : '') + '\nrecebe a ' + (i + 1) + 'ª linha de cada versão';
+			pill.title = 'layer ' + layer.index + ' · ' + layer.name + (inName[i] ? '\no texto dele está no nome da comp: muda em cada versão' : '') + '\nrecebe a ' + (i + 1) + 'ª linha de cada bloco';
 			pill.appendChild(el('i', 'lt-num', String(i + 1)));
 			pill.appendChild(el('span', null, layer.text || layer.name));
 			box.appendChild(pill);
 		});
 	}
 
-	// a situação de uma linha: o que fica de fora ou some nesta duplicata, e o nome que já existe
+	// a situação de uma linha: o que fica de fora ou some nesta versão, e o nome que já existe
 	function notesOf(lines, name, custom, planned, seen) {
 		var count = state.info.layers.length;
 		var extra = lines.length - count;
 		var notes = [];
 		var key = name.toUpperCase();
 
-		if (custom != null && !name) notes.push('sem nome: a duplicata fica com o nome sugerido');
+		if (custom != null && !name) notes.push('sem nome: a versão fica com o nome sugerido');
 		if (custom != null && name && (seen[key] || state.plan.existing.indexOf(key) >= 0)) notes.push('já existe uma comp com este nome');
 		if (custom == null && planned && planned.taken) notes.push('o nome já existia no projeto: ganhou o sufixo');
 		var unit = byParts() ? ['parte ignorada', 'partes ignoradas'] : ['linha ignorada', 'linhas ignoradas'];
@@ -268,7 +268,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 			input.setAttribute('aria-label', 'nome da comp da versão ' + (at + 1));
 			// o layer de nome decide (só dá para saber depois de preencher): o campo vazio diz isso
 			if (!auto && state.info.nameLayer) input.placeholder = 'pelo layer de nome';
-			input.title = custom != null ? 'nome digitado: vale como está, por cima da regra e do layer de nome' : 'o nome da duplicata: clique para trocar (o digitado vale como está)';
+			input.title = custom != null ? 'nome digitado: vale como está, por cima da regra e do layer de nome' : 'o nome da versão: clique para trocar (o digitado vale como está)';
 			input.addEventListener('change', function () {
 				var typed = input.value;
 
@@ -325,9 +325,9 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 		$('lt-sep-box').hidden = !many;
 		$('lt-sep').disabled = state.busy;
 
-		if (state.info && state.info.layers.length === 1) input.placeholder = 'o texto do layer (pode ter várias linhas) · linha vazia separa as versões';
-		else if (many && sep) input.placeholder = 'o texto de cada layer separado por uma linha com ' + sep + ' · linha vazia separa as versões';
-		else input.placeholder = 'uma linha por layer · linha vazia separa as versões';
+		if (state.info && state.info.layers.length === 1) input.placeholder = 'o texto do layer (pode ter várias linhas) · linha vazia separa os blocos';
+		else if (many && sep) input.placeholder = 'o texto de cada layer separado por uma linha com ' + sep + ' · linha vazia separa os blocos';
+		else input.placeholder = 'uma linha por layer · linha vazia separa os blocos';
 	}
 
 	function renderFooter(count) {
@@ -454,7 +454,7 @@ mesmo do preenchimento completo: uma linha por layer, linha vazia separa as vers
 
 	/* ---------- ler, planejar, duplicar ---------- */
 
-	// os nomes que as duplicatas vão ter: o host aplica a regra do renomear e confere o que já existe no projeto
+	// os nomes que as versões vão ter: o host aplica a regra do renomear e confere o que já existe no projeto
 	async function plan() {
 		var seq = ++planSeq;
 		var list = ready() ? versions() : [];

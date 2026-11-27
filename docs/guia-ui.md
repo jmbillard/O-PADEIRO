@@ -71,6 +71,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - **opções em cartões** (`wz-opt`) → ícone antes, título e caminho / explicação, **bolinha à direita**. o escolhido fica destacado. é o mesmo cartão em todas as etapas.
 - **menus radiais** (`log-radio`) para poucas opções curtas na mesma linha; **toggles** para ligar / desligar.
 - **o que depende de uma escolha aparece embaixo dela, animado** (ex: "outra pasta…" abre o campo com a pastinha) e some animado quando sai.
+- **o item escolhido ou em foco numa lista** → fundo suave (e a cor do texto), nunca uma faixa de cor num lado só (`border-left`, `box-shadow: inset 2px 0 0`): num item arredondado ela vira uma "unha".
 - **nada fica pela metade na tela**: uma opção que ainda não existe fica desabilitada com "em breve", não escondida pela metade.
 
 ## 📍 ícones
@@ -78,7 +79,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
 - **SVG em linha**, `stroke: currentcolor`, traço entre 1.7 e 1.8, cantos e pontas arredondados. a cor vem de quem o contém, nunca do ícone.
 - **pastas só no contorno**; **arquivos (o `.aep`, os templates) sólidos**, com a dobra do canto um tom mais escuro da cor do próprio ícone (`--fold`; sobre o degradê, `--fold-on-brand`, que no escuro é clara). num ícone de `<use>`, a cor da dobra passa pela variável `--file-fold`.
 - **ícones das ferramentas** (os `barra-<nome>.svg` da pasta de ícones, lidos pelo `js/icons.js`) animam no hover pelo CSS (`css/icons.css`, pelas classes de dentro do desenho: a claquete abre, a lupa procura (e um reflexo passa no vidro), as folhas dos templates se separam, a pasta recebe os arquivos…). **a regra:** enquanto o mouse está em cima, o ícone fica diferente do normal (o movimento chega num estado e para nele, com `transition` ou `animation … forwards`); ao sair, volta. nada anima e volta sozinho com o mouse ainda em cima. parados, como no seletor, mostram o primeiro quadro. uma ferramenta nova ganha um ícone com animação. **silhuetas diferentes** → dois ícones vizinhos na barra não podem ter o mesmo contorno (ex: a janela de templates e a claquete eram, as duas, um retângulo com uma faixa em cima): na dúvida, troque um deles. ids de máscaras e recortes levam `{u}` no arquivo (cada cópia ganha um sufixo próprio).
-- **a biblioteca de ícones** (o seletor das categorias e das produções) fica em **arquivos**, na pasta `extension/client/icons/`: um `nome.svg` por ícone (o desenho, 24 x 24, com `stroke="currentColor"`) ou um `nome.json` (animação **Lottie**, que toca ao passar o mouse). a ordem e os nomes que aparecem ficam em `icons/icons.json` (`{ "key", "label" }`; um arquivo fora dele vem depois, pelo nome). no After Effects a pasta é lida direto; para o modo de teste (navegador), rode `node extension/scripts/build-icons.js` depois de mexer nos arquivos.
+- **a biblioteca de ícones** (o seletor dos tipos e das produções) fica em **arquivos**, na pasta `extension/client/icons/`: um `nome.svg` por ícone (o desenho, 24 x 24, com `stroke="currentColor"`) ou um `nome.json` (animação **Lottie**, que toca ao passar o mouse). a ordem e os nomes que aparecem ficam em `icons/icons.json` (`{ "key", "label" }`; um arquivo fora dele vem depois, pelo nome). no After Effects a pasta é lida direto; para o modo de teste (navegador), rode `node extension/scripts/build-icons.js` depois de mexer nos arquivos.
   - **Lottie com as cores do tema** → por padrão os traços e preenchimentos seguem a cor do texto (como os svg); para manter as cores do arquivo, ponha `"tint": false` no item do `icons.json`.
   - a chave (o nome do arquivo) é o que fica gravado na configuração: trocar o desenho de um arquivo troca em todo lugar; renomear o arquivo desfaz a escolha de quem usava a chave antiga.
   - **trocar por uma animação** → um `nome.json` (Lottie) passa à frente do `nome.svg` de mesmo nome: dá para testar uma animação sem apagar o desenho (vale para os da barra também, ex: `barra-project.json`).
@@ -179,7 +180,7 @@ cada tipo de item e de arquivo (comps de render, vídeos, imagens, sequências, 
   }
   ```
 
-  veja `.org-side` (`productions.css`) e `.out-reveal` (`project.css`).
+  veja `.org-side` (`productions.css`) e `.out-reveal` (`projetista.css`).
 - **checagem automática** → `extension/scripts/check-focus-crop.js` abre as janelas no navegador (com o `mock-host.js`), passa pelas telas de `ui-states.js`, foca cada campo e lista os que ficam sem a folga de 3 px em volta: o campo, o bloco que corta e de que lado.
 
   ```bash

@@ -4,12 +4,12 @@
 > A FORMINHA — o preenchimento leve
 ---------------------------------------------------------------
 
-Duplica a comp aberta e preenche os layers de texto selecionados, uma duplicata por versão do input (uma linha por
+Duplica a comp aberta e preenche os layers de texto selecionados, uma versão por bloco do input (uma linha por
 layer, linha vazia separa as versões: o mesmo input do preenchimento completo). o texto de um layer pode ter várias
 linhas: com 1 layer, a versão inteira vai para ele; com 2 ou mais, a janela separa as partes pelo separador (---). Tudo na memória: nenhum template,
 nenhum arquivo. Um passo só de desfazer do After.
 
-O nome de cada duplicata:
+O nome de cada versão:
   - o nome digitado na janela vale como está (por cima de tudo, até do layer de nome);
   - a comp com o layer 'script_template_name' (o último, de texto) leva o texto dele, como no preenchimento completo;
   - senão, o nome da comp de hoje com os trechos que são o texto de um layer selecionado trocados pelo texto novo
@@ -114,7 +114,7 @@ function padLightParts(name, texts) {
 	return parts;
 }
 
-// O nome de uma duplicata, pelas partes do nome da comp e as linhas da versão
+// O nome de uma versão, pelas partes do nome da comp e as linhas da versão
 function padLightName(parts, compName, lines) {
 	var vars = 0;
 	var out = '';
@@ -135,7 +135,7 @@ function padLightName(parts, compName, lines) {
 	if (!vars) {
 		if (!lines.length) return compName;
 
-		return compName + globalSeparator + padRenameFormat(lines[0]);
+		return compName + PAD_RENAME_SEPARATOR + padRenameFormat(lines[0]);
 	}
 
 	return out.replace(/\s+/g, ' ').replace(/^[\s\-_]+|[\s\-_]+$/g, '');
@@ -192,7 +192,7 @@ function padLightVersions(list) {
 PADX.lightRead = function () {
 	var comp = padLightComp();
 
-	if (!comp) return { comp: '', id: 0, layers: [], parts: [], nameLayer: false, separator: globalSeparator };
+	if (!comp) return { comp: '', id: 0, layers: [], parts: [], nameLayer: false, separator: PAD_RENAME_SEPARATOR };
 
 	var layers = padLightLayers(comp);
 	var list = [];
@@ -211,11 +211,11 @@ PADX.lightRead = function () {
 		layers: list,
 		parts: padLightParts(comp.name, texts),
 		nameLayer: !!getTemplateNameLayer(comp),
-		separator: globalSeparator
+		separator: PAD_RENAME_SEPARATOR
 	};
 };
 
-// Os nomes que as duplicatas vão ter. a: { versions } → { names: [{ name, taken }], existing }
+// Os nomes que as versões vão ter. a: { versions } → { names: [{ name, taken }], existing }
 // name: '' quando o layer de nome decide (só dá para saber depois de preencher); taken: o nome já existia e
 // ganhou o sufixo; existing: os nomes de comp do projeto (maiúsculas), para conferir os digitados na janela
 PADX.lightPlan = function (a) {
@@ -315,7 +315,7 @@ PADX.lightFill = function (a) {
 
 					var text = lines[l].replace(/\n/g, '\r');
 
-					// com keyframes no texto, todos eles: senão a duplicata volta ao texto antigo no key seguinte
+					// com keyframes no texto, todos eles: senão a versão volta ao texto antigo no key seguinte
 					if (prop.numKeys > 0) {
 						for (var k = 1; k <= prop.numKeys; k++) {
 							var keyDoc = prop.keyValue(k);

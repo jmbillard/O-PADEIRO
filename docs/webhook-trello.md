@@ -1,9 +1,10 @@
-# cards do Trello na claquete
+# cards do Trello n'O PROJETISTA
 
-Digitando na claquete (janela **PROJETO**), a atração com **card novo no Trello** vem primeiro, no grupo **NO
-TRELLO**, com o card embaixo (`card DOMINGAO 25/11 · há 2 dias · ANA`) e a etiqueta **CARD NOVO**. O card é só a
-referência: o clique abre a atração (a pasta dela e os `.aep` que já estão lá), como clicar nela na lista. Nem a pasta
-nem o arquivo levam o nome do card, e o "o que é" fica vazio.
+Digitando n'**O PROJETISTA** (a janela de projeto), os **cards novos no Trello** que batem com o texto vêm primeiro, no grupo
+**NO TRELLO**: um card por linha, com o **nome da atração** em destaque, a claquete embaixo (e o designer, quando o card
+não é seu) e o **status** como etiqueta. Os cards do designer desta máquina vêm primeiro, marcados **seu** (a regra
+está em [projeto.md](projeto.md#1--qual-atração)). O card é só a referência: o clique abre a atração (a pasta dela e
+os `.aep` que já estão lá). Nem a pasta nem o arquivo levam o nome do card, e o "o que é" fica vazio.
 
 ## o que muda no webhook do buscar
 
@@ -23,7 +24,10 @@ Os cards já vêm no índice da busca (`GET …/webhook/buscar`, o campo `trello
 | `at` | a data em que o card entrou, `AAAA-MM-DD` (ou data e hora ISO). |
 | `fim` | `true` quando o card está finalizado (FINALIZADO ou CAIU, ou arquivado). |
 | `atr` | a atração ligada ao card no banco (ARTE_producao), quando tem. |
-| `fil` | `true` nos cards de filme (os filmes têm a lista deles na claquete: ficam de fora). |
+| `des` | o designer do card, o nome completo (`Cristina Vianna`): O PROJETISTA mostra e compara com o login da máquina (o **seu**). |
+| `st` | o status do card (`PRODUZINDO`, `EM APROVAÇÃO`…): vira a etiqueta da linha. sem status, sem etiqueta. |
+| `fil` | `true` nos cards de filme: o card vai para o filme cujo `trello` (no [webhook dos filmes](webhook-filmes.md)) é o link dele; sem o filme na lista dos recentes, fica de fora. |
+| `card` | o id do card no Trello: é por ele que o card de filme acha o filme (o id está no link do `trello` do filme). |
 
 - **Não quebra a versão anterior:** são campos novos; o padeiro de antes ignora. O webhook continua mandando **todos**
   os cards, como hoje: a busca de caminhos (acessorista) mostra todos.
@@ -34,13 +38,20 @@ Os cards já vêm no índice da busca (`GET …/webhook/buscar`, o campo `trello
 
 O card ligado a uma atração no banco (`atr`) vale só para ela: `FUT FEM AMIS 29/11` → **AMISTÓSOS DA SELEÇÃO
 FEMININA**, não FUTEBOL. O card sem vínculo vai pelo começo da claquete, com o nome e os padrões (`pattern`) da
-atração no índice, a mesma regra da busca: `DOMINGAO 25/11` → **DOMINGÃO COM HUCK** (padrão `DOMINGAO`). Card que não
-bate com nenhuma atração fica de fora.
+atração no índice, a mesma regra da busca: `DOMINGAO 25/11` → **DOMINGÃO COM HUCK** (padrão `DOMINGAO`). O card que
+não bate com nenhuma atração aparece **sem atração** e vira uma **atração nova**: o nome sugerido é o começo da
+claquete sem a data, a versão e o ano (`RIO SUMMER BEATS 5-12` → `RIO SUMMER BEATS`), editável, com os chips dos
+tipos para escolher onde criar. O card de filme leva ao filme (a pasta do filme, ADR 0004), com o pôster.
+
+A atração que tem card não aparece de novo no grupo ATRAÇÕES (no tipo fixo, só a do mês do card sai; a regra de
+sempre fica), e o filme que tem card não aparece de novo em FILMES.
 
 A busca também procura pela claquete dos cards novos: o card ligado a uma atração traz ela para o grupo **NO TRELLO**
 mesmo que o nome dela não bata com o digitado (`fut` → o card `FUT FEM AMIS 29/11` → **AMISTÓSOS DA SELEÇÃO
 FEMININA**, ao lado do FUTEBOL). O clique no card recolhe a lista direto na pasta de projetos da atração (os `.aep`
-que já estão lá, em **JÁ NA PASTA**), sem mostrar as pastas de dentro, como no filme.
+que já estão lá, em **JÁ NA PASTA**), sem mostrar as pastas de dentro, como no filme. Embaixo do campo, uma linha do
+card fica como referência (a claquete, o designer ou **seu**, a atração e o status). Um ano escrito na claquete
+(`VEM AI(2027)`) vira o ano do projeto, com a nota **pelo card** no chip do ano.
 
 ## criar ou abrir
 
@@ -48,37 +59,43 @@ O card decide **qual atração**; a regra da atração decide **a pasta e o `.ae
 **criar ou abrir**:
 
 1. **atração** → o vínculo do card no banco (`atr`): `JANEIRO NA GLOBO` → **MOOD MENSAL**.
-2. **pasta e `.aep`** → a atração que é um tipo com regra na aba PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
+2. **pasta e `.aep`** → a atração que é um tipo com regra na aba TIPOS DE PROJETO (sem `{atracao}` no caminho: MOOD MENSAL)
    usa a regra, e **o mês escrito na claquete do card vale mais que a data de hoje** nos tokens de mês e de ano
    (`{mes}`, `{mes_extenso}`, `{proximo_mes}`, `{proximo_mes_num}`, `{ano}`, `{ano_proximo_mes}`): `JANEIRO NA GLOBO`
    → `…/MOOD MENSAL/2027/01 JANEIRO` e `JANEIRO NA GLOBO.aep` (sem o ano escrito, o próximo janeiro). Com o card de
    outro mês, a regra de sempre (o próximo mês) continua na lista, logo abaixo. A atração sem regra usa a pasta de
    projetos dela (a do banco).
-3. **criar ou abrir** → o `.aep` que a regra dá ainda não existe: **Criar projeto**. Já existe: pelo card, a janela
-   vem em **abrir o existente** (fora do card, o padrão continua sendo **salvar como … 2**).
+3. **criar ou abrir** → os `.aep` da pasta (e das subpastas logo dentro dela) que batem com a claquete ficam no topo
+   do **JÁ NA PASTA**, em destaque (a etiqueta **CARD**): só um, ele vem marcado (**Abrir projeto**); dois ou mais,
+   você escolhe; nenhum, a janela fica pronta para criar (**Criar projeto**).
 
 O nome do card não vira nome de arquivo: ele só diz a atração e, quando a regra usa mês, qual mês.
-Com vários cards da mesma atração, aparece **um card por linha** (até 5; no tipo com regra, como o MOOD MENSAL, só o mais novo). O clique marca na lista **JÁ NA PASTA** o `.aep` daquele card: cada palavra da claquete é o começo de uma palavra do nome do arquivo (`PREMIO 2026 CH JOR ESP G5` → `MELHOR CHAMADA DE JORNALISMO E ESPORTE G5.aep`), o botão vira **Abrir projeto**. Empate ou nada em comum: nada marcado.
+Com vários cards da mesma atração, aparece **um card por linha** (até 4 no grupo; com mais, *+N outros: continue digitando*). O clique destaca na lista **JÁ NA PASTA** os `.aep` daquele card: cada palavra da claquete é o começo de uma palavra do nome do arquivo (`PREMIO 2026 CH JOR ESP G5` → `MELHOR CHAMADA DE JORNALISMO E ESPORTE G5.aep`); valem os que batem com mais palavras. Só um: ele vem marcado e o botão vira **Abrir projeto**. Empate: os empatados em destaque, nada marcado. Nada em comum: nada marcado.
 
 ## vindo das Produções do PROMeiro
 
-Com o endereço do **PROMeiro** na configuração (aba **BUSCAR**, da equipe), cada computador pede a sua **chave do
-Padeiro** sozinho, na primeira vez que a barra abre (`POST /api/padeiro/cadastro`, com o usuário do computador, o
-nome do computador, o sistema e a sigla). A chave fica guardada neste computador (`promeiro.json`, na pasta de dados
-do usuário, ao lado do `machine_config.json`) e começa **pendente**: até um administrador ligar a chave a um designer
+Com o endereço do **PROMeiro** na configuração (aba **BUSCAR**, da equipe: a seção `promeiro`, chave `PROMEIRO` do
+`O_PADEIRO_GLOBAL_config.json`), cada computador pede a sua **chave do Padeiro** sozinho, na primeira vez que a barra
+abre (`POST /api/padeiro/cadastro`, com o login, o nome do computador, o sistema e a sigla). A chave fica guardada
+na configuração deste computador (a seção `chaveDoPromeiro`: `computador_promeiro.json`, na pasta de dados, ao lado
+do `computador_config.json`; o `promeiro.json` de antes ainda é lido enquanto ela não existe) e começa **pendente**: até um administrador ligar a chave a um designer
 (PROMeiro › Cadastros › Padeiros), a barra mostra um aviso ao abrir e a configuração > buscar diz que falta aprovar.
 
 Com a chave **ligada**, o grupo **NO TRELLO** lê as Produções em Entrada e Produzindo do PROMeiro
 (`GET /api/padeiro/producoes`, no mesmo formato `trello` de cima, com a chave no cabeçalho `X-Chave-Do-Padeiro`), no
 lugar dos cards do webhook. Vale toda Produção aberta, sem o limite dos 7 dias (o PROMeiro já deixa de fora as
-entregues); os filmes (`fil`) continuam de fora. A lista é lida ao abrir a claquete e de novo a cada minuto, em
-segundo plano.
+entregues). A Produção de filme (`fil`) entra como os cards de filme do webhook: O PROJETISTA liga ao filme pelo
+card (o `trello` do filme no webhook dos filmes). A lista é lida ao abrir O PROJETISTA e de novo a cada minuto, em
+segundo plano; `des` e `st` não vêm do PROMeiro (sem o **seu** e sem a etiqueta do status).
+
+- **O webhook do projeto** (o n8n, [docs/webhook-projeto.md](webhook-projeto.md)) continua a ir com ou sem a chave:
+  o registro do projeto, a atração nova e o designer no card são dele; o aviso do Padeiro é a parte do PROMeiro.
 
 - **Sem o endereço, no modo local, com a chave pendente ou com o PROMeiro fora do ar:** tudo como antes, pelo
   webhook do n8n. Nenhuma falha do PROMeiro aparece como erro.
 - **Chave revogada, ou que o PROMeiro não conhece mais:** o Padeiro pede outra sozinho, que volta a ficar pendente.
 - **Quem fala com o PROMeiro** é o Node do painel (`js/promeiro.js`), sem travar o After Effects; o host
-  (`host/promeiro.jsx`, ES3) só diz o usuário, o computador, o sistema e a sigla, e guarda a chave.
+  (`host/promeiro.jsx`, ES3) só diz o login, o computador, o sistema e a sigla, e guarda a chave.
 - **Teste:** `PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js` sobe um
   PROMeiro de teste e passa pelos painéis no navegador (mock-host): pedir a chave, pendente, ligada, o aviso ao abrir
   pelo card, a fila sem rede (e o reenvio), o aviso repetido, revogada, fora do ar e sem endereço.
@@ -99,8 +116,8 @@ designer da chave entra no card do Trello e na Produção, com a origem "Padeiro
 Só o clique num card do NO TRELLO conta: digitar a atração e criar o projeto, sem o card, não avisa.
 
 **A fila sem rede.** O aviso entra primeiro na fila deste computador (`promeiro-fila.json`, na pasta de dados, ao lado
-do `promeiro.json`; `host/promeiro.jsx`) e só sai dela quando o PROMeiro responde. Quem manda é o Node do painel, sem
-esperar a resposta para fechar a janela nem travar o After. A fila vai de novo ao abrir a barra e a claquete e, com a
+do `computador_promeiro.json`; `host/promeiro.jsx`) e só sai dela quando o PROMeiro responde. Quem manda é o Node do painel, sem
+esperar a resposta para fechar a janela nem travar o After. A fila vai de novo ao abrir a barra e O PROJETISTA e, com a
 barra aberta, a cada 3 minutos. O que acontece com cada aviso:
 
 - **entregue** (200), **repetido**, **mal feito** (400), **a Produção que não existe** (404) ou **que já mudou**
@@ -123,13 +140,17 @@ da fila a ação que ainda não foi; a que já foi ganha um desfazer na fila, co
 
 ## onde está no código
 
-- `extension/client/js/attractions.js`: `recentCards()` filtra os cards e `cardFor()` acha o card de cada atração;
-  `findAttractions()` põe a atração com card primeiro (`trello` em cada resultado).
-- `extension/client/js/project.js`: `cardRow()` desenha a linha e `cardWhen()` escreve quando o card entrou.
-- `extension/client/js/mock-host.js`: o card de exemplo do Domingão (modo de teste: digite `domingao`).
+- `extension/client/js/attractions.js`: `recentCards()` filtra os cards (com `des`, `st` e `fil`),
+  `guessCardAttractions()` liga o card sem `atr` pela claquete e `findAttractions()` devolve os cards junto (`cards`).
+- `extension/client/js/projetista.js`: `pickGroups()` monta os grupos (as regras num ponto só, também no editor),
+  `cardTarget()` diz o que o card aponta, `loginMatches()` é a regra do **seu**, `cardRow()` desenha a linha e
+  `cardFiles()` acha os `.aep` do card.
+- `extension/client/js/mock-host.js`: os cards de exemplo (`mockCards`: digite `premio`, `summer`, `encanto`, `vem ai`,
+  `mood` ou `domingao`).
 - `extension/client/js/promeiro.js` e `extension/host/promeiro.jsx`: a chave do Padeiro e a lista das Produções;
-  `attractions.js` troca os cards do webhook pelos do PROMeiro (`currentCards()`).
-- o aviso do Padeiro: `project.js` (`avisoTarget()` e `avisar()`, ao abrir ou criar), `promeiro.js` (`notify()` e
+  `attractions.js` troca os cards do webhook pelos do PROMeiro (`currentCards()`), também na resposta do host
+  (`findAttractions()`, no navegador de teste).
+- o aviso do Padeiro: `projetista.js` (`avisoTarget()` e `avisar()`, ao abrir ou criar), `promeiro.js` (`notify()` e
   `flush()`, a fila), `attractions.js` (`filmProduction()`, a Produção do filme) e `host/promeiro.jsx`
   (`promeiroQueue`, `promeiroQueueAdd`, `promeiroQueueDrop`, `promeiroRecusadas`); `bar.js` manda a fila ao abrir e
   de tempos em tempos.

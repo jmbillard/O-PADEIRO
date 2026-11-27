@@ -4,15 +4,21 @@
 > O ARQUIVISTA — renomear os arquivos e as pastas de um diretório
 ---------------------------------------------------------------
 
-A mesma regra do renomear das comps (configuração > renomear), nos nomes dos arquivos e das pastas de uma pasta. O
-host (files.jsx) lê a pasta e sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser,
-desliga o que não deve mudar e renomeia.
+A mesma regra do renomear das comps (configuração > renomear: o formato, o prefixo do formato, a caixa, o separador,
+os especiais e os nomes fixos), nos nomes dos arquivos e das pastas de uma pasta. O host (files.jsx) lê a pasta e
+sugere o nome de cada item; aqui a pessoa confere, edita o novo nome que quiser, desliga o que não deve mudar e
+renomeia.
 
-  - o prefixo do tipo vem do próprio nome do arquivo (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
-  - nome repetido na mesma pasta, vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em lotes, com a barra de progresso;
-  - o arquivo usado no projeto aberto é religado depois de renomeado;
+  - o prefixo do formato vem do próprio nome do item, arquivo ou pasta (_CRT_HOJE → CRT - HOJE), nunca da pasta de cima;
+  - nome repetido na mesma pasta ganha o primeiro sufixo livre (_2, _3…: regras/nomes-repetidos.js) e o aviso na linha, e é
+    renomeado; vazio ou com caractere inválido fica de fora (o alerta na linha diz o motivo); o resto renomeia, em
+    lotes, com a barra de progresso;
+  - o arquivo usado no projeto aberto é religado depois de renomeado; a pasta com um arquivo usado dentro também
+    mostra o elo (renomeá-la religa os de dentro) e entra na contagem "em uso";
   - uma sequência de imagens é uma linha só (os números dos quadros ficam);
-  - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela.
+  - a última renomeação pode ser desfeita (o botão redondo do rodapé), mesmo depois de fechar a janela; o que não
+    voltar fica guardado e o botão continua, para tentar de novo;
+  - o religar no projeto aberto acontece uma vez, no fim dos lotes: um passo só do Ctrl+Z do After.
 
 */
 
@@ -22,25 +28,28 @@ desliga o que não deve mudar e renomeia.
 	var call = PAD_BRIDGE.call;
 	var DOCS_URL = 'https://github.com/jmbillard/O-PADEIRO/blob/main/README.md#arquivos';
 	var PREF_OPTS = 'pad.files.opts';
-	var BAD_CHARS = /[\\\/:*?"<>|]/;
+	var NAMES = window.PAD_NOMES_REPETIDOS;
 
 	var ICON = {
 		folder: '<svg class="fl-kind is-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18V7.5A1.5 1.5 0 0 1 5 6h4l2 2.5h8a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z" /></svg>',
 		file: '<svg class="fl-kind" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>',
 		seq: '<svg class="fl-kind" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="13" height="13" rx="2" /><path d="M4 16V6a2 2 0 0 1 2-2h10" /></svg>'
 	};
-	// a situação em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode), o elo (muda e é usado no
-	// projeto aberto) e o traço (desligado)
+	// a situação em ícone: o lápis (muda), o visto (já no padrão), o alerta (não pode), o aviso (ganhou _2: muda,
+	// mas confira), o elo (muda, com ou sem _2, e é usado no projeto aberto) e o traço (desligado)
 	var STATE_ICON = {
 		chg: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>',
 		same: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>',
 		bad: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.5 20h19z" /><path d="M12 10v4.5M12 17.5v.01" /></svg>',
+		dup: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5v5.5M12 16.5v.01" /></svg>',
 		use: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>',
 		off: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>'
 	};
 
-	// items: os do host, cada um com id, on (ligado) e custom (o nome editado, ou null)
-	var state = { path: '', name: '', items: [], filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
+	// items: os do host, cada um com id, on (ligado) e custom (o nome editado, ou null). others: os nomes do disco que
+	// não estão na lista, por pasta (contam para o sufixo _2). kept: o que a pessoa mexeu em cada item (o nome editado
+	// e a chave), pelo caminho relativo: sobrevive a ligar e desligar as subpastas na mesma pasta
+	var state = { path: '', name: '', items: [], others: {}, kept: {}, filter: 'all', step: 0, busy: false, undo: null, truncated: false, loaded: false };
 
 	function $(id) {
 		return document.getElementById(id);
@@ -83,17 +92,15 @@ desliga o que não deve mudar e renomeia.
 	/* ---------- o nome de cada item ---------- */
 
 	function suggest(it) {
-		return $('fl-o-prefix').checked ? it.typed : it.plain;
+		return $('fl-o-prefix').checked ? it.prefixed : it.plain;
 	}
 
 	function target(it) {
 		return it.custom != null ? it.custom : suggest(it);
 	}
 
-	// o resto do nome, que não muda: os quadros da sequência e a extensão
-	function tail(it) {
-		return (it.frames || '') + (it.ext ? '.' + it.ext : '');
-	}
+	// o resto do nome, que não muda: os quadros da sequência e a extensão (regras/nomes-repetidos.js)
+	var tail = NAMES.tail;
 
 	function enabled(it) {
 		if (!it.on) return false;
@@ -102,45 +109,37 @@ desliga o que não deve mudar e renomeia.
 		return $('fl-o-files').checked;
 	}
 
-	// o nome final de cada item (os desligados ficam com o de hoje): dois iguais na mesma pasta não podem. os discos
-	// não diferenciam a caixa, então a comparação também não
-	function clashes() {
-		var seen = {};
-		var out = {};
-
-		state.items.forEach(function (it) {
-			var key = it.dir + '/' + ((enabled(it) ? target(it).trim() : it.name) + tail(it)).toLowerCase();
-
-			(seen[key] = seen[key] || []).push(it.id);
-		});
-		Object.keys(seen).forEach(function (k) {
-			if (seen[k].length > 1) seen[k].forEach(function (id) {
-				out[id] = true;
-			});
-		});
-
-		return out;
+	// o nome final e a situação de cada item (regras/nomes-repetidos.js): id → { state, name, suffix }. o repetido na mesma pasta
+	// ganha o primeiro sufixo livre (_2, _3…), contando os desligados (com o nome de hoje) e os nomes do disco
+	function finals() {
+		return NAMES.resolve(state.items.map(function (it) {
+			return { id: it.id, dir: it.dir, name: it.name, kind: it.kind, ext: it.ext, sep: it.sep, pad: it.pad, want: enabled(it) ? target(it) : null };
+		}), state.others);
 	}
 
-	function stateOf(it, clash) {
-		if (!enabled(it)) return 'off';
-
-		var name = target(it).trim();
-
-		if (!name || BAD_CHARS.test(name) || clash[it.id]) return 'bad';
-
-		// o mesmo nome com o acento junto ou separado (macOS) é o mesmo nome
-		return name.normalize('NFC') === it.name.normalize('NFC') ? 'same' : 'chg';
+	// ganhou _2 também muda de nome (vai na renomeação)
+	function renames(st) {
+		return st === 'chg' || st === 'dup';
 	}
 
-	function reason(it, st, clash) {
+	// o aviso de quem ganhou _2
+	function dupNote(fin) {
+		return 'ganhou ' + fin.suffix + ': o nome ficaria repetido nesta pasta. confira antes de renomear';
+	}
+
+	function reason(it, fin) {
+		var st = fin.state;
+		var used = '';
+
+		if (it.use) used = it.kind === 'folder' ? ' · tem arquivo usado no projeto aberto: os de dentro são religados depois de renomear' : ' · usado no projeto aberto: é religado depois de renomeado';
+
 		if (st === 'bad') {
-			if (clash[it.id]) return 'nome repetido nesta pasta: fica como está até você editar um dos dois';
 			if (!target(it).trim()) return 'sem nome';
 
 			return 'caractere que não vale em nome de arquivo ( \\ / : * ? " < > | )';
 		}
-		if (st === 'chg') return it.use ? 'muda de nome · usado no projeto aberto: é religado depois de renomeado' : 'muda de nome';
+		if (st === 'dup') return dupNote(fin) + used;
+		if (st === 'chg') return 'muda de nome' + used;
 		if (st === 'same') return 'já está no padrão';
 
 		return 'desligado: fica como está';
@@ -148,26 +147,42 @@ desliga o que não deve mudar e renomeia.
 
 	/* ---------- a tabela ---------- */
 
-	function render(keepFocus) {
-		var clash = clashes();
+	// a contagem de cada situação e os itens que aparecem na lista (o filtro da situação e o filtro pelo nome)
+	function tally(fin) {
 		var q = fold($('fl-q').value);
-		var count = { all: 0, chg: 0, same: 0, bad: 0, off: 0 };
+		var count = { all: 0, chg: 0, same: 0, bad: 0, off: 0, dup: 0 };
 		var used = 0;
+		var list = [];
+
+		state.items.forEach(function (it) {
+			var st = fin[it.id].state;
+			var shown = renames(st) ? 'chg' : st; // o filtro: ganhou _2 está entre os que mudam
+
+			count.all++;
+			count[shown]++;
+			if (st === 'dup') count.dup++;
+			if (renames(st) && it.use) used++;
+			if (state.filter !== 'all' && state.filter !== shown) return;
+			if (q && fold(it.name + ' ' + target(it)).indexOf(q) < 0) return;
+			list.push(it);
+		});
+
+		return { count: count, used: used, list: list };
+	}
+
+	function render(keepFocus) {
+		var fin = finals();
+		var t = tally(fin);
 		var box = $('fl-rows');
 		var focused = keepFocus && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
 		var caret = focused != null ? document.activeElement.selectionStart : 0;
+		// a rolagem do texto dentro do campo refeito: sem ela, o navegador rola o texto até o cursor e o deixa colado
+		// na borda (sem a margem), escondendo o começo do nome
+		var scroll = focused != null ? document.activeElement.scrollLeft : 0;
 		var lastDir = null;
 
 		box.textContent = '';
-		state.items.forEach(function (it) {
-			var st = stateOf(it, clash);
-
-			count.all++;
-			count[st]++;
-			if (st === 'chg' && it.use) used++;
-			if (state.filter !== 'all' && state.filter !== st) return;
-			if (q && fold(it.name + ' ' + target(it)).indexOf(q) < 0) return;
-
+		t.list.forEach(function (it) {
 			if (it.dir !== lastDir) {
 				var group = el('div', 'fl-group');
 
@@ -176,76 +191,150 @@ desliga o que não deve mudar e renomeia.
 				group.appendChild(el('span', null, it.dir ? state.name + ' / ' + it.dir.split('/').join(' / ') : state.name));
 				box.appendChild(group);
 			}
+			box.appendChild(makeRow(it, fin[it.id]));
+		});
 
-			var row = el('div', 'fl-row is-' + st + (it.custom != null ? ' is-edited' : ''));
-			var cb = el('input', 'fl-cb');
-			var cur = el('span', 'fl-cur');
-			var wrap = el('span', 'fl-new-wrap');
-			var input = el('input', 'fl-new');
-			var mark = el('span', 'fl-st is-' + (st === 'chg' && it.use ? 'use' : st));
-			var why = reason(it, st, clash);
+		if (!box.children.length) box.appendChild(el('p', 'fl-empty', emptyText(t.count)));
 
-			cb.type = 'checkbox';
-			cb.checked = it.on;
-			cb.disabled = state.busy;
-			cb.setAttribute('aria-label', 'renomear ' + it.name);
-			cb.addEventListener('change', function () {
-				it.on = this.checked;
+		totals(t.count, t.used);
+
+		if (focused != null) {
+			var again = $('fl-new-' + focused);
+
+			if (again) {
+				again.focus();
+				try {
+					again.setSelectionRange(caret, caret);
+				} catch (err) { }
+				again.scrollLeft = scroll;
+			}
+		}
+
+		return t.count;
+	}
+
+	// digitou no novo nome: as linhas são atualizadas no lugar, com o mesmo campo, e o navegador cuida do cursor e
+	// da rolagem do texto (refazer o campo a cada tecla deixava o cursor colado na borda e o começo do nome
+	// escondido). só refaz a lista se o que aparece nela mudou (o filtro esconde ou mostra uma linha)
+	function typed() {
+		var fin = finals();
+		var t = tally(fin);
+		var shown = $('fl-rows').querySelectorAll('.fl-row');
+		var same = shown.length === t.list.length;
+
+		for (var i = 0; same && i < shown.length; i++) same = shown[i].dataset.id === String(t.list[i].id);
+		if (!same) return render(true);
+
+		t.list.forEach(function (it, n) {
+			update(shown[n], makeRow(it, fin[it.id]));
+		});
+		totals(t.count, t.used);
+	}
+
+	// a linha na tela fica com a situação, o sufixo, os avisos e a seta da linha nova, mas com o mesmo campo
+	function update(row, fresh) {
+		var wrap = row.querySelector('.fl-new-wrap');
+		var input = wrap.querySelector('.fl-new');
+		var freshWrap = fresh.querySelector('.fl-new-wrap');
+
+		row.className = fresh.className;
+		while (input.nextSibling) wrap.removeChild(input.nextSibling);
+		while (freshWrap.firstChild) {
+			if (freshWrap.firstChild.classList.contains('fl-new')) freshWrap.removeChild(freshWrap.firstChild);
+			else wrap.appendChild(freshWrap.firstChild);
+		}
+		row.replaceChild(fresh.querySelector(':scope > .fl-st'), row.querySelector(':scope > .fl-st'));
+	}
+
+	// uma linha da tabela: a chave, o tipo, o nome de hoje, o novo nome (o campo), o resto do nome e a situação
+	function makeRow(it, f) {
+		var st = f.state;
+		var row = el('div', 'fl-row is-' + st + (it.custom != null ? ' is-edited' : ''));
+		var cb = el('input', 'fl-cb');
+		var cur = el('span', 'fl-cur');
+		var wrap = el('span', 'fl-new-wrap');
+		var input = el('input', 'fl-new');
+		// o elo: o item em uso que muda de nome (também o que ganhou _2: o aviso vai ao lado do sufixo). assim os elos
+		// visíveis batem com a contagem "em uso" do rodapé
+		var icon = renames(st) && it.use ? 'use' : st;
+		var mark = el('span', 'fl-st is-' + icon);
+		var why = reason(it, f);
+		var end = el('span', 'fl-ext', tail(it));
+
+		row.dataset.id = it.id;
+		cb.type = 'checkbox';
+		cb.checked = it.on;
+		cb.disabled = state.busy;
+		cb.setAttribute('aria-label', 'renomear ' + it.name);
+		cb.addEventListener('change', function () {
+			it.on = this.checked;
+			state.step = 0;
+			render();
+		});
+
+		cur.appendChild(el('span', null, it.name));
+		cur.appendChild(el('i', null, tail(it)));
+		cur.title = it.name + tail(it) + (it.kind === 'seq' ? ' · sequência de ' + plural(it.count, 'imagem', 'imagens') : '');
+
+		input.type = 'text';
+		input.value = target(it);
+		input.id = 'fl-new-' + it.id;
+		input.dataset.id = it.id;
+		input.spellcheck = false;
+		input.autocomplete = 'off';
+		input.disabled = st === 'off' || state.busy;
+		input.setAttribute('aria-label', 'novo nome de ' + it.name);
+		input.addEventListener('input', function () {
+			it.custom = this.value === suggest(it) ? null : this.value;
+			state.step = 0;
+			typed();
+		});
+		wrap.appendChild(input);
+		// o sufixo que o nome ganhou vem antes dos quadros e da extensão, em destaque
+		if (f.suffix) end.insertBefore(el('b', 'fl-suffix', f.suffix), end.firstChild);
+		wrap.appendChild(end);
+		// ganhou _2 e está em uso: o elo fica na situação e o aviso, logo depois do sufixo
+		if (st === 'dup' && icon === 'use') {
+			var warn = el('span', 'fl-st is-dup');
+
+			warn.innerHTML = STATE_ICON.dup;
+			warn.title = dupNote(f);
+			warn.setAttribute('aria-label', warn.title);
+			wrap.appendChild(warn);
+		}
+
+		// o nome editado à mão: a seta volta para a sugestão
+		if (it.custom != null && !state.busy) {
+			var reset = el('button', 'fl-reset');
+
+			reset.type = 'button';
+			reset.title = 'voltar para a sugestão';
+			reset.setAttribute('aria-label', 'voltar para a sugestão de ' + it.name);
+			reset.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg>';
+			reset.addEventListener('click', function () {
+				it.custom = null;
 				state.step = 0;
 				render();
 			});
+			wrap.appendChild(reset);
+		}
 
-			cur.appendChild(el('span', null, it.name));
-			cur.appendChild(el('i', null, tail(it)));
-			cur.title = it.name + tail(it) + (it.kind === 'seq' ? ' · sequência de ' + plural(it.count, 'imagem', 'imagens') : '');
+		mark.innerHTML = STATE_ICON[icon];
+		mark.title = why;
+		mark.setAttribute('aria-label', why);
 
-			input.type = 'text';
-			input.value = target(it);
-			input.id = 'fl-new-' + it.id;
-			input.dataset.id = it.id;
-			input.spellcheck = false;
-			input.autocomplete = 'off';
-			input.disabled = st === 'off' || state.busy;
-			input.setAttribute('aria-label', 'novo nome de ' + it.name);
-			input.addEventListener('input', function () {
-				it.custom = this.value === suggest(it) ? null : this.value;
-				state.step = 0;
-				render(true);
-			});
-			wrap.appendChild(input);
-			wrap.appendChild(el('span', 'fl-ext', tail(it)));
+		row.appendChild(cb);
+		row.insertAdjacentHTML('beforeend', ICON[it.kind] || ICON.file);
+		row.appendChild(cur);
+		row.appendChild(el('span', 'fl-arrow', '→'));
+		row.appendChild(wrap);
+		row.appendChild(mark);
 
-			// o nome editado à mão: a seta volta para a sugestão
-			if (it.custom != null && !state.busy) {
-				var reset = el('button', 'fl-reset');
+		return row;
+	}
 
-				reset.type = 'button';
-				reset.title = 'voltar para a sugestão';
-				reset.setAttribute('aria-label', 'voltar para a sugestão de ' + it.name);
-				reset.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4.5 9.5 9 5" /><path d="M4.5 9.5H14a5.5 5.5 0 0 1 0 11h-3" /></svg>';
-				reset.addEventListener('click', function () {
-					it.custom = null;
-					state.step = 0;
-					render();
-				});
-				wrap.appendChild(reset);
-			}
-
-			mark.innerHTML = STATE_ICON[st === 'chg' && it.use ? 'use' : st];
-			mark.title = why;
-			mark.setAttribute('aria-label', why);
-
-			row.appendChild(cb);
-			row.insertAdjacentHTML('beforeend', ICON[it.kind] || ICON.file);
-			row.appendChild(cur);
-			row.appendChild(el('span', 'fl-arrow', '→'));
-			row.appendChild(wrap);
-			row.appendChild(mark);
-			box.appendChild(row);
-		});
-
-		if (!box.children.length) box.appendChild(el('p', 'fl-empty', emptyText(count)));
-
+	// as contagens dos filtros, a chave de todos e o rodapé
+	function totals(count, used) {
 		['all', 'chg', 'same', 'bad', 'off'].forEach(function (k) {
 			$('fl-n-' + k).textContent = count[k];
 		});
@@ -264,19 +353,6 @@ desliga o que não deve mudar e renomeia.
 		all.disabled = state.busy || !state.items.length;
 
 		footer(count, used);
-
-		if (focused != null) {
-			var again = $('fl-new-' + focused);
-
-			if (again) {
-				again.focus();
-				try {
-					again.setSelectionRange(caret, caret);
-				} catch (err) { }
-			}
-		}
-
-		return count;
 	}
 
 	function emptyText(count) {
@@ -303,7 +379,7 @@ desliga o que não deve mudar e renomeia.
 
 		go.textContent = state.step === 1 ? 'Confirmar: renomear ' + count.chg : count.all ? 'Renomear ' + plural(count.chg, 'item', 'itens') : 'Renomear';
 		go.disabled = !count.chg;
-		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + ' · ' + count.same + ' no padrão' + left + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
+		if (!state.note) status(count.all ? plural(count.chg, 'muda', 'mudam') + (count.dup ? ' (' + count.dup + ' com sufixo: confira)' : '') + ' · ' + count.same + ' no padrão' + left + (count.off ? ' · ' + plural(count.off, 'desligado', 'desligados') : '') + (used ? ' · ' + used + ' em uso (religados depois)' : '') + (state.truncated ? ' · a pasta tem mais itens do que a lista mostra' : '') : '');
 	}
 
 	// o progresso: uma barra fina entre a tabela e o rodapé e a contagem no botão
@@ -319,7 +395,25 @@ desliga o que não deve mudar e renomeia.
 
 	/* ---------- ler, renomear, desfazer ---------- */
 
-	async function load(path) {
+	// o caminho relativo de um item (a pasta, o nome, a extensão e o tipo): o mesmo item depois de reler
+	function keyOf(it) {
+		return [it.dir, it.name, it.ext || '', it.kind].join('\n');
+	}
+
+	// guarda o que a pessoa mexeu nos itens da lista (o nome editado e a chave desligada)
+	function keep() {
+		state.items.forEach(function (it) {
+			if (it.custom != null || !it.on) state.kept[keyOf(it)] = { custom: it.custom, on: it.on };
+			else delete state.kept[keyOf(it)];
+		});
+	}
+
+	// keepEdits: reler a mesma pasta por causa das subpastas: os itens que continuam na lista ficam com o nome
+	// editado (e os novos chegam com a sugestão). sem keepEdits (outra pasta, depois de renomear ou desfazer), tudo
+	// volta para a sugestão
+	async function load(path, keepEdits) {
+		if (keepEdits) keep();
+		else state.kept = {};
 		state.note = '';
 		state.step = 0;
 		state.loaded = false;
@@ -332,11 +426,14 @@ desliga o que não deve mudar e renomeia.
 			state.path = res.path;
 			state.name = res.name;
 			state.truncated = !!res.truncated;
+			state.others = res.others || {};
 			state.undo = res.undo || null;
 			state.items = (res.items || []).map(function (it, i) {
+				var was = state.kept[keyOf(it)];
+
 				it.id = i;
-				it.on = true;
-				it.custom = null;
+				it.on = was ? was.on : true;
+				it.custom = was ? was.custom : null;
 
 				return it;
 			});
@@ -354,11 +451,11 @@ desliga o que não deve mudar e renomeia.
 	var BATCH = 10; // itens por chamada ao After
 
 	async function rename() {
-		var clash = clashes();
+		var fin = finals();
 		var list = state.items.filter(function (it) {
-			return stateOf(it, clash) === 'chg';
+			return renames(fin[it.id].state);
 		}).map(function (it) {
-			return { dir: it.dir, name: it.name, ext: it.ext, kind: it.kind, sep: it.sep || '', pad: it.pad || 0, to: target(it).trim() };
+			return { dir: it.dir, name: it.name, ext: it.ext, kind: it.kind, sep: it.sep || '', pad: it.pad || 0, to: fin[it.id].name };
 		});
 
 		if (!list.length) return;
@@ -383,21 +480,22 @@ desliga o que não deve mudar e renomeia.
 		var note = '';
 		var kind = '';
 		var count = 0;
-		var relinked = 0;
+		var religados = 0;
 		var errors = [];
 
 		// em lotes: cada um volta do After e a barra anda (o registro do desfazer junta todos). só junta ao registro
 		// depois de um lote que gravou nele: se os primeiros não renomearam nada, o registro ainda é o de antes
 		// (outra renomeação), e juntar nele faria o desfazer voltar aquela também
 		var wrote = false;
+		var ops = [];
 
 		try {
 			for (var at = 0; at < list.length; at += BATCH) {
-				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote });
+				var res = await call('filesRename', { path: state.path, items: list.slice(at, at + BATCH), append: wrote, religar: false });
 
 				if (res.count > 0) wrote = true;
 				count += res.count || 0;
-				relinked += res.relinked || 0;
+				ops = ops.concat(res.ops || []);
 				errors = errors.concat(res.errors || []);
 				progress(Math.min(at + BATCH, list.length), list.length);
 			}
@@ -405,7 +503,16 @@ desliga o que não deve mudar e renomeia.
 			errors.push({ name: 'a renomeação parou', error: err.message });
 		}
 
-		note = plural(count, 'renomeado', 'renomeados') + (relinked ? ' · ' + plural(relinked, 'religado', 'religados') + ' no projeto' : '');
+		// o religar de todos os lotes de uma vez, no fim: um passo só do Ctrl+Z do After (O ARQUIVISTA: religar)
+		if (ops.length) {
+			try {
+				religados = (await call('filesReligar', { ops: ops })).religados || 0;
+			} catch (err) {
+				errors.push({ name: 'o religar no projeto', error: err.message });
+			}
+		}
+
+		note = plural(count, 'renomeado', 'renomeados') + (religados ? ' · ' + plural(religados, 'religado', 'religados') + ' no projeto' : '');
 		if (errors.length) {
 			note += ' · ' + plural(errors.length, 'não mudou', 'não mudaram') + ': ' + errors[0].name + ' (' + errors[0].error + ')';
 			kind = 'error';
@@ -418,8 +525,35 @@ desliga o que não deve mudar e renomeia.
 		status(note, kind);
 	}
 
-	// A lista da pasta num .csv: o nome de cada item e o caminho dele (como estão agora, todos os da lista, sem os
-	// filtros). separado por ';' e com o BOM do UTF-8: o Excel em português abre direto, com os acentos certos
+	// A data de criação de um item (AAAA-MM-DD HH:MM), lida pelo Node do painel na hora de exportar (sem passar pelo
+	// After). a sequência vale pelo primeiro quadro. '' quando não dá para ler (no navegador, ou o sistema não guarda)
+	function createdAt(fs, path, it) {
+		if (!fs) return '';
+
+		var real = path;
+
+		if (it.kind === 'seq') {
+			var first = /\[(\d+)-\d+\]/.exec(it.frames || '');
+
+			real = path.replace(/\[\d+-\d+\](?=\.[^.\\\/]*$|$)/, first ? first[1] : '');
+		}
+
+		try {
+			var st = fs.statSync(real);
+			var d = st.birthtimeMs > 0 ? st.birthtime : st.mtime; // sem a data de criação, a da última alteração
+			var two = function (n) {
+				return (n < 10 ? '0' : '') + n;
+			};
+
+			return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes());
+		} catch (err) {
+			return '';
+		}
+	}
+
+	// A lista da pasta num .csv: o nome de cada item, o caminho dele e a data de criação (como estão agora, todos os
+	// da lista, sem os filtros). separado por ';' e com o BOM do UTF-8: o Excel em português abre direto, com os
+	// acentos certos
 	function exportCsv() {
 		if (!state.path || !state.items.length) return status('escolha uma pasta com itens para exportar a lista.', 'error');
 
@@ -427,13 +561,18 @@ desliga o que não deve mudar e renomeia.
 		var cell = function (text) {
 			return '"' + String(text).replace(/"/g, '""') + '"';
 		};
-		var rows = ['nome;caminho'];
+		var rows = ['nome;caminho;criado em'];
+		var fs = null;
+
+		try {
+			fs = typeof require === 'function' ? require('fs') : null;
+		} catch (err) { }
 
 		state.items.forEach(function (it) {
 			var name = it.name + tail(it);
 			var path = state.path.replace(/[\\\/]+$/, '') + (it.dir ? sep + it.dir.split('/').join(sep) : '') + sep + name;
 
-			rows.push(cell(name) + ';' + cell(path));
+			rows.push(cell(name) + ';' + cell(path) + ';' + cell(createdAt(fs, path, it)));
 		});
 
 		var text = '\ufeff' + rows.join('\r\n') + '\r\n';
@@ -460,9 +599,10 @@ desliga o que não deve mudar e renomeia.
 		try {
 			var res = await call('filesUndo');
 
-			note = plural(res.count, 'item voltou', 'itens voltaram') + ' ao nome de antes' + (res.relinked ? ' · ' + plural(res.relinked, 'religado', 'religados') + ' no projeto' : '');
+			note = plural(res.count, 'item voltou', 'itens voltaram') + ' ao nome de antes' + (res.religados ? ' · ' + plural(res.religados, 'religado', 'religados') + ' no projeto' : '');
+			// o que não voltou fica guardado: o botão continua, para tentar de novo
 			if (res.errors && res.errors.length) {
-				note += ' · ' + plural(res.errors.length, 'não voltou', 'não voltaram') + ': ' + res.errors[0].name + ' (' + res.errors[0].error + ')';
+				note += ' · ' + plural(res.errors.length, 'ficou faltando', 'ficaram faltando') + ' (' + res.errors[0].name + ': ' + res.errors[0].error + '): resolva e desfaça de novo';
 				kind = 'error';
 			}
 		} catch (err) {
@@ -503,10 +643,10 @@ desliga o que não deve mudar e renomeia.
 				render();
 			});
 		});
-		// as subpastas mudam a lista: a pasta é lida de novo
+		// as subpastas mudam a lista: a pasta é lida de novo, mantendo o que a pessoa editou
 		$('fl-o-sub').addEventListener('change', function () {
 			saveOpts();
-			if (state.path) load(state.path);
+			if (state.path) load(state.path, true);
 		});
 
 		Array.prototype.forEach.call(document.querySelectorAll('.fl-chip'), function (chip) {

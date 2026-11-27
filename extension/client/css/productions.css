@@ -209,7 +209,7 @@ body.prods-page {
   animation: ti-led 560ms steps(1) 2;
 }
 
-/* meu usuário: a cabeça e os ombros sobem um pouco e descem de novo (a cabeça um pouco mais) */
+/* deste computador: a cabeça e os ombros sobem um pouco e descem de novo (a cabeça um pouco mais) */
 .tab:hover .ti-user .ti-head {
   animation: ti-lift 520ms var(--ease-soft);
 }
@@ -592,6 +592,16 @@ body.prods-page {
   height: 50px;
 }
 
+/* carregar a lista de um arquivo (a seta desce) · salvar uma cópia (a seta sobe), como o importar e o exportar dos
+   outros painéis (panel.css) */
+#btn-carregar:hover .io-arrow {
+  transform: translateY(2.5px);
+}
+
+#btn-salvar-copia:hover .io-arrow {
+  transform: translateY(-2.5px);
+}
+
 .prods-filter input {
   min-height: 50px;
   border-color: var(--border-strong);
@@ -867,7 +877,7 @@ body.prods-page {
   margin: 3px 0 4px;
 }
 
-/* aba RENOMEAR: tipos de peça (puxador, prefixo, comentário, termos) */
+/* aba RENOMEAR: os formatos (puxador, prefixo, etiqueta, termos) */
 .rename-head,
 .rename-row {
   display: grid;
@@ -1297,7 +1307,7 @@ body.is-org-dragging * {
   stroke-width: 1.8;
 }
 
-/* subpasta "fantasma": os comentários dos itens viram subpastas desta pasta */
+/* subpasta "fantasma": as etiquetas dos itens viram subpastas desta pasta */
 .org-sub-hint {
   display: flex;
   align-items: center;
@@ -1320,42 +1330,6 @@ body.is-org-dragging * {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.6;
-}
-
-/* aba BUSCA: a categoria (chave do índice) e o nome de exibição */
-.category-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) 90px;
-  align-items: center;
-  gap: 8px;
-}
-
-.category-key {
-  overflow: hidden;
-  padding: 0 4px;
-  color: var(--text-secondary);
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.72rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.category-count {
-  color: var(--text-tertiary);
-  font-size: 0.68rem;
-  text-align: right;
-}
-
-.category-row.is-missing .category-key {
-  color: var(--text-tertiary);
-  text-decoration: line-through;
-}
-
-.category-empty {
-  margin: 0;
-  padding: 10px 0;
-  color: var(--text-tertiary);
-  font-size: 0.74rem;
 }
 
 /* aba LINKS: puxador, ícone (favicon ou escolhido), nome e endereço com o × dentro */
@@ -1841,7 +1815,7 @@ body.is-org-dragging * {
   height: 11px;
 }
 
-/* o seletor da superfície: ícone antes, como os de categoria */
+/* o seletor da superfície: ícone antes, como os de tipo */
 .pv-dd-line {
   display: flex;
   align-items: center;
@@ -2043,7 +2017,7 @@ body.is-org-dragging * {
 }
 
 /* =========================================================
-   aba PROJETO
+   aba TIPOS DE PROJETO
    ========================================================= */
 
 .drive-row.is-retranca {
@@ -2071,7 +2045,7 @@ body.is-org-dragging * {
    ========================================================= */
 
 /* na raiz ficam os tipos que não são coletados: riscados */
-#pane-collect .org-folder.is-root .org-chip {
+#pane-coletar .org-folder.is-root .org-chip {
   opacity: 0.6;
   text-decoration: line-through;
 }
@@ -2306,7 +2280,7 @@ body.is-org-dragging * {
 }
 
 /* =========================================================
-   equipe (rede) × local (este computador)
+   da equipe (rede) × deste computador
    ========================================================= */
 
 /* os grupos da barra lateral (ferramentas · links · o resto): só uma linha entre eles */
@@ -2318,22 +2292,22 @@ body.is-org-dragging * {
 }
 
 /* dentro de uma aba da equipe: daqui para baixo, as opções só deste computador */
-.local-split {
+.deste-computador-split {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 26px;
 }
 
-.local-split::before,
-.local-split::after {
+.deste-computador-split::before,
+.deste-computador-split::after {
   height: 1px;
   flex: 1;
   background: var(--border);
   content: "";
 }
 
-.local-split-label {
+.deste-computador-split-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2344,7 +2318,7 @@ body.is-org-dragging * {
   text-transform: uppercase;
 }
 
-.local-split-label svg {
+.deste-computador-split-label svg {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;
@@ -2356,12 +2330,12 @@ body.is-org-dragging * {
   transform: translateY(-1.5px);
 }
 
-.local-split-hint {
+.deste-computador-split-hint {
   margin-top: 2px;
   text-align: center;
 }
 
-/* TEMPLATES: a aba inteira rola (a lista da equipe e, embaixo, a parte local) */
+/* TEMPLATES: a aba inteira rola (a lista da equipe e, embaixo, a parte deste computador) */
 #pane-prods {
   overflow-x: hidden;
   overflow-y: auto;
@@ -2374,14 +2348,14 @@ body.is-org-dragging * {
   overflow: visible;
 }
 
-.prods-local {
+.prods-computador {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 0 16px 14px;
 }
 
-.prods-local .prods-section-title {
+.prods-computador .prods-section-title {
   margin-top: 10px;
   padding: 16px 0 0;
 }
@@ -2431,7 +2405,7 @@ body.is-org-dragging * {
   color: var(--blue-500);
 }
 
-/* editando o padrão da equipe: a faixa fica azul, para não esquecer */
+/* editando a aparência e o layout da equipe: a faixa fica azul, para não esquecer */
 .scope-note.is-editing-team {
   background: var(--blue-50);
   color: var(--blue-ink, var(--blue-600));
@@ -2471,23 +2445,23 @@ body.is-org-dragging * {
 }
 
 /* aba COMPUTADOR: a sigla é curta */
-.machine-user {
+.deste-computador-designer {
   max-width: 220px;
 }
 
 /* aba COMPUTADOR: templates por produção (nome | pasta daqui | copiar) */
-.machine-sync.is-busy {
+.deste-computador-sync.is-busy {
   opacity: 0.6;
   pointer-events: none;
 }
 
-/* produção local: sem "copiar", mas a coluna continua (os campos alinham) */
-.machine-sync.is-placeholder {
+/* produção deste computador: sem "copiar", mas a coluna continua (os campos alinham) */
+.deste-computador-sync.is-placeholder {
   visibility: hidden;
 }
 
 /* aba COMPUTADOR: aviso de que a rede caiu (o modo local já vale) */
-.machine-offline {
+.deste-computador-offline {
   margin: 0;
   border-radius: var(--radius-small);
 }
@@ -2518,37 +2492,37 @@ body.is-org-dragging * {
   gap: 8px;
 }
 
-/* aba BUSCAR: caminhos fixos do servidor (pontinhos | nome | caminho com pasta e ×) */
-.srv-row {
+/* aba BUSCAR: os caminhos fixos (pontinhos | nome | caminho com pasta e ×) */
+.caminho-fixo-row {
   display: grid;
   grid-template-columns: 22px minmax(150px, 220px) minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
-.srv-row .cfg-path .cfg-input {
+.caminho-fixo-row .cfg-path .cfg-input {
   padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
-/* aba PROJETO: cada categoria num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
+/* aba TIPOS DE PROJETO: cada tipo num cartão (NOME com o ícone dentro do campo e a lixeira fora dele, PROJETO e
    OUTPUT com a prévia embaixo); os rótulos alinham os campos */
-#cat-list {
+#tipo-list {
   display: grid;
   gap: 10px;
 }
 
-.cat-card {
+.tipo-card {
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   align-items: start;
   gap: 6px;
 }
 
-.cat-card > .drag-handle {
+.tipo-card > .drag-handle {
   margin-top: 14px;
 }
 
-.cat-body {
+.tipo-body {
   display: grid;
   gap: 6px;
   padding: 10px;
@@ -2557,14 +2531,14 @@ body.is-org-dragging * {
   background: var(--surface-soft);
 }
 
-.cat-line {
+.tipo-line {
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr) 30px;
   align-items: center;
   gap: 8px;
 }
 
-.cat-label {
+.tipo-label {
   color: var(--text-tertiary);
   font-size: 0.58rem;
   font-weight: 800;
@@ -2572,22 +2546,22 @@ body.is-org-dragging * {
   text-align: right;
 }
 
-.cat-line .cfg-path .cfg-input {
+.tipo-line .cfg-path .cfg-input {
   padding-right: 44px; /* a pasta dentro do campo */
 }
 
-.cat-name {
+.tipo-name {
   position: relative;
   min-width: 0;
 }
 
-.cat-name .cfg-input {
+.tipo-name .cfg-input {
   width: 100%;
   padding-left: 46px;
 }
 
 /* o ícone (abre o seletor): só o desenho, dentro do campo */
-.cat-icon {
+.tipo-icon {
   position: absolute;
   top: 50%;
   left: 10px;
@@ -2601,8 +2575,8 @@ body.is-org-dragging * {
   transform: translateY(-50%);
 }
 
-/* a lixeira: exclui a categoria (fora do campo, para não parecer que só apaga o texto) */
-.cat-del {
+/* a lixeira: exclui o tipo (fora do campo, para não parecer que só apaga o texto) */
+.tipo-del {
   display: grid;
   width: 30px;
   height: 30px;
@@ -2618,12 +2592,12 @@ body.is-org-dragging * {
     background-color 160ms ease;
 }
 
-.cat-del:hover,
-.cat-del:focus-visible {
+.tipo-del:hover,
+.tipo-del:focus-visible {
   color: #d64545;
 }
 
-.cat-icon svg,
+.tipo-icon svg,
 .icon-grid svg {
   width: 20px;
   height: 20px;
@@ -2634,7 +2608,7 @@ body.is-org-dragging * {
   stroke-width: 1.7;
 }
 
-.cat-del svg {
+.tipo-del svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -2644,7 +2618,7 @@ body.is-org-dragging * {
   stroke-width: 1.7;
 }
 
-.cat-preview {
+.tipo-preview {
   min-height: 1em;
   margin: -2px 38px 2px 84px;
   overflow: hidden;
@@ -2655,20 +2629,20 @@ body.is-org-dragging * {
   white-space: nowrap;
 }
 
-.cat-preview:empty {
+.tipo-preview:empty {
   display: none;
 }
 
-.cat-preview b {
+.tipo-preview b {
   color: var(--blue-500);
 }
 
-.cat-preview i {
+.tipo-preview i {
   color: #d64545;
   font-style: normal;
 }
 
-.cat-empty {
+.tipo-empty {
   border: 0;
   border-radius: 10px;
 }
@@ -2732,8 +2706,8 @@ body.is-org-dragging * {
   vertical-align: 1px;
 }
 
-/* o seletor de ícones (abre embaixo do ícone da categoria) */
-#pane-project,
+/* o seletor de ícones (abre embaixo do ícone do tipo) */
+#pane-tipos-de-projeto,
 #pane-prods {
   position: relative;
 }
@@ -2792,14 +2766,14 @@ body.is-org-dragging * {
   color: var(--blue-500);
 }
 
-/* meu usuário: índice local da busca */
-.machine-index-opts {
+/* deste computador: índice local da busca */
+.deste-computador-index-opts {
   display: grid;
   gap: 10px;
   margin: 14px 0;
 }
 
-.machine-index-status {
+.deste-computador-index-status {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -2811,12 +2785,12 @@ body.is-org-dragging * {
   font-size: 0.74rem;
 }
 
-.machine-index-status b {
+.deste-computador-index-status b {
   color: var(--text-primary);
   font-weight: 700;
 }
 
-.machine-index-status .button {
+.deste-computador-index-status .button {
   flex: 0 0 auto;
 }
 
@@ -2838,19 +2812,19 @@ body.is-org-dragging * {
   padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
-/* meu usuário: produções locais (pontinhos | ícone com o bonequinho | nome | pasta) */
-.local-prod-row {
+/* deste computador: produções deste computador (pontinhos | ícone com o bonequinho | nome | pasta) */
+.computador-prod-row {
   display: grid;
   grid-template-columns: 22px 40px minmax(140px, 200px) minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
 
-.local-prod-row .cfg-path .cfg-input {
+.computador-prod-row .cfg-path .cfg-input {
   padding-right: 44px; /* a pasta dentro do campo (a lixeira fica fora) */
 }
 
-.local-prod-icon {
+.computador-prod-icon {
   position: relative;
   display: grid;
   width: 40px;
@@ -2861,7 +2835,7 @@ body.is-org-dragging * {
   color: var(--text-tertiary);
 }
 
-.local-prod-icon svg {
+.computador-prod-icon svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -2869,7 +2843,7 @@ body.is-org-dragging * {
   stroke-width: 1.6;
 }
 
-.local-prod-icon::after {
+.computador-prod-icon::after {
   position: absolute;
   right: -4px;
   bottom: -4px;
@@ -2883,7 +2857,7 @@ body.is-org-dragging * {
 
 /* produção da equipe com caminho deste computador: ignorada (fica no arquivo, mas não aparece para ninguém) */
 .prod-row.is-ignored .prod-icon,
-.prod-row.is-ignored .cat-name .cfg-input,
+.prod-row.is-ignored .tipo-name .cfg-input,
 .prod-row.is-ignored .prod-path .cfg-input {
   opacity: 0.5;
 }
@@ -2911,11 +2885,11 @@ body.is-org-dragging * {
   transform: translateY(-50%);
 }
 
-.cat-del:hover .trash-lid {
+.tipo-del:hover .trash-lid {
   transform: translateY(-1.5px) rotate(14deg);
 }
 
-.cat-del svg {
+.tipo-del svg {
   overflow: visible;
 }
 
@@ -2935,7 +2909,7 @@ body.is-org-dragging * {
   margin-top: 14px;
 }
 
-/* os presets de render (aba projeto, neste computador): os dois lado a lado; estreito, um embaixo do outro */
+/* os presets de render (aba tipos de projeto, deste computador): os dois lado a lado; estreito, um embaixo do outro */
 .render-presets {
   display: grid;
   gap: 10px;

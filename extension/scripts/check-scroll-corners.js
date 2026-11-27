@@ -3,8 +3,9 @@
 // uso: node scripts/check-scroll-corners.js
 const path = require('path');
 const { chromium } = require('playwright');
+const { windowSize } = require('./ui-states');
 
-const PAGES = ['index.html', 'productions.html', 'project.html', 'fonts.html', 'collect.html', 'finder.html', 'maker.html', 'files.html', 'light.html', 'converter.html', 'labels.html', 'versioner.html', 'promeiro.html?mock=janela'];
+const PAGES = ['index.html', 'productions.html', 'projetista.html', 'fonts.html', 'catador.html', 'finder.html', 'confeiteiro.html', 'files.html', 'light.html', 'converter.html', 'labels.html', 'versioner.html', 'promeiro.html?mock=janela'];
 
 function scan() {
 	var out = [];
@@ -61,6 +62,7 @@ function scan() {
 
 	for (const file of PAGES) {
 		try {
+			await page.setViewportSize(windowSize(file)); // o tamanho padrão da janela (manifest)
 			await page.goto('file://' + path.join(__dirname, '..', 'client', file));
 		} catch (err) {
 			continue;

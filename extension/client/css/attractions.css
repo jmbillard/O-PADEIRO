@@ -1,5 +1,5 @@
 /* =========================================================
-   Atrações: o seletor (a busca, os cartões e a atração nova), comum à janela PROJETO, ao criador de
+   Atrações: o seletor (a busca, os cartões e a atração nova), comum à janela de projeto, ao criador de
    templates e ao editor de config (js/attractions.js)
    ========================================================= */
 
@@ -22,86 +22,6 @@
   overflow-y: auto;
   margin: -4px; /* folga em volta: o brilho do cartão escolhido (3 px) não é cortado pela rolagem */
   padding: 4px;
-}
-
-.wz-opt {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text-primary);
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.wz-opt:hover {
-  border-color: var(--border-hover);
-}
-
-.wz-opt.is-selected {
-  border-color: var(--blue-300);
-  background: var(--blue-50);
-}
-
-.wz-opt svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: var(--blue-500);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-}
-
-.wz-opt-text {
-  display: grid;
-  min-width: 0;
-  flex: 1;
-  gap: 2px;
-}
-
-.wz-opt-text b {
-  overflow: hidden;
-  font-size: 0.8rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wz-opt-text small {
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 0.66rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* caminho: o "…" no começo (o fim é o que importa) */
-.wz-opt-text small.is-path {
-  direction: rtl;
-  text-align: left;
-}
-
-.wz-radio {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  box-sizing: border-box;
-  border: 1.5px solid var(--border-strong);
-  border-radius: 50%;
-}
-
-.wz-opt.is-selected .wz-radio {
-  border: 5px solid var(--blue-500);
 }
 
 /* NOVA: a pasta que vai ser criada */
@@ -128,19 +48,7 @@
   color: var(--text-primary);
 }
 
-/* a pasta da categoria fora do alcance: vai para a pasta dos projetos deste computador (linha de baixo) */
-.wz-preview:has(.nova-offline) {
-  flex-wrap: wrap;
-}
-
-.nova-offline {
-  flex: 1 0 100%;
-  padding-left: 22px;
-  color: var(--text-tertiary);
-  font-style: normal;
-}
-
-/* NOVA sem categorias: escolher a pasta (no lugar da lista) */
+/* NOVA sem tipos: escolher a pasta (no lugar da lista) */
 .wz-pick {
   display: flex;
   min-width: 0;
@@ -240,7 +148,7 @@
   display: none;
 }
 
-/* fora da janela PROJETO, a lista e o aviso ficam logo embaixo do campo */
+/* fora da janela de projeto, a lista e o aviso ficam logo embaixo do campo */
 .atr-picker {
   display: grid;
   gap: 8px;
@@ -291,7 +199,7 @@
 }
 
 .combo.is-open .combo-field > .field-icon,
-.maker-glass .combo.is-open .combo-field > .field-icon {
+.confeiteiro-glass .combo.is-open .combo-field > .field-icon {
   stroke: var(--blue-500);
 }
 
@@ -394,7 +302,7 @@
   white-space: nowrap;
 }
 
-/* a atração nova dentro da lista: o nome e a categoria logo abaixo do item */
+/* a atração nova dentro da lista: o nome e o tipo logo abaixo do item */
 .combo-panel .atr-nova {
   margin: 0;
   padding: 0 10px;
@@ -410,7 +318,7 @@
   background: var(--surface-soft);
 }
 
-/* a atração nova dentro da lista: o nome em cima e a categoria embaixo (a lista é estreita) */
+/* a atração nova dentro da lista: o nome em cima e o tipo embaixo (a lista é estreita) */
 .combo-panel .atr-nova-row {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -421,40 +329,40 @@
 
 /* dentro da lista aberta (opaca), os campos são os normais, mesmo sobre o vidro */
 .combo-panel .cfg-input,
-.maker-glass .combo-panel .cfg-input {
+.confeiteiro-glass .combo-panel .cfg-input {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text-primary);
 }
 
 .combo-panel .cfg-input::placeholder,
-.maker-glass .combo-panel .cfg-input::placeholder {
+.confeiteiro-glass .combo-panel .cfg-input::placeholder {
   color: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .has-field-icon > .field-icon {
+.confeiteiro-glass .combo-panel .has-field-icon > .field-icon {
   stroke: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .wz-preview,
-.maker-glass .combo-panel .wz-preview b {
+.confeiteiro-glass .combo-panel .wz-preview,
+.confeiteiro-glass .combo-panel .wz-preview b {
   color: var(--text-tertiary);
 }
 
-.maker-glass .combo-panel .wz-preview b {
+.confeiteiro-glass .combo-panel .wz-preview b {
   color: var(--text-primary);
 }
 
-.maker-glass .combo-panel .wz-preview svg {
+.confeiteiro-glass .combo-panel .wz-preview svg {
   stroke: var(--blue-500);
 }
 
 .combo-panel .cfg-input:focus,
-.maker-glass .combo-panel .cfg-input:focus {
+.confeiteiro-glass .combo-panel .cfg-input:focus {
   border-color: var(--blue-500);
 }
 
-.maker-glass .combo-panel .has-field-icon:focus-within > .field-icon {
+.confeiteiro-glass .combo-panel .has-field-icon:focus-within > .field-icon {
   stroke: var(--blue-500);
 }
 
@@ -472,15 +380,15 @@
   color: var(--text-control);
 }
 
-/* a atração nova: as categorias à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
-.cat-chips {
+/* a atração nova: os tipos à vista, numa grade (um clique cria nela); a digitada no começo vem marcada */
+.tipo-chips {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 4px 12px 6px;
 }
 
-.cat-chip {
+.tipo-chip {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -501,13 +409,13 @@
     color 140ms ease;
 }
 
-.cat-chip span {
+.tipo-chip span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cat-chip svg {
+.tipo-chip svg {
   width: 15px;
   height: 15px;
   flex: 0 0 auto;
@@ -518,18 +426,20 @@
   stroke-width: 1.8;
 }
 
-.cat-chip:hover {
+/* is-hover: o realce do teclado (as setas, ou o Enter sem atração achada, que abre os tipos) */
+.tipo-chip:hover,
+.tipo-chip.is-hover {
   border-color: var(--border-hover);
   background: var(--surface-soft);
 }
 
-.cat-chip.is-on {
+.tipo-chip.is-on {
   border-color: var(--blue-300);
   background: var(--blue-50);
   color: var(--blue-500);
 }
 
-.cat-path {
+.tipo-path {
   margin: 0;
   padding: 2px 14px 6px;
   overflow: hidden;
@@ -540,7 +450,7 @@
   white-space: nowrap;
 }
 
-.cat-path b {
+.tipo-path b {
   color: var(--text-secondary);
   font-weight: 800;
 }

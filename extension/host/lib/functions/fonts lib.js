@@ -53,7 +53,7 @@ function getProjectFonts() {
 // Nome do arquivo copiado. As fontes do Adobe Fonts ficam em arquivos ocultos e numerados
 // ('.../CoreSync/plugins/livetype/.r/.34534.otf'): nesse caso (ou sem extensão de fonte), o arquivo leva
 // o nome PostScript da fonte e a extensão do formato de verdade (lido no começo do arquivo).
-function fontCollectName(file, postScriptName) {
+function fontCopyName(file, postScriptName) {
 	var name = File.decode(file.name);
 	var path = file.fsName.replace(/\\/g, '/');
 
@@ -84,8 +84,9 @@ function fontFileExtension(file) {
 }
 
 // Copia os arquivos das fontes usadas no projeto para 'savePath'.
-// Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada.
-function fontCollect(savePath) {
+// Retorna o caminho da pasta, ou '' se nenhuma fonte pôde ser copiada. fails (opcional): recebe os nomes das fontes
+// que não puderam ser copiadas (o coletar avisa junto dos outros); sem ele, vira um aviso ao painel (padAviso)
+function fontCopyTo(savePath, fails) {
 	var saveFolder = new Folder(savePath);
 	var fonts = getProjectFonts();
 	var copiedFiles = {};
@@ -96,7 +97,7 @@ function fontCollect(savePath) {
 	for (var f = 0; f < fonts.length; f++) {
 		var fontSrcFile = new File(fonts[f].location);
 
-		// fontes sem arquivo local (ex: Adobe Fonts) não podem ser copiadas
+		// fontes sem arquivo no computador (ex: Adobe Fonts) não podem ser copiadas
 		if (!fonts[f].location || !fontSrcFile.exists) {
 			failArray.push(fonts[f].name);
 			continue;
@@ -105,7 +106,7 @@ function fontCollect(savePath) {
 		// estilos diferentes podem vir do mesmo arquivo
 		if (copiedFiles[fontSrcFile.fsName]) continue;
 
-		var fontFileName = fontCollectName(fontSrcFile, fonts[f].name);
+		var fontFileName = fontCopyName(fontSrcFile, fonts[f].name);
 
 		if (fontSrcFile.copy(new File(savePath + '/' + fontFileName))) {
 			copiedFiles[fontSrcFile.fsName] = true;
@@ -115,7 +116,9 @@ function fontCollect(savePath) {
 	}
 
 	if (failArray.length > 0) {
-		alert(lol + '#PAD_034 - estas fontes não puderam ser copiadas:\n\n' + failArray.join('\n'));
+		if (fails) {
+			for (var k = 0; k < failArray.length; k++) fails.push(failArray[k]);
+		} else padAviso('#PAD_034 - estas fontes não puderam ser copiadas: ' + padListaCurta(failArray) + '.');
 	}
 
 	if (saveFolder.getFiles().length == 0) {

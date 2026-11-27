@@ -4,42 +4,42 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>A FORMA · criar</title>
+	<title>O CONFEITEIRO</title>
 	<link rel="stylesheet" href="css/styles.css">
 	<link rel="stylesheet" href="css/panel.css">
 	<link rel="stylesheet" href="css/attractions.css">
-	<link rel="stylesheet" href="css/maker.css">
+	<link rel="stylesheet" href="css/confeiteiro.css">
 	<link rel="stylesheet" href="css/theme.css">
 </head>
 
-<body class="maker-page">
-	<main class="maker" id="maker">
+<body class="confeiteiro-page">
+	<main class="confeiteiro" id="confeiteiro">
 		<!-- o formulário, no vidro (não depende do After Effects); o rodapé do vidro como o da lista de templates -->
-		<aside class="maker-side">
-			<header class="maker-top">
+		<aside class="confeiteiro-side">
+			<header class="confeiteiro-top">
 				<p class="eyebrow">criar template</p>
-				<div class="maker-check" id="checklist" aria-label="o que falta para salvar"></div>
+				<div class="confeiteiro-check" id="checklist" aria-label="o que falta para salvar"></div>
 			</header>
-			<div class="maker-glass">
-				<div class="maker-glass-body">
+			<div class="confeiteiro-glass">
+				<div class="confeiteiro-glass-body">
 				<!-- primeiro, a atração (buscada no índice, ou nova) e o que é: o template é dessa atração -->
-				<div class="maker-name">
-					<div class="maker-name-col">
-						<p class="cfg-title maker-name-title">ATRAÇÃO</p>
+				<div class="confeiteiro-name">
+					<div class="confeiteiro-name-col">
+						<p class="cfg-title confeiteiro-name-title">ATRAÇÃO</p>
 						<div class="atr-picker" id="atr-picker"></div>
 					</div>
-					<div class="maker-name-col">
-						<p class="cfg-title maker-name-title">O QUE É</p>
+					<div class="confeiteiro-name-col">
+						<p class="cfg-title confeiteiro-name-title">O QUE É</p>
 						<div class="has-field-icon" title="o que é: identifica o template no log">
 							<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h6.5L18 8v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" /><path d="M13.5 3.5V8H18" /></svg>
 							<input class="cfg-input" id="f-config" type="text" spellcheck="false" autocomplete="off" placeholder="ex: SERVIÇO, CONVIDADO, AESP" aria-label="O que é">
 						</div>
 					</div>
-					<p class="wz-preview maker-name-preview" id="name-full" hidden></p>
+					<p class="wz-preview confeiteiro-name-preview" id="name-full" hidden></p>
 				</div>
 						<section class="cfg-card">
 							<div class="cfg-card-head"><h3 class="cfg-title">Formulário</h3></div>
-<div class="maker-pair">
+<div class="confeiteiro-pair">
 							<div class="cfg-field">
 								<label class="cfg-label" for="f-example">Exemplo de preenchimento</label>
 								<div class="cfg-area">
@@ -47,7 +47,7 @@
 INFORMAÇÃO 2</textarea>
 									<button type="button" class="mini-button area-tool" id="btn-example" title="puxar dos layers: montar o exemplo com o texto atual dos layers editáveis (na ordem da lista)" aria-label="puxar o exemplo dos layers"><svg viewBox="0 0 24 24"><path class="import-arrow" d="M12 15V5M8 8.5l4-4 4 4" /><path d="M5 18.500h14" /></svg></button>
 								</div>
-								<p class="cfg-hint">linha vazia separa as versões.</p>
+								<p class="cfg-hint">linha vazia separa os blocos.</p>
 							</div>
 							<div class="cfg-field">
 								<label class="cfg-label" for="f-tip">Dicas</label>
@@ -77,7 +77,7 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 									</select></span>
 								</div>
 								<div class="cfg-field">
-									<label class="cfg-label" for="f-separator" title="separador de informações: o que divide uma informação da outra no input (\n = quebra de linha)">Separador</label>
+									<label class="cfg-label" for="f-separator" title="separador de campos: o que divide um campo do outro no bloco do input (\n = quebra de linha)">Separador</label>
 									<div class="has-field-icon" id="sep-field">
 										<svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5v7a3 3 0 0 1-3 3H6" /><path d="m9.5 11.5-3.5 3.5 3.5 3.5" /></svg>
 										<input class="cfg-input" id="f-separator" type="text" spellcheck="false" autocomplete="off" value="\n">
@@ -89,16 +89,16 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 						<section class="cfg-card">
 							<div class="cfg-card-head"><h3 class="cfg-title">Caminhos</h3></div>
 							<div class="cfg-field">
-								<label class="cfg-label" for="f-import">Pasta de mídias (opcional)</label>
+								<label class="cfg-label" for="f-import">Pasta de import (opcional)</label>
 								<!-- uma pasta só: o campo aparece pelo botão e some na lixeira (fora do campo) -->
 								<div class="path-row" id="import-row" hidden>
 									<div class="cfg-path one-btn">
 										<input class="cfg-input" id="f-import" type="text" spellcheck="false" autocomplete="off" placeholder="pasta padrão para importar footages">
 										<button type="button" class="mini-button" id="pick-import" title="escolher pasta" aria-label="escolher pasta"><svg viewBox="0 0 24 24"><path d="M3.500 7.500A1.500 1.500 0 0 1 5 6h4l2 2.500h8a1.500 1.500 0 0 1 1.500 1.500v7a1.500 1.500 0 0 1-1.500 1.500H5A1.500 1.500 0 0 1 3.500 17z" /></svg></button>
 									</div>
-									<button type="button" class="row-del" id="remove-import" title="remover a pasta de mídias" aria-label="remover a pasta de mídias"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7h11l-1 12.5h-9z" /><path d="M10 11v5M14 11v5" /></svg></button>
+									<button type="button" class="row-del" id="remove-import" title="remover a pasta de import" aria-label="remover a pasta de import"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="trash-lid"><path d="M4.5 7h15" /><path d="M10 7V5h4v2" /></g><path d="M6.5 7h11l-1 12.5h-9z" /><path d="M10 11v5M14 11v5" /></svg></button>
 								</div>
-								<button type="button" class="button button-secondary button-compact add-button" id="btn-import-add">+ pasta de mídias</button>
+								<button type="button" class="button button-secondary button-compact add-button" id="btn-import-add">+ pasta de import</button>
 							</div>
 							<div class="cfg-field">
 								<span class="cfg-label">Pastas de output</span>
@@ -108,7 +108,7 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 							</div>
 						</section>
 				</div>
-				<div class="maker-glass-foot">
+				<div class="confeiteiro-glass-foot">
 					<button type="button" class="icon-button" id="btn-reset" title="Começar de novo (limpar o formulário)" aria-label="Começar de novo">
 						<svg viewBox="0 0 24 24" class="anim-refresh"><path d="M4.5 11.5a7.5 7.5 0 0 1 12.9-5.2l2.1 2.2" /><path d="M19.5 4v4.5H15" /><path d="M19.5 12.5a7.5 7.5 0 0 1-12.9 5.2l-2.1-2.2" /><path d="M4.5 20v-4.5H9" /></svg>
 					</button>
@@ -124,28 +124,28 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 		</aside>
 
 		<!-- o que vem do After Effects: o projeto (preview, comp, fontes), os layers e as variações -->
-		<section class="maker-sheet">
+		<section class="confeiteiro-sheet">
 			<!-- sem comp ativa -->
-			<div class="maker-state" id="state-nocomp" hidden>
+			<div class="confeiteiro-state" id="state-nocomp" hidden>
 				<strong>abra a comp principal do template</strong>
 				<span>o criador usa a comp ativa no After Effects como comp principal.</span>
 				<button type="button" class="button button-primary" id="btn-retry">Tentar de novo</button>
 			</div>
 
-			<div class="maker-scroll" id="form">
-				<details class="maker-help">
+			<div class="confeiteiro-scroll" id="form">
+				<details class="confeiteiro-help">
 					<summary>como criar um template</summary>
 					<ol>
 						<li>limpe o projeto: remova tudo o que não for necessário para a comp principal.</li>
 						<li>preencha o formulário.</li>
 						<li>posicione a agulha da timeline em um frame de referência e capture o preview.</li>
-						<li>selecione os layers editáveis na comp e clique em “+ layers”: eles receberão o texto das informações do input.</li>
+						<li>selecione os layers editáveis na comp e clique em “+ layers”: eles receberão os campos do input.</li>
 						<li>se o texto está em uma pré-comp, adicione a propriedade “source text” ao painel “essential graphics” e use um layer de texto na comp principal para controlá-lo.</li>
-						<li>adicione as pastas de mídia e de output necessárias e salve.</li>
+						<li>adicione a pasta de import e as pastas de output necessárias e salve.</li>
 					</ol>
 				</details>
-				<div class="maker-grid">
-					<div class="maker-col">
+				<div class="confeiteiro-grid">
+					<div class="confeiteiro-col">
 						<section class="cfg-card">
 							<div class="cfg-card-head"><h3 class="cfg-title">Projeto</h3></div>
 							<div class="preview-card" id="preview-card">
@@ -155,23 +155,23 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 									<span>capturar preview</span>
 								</button>
 							</div>
-							<div class="maker-comp">
-								<span class="maker-comp-label">comp principal</span>
+							<div class="confeiteiro-comp">
+								<span class="confeiteiro-comp-label">comp principal</span>
 								<svg class="comp-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M7.500 5v14M16.500 5v14" /><path class="film-holes" d="M5.500 6v12M18.500 6v12" /></svg>
 								<strong id="comp-name">—</strong>
-								<span class="maker-comp-time" id="comp-time" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7.500V12l3 2" /></svg><span></span></span>
+								<span class="confeiteiro-comp-time" id="comp-time" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7.500V12l3 2" /></svg><span></span></span>
 							</div>
-							<div class="maker-fonts" id="fonts" hidden>
-								<span class="maker-comp-label">fontes usadas</span>
+							<div class="confeiteiro-fonts" id="fonts" hidden>
+								<span class="confeiteiro-comp-label">fontes usadas</span>
 								<ul id="fonts-list"></ul>
 							</div>
 						</section>
 					</div>
-					<div class="maker-col">
+					<div class="confeiteiro-col">
 						<section class="cfg-card">
 							<div class="cfg-card-head">
 								<h3 class="cfg-title">Layers editáveis</h3>
-								<p class="cfg-hint">na ordem do input: a 1ª informação vai para o 1º layer.</p>
+								<p class="cfg-hint">na ordem do input: o 1º campo vai para o 1º layer.</p>
 							</div>
 							<div class="cfg-rows" id="layers"></div>
 							<button type="button" class="button button-secondary button-compact add-button" id="btn-layers" title="adicionar à lista os layers selecionados na comp principal">+ layers</button>
@@ -180,7 +180,7 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 						<section class="cfg-card" id="fx-card">
 							<div class="cfg-card-head">
 								<h3 class="cfg-title">Variações de layout</h3>
-								<p class="cfg-hint">opcional: uma comp por opção do menu (ou desligado e ligado, num checkbox), com o sufixo no nome.</p>
+								<p class="cfg-hint">opcional: uma versão por opção do menu (ou desligado e ligado, num checkbox), com o sufixo no nome.</p>
 							</div>
 							<div class="fx-box" id="fx-box"></div>
 							<button type="button" class="button button-secondary button-compact add-button" id="btn-fx" title="usar o efeito de menu selecionado no Effect Controls da comp principal">+ efeito</button>
@@ -189,11 +189,11 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 				</div>
 			</div>
 
-			<div class="action-bar is-anchored maker-bar" id="bar">
-				<div class="maker-bar-left">
+			<div class="action-bar is-anchored confeiteiro-bar" id="bar">
+				<div class="confeiteiro-bar-left">
 					<button type="button" class="button button-secondary" id="btn-test" title="testar o preenchimento com o exemplo">Testar agora</button>
 				</div>
-				<span class="maker-hint" id="save-hint"></span>
+				<span class="confeiteiro-hint" id="save-hint"></span>
 				<button type="button" class="button button-primary" id="btn-save">Salvar template</button>
 			</div>
 		</section>
@@ -204,6 +204,8 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 	<script src="js/motion.js"></script>
 	<script src="js/tooltip.js"></script>
 	<script src="js/bridge.js"></script>
+	<!-- a tabela de seções da configuração: a cópia do índice da busca (search-index.js) -->
+	<script src="../regras/configuracao.js"></script>
 	<script src="js/mock-host.js"></script>
 	<script src="js/theme.js"></script>
 	<script src="icons/_snapshot.js"></script>
@@ -212,8 +214,9 @@ use 1 linha vazia para criar mais de 1 versão.</textarea>
 	<script src="js/dropdown.js"></script>
 	<script src="js/sortable.js"></script>
 	<script src="js/local-index.js"></script>
+	<script src="js/search-index.js"></script>
 	<script src="js/attractions.js"></script>
-	<script src="js/maker.js"></script>
+	<script src="js/confeiteiro.js"></script>
 </body>
 
 </html>

@@ -8,7 +8,7 @@
 O ExtendScript agrupa 'a ? b : c ? d : e' como '(a ? b : c) ? d : e' (o JavaScript de verdade faz 'a ? b : (c ? d
 : e)'). No navegador o código passa; no After, cai no ramo errado sem erro nenhum (foi assim que a barra dizia
 "ainda sem atração" num projeto já criado). Este script acha todo ternário com outro dentro sem parênteses nos
-arquivos que rodam no After (host/, o instalador e os .jsx de scripts/).
+arquivos que rodam no After (host/, as regras compartilhadas de regras/, o instalador e os .jsx de scripts/).
 
 uso: node extension/scripts/check-ternary.js   (sai com 1 se achar algum)
 
@@ -43,6 +43,7 @@ function files(dir) {
 }
 
 const targets = files(path.join(ROOT, 'host'))
+	.concat(files(path.join(ROOT, 'regras')))
 	.concat(fs.readdirSync(path.join(ROOT, 'scripts')).filter((n) => /\.jsx$/.test(n)).map((n) => path.join(ROOT, 'scripts', n)))
 	.concat(fs.readdirSync(path.join(ROOT, '..')).filter((n) => /\.jsx$/.test(n)).map((n) => path.join(ROOT, '..', n)));
 const found = [];
@@ -97,4 +98,4 @@ if (es3.length) {
 	process.exit(1);
 }
 
-console.log('nenhum ternário encadeado nem sintaxe fora do ES3 no host (' + targets.length + ' arquivos).');
+console.log('nenhum ternário encadeado nem sintaxe fora do ES3 no host e nas regras (' + targets.length + ' arquivos).');

@@ -8,7 +8,7 @@
 Rode no After Effects, com o projeto aberto e a barra do padeiro aberta:
   File > Scripts > Run Script File… > este arquivo
 
-Mostra o que o host do padeiro responde sobre o projeto aberto (o mesmo que a bolinha do botão Criar / Alterar
+Mostra o que o host do padeiro responde sobre o projeto aberto (o mesmo que a bolinha do botão Iniciar / Alterar
 da barra pergunta), num campo de texto para copiar. Não muda nada no projeto.
 
 */
@@ -56,7 +56,7 @@ da barra pergunta), num campo de texto para copiar. Não muda nada no projeto.
 	line('projectStatus de novo', function () {
 		return json(PADX.projectStatus());
 	});
-	line('projectCurrent (o que a claquete recebe)', function () {
+	line('projectCurrent (o que O PROJETISTA recebe)', function () {
 		var c = PADX.projectCurrent();
 
 		return json({ created: c.created, outside: c.outside, atracao: c.atracao, oQueE: c.oQueE, root: c.root, file: c.file });

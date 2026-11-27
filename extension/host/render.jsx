@@ -6,29 +6,25 @@
 
 Um botão da barra, sem janela:
 
-  clique          → o render FINAL: na pasta de output do projeto (a que A CLAQUETE grava), com o nome da comp
+  clique          → o render FINAL: na pasta de output do projeto (a que O PROJETISTA grava), com o nome da comp
   clique direito  → um PREVIEW: na pasta de previews das saídas do projeto (03_SAIDA/PREVIEWS), com a versão no nome
                     (COMP_prev_v01, _v02…: um preview nunca substitui o anterior)
 
 As comps: as selecionadas no painel de projeto; sem seleção, a comp aberta. Só põe na fila: não renderiza.
 
-Os presets (os templates de output do After) são de cada um, deste computador (configuração > projeto > neste
+Os presets (os templates de output do After) são de cada um, deste computador (configuração > tipos de projeto > deste
 computador): cada pessoa tem a sua lista. Sem preset escolhido, a comp entra na fila com o padrão do After.
 
 Se a pasta não puder ser acessada (rede fora, modo local, projeto sem output ou ainda não salvo), o render vai para
-a pasta de saída deste computador (configuração > produções > neste computador; vazia: a Área de Trabalho).
+o output local deste computador (configuração > produções > neste computador; vazia: a Área de Trabalho).
 
-  PADX.renderPresets()            → { templates: [nome], final, preview } (a lista do After e os dois escolhidos)
+  PADX.renderPresets()            → { renderTemplates: [nome], preferredTemplate, final, preview } (api.jsx: a lista
+                                    do After e os dois escolhidos)
   PADX.renderQueue({ preview })   → { count, folder, local, names, warnings }
 
 */
 
-// Os dois presets deste computador → { final, preview }
-function padMachineRender(d) {
-	var r = d && d.render ? d.render : {};
-
-	return { 'final': padTrim(r['final'] || ''), preview: padTrim(r.preview || '') };
-}
+// Os dois presets deste computador ({ final, preview }) são a seção presetsDeRender da tabela de seções.
 
 // A pasta dos previews, relativa à raiz do projeto: a pasta PREVIEWS da estrutura (configuração > coletar); sem
 // ela, PREVIEWS dentro da pasta das saídas.
@@ -79,41 +75,7 @@ function padRenderNextVersion(folder, base) {
 	return max + 1;
 }
 
-PADX.renderPresets = function () {
-	var comp = null;
-	var temp = null;
-	var list = [];
-
-	for (var i = 1; i <= app.project.numItems && !comp; i++) {
-		if (app.project.item(i) instanceof CompItem) comp = app.project.item(i);
-	}
-
-	// a lista dos templates só existe num item da fila: um de passagem (e uma comp de passagem, sem nenhuma)
-	padUndoBegin('O PADEIRO: ler os presets de render');
-
-	try {
-		if (!comp) temp = comp = app.project.items.addComp('_padeiro', 16, 16, 1, 1, 1);
-
-		var rq = app.project.renderQueue.items.add(comp);
-
-		try {
-			var all = rq.outputModule(1).templates;
-
-			for (var t = 0; t < all.length; t++) {
-				if (!String(all[t]).match(/^_HIDDEN\s/)) list.push(String(all[t]));
-			}
-		} finally {
-			rq.remove();
-		}
-	} finally {
-		if (temp) temp.remove();
-		padUndoEnd();
-	}
-
-	var presets = padMachineRender(padMachineData());
-
-	return { templates: list, 'final': presets['final'], preview: presets.preview };
-};
+// PADX.renderPresets (a lista dos presets deste After) fica em api.jsx: o painel de templates também usa.
 
 // a: { preview }
 PADX.renderQueue = function (a) {
@@ -128,25 +90,24 @@ PADX.renderQueue = function (a) {
 	if (!comps.length && app.project.activeItem instanceof CompItem) comps.push(app.project.activeItem);
 	if (!comps.length) throw new Error('#PAD_113 - render: selecione as comps no painel de projeto (ou abra uma comp).');
 
-	var machine = padMachineData();
-	var preset = padMachineRender(machine)[preview ? 'preview' : 'final'];
+	var preset = padLerSecao('presetsDeRender')[preview ? 'preview' : 'final'];
 	var warnings = [];
 	var folder = '';
 	var local = false;
 
 	if (preview) {
 		if (app.project.file) {
-			var settings = padReadCollect();
+			var settings = padLerSecao('coletar');
 
-			folder = padCollectRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
-		} else warnings.push('o projeto ainda não foi salvo: o preview vai para a pasta de saída deste computador.');
+			folder = padColetarRoot(app.project.file, settings) + '/' + padRenderPreviewPath(settings);
+		} else warnings.push('o projeto ainda não foi salvo: o preview vai para o output local.');
 	} else if (padLocalMode()) {
-		warnings.push('modo local: o render vai para a pasta de saída deste computador.');
+		warnings.push('modo local: o render vai para o output local.');
 	} else {
 		var output = padMetaRead().output;
 
 		if (output) folder = padMountedPath(padPath(output));
-		else warnings.push('o projeto não tem pasta de output (A CLAQUETE grava): o render vai para a pasta de saída deste computador.');
+		else warnings.push('o projeto não tem pasta de output (O PROJETISTA grava): o render vai para o output local.');
 	}
 
 	// a pasta que ainda não existe é criada (na rede, só dentro de um volume montado de verdade)
@@ -158,14 +119,14 @@ PADX.renderQueue = function (a) {
 		}
 
 		if (!new Folder(folder).exists) {
-			warnings.push('#PAD_019 - a pasta não pode ser acessada (vai para a pasta de saída deste computador): ' + padDisplayPath(folder));
+			warnings.push('#PAD_019 - a pasta não pode ser acessada (vai para o output local): ' + padDisplayPath(folder));
 			folder = '';
 		}
 	}
 
 	if (!folder) {
 		local = true;
-		folder = padPath(padMachinePath(machine.outputs) || '~/Desktop');
+		folder = padPath(padLerSecao('outputLocal') || '~/Desktop');
 		padEnsureFolder(folder);
 	}
 
@@ -180,7 +141,7 @@ PADX.renderQueue = function (a) {
 		for (i = 0; i < comps.length; i++) {
 			var item = app.project.renderQueue.items.add(comps[i]);
 			var om = item.outputModule(1);
-			// o nome padronizado da saída (a mesma regra do Renomear > saídas): a camada de nome do template ou o
+			// o nome padronizado da saída (a mesma regra do Renomear > outputs da fila): o layer de nome (script_template_name) ou o
 			// nome da comp no padrão da promo
 			var nameLayer = getTemplateNameLayer(comps[i]);
 			var base = sanitizeFileName(nameLayer ? templateNameValue(nameLayer) : getPromoRename(comps[i]).name) || sanitizeFileName(comps[i].name);
@@ -202,7 +163,7 @@ PADX.renderQueue = function (a) {
 			}
 			used[name.toLowerCase()] = true;
 
-			// sequência de imagens (pelo nome do preset): o número do quadro no nome, como no Renomear > saídas
+			// sequência de imagens (pelo nome do preset): o número do quadro no nome, como no Renomear > outputs da fila
 			var seq = /sequ|seq\b|png|tiff?|tga|exr|dpx|jpe?g|psd/i.test(preset || '');
 			var file = new File(folder + '/' + name + (seq ? '_[#####]' : '') + '.[fileextension]');
 
@@ -223,9 +184,9 @@ PADX.renderQueue = function (a) {
 		padUndoEnd();
 	}
 
-	if (badPreset) warnings.push('o preset "' + preset + '" não existe mais no After: escolha outro em configuração > projeto > neste computador.');
+	if (badPreset) warnings.push('o preset "' + preset + '" não existe mais no After: escolha outro em configuração > tipos de projeto > deste computador.');
 
-	if (auto) warnings.push(preset ? 'preset: ' + preset + ' (escolha o seu em configuração > projeto > neste computador)' : 'sem preset escolhido nem H.264 no After: a fila usa o padrão do After.');
+	if (auto) warnings.push(preset ? 'preset: ' + preset + ' (escolha o seu em configuração > tipos de projeto > deste computador)' : 'sem preset escolhido nem H.264 no After: a fila usa o padrão do After.');
 
 	return { count: comps.length, folder: padDisplayPath(folder), local: local, preview: preview, names: names, warnings: warnings, preset: preset };
 };

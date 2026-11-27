@@ -10,72 +10,109 @@ Como mais de uma pessoa pode editar, salvar confere se o arquivo mudou desde que
 
 */
 
-// Valida e normaliza uma lista vinda do painel / de um arquivo importado. Lança Error com a mensagem.
-function padCleanProductions(list) {
-	if (!(list instanceof Array) || list.length == 0) throw new Error('#PAD_051 - a lista de produções não pode ficar vazia.');
+// A tabela de seções da configuração (regras/configuracao.js) lê e grava as seções por um adaptador: um documento
+// (objeto) pelo nome do arquivo. Este é o dos arquivos do disco; o JSON fica aqui.
 
-	var seen = {};
-	var clean = [];
+// Os arquivos deste computador (na pasta de dados do usuário), já lidos: relidos só quando a data muda. Ilegível: null
+// (a tabela devolve o padrão da seção).
+var PAD_DESTE_COMPUTADOR_CACHE = {};
 
-	for (var i = 0; i < list.length; i++) {
-		var name = String(list[i].name == null ? '' : list[i].name).replace(/^\s+|\s+$/g, '');
-		var path = String(list[i].templatesPath == null ? '' : list[i].templatesPath).replace(/^\s+|\s+$/g, '');
-
-		if (name == '') throw new Error('#PAD_052 - produção ' + (i + 1) + ': preencha o nome.');
-		if (path == '') throw new Error('#PAD_053 - "' + name + '": preencha a pasta de templates.');
-		if (seen[name.toUpperCase()]) throw new Error('#PAD_054 - "' + name + '": já existe uma produção com esse nome.');
-
-		seen[name.toUpperCase()] = true;
-		clean.push({ name: name, icon: list[i].icon ? String(list[i].icon) : '', templatesPath: path });
-	}
-
-	return clean; // na ordem do editor
+function padArquivoDesteComputador(arquivo) {
+	return new File(scriptPreferencesPath + '/' + arquivo);
 }
 
-// Grava as seções da configuração ({ PRODUCTIONS, LOG, DRIVES }); as que não vierem ficam como estão no arquivo.
-function padWriteConfig(file, changes) {
-	var data = {};
+function padDataDoArquivo(file) {
+	try {
+		return file.exists ? file.modified.getTime() : 0;
+	} catch (err) {
+		return 0;
+	}
+}
 
-	if (file.exists) {
-		try {
-			data = JSON.parse(readFileContent(file)) || {};
-		} catch (err) {
-			data = {};
+function padLerDesteComputador(arquivo) {
+	var file = padArquivoDesteComputador(arquivo);
+	var stamp = padDataDoArquivo(file);
+	var c = PAD_DESTE_COMPUTADOR_CACHE[arquivo];
+
+	if (!c || c.stamp != stamp) {
+		c = PAD_DESTE_COMPUTADOR_CACHE[arquivo] = { stamp: stamp, data: null };
+
+		if (stamp) {
+			try {
+				c.data = JSON.parse(readFileContent(file));
+			} catch (err) { }
 		}
 	}
 
-	for (var key in changes) {
-		if (changes[key] != null) data[key] = changes[key];
+	return c.data;
+}
+
+// Para ler: a configuração da equipe já lida (padConfigData, relida só quando o arquivo muda; sem o arquivo ou com um
+// JSON inválido, lança, e a tabela devolve o padrão da seção) e os arquivos deste computador. Grava só os deste
+// computador: a da equipe se grava pelo padConfigArquivo, que confere o arquivo da rede.
+var PAD_CONFIG_ADAPTADOR = {
+	ler: function (arquivo) {
+		return arquivo == PAD_CONFIGURACAO.EQUIPE ? padConfigData() : padLerDesteComputador(arquivo);
+	},
+	gravar: function (arquivo, doc) {
+		if (arquivo == PAD_CONFIGURACAO.EQUIPE) throw new Error('#PAD_099 - configuração: a da equipe se grava pelo editor (saveProductions).');
+
+		var folder = new Folder(scriptPreferencesPath);
+
+		if (!folder.exists) folder.create();
+
+		saveTextFile(JSON.stringify(doc, null, '\t'), padArquivoDesteComputador(arquivo).fsName);
+		delete PAD_DESTE_COMPUTADOR_CACHE[arquivo];
 	}
+	// sem apagar: os arquivos antigos deste computador ficam no lugar no beta (regras/configuracao.js: gravar)
+};
 
-	saveTextFile(JSON.stringify(data, null, '\t'), file.fsName);
-	padConfigInvalidate();
+// Uma seção da configuração (da equipe ou deste computador), limpa e completa (pela tabela).
+function padLerSecao(nome) {
+	return PAD_CONFIGURACAO.ler(PAD_CONFIG_ADAPTADOR, nome);
+}
 
-	// confere o que foi gravado
-	JSON.parse(readFileContent(new File(file.fsName)));
+// Grava seções deste computador ({ nome: valor }): o arquivo de cada uma é regravado inteiro, com as enviadas e as
+// outras como estão (null tira a seção). Lança a mensagem da limpeza sem gravar nada.
+function padGravarSecoes(valores) {
+	return PAD_CONFIGURACAO.gravar(PAD_CONFIG_ADAPTADOR, valores);
+}
+
+// Para gravar num arquivo (o da equipe, ou outro ao salvar uma cópia da lista): lê o arquivo de novo (não o guardado), grava o
+// documento inteiro e confere o que foi gravado. Um arquivo ilegível vira um documento novo (como sempre foi).
+function padConfigArquivo(file) {
+	return {
+		ler: function () {
+			return file.exists ? JSON.parse(readFileContent(file)) : null;
+		},
+		gravar: function (arquivo, doc) {
+			saveTextFile(JSON.stringify(doc, null, '\t'), file.fsName);
+			padConfigInvalidate();
+
+			// confere o que foi gravado
+			JSON.parse(readFileContent(new File(file.fsName)));
+		}
+	};
 }
 
 // Grava a lista compartilhada. a: { productions, stamp } — 'stamp' é a data do arquivo quando o editor o leu.
 PADX.saveProductions = function (a) {
-	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > meu usuário) para editar.');
+	if (padLocalForced()) throw new Error('#PAD_096 - modo local: a configuração da equipe fica na rede. desligue o modo local (configuração > DESTE COMPUTADOR) para editar.');
 	if (padConfigIsCopy()) throw new Error('#PAD_096 - sem a rede: a configuração aberta é a cópia deste computador, só para ler. tente de novo com a rede.');
 
 	var file = padConfigFile();
 
 	if (!file) throw new Error(padNoSharedListError());
 
-	var clean = padCleanProductions(a.productions);
-	var log = a.log ? padCleanLog(a.log) : null;
-	var drives = a.drives ? padCleanDrives(a.drives) : null;
-	var rename = a.rename ? padCleanRename(a.rename) : null;
-	var organize = a.organize ? padCleanOrganize(a.organize) : null;
-	var search = a.search ? padCleanSearch(a.search) : null;
-	var links = a.links ? padCleanLinks(a.links) : null;
-	var appearance = a.appearance ? padCleanAppearance(a.appearance) : null;
-	var project = a.project ? padCleanProject(a.project) : null;
-	var collect = a.collect ? padCleanCollect(a.collect) : null;
-	var bar = a.bar ? padCleanBar(a.bar) : null;
-	var fonts = a.fonts ? padCleanFonts(a.fonts) : null;
+	var adaptador = padConfigArquivo(file);
+	var doc = null;
+
+	try {
+		doc = adaptador.ler();
+	} catch (err) { }
+
+	// as seções da tabela, limpas (lança a mensagem da limpeza sem gravar nada); as que não vierem ficam como estão
+	var data = PAD_CONFIGURACAO.aplicar(doc, PAD_CONFIGURACAO.secoesDoPainel(a));
 
 	if (file.exists && a.stamp && file.modified.getTime() != a.stamp) {
 		throw new Error('#PAD_065 - a lista foi alterada por outra pessoa depois que você abriu o editor. use "recarregar" e refaça as alterações.');
@@ -89,7 +126,7 @@ PADX.saveProductions = function (a) {
 	}
 
 	try {
-		padWriteConfig(file, { PRODUCTIONS: clean, LOG: log, DRIVES: drives, RENAME: rename, ORGANIZE: organize, SEARCH: search, LINKS: links, APPEARANCE: appearance, PROJECT: project, COLLECT: collect, BAR: bar, FONTS: fonts });
+		adaptador.gravar(PAD_CONFIGURACAO.EQUIPE, data);
 	} catch (err) {
 		throw new Error('#PAD_055 - não foi possível gravar a lista: ' + err.message);
 	}
@@ -97,10 +134,10 @@ PADX.saveProductions = function (a) {
 	padDrivesCache.stamp = -1; // relê o que foi salvo
 	padDrivesCache.checked = 0;
 
-	return { stamp: new File(file.fsName).modified.getTime(), productions: clean, log: padReadLogSettings(), drives: padReadDrives(), rename: padReadRename(), organize: padReadOrganize(), search: padReadSearch(), links: padReadLinks(), appearance: padReadTeamAppearance(), project: padReadProject(), collect: padReadCollect(), bar: padReadTeamBar(), fonts: padReadFonts(), personal: PADX.personalPrefs(), configPath: file.fsName };
+	return { stamp: new File(file.fsName).modified.getTime(), productions: data.PRODUCTIONS, log: padLerSecao('registroDeUso'), drives: padLerSecao('mapaDeDrives'), rename: padLerSecao('regraDoRenomear'), organize: padLerSecao('organizar'), search: padLerSecao('buscaDeCaminhos'), links: padLerSecao('links'), appearance: padLerSecao('aparencia'), tiposDeProjeto: padLerSecao('tiposDeProjeto'), webhookDoProjeto: padLerSecao('webhookDoProjeto'), promeiro: padLerSecao('promeiro'), coletar: padLerSecao('coletar'), bar: padLerSecao('barra'), fonts: padReadFonts(), personalizadas: PADX.prefsPersonalizadas(), configPath: file.fsName };
 };
 
-// Lê uma lista de produções de um arquivo (importar). a: { path }
+// Carrega a lista de produções de um arquivo (no formato do arquivo da equipe). a: { path }
 PADX.readProductionsFile = function (a) {
 	var file = new File(a.path);
 
@@ -111,15 +148,15 @@ PADX.readProductionsFile = function (a) {
 	try {
 		data = JSON.parse(readFileContent(file));
 	} catch (err) {
-		throw new Error('#PAD_057 - o arquivo não é uma lista de produções válida.');
+		throw new Error('#PAD_057 - não deu para carregar: o arquivo não é uma lista de produções válida.');
 	}
 
-	return { productions: padCleanProductions(data.PRODUCTIONS) };
+	return { productions: PAD_CONFIGURACAO.limpar('producoes', data.PRODUCTIONS) };
 };
 
-// Grava a lista em outro arquivo (exportar). a: { path, productions }
+// Salva uma cópia da lista de produções em outro arquivo (no formato do arquivo da equipe). a: { path, productions }
 PADX.writeProductionsFile = function (a) {
-	padWriteConfig(new File(a.path), { PRODUCTIONS: padCleanProductions(a.productions) });
+	PAD_CONFIGURACAO.gravar(padConfigArquivo(new File(a.path)), { producoes: a.productions });
 
 	return { path: a.path };
 };
@@ -147,85 +184,22 @@ PADX.checkFolders = function (a) {
 /*
 
 ---------------------------------------------------------------
-> drives da rede (aba REDE da configuração)
+> as seções da configuração da equipe
 ---------------------------------------------------------------
 
-'DRIVES' no O_PADEIRO_GLOBAL_config.json: { drives: [{ letter, path }], shares: [{ share, server }], defaultServer }.
-  drives        → letra do Windows ↔ caminho de rede (//servidor/share/...): converte L:\... em //... e /Volumes/...
-  shares        → volumes sem letra (share → servidor), para converter /Volumes/SHARE em //servidor/SHARE
-  defaultServer → servidor usado quando o share não está em nenhum dos dois
-Sem 'DRIVES' no arquivo: os valores de lib/globals.js (os de sempre).
+As seções da configuração da equipe (produções, mapa de drives, regra do renomear, organizar, busca de caminhos,
+links e barra) ficam na tabela de seções (regras/configuracao.js): onde cada uma mora, o padrão, a limpeza e os
+nomes antigos. Aqui, o que o host faz com elas: as variáveis globais do host (padApplyConfig) e os pedidos do painel.
 
 */
 
-var PAD_DEFAULT_DRIVES = null; // cópia dos padrões, feita antes da primeira troca
 var padDrivesCache = { stamp: -1, checked: 0 };
-
-function padDefaultDrives() {
-	if (!PAD_DEFAULT_DRIVES) {
-		var d = { drives: [], shares: [], defaultServer: PAD_DEFAULT_SERVER };
-
-		for (var letter in DRIVE_MAP) d.drives.push({ letter: letter, path: DRIVE_MAP[letter] });
-		for (var share in PAD_SHARE_SERVERS) d.shares.push({ share: share, server: PAD_SHARE_SERVERS[share] });
-
-		PAD_DEFAULT_DRIVES = d;
-	}
-
-	return PAD_DEFAULT_DRIVES;
-}
 
 function padTrim(value) {
 	return String(value == null ? '' : value).replace(/^\s+|\s+$/g, '');
 }
 
-// Valida e normaliza o mapa vindo do painel. Lança Error com a mensagem.
-function padCleanDrives(d) {
-	var clean = { drives: [], shares: [], defaultServer: padTrim(d.defaultServer).replace(/^[\\\/]+|[\\\/]+$/g, '') };
-	var seen = {};
-	var i;
-
-	for (i = 0; i < (d.drives || []).length; i++) {
-		var letter = padTrim(d.drives[i].letter).replace(/:$/, '').toUpperCase();
-		var path = padTrim(d.drives[i].path).replace(/\\/g, '/').replace(/\/+$/, '');
-
-		if (!/^[A-Z]$/.test(letter)) throw new Error('#PAD_079 - drives: a letra do drive ' + (i + 1) + ' precisa ser uma letra de A a Z.');
-		if (seen[letter]) throw new Error('#PAD_079 - drives: a letra ' + letter + ': aparece mais de uma vez.');
-		if (!/^\/\/[^\/\s]+\/[^\/]+/.test(path)) throw new Error('#PAD_080 - drives: o caminho de ' + letter + ': precisa ser de rede (//servidor/share/...).');
-
-		seen[letter] = true;
-		clean.drives.push({ letter: letter, path: path });
-	}
-
-	seen = {};
-
-	for (i = 0; i < (d.shares || []).length; i++) {
-		var share = padTrim(d.shares[i].share).replace(/^[\\\/]+|[\\\/]+$/g, '');
-		var server = padTrim(d.shares[i].server).replace(/^[\\\/]+|[\\\/]+$/g, '');
-
-		if (share == '' || /[\\\/]/.test(share)) throw new Error('#PAD_081 - drives: o volume ' + (i + 1) + ' precisa de um nome, sem barras.');
-		if (server == '' || /[\\\/\s]/.test(server)) throw new Error('#PAD_081 - drives: "' + share + '" precisa do servidor (só o nome, sem barras).');
-		if (seen[share.toLowerCase()]) throw new Error('#PAD_081 - drives: o volume "' + share + '" aparece mais de uma vez.');
-
-		seen[share.toLowerCase()] = true;
-		clean.shares.push({ share: share, server: server });
-	}
-
-	if (/[\\\/\s]/.test(clean.defaultServer)) throw new Error('#PAD_081 - drives: o servidor padrão é só o nome, sem barras.');
-
-	return clean;
-}
-
-function padReadDrives() {
-	try {
-		var data = padConfigData();
-
-		return data.DRIVES ? padCleanDrives(data.DRIVES) : padDefaultDrives();
-	} catch (err) {
-		return padDefaultDrives();
-	}
-}
-
-// Aplica a configuração compartilhada nas globais do host (drives e renomear). Confere o arquivo no
+// Aplica a configuração compartilhada nas variáveis globais do host (drives e renomear). Confere o arquivo no
 // máximo a cada 5 s, e só relê quando ele mudou.
 function padApplyConfig() {
 	var now = new Date().getTime();
@@ -233,10 +207,6 @@ function padApplyConfig() {
 	if (now - padDrivesCache.checked < 5000) return;
 
 	padDrivesCache.checked = now;
-	padDefaultDrives(); // guarda os padrões antes da primeira troca
-	padDefaultRename();
-	padDefaultOrganize();
-	padDefaultSearch();
 
 	var file = padConfigFile();
 	var stamp = 0;
@@ -249,7 +219,7 @@ function padApplyConfig() {
 
 	padDrivesCache.stamp = stamp;
 
-	var d = padReadDrives();
+	var d = padLerSecao('mapaDeDrives');
 	var map = {};
 	var reverse = {};
 	var shares = {};
@@ -266,456 +236,38 @@ function padApplyConfig() {
 	PAD_SHARE_SERVERS = shares;
 	PAD_DEFAULT_SERVER = d.defaultServer;
 
-	var r = padReadRename();
+	var r = padLerSecao('regraDoRenomear');
 
-	PAD_RENAME_TYPES = r.types;
+	PAD_RENAME_FORMATS = r.formatos;
 	PAD_RENAME_FIXED = r.fixed;
 	PAD_RENAME_OPTIONS = { removeSpecial: r.removeSpecial !== false, textCase: r.textCase || 'upperCase' };
-	globalSeparator = r.separator || ' - '; // também o dos nomes criados pelos templates
-	renameRefArray = padRenameRefs(r.types);
+	PAD_RENAME_SEPARATOR = r.separator || ' - '; // também o dos nomes criados pelos templates
+	renameRefArray = padRenameRefs(r.formatos);
 
-	PAD_ORGANIZE = padReadOrganize();
+	PAD_ORGANIZE = padLerSecao('organizar');
 
-	// busca de caminhos: o endereço do webhook novo e os caminhos fixos do servidor
-	var search = padReadSearch();
+	// busca de caminhos: o endereço do webhook da busca e os caminhos fixos
+	var search = padLerSecao('buscaDeCaminhos');
 
-	PS_V2_URL = search.url;
-	PS_SERVIDOR = search.servidor;
+	PS_INDEX_URL = search.url;
+	PS_CAMINHOS_FIXOS = search.caminhosFixos;
 }
 
-/*
-
----------------------------------------------------------------
-> renomear (aba RENOMEAR da configuração)
----------------------------------------------------------------
-
-'RENAME' no O_PADEIRO_GLOBAL_config.json: { types: [{ prefix, comment, terms: [...] }], fixed: [{ match, name }] }.
-  types → tipos de peça, na ordem em que são procurados (vale o primeiro encontrado)
-  fixed → nomes fixos: a comp que contém 'match' (no nome ou no comentário) passa a se chamar 'name'
-Sem 'RENAME' no arquivo: os valores de lib/globals.js (os de sempre).
-
-*/
-
-var PAD_DEFAULT_RENAME = null;
-
-function padDefaultRename() {
-	if (!PAD_DEFAULT_RENAME) PAD_DEFAULT_RENAME = JSON.parse(JSON.stringify({ types: PAD_RENAME_TYPES, fixed: PAD_RENAME_FIXED, removeSpecial: PAD_RENAME_OPTIONS.removeSpecial, textCase: PAD_RENAME_OPTIONS.textCase, separator: globalSeparator }));
-
-	return PAD_DEFAULT_RENAME;
-}
-
-// Texto do campo → maiúsculas, sem acentos e com espaços simples.
-function padRenameText(value) {
-	return padTrim(value).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-}
-
-// Valida e normaliza a tabela vinda do painel. Lança Error com a mensagem.
-function padCleanRename(r) {
-	var clean = {
-		types: [],
-		fixed: [],
-		removeSpecial: r.removeSpecial !== false,
-		textCase: /^(upperCase|lowerCase|titleCase|keep)$/.test(r.textCase) ? r.textCase : 'upperCase',
-		separator: r.separator == null ? ' - ' : String(r.separator)
-	};
-
-	// os espaços contam (' - '); vai para nomes de comp e de arquivo
-	if (clean.separator == '' || clean.separator.length > 5 || /[\\\/:*?"<>|]/.test(clean.separator)) {
-		throw new Error('#PAD_082 - renomear: o separador precisa ter de 1 a 5 caracteres, sem \\ / : * ? " < > |.');
-	}
-	var seen = {};
-	var i;
-
-	for (i = 0; i < (r.types || []).length; i++) {
-		var t = r.types[i];
-		var prefix = padRenameText(t.prefix);
-		var comment = padRenameText(t.comment);
-		var list = t.terms instanceof Array ? t.terms : String(t.terms == null ? '' : t.terms).split(',');
-		var terms = [];
-
-		for (var j = 0; j < list.length; j++) {
-			var term = padRenameText(list[j]);
-
-			if (term != '') terms.push(term);
-		}
-
-		if (prefix == '') throw new Error('#PAD_082 - renomear: o tipo ' + (i + 1) + ' precisa de um prefixo.');
-		if (comment == '') throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de um comentário.');
-		if (!terms.length) throw new Error('#PAD_082 - renomear: "' + prefix + '" precisa de ao menos um termo.');
-		if (seen[prefix]) throw new Error('#PAD_082 - renomear: o prefixo "' + prefix + '" aparece mais de uma vez.');
-
-		seen[prefix] = true;
-		clean.types.push({ prefix: prefix, comment: comment, terms: terms });
-	}
-
-	for (i = 0; i < (r.fixed || []).length; i++) {
-		var match = padRenameText(r.fixed[i].match);
-		var name = padRenameText(r.fixed[i].name);
-
-		if (match == '' || name == '') throw new Error('#PAD_083 - renomear: o nome fixo ' + (i + 1) + ' precisa do termo e do nome.');
-
-		clean.fixed.push({ match: match, name: name });
-	}
-
-	return clean;
-}
-
-function padReadRename() {
-	try {
-		var data = padConfigData();
-
-		return data.RENAME ? padCleanRename(data.RENAME) : padDefaultRename();
-	} catch (err) {
-		return padDefaultRename();
-	}
-}
-
-/*
-
----------------------------------------------------------------
-> organizar (aba ORGANIZAR da configuração)
----------------------------------------------------------------
-
-'ORGANIZE' no O_PADEIRO_GLOBAL_config.json: a mesma forma de PAD_ORGANIZE (lib/functions/project lib.js):
-{ folders: [{ name, parent, contents: [...] }], renderComments: [...], editComments: [...], autoComment, dataExtensions: [...], commentSubfolders,
-  fileTags: [...] }
-Sem 'ORGANIZE' no arquivo: os valores de project lib.js (os de sempre).
-
-*/
-
-var PAD_ORGANIZE_CONTENTS = ['render', 'editaveis', 'precomps', 'videos', 'imagens', 'sequencias', 'audio', 'solidos', 'dados', 'missing'];
-var PAD_DEFAULT_ORGANIZE = null;
-
-function padDefaultOrganize() {
-	if (!PAD_DEFAULT_ORGANIZE) PAD_DEFAULT_ORGANIZE = JSON.parse(JSON.stringify(PAD_ORGANIZE));
-
-	return PAD_DEFAULT_ORGANIZE;
-}
-
-function padCommaList(value) {
-	var list = value instanceof Array ? value : String(value == null ? '' : value).split(',');
-	var out = [];
-
-	for (var i = 0; i < list.length; i++) {
-		var item = padTrim(list[i]);
-
-		if (item != '') out.push(item);
-	}
-
-	return out;
-}
-
-// Valida e normaliza a organização vinda do painel. Lança Error com a mensagem.
-function padCleanOrganize(o) {
-	var clean = { folders: [], renderComments: [], editComments: [], autoComment: '', dataExtensions: [], commentSubfolders: o.commentSubfolders !== false, fileTags: [], version: 2 };
-	var names = {};
-	var contents = {};
-	var i;
-
-	for (i = 0; i < (o.folders || []).length; i++) {
-		var name = padTrim(o.folders[i].name).replace(/\s+/g, ' ');
-		// 'contents' (lista) ou 'content' (um tipo só, como nas primeiras versões)
-		var list = o.folders[i].contents instanceof Array ? o.folders[i].contents : (padTrim(o.folders[i].content) ? [padTrim(o.folders[i].content)] : []);
-		var kept = [];
-
-		if (name == '') throw new Error('#PAD_084 - organizar: a pasta ' + (i + 1) + ' precisa de um nome.');
-		if (names[name.toUpperCase()]) throw new Error('#PAD_084 - organizar: a pasta "' + name + '" aparece mais de uma vez.');
-
-		for (var t = 0; t < list.length; t++) {
-			var content = padTrim(list[t]);
-
-			if (content == '') continue;
-			if (PAD_ORGANIZE_CONTENTS.indexOf(content) < 0) throw new Error('#PAD_084 - organizar: tipo desconhecido em "' + name + '".');
-			if (contents[content]) throw new Error('#PAD_084 - organizar: "' + name + '" e "' + contents[content] + '" recebem o mesmo tipo.');
-
-			contents[content] = name;
-			kept.push(content);
-		}
-
-		names[name.toUpperCase()] = true;
-		clean.folders.push({ name: name, parent: padTrim(o.folders[i].parent), contents: kept });
-	}
-
-	// pasta pai: precisa existir e não pode formar ciclo
-	for (i = 0; i < clean.folders.length; i++) {
-		var f = clean.folders[i];
-		var seen = {};
-		var cur = f;
-
-		if (f.parent != '' && !names[f.parent.toUpperCase()]) throw new Error('#PAD_084 - organizar: a pasta pai de "' + f.name + '" não existe.');
-
-		for (var c = 0; c < clean.folders.length; c++) {
-			if (clean.folders[c].name.toUpperCase() == f.parent.toUpperCase()) f.parent = clean.folders[c].name; // grafia da pasta
-		}
-
-		while (cur && cur.parent != '') {
-			if (seen[cur.name.toUpperCase()]) throw new Error('#PAD_084 - organizar: "' + f.name + '" está dentro dela mesma.');
-
-			seen[cur.name.toUpperCase()] = true;
-
-			var next = null;
-
-			for (var k = 0; k < clean.folders.length; k++) {
-				if (clean.folders[k].name.toUpperCase() == cur.parent.toUpperCase()) next = clean.folders[k];
-			}
-
-			cur = next;
-		}
-	}
-
-	var comments = padCommaList(o.renderComments);
-
-	for (i = 0; i < comments.length; i++) clean.renderComments.push(comments[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' '));
-
-	if (!clean.renderComments.length) throw new Error('#PAD_085 - organizar: informe ao menos um comentário de render.');
-
-	var edits = o.editComments == null ? ['EDIT'] : padCommaList(o.editComments); // configurações antigas: o padrão
-
-	for (i = 0; i < edits.length; i++) clean.editComments.push(edits[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' '));
-
-	clean.autoComment = padTrim(o.autoComment).toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ');
-
-	var matches = false;
-
-	for (i = 0; i < clean.renderComments.length; i++) {
-		if (clean.autoComment.indexOf(clean.renderComments[i]) >= 0) matches = true;
-	}
-
-	if (clean.autoComment == '' || !matches) throw new Error('#PAD_085 - organizar: o comentário automático precisa conter um dos comentários de render.');
-
-	var exts = padCommaList(o.dataExtensions);
-
-	for (i = 0; i < exts.length; i++) clean.dataExtensions.push('.' + exts[i].replace(/^\*?\.+/, '').toLowerCase());
-
-	// as etiquetas dos arquivos (janela de etiquetas); configurações antigas: as do padrão
-	var tags = o.fileTags == null ? padDefaultOrganize().fileTags : padCommaList(o.fileTags);
-
-	for (i = 0; i < tags.length; i++) {
-		var tag = tags[i].toUpperCase().replaceSpecialCharacters().replace(/\s+/g, ' ');
-
-		if (padIndexOf(clean.fileTags, tag) < 0) clean.fileTags.push(tag);
-	}
-
-	return clean;
-}
-
-// Configurações de antes do tipo 'sequencias' (sem 'version'): as sequências de imagens iam com os vídeos; agora
-// vão para a pasta das imagens (como no padrão). depois de salva pela configuração, vale o que estiver lá.
-function padOrganizeUpgrade(clean, raw) {
-	if (raw.version >= 2) return clean;
-
-	for (var i = 0; i < clean.folders.length; i++) {
-		if (padIndexOf(clean.folders[i].contents, 'sequencias') >= 0) return clean;
-	}
-
-	for (i = 0; i < clean.folders.length; i++) {
-		if (padIndexOf(clean.folders[i].contents, 'imagens') >= 0) {
-			clean.folders[i].contents.push('sequencias');
-			break;
-		}
-	}
-
-	return clean;
-}
-
-function padReadOrganize() {
-	try {
-		var data = padConfigData();
-
-		return data.ORGANIZE ? padOrganizeUpgrade(padCleanOrganize(data.ORGANIZE), data.ORGANIZE) : padDefaultOrganize();
-	} catch (err) {
-		return padDefaultOrganize();
-	}
-}
-
-/*
-
----------------------------------------------------------------
-> busca de caminhos (aba BUSCAR da configuração)
----------------------------------------------------------------
-
-'SEARCH' no O_PADEIRO_GLOBAL_config.json: { url, promeiro, servidor: [{ name, path }] }.
-  url      → o webhook da busca (workflow PROMO - BUSCAR): devolve o índice pronto (formato v2)
-  promeiro → o endereço do PROMeiro (jmbillard/TEXTAO#140): com a chave do Padeiro ligada, o grupo NO TRELLO da
-             claquete vem das Produções dele (host/promeiro.jsx, js/promeiro.js). vazio: nada fala com o PROMeiro
-  servidor → caminhos fixos que aparecem sempre na busca (Mac /Volumes/... ou rede //servidor/share/...)
-Sem 'SEARCH' (ou no formato antigo, do índice que ficou só para o legacy): o webhook e os caminhos padrão.
-
-*/
-
-var PAD_DEFAULT_SEARCH = null;
-
-function padDefaultSearch() {
-	if (!PAD_DEFAULT_SEARCH) {
-		var servidor = [];
-
-		for (var i = 0; i < PS_LOCAL_SOURCES.servidor.length; i++) {
-			servidor.push({ name: PS_LOCAL_SOURCES.servidor[i].atracao, path: psSlashes(PS_LOCAL_SOURCES.servidor[i].win.caminho) });
-		}
-
-		PAD_DEFAULT_SEARCH = { url: PS_V2_DEFAULT_URL, promeiro: '', servidor: servidor };
-	}
-
-	return JSON.parse(JSON.stringify(PAD_DEFAULT_SEARCH));
-}
-
-// Valida e normaliza a busca vinda do painel. Lança Error com a mensagem.
-function padCleanSearch(o) {
-	if (o.url == null && o.servidor == null) return padDefaultSearch(); // o formato antigo (legacy): os padrões
-
-	var clean = { url: padTrim(o.url) || PS_V2_DEFAULT_URL, promeiro: padTrim(o.promeiro).replace(/\/+$/, ''), servidor: [] };
-	var seen = {};
-
-	// o endereço também vai para a linha de comando do curl (plano B): sem espaços, aspas nem símbolos do terminal
-	if (!/^https?:\/\/[^\s"'`$\\;&|<>]+$/i.test(clean.url)) {
-		throw new Error('#PAD_086 - busca: endereço do webhook inválido (comece com http:// ou https://, sem espaços nem aspas).');
-	}
-
-	// o PROMeiro: só o endereço (o painel acrescenta /api/padeiro/…)
-	if (clean.promeiro && !/^https?:\/\/[^\s"'`$\\;&|<>?#]+$/i.test(clean.promeiro)) {
-		throw new Error('#PAD_086 - busca: endereço do PROMeiro inválido (comece com http:// ou https://, sem espaços nem aspas).');
-	}
-
-	for (var i = 0; i < (o.servidor || []).length; i++) {
-		var name = padTrim(o.servidor[i].name).replace(/\s+/g, ' ');
-		var path = padTrim(o.servidor[i].path).replace(/\\/g, '/').replace(/\/+$/, '');
-
-		if (name == '' && path == '') continue;
-		if (name == '' || path == '') throw new Error('#PAD_086 - busca: o caminho fixo ' + (i + 1) + ' precisa de um nome e de um caminho.');
-		if (seen[name.toUpperCase()]) throw new Error('#PAD_086 - busca: o caminho fixo "' + name + '" aparece mais de uma vez.');
-
-		seen[name.toUpperCase()] = true;
-		clean.servidor.push({ name: name, path: path });
-	}
-
-	return clean;
-}
-
-function padReadSearch() {
-	try {
-		var data = padConfigData();
-
-		return data.SEARCH ? padCleanSearch(data.SEARCH) : padDefaultSearch();
-	} catch (err) {
-		return padDefaultSearch();
-	}
-}
-
-PADX.searchCategories = function (a) {
-	var cacheFile = new File(tempFolder.fsName + '/path_index.json');
-	var downloaded = false;
-
-	if (a.force || !cacheFile.exists) downloaded = psDownloadIndex(cacheFile);
-
-	var data = null;
-
-	try {
-		data = psReadJSON(cacheFile);
-	} catch (err) { }
-
-	if (data && typeof data == 'object' && typeof data.length == 'number') data = data[0];
-	if (!data) throw new Error('#PAD_058 - não foi possível carregar o índice. verifique a conexão e o workflow.');
-
-	var out = [];
-
-	for (var key in data) {
-		if (!(data[key] instanceof Array) || data[key].length == 0) continue;
-
-		out.push({ key: key, auto: psCategoryLabel(key), count: data[key].length });
-	}
-
-	for (var src in PS_LOCAL_SOURCES) {
-		var found = false;
-
-		for (var j = 0; j < out.length; j++) {
-			if (out[j].key == src) {
-				out[j].count += PS_LOCAL_SOURCES[src].length;
-				found = true;
-			}
-		}
-
-		if (!found) out.push({ key: src, auto: psCategoryLabel(src), count: PS_LOCAL_SOURCES[src].length });
-	}
-
-	return { categories: out, downloaded: downloaded };
-};
-
-/*
-
----------------------------------------------------------------
-> links da barra (aba LINKS da configuração)
----------------------------------------------------------------
-
-'LINKS' no O_PADEIRO_GLOBAL_config.json: [{ name, url, icon }], na ordem da barra. 'icon' é um PNG 24 x 24 (literal de
-string binária, como o das produções); vazio = o favicon do site.
-
-*/
-
-var PAD_DEFAULT_LINKS = [
-	{ name: 'apontamento de projetos', url: 'https://tvglobocorp.sharepoint.com/:x:/s/Planejamento-DTEN/Planejamento/EbkuFueT_DlFlUyRqlMSnJIBRpRsPPY72NSDqgKq0DvOKg?e=T7sn7i', icon: '' }
-];
-
-// Valida e normaliza a lista vinda do painel. Lança Error com a mensagem.
-function padCleanLinks(list) {
-	var clean = [];
-
-	for (var i = 0; i < (list || []).length; i++) {
-		var name = padTrim(list[i].name).replace(/\s+/g, ' ');
-		var url = padTrim(list[i].url);
-
-		if (name == '') throw new Error('#PAD_087 - links: o link ' + (i + 1) + ' precisa de um nome.');
-		if (!/^https?:\/\/\S+$/i.test(url)) throw new Error('#PAD_087 - links: "' + name + '" precisa de um endereço (http:// ou https://, sem espaços).');
-
-		clean.push({ name: name, url: url, icon: list[i].icon ? String(list[i].icon) : '' });
-	}
-
-	return clean;
-}
-
-function padReadLinks() {
-	try {
-		var data = padConfigData();
-
-		return data.LINKS ? padCleanLinks(data.LINKS) : PAD_DEFAULT_LINKS;
-	} catch (err) {
-		return PAD_DEFAULT_LINKS;
-	}
-}
-
-// Links pessoais: os do usuário, só neste computador (pasta de dados do usuário), mesma forma dos da equipe.
-function padPersonalLinksFile() {
-	return new File(scriptPreferencesPath + '/personal_links.json');
-}
-
-function padReadPersonalLinks() {
-	var file = padPersonalLinksFile();
-
-	if (!file.exists) return [];
-
-	try {
-		return padCleanLinks(JSON.parse(readFileContent(file)).LINKS || []);
-	} catch (err) {
-		return [];
-	}
-}
-
-PADX.personalLinks = function () {
-	return { links: padReadPersonalLinks() };
+// Links deste computador: os do designer (a seção linksDesteComputador: 'computador_links.json' na pasta de dados
+// do usuário), mesma forma e mesma limpeza dos da equipe.
+PADX.linksDesteComputador = function () {
+	return { links: padLerSecao('linksDesteComputador') };
 };
 
 // a: { links }
-PADX.savePersonalLinks = function (a) {
-	var clean;
-
+PADX.saveLinksDesteComputador = function (a) {
 	try {
-		clean = padCleanLinks(a.links || []);
+		padGravarSecoes({ linksDesteComputador: a.links || [] });
 	} catch (err) {
 		throw new Error(err.message.replace('#PAD_087 - links:', '#PAD_087 - meus links:'));
 	}
 
-	saveTextFile(JSON.stringify({ LINKS: clean }, null, '\t'), padPersonalLinksFile().fsName);
-
-	return { links: padReadPersonalLinks() };
+	return { links: padLerSecao('linksDesteComputador') };
 };
 
 /*
@@ -724,27 +276,10 @@ PADX.savePersonalLinks = function (a) {
 > ferramentas da barra (aba LAYOUT da configuração)
 ---------------------------------------------------------------
 
-'BAR' no O_PADEIRO_GLOBAL_config.json: { items: [...], hidden: [...] } (aba LAYOUT, vale para a equipe toda):
-  items  → a ordem da barra, plana; 'divider' separa os grupos. as gavetas: templates (preencher, criar-template),
-           projeto (projeto, fontes, coletar, render) e organizar (renomear, organizar), cada uma com as de dentro
-           juntas, na ordem de dentro; as soltas: importar, pastas, buscar e logo-globo (as que faltarem entram no fim)
-  hidden → as escondidas: as ferramentas, 'gaveta:<chave>' (a gaveta inteira) e 'links' (o bloco de links)
+'BAR' na configuração da equipe e em computador_personalizado.json (a deste computador): as seções barra e barraDesteComputador da
+tabela de seções (regras/configuracao.js), { items: [...], hidden: [...] }, a mesma limpeza.
 
 */
-
-// as gavetas e as de dentro (a ordem padrão de dentro) e as soltas; a mesma regra do painel (js/util.js: barLayout)
-var PAD_BAR_GROUPS = { templates: ['preencher', 'duplicar', 'criar-template'], projeto: ['projeto', 'fontes', 'coletar', 'render'], organizar: ['renomear', 'organizar', 'arquivos'] };
-var PAD_BAR_LOOSE = ['importar', 'pastas', 'buscar', 'logo-globo'];
-var PAD_BAR_TOOLS = ['preencher', 'duplicar', 'criar-template', 'projeto', 'fontes', 'coletar', 'render', 'renomear', 'organizar', 'arquivos', 'pastas', 'buscar', 'importar', 'logo-globo'];
-var PAD_BAR_DEFAULT_ITEMS = ['preencher', 'duplicar', 'criar-template', 'divider', 'projeto', 'fontes', 'coletar', 'render', 'divider', 'renomear', 'organizar', 'arquivos', 'divider', 'pastas', 'buscar', 'importar', 'logo-globo'];
-
-function padBarGroupOf(key) {
-	for (var g in PAD_BAR_GROUPS) {
-		if (PAD_BAR_GROUPS.hasOwnProperty(g) && padIndexOf(PAD_BAR_GROUPS[g], key) >= 0) return g;
-	}
-
-	return '';
-}
 
 function padIndexOf(list, value) {
 	for (var i = 0; i < list.length; i++) {
@@ -754,118 +289,14 @@ function padIndexOf(list, value) {
 	return -1;
 }
 
-// items: a ordem, plana; as ferramentas de uma gaveta ficam juntas (a ordem delas é a de dentro da gaveta).
-// hidden: as ferramentas escondidas, 'gaveta:<chave>' (a gaveta inteira) e 'links'. o formato de antes (com 'templates'
-// e as gavetas montadas pela primeira ferramenta) vira o de agora: cada gaveta no lugar da primeira ferramenta dela,
-// com a ordem de dentro padrão
-function padCleanBar(o) {
-	var list = o && o.items instanceof Array && o.items.length ? o.items : PAD_BAR_DEFAULT_ITEMS;
-	var old = false;
-	var items = [];
-	var hidden = [];
-	var seen = {};
-	var i;
-	var g;
-	var m;
-
-	for (i = 0; i < list.length; i++) {
-		if (padTrim(list[i]).toLowerCase() == 'templates') old = true;
-	}
-
-	for (i = 0; i < list.length; i++) {
-		var key = padTrim(list[i]).toLowerCase();
-
-		if (key == 'divider') {
-			if (items.length && items[items.length - 1] != 'divider') items.push(key); // sem separador no começo nem dois seguidos
-			continue;
-		}
-
-		var group = key == 'templates' ? 'templates' : padBarGroupOf(key);
-
-		if (group) {
-			if (seen['gaveta:' + group]) continue;
-			seen['gaveta:' + group] = true;
-
-			// as de dentro: na ordem da lista (as que faltam, no fim da gaveta); no formato de antes, a padrão
-			var mine = [];
-
-			for (m = 0; !old && m < list.length; m++) {
-				var k2 = padTrim(list[m]).toLowerCase();
-
-				if (padIndexOf(PAD_BAR_GROUPS[group], k2) >= 0 && padIndexOf(mine, k2) < 0) mine.push(k2);
-			}
-			for (m = 0; m < PAD_BAR_GROUPS[group].length; m++) {
-				if (padIndexOf(mine, PAD_BAR_GROUPS[group][m]) < 0) mine.push(PAD_BAR_GROUPS[group][m]);
-			}
-			for (m = 0; m < mine.length; m++) {
-				if (!seen[mine[m]]) {
-					seen[mine[m]] = true;
-					items.push(mine[m]);
-				}
-			}
-			continue;
-		}
-
-		if (padIndexOf(PAD_BAR_LOOSE, key) >= 0 && !seen[key]) {
-			seen[key] = true;
-			items.push(key);
-		}
-	}
-
-	// gaveta ou ferramenta nova (ou esquecida): no fim
-	for (g in PAD_BAR_GROUPS) {
-		if (PAD_BAR_GROUPS.hasOwnProperty(g) && !seen['gaveta:' + g]) {
-			for (m = 0; m < PAD_BAR_GROUPS[g].length; m++) items.push(PAD_BAR_GROUPS[g][m]);
-		}
-	}
-	for (i = 0; i < PAD_BAR_LOOSE.length; i++) {
-		if (!seen[PAD_BAR_LOOSE[i]]) items.push(PAD_BAR_LOOSE[i]);
-	}
-
-	while (items.length && items[items.length - 1] == 'divider') items.pop();
-
-	var h = o && o.hidden instanceof Array ? o.hidden : [];
-
-	for (i = 0; i < h.length; i++) {
-		var hk = padTrim(h[i]).toLowerCase();
-
-		if (hk == 'templates') hk = 'gaveta:templates';
-
-		var ok = hk == 'links' || padIndexOf(items, hk) >= 0 || (hk.indexOf('gaveta:') == 0 && PAD_BAR_GROUPS.hasOwnProperty(hk.substring(7)));
-
-		if (ok && padIndexOf(hidden, hk) < 0) hidden.push(hk);
-	}
-
-	return { items: items, hidden: hidden };
-}
-
-// A barra da equipe (o padrão, na rede).
-function padReadTeamBar() {
-	try {
-		var data = padConfigData();
-
-		return padCleanBar(data.BAR || {});
-	} catch (err) {
-		return padCleanBar({});
-	}
-}
-
-// A barra desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+// A barra deste computador: a personalizada ou, sem ela, a da equipe.
 function padReadBar() {
-	var mine = padPersonalData().BAR;
-
-	if (mine) {
-		try {
-			return padCleanBar(mine);
-		} catch (err) { }
-	}
-
-	return padReadTeamBar();
+	return padLerSecao('barraDesteComputador') || padLerSecao('barra');
 }
 
-// Links para a barra (os da equipe e os pessoais), com a data das duas listas (a barra só redesenha quando muda).
+// Links para a barra (os da equipe e os deste computador), com a data das duas listas (a barra só redesenha quando muda).
 PADX.barLinks = function () {
-	var personal = padPersonalLinksFile();
+	var arquivoDosLinks = padArquivoDesteComputador(PAD_CONFIGURACAO.LINKS_DESTE_COMPUTADOR);
 	var stamp = '';
 
 	// a data da configuração vem do cache (padConfigData): sem perguntar de novo à rede
@@ -874,15 +305,16 @@ PADX.barLinks = function () {
 	} catch (err) { }
 
 	try {
-		stamp = PAD_CONFIG_CACHE.stamp + '|' + (personal.exists ? personal.modified.getTime() : 0) + '|' + padPersonalStamp();
+		stamp = PAD_CONFIG_CACHE.stamp + '|' + (arquivoDosLinks.exists ? arquivoDosLinks.modified.getTime() : 0) + '|' + padPersonalizadasStamp();
 	} catch (err) { }
 
 	var bar = padReadBar();
 
-	return { stamp: stamp, links: padReadLinks(), personal: padReadPersonalLinks(), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
+	return { stamp: stamp, links: padLerSecao('links'), linksDesteComputador: padLerSecao('linksDesteComputador'), items: bar.items, hidden: bar.hidden, localMode: padLocalMode(), localForced: padLocalForced() };
 };
 
-// Pedido de aba feito pela barra (2 cliques numa ferramenta): a configuração acompanha o arquivo.
+// Pedido de aba feito pela barra (o botão da rede: a aba rede ou a deste computador): a configuração acompanha o
+// arquivo.
 PADX.requestConfigTab = function (a) {
 	saveTextFile(JSON.stringify({ tab: a.tab, stamp: new Date().getTime() }), scriptPreferencesPath + '/config_tab.json');
 
@@ -909,7 +341,8 @@ PADX.requestedConfigTab = function () {
 > aparência (aba APARÊNCIA da configuração)
 ---------------------------------------------------------------
 
-'APPEARANCE' no O_PADEIRO_GLOBAL_config.json: o tema de todas as janelas (aplicado por client/js/theme.js).
+'APPEARANCE' no O_PADEIRO_GLOBAL_config.json (a seção aparencia da tabela de seções; a deste computador é a
+aparenciaDesteComputador): o tema de todas as janelas (aplicado por client/js/theme.js).
   mode          → light, dark ou auto (segue o sistema)
   background    → gradient (degradê) ou solid (a cor de destaque)
   accent        → cor de destaque (#rrggbb); gradientStart / gradientEnd → as pontas do degradê
@@ -918,59 +351,9 @@ PADX.requestedConfigTab = function () {
 
 */
 
-var PAD_DEFAULT_APPEARANCE = {
-	mode: 'light',
-	background: 'gradient',
-	accent: '#5184f8',
-	gradientStart: '#67b7ff',
-	gradientEnd: '#5649e9',
-	font: 'inter',
-	logo: ''
-};
-
-// Valida e normaliza a aparência vinda do painel. Lança Error com a mensagem.
-function padCleanAppearance(o) {
-	var d = PAD_DEFAULT_APPEARANCE;
-	var clean = {
-		mode: /^(light|dark|auto)$/.test(o.mode) ? o.mode : d.mode,
-		background: o.background == 'solid' ? 'solid' : 'gradient',
-		accent: padTrim(o.accent).toLowerCase(),
-		gradientStart: padTrim(o.gradientStart).toLowerCase(),
-		gradientEnd: padTrim(o.gradientEnd).toLowerCase(),
-		font: /^(inter|system|helvetica|segoe|roboto|georgia|mono)$/.test(o.font) ? o.font : d.font,
-		logo: o.logo ? String(o.logo) : ''
-	};
-	var names = { accent: 'cor de destaque', gradientStart: 'início do degradê', gradientEnd: 'fim do degradê' };
-
-	for (var key in names) {
-		if (!/^#[0-9a-f]{6}$/.test(clean[key])) throw new Error('#PAD_088 - aparência: ' + names[key] + ' inválida (use #rrggbb).');
-	}
-
-	return clean;
-}
-
-// A aparência da equipe (o padrão, na rede).
-function padReadTeamAppearance() {
-	try {
-		var data = padConfigData();
-
-		return data.APPEARANCE ? padCleanAppearance(data.APPEARANCE) : PAD_DEFAULT_APPEARANCE;
-	} catch (err) {
-		return PAD_DEFAULT_APPEARANCE;
-	}
-}
-
-// A aparência desta pessoa: a personalizada (neste computador) ou, sem ela, a da equipe.
+// A aparência deste computador: a personalizada ou, sem ela, a da equipe.
 function padReadAppearance() {
-	var mine = padPersonalData().APPEARANCE;
-
-	if (mine) {
-		try {
-			return padCleanAppearance(mine);
-		} catch (err) { }
-	}
-
-	return padReadTeamAppearance();
+	return padLerSecao('aparenciaDesteComputador') || padLerSecao('aparencia');
 }
 
 // O tema, com a data dos arquivos (as janelas só reaplicam quando mudam).
@@ -981,7 +364,7 @@ PADX.appearance = function () {
 		padConfigData();
 	} catch (err) { }
 
-	stamp = PAD_CONFIG_CACHE.stamp + '|' + padPersonalStamp();
+	stamp = PAD_CONFIG_CACHE.stamp + '|' + padPersonalizadasStamp();
 
 	return { stamp: stamp, appearance: padReadAppearance() };
 };
@@ -989,76 +372,27 @@ PADX.appearance = function () {
 /*
 
 ---------------------------------------------------------------
-> preferências pessoais (aparência e layout, só neste computador)
+> aparência e layout deste computador
 ---------------------------------------------------------------
 
-'personal_config.json' na pasta de dados do usuário: { APPEARANCE, BAR }, só as que a pessoa personalizou.
-Sem elas, vale o padrão da equipe (APPEARANCE e BAR do O_PADEIRO_GLOBAL_config.json, na rede).
+'computador_personalizado.json' (antes 'personal_config.json') na pasta de dados do usuário: { APPEARANCE, BAR }, só
+as que a pessoa personalizou. Sem elas, vale a da equipe (APPEARANCE e BAR do O_PADEIRO_GLOBAL_config.json, na rede).
 
 */
 
-var PAD_PERSONAL_CACHE = { stamp: -1, data: {} };
-
-function padPersonalConfigFile() {
-	return new File(scriptPreferencesPath + '/personal_config.json');
+function padPersonalizadasStamp() {
+	return padDataDoArquivo(padArquivoDesteComputador(PAD_CONFIGURACAO.PERSONALIZADO));
 }
 
-function padPersonalStamp() {
-	var file = padPersonalConfigFile();
-
-	try {
-		return file.exists ? file.modified.getTime() : 0;
-	} catch (err) {
-		return 0;
-	}
-}
-
-function padPersonalData() {
-	var stamp = padPersonalStamp();
-
-	if (stamp != PAD_PERSONAL_CACHE.stamp) {
-		PAD_PERSONAL_CACHE.stamp = stamp;
-		PAD_PERSONAL_CACHE.data = {};
-
-		if (stamp) {
-			try {
-				PAD_PERSONAL_CACHE.data = JSON.parse(readFileContent(padPersonalConfigFile())) || {};
-			} catch (err) { }
-		}
-	}
-
-	return PAD_PERSONAL_CACHE.data;
-}
-
-// { appearance, bar }: as personalizadas (null = usa o padrão da equipe)
-PADX.personalPrefs = function () {
-	var d = padPersonalData();
-	var out = { appearance: null, bar: null };
-
-	try {
-		if (d.APPEARANCE) out.appearance = padCleanAppearance(d.APPEARANCE);
-	} catch (err) { }
-
-	try {
-		if (d.BAR) out.bar = padCleanBar(d.BAR);
-	} catch (err) { }
-
-	return out;
+// { appearance, bar }: as personalizadas (null = usa a da equipe)
+PADX.prefsPersonalizadas = function () {
+	return { appearance: padLerSecao('aparenciaDesteComputador'), bar: padLerSecao('barraDesteComputador') };
 };
 
-// a: { appearance, bar } (null = voltar ao padrão da equipe)
-PADX.savePersonalPrefs = function (a) {
-	var data = {};
+// a: { appearance, bar } (null = voltar à da equipe; sem o campo, fica como está). O arquivo guarda só as
+// personalizadas.
+PADX.savePrefsPersonalizadas = function (a) {
+	padGravarSecoes({ aparenciaDesteComputador: a.appearance, barraDesteComputador: a.bar });
 
-	if (a.appearance) data.APPEARANCE = padCleanAppearance(a.appearance);
-	if (a.bar) data.BAR = padCleanBar(a.bar);
-
-	var folder = new Folder(scriptPreferencesPath);
-
-	if (!folder.exists) folder.create();
-
-	saveTextFile(JSON.stringify(data, null, '\t'), padPersonalConfigFile().fsName);
-	PAD_PERSONAL_CACHE.stamp = -1;
-
-	return PADX.personalPrefs();
+	return PADX.prefsPersonalizadas();
 };

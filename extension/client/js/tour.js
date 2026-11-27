@@ -45,17 +45,18 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 
 	// cada clique com o nome de quem faz
 	var TOOLS = {
-		// as ferramentas de dentro das gavetas (Templates e Projeto): o tour abre a gaveta de cada uma
+		// as ferramentas, as de dentro das gavetas (Templates, Projeto e Organização) e as soltas: o tour abre a
+		// gaveta de cada uma
 		preencher: { title: 'Preencher', l: ['A FORMA', 'preenche um template e cria a fila de render'] },
 		duplicar: { title: 'Duplicar', l: ['A FORMINHA', 'duplica a comp aberta e preenche os layers de texto selecionados'] },
-		'criar-template': { title: 'Criar template', l: ['A FORMA', 'cria um template a partir da comp aberta'] },
+		'criar-template': { title: 'Criar template', l: ['O CONFEITEIRO', 'cria um template a partir da comp aberta'] },
 		fontes: { title: 'Fontes', l: ['O TIPÓGRAFO', 'resolve as fontes: instala as que faltam'], r: ['O TIPÓGRAFO', 'mostra cada fonte e troca por outra'] },
-		projeto: { title: 'Iniciar / Alterar', l: ['A CLAQUETE', 'projeto novo pela atração, ou altera os dados do atual'], r: ['A CLAQUETE', 'salva o projeto na pasta dele'] },
+		projeto: { title: 'Iniciar / Alterar', l: ['O PROJETISTA', 'projeto novo pela atração, ou altera os dados do atual'], r: ['O PROJETISTA', 'salva o projeto na pasta dele'] },
 		coletar: { title: 'Coletar', l: ['O CATADOR', 'copia os arquivos para a pasta do projeto'], r: ['O CATADOR', 'mostra os arquivos e resolve os que faltam'] },
 		render: { title: 'Render', l: ['O FORNO', 'põe o render final das comps na fila, na pasta de output'], r: ['O FORNO', 'põe um preview na fila, na pasta de previews'] },
 		importar: { title: 'Importar AEP', l: ['O VERSIONADOR', 'importa um projeto do After de qualquer versão (o mais novo é convertido)'], r: ['O VERSIONADOR', 'salva o projeto em versões mais velhas do After'] },
-		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todas as saídas da fila de render'] },
-		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica etiquetas (comentários) nos itens do projeto'] },
+		renomear: { title: 'Renomear', l: ['O ETIQUETADOR', 'renomeia as comps selecionadas'], r: ['O ETIQUETADOR', 'renomeia todos os outputs da fila de render'] },
+		organizar: { title: 'Organizar', l: ['O CONTRARREGRA', 'organiza o projeto (selecione antes as comps do render)'], r: ['O CONTRARREGRA', 'aplica etiquetas nos itens do projeto'] },
 		pastas: { title: 'Pastas', l: ['O ADAPTADOR', 'abre a pasta do último render'], r: ['O ADAPTADOR', 'converte caminhos Windows ⇄ macOS'] },
 		buscar: { title: 'Buscar', l: ['O ACESSORISTA', 'busca caminhos das atrações'], r: ['O ACESSORISTA', 'busca nos textos dos layers'] }
 	};
@@ -173,7 +174,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 			return { wide: true, lead: '<span class="tour-step-icon">' + I.check + '</span>', kicker: '1 de 3 · configuração da equipe', title: t[0], text: t[1], actions: round('config', true) + btn('continuar', 'user', 'is-primary', I.next) };
 		},
 		user: function () {
-			return { wide: true, lead: '<span class="tour-step-icon">' + I.person + '</span>', kicker: '2 de 3 · meu usuário', title: 'quem é você?', text: state.error ? esc(state.error) : 'a sigla vai nos projetos, nos logs e no banco de fontes.', error: !!state.error, actions: '<label class="tour-field">' + I.person + '<input id="tour-user" value="' + esc(state.user) + '" maxlength="24" aria-label="sigla do designer"></label>' + round('config', true) + btn('continuar', 'save-user', 'is-primary', I.next) };
+			return { wide: true, lead: '<span class="tour-step-icon">' + I.person + '</span>', kicker: '2 de 3 · deste computador', title: 'quem é você?', text: state.error ? esc(state.error) : 'a sigla vai nos projetos, nos logs e no banco de fontes.', error: !!state.error, actions: '<label class="tour-field">' + I.person + '<input id="tour-user" value="' + esc(state.user) + '" maxlength="24" aria-label="sigla do designer"></label>' + round('config', true) + btn('continuar', 'save-user', 'is-primary', I.next) };
 		},
 		ask: function () {
 			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: (state.setup ? '3 de 3 · ' : '') + 'a turma', title: 'quer conhecer a turma da barra?', text: 'cada ferramenta tem um nome e dois cliques: ' + ML + ' esquerdo e ' + MR + ' direito. uns 40 segundos.', actions: skip('pular', 'done') + (state.setup ? round('user', true) : '') + btn('fazer o tour', 'tool', 'is-primary', I.next) };
@@ -185,7 +186,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 			return { spot: t.id, kicker: '<span class="tour-head">a turma ' + (state.tool + 1) + '/' + n + ' · clique na ferramenta ' + dots(n, state.tool) + '</span>', title: t.title + names(t), extra: '<span class="tour-lines"><span data-k="l"><i>' + ML + '</i><em>' + who(t.l) + '</em></span>' + (t.r ? '<span data-k="r"><i>' + MR + '</i><em>' + who(t.r) + '</em></span>' : '') + '</span>', actions: skip('sair', 'done') + round('prev', true) + round('next') };
 		},
 		done: function () {
-			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: '2 cliques numa ferramenta abrem O PRODUTOR na aba dela; ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
+			return { wide: true, lead: LOAF, cls: 'is-hello', kicker: 'pronto' + (state.user ? ', ' + esc(state.user) : '') + '!', title: 'a padaria está aberta.', text: 'O PRODUTOR abre no ⋯ do painel de templates; ' + MR + ' no pãozinho refaz o tour.', actions: btn('começar a usar', 'close', 'is-primary', I.check) };
 		}
 	};
 
@@ -357,7 +358,7 @@ Ao terminar a configuração, avisa a barra com o evento 'pad-tour-setup' (ela r
 
 		if (action === 'save-user') {
 			return work('user', async function () {
-				var res = await call('saveMachinePrefs', { user: state.user });
+				var res = await call('savePrefsDesteComputador', { user: state.user });
 
 				state.user = res.user || res.defaultUser || state.user;
 				state.step = 'ask';

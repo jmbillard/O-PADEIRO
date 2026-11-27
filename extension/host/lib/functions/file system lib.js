@@ -203,14 +203,14 @@ function writeFileContent(newFile, fileContent) {
  * @param {Object} options.serverMap - Mapa de shares para servidores específicos
  * @returns {string} Caminho normalizado ou string vazia se inválido
  * Normaliza caminhos de rede entre sistemas operacionais
- * Utiliza as globais DRIVE_MAP e UNC_TO_DRIVE definidas no arquivo de configuração
+ * Utiliza as variáveis globais DRIVE_MAP e UNC_TO_DRIVE definidas no arquivo de configuração
  * @param {string} pathStr - Caminho a ser normalizado
  * @param {object} options - Opções de configuração
  * @param {boolean} options.forceWin - Força conversão para formato Windows
  * @param {boolean} options.forceMac - Força conversão para formato Mac
  * @param {boolean} options.forceBackslash - Usa backslash na saída (para colar no Explorer)
  * @param {boolean} options.forceDriveLetter - Converte UNC para letra de drive quando possível
- * @param {boolean} options.silent - Não exibe alertas
+ * @param {boolean} options.silent - Não manda avisos ao painel (padAviso; nunca um alert)
  * @returns {string} Caminho normalizado
  */
 function normalizeNetworkPath(pathStr, options) {
@@ -241,7 +241,7 @@ function normalizeNetworkPath(pathStr, options) {
 	var isUNC = /^\\\\|^\/\//.test(path);
 	var isMacVolumes = /^\/Volumes\//i.test(path);
 
-	// CONVERSÃO: DRIVE LETTER → UNC (usando DRIVE_MAP global)
+	// CONVERSÃO: DRIVE LETTER → UNC (pela variável global DRIVE_MAP)
 	if (isWindowsDrive) {
 		var driveMatch = path.match(/^([A-Z]):/i);
 		if (driveMatch) {
@@ -266,7 +266,7 @@ function normalizeNetworkPath(pathStr, options) {
 
 		// Valida estrutura mínima: //servidor/share
 		if (parts.length < 2) {
-			if (!silent) alert("#PAD_070 - Caminho UNC inválido: estrutura mínima não encontrada");
+			if (!silent) padAviso('#PAD_070 - caminho UNC inválido: estrutura mínima não encontrada.');
 			return "";
 		}
 
@@ -293,9 +293,7 @@ function normalizeNetworkPath(pathStr, options) {
 		// Verifica se o volume está montado
 		if (typeof pathExists === "function" && !pathExists(macPath.replace(/^(\/Volumes\/[^\/]+).*$/, "$1"))) {
 			if (!silent && appOs === 'Mac') {
-				alert("#PAD_071 - O VOLUME '" + shareName + "' NÃO ESTÁ MONTADO\n\n" +
-					"Servidor: " + serverName + "\n" +
-					"Monte o volume antes de continuar.");
+				padAviso("#PAD_071 - o volume '" + shareName + "' (servidor " + serverName + ") não está montado: monte o volume antes de continuar.");
 			}
 		}
 
@@ -318,13 +316,12 @@ function normalizeNetworkPath(pathStr, options) {
 		var shareName = macParts[1].replace(/-[1-5]$/, '');
 		var subPathParts = macParts.slice(2);
 
-		// Procura o servidor correto nas globais DRIVE_MAP
+		// Procura o servidor correto nas variáveis globais DRIVE_MAP
 		var serverName = findServerForShare(shareName);
 
 		if (!serverName) {
 			if (!silent) {
-				alert("#PAD_072 - Share '" + shareName + "' não encontrado no mapeamento.\n" +
-					"Usando servidor padrão.");
+				padAviso("#PAD_072 - share '" + shareName + "' não encontrado no mapeamento: usando o servidor padrão.");
 			}
 			serverName = PAD_DEFAULT_SERVER;
 		}
@@ -378,7 +375,7 @@ function applyBackslash(path, apply) {
 }
 
 /**
- * Encontra o servidor correspondente a um share usando as globais
+ * Encontra o servidor correspondente a um share usando as variáveis globais
  * @param {string} shareName - Nome do share/volume
  * @returns {string|null} Nome do servidor ou null se não encontrado
  */
@@ -410,7 +407,7 @@ function findServerForShare(shareName) {
 }
 
 /**
- * Converte caminho UNC para letra de drive usando UNC_TO_DRIVE global
+ * Converte caminho UNC para letra de drive pela variável global UNC_TO_DRIVE
  * @param {string} uncPath - Caminho UNC
  * @returns {string} Caminho com letra de drive ou original se não mapeado
  */

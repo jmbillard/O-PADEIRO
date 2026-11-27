@@ -98,7 +98,10 @@ Enquanto some, 'el.hidden' já responde true.
 		var closed = { opacity: 0 };
 
 		if (axis === 'x') {
-			open.width = box.width + 'px';
+			// a largura máxima também: um item de flex que cresce (flex-grow, flex-basis) não obedece só ao width
+			open.width = open.maxWidth = box.width + 'px';
+			open.minWidth = closed.minWidth = '0px';
+			closed.maxWidth = '0px';
 			open.marginLeft = cs.marginLeft;
 			open.marginRight = cs.marginRight;
 			open.paddingLeft = cs.paddingLeft;

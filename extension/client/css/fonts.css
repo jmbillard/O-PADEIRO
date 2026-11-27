@@ -279,6 +279,11 @@ body.fonts-page {
   color: var(--danger);
 }
 
+/* o aviso amarelo (o coletar com arquivos ausentes): o resto foi feito. o mesmo tom do "atenção" da barra */
+.fw-status.is-warn {
+  color: var(--waiting);
+}
+
 .fw-menu .menu-popover {
   top: auto;
   bottom: calc(100% + 8px);
@@ -342,17 +347,17 @@ body.fonts-page {
   }
 }
 
-/* o collect das fontes: o botão redondo no canto esquerdo do rodapé */
+/* coletar as fontes: o botão redondo no canto esquerdo do rodapé */
 .fw-bar .io-button {
   flex: 0 0 auto;
 }
 
-/* o collect das fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
-#fw-collect .fw-t {
+/* coletar as fontes: a pasta com o T de fonte dentro; no hover, o T sobe um pouco (vai para a pasta) */
+#fw-copy .fw-t {
   stroke-width: 2.1;
   transition: transform 300ms var(--ease-soft);
 }
 
-#fw-collect:hover:not(:disabled) .fw-t {
+#fw-copy:hover:not(:disabled) .fw-t {
   transform: translateY(-1.6px);
 }

@@ -4,11 +4,11 @@ Como as skills de engenharia leem a documentação de domínio deste repositóri
 
 ## Antes de explorar, leia
 
-- **`GLOSSARY.md`** na raiz do repositório.
+- **`GLOSSARY.md`** na raiz do repositório: o glossário do O PADEIRO.
 - **`docs/adr/`**: as ADRs que tocam a área em que você vai mexer.
 
-Se algum desses arquivos não existir, **siga em frente em silêncio**. Não aponte a ausência nem sugira criá-los
-de antemão. A skill `/domain-modeling` (pelo `/grill-with-docs` e pelo `/improve-codebase-architecture`) cria quando
+Se algum desses arquivos não existir, **siga em frente em silêncio**. Não aponte a ausência nem sugira criá-los de
+antemão. A skill `/domain-modeling` (pelo `/grill-with-docs` e pelo `/improve-codebase-architecture`) cria quando
 termos ou decisões forem de fato resolvidos.
 
 ## Estrutura
@@ -19,6 +19,8 @@ Contexto único (este repositório):
 /
 ├── GLOSSARY.md
 ├── docs/adr/
+│   ├── 0001-card-so-aponta-a-atracao.md
+│   └── 0002-mes-do-card-vale-mais-que-hoje.md
 └── extension/ (client/, host/, scripts/)
 ```
 

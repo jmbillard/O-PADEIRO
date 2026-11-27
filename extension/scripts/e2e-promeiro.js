@@ -170,12 +170,13 @@ async function noTrello(context, typed) {
 	const page = await pagina(context);
 	const errors = page.errors;
 
-	await page.goto(CLIENT + 'project.html');
+	await page.goto(CLIENT + 'projetista.html');
 	await page.waitForTimeout(1200);
 	await page.fill('#claq', typed);
 	await page.waitForTimeout(2200);
 
-	const rows = await page.locator('.card-row .combo-title').allTextContents();
+	// a claquete de cada card (a linha embaixo do nome da atração, sem o designer)
+	const rows = await page.locator('.card-row .film-sub').evaluateAll((els) => els.map((e) => e.firstChild.textContent));
 
 	assert.deepEqual(errors, [], 'a claquete abre sem erro');
 
@@ -201,7 +202,7 @@ async function aviso(context) {
 async function abrirPeloCard(context, typed, claq, antes) {
 	const page = await pagina(context);
 
-	await page.goto(CLIENT + 'project.html');
+	await page.goto(CLIENT + 'projetista.html');
 	await page.waitForTimeout(1200);
 	await page.fill('#claq', typed);
 	await page.waitForTimeout(2200);
@@ -226,7 +227,7 @@ async function estadoNaConfiguracao(context) {
 	await page.locator('.tab[data-tab="search"]').click();
 	await page.waitForTimeout(1500);
 
-	const text = (await page.locator('#machine-promeiro').innerText()).replace(/\s+/g, ' ');
+	const text = (await page.locator('#deste-computador-promeiro').innerText()).replace(/\s+/g, ' ');
 
 	assert.deepEqual(page.errors, [], 'a configuração abre sem erro');
 
@@ -280,7 +281,7 @@ async function estadoNaConfiguracao(context) {
 		assert.deepEqual(claquete.rows, ['MAIS VOCE 28/11 SP'], 'a Produção em Produzindo, mesmo tendo entrado há 20 dias');
 		claquete = await noTrello(context, 'chef');
 		assert.deepEqual(claquete.rows, [], 'a Entregue fica de fora');
-		assert.match(await estadoNaConfiguracao(context), /^ligada a Dora Teste: o NO TRELLO da claquete vem das Produções do PROMeiro/);
+		assert.match(await estadoNaConfiguracao(context), /^ligada a Dora Teste: o NO TRELLO d'O PROJETISTA vem das Produções do PROMeiro/);
 		assert.equal(await aviso(context), '', 'ligada, a barra não avisa nada');
 		passo('ligada: o NO TRELLO mostra as Produções em Entrada e Produzindo (a Entregue e o filme ficam de fora)');
 

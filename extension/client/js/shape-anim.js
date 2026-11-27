@@ -1,7 +1,7 @@
 /*
 
 ---------------------------------------------------------------
-> a estrutura do projeto, animada (A CLAQUETE, etapa ATRAÇÃO)
+> a estrutura do projeto, animada (O PROJETISTA, etapa ATRAÇÃO)
 ---------------------------------------------------------------
 
 A árvore de pastas que o projeto novo vai ter (configuração > coletar), montada em loop: a pasta da atração, as

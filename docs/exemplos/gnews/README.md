@@ -50,6 +50,8 @@ O modo alternativo do script (`projectMode: 1`) também cabe: `---- render ----`
 
 ### Busca de caminhos (SEARCH)
 
+> 🚩 *obs:* o índice por arquivo (`SEARCH.file`, com o `gnews_path_index.json`) saiu do padeiro: hoje a busca de caminhos usa o índice da equipe (o webhook da aba buscar) ou o índice local, e um `SEARCH` neste formato antigo vale como os padrões. esta seção fica como registro do que o arquivo recriava.
+
 O índice tem uma categoria por grupo do `promoSubPath` do script, com uma entrada por retranca (as 3 letras do ID do projeto + o nome), apontando para `PROMO/<grupo>/<retranca>`:
 
 | categoria | retrancas |
@@ -66,7 +68,7 @@ Buscar `EMP`, `em ponto` ou `jornais` encontra a pasta de Em Ponto. A última ca
 
 ### Projeto (PROJECT)
 
-A aba *project* do script vira a janela [PROJETO](../../projeto.md):
+A aba *project* do script vira a [janela de projeto](../../projeto.md):
 
 - **ID e nome do projeto** nos mesmos campos do XMP (`dc:identifier`, `dc:title`): projetos feitos na barra antiga abrem com os dados.
 - **Retrancas**: as 33 do `promoSubPath`, pelas 3 primeiras letras do ID (`EMP123456` → `JORNAIS/em ponto`), dentro de `…/GLOBONEWS/PROMO`.
@@ -96,19 +98,19 @@ Os volumes dos dois servidores do script: `cdesign` (egcdesign01) e `Arte_Ilha` 
 | pasta `End Pages` (detecta o efeito `servico end page`) | tipo EP pelo nome | **parcial**: só pelo nome da comp, vai para a raiz junto com o render |
 | tag `ignore` (fica fora das subpastas) | — | **parcial**: vira a subpasta `Comps/IGNORE` |
 | subpastas pelo nome do template de Essential Graphics | subpastas pelo comentário | **parcial**: o critério é outro |
-| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | — | **fora**: específico demais da GNEWS; o renomear do padeiro segue os tipos de peça |
+| `USR PROMO - ID projeto` (prefixo do usuário + ID do XMP) | — | **fora**: específico demais da GNEWS; o renomear do padeiro segue os formatos |
 | apoio + data/hora do end page no nome (`txt_apoio`, `txt_data e horario`) | — | **falta** |
 | hard news: `GNEWS projeto n - ID` | — | **falta** |
-| collect para `projPath/<grupo>/<retranca>/<projeto>` | janela PROJETO (salvar) + botão COLETAR | igual (e copia as sequências de imagens) |
+| collect para `projPath/<grupo>/<retranca>/<projeto>` | janela de projeto (salvar) + botão COLETAR | igual (e copia as sequências de imagens) |
 | botão de salvar com clique direito (Desktop) | `⋯ > salvar em outra pasta…` | equivalente |
 | pasta do dia (`DIARIOS/RJ/aaaa/mm_MÊS/dd`) | entrada fixa em `DIARIOS/RJ` | **parcial**: o caminho com a data não é calculado |
 | botões de pastas (shortcuts) | categoria PASTAS DA PROMO na busca | equivalente (links aceitam só http/https) |
 | cor do menu claro `#3E50B4` / escuro `#8FF7A7` | uma cor de destaque | **parcial**: a mesma cor nos dois modos |
-| categoria SERVIDOR da busca | — | **sobra**: as pastas fixas da PROMO JB (`#INGEST`, `BASES VALENDO`) sempre aparecem |
+| origem CAMINHOS FIXOS da busca | — | **sobra**: as pastas fixas da PROMO JB (`#INGEST`, `BASES VALENDO`) sempre aparecem |
 
 Resumindo: **organização de pastas (com as editáveis), barra, busca de caminhos, projeto (ID, nome, retranca, salvar) e collect chegam bem perto**. Ficaram de fora, por serem específicos da GNEWS, a nomenclatura `USR PROMO - ID` das comps, os dados do end page no nome e o modo hard news.
 
 Próximos passos sugeridos:
 
 1. **End pages** no ORGANIZE (pasta própria) e a tag `ignore`.
-2. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a categoria SERVIDOR.
+2. **Cor por modo** na APARÊNCIA (claro / escuro) e opção de esconder a origem CAMINHOS FIXOS.

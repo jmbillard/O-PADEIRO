@@ -1,0 +1,75 @@
+# O PADEIRO: instruções para os agentes
+
+Extensão CEP do After Effects da equipe de arte da Globo Promo: o painel em HTML/JS fica em `extension/client`, o host em ExtendScript (ES3) em
+`extension/host`, o instalador é `INSTALAR O PADEIRO.jsx` na raiz e a documentação fica em `README.md` e `docs/`. Tudo em pt-BR: textos, comentários, commits e documentos.
+
+## Papel do agente principal: gestor do projeto
+
+- O agente principal coordena: entende o pedido, decide o plano e delega a execução a subagentes. Ele mesmo não faz
+  o trabalho longo.
+- Cada subagente recebe o contexto completo: o objetivo, os arquivos envolvidos, as regras deste repositório (abaixo)
+  e o que já foi decidido. Ele começa sem saber nada da conversa.
+- Os subagentes rodam em segundo plano. O agente principal fica livre para conversar, responder dúvidas e acompanhar.
+- Ao voltar, o resultado de cada subagente é conferido pelo gestor (diff, testes, capturas) antes de ser apresentado
+  ou enviado.
+- O gestor faz direto só: ler e conferir (diff, testes, capturas); juntar e enviar o trabalho dos subagentes
+  (resolvendo conflito só de texto); mexer em issues, PRs e artefatos; e trocar um texto ou valor já localizado (um
+  rótulo, um padrão, uma linha de documento) sem investigar.
+- Vai sempre para um subagente: qualquer bug (mesmo que pareça simples), qualquer mudança que peça teste novo,
+  captura ou reprodução no navegador, e qualquer mudança em mais de um arquivo de código.
+- Regra de parada: se uma tarefa começada direto pedir uma segunda investigação (mais uma leitura de código para
+  achar a causa, ou um script de teste), o gestor para e passa a um subagente, com o que já descobriu.
+- Mudança de interface: mockup primeiro, aprovado antes de implementar.
+- Respostas em português.
+
+## Regras do código
+
+- **Host (ExtendScript, ES3):** sem ternário encadeado e sem sintaxe moderna, também em `extension/regras/`.
+  `node extension/scripts/check-ternary.js` confere.
+  Antes de enviar uma mudança no host (ou um `call('…')` novo no painel), rodar
+  `node extension/scripts/check-funcoes-do-host.js`: acha a função ou o `PADX.*` chamado e não definido no host
+  (no After, "Function … is undefined" só na hora em que a linha roda).
+  O host nunca abre a caixa do After (`alert`, `confirm`, `prompt`, `new Window`) nem usa o kaomoji do padeiro
+  antigo: o aviso vai ao painel (`padAviso`, `warnings` na resposta ou `Error('#PAD_xxx - …')`).
+  `node extension/scripts/check-alertas.js` confere; `node extension/scripts/test-avisos-do-host.js` testa o coletar.
+- **Regras compartilhadas (ADR 0005):** as regras puras do domínio ficam em `extension/regras/`, em ES3, sem After e
+  sem DOM (o host inclui por `#include`, o painel por `<script>`). Antes de enviar, rodar
+  `node extension/scripts/test-regras.js`; regra nova ganha uma entrada em `REGRAS` nesse teste.
+- **Scripts de template:** o `_script.js` de um template, na rede, roda no host (`PADX.runEnd`) e chama as funções
+  globais do padeiro antigo, que ficam em `extension/host/lib/scripts-de-template.js`: não renomear nem apagar. Antes
+  de enviar uma mudança no host, rodar `node extension/scripts/test-scripts-de-template.js`.
+- **Preenchimento:** `fillBegin`/`fillStep`/`fillFinish` (`extension/host/api.jsx`) têm um teste com um modelo do
+  projeto do After na memória: antes de enviar uma mudança nesse fluxo, rodar `node extension/scripts/test-preenchimento.js`.
+- **Interface:** antes de enviar, rodar as checagens de `extension/scripts/` (`check-corners.js`, `check-footers.js`,
+  `check-focus-crop.js`, `check-scroll-corners.js`), com `NODE_PATH=$(npm root -g)`; as telas testadas ficam em
+  `ui-states.js`.
+- **Guia de UI:** `docs/guia-ui.md` vale para toda janela e todo mockup. Ex.: item escolhido numa lista ganha fundo
+  suave, nunca uma faixa de cor num lado só.
+- **Glossário no código:** os termos do `GLOSSARY.md` valem também para nomes de variáveis, funções, classes, chaves
+  guardadas, arquivos e ids; os termos em `_Avoid_` não entram em código novo e saem do código que for mexido. Chave
+  guardada que muda de nome: o padeiro lê a antiga e grava a nova. No código, os termos do domínio (os do glossário)
+  ficam em português e o resto, a parte técnica, em inglês (`prefix`, `path`, `load`, `save`…), como em
+  `savePrefsDesteComputador`. Antes de enviar, rodar `node extension/scripts/check-glossario.js`: acha os termos
+  evitados no código, no texto visível e nos documentos. Exceção nova só declarada e comentada no começo do script.
+- **Teste:** tudo roda no navegador com `extension/client/js/mock-host.js` no lugar do After Effects. Nada disso é
+  teste no After de verdade: dizer isso ao relatar.
+
+## Skills dos agentes
+
+As skills do Matt Pocock, traduzidas para pt-BR, ficam em `.claude/skills/` (veja `.claude/skills/README.md`).
+O fluxo do dia a dia: `/grill-with-docs` (interrogatório + glossário) → `/to-spec` → `/to-tickets` → `/implement`.
+
+### Rastreador de issues
+
+As issues ficam nas Issues do GitHub de jmbillard/O-PADEIRO, usadas pelo `gh api` (REST). Veja
+`docs/agents/issue-tracker.md`.
+
+### Rótulos de triagem
+
+Os cinco papéis da triagem, com os rótulos em português (`precisa-triagem`, `precisa-info`, `pronto-para-agente`,
+`pronto-para-humano`, `wontfix`). Veja `docs/agents/triage-labels.md`.
+
+### Documentos de domínio
+
+Contexto único: um `GLOSSARY.md` (o glossário) e `docs/adr/` na raiz.
+Veja `docs/agents/domain.md`.

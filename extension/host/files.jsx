@@ -5,15 +5,19 @@
 > O ARQUIVISTA: renomear os arquivos e as pastas de um diretório
 ---------------------------------------------------------------
 
-A mesma regra do renomear das comps (configuração > renomear: a caixa, os acentos, o separador e o prefixo do
-tipo), aplicada aos nomes dos arquivos e das pastas de um diretório. O prefixo do tipo vem do PRÓPRIO nome
-(_CRT_HOJE → CRT - HOJE), nunca da pasta de cima.
+A mesma regra do renomear das comps (configuração > renomear: o formato pelos termos, o prefixo do formato, a caixa,
+o separador, os especiais e os nomes fixos), aplicada aos nomes dos arquivos e das pastas de um diretório
+(PAD_REGRA_DO_RENOMEAR.suggest, regras/regra-do-renomear.js). A única diferença: o formato vem do PRÓPRIO nome (_CRT_HOJE → CRT - HOJE; a pasta
+RODAPES JOGO → RDP - JOGO), nunca da pasta onde o item está.
 
 - filesStart  → se há uma renomeação para desfazer (a janela abre sempre vazia: a pessoa escolhe a pasta)
 - filesList   → os itens da pasta (e das subpastas, se pedido), com a sugestão de cada um
-- filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora), religa no projeto aberto
-                o que mudou de caminho e guarda o registro para desfazer
-- filesUndo   → desfaz a última renomeação (e religa de volta)
+- filesRename → renomeia (os arquivos antes das pastas, as pastas de dentro para fora) e guarda o registro para
+                desfazer; religa no projeto aberto o que mudou de caminho, ou devolve as trocas (religar: false) para a
+                janela religar tudo de uma vez no fim dos lotes
+- filesReligar → religa no projeto aberto as trocas de caminho dos lotes: um passo só do Ctrl+Z
+- filesUndo   → desfaz a última renomeação (e religa de volta, num passo só do Ctrl+Z). o que não voltar fica no
+                registro, para tentar de novo
 
 Ficam de fora: os arquivos escondidos e de sistema, as pastas de autosave e de logs do After e os projetos (.aep,
 .aet e os de outros programas). Uma sequência de imagens é um item só: o nome muda, os números ficam.
@@ -26,6 +30,7 @@ var PAD_FILES_MAX = 3000; // itens lidos numa pasta (com as subpastas): acima di
 var PAD_FILES_SKIP_EXT = /\.(aep|aet|aepx|prproj|c4d|blend|ma|mb|max|drp|nk|hip|hipnc|sesx|fcpxml)$/i;
 var PAD_FILES_SKIP_NAME = /^(\.|~\$)|^(thumbs\.db|desktop\.ini)$|^adobe after effects auto-save$|\.aep logs$|^tmpaetoameproject/i;
 var PAD_FILES_SEQ_MIN = 3; // a partir de quantos arquivos numerados um grupo é uma sequência
+var PAD_FILES_RELIGAR_LABEL = 'O ARQUIVISTA: religar'; // o passo do Ctrl+Z do After
 
 function padFilesUndoFile() {
 	return new File(scriptPreferencesPath + '/arquivista_desfazer.json');
@@ -45,24 +50,11 @@ function padFilesSplit(name, isFolder) {
 	return { base: name.slice(0, at), ext: name.slice(at + 1) };
 }
 
-// o nome novo de um item, pela regra do renomear: { plain (só o formato), typed (com o prefixo do tipo) }
+// o nome novo de um item (sem a extensão e sem os quadros), pela regra do renomear da equipe que o host tem agora:
+// { plain (sem o prefixo do formato), prefixed (com ele) }. o formato vem só do PRÓPRIO nome (arquivo ou pasta),
+// nunca da pasta onde ele está: a única diferença em relação às comps (regras/regra-do-renomear.js, suggest)
 function padFilesSuggest(name) {
-	// o macOS guarda o nome com o acento separado da letra (a + ~): junta os dois antes da regra, senão a marca solta
-	// vira espaço no meio da palavra; a marca que sobrar (sem letra do português) sai
-	var base = padComposeAccents(String(name)).replace(/[\u0300-\u036F]/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-	var plain = sanitizeFileName(padRenameFormat(base.replace(/[\-]+/g, ' ')));
-	var typed = plain;
-	var found = findMatchingPrefix(base, false);
-
-	if (found) {
-		var clean = padRenameFormat(cleanCompName(base, found));
-
-		typed = sanitizeFileName(clean && clean.toUpperCase() !== found.prefix ? found.prefix + globalSeparator + clean : found.prefix);
-		// o nome já no padrão (CRT - HOJE) não perde o separador no formato simples
-		if (padRenameFormat(base) == typed) plain = typed;
-	}
-
-	return { plain: plain || base, typed: typed || base };
+	return PAD_REGRA_DO_RENOMEAR.suggest(padRenameRule(), name);
 }
 
 // os arquivos que o projeto aberto usa: caminho (minúsculas, barras normais) → true
@@ -80,16 +72,42 @@ function padFilesUsed() {
 	return used;
 }
 
-// os itens de uma pasta: as pastas e os arquivos, com as sequências juntas. dir: o caminho relativo à pasta lida
+// a pasta tem algum arquivo usado no projeto aberto (em qualquer nível dentro dela)? renomeá-la também religa
+function padFilesUsedInside(used, path) {
+	var head = padFilesKey(path).toLowerCase() + '/';
+
+	for (var k in used) {
+		if (used.hasOwnProperty(k) && k.indexOf(head) == 0) return true;
+	}
+
+	return false;
+}
+
+// os itens de uma pasta: as pastas e os arquivos, com as sequências juntas. dir: o caminho relativo à pasta lida.
+// state.others[dir]: os nomes do disco que não viraram item (os de fora e os que passaram do limite): a janela conta
+// com eles para o nome novo não repetir um que já existe
 function padFilesRead(folder, dir, sub, used, out, state) {
 	var entries = folder.getFiles();
 	var folders = [];
 	var files = [];
+	var names = [];
+	var listed = {};
+	var base = padFilesKey(folder.fsName);
 	var i;
+
+	var finish = function () {
+		var rest = [];
+
+		for (var r = 0; r < names.length; r++) {
+			if (!listed[names[r]]) rest.push(names[r]);
+		}
+		if (rest.length) state.others[dir] = rest;
+	};
 
 	for (i = 0; i < entries.length; i++) {
 		var name = decodeURI(entries[i].name);
 
+		names.push(name);
 		if (PAD_FILES_SKIP_NAME.test(name)) continue;
 		if (entries[i] instanceof Folder) folders.push({ name: name, ref: entries[i] });
 		else if (!PAD_FILES_SKIP_EXT.test(name)) files.push(name);
@@ -105,13 +123,16 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	for (i = 0; i < folders.length; i++) {
 		if (out.length >= PAD_FILES_MAX) {
 			state.truncated = true;
+			finish();
 
 			return;
 		}
 
 		var fs = padFilesSuggest(folders[i].name);
 
-		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, typed: fs.plain, use: false });
+		listed[folders[i].name] = true;
+
+		out.push({ dir: dir, name: folders[i].name, ext: '', kind: 'folder', plain: fs.plain, prefixed: fs.prefixed, use: padFilesUsedInside(used, base + '/' + folders[i].name) });
 	}
 
 	// as sequências: prefixo + número (3 dígitos ou mais) + extensão, com pelo menos PAD_FILES_SEQ_MIN arquivos
@@ -137,7 +158,6 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 		}
 	}
 
-	var base = padFilesKey(folder.fsName);
 	var k;
 
 	for (k = 0; k < order.length; k++) {
@@ -167,7 +187,9 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 		};
 		var ss = padFilesSuggest(g.prefix);
 
-		out.push({ dir: dir, name: g.prefix, ext: g.ext, kind: 'seq', sep: g.sep, pad: g.pad, frames: g.sep + '[' + two(min) + '-' + two(max) + ']', count: g.files.length, plain: ss.plain, typed: ss.typed, use: inUse });
+		for (i = 0; i < g.files.length; i++) listed[g.files[i]] = true;
+
+		out.push({ dir: dir, name: g.prefix, ext: g.ext, kind: 'seq', sep: g.sep, pad: g.pad, frames: g.sep + '[' + two(min) + '-' + two(max) + ']', count: g.files.length, plain: ss.plain, prefixed: ss.prefixed, use: inUse });
 	}
 
 	solo.sort(function (a, b) {
@@ -177,15 +199,20 @@ function padFilesRead(folder, dir, sub, used, out, state) {
 	for (i = 0; i < solo.length; i++) {
 		if (out.length >= PAD_FILES_MAX) {
 			state.truncated = true;
+			finish();
 
 			return;
 		}
 
 		var sp = padFilesSplit(solo[i], false);
+
+		listed[solo[i]] = true;
 		var sg = padFilesSuggest(sp.base);
 
-		out.push({ dir: dir, name: sp.base, ext: sp.ext, kind: 'file', plain: sg.plain, typed: sg.typed, use: !!used[(base + '/' + solo[i]).toLowerCase()] });
+		out.push({ dir: dir, name: sp.base, ext: sp.ext, kind: 'file', plain: sg.plain, prefixed: sg.prefixed, use: !!used[(base + '/' + solo[i]).toLowerCase()] });
 	}
+
+	finish();
 
 	if (!sub) return;
 
@@ -200,18 +227,18 @@ PADX.filesStart = function () {
 	return { undo: padFilesUndoInfo() };
 };
 
-// a: { path, sub } → { path, name, items, truncated, undo }
+// a: { path, sub } → { path, name, items, others, truncated, undo }
 PADX.filesList = function (a) {
 	var folder = new Folder(padMountedPath(padPath(a.path)));
 
-	if (!a.path || !folder.exists) throw new Error('#PAD_113 - a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
+	if (!a.path || !folder.exists) throw new Error('#PAD_118 - arquivos: a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
 
 	var out = [];
-	var state = { truncated: false };
+	var state = { truncated: false, others: {} };
 
 	padFilesRead(folder, '', a.sub === true, padFilesUsed(), out, state);
 
-	return { path: padDisplayPath(folder.fsName), name: decodeURI(folder.name), items: out, truncated: state.truncated, undo: padFilesUndoInfo() };
+	return { path: padDisplayPath(folder.fsName), name: decodeURI(folder.name), items: out, others: state.others, truncated: state.truncated, undo: padFilesUndoInfo() };
 };
 
 // o que dá para desfazer: { count, folder, when } ou null
@@ -274,8 +301,17 @@ function padFilesMap(path, ops) {
 	return p;
 }
 
-// religa no projeto aberto os arquivos que mudaram de caminho. devolve quantos foram religados
-function padFilesRelink(ops) {
+// religa no projeto aberto os arquivos que mudaram de caminho, num grupo de desfazer do After (um passo do Ctrl+Z).
+// devolve quantos foram religados
+function padFilesReligarGroup(ops, label) {
+	if (!ops.length) return 0;
+
+	return padGroup(label, function () {
+		return padFilesReligar(ops);
+	});
+}
+
+function padFilesReligar(ops) {
 	var count = 0;
 
 	for (var i = 1; i <= app.project.numItems; i++) {
@@ -301,12 +337,13 @@ function padFilesRelink(ops) {
 	return count;
 }
 
-// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }] } → { count, relinked, errors: [{ name, error }], undo }
-// a: { path, items, append } → { count, relinked, errors, undo }
+// a: { path, items: [{ dir, name, ext, kind, sep, pad, to }], append, religar }
+//   → { count, religados, errors: [{ name, error }], ops: [{ from, to, dir }], undo }
+// religar: false → não religa aqui: a janela junta as ops dos lotes e chama filesReligar no fim (um passo do Ctrl+Z)
 PADX.filesRename = function (a) {
 	var root = new Folder(padMountedPath(padPath(a.path)));
 
-	if (!a.path || !root.exists) throw new Error('#PAD_113 - a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
+	if (!a.path || !root.exists) throw new Error('#PAD_118 - arquivos: a pasta não foi encontrada: ' + padDisplayPath(a.path || ''));
 
 	var base = padFilesKey(root.fsName);
 	var list = a.items instanceof Array ? a.items.slice(0) : [];
@@ -384,10 +421,10 @@ PADX.filesRename = function (a) {
 		else count++;
 	}
 
-	var relinked = 0;
+	var religados = 0;
 
 	if (ops.length) {
-		relinked = padFilesRelink(ops);
+		if (a.religar !== false) religados = padFilesReligarGroup(ops, PAD_FILES_RELIGAR_LABEL);
 
 		// o registro para desfazer: as renomeações na ordem em que foram feitas
 		try {
@@ -414,10 +451,19 @@ PADX.filesRename = function (a) {
 		} catch (err) { }
 	}
 
-	return { count: count, relinked: relinked, errors: errors, undo: padFilesUndoInfo() };
+	return { count: count, religados: religados, errors: errors, ops: ops, undo: padFilesUndoInfo() };
 };
 
-// desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado)
+// a: { ops: [{ from, to, dir }] } (as dos lotes de filesRename) → { religados }
+PADX.filesReligar = function (a) {
+	var ops = a && a.ops instanceof Array ? a.ops : [];
+
+	return { religados: padFilesReligarGroup(ops, PAD_FILES_RELIGAR_LABEL) };
+};
+
+// desfaz a última renomeação: de trás para a frente, cada item volta para o nome de antes (e o projeto é religado).
+// o que não voltar (travado, sem permissão) fica no registro: o desfazer continua disponível para tentar de novo; o
+// registro só é apagado quando tudo voltou
 PADX.filesUndo = function () {
 	var file = padFilesUndoFile();
 	var data = null;
@@ -430,28 +476,37 @@ PADX.filesUndo = function () {
 
 	var back = [];
 	var errors = [];
+	var left = [];
 
 	for (var i = data.ops.length - 1; i >= 0; i--) {
 		var op = data.ops[i];
-		var at = op.to.lastIndexOf('/');
-		var parent = op.to.slice(0, at);
+		// onde o item está agora: as renomeações feitas depois dele que não voltaram (left) continuam valendo. ex.: a
+		// pasta que não voltou ainda tem o nome novo, e o arquivo de dentro está nela
+		var now = padFilesMap(op.to, left);
+		var at = now.lastIndexOf('/');
+		var parent = now.slice(0, at);
 		var oldName = op.from.slice(op.from.lastIndexOf('/') + 1);
 		var isFolder = op.dir === true;
-		var ref = isFolder ? new Folder(op.to) : new File(op.to);
+		var ref = isFolder ? new Folder(now) : new File(now);
 		var why = '';
 
 		if (!ref.exists) why = 'não está mais na pasta';
 		else why = padFilesMove(ref, parent, oldName, isFolder);
 
-		if (why) errors.push({ name: op.to.slice(at + 1), error: why });
-		else back.push({ from: op.to, to: op.from, dir: isFolder });
+		if (why) {
+			errors.push({ name: now.slice(at + 1), error: why });
+			left.unshift(op); // na ordem em que foram feitas
+		} else {
+			back.push({ from: now, to: parent + '/' + oldName, dir: isFolder });
+		}
 	}
 
-	var relinked = back.length ? padFilesRelink(back) : 0;
+	var religados = padFilesReligarGroup(back, PAD_FILES_RELIGAR_LABEL + ' (desfazer)');
 
 	try {
-		file.remove();
+		if (left.length) saveTextFile(JSON.stringify({ folder: data.folder, count: left.length, when: data.when || new Date().getTime(), ops: left }), file.fsName);
+		else file.remove();
 	} catch (err2) { }
 
-	return { count: back.length, relinked: relinked, errors: errors, folder: padDisplayPath(data.folder || ''), undo: null };
+	return { count: back.length, missing: errors.length, religados: religados, errors: errors, folder: padDisplayPath(data.folder || ''), undo: padFilesUndoInfo() };
 };

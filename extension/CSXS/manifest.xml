@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.9"
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.jmbillard.opadeiro" ExtensionBundleVersion="2.0.11"
 	ExtensionBundleName="O PADEIRO" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<ExtensionList>
-		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.maker" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.project" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.fonts" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.collect" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.versioner" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.labels" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.files" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.light" Version="2.0.9" />
-		<Extension Id="com.jmbillard.opadeiro.promeiro" Version="2.0.9" />
+		<Extension Id="com.jmbillard.opadeiro.bar" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.panel" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.finder" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.converter" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.productions" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.confeiteiro" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.projetista" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.fonts" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.catador" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.versioner" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.labels" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.files" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.light" Version="2.0.11" />
+		<Extension Id="com.jmbillard.opadeiro.promeiro" Version="2.0.11" />
 	</ExtensionList>
 
 	<ExecutionEnvironment>
@@ -204,11 +204,11 @@
 				</UI>
 			</DispatchInfo>
 		</Extension>
-		<!-- criador de templates -->
-		<Extension Id="com.jmbillard.opadeiro.maker">
+		<!-- O CONFEITEIRO: o criador de templates -->
+		<Extension Id="com.jmbillard.opadeiro.confeiteiro">
 			<DispatchInfo>
 				<Resources>
-					<MainPath>./client/maker.html</MainPath>
+					<MainPath>./client/confeiteiro.html</MainPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access-from-files</Parameter>
 						<Parameter>--allow-file-access</Parameter>
@@ -221,7 +221,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A FORMA · criar</Menu>
+					<Menu>O CONFEITEIRO</Menu>
 					<Geometry>
 						<Size>
 							<Width>1260</Width>
@@ -241,11 +241,11 @@
 				</UI>
 			</DispatchInfo>
 		</Extension>
-		<!-- projeto: ID, nome, retranca, renomear e salvar -->
-		<Extension Id="com.jmbillard.opadeiro.project">
+		<!-- O PROJETISTA: a janela de projeto (um projeto novo pela atração, ou o editor do atual) -->
+		<Extension Id="com.jmbillard.opadeiro.projetista">
 			<DispatchInfo>
 				<Resources>
-					<MainPath>./client/project.html</MainPath>
+					<MainPath>./client/projetista.html</MainPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access-from-files</Parameter>
 						<Parameter>--allow-file-access</Parameter>
@@ -258,7 +258,7 @@
 				</Lifecycle>
 				<UI>
 					<Type>Modeless</Type>
-					<Menu>A CLAQUETE</Menu>
+					<Menu>O PROJETISTA</Menu>
 					<Geometry>
 						<!-- a altura cabe a tela inteira do projeto novo com a lista do output aberta; o mínimo, o caminho, o
 						     que é e o cartão do output sem nada atrás do rodapé -->
@@ -313,11 +313,11 @@
 				</UI>
 			</DispatchInfo>
 		</Extension>
-		<!-- coletar: as mídias do projeto e o estado de cada uma -->
-		<Extension Id="com.jmbillard.opadeiro.collect">
+		<!-- O CATADOR: as mídias do projeto e o estado de cada uma (coletar) -->
+		<Extension Id="com.jmbillard.opadeiro.catador">
 			<DispatchInfo>
 				<Resources>
-					<MainPath>./client/collect.html</MainPath>
+					<MainPath>./client/catador.html</MainPath>
 					<CEFCommandLine>
 						<Parameter>--allow-file-access-from-files</Parameter>
 						<Parameter>--allow-file-access</Parameter>

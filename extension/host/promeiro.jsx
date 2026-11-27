@@ -9,15 +9,19 @@ O Padeiro fala com o PROMeiro por um caminho só dele (/api/padeiro/, com a chav
 X-Chave-Do-Padeiro). Quem fala é o Node do painel (js/promeiro.js), sem travar o After Effects; aqui ficam só o que
 o painel não sabe sozinho (o usuário e o nome do computador, o sistema, a sigla) e a chave guardada.
 
-'promeiro.json' na pasta de dados do usuário (ao lado do machine_config.json), só deste computador:
+A chave do Padeiro deste computador fica na configuração deste computador (a seção 'chaveDoPromeiro' da tabela,
+regras/configuracao.js: 'computador_promeiro.json' na pasta de dados do usuário, ao lado do computador_config.json):
   url       → o endereço do PROMeiro em que a chave foi pedida (outro endereço na configuração: a chave não vale e
               o painel pede outra)
   chave     → a chave do Padeiro (às claras só aqui e na resposta do cadastro; o PROMeiro guarda só o hash)
   estado    → o último estado lido do PROMeiro: pendente, ligada ou revogada
   designer  → o nome do designer ligado à chave (quando ligada)
   conferido → quando o estado foi lido (ISO)
+Antes, a chave ficava no 'promeiro.json' (os mesmos campos, sem a seção): enquanto não há a seção, o host lê o antigo;
+a gravação seguinte grava só a seção (o antigo fica no lugar, como os outros arquivos antigos no beta; apagar a
+chave apaga os dois).
 
-O endereço do PROMeiro é da equipe: configuração > buscar ('SEARCH.promeiro'). Vazio, nada fala com o PROMeiro.
+O endereço do PROMeiro é da equipe: a seção 'promeiro' (configuração > buscar). Vazio, nada fala com o PROMeiro.
 
 'promeiro-fila.json', na mesma pasta: a fila dos avisos do Padeiro ainda não entregues (jmbillard/TEXTAO#141). O
 aviso entra aqui primeiro, ao abrir ou criar o projeto, e sai quando o PROMeiro responde (js/promeiro.js); sem rede,
@@ -42,21 +46,34 @@ var PAD_PROMEIRO_QUEUE_MAX = 100;
 var PAD_PROMEIRO_QUEUE_DAYS = 30;
 var PAD_PROMEIRO_REFUSED_MAX = 20;
 
-function padPromeiroFile() {
+// o arquivo de antes da seção 'chaveDoPromeiro' (lido só enquanto ela não existe)
+function padPromeiroOldFile() {
 	return new File(scriptPreferencesPath + '/promeiro.json');
 }
 
+// a chave guardada: a seção ou, sem ela, o promeiro.json de antes (limpo pela mesma regra) → { url, chave, … } ou {}
 function padPromeiroSaved() {
-	var file = padPromeiroFile();
+	var saved = padLerSecao('chaveDoPromeiro');
+
+	if (saved) return saved;
+
+	var file = padPromeiroOldFile();
 
 	if (!file.exists) return {};
 
 	try {
-		var data = JSON.parse(readFileContent(file));
-
-		return data && typeof data == 'object' ? data : {};
+		return PAD_CONFIGURACAO.limpar('chaveDoPromeiro', JSON.parse(readFileContent(file))) || {};
 	} catch (err) {
 		return {};
+	}
+}
+
+// o endereço do PROMeiro da configuração da equipe ('' sem ele ou sem a configuração)
+function padPromeiroUrl() {
+	try {
+		return padLerSecao('promeiro').url || '';
+	} catch (err) {
+		return '';
 	}
 }
 
@@ -94,15 +111,11 @@ function padPromeiroMachine() {
 	return padTrim(name).substring(0, 120);
 }
 
-// O que o painel precisa para falar com o PROMeiro. → { url, usuario, computador, sistema, sigla, chave, estado,
-// designer, conferido, local }. A chave pedida em outro endereço não vale (chave e estado vazios).
+// O que o painel precisa para falar com o PROMeiro (o campo do modo local valendo, no fim). A chave pedida em outro
+// endereço não vale (chave e estado vazios).
+// → { url, usuario, computador, sistema, sigla, chave, estado, designer, conferido, local }
 PADX.promeiroInfo = function () {
-	var url = '';
-
-	try {
-		url = padReadSearch().promeiro || '';
-	} catch (err) { }
-
+	var url = padPromeiroUrl();
 	var saved = padPromeiroSaved();
 	var same = !!url && saved.url == url && !!saved.chave;
 
@@ -111,7 +124,7 @@ PADX.promeiroInfo = function () {
 		usuario: padTrim(String(system.userName || '')).substring(0, 80),
 		computador: padPromeiroMachine(),
 		sistema: padPromeiroSystem(),
-		sigla: padMachineUser(),
+		sigla: padSigla(),
 		chave: same ? String(saved.chave) : '',
 		estado: same ? String(saved.estado || '') : '',
 		designer: same ? String(saved.designer || '') : '',
@@ -123,29 +136,20 @@ PADX.promeiroInfo = function () {
 // Guarda a chave (a do cadastro) ou o estado lido do PROMeiro. a: { url, chave, estado, designer } (a chave vazia
 // apaga o que estava guardado). → o mesmo que promeiroInfo
 PADX.promeiroSave = function (a) {
-	var folder = new Folder(scriptPreferencesPath);
-
-	if (!folder.exists) folder.create();
-
 	var chave = padTrim(String(a.chave == null ? '' : a.chave));
 
+	// null tira a seção do arquivo (o antigo promeiro.json, se houver, também sai: senão voltaria a valer)
 	if (!chave) {
-		var file = padPromeiroFile();
+		padGravarSecoes({ chaveDoPromeiro: null });
 
-		if (file.exists) file.remove();
+		var old = padPromeiroOldFile();
+
+		if (old.exists) old.remove();
 
 		return PADX.promeiroInfo();
 	}
 
-	var data = {
-		url: padTrim(String(a.url == null ? '' : a.url)),
-		chave: chave,
-		estado: padTrim(String(a.estado == null ? '' : a.estado)),
-		designer: padTrim(String(a.designer == null ? '' : a.designer)),
-		conferido: padPromeiroNow()
-	};
-
-	saveTextFile(JSON.stringify(data, null, '\t'), padPromeiroFile().fsName);
+	padGravarSecoes({ chaveDoPromeiro: { url: a.url, chave: chave, estado: a.estado, designer: a.designer, conferido: padPromeiroNow() } });
 
 	return PADX.promeiroInfo();
 };
@@ -222,12 +226,7 @@ function padPromeiroActionData(d) {
 // { rota, dados, claq }. Sem o endereço do PROMeiro na configuração, nada entra (ninguém para avisar). O mesmo
 // identificador não entra duas vezes. → { queued, itens }
 PADX.promeiroQueueAdd = function (a) {
-	var url = '';
-
-	try {
-		url = padReadSearch().promeiro || '';
-	} catch (err) { }
-
+	var url = padPromeiroUrl();
 	var item = {
 		aviso: padPromeiroText(a.aviso, 100),
 		abertoEm: padPromeiroText(a.abertoEm, 40) || padPromeiroNow(),
@@ -356,9 +355,9 @@ PADX.promeiroRecusadas = function (a) {
 
 // 'promeiro-pedido-<para>.json', na mesma pasta: o pedido de uma janela a outra, como o do conversor e o da aba da
 // configuração (a janela que recebe confere de tempos em tempos e ao voltar à frente):
-//   projeto       → a janela PROJETO abre (ou cria) o projeto da Produção, como pelo card: { producao, claq, atr, card }
+//   projeto       → O PROJETISTA abre (ou cria) o projeto da Produção, como pelo card: { producao, claq, atr, card }
 //   templates     → A FORMA abre nos templates da atração: { atr, claq }
-//   projeto-feito → a resposta da janela PROJETO à janela PROMeiro: { pedido, producao, arquivo, criado, erro, pendente }
+//   projeto-feito → a resposta d'O PROJETISTA à janela PROMeiro: { pedido, producao, arquivo, criado, erro, pendente }
 // Cada pedido novo toma o lugar do anterior. { stamp, dados }
 
 function padPromeiroRequestFile(para) {
@@ -368,7 +367,7 @@ function padPromeiroRequestFile(para) {
 function padPromeiroRequestKind(para) {
 	var kind = String(para == null ? '' : para);
 
-	if (!/^[a-z-]{1,20}$/.test(kind)) throw new Error('#PAD_120 - pedido da janela PROMeiro sem destino: ' + kind.substring(0, 20));
+	if (!/^[a-z-]{1,20}$/.test(kind)) throw new Error('#PAD_123 - pedido da janela PROMeiro sem destino: ' + kind.substring(0, 20));
 
 	return kind;
 }
