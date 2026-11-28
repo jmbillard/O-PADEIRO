@@ -31,9 +31,10 @@ e2e-promeiro.js). Nada sai para a rede. Confere:
 
   PROMEIRO=/caminho/do/TEXTAO CAPTURAS=/uma/pasta NODE_PATH=$(npm root -g) node extension/scripts/e2e-janela.js
 
-Sem PROMEIRO, procura o TEXTAO ao lado desta pasta do Padeiro. Precisa do Playwright com o Chromium (nunca
-`playwright install`: o que já está na máquina) e do Node 22 (o servidor do PROMeiro lê TypeScript). Nomes,
-claquetes e e-mails inventados.
+Sem PROMEIRO, procura o TEXTAO ao lado desta pasta do Padeiro; para, dizendo o motivo, quando a pasta não é um
+PROMeiro ou o checkout está atrás da branch que segue (pasta-do-promeiro.js). O painel vem de um servidor de teste, por
+http, e não do disco. Precisa do Playwright com o Chromium (nunca `playwright install`: o que já está na máquina) e
+do Node 22 (o servidor do PROMeiro lê TypeScript). Nomes, claquetes e e-mails inventados.
 
 */
 
@@ -45,9 +46,12 @@ const http = require('node:http');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const { prepareContext } = require('./ui-states');
+const { pastaDoPromeiro } = require('./pasta-do-promeiro');
 
-const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
-const TEXTAO = path.resolve(process.env.PROMEIRO || path.join(__dirname, '../../../TEXTAO'));
+// o painel de teste vem de um servidor de teste (servirOPainel), não do disco: no Chromium do teste, o localStorage do
+// file:// fica preso ao processo da página, e a janela que reabria noutro processo não via a praça lembrada (#183)
+let CLIENT = '';
+const TEXTAO = pastaDoPromeiro();
 const CAPTURAS = process.env.CAPTURAS || '';
 const CHEFE = 'chefe@exemplo.com';
 const DIA = 86400000;
@@ -152,8 +156,8 @@ async function subirPromeiro() {
 	await app.releituraPronta;
 	await app.pessoasProntas;
 
-	// o painel de teste abre do disco (file://): o PROMeiro de teste responde ao navegador (no After, quem pede é o Node
-	// do painel, sem essa conta). só aqui, em volta do servidor
+	// o painel de teste vem de outra origem (servirOPainel): o PROMeiro de teste responde ao navegador (no After, quem
+	// pede é o Node do painel, sem essa conta). só aqui, em volta do servidor
 	const servidor = http.createServer((req, res) => {
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		res.setHeader('Access-Control-Allow-Headers', 'content-type, x-chave-do-padeiro');
@@ -245,6 +249,43 @@ async function guardarAChave(context) {
 	return host;
 }
 
+// os arquivos do painel por http, numa porta livre: a pasta extension inteira, porque o painel lê também ../regras.
+// Só lê, e nada fora dela
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf' };
+
+async function servirOPainel() {
+	const raiz = path.resolve(__dirname, '..');
+	const servidor = http.createServer((req, res) => {
+		const arquivo = path.join(raiz, decodeURIComponent(new URL(req.url, 'http://painel').pathname));
+
+		if (!arquivo.startsWith(raiz + path.sep)) {
+			res.writeHead(403);
+			res.end();
+			return;
+		}
+		if (process.env.DEBUG) console.log('  [painel] ' + req.url);
+		fs.readFile(arquivo, (err, dados) => {
+			if (err) {
+				res.writeHead(404);
+				res.end();
+				return;
+			}
+			res.writeHead(200, { 'content-type': TIPOS[path.extname(arquivo).toLowerCase()] || 'application/octet-stream' });
+			res.end(dados);
+		});
+	});
+
+	await new Promise((ok) => servidor.listen(0, '127.0.0.1', ok));
+
+	return {
+		url: 'http://127.0.0.1:' + servidor.address().port + '/client/',
+		async fechar() {
+			await new Promise((ok) => servidor.close(ok));
+			servidor.closeAllConnections();
+		}
+	};
+}
+
 const ESCURO = { mode: 'dark', background: 'gradient', accent: '#5184f8', gradientStart: '#67b7ff', gradientEnd: '#5649e9', font: 'inter', logo: '' };
 
 async function contexto(browser, promeiro, { largura, escuro }) {
@@ -324,6 +365,8 @@ async function capturar(page, nome) {
 }
 
 (async () => {
+	const painel = await servirOPainel();
+	CLIENT = painel.url;
 	const promeiro = await subirPromeiro();
 	const browser = await chromium.launch();
 	let ok = 0;
@@ -375,20 +418,12 @@ async function capturar(page, nome) {
 		await aba(page, 'Entrada');
 		await page.locator('.pr-praca').click();
 		assert.deepEqual(await page.locator('.pr-menu-item').evaluateAll((els) => els.map((e) => e.textContent.replace(/\s+/g, ' ').trim())), ['G51 aberta', 'SP3 abertas', 'Todas as praças']);
-		// no navegador de teste, o localStorage do file:// some quando a última página dele fecha (a janela navegando
-		// para ela mesma): outra página aberta segura o que foi gravado até a janela abrir de novo
-		const segura = await largo.newPage();
-		await segura.goto(CLIENT + 'promeiro.html?mock=janelapendente');
-		await page.bringToFront();
 		await page.locator('.pr-menu-item', { hasText: 'G5' }).click();
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5');
 		assert.deepEqual(await abas(page), ['Entrada 0', 'Produzindo 1', 'Minhas 1'], 'Minhas vale para todas as praças');
 		assert.equal(await texto(page.locator('.pr-nada')), 'nada na entrada!');
-		// a outra página vê o que foi gravado antes de a janela abrir de novo (sem isso, a gravação às vezes não chega)
-		await segura.waitForFunction(() => /G5/.test(localStorage.getItem('pad.promeiro.praca') || ''));
 		page = await abrirJanela(largo);
 		assert.equal(await texto(page.locator('.pr-praca')), 'G5', 'a praça escolhida fica lembrada ao abrir de novo');
-		await segura.close();
 		await page.locator('.pr-praca').click();
 		await page.locator('.pr-menu-item', { hasText: 'SP' }).click();
 		assert.deepEqual(await abas(page).then((a) => a.slice(0, 2)), ['Entrada 2', 'Produzindo 1']);
@@ -882,5 +917,6 @@ async function capturar(page, nome) {
 	} finally {
 		await browser.close();
 		await promeiro.descer();
+		await painel.fechar();
 	}
 })();

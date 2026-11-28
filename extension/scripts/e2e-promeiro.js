@@ -30,8 +30,9 @@ Nada sai para a rede. Confere:
 
   PROMEIRO=/caminho/do/TEXTAO NODE_PATH=$(npm root -g) node extension/scripts/e2e-promeiro.js
 
-Sem PROMEIRO, procura o TEXTAO ao lado desta pasta do Padeiro. Precisa do Playwright com o Chromium (nunca
-`playwright install`: o que já está na máquina) e do Node 22 (o servidor do PROMeiro lê TypeScript). Nomes,
+Sem PROMEIRO, procura o TEXTAO ao lado desta pasta do Padeiro; para, dizendo o motivo, quando a pasta não é um
+PROMeiro ou o checkout está atrás da branch que segue (pasta-do-promeiro.js). Precisa do Playwright com o Chromium
+(nunca `playwright install`: o que já está na máquina) e do Node 22 (o servidor do PROMeiro lê TypeScript). Nomes,
 claquetes e e-mails inventados.
 
 */
@@ -44,9 +45,10 @@ const http = require('node:http');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const { prepareContext } = require('./ui-states');
+const { pastaDoPromeiro } = require('./pasta-do-promeiro');
 
 const CLIENT = 'file://' + path.resolve(__dirname, '../client') + '/';
-const TEXTAO = path.resolve(process.env.PROMEIRO || path.join(__dirname, '../../../TEXTAO'));
+const TEXTAO = pastaDoPromeiro();
 const CHEFE = 'chefe@exemplo.com';
 const DIA = 86400000;
 const ha = (n) => new Date(Date.now() - n * DIA).toISOString();
