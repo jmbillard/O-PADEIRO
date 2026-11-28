@@ -61,7 +61,7 @@ const PRODUCOES = [
 	registro('recJanShow', { card_ID: card(1), claquete: 'SHOW DA NOITE 20/12 SP', status: '[]', designers: null, artes: 'HOJE | AMANHÃ | DOMINGO', data_entrada: ha(1), __last_modified_time: ha(1) }),
 	// Entrada, SP: sem a atração no cadastro
 	registro('recJanNovo', { card_ID: card(2), claquete: 'PROGRAMA NOVO 21/12 SP', status: '[]', designers: null, artes: 'LETTERING', data_entrada: ha(1.2), __last_modified_time: ha(1.2) }),
-	// Produzindo, SP, com a Dora: a atração sem a pasta do projeto (sem pasta), sem Roteiro (as artes sem fogo)
+	// Produzindo, SP, com a Dora: a atração sem a pasta do projeto (sem pasta), sem Roteiro (o fogo das artes na vela, #174)
 	registro('recJanFesta', { card_ID: card(3), claquete: 'FESTA NA PRACA 20/12 SP', status: '["PRODUZINDO"]', designers: '["Dora Teste"]', artes: 'LETTERING | CARTÃO', data_entrada: ha(2), __last_modified_time: ha(2) }),
 	// Produzindo, na rede (G5), com outro designer
 	registro('recJanBaile', { card_ID: card(4), claquete: 'BAILE DA ILHA 22/12', status: '["PRODUZINDO"]', designers: '["Rui Teste"]', artes: 'LETTERING', data_entrada: ha(3), __last_modified_time: ha(3) }),
@@ -428,11 +428,12 @@ async function capturar(page, nome) {
 		assert.equal(await texto(page.locator('.pr-rotulo')), 'SP · PRODUZINDO');
 		assert.equal(await page.locator('.pr-versao').count(), 0, 'sem Roteiro, sem a versão');
 		assert.equal(await texto(page.locator('.pr-conta-artes small')), '1 de 2');
-		artes = await page.locator('.artes li').evaluateAll((els) => els.map((e) => [e.querySelector('.txt').textContent, e.classList.contains('feita'), !!e.querySelector('.pr-risco'), !!e.querySelector('.fogo')]));
+		artes = await page.locator('.artes li').evaluateAll((els) => els.map((e) => [e.querySelector('.txt').textContent, e.classList.contains('feita'), !!e.querySelector('.pr-risco'), (e.querySelector('.fogo') || { className: { baseVal: '' } }).className.baseVal]));
+		// sem Roteiro, o fogo fica na própria Produção e começa na vela (jmbillard/TEXTAO#174)
 		assert.deepEqual(artes, [
-			['LETTERING', true, true, false],
-			['CARTÃO', false, false, false]
-		], 'a feita riscada; sem Roteiro, sem fogo');
+			['LETTERING', true, true, 'fogo n1'],
+			['CARTÃO', false, false, 'fogo n1']
+		], 'a feita riscada; sem Roteiro, o fogo na vela');
 		assert.equal(await page.locator('.artes li.feita .b').getAttribute('title'), 'feita · marcada por Dora Teste · clique para voltar a fazer');
 		await capturar(page, 'producao-largo-claro');
 		assert.deepEqual(page.errors, []);
